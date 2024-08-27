@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 package fish.payara.internal.notification.admin;
 
 import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -151,13 +150,8 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
     protected Map<String, Object> getNotifierConfiguration(C configuration) {
         Map<String, Object> map = new LinkedHashMap<>(2);
 
-        if (configuration != null) {
-            map.put("Enabled", configuration.getEnabled());
-            map.put("Noisy", configuration.getNoisy());
-        } else {
-            map.put("Enabled", FALSE.toString());
-            map.put("Noisy", TRUE.toString());
-        }
+        if (configuration != null) map.put("Enabled", configuration.getEnabled());
+        else map.put("Enabled", FALSE.toString());
 
         return map;
     }

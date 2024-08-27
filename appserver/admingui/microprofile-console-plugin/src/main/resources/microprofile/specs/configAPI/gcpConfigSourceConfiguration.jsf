@@ -1,7 +1,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,7 @@
                 value="#{requestScope.resp.data.extraProperties.configSourceConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled"});
         
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
