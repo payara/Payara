@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
@@ -623,7 +623,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // now were falling back into the mainstream loading/starting sequence, at this
         // time the containers are set up, all the modules have been prepared in their
         // associated engines and the application info is created and registered
-        if (loadOnCurrentInstance(context) && isAppAvailableOnTarget(appInfo.getName(), server.getName())) {
+        if (loadOnCurrentInstance(context)) {
             try (SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.INITIALIZE)){
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
@@ -649,21 +649,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             currentDeploymentContext.get().pop();
         }
     }
-
-    /**
-     * This is a method to validate if the app should need to be deployed on the target server
-     * @param appName application Name
-     * @param targetName Target server name
-     * @return boolean
-     */
-    private boolean isAppAvailableOnTarget(final String appName, final String targetName) {
-        List<String> targets = domain.getAllReferencedTargetsForApplication(appName);
-        if (targets.isEmpty()) {
-            return true;
-        }
-        return targets.stream().anyMatch(t -> t.equals(targetName));
-    }
-
+    
     @Override
     public ApplicationInfo deploy(final ExtendedDeploymentContext context) {
         return deploy(null, context);
