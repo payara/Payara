@@ -198,9 +198,9 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                            -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                            -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                            -Ppayara -DtrimStackTrace=false"""
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Ppayara -DtrimStackTrace=false"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
