@@ -187,8 +187,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+                            branches: [[name: "*/master"]],
+                            userRemoteConfigs: [[url: "https://github.com/eclipse-ee4j/cargotracker.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         
                         setupDomain()
@@ -198,9 +198,10 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Ppayara-server-remote -DtrimStackTrace=false"""
+                            -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                            -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                            -Ppayara -DtrimStackTrace=false"""
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
