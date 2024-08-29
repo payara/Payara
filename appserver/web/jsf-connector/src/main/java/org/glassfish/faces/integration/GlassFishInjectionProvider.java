@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 
 package org.glassfish.faces.integration;
 
 import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
 import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
 import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
-import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.EnableAgressiveSessionDirtying;
+import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.EnableDistributable;
 import static java.lang.Boolean.TRUE;
 import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
@@ -460,7 +461,7 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
         // 2> Was deployed with --availabilityenabled --target <clustername>
         
         WebConfiguration config = WebConfiguration.getInstance(ctx);
-        if (!config.isSet(EnableAgressiveSessionDirtying)) {
+        if (!config.isSet(EnableDistributable)) {
             Object isDistributableObj = ctx.getAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
             Object enableHAObj = ctx.getAttribute(ENABLE_HA_ATTRIBUTE);
             
@@ -473,8 +474,8 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
                 }
                 
                 if (isDistributable && enableHA) {
-                    LOGGER.fine("setting the EnableAgressiveSessionDirtying to true");
-                    config.overrideContextInitParameter(EnableAgressiveSessionDirtying, TRUE);
+                    LOGGER.fine("setting EnableDistributable to true");
+                    config.overrideContextInitParameter(EnableDistributable, TRUE);
                 }
             }
         }
