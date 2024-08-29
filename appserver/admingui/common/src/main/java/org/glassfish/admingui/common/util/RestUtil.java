@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -190,12 +190,12 @@ public class RestUtil {
         Logger logger = GuiUtil.getLogger();
         if (logger.isLoggable(Level.FINEST)) {
             Map<String, Object> maskedAttr = maskOffPassword(attrs);
-            logger.log(Level.FINEST,
-                       GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
-                                                new Object[]{
-                        endpoint,
-                        (useData && "post".equals(method)) ? data : attrs, method
-                    }));
+            logger.log(Level.FINEST, GuiUtil.getCommonMessage("LOG_REST_REQUEST_INFO",
+                new Object[]{
+                    endpoint,
+                    (useData && "post".equals(method)) ? data : maskedAttr, method
+                })
+            );
         }
 
         // Execute the request...
