@@ -78,6 +78,8 @@ public class LogDomains {
      */
     public static final String RESOURCE_BUNDLE = "LogStrings";
 
+    public static final String RESOURCE_BUNDLE_MESSAGES = "LogMessages";
+
     /**
      * Field
      */
@@ -363,26 +365,33 @@ public class LogDomains {
         return logManager.getLogger(cLogger.getName());
     }
 
-    private static ResourceBundle getResourceBundle(final String name, final Class clazz,
-            final ClassLoader resourceBundleLoader) {
-        final ResourceBundle classBundle = findResourceBundle(name, clazz, resourceBundleLoader);
+    private static ResourceBundle getResourceBundle (final String name, final Class<?> clazz, final ClassLoader resourceBundleLoader) {
+        ResourceBundle classBundle = findResourceBundle(name, clazz, resourceBundleLoader);
+        if (classBundle == null) { // EJB uses LogMessages instead of LogStrings, check for this file if necessary.
+            classBundle = findResourceBundle(name, clazz, resourceBundleLoader, RESOURCE_BUNDLE_MESSAGES);
+        }
+
         if (classBundle != null) {
             return classBundle;
         }
+
         Logger.getAnonymousLogger().log(Level.INFO, "Cannot find the resource bundle for the name {0} for {1} using {2}", new Object[]{name, clazz, resourceBundleLoader});
         return null;
     }
 
-    private static ResourceBundle findResourceBundle(final String name, final Class clazz,
-            final ClassLoader classLoader) {
-        final ResourceBundle packageRootBundle = tryTofindResourceBundle(name, classLoader);
+    private static ResourceBundle findResourceBundle (final String name, final Class<?> clazz, final ClassLoader classLoader) {
+        return findResourceBundle(name, clazz, classLoader, LogDomains.RESOURCE_BUNDLE);
+    }
+
+    private static ResourceBundle findResourceBundle (final String name, final Class<?> clazz, final ClassLoader classLoader, final String fileSuffix) {
+        final ResourceBundle packageRootBundle = tryToFindResourceBundle(name, classLoader, fileSuffix);
         if (packageRootBundle != null) {
             return packageRootBundle;
         }
         // not found. Ok, let's try to go through the class's package tree
         final StringBuilder rbPackage = new StringBuilder(clazz.getPackage().getName());
         while (true) {
-            final ResourceBundle subPkgBundle = tryTofindResourceBundle(rbPackage.toString(), classLoader);
+            final ResourceBundle subPkgBundle = tryToFindResourceBundle(rbPackage.toString(), classLoader, fileSuffix);
             if (subPkgBundle != null) {
                 return subPkgBundle;
             }
@@ -402,9 +411,9 @@ public class LogDomains {
         return loggerName;
     }
 
-    private static ResourceBundle tryTofindResourceBundle(final String name, final ClassLoader classLoader) {
+    private static ResourceBundle tryToFindResourceBundle (final String name, final ClassLoader classLoader, final String fileSuffix) {
         try {
-            return ResourceBundle.getBundle(name + "." + LogDomains.RESOURCE_BUNDLE, Locale.getDefault(), classLoader);
+            return ResourceBundle.getBundle(name + "." + fileSuffix, Locale.getDefault(), classLoader);
         } catch (MissingResourceException e) {
             return null;
         }

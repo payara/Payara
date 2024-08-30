@@ -59,6 +59,7 @@
 
 package org.apache.naming.resources;
 
+import java.nio.file.LinkOption;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Logger;
@@ -927,7 +928,7 @@ public class FileDirContext extends BaseDirContext {
             // Check that this file belongs to our root path
             String canPath = null;
             try {
-                canPath = normalize(file.toPath().toRealPath().toString());
+                canPath = normalize(file.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS).toString());
             } catch (IOException e) {
             }
             if (canPath == null || (!canPath.startsWith(canonicalBase) && !allowLinking)) {
