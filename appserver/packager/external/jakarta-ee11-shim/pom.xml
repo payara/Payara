@@ -92,7 +92,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Downgrade shim for JSP, required by WASP. Remove once WASP upgraded -->
+        <!-- Downgrade shim for JSP, required by WASP. Remove once JSTL API upgraded -->
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
             <artifactId>jakarta.servlet.jsp-api</artifactId>
@@ -132,7 +132,7 @@
                                     jakarta.security.jacc-api,
                                     <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
                                     jakarta.ws.rs-api,
-                                    <!-- Downgrade shim for JSP, required by WASP. Remove once WASP upgraded -->
+                                    <!-- Downgrade shim for JSP, required by WASP. Remove once JSTL API upgraded -->
                                     jakarta.servlet.jsp-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
@@ -238,7 +238,7 @@
                                     jakarta.ws.rs.ext;
                                     jakarta.ws.rs.sse;version="3.1.99";shim=true,
 
-                                    <!-- Downgrade shim for JSP, required by WASP. Remove once WASP upgraded -->
+                                    <!-- Downgrade shim for JSP, required by WASP. Remove once JSTL API upgraded -->
                                     jakarta.servlet.jsp;
                                     jakarta.servlet.jsp.el;
                                     jakarta.servlet.jsp.tagext;version="3.1.99";shim=true
