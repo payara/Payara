@@ -444,9 +444,9 @@
                 <version>${openmq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-                <version>${jakarta.servlet.jsp.jstl.version}</version>
+                <groupId>org.glassfish.wasp</groupId>
+                <artifactId>wasp</artifactId>
+                <version>${jsp-impl.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse</groupId>
