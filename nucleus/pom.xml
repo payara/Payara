@@ -137,7 +137,7 @@
 
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.14</ant.version>
-        <ant-launcher.version>1.10.14</ant-launcher.version>
+        <ant-launcher.version>1.10.15</ant-launcher.version>
         <javadoc.options>-Xdoclint:none</javadoc.options>
 
         <!-- Debug / analysis -->
