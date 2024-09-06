@@ -276,7 +276,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>2.2</specVersion>
-                            <specImplVersion>${jakarta.servlet.jsp.jstl.version}</specImplVersion>
+                            <specImplVersion>${jsp-impl.version}</specImplVersion>
                             <apiPackage>jakarta.servlet.jsp.jstl</apiPackage>
                         </spec>
 
