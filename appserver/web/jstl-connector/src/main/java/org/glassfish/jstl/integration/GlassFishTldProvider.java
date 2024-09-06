@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.jstl.integration;
 
@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import org.apache.taglibs.standard.Version;
+import org.glassfish.wasp.taglibs.standard.Version;
 import org.glassfish.api.web.TldProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.web.loader.LogFacade;
