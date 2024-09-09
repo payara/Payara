@@ -109,6 +109,8 @@ public class CreateSystemProperties implements AdminCommand, AdminCommandSecurit
 
     private SystemPropertyBag spb;
 
+    private static final Pattern HTML_JS_PATTERN = Pattern.compile("<[^>]+>");
+
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         spb = CLIUtil.chooseTarget(domain, target);
@@ -158,9 +160,7 @@ public class CreateSystemProperties implements AdminCommand, AdminCommandSecurit
                     TranslatedConfigView.doSubstitution.set(Boolean.TRUE);
                 }
 
-                String HTML_JS_PATTERN = "<[^>]+>";
-                Pattern pattern = Pattern.compile(HTML_JS_PATTERN);
-                Matcher matcher = pattern.matcher(properties.getProperty(propName));
+                Matcher matcher = HTML_JS_PATTERN.matcher(properties.getProperty(propName));
                 if (matcher.find()) {
                     report.setMessage(localStrings.getLocalString("create.system.properties.failed",
                             "System property {0} creation failed", sysPropName));
