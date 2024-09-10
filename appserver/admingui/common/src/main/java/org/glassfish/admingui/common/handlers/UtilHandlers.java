@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
+// Portions Copyright 2018-2024 Payara Foundation and/or affiliates
 
 /*
  * UtilHandlers.java
@@ -1164,4 +1164,16 @@ public class UtilHandlers {
     }
 
     private static final String PATH_SEPARATOR = "${path.separator}";
+
+    @Handler(id = "gf.sanitiseProperty",
+            input = {
+                    @HandlerInput(name = "systemProperty", type = String.class, required = true)
+            },
+            output = {
+                    @HandlerOutput(name = "result", type = String.class)
+            }
+    )
+    public static void sanitiseProperty(HandlerContext handlerCtx) {
+        handlerCtx.setOutputValue("result", escapePropertyValue(((String)handlerCtx.getInputValue("systemProperty"))));
+    }
 }
