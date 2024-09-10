@@ -162,10 +162,7 @@ public class CreateSystemProperties implements AdminCommand, AdminCommandSecurit
 
                 Matcher matcher = HTML_JS_PATTERN.matcher(properties.getProperty(propName));
                 if (matcher.find()) {
-                    report.setMessage(localStrings.getLocalString("create.system.properties.failed",
-                            "System property {0} creation failed", sysPropName));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
+                    throw new IllegalArgumentException("Argument must not contain HTML/JS tags");
                 }
                 
                 ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
