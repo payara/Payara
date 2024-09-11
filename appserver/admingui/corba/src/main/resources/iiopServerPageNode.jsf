@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- iiopServerPageNode.jsf -->
@@ -59,6 +60,8 @@
             listAdd(value="#{pageSession.iiopListenerAttrs.data.extraProperties.entity['port']}" list="#{pageSession.iiopPortsList}");
         }
         gf.resolveTokens(tokens="#{pageSession.iiopPortsList}" endPoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.instanceName}" resolvedTokens="#{pageSession.iiopResolvedPortsList}");
-        convertListToCommaString(list="#{pageSession.iiopResolvedPortsList}" commaString="#{pageSession.iiopPorts}");
+        convertListToCommaString(list="#{pageSession.iiopResolvedPortsList}" commaString="#{iiopPorts}");
+        gf.sanitiseProperty(systemProperty="#{iiopPorts}", result="#{pageSession.iiopPorts}");
+
     />
 </sun:property> 
