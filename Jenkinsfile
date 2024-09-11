@@ -187,7 +187,7 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara6"]],
+                            branches: [[name: "*/cargotracker6"]],
                             userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         
@@ -197,10 +197,10 @@ pipeline {
                         sh "rm -rf /tmp/cargo*"
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
-                        -Ppayara-server-remote -DtrimStackTrace=false"""
+                        sh  """mvn -B -V -ff -e clean verify --strict-checksums -Dsurefire.useFile=false \
+                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                         -Djavax.xml.accessExternalSchema=all \
+                         -Ppayara-server-remote -DtrimStackTrace=false"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
