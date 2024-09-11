@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- serverPageNode.jsf -->
@@ -60,6 +60,7 @@
             listAdd(value="#{pageSession.tmpPort}" list="#{pageSession.httpPortsList}");
         }
         gf.resolveTokens(tokens="#{pageSession.httpPortsList}" endPoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.instanceName}" resolvedTokens="#{pageSession.httpResolvedPortsList}");
-        convertListToCommaString(list="#{pageSession.httpResolvedPortsList}" commaString="#{pageSession.httpPorts}");
+        convertListToCommaString(list="#{pageSession.httpResolvedPortsList}" commaString="#{portList}");
+        gf.sanitiseProperty(systemProperty="#{portList}", result="#{pageSession.httpPorts}");
     />
 </sun:property> 
