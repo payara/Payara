@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ public interface PayaraNotifierConfiguration extends ConfigBeanProxy {
 
     public static final String DEFAULT_ENABLED_VALUE = "false";
     public static final String DEFAULT_NOISY_VALUE = "true";
+    String DEFAULT_EVENT_FILTER = "WARNING";
 
     @Attribute(defaultValue = DEFAULT_ENABLED_VALUE, dataType = Boolean.class)
     String getEnabled();
@@ -65,4 +66,7 @@ public interface PayaraNotifierConfiguration extends ConfigBeanProxy {
     String getNoisy();
     void noisy(Boolean value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = DEFAULT_EVENT_FILTER, dataType = String.class)
+    String getFilter ();
+    void filter (String value) throws PropertyVetoException;
 }

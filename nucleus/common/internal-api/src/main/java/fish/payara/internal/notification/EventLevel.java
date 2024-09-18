@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,45 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.internal.notification;
 
-import org.jvnet.hk2.annotations.Contract;
+import java.util.function.BiPredicate;
+import java.util.logging.Level;
 
 /**
- * A contract for a service representing a dynamic PayaraNotifier with no
- * domain.xml configuration. For a notifier with domain.xml configuration see
- * {@link PayaraConfiguredNotifier}.
+ *
  */
-@Contract
-public interface PayaraNotifier {
+public enum EventLevel {
+    INFO(800),
+    WARNING(900),
+    SEVERE(1000);
 
-    /**
-     * Receives a notification and processes if certain conditions are met.
-     *
-     * @param event the notification
-     */
-    default void tryHandleNotification (PayaraNotification event) {
-        this.handleNotification(event);
+    private final int severityLevel;
+
+    public static EventLevel fromNameOrWarning (String name) {
+        try {
+            return EventLevel.valueOf(name.toUpperCase());
+        } catch (Exception e) {
+            return WARNING;
+        }
     }
 
-    /**
-     * Receive notifications from the notification service.
-     * @param event the notification
-     */
-    void handleNotification(PayaraNotification event);
+    public static EventLevel fromLogLevel (Level level) {
+        if (level.intValue() <= INFO.severityLevel) return INFO;
+        if (level.intValue() <= WARNING.severityLevel) return WARNING;
+        return SEVERE;
+    }
 
-    /**
-     * Initialise any required properties. Called when the notifier is initialised,
-     * or configuration values are changed.
-     */
-    default void bootstrap() {
-    };
+    EventLevel (int severityLevel) {
+        this.severityLevel = severityLevel;
+    }
 
-    /**
-     * Destroy any objects before configuration values are changed. Called when the
-     * server shuts down or before the notifier is reinitialised.
-     */
-    default void destroy() {
-    };
+    public int getSeverityLevel () {
+        return severityLevel;
+    }
 
+    public boolean compare (EventLevel other, BiPredicate<Integer, Integer> predicate) {
+        return predicate.test(this.severityLevel, other.severityLevel);
+    }
 }

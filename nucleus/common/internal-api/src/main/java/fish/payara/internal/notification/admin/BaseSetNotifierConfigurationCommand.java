@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fish.payara.internal.notification.EventLevel;
 import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -94,6 +95,9 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
 
     @Param(name = "noisy", optional = true, defaultValue = "true")
     protected Boolean noisy;
+
+    @Param(name = "filter", optional = true, defaultValue = "WARNING")
+    protected String filter;
 
     @Override
     public void execute(final AdminCommandContext context) {
@@ -180,6 +184,7 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
         if (this.noisy != null) {
             configuration.noisy(this.noisy);
         }
+        if (this.filter != null) configuration.filter(EventLevel.fromNameOrWarning(this.filter).toString());
     }
 
     /**
