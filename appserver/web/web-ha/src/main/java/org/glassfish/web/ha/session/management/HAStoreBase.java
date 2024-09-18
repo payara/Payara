@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 /*
  * HAStoreBase.java
@@ -311,7 +311,8 @@ public abstract class HAStoreBase extends StoreBase {
 
     //possible generic methods end
 
-
-
-
+    @Override
+    public boolean isHighAvailability() {
+        return true;
+    }
 }
