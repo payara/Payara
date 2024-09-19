@@ -93,7 +93,7 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     protected Boolean enabled;
 
     @Deprecated
-    @Param(name = "noisy", optional = true, defaultValue = "true")
+    @Param(name = "noisy", optional = true, defaultValue = "true", obsolete = true)
     protected Boolean noisy;
 
     @Override
@@ -175,7 +175,9 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
      *                               pass the configured validation.
      */
     protected void applyValues(C configuration) throws PropertyVetoException {
-        if (this.enabled != null) configuration.enabled(this.enabled);
+        if (this.enabled != null) {
+            configuration.enabled(this.enabled);
+        }
     }
 
     /**

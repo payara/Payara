@@ -150,8 +150,11 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
     protected Map<String, Object> getNotifierConfiguration(C configuration) {
         Map<String, Object> map = new LinkedHashMap<>(2);
 
-        if (configuration != null) map.put("Enabled", configuration.getEnabled());
-        else map.put("Enabled", FALSE.toString());
+        if (configuration != null) {
+            map.put("Enabled", configuration.getEnabled());
+        } else {
+            map.put("Enabled", FALSE.toString());
+        }
 
         return map;
     }
