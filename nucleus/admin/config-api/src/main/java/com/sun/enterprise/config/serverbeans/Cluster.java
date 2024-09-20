@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -92,6 +92,8 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 @NotDuplicateTargetName(message="{cluster.duplicate.name}", payload=Cluster.class)
 @ReferenceConstraint(skipDuringCreation=true, payload=Cluster.class)
 public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
+
+    SecureRandom R = new SecureRandom();
 
     /**
      * Sets the cluster name
@@ -723,7 +725,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
                         // generate a random port since user did not provide one.
                         // better fix in future would be to walk existing clusters and pick an unused port.
-                        TCPPORT = Integer.toString(new SecureRandom().nextInt(9200 - 9090) + 9090);
+                        TCPPORT = Integer.toString(R.nextInt(9200 - 9090) + 9090);
 
                         // hardcode all instances to use same default port.
                         // generate mode does not support multiple instances on one machine.
@@ -744,7 +746,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                             gmsListenerPortSysProp.setName(propName);
                             if (TCPPORT == null || TCPPORT.trim().charAt(0) == '$') {
                                 String generateGmsListenerPort = Integer.toString(
-                                        new SecureRandom().nextInt(9200 - 9090) + 9090);
+                                        R.nextInt(9200 - 9090) + 9090);
                                 gmsListenerPortSysProp.setValue(generateGmsListenerPort);
                             } else {
                                 gmsListenerPortSysProp.setValue(TCPPORT);
