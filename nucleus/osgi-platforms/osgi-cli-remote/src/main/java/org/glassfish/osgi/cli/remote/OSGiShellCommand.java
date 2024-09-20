@@ -48,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -221,11 +222,11 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
 
         // standard output...
         ByteArrayOutputStream bOut = new ByteArrayOutputStream(512);
-        PrintStream out = new PrintStream(bOut);
+        PrintStream out = new PrintStream(bOut, true, StandardCharsets.UTF_8);
 
         // error output...
         ByteArrayOutputStream bErr = new ByteArrayOutputStream(512);
-        PrintStream err = new PrintStream(bErr);
+        PrintStream err = new PrintStream(bErr, true, StandardCharsets.UTF_8);
 
         try {
             Object shell = null;
