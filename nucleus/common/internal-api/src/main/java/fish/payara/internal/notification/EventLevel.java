@@ -62,8 +62,12 @@ public enum EventLevel {
     }
 
     public static EventLevel fromLogLevel (Level level) {
-        if (level.intValue() <= INFO.severityLevel) return INFO;
-        if (level.intValue() <= WARNING.severityLevel) return WARNING;
+        if (level.intValue() <= INFO.severityLevel) {
+            return INFO;
+        }
+        if (level.intValue() <= WARNING.severityLevel) {
+            return WARNING;
+        }
         return SEVERE;
     }
 

@@ -52,7 +52,7 @@ public interface PayaraNotifier {
     /**
      * Receives a notification and processes if certain conditions are met.
      *
-     * @param event the notification
+     * @param event The notification.
      */
     default void tryHandleNotification (PayaraNotification event) {
         this.handleNotification(event);

@@ -68,7 +68,9 @@ public abstract class PayaraConfiguredNotifier<C extends PayaraNotifierConfigura
 
     @Override
     public void tryHandleNotification (PayaraNotification event) {
-        if (event.getLevel().compare(EventLevel.fromNameOrWarning(this.configuration.getFilter()), (a, b) -> a >= b))
+        EventLevel filterLevel = EventLevel.fromNameOrWarning(this.configuration.getFilter());
+        if (event.getLevel().compare(filterLevel, (a, b) -> a >= b)) {
             this.handleNotification(event);
+        }
     }
 }

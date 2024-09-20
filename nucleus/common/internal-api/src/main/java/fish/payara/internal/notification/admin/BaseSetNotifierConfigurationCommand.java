@@ -184,7 +184,9 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
         if (this.noisy != null) {
             configuration.noisy(this.noisy);
         }
-        if (this.filter != null) configuration.filter(EventLevel.fromNameOrWarning(this.filter).toString());
+        if (this.filter != null) {
+            configuration.filter(EventLevel.fromNameOrWarning(this.filter).toString());
+        }
     }
 
     /**
