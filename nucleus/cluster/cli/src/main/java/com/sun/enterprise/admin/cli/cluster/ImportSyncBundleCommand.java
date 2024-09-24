@@ -132,7 +132,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private File backupDir;
 
     private static final String RENDEZVOUS_PROPERTY_NAME = "rendezvousOccurred";
-    private static final SecureRandom r = new SecureRandom();
+    private static final Random random = new SecureRandom();
     private String instanceDottedName;
     private String rendevousDottedName;
 
@@ -335,7 +335,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private void backupInstanceDir() {
         File f = getServerDirs().getServerDir();
         if (f != null && f.isDirectory()) {
-            setBackupDir(r.nextInt());
+            setBackupDir(random.nextInt());
             File backup = getBackupDir();
             if (!f.renameTo(backup)) {
                 logger.warning(Strings.get("import.sync.bundle.backupInstanceDirFailed", f.getAbsolutePath(), backup.getAbsolutePath()));

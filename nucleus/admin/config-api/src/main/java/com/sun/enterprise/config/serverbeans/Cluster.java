@@ -93,8 +93,6 @@ import static org.glassfish.config.support.Constants.NAME_SERVER_REGEX;
 @ReferenceConstraint(skipDuringCreation=true, payload=Cluster.class)
 public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemPropertyBag, ReferenceContainer, RefContainer, Payload {
 
-    SecureRandom R = new SecureRandom();
-
     /**
      * Sets the cluster name
      * @param value cluster name
@@ -614,6 +612,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
          */
         @Override
         public void decorate(AdminCommandContext context, final Cluster instance) throws TransactionFailure, PropertyVetoException {
+            SecureRandom random = new SecureRandom();
             Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
             Transaction t = Transaction.getTransaction(instance);
@@ -725,7 +724,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
                         // generate a random port since user did not provide one.
                         // better fix in future would be to walk existing clusters and pick an unused port.
-                        TCPPORT = Integer.toString(R.nextInt(9200 - 9090) + 9090);
+                        TCPPORT = Integer.toString(random.nextInt(9200 - 9090) + 9090);
 
                         // hardcode all instances to use same default port.
                         // generate mode does not support multiple instances on one machine.
@@ -746,7 +745,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                             gmsListenerPortSysProp.setName(propName);
                             if (TCPPORT == null || TCPPORT.trim().charAt(0) == '$') {
                                 String generateGmsListenerPort = Integer.toString(
-                                        R.nextInt(9200 - 9090) + 9090);
+                                        random.nextInt(9200 - 9090) + 9090);
                                 gmsListenerPortSysProp.setValue(generateGmsListenerPort);
                             } else {
                                 gmsListenerPortSysProp.setValue(TCPPORT);
