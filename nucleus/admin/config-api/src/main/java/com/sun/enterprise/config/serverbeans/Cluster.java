@@ -77,6 +77,7 @@ import java.io.File;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -612,9 +613,9 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
          */
         @Override
         public void decorate(AdminCommandContext context, final Cluster instance) throws TransactionFailure, PropertyVetoException {
-            SecureRandom random = new SecureRandom();
             Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
+            Random random = new SecureRandom();
             Transaction t = Transaction.getTransaction(instance);
             //check if cluster software is installed else fail , see issue 12023
             final CopyConfig command = (CopyConfig) runner
