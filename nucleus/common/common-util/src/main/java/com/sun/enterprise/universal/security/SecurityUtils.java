@@ -49,8 +49,17 @@ import java.security.SecureRandom;
  */
 public final class SecurityUtils {
 
+    private static SecureRandom random = new SecureRandom();
+
+    private static int nextInt() {
+        return random.nextInt();
+    }
+
+    private static int nextInt(int bound) {
+        return random.nextInt(bound);
+    }
+
     public static String getSecureRandomHexString(int numBytes) {
-        SecureRandom random = new SecureRandom();
         byte[] bb = new byte[numBytes];
         random.nextBytes(bb);
         return toHexString(bb);

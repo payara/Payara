@@ -615,7 +615,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         public void decorate(AdminCommandContext context, final Cluster instance) throws TransactionFailure, PropertyVetoException {
             Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Cluster.class);
-            Random random = new SecureRandom();
             Transaction t = Transaction.getTransaction(instance);
             //check if cluster software is installed else fail , see issue 12023
             final CopyConfig command = (CopyConfig) runner
@@ -725,7 +724,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
 
                         // generate a random port since user did not provide one.
                         // better fix in future would be to walk existing clusters and pick an unused port.
-                        TCPPORT = Integer.toString(random.nextInt(9200 - 9090) + 9090);
+                        TCPPORT = Integer.toString(SecurityUtils.nextInt(9200 - 9090) + 9090);
 
                         // hardcode all instances to use same default port.
                         // generate mode does not support multiple instances on one machine.
@@ -746,7 +745,7 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                             gmsListenerPortSysProp.setName(propName);
                             if (TCPPORT == null || TCPPORT.trim().charAt(0) == '$') {
                                 String generateGmsListenerPort = Integer.toString(
-                                        random.nextInt(9200 - 9090) + 9090);
+                                        SecurityUtils.nextInt(9200 - 9090) + 9090);
                                 gmsListenerPortSysProp.setValue(generateGmsListenerPort);
                             } else {
                                 gmsListenerPortSysProp.setValue(TCPPORT);
