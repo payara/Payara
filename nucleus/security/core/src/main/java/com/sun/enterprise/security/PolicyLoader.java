@@ -92,6 +92,7 @@ public class PolicyLoader {
     private static final String POLICY_PROVIDER_14 = "jakarta.security.jacc.policy.provider";
     private static final String POLICY_PROVIDER_13 = "jakarta.security.jacc.auth.policy.provider";
     public static final String POLICY_CONF_FACTORY = "jakarta.security.jacc.PolicyConfigurationFactory.provider";
+    public static final String POLICY_FACTORY_PROVIDER = "jakarta.security.jacc.PolicyFactory.provider";
     private static final String POLICY_PROP_PREFIX = "com.sun.enterprise.jaccprovider.property.";
 
     private static final String AUTH_PROXY_HANDLER = "com.sun.enterprise.security.AuthenticationProxyHandler";

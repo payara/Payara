@@ -193,12 +193,7 @@ public class JaccWebAuthorizationManager {
         this.serverContext = serverContext;
         this.webSecurityManagerFactory = webSecurityManagerFactory;
 
-        //evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
-        //if this is true load class and assign as a custom configuration for the PolicyConfigurationFactory
-        webBundleDescriptor.getContextParametersSet().stream()
-                .filter(c -> c.getName().equals(PolicyLoader.POLICY_CONF_FACTORY))
-                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
-                .ifPresent(cl -> installPolicyConfigurationFactory(webBundleDescriptor, cl));
+        preprocessParams(webBundleDescriptor);
 
         String appname = getAppId();
         SecurityRoleMapperFactory securityRoleMapperFactory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
@@ -229,6 +224,22 @@ public class JaccWebAuthorizationManager {
                 webBundleDescriptor.isDenyUncoveredHttpMethods(),
                 GlassFishToExousiaConverter.getSecurityRoleRefsFromBundle(webBundleDescriptor));
     }
+    
+    private void preprocessParams(WebBundleDescriptor webBundleDescriptor) {
+        //evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
+        //if this is true load class and assign as a custom configuration for the PolicyConfigurationFactory
+        webBundleDescriptor.getContextParametersSet().stream()
+                .filter(c -> c.getName().equals(PolicyLoader.POLICY_CONF_FACTORY))
+                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
+                .ifPresent(cl -> installPolicyConfigurationFactory(webBundleDescriptor, cl));
+        
+        // evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
+        //if this is true load class and assign as a custom policy for the 
+        webBundleDescriptor.getContextParametersSet().stream()
+                .filter(c -> c.getName().equals(PolicyLoader.POLICY_FACTORY_PROVIDER))
+                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
+                .ifPresent(cl -> installPolicyFactory(webBundleDescriptor, cl));
+    }
 
     private Class<?> loadFactory(WebBundleDescriptor webBundleDescriptor, String factoryClassName) {
         try {
@@ -243,6 +254,16 @@ public class JaccWebAuthorizationManager {
         try {
             Thread.currentThread().setContextClassLoader(webBundleDescriptor.getApplicationClassLoader());
             AuthorizationService.installPolicyConfigurationFactory(factoryClass);
+        } finally {
+            Thread.currentThread().setContextClassLoader(existing);
+        }
+    }
+
+    private void installPolicyFactory(WebBundleDescriptor webBundleDescriptor, Class<?> factoryClass) {
+        ClassLoader existing = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(webBundleDescriptor.getApplicationClassLoader());
+            AuthorizationService.installPolicyFactory(factoryClass);
         } finally {
             Thread.currentThread().setContextClassLoader(existing);
         }
