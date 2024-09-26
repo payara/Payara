@@ -55,14 +55,13 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-
+import com.sun.enterprise.universal.security.SecurityUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FileInputStream;
-import java.security.SecureRandom;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.admin.payload.PayloadFilesManager.Perm;
 import org.glassfish.hk2.api.PerLookup;

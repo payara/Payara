@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.security;
 
@@ -51,11 +51,11 @@ public final class SecurityUtils {
 
     private static SecureRandom random = new SecureRandom();
 
-    private static int nextInt() {
+    public static int nextInt() {
         return random.nextInt();
     }
 
-    private static int nextInt(int bound) {
+    public static int nextInt(int bound) {
         return random.nextInt(bound);
     }
 
