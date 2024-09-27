@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -92,7 +92,8 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     @Param(name = "enabled")
     protected Boolean enabled;
 
-    @Param(name = "noisy", optional = true, defaultValue = "true")
+    @Deprecated
+    @Param(name = "noisy", optional = true, defaultValue = "true", obsolete = true)
     protected Boolean noisy;
 
     @Override
@@ -176,9 +177,6 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     protected void applyValues(C configuration) throws PropertyVetoException {
         if (this.enabled != null) {
             configuration.enabled(this.enabled);
-        }
-        if (this.noisy != null) {
-            configuration.noisy(this.noisy);
         }
     }
 
