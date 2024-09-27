@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 -->
 
 <sun:table id="sysPropsTable" style="padding: 10pt" title="$resource{i18n.common.AdditionalProperties}"
@@ -62,7 +63,8 @@
         foreach(var="prop", list="#{pageSession.sysProps}") {
             createMap(result="#{row}");
             mapPut(map="#{row}", key="name", value="#{prop.name}");
-            mapPut(map="#{row}", key="currentValue", value="#{!empty prop.value ? prop.value : prop.defaultValue}");
+            gf.sanitiseProperty(systemProperty="#{!empty prop.value ? prop.value : prop.defaultValue}", result="#{currentVal}");
+            mapPut(map="#{row}", key="currentValue", value="#{currentVal}");
             mapPut(map="#{row}", key="overrideValue", value="#{!empty prop.value ? prop.value : ''}");
             listAdd(list="#{pageSession.tableList}", value="#{row}");
         }

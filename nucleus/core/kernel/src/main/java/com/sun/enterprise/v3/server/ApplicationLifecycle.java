@@ -649,7 +649,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             currentDeploymentContext.get().pop();
         }
     }
-
+    
     @Override
     public ApplicationInfo deploy(final ExtendedDeploymentContext context) {
         return deploy(null, context);

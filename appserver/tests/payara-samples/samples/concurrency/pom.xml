@@ -58,10 +58,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <arquillian-bom.version>1.9.1.Final</arquillian-bom.version>
-        <junit-jupiter.version>5.10.3</junit-jupiter.version>
+        <junit-jupiter.version>5.11.0</junit-jupiter.version>
         <arquillian-payara.version>3.0.alpha4</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.3</jakarta-concurrent.version>
-        <shrinkwrap.version>3.3.0</shrinkwrap.version>
+        <shrinkwrap.version>3.3.1</shrinkwrap.version>
     </properties>
 
     <dependencyManagement>
@@ -138,7 +138,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
