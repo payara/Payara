@@ -55,7 +55,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import com.sun.enterprise.universal.security.SecurityUtils;
+import org.glassfish.common.util.RandomUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -333,7 +333,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private void backupInstanceDir() {
         File f = getServerDirs().getServerDir();
         if (f != null && f.isDirectory()) {
-            setBackupDir(SecurityUtils.nextInt());
+            setBackupDir(RandomUtils.nextInt());
             File backup = getBackupDir();
             if (!f.renameTo(backup)) {
                 logger.warning(Strings.get("import.sync.bundle.backupInstanceDirFailed", f.getAbsolutePath(), backup.getAbsolutePath()));
