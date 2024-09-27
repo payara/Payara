@@ -538,7 +538,7 @@ public class WebServiceTesterServlet extends HttpServlet {
             logger.log(Level.SEVERE, LogUtils.CREATE_DIR_FAILED, classesDir);
         }
 
-        String[] wsimportArgs = new String[14];
+        String[] wsimportArgs = new String[13];
         wsimportArgs[0] = "-d";
         wsimportArgs[1] = classesDir.getAbsolutePath();
         wsimportArgs[2] = "-keep";
