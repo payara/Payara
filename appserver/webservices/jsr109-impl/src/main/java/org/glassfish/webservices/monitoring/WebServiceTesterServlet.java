@@ -549,10 +549,10 @@ public class WebServiceTesterServlet extends HttpServlet {
         wsimportArgs[7] = "-extension";
         String modulesDir = System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator;
         wsimportArgs[8] = modulesDir + "jakarta.jws-api.jar";
-        wsimportArgs[10] = modulesDir + "webservices-osgi.jar";
-        wsimportArgs[11] = modulesDir + "jaxb-osgi.jar";
-        wsimportArgs[12] = modulesDir + "jakarta.xml.ws-api.jar";
-        wsimportArgs[13] = modulesDir + "jakarta.activation-api.jar";
+        wsimportArgs[9] = modulesDir + "webservices-osgi.jar";
+        wsimportArgs[10] = modulesDir + "jaxb-osgi.jar";
+        wsimportArgs[11] = modulesDir + "jakarta.xml.ws-api.jar";
+        wsimportArgs[12] = modulesDir + "jakarta.activation-api.jar";
         WSToolsObjectFactory tools = WSToolsObjectFactory.newInstance();
         logger.log(Level.INFO, LogUtils.WSIMPORT_INVOKE, wsdlLocation);
         boolean success = tools.wsimport(System.out, wsimportArgs);
