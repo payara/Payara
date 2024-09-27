@@ -40,7 +40,6 @@
 package fish.payara.internal.notification.admin;
 
 import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -154,11 +153,9 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
 
         if (configuration != null) {
             map.put("Enabled", configuration.getEnabled());
-            map.put("Noisy", configuration.getNoisy());
             map.put("Filter", configuration.getFilter());
         } else {
             map.put("Enabled", FALSE.toString());
-            map.put("Noisy", TRUE.toString());
             map.put("Filter", EventLevel.WARNING.toString());
         }
 
