@@ -94,7 +94,7 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     protected Boolean enabled;
 
     @Deprecated
-    @Param(name = "noisy", optional = true, defaultValue = "true", obsolete = true)
+    @Param(name = "noisy", optional = true, obsolete = true)
     protected Boolean noisy;
 
     @Param(name = "filter", optional = true, defaultValue = "WARNING")

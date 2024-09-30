@@ -100,7 +100,7 @@ public class SetNotificationConfiguration implements AdminCommand {
     private Boolean useSeparateLogFile;
 
     @Deprecated
-    @Param(name = "noisy", defaultValue = "true", optional = true, obsolete = true)
+    @Param(name = "noisy", optional = true, obsolete = true)
     private Boolean noisy;
 
     @Inject
