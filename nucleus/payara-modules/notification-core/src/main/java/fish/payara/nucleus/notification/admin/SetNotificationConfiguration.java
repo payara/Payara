@@ -103,6 +103,9 @@ public class SetNotificationConfiguration implements AdminCommand {
     @Param(name = "noisy", optional = true, obsolete = true)
     private Boolean noisy;
 
+    @Param(name = "filter", optional = true, acceptableValues = "info,warning,severe")
+    protected String filter;
+
     @Inject
     ServiceLocator serviceLocator;
 
@@ -150,6 +153,7 @@ public class SetNotificationConfiguration implements AdminCommand {
         params.add("target", target);
         params.add("enabled", notifierEnabled.toString());
         params.add("useSeparateLogFile", useSeparateLogFile.toString());
+        params.add("filter", filter);
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
