@@ -47,7 +47,7 @@ import java.security.SecureRandom;
  * @author: Petr Aubrecht
  */
 public class RandomUtils {
-    private static SecureRandom random = new SecureRandom();
+    private static final SecureRandom random = new SecureRandom();
 
     public static int nextInt() {
         return random.nextInt();
