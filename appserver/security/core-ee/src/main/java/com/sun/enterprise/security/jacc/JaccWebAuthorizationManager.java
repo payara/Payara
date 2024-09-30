@@ -667,16 +667,6 @@ public class JaccWebAuthorizationManager {
         return policyConfigurationFactory;
     }
 
-    private ProtectionDomain getProtectionDomain(Set<Principal> principalSet) {
-        return protectionDomainCache.computeIfAbsent(principalSet, e -> {
-            Principal[] principals = (principalSet == null ? null : (Principal[]) principalSet.toArray(new Principal[0]));
-
-            logProtectionDomainCreated(principals);
-
-            return new ProtectionDomain(codesource, null, null, principals);
-        });
-    }
-
     private static String setPolicyContext(String newContextID) throws Throwable {
         String oldContextID = PolicyContext.getContextID();
 
