@@ -97,7 +97,7 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     @Param(name = "noisy", optional = true, obsolete = true)
     protected Boolean noisy;
 
-    @Param(name = "filter", optional = true, acceptableValues = "info,warning,severe")
+    @Param(name = "filter", optional = true, acceptableValues = "INFO,WARNING,SEVERE")
     protected String filter;
 
     @Override
