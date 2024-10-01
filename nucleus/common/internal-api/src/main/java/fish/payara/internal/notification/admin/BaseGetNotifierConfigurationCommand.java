@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import fish.payara.internal.notification.EventLevel;
 import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -152,8 +153,10 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
 
         if (configuration != null) {
             map.put("Enabled", configuration.getEnabled());
+            map.put("Filter", configuration.getFilter());
         } else {
             map.put("Enabled", FALSE.toString());
+            map.put("Filter", EventLevel.WARNING.toString());
         }
 
         return map;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import java.util.logging.Level;
 
 import javax.management.MBeanServer;
 
+import fish.payara.internal.notification.EventLevel;
 import org.glassfish.hk2.api.messaging.Topic;
 
 import fish.payara.internal.notification.PayaraNotification;
@@ -128,7 +129,8 @@ public class JMXMonitoringFormatter implements Runnable {
     private void sendNotification(Level level, String message, Object[] parameters) {
         PayaraNotificationBuilder notification = notificationFactory.newBuilder()
             .whitelist(enabledNotifiers.toArray(new String[0]))
-            .subject(LOGMESSAGE_PREFIX + message);
+            .subject(LOGMESSAGE_PREFIX + message)
+            .level(EventLevel.INFO);
 
         if (parameters != null && parameters.length > 0) {
             notification = notification.message(MessageFormat.format(message, parameters));

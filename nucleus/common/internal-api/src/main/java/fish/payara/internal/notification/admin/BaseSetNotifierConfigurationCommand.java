@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fish.payara.internal.notification.EventLevel;
 import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -93,8 +94,11 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     protected Boolean enabled;
 
     @Deprecated
-    @Param(name = "noisy", optional = true, defaultValue = "true", obsolete = true)
+    @Param(name = "noisy", optional = true, obsolete = true)
     protected Boolean noisy;
+
+    @Param(name = "filter", optional = true, acceptableValues = "info,warning,severe")
+    protected String filter;
 
     @Override
     public void execute(final AdminCommandContext context) {
@@ -177,6 +181,9 @@ public abstract class BaseSetNotifierConfigurationCommand<C extends PayaraNotifi
     protected void applyValues(C configuration) throws PropertyVetoException {
         if (this.enabled != null) {
             configuration.enabled(this.enabled);
+        }
+        if (this.filter != null) {
+            configuration.filter(EventLevel.fromNameOrWarning(this.filter).toString());
         }
     }
 

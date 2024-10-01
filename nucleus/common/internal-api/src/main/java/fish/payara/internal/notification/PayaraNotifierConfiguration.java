@@ -53,8 +53,10 @@ import org.jvnet.hk2.config.Configured;
  */
 @Configured
 public interface PayaraNotifierConfiguration extends ConfigBeanProxy {
+
     String DEFAULT_ENABLED_VALUE = "false";
     String DEFAULT_NOISY_VALUE = "true";
+    String DEFAULT_EVENT_FILTER = "WARNING";
 
     @Attribute(defaultValue = DEFAULT_ENABLED_VALUE, dataType = Boolean.class)
     String getEnabled();
@@ -67,4 +69,7 @@ public interface PayaraNotifierConfiguration extends ConfigBeanProxy {
     @Deprecated
     void noisy(Boolean value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = DEFAULT_EVENT_FILTER, dataType = String.class)
+    String getFilter ();
+    void filter (String value) throws PropertyVetoException;
 }
