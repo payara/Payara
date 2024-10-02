@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.security.PolicyLoader;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
@@ -193,6 +194,8 @@ public class JaccWebAuthorizationManager {
         this.serverContext = serverContext;
         this.webSecurityManagerFactory = webSecurityManagerFactory;
 
+        preprocessParams(webBundleDescriptor);
+
         String appname = getAppId();
         SecurityRoleMapperFactory securityRoleMapperFactory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
         securityRoleMapperFactory.setAppNameForContext(getAppId(), CONTEXT_ID);
@@ -203,13 +206,14 @@ public class JaccWebAuthorizationManager {
         while (securityRoleMapperFactory.getRoleMapper(getAppId()).getRoles().hasNext()){
             roles.add((String) securityRoleMapperFactory.getRoleMapper(getAppId()).getRoles().next());
         }
+        
+
 
         authorizationService = new AuthorizationService(
                 CONTEXT_ID,
                 () -> SecurityContext.getCurrent().getSubject(),
                 () -> new GlassFishPrincipalMapper(CONTEXT_ID)
         );
-
         authorizationService.setConstrainedUriRequestAttribute(CONSTRAINT_URI);
         authorizationService.setRequestSupplier(CONTEXT_ID, currentRequest::get);
         authorizationService.addConstraintsToPolicy(
@@ -220,6 +224,50 @@ public class JaccWebAuthorizationManager {
                         .collect(Collectors.toSet()),
                 webBundleDescriptor.isDenyUncoveredHttpMethods(),
                 GlassFishToExousiaConverter.getSecurityRoleRefsFromBundle(webBundleDescriptor));
+    }
+    
+    private void preprocessParams(WebBundleDescriptor webBundleDescriptor) {
+        //evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
+        //if this is true load class and assign as a custom configuration for the PolicyConfigurationFactory
+        webBundleDescriptor.getContextParametersSet().stream()
+                .filter(c -> c.getName().equals(PolicyLoader.POLICY_CONF_FACTORY))
+                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
+                .ifPresent(cl -> installPolicyConfigurationFactory(webBundleDescriptor, cl));
+        
+        // evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
+        //if this is true load class and assign as a custom policy for the 
+        webBundleDescriptor.getContextParametersSet().stream()
+                .filter(c -> c.getName().equals(PolicyLoader.POLICY_FACTORY_PROVIDER))
+                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
+                .ifPresent(cl -> installPolicyFactory(webBundleDescriptor, cl));
+    }
+
+    private Class<?> loadFactory(WebBundleDescriptor webBundleDescriptor, String factoryClassName) {
+        try {
+            return webBundleDescriptor.getApplicationClassLoader().loadClass(factoryClassName);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    
+    private void installPolicyConfigurationFactory(WebBundleDescriptor webBundleDescriptor, Class<?> factoryClass) {
+        ClassLoader existing = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(webBundleDescriptor.getApplicationClassLoader());
+            AuthorizationService.installPolicyConfigurationFactory(factoryClass);
+        } finally {
+            Thread.currentThread().setContextClassLoader(existing);
+        }
+    }
+
+    private void installPolicyFactory(WebBundleDescriptor webBundleDescriptor, Class<?> factoryClass) {
+        ClassLoader existing = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(webBundleDescriptor.getApplicationClassLoader());
+            AuthorizationService.installPolicyFactory(factoryClass);
+        } finally {
+            Thread.currentThread().setContextClassLoader(existing);
+        }
     }
 
     // fix for CR 6155144

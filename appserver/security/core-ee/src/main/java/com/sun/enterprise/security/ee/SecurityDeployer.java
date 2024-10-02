@@ -203,6 +203,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
             }
 
             for (WebBundleDescriptor webBundleDescriptor : webBundleDescriptors) {
+                webBundleDescriptor.setApplicationClassLoader(context.getFinalClassLoader());
                 loadPolicy(webBundleDescriptor, false);
             }
 

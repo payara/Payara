@@ -79,6 +79,8 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     protected boolean conflictEntityManagerReference = false;
     protected boolean conflictEntityManagerFactoryReference = false;
 
+    private ClassLoader applicationClassLoader;
+
     public abstract void addWebBundleDescriptor(WebBundleDescriptor webBundleDescriptor);
 
     public abstract void addDefaultWebBundleDescriptor(WebBundleDescriptor webBundleDescriptor);
@@ -533,4 +535,18 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     }
 
     public abstract Set<String> getConflictedMimeMappingExtensions();
+
+    /**
+     * @return the applicationClassLoader
+     */
+    public ClassLoader getApplicationClassLoader() {
+        return applicationClassLoader;
+    }
+
+    /**
+     * @param applicationClassLoader the applicationClassLoader to set
+     */
+    public void setApplicationClassLoader(ClassLoader applicationClassLoader) {
+        this.applicationClassLoader = applicationClassLoader;
+    }
 }
