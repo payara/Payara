@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -46,6 +46,7 @@ package com.sun.enterprise.util;
 import com.sun.enterprise.util.io.FileUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -356,7 +357,7 @@ public class ProcessExecutor {
         if (mInputLines == null)
             return;
 
-        try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(subProcess.getOutputStream())))) {
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(subProcess.getOutputStream(), StandardCharsets.UTF_8)))) {
             for (String mInputLine : mInputLines) {
                 if (bDebug) {
                     System.out.println("InputLine ->" + mInputLine + "<-");
@@ -374,7 +375,7 @@ public class ProcessExecutor {
         if (inputStream == null)
             return null;
         List<String> list = new ArrayList<>();
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String str;
             while ((str = in.readLine()) != null) list.add(str);
             return list.isEmpty()
@@ -438,7 +439,7 @@ public class ProcessExecutor {
      */
     protected String getFileBuffer(File file) {
         final StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line);

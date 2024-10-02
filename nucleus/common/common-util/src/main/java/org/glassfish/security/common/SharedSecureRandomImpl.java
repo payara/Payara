@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package org.glassfish.security.common;
 
 import java.security.SecureRandom;
@@ -49,15 +49,7 @@ public class SharedSecureRandomImpl {
 
     // the generator has a large period (in Sun's standard implementation, based on the 160-bit SHA1 hash function, the
     // period is 2^160);
-    private static final SecureRandom secureRandom = new SecureRandom();
-
-    static {
-        // always call java.security.SecureRandom.nextBytes(byte[])
-        // immediately after creating a new instance of the PRNG.
-        // This will force the PRNG to seed itself securely
-        byte[] key = new byte[20];
-        secureRandom.nextBytes(key);
-    }
+    private static final SecureRandom secureRandom = new SecureRandom(new byte[20]);
 
     /**
      * Can a single java.security.SecureRandom instance be shared safely by multiple threads ?. Yes. As far as I know.

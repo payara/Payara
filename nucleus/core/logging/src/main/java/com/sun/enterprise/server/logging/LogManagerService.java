@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -733,7 +733,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                 } else if (a.equals(FAST_LOGGER_PROPERTY)) {
                                     if (!val.equals(fastLoggingDetail)) {
                                         fastLoggingDetail = val;
-                                        GFLogRecord.fastLogging = Boolean.parseBoolean(fastLoggingDetail);
+                                        GFLogRecord.fastLoggingAtomic.set(Boolean.parseBoolean(fastLoggingDetail));
                                     }
                                 } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
                                     if (!val.equals(compressOnRotationDetail)) {
