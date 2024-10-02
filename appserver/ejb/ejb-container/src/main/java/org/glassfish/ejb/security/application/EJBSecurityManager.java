@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 package org.glassfish.ejb.security.application;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
+import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityManager;
@@ -55,6 +56,7 @@ import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl;
 import com.sun.enterprise.security.jacc.cache.PermissionCache;
 import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
+import com.sun.enterprise.security.web.integration.GlassFishPrincipalMapper;
 import com.sun.logging.LogDomains;
 import jakarta.security.jacc.EJBMethodPermission;
 import jakarta.security.jacc.EJBRoleRefPermission;
@@ -69,6 +71,8 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
+import org.glassfish.exousia.mapping.SecurityRoleRef;
+import org.glassfish.exousia.permissions.RolesToPermissionsTransformer;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 
@@ -82,6 +86,15 @@ import java.security.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+import org.glassfish.exousia.AuthorizationService;
+import org.glassfish.exousia.permissions.JakartaPermissions;
+
+import com.sun.enterprise.deployment.MethodDescriptor;
+import com.sun.enterprise.deployment.MethodPermission;
+
+import org.glassfish.security.common.Role;
 
 import static com.sun.enterprise.security.common.AppservAccessController.doPrivileged;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
@@ -91,7 +104,7 @@ import static java.util.logging.Level.SEVERE;
 /**
  * This class is used by the EJB server to manage security. All the container object only call into this object for
  * managing security. This class cannot be subclassed.
- * <p/>
+ * <p>
  * An instance of this class should be created per deployment unit.
  *
  * @author Harpreet Singh, monzillo
@@ -143,6 +156,8 @@ public final class EJBSecurityManager implements SecurityManager {
     private final EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
     private static volatile EjbSecurityStatsProvider ejbStatsProvider;
 
+    private final AuthorizationService authorizationService;
+
     public EJBSecurityManager(EjbDescriptor ejbDescriptor, InvocationManager invocationManager, EJBSecurityManagerFactory fact) throws Exception {
 
         this.deploymentDescriptor = ejbDescriptor;
@@ -168,7 +183,154 @@ public final class EJBSecurityManager implements SecurityManager {
             runAs = null;
         }
 
-        initialize();
+        if (ejbStatsProvider == null) {
+            synchronized (EjbSecurityStatsProvider.class) {
+                if (ejbStatsProvider == null) {
+                    ejbStatsProvider = new EjbSecurityStatsProvider();
+                    StatsProviderManager.register("security", PluginPoint.SERVER, "security/ejb", ejbStatsProvider);
+                }
+            }
+        }
+
+        contextId = getContextID(deploymentDescriptor);
+        String appName = deploymentDescriptor.getApplication().getRegistrationName();
+        roleMapperFactory.setAppNameForContext(appName, contextId);
+        codesource = getApplicationCodeSource(contextId);
+        ejbName = deploymentDescriptor.getName();
+
+        realmName = deploymentDescriptor.getApplication().getRealm();
+
+        if (realmName == null) {
+            Set<EjbIORConfigurationDescriptor> iorConfigs = deploymentDescriptor.getIORConfigurationDescriptors();
+            // iorConfigs is not null from implementation of EjbDescriptor
+            Iterator<EjbIORConfigurationDescriptor> iter = iorConfigs.iterator();
+            if (iter != null) {
+                // there should be at most one element in the loop from
+                // definition of dtd
+                while (iter.hasNext()) {
+                    realmName = iter.next().getRealmName();
+                }
+            }
+        }
+
+        _logger.fine(() -> "JACC: EJB name = '" + ejbName
+                + "'. Context id (id under which all EJB's in application will be created) = '" + contextId + "'");
+        loadPolicyConfiguration(deploymentDescriptor);
+        // translate the deployment descriptor to populate the role-ref permission cache
+        // addEJBRoleReferenceToCache(deploymentDescriptor);
+
+        // create and initialize the unchecked permission cache.
+        uncheckedMethodPermissionCache = PermissionCacheFactory.createPermissionCache(this.contextId, this.codesource,
+                EJBMethodPermission.class, this.ejbName);
+
+        auditManager = this.securityManagerFactory.getAuditManager();
+
+        authorizationService = new AuthorizationService(
+                getContextID(ejbDescriptor),
+                () -> SecurityContext.getCurrent().getSubject(),
+                () -> new GlassFishPrincipalMapper(contextId));
+
+        authorizationService.addPermissionsToPolicy(
+                convertEJBMethodPermissions(ejbDescriptor, contextId));
+
+        authorizationService.addPermissionsToPolicy(RolesToPermissionsTransformer.createEnterpriseBeansRoleRefPermission(
+                ejbDescriptor.getEjbBundleDescriptor()
+                        .getRoles()
+                        .stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toSet()),
+
+                getSecurityRoleRefsFromBundle(ejbDescriptor)));
+    }
+
+    private static JakartaPermissions convertEJBMethodPermissions(EjbDescriptor ejbDescriptor, String contextId) throws PolicyContextException {
+        JakartaPermissions jakartaPermissions = new JakartaPermissions();
+
+        String ejbName = ejbDescriptor.getName();
+
+        // phase 1
+        Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD = ejbDescriptor
+                .getMethodPermissionsFromDD();
+
+        for (var methodPermissionFromDD : methodPermissionsFromDD.entrySet()) {
+            MethodPermission methodPermission = methodPermissionFromDD.getKey();
+            for (MethodDescriptor methodDescriptor : methodPermissionFromDD.getValue()) {
+                String methodName = methodDescriptor.getName();
+                String methodInterface = methodDescriptor.getEjbClassSymbol();
+                String methodParameters[] = methodDescriptor.getStyle() == 3
+                        ? methodDescriptor.getParameterClassNames()
+                        : null;
+
+                EJBMethodPermission ejbMethodPermission = new EJBMethodPermission(ejbName,
+                        methodName.equals("*") ? null : methodName, methodInterface, methodParameters);
+
+                if (methodPermission.isExcluded()) {
+                    jakartaPermissions.getExcluded().add(ejbMethodPermission);
+                } else if (methodPermission.isUnchecked()) {
+                    jakartaPermissions.getUnchecked().add(ejbMethodPermission);
+                } else if (methodPermission.isRoleBased()) {
+                    jakartaPermissions.getPerRole()
+                            .computeIfAbsent(methodPermission.getRole().getName(), e -> new Permissions())
+                            .add(ejbMethodPermission);
+                }
+            }
+        }
+
+        // phase 2 - configures additional perms:
+        //      . to optimize performance of Permissions.implies
+        //      . to cause any uncovered methods to be unchecked
+
+        for (MethodDescriptor methodDescriptor : ejbDescriptor.getMethodDescriptors()) {
+
+            Method methodName = methodDescriptor.getMethod(ejbDescriptor);
+            String methodInterface = methodDescriptor.getEjbClassSymbol();
+
+            if (methodName == null) {
+                continue;
+            }
+
+            if (methodInterface == null || methodInterface.isEmpty()) {
+                _logger.log(SEVERE, "method_descriptor_not_defined",
+                        new Object[] { ejbName, methodDescriptor.getName(), methodDescriptor.getParameterClassNames() });
+
+                continue;
+            }
+
+            EJBMethodPermission ejbMethodPermission = new EJBMethodPermission(ejbName, methodInterface, methodName);
+
+            Set<MethodPermission> methodPermissions = ejbDescriptor.getMethodPermissionsFor(methodDescriptor);
+            _logger.log(Level.FINEST, "Descriptor: {0}, permissions: {1}",
+                    new Object[] {methodDescriptor, methodPermissions});
+            for (MethodPermission methodPermission : methodPermissions) {
+                if (methodPermission.isExcluded()) {
+                    jakartaPermissions.getExcluded().add(ejbMethodPermission);
+                } else if (methodPermission.isUnchecked()) {
+                    jakartaPermissions.getUnchecked().add(ejbMethodPermission);
+                } else if (methodPermission.isRoleBased()) {
+                    jakartaPermissions.getPerRole()
+                            .computeIfAbsent(methodPermission.getRole().getName(), e -> new Permissions())
+                            .add(ejbMethodPermission);
+                }
+            }
+        }
+
+        return jakartaPermissions;
+    }
+
+    private static Map<String, List<SecurityRoleRef>> getSecurityRoleRefsFromBundle(EjbDescriptor ejbDescriptor) {
+        Map<String, List<SecurityRoleRef>> exousiaRoleRefsPerEnterpriseBean = new HashMap<>();
+
+        List<SecurityRoleRef> exousiaSecurityRoleRefs = new ArrayList<>();
+
+        for (RoleReference glassFishSecurityRoleRef : ejbDescriptor.getRoleReferences()) {
+            exousiaSecurityRoleRefs.add(new SecurityRoleRef(
+                    glassFishSecurityRoleRef.getRoleName(),
+                    glassFishSecurityRoleRef.getSecurityRoleLink().getName()));
+        }
+
+        exousiaRoleRefsPerEnterpriseBean.put(ejbDescriptor.getName(), exousiaSecurityRoleRefs);
+
+        return exousiaRoleRefsPerEnterpriseBean;
     }
 
     public static String getContextID(EjbDescriptor ejbDescriptor) {
@@ -398,7 +560,6 @@ public final class EJBSecurityManager implements SecurityManager {
      * @param isLocal, true if this invocation is through the local EJB view
      * @param beanObject the object on which this method is to be invoked in this case the ejb,
      * @param parameters the parameters for the method,
-     * @param c, the container instance can be a null value, where in the container will be queried to find its security
      * manager.
      * @return Object, the result of the execution of the method.
      */
@@ -599,52 +760,6 @@ public final class EJBSecurityManager implements SecurityManager {
 
 
     // ### Private methods
-
-
-    private void initialize() throws Exception {
-        if (ejbStatsProvider == null) {
-            synchronized (EjbSecurityStatsProvider.class) {
-                if (ejbStatsProvider == null) {
-                    ejbStatsProvider = new EjbSecurityStatsProvider();
-                    StatsProviderManager.register("security", PluginPoint.SERVER, "security/ejb", ejbStatsProvider);
-                }
-            }
-        }
-
-        contextId = getContextID(deploymentDescriptor);
-        String appName = deploymentDescriptor.getApplication().getRegistrationName();
-        roleMapperFactory.setAppNameForContext(appName, contextId);
-        codesource = getApplicationCodeSource(contextId);
-        ejbName = deploymentDescriptor.getName();
-
-        realmName = deploymentDescriptor.getApplication().getRealm();
-
-        if (realmName == null) {
-            Set<EjbIORConfigurationDescriptor> iorConfigs = deploymentDescriptor.getIORConfigurationDescriptors();
-            // iorConfigs is not null from implementation of EjbDescriptor
-            Iterator<EjbIORConfigurationDescriptor> iter = iorConfigs.iterator();
-            if (iter != null) {
-                // there should be at most one element in the loop from
-                // definition of dtd
-                while (iter.hasNext()) {
-                    realmName = iter.next().getRealmName();
-                }
-            }
-        }
-
-        _logger.fine(() -> "JACC: EJB name = '" + ejbName
-            + "'. Context id (id under which all EJB's in application will be created) = '" + contextId + "'");
-        loadPolicyConfiguration(deploymentDescriptor);
-        // translate the deployment descriptor to populate the role-ref permission cache
-        // addEJBRoleReferenceToCache(deploymentDescriptor);
-
-        // create and initialize the unchecked permission cache.
-        uncheckedMethodPermissionCache = PermissionCacheFactory.createPermissionCache(this.contextId, this.codesource,
-                EJBMethodPermission.class, this.ejbName);
-
-        auditManager = this.securityManagerFactory.getAuditManager();
-
-    }
 
     private ProtectionDomain getCachedProtectionDomain(Set principalSet, boolean applicationCodeSource) {
         ProtectionDomain prdm = null;
