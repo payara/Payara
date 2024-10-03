@@ -44,7 +44,6 @@ package org.glassfish.ejb.security.application;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
-import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityManager;
@@ -73,7 +72,6 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
-import org.glassfish.exousia.mapping.SecurityRoleRef;
 import org.glassfish.exousia.permissions.RolesToPermissionsTransformer;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
@@ -91,10 +89,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.glassfish.exousia.AuthorizationService;
-import org.glassfish.exousia.permissions.JakartaPermissions;
-
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.MethodPermission;
 
 import org.glassfish.security.common.Role;
 
@@ -233,7 +227,7 @@ public final class EJBSecurityManager implements SecurityManager {
                 () -> new GlassFishPrincipalMapper(contextId));
 
         authorizationService.addPermissionsToPolicy(
-                convertEJBMethodPermissions(ejbDescriptor, contextId));
+                PayaraToExousiaConverter.convertEJBMethodPermissions(ejbDescriptor, contextId));
 
         authorizationService.addPermissionsToPolicy(RolesToPermissionsTransformer.createEnterpriseBeansRoleRefPermission(
                 ejbDescriptor.getEjbBundleDescriptor()
@@ -242,97 +236,7 @@ public final class EJBSecurityManager implements SecurityManager {
                         .map(Role::getName)
                         .collect(Collectors.toSet()),
 
-                getSecurityRoleRefsFromBundle(ejbDescriptor)));
-    }
-
-    private static JakartaPermissions convertEJBMethodPermissions(EjbDescriptor ejbDescriptor, String contextId) throws PolicyContextException {
-        JakartaPermissions jakartaPermissions = new JakartaPermissions();
-
-        String ejbName = ejbDescriptor.getName();
-
-        // phase 1
-        Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD = ejbDescriptor
-                .getMethodPermissionsFromDD();
-
-        for (var methodPermissionFromDD : methodPermissionsFromDD.entrySet()) {
-            MethodPermission methodPermission = methodPermissionFromDD.getKey();
-            for (MethodDescriptor methodDescriptor : methodPermissionFromDD.getValue()) {
-                String methodName = methodDescriptor.getName();
-                String methodInterface = methodDescriptor.getEjbClassSymbol();
-                String methodParameters[] = methodDescriptor.getStyle() == 3
-                        ? methodDescriptor.getParameterClassNames()
-                        : null;
-
-                EJBMethodPermission ejbMethodPermission = new EJBMethodPermission(ejbName,
-                        methodName.equals("*") ? null : methodName, methodInterface, methodParameters);
-
-                if (methodPermission.isExcluded()) {
-                    jakartaPermissions.getExcluded().add(ejbMethodPermission);
-                } else if (methodPermission.isUnchecked()) {
-                    jakartaPermissions.getUnchecked().add(ejbMethodPermission);
-                } else if (methodPermission.isRoleBased()) {
-                    jakartaPermissions.getPerRole()
-                            .computeIfAbsent(methodPermission.getRole().getName(), e -> new Permissions())
-                            .add(ejbMethodPermission);
-                }
-            }
-        }
-
-        // phase 2 - configures additional perms:
-        //      . to optimize performance of Permissions.implies
-        //      . to cause any uncovered methods to be unchecked
-
-        for (MethodDescriptor methodDescriptor : ejbDescriptor.getMethodDescriptors()) {
-
-            Method methodName = methodDescriptor.getMethod(ejbDescriptor);
-            String methodInterface = methodDescriptor.getEjbClassSymbol();
-
-            if (methodName == null) {
-                continue;
-            }
-
-            if (methodInterface == null || methodInterface.isEmpty()) {
-                _logger.log(SEVERE, "method_descriptor_not_defined",
-                        new Object[] { ejbName, methodDescriptor.getName(), methodDescriptor.getParameterClassNames() });
-
-                continue;
-            }
-
-            EJBMethodPermission ejbMethodPermission = new EJBMethodPermission(ejbName, methodInterface, methodName);
-
-            Set<MethodPermission> methodPermissions = ejbDescriptor.getMethodPermissionsFor(methodDescriptor);
-            _logger.log(Level.FINEST, "Descriptor: {0}, permissions: {1}",
-                    new Object[] {methodDescriptor, methodPermissions});
-            for (MethodPermission methodPermission : methodPermissions) {
-                if (methodPermission.isExcluded()) {
-                    jakartaPermissions.getExcluded().add(ejbMethodPermission);
-                } else if (methodPermission.isUnchecked()) {
-                    jakartaPermissions.getUnchecked().add(ejbMethodPermission);
-                } else if (methodPermission.isRoleBased()) {
-                    jakartaPermissions.getPerRole()
-                            .computeIfAbsent(methodPermission.getRole().getName(), e -> new Permissions())
-                            .add(ejbMethodPermission);
-                }
-            }
-        }
-
-        return jakartaPermissions;
-    }
-
-    private static Map<String, List<SecurityRoleRef>> getSecurityRoleRefsFromBundle(EjbDescriptor ejbDescriptor) {
-        Map<String, List<SecurityRoleRef>> exousiaRoleRefsPerEnterpriseBean = new HashMap<>();
-
-        List<SecurityRoleRef> exousiaSecurityRoleRefs = new ArrayList<>();
-
-        for (RoleReference glassFishSecurityRoleRef : ejbDescriptor.getRoleReferences()) {
-            exousiaSecurityRoleRefs.add(new SecurityRoleRef(
-                    glassFishSecurityRoleRef.getRoleName(),
-                    glassFishSecurityRoleRef.getSecurityRoleLink().getName()));
-        }
-
-        exousiaRoleRefsPerEnterpriseBean.put(ejbDescriptor.getName(), exousiaSecurityRoleRefs);
-
-        return exousiaRoleRefsPerEnterpriseBean;
+                PayaraToExousiaConverter.getSecurityRoleRefsFromBundle(ejbDescriptor)));
     }
 
     public static String getContextID(EjbDescriptor ejbDescriptor) {
