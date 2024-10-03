@@ -227,7 +227,7 @@ public final class EJBSecurityManager implements SecurityManager {
                 () -> new GlassFishPrincipalMapper(contextId));
 
         authorizationService.addPermissionsToPolicy(
-                PayaraToExousiaConverter.convertEJBMethodPermissions(ejbDescriptor, contextId));
+                PayaraToExousiaConverter.convertEJBMethodPermissions(ejbDescriptor));
 
         authorizationService.addPermissionsToPolicy(RolesToPermissionsTransformer.createEnterpriseBeansRoleRefPermission(
                 ejbDescriptor.getEjbBundleDescriptor()

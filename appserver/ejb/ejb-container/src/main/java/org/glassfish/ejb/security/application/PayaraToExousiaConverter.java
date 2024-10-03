@@ -63,16 +63,14 @@ public class PayaraToExousiaConverter {
      * EJBMethodPermission to be added to the returned JakartaPermissions instance.
      *
      * @param ejbDescriptor the ejb descriptor for this EJB.
-     * @param contextId the policy context identifier.
      */
-    public static JakartaPermissions convertEJBMethodPermissions(EjbDescriptor ejbDescriptor, String contextId) throws PolicyContextException {
+    public static JakartaPermissions convertEJBMethodPermissions(EjbDescriptor ejbDescriptor) throws PolicyContextException {
         JakartaPermissions jakartaPermissions = new JakartaPermissions();
 
         String ejbName = ejbDescriptor.getName();
 
         // phase 1
-        Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD = ejbDescriptor
-                .getMethodPermissionsFromDD();
+        Map<MethodPermission, List<MethodDescriptor>> methodPermissionsFromDD = ejbDescriptor.getMethodPermissionsFromDD();
 
         for (var methodPermissionFromDD : methodPermissionsFromDD.entrySet()) {
             MethodPermission methodPermission = methodPermissionFromDD.getKey();
