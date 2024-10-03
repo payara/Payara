@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.security.jacc;
 
@@ -48,6 +49,7 @@ import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import com.sun.enterprise.deployment.runtime.common.wls.SecurityRoleAssignment;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.security.PolicyLoader;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
@@ -192,6 +194,8 @@ public class JaccWebAuthorizationManager {
         this.serverContext = serverContext;
         this.webSecurityManagerFactory = webSecurityManagerFactory;
 
+        preprocessParams(webBundleDescriptor);
+
         String appname = getAppId();
         SecurityRoleMapperFactory securityRoleMapperFactory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
         securityRoleMapperFactory.setAppNameForContext(getAppId(), CONTEXT_ID);
@@ -202,13 +206,14 @@ public class JaccWebAuthorizationManager {
         while (securityRoleMapperFactory.getRoleMapper(getAppId()).getRoles().hasNext()){
             roles.add((String) securityRoleMapperFactory.getRoleMapper(getAppId()).getRoles().next());
         }
+        
+
 
         authorizationService = new AuthorizationService(
                 CONTEXT_ID,
                 () -> SecurityContext.getCurrent().getSubject(),
                 () -> new GlassFishPrincipalMapper(CONTEXT_ID)
         );
-
         authorizationService.setConstrainedUriRequestAttribute(CONSTRAINT_URI);
         authorizationService.setRequestSupplier(CONTEXT_ID, currentRequest::get);
         authorizationService.addConstraintsToPolicy(
@@ -219,6 +224,50 @@ public class JaccWebAuthorizationManager {
                         .collect(Collectors.toSet()),
                 webBundleDescriptor.isDenyUncoveredHttpMethods(),
                 GlassFishToExousiaConverter.getSecurityRoleRefsFromBundle(webBundleDescriptor));
+    }
+    
+    private void preprocessParams(WebBundleDescriptor webBundleDescriptor) {
+        //evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
+        //if this is true load class and assign as a custom configuration for the PolicyConfigurationFactory
+        webBundleDescriptor.getContextParametersSet().stream()
+                .filter(c -> c.getName().equals(PolicyLoader.POLICY_CONF_FACTORY))
+                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
+                .ifPresent(cl -> installPolicyConfigurationFactory(webBundleDescriptor, cl));
+        
+        // evaluate if the context param was set for the property jakarta.security.jacc.PolicyFactory.provider
+        //if this is true load class and assign as a custom policy for the 
+        webBundleDescriptor.getContextParametersSet().stream()
+                .filter(c -> c.getName().equals(PolicyLoader.POLICY_FACTORY_PROVIDER))
+                .findAny().map(p -> loadFactory(webBundleDescriptor, p.getValue()))
+                .ifPresent(cl -> installPolicyFactory(webBundleDescriptor, cl));
+    }
+
+    private Class<?> loadFactory(WebBundleDescriptor webBundleDescriptor, String factoryClassName) {
+        try {
+            return webBundleDescriptor.getApplicationClassLoader().loadClass(factoryClassName);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+    
+    private void installPolicyConfigurationFactory(WebBundleDescriptor webBundleDescriptor, Class<?> factoryClass) {
+        ClassLoader existing = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(webBundleDescriptor.getApplicationClassLoader());
+            AuthorizationService.installPolicyConfigurationFactory(factoryClass);
+        } finally {
+            Thread.currentThread().setContextClassLoader(existing);
+        }
+    }
+
+    private void installPolicyFactory(WebBundleDescriptor webBundleDescriptor, Class<?> factoryClass) {
+        ClassLoader existing = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(webBundleDescriptor.getApplicationClassLoader());
+            AuthorizationService.installPolicyFactory(factoryClass);
+        } finally {
+            Thread.currentThread().setContextClassLoader(existing);
+        }
     }
 
     // fix for CR 6155144
@@ -309,6 +358,7 @@ public class JaccWebAuthorizationManager {
         if (!isGranted && !servletRequest.isSecure()) {
 
             if (uri == null) {
+                uri = getUriMinusContextPath(servletRequest);
                 httpMethod = servletRequest.getMethod();
             }
 
@@ -349,7 +399,7 @@ public class JaccWebAuthorizationManager {
 
         if (logger.isLoggable(FINE)) {
             logger.log(Level.FINE, "[Web-Security] hasResource isGranted: {0}", isGranted);
-            logger.log(Level.FINE, "[Web-Security] hasResource perm: {0}", servletRequest.getRequestURI());
+            logger.log(Level.FINE, "[Web-Security] hasResource perm: {0}", getUriMinusContextPath(servletRequest));
         }
 
         recordWebInvocation(servletRequest, RESOURCE, isGranted);
@@ -665,46 +715,6 @@ public class JaccWebAuthorizationManager {
         return policyConfigurationFactory;
     }
 
-    private ProtectionDomain getProtectionDomain(Set<Principal> principalSet) {
-        return protectionDomainCache.computeIfAbsent(principalSet, e -> {
-            Principal[] principals = (principalSet == null ? null : (Principal[]) principalSet.toArray(new Principal[0]));
-
-            logProtectionDomainCreated(principals);
-
-            return new ProtectionDomain(codesource, null, null, principals);
-        });
-    }
-
-    private WebResourcePermission createWebResourcePermission(HttpServletRequest servletRequest) {
-        String uri = (String) servletRequest.getAttribute(CONSTRAINT_URI);
-
-        if (uri == null) {
-            uri = servletRequest.getRequestURI();
-            if (uri != null) {
-                // FIX TO BE CONFIRMED (after ~12 years): subtract the context path
-                String contextPath = servletRequest.getContextPath();
-                int contextLength = contextPath == null ? 0 : contextPath.length();
-                if (contextLength > 0) {
-                    uri = uri.substring(contextLength);
-                }
-            }
-        }
-
-        if (uri == null) {
-            logger.fine("[Web-Security] mappedUri is null");
-            throw new RuntimeException("Fatal Error in creating WebResourcePermission");
-        }
-
-        if (uri.equals("/")) {
-            uri = EMPTY_STRING;
-        } else {
-            // FIX TO BE CONFIRMED: encode all colons
-            uri = uri.replaceAll(":", "%3A");
-        }
-
-        return new WebResourcePermission(uri, servletRequest.getMethod());
-    }
-
     private static String setPolicyContext(String newContextID) throws Throwable {
         String oldContextID = PolicyContext.getContextID();
 
@@ -849,6 +859,28 @@ public class JaccWebAuthorizationManager {
                 logger.log(FINE, "[Web-Security] Checking with Principals: null");
             }
         }
+    }
+
+    private static String getUriMinusContextPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        if (uri == null) {
+            return EMPTY_STRING;
+        }
+
+        String contextPath = request.getContextPath();
+        int contextLength = contextPath == null ? 0 : contextPath.length();
+
+        if (contextLength > 0) {
+            uri = uri.substring(contextLength);
+        }
+
+        if (uri.equals("/")) {
+            return EMPTY_STRING;
+        }
+
+        // Encode all colons
+        return uri.replaceAll(":", "%3A");
     }
 
 }

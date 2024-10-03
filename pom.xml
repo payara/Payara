@@ -162,11 +162,11 @@
         <!-- BOM-referenced versions -->
 
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
-        <snakeyaml.version>2.2</snakeyaml.version>
-        <mojarra.version>4.0.0.payara-p2</mojarra.version>
+        <snakeyaml.version>2.3</snakeyaml.version>
+        <mojarra.version>4.0.7.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
-        <yasson.version>3.0.3</yasson.version>
+        <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>5.0.0-B02</eclipselink.version>
         <eclipselink.asm.version>9.7.0</eclipselink.asm.version>
         <openmq.version>6.3.0.payara-p3</openmq.version>

@@ -37,8 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.adapter;
 
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.admin.restconnector.Constants;
@@ -53,6 +57,13 @@ public class RestManagementAdapter extends RestAdapter {
 
     public RestManagementAdapter() {
         setRestResourceProvider(new RestManagementResourceProvider());
+    }
+
+    @Override
+    public void service(Request req, Response res) {
+        req.setServerName(req.getLocalName());
+        req.setServerPort(req.getLocalPort());
+        super.service(req, res);
     }
 
 }
