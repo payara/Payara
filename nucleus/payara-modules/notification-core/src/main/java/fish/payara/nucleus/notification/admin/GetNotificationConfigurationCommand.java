@@ -129,7 +129,7 @@ public class GetNotificationConfigurationCommand implements AdminCommand {
             return;
         }
 
-        String headers[] = {"Notifier Name", "Enabled", "Notifier Enabled"};
+        String[] headers = {"Notifier Name", "Enabled", "Notifier Enabled", "Filter Level"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
         Properties extraProps = new Properties();
@@ -137,7 +137,7 @@ public class GetNotificationConfigurationCommand implements AdminCommand {
             
             final Class<?> notifierClass = serviceHandle.getActiveDescriptor().getImplementationClass();
 
-            Object values[] = new Object[3];
+            Object[] values = new Object[4];
             values[0] = getNotifierName(serviceHandle.getActiveDescriptor());
             values[1] = notificationServiceEnabled;
 
@@ -150,8 +150,10 @@ public class GetNotificationConfigurationCommand implements AdminCommand {
 
             if (notifierConfig == null) {
                 values[2] = PayaraNotifierConfiguration.DEFAULT_ENABLED_VALUE;
+                values[3] = PayaraNotifierConfiguration.DEFAULT_EVENT_FILTER;
             } else {
                 values[2] = notifierConfig.getEnabled();
+                values[3] = notifierConfig.getFilter();
             }
 
             columnFormatter.addRow(values);
@@ -159,7 +161,8 @@ public class GetNotificationConfigurationCommand implements AdminCommand {
             Map<String, Object> map = new HashMap<>(3);
             map.put("enabled", values[1]);
             map.put("notifierEnabled", values[2]);
-            if (notifierConfig != null && notifierConfig instanceof LogNotifierConfiguration) {
+            map.put("filter", values[3]);
+            if (notifierConfig instanceof LogNotifierConfiguration) {
                 map.put("useSeparateLogFile", ((LogNotifierConfiguration) notifierConfig).getUseSeparateLogFile());
             }
             extraProps.put("getNotificationConfiguration" + notifierClass.getSimpleName(), map);

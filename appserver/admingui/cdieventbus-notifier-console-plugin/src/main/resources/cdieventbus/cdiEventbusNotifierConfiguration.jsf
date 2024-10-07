@@ -107,6 +107,11 @@
                           helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
                 <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
             </sun:property>
+            <sun:property id="filter" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                          label="$resource{i18nn.notification.configuration.filter}"
+                          helpText="$resource{i18nn.notification.configuration.notifier.filterHelp}">
+                <sun:dropDown id="filterDropdown" selected="#{pageSession.valueMap['filter']}" labels={"INFO", "WARNING", "SEVERE"} />
+            </sun:property>
             <sun:property id="loopBackProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                           rendered="#{pageSession.hazelcastEnabled == true}"
                           label="$resource{i18ncebn.notifier.cdieventbus.configuration.loopBackEnabledLabel}"
