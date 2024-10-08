@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -49,6 +49,7 @@ import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.StringUtils;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,6 +69,8 @@ import static javax.xml.stream.XMLStreamConstants.*;
  * @author bnevins
  */
 public class MiniXmlParser {
+
+    private static final Logger LOGGER = Logger.getLogger(MiniXmlParser.class.getName());
     public MiniXmlParser(File domainXml) throws MiniXmlParserException {
         this(domainXml, DEFAULT_VS_ID);  // default for a domain
     }
@@ -96,7 +99,7 @@ public class MiniXmlParser {
                 }
             }
             catch (Exception e) {
-                // ignore
+                LOGGER.log(Level.FINE, "Problem closing parser", e);
             }
             try {
                 if (reader != null) {
@@ -104,7 +107,7 @@ public class MiniXmlParser {
                 }
             }
             catch (Exception e) {
-                // ignore
+                LOGGER.log(Level.FINE, "Problem closing parser", e);
             }
         }
     }
@@ -400,7 +403,7 @@ public class MiniXmlParser {
     }
 
     private void createParser() throws FileNotFoundException, XMLStreamException {
-        reader = new InputStreamReader(new FileInputStream(domainXml));
+        reader = new InputStreamReader(new FileInputStream(domainXml), StandardCharsets.UTF_8);
         XMLInputFactory xif = getXmlInputFactory();
         // Set the resolver so that any external entity references, such
         // as a reference to a DTD, return an empty file.  The domain.xml
@@ -531,8 +534,9 @@ public class MiniXmlParser {
             } else if (event == START_ELEMENT) {
                 String name = parser.getLocalName();
                 if (null == name) {
-                    skipTree(name);
-                } else switch (name) {
+                    continue;
+                }
+                switch (name) {
                     case SYSTEM_PROPERTY:
                         parseSystemProperty(SysPropsHandler.Type.CONFIG);
                         break;
@@ -589,8 +593,10 @@ public class MiniXmlParser {
                 }
             } else if (event == START_ELEMENT) {
                 String name = parser.getLocalName();
-                if (null == name) {skipTree(name);
-                } else switch (name) {
+                if (null == name) {
+                    continue;
+                }
+                switch (name) {
                     case "protocols":
                         parseProtocols();
                         break;
@@ -622,29 +628,26 @@ public class MiniXmlParser {
             } else if (event == START_ELEMENT) {
                 String name = parser.getLocalName();
                 if (null == name) {
-                    skipTree(name);
-                } else switch (name) {
-                    // Cursor --> START_ELEMENT of <iiop-listener>
-                    case "iiop-listener":
-                        // Get <iiop-listener> attributes
-                        Map<String, String> iiopAttributes = parseAttributes();
+                    continue;
+                }
+                // Cursor --> START_ELEMENT of <iiop-listener>
+                if (name.equals("iiop-listener")) {// Get <iiop-listener> attributes
+                    Map<String, String> iiopAttributes = parseAttributes();
 
-                        // Skip to ssl config if present
-                        while (true) {
-                            skipToButNotPast("iiop-listener", "ssl");
-                            name = parser.getLocalName();
-                            if ("ssl".equals(name)) {
-                                iiopAttributes.putAll(parseAttributes());
-                                // Only store attributes of SSL enabled IIOP listeners
-                                iiopSslAttributes.add(iiopAttributes);
-                            } else if ("iiop-listener".equals(name)) {
-                                break;
-                            }
+                    // Skip to ssl config if present
+                    while (true) {
+                        skipToButNotPast("iiop-listener", "ssl");
+                        name = parser.getLocalName();
+                        if ("ssl".equals(name)) {
+                            iiopAttributes.putAll(parseAttributes());
+                            // Only store attributes of SSL enabled IIOP listeners
+                            iiopSslAttributes.add(iiopAttributes);
+                        } else if ("iiop-listener".equals(name)) {
+                            break;
                         }
-                        break;
-                    default:
-                        skipTree(name);
-                        break;
+                    }
+                } else {
+                    skipTree(name);
                 }
             }
         }
