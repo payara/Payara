@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2020] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.universal.glassfish;
 
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.net.NetUtils;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
@@ -241,7 +242,7 @@ public class ASenvPropertyReader {
             File asenv = new File(configDir,
                     GFLauncherUtils.isWindows() ? WINDOWS_ASENV_FILENAME : UNIX_ASENV_FILENAME);
 
-            try (BufferedReader reader = new BufferedReader(new FileReader(asenv))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(asenv, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     setProperty(line);

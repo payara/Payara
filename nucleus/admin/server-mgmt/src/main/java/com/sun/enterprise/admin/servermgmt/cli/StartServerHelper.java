@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2023] Payara Foundation and/or Affiliates
+// Portions Copyright [2017-2024] Payara Foundation and/or Affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -59,6 +59,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import java.util.stream.Collectors;
+
+import com.sun.enterprise.universal.process.ProcessState;
 import org.glassfish.api.admin.CommandException;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
@@ -387,18 +389,18 @@ public class StartServerHelper {
         long start = System.currentTimeMillis();
         try {
             do {
-                Boolean b = ProcessUtils.isProcessRunning(pid);
-                if (b == null) {
+                ProcessState b = ProcessUtils.getProcessRunningState(pid);
+                if (b == ProcessState.ERROR) {
                     // this means we were unable to find out from the OS if the process
                     // is running or not
-                    debugMessage("ProcessUtils.isProcessRunning(" + pid + ") "
+                    debugMessage("ProcessUtils.getProcessRunningState(" + pid + ") "
                             + "returned null which means we can't get process "
                             + "info on this platform.");
 
                     new ParentDeathWaiterPureJava();
                     return;
                 }
-                if (!b) {
+                if (b == ProcessState.STOPPED) {
                     debugMessage("Parent process (" + pid + ") is dead.");
                     return;
                 }

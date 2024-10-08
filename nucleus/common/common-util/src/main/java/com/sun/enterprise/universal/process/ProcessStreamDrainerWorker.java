@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -78,7 +79,7 @@ class ProcessStreamDrainerWorker implements Runnable
                 }
 
                 if (sb != null) {
-                    sb.append(new String(buffer, 0, count));
+                    sb.append(new String(buffer, 0, count, StandardCharsets.UTF_8));
                 }
             }
         } catch (IOException e) {

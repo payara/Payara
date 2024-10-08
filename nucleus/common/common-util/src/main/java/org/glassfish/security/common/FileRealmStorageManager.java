@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.security.common;
 
@@ -52,6 +52,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -365,7 +366,7 @@ public final class FileRealmStorageManager {
             try (FileOutputStream out = new FileOutputStream(keyfile)) {
 
                 for (Entry<String, User> userEntry : userTable.entrySet()) {
-                    out.write(encodeUser(userEntry.getKey(), userEntry.getValue(), userEntry.getValue().getAlgo()).getBytes());
+                    out.write(encodeUser(userEntry.getKey(), userEntry.getValue(), userEntry.getValue().getAlgo()).getBytes(StandardCharsets.UTF_8));
                 }
             } catch (IOException e) {
                 throw e;
@@ -549,7 +550,7 @@ public final class FileRealmStorageManager {
      *
      */
     private void loadKeyFile() throws IOException {
-        try (BufferedReader input = new BufferedReader(new FileReader(keyfile))) {
+        try (BufferedReader input = new BufferedReader(new FileReader(keyfile, StandardCharsets.UTF_8))) {
             while (input.ready()) {
                 String line = input.readLine();
                 

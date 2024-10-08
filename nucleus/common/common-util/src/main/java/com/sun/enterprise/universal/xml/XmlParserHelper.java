@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 package com.sun.enterprise.universal.xml;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import javax.xml.stream.*;
 
 /**
@@ -49,7 +51,7 @@ import javax.xml.stream.*;
 public final class XmlParserHelper {
 
     public XmlParserHelper(final File f) throws FileNotFoundException, XMLStreamException {
-        reader = new InputStreamReader(new FileInputStream(f));
+        reader = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8);
         parser = XMLInputFactory.newInstance().createXMLStreamReader(
                 f.toURI().toString(), reader);
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.store;
 
@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -160,7 +161,7 @@ public final class PasswordAdapter {
         final Key key = pwdStore.getKey( alias, getMasterPassword() );
         if ( key != null )
         {
-            passwordString  = new String( key.getEncoded() );
+            passwordString  = new String(key.getEncoded(), StandardCharsets.UTF_8);
         }
 
         return passwordString;
