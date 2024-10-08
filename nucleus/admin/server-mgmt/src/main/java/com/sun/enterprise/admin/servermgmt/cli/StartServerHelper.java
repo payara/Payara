@@ -389,11 +389,11 @@ public class StartServerHelper {
         long start = System.currentTimeMillis();
         try {
             do {
-                ProcessState b = ProcessUtils.isProcessRunningState(pid);
+                ProcessState b = ProcessUtils.getProcessRunningState(pid);
                 if (b == ProcessState.ERROR) {
                     // this means we were unable to find out from the OS if the process
                     // is running or not
-                    debugMessage("ProcessUtils.isProcessRunning(" + pid + ") "
+                    debugMessage("ProcessUtils.getProcessRunningState(" + pid + ") "
                             + "returned null which means we can't get process "
                             + "info on this platform.");
 

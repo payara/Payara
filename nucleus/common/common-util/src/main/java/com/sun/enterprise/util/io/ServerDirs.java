@@ -43,6 +43,7 @@ package com.sun.enterprise.util.io;
 import java.io.*;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -132,7 +133,7 @@ public class ServerDirs {
         try (BufferedReader r = new BufferedReader(new FileReader(localPasswordFile, StandardCharsets.UTF_8))) {
             localPasswordBuffer = r.readLine();
         } catch (Exception e) {
-            // needs no handling
+            LOGGER.fine("Error reading local password file: " + localPasswordFile);
         } finally {
             localPassword = localPasswordBuffer;
             // ignore
@@ -253,6 +254,7 @@ public class ServerDirs {
     ///////////////////////////////////////////////////////////////////////////
     ///////////           All Private Below           /////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+    private static final Logger LOGGER = Logger.getLogger(ServerDirs.class.getName());
     private final String serverName;
     private final File serverDir;
     private final File parentDir;

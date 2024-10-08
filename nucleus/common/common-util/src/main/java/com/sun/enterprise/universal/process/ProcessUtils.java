@@ -175,7 +175,7 @@ public final class ProcessUtils {
     /**
      * The deprecated isProcessingRunning method
      *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ProcessUtils#isProcessRunningState(int)}.
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ProcessUtils#getProcessRunningState(int)}.
      */
     @Deprecated(forRemoval = true, since = "6.21.0")
     public static Boolean isProcessRunning(int aPid) {
@@ -190,7 +190,7 @@ public final class ProcessUtils {
      * @return true if it's running, false if not and null if we don't know. I.e
      * the return value is a true tri-state Boolean.
      */
-    public static ProcessState isProcessRunningState(int aPid) {
+    public static ProcessState getProcessRunningState(int aPid) {
         try {
             if (OS.isWindowsForSure())
                 return isProcessRunningWindows(aPid);

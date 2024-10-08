@@ -387,7 +387,7 @@ public abstract class LocalServerCommand extends CLICommand {
             return isRunningByCheckingForPidFile();
         }
 
-        ProcessState b = ProcessUtils.isProcessRunningState(pp);
+        ProcessState b = ProcessUtils.getProcessRunningState(pp);
 
         if (b == ProcessState.ERROR) { // this means it couldn't find out!
             return isRunningUsingJps();
