@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.jacc;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
@@ -123,23 +123,20 @@ public class JaccEJBConstraintsTranslator {
         // Phase 1
         
         Map<MethodPermission, List<MethodDescriptor>> methodPermissions = ejbDescriptor.getMethodPermissionsFromDD();
-        if (methodPermissions != null) {
-            
-            for (Entry<MethodPermission, List<MethodDescriptor>> permissionEntry : methodPermissions.entrySet()) {
 
-                MethodPermission methodPermission = permissionEntry.getKey();
-                
-                for (MethodDescriptor methodDescriptor : permissionEntry.getValue()) {
-                    String methodName = methodDescriptor.getName().equals("*") ? null : methodDescriptor.getName();
-                    String methodInterface = methodDescriptor.getEjbClassSymbol();
-                    String methodParams[] = methodDescriptor.getStyle() == 3 ? methodDescriptor.getParameterClassNames() : null;
+        for (Entry<MethodPermission, List<MethodDescriptor>> permissionEntry : methodPermissions.entrySet()) {
+            MethodPermission methodPermission = permissionEntry.getKey();
 
-                    EJBMethodPermission ejbMethodPermission = new EJBMethodPermission(ejbName, methodName, methodInterface, methodParams);
-                    
-                    perRolePermissions = addToRolePermissions(perRolePermissions, methodPermission, ejbMethodPermission);
-                    uncheckedPermissions = addToUncheckedPermissions(uncheckedPermissions, methodPermission, ejbMethodPermission);
-                    excludedPermissions = addToExcludedPermissions(excludedPermissions, methodPermission, ejbMethodPermission);
-                }
+            for (MethodDescriptor methodDescriptor : permissionEntry.getValue()) {
+                String methodName = methodDescriptor.getName().equals("*") ? null : methodDescriptor.getName();
+                String methodInterface = methodDescriptor.getEjbClassSymbol();
+                String methodParams[] = methodDescriptor.getStyle() == 3 ? methodDescriptor.getParameterClassNames() : null;
+
+                EJBMethodPermission ejbMethodPermission = new EJBMethodPermission(ejbName, methodName, methodInterface, methodParams);
+
+                perRolePermissions = addToRolePermissions(perRolePermissions, methodPermission, ejbMethodPermission);
+                uncheckedPermissions = addToUncheckedPermissions(uncheckedPermissions, methodPermission, ejbMethodPermission);
+                excludedPermissions = addToExcludedPermissions(excludedPermissions, methodPermission, ejbMethodPermission);
             }
         }
 
