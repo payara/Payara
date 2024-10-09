@@ -260,8 +260,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
             List mdObjs = (List) mdObjsObj;
             for (Object mdObj : mdObjs) {
                 MethodDescriptor md = (MethodDescriptor) mdObj;
-                for (Object style3MdObj :
-                        md.doStyleConversion(ejbDesc, allMethods)) {
+                for (Object style3MdObj : md.doStyleConversion(ejbDesc, allMethods)) {
                     MethodDescriptor style3Md = (MethodDescriptor) style3MdObj;
                     if (methodDesc.equals(style3Md)) {
                         return true;
