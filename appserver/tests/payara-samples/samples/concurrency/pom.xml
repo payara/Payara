@@ -59,7 +59,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <arquillian-bom.version>1.9.1.Final</arquillian-bom.version>
         <junit-jupiter.version>5.11.0</junit-jupiter.version>
-        <arquillian-payara.version>3.0.alpha4</arquillian-payara.version>
+        <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.3</jakarta-concurrent.version>
         <shrinkwrap.version>3.3.1</shrinkwrap.version>
     </properties>
@@ -155,7 +155,7 @@
             <dependencies>
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>payara-client-ee9</artifactId>
+                    <artifactId>payara-client-ee11</artifactId>
                     <version>${arquillian-payara.version}</version>
                     <scope>test</scope>
                 </dependency>
