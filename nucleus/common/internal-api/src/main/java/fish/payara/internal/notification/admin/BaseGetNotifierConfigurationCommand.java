@@ -153,7 +153,7 @@ public abstract class BaseGetNotifierConfigurationCommand<C extends PayaraNotifi
 
         if (configuration != null) {
             map.put("Enabled", configuration.getEnabled());
-            map.put("Filter", configuration.getFilter());
+            map.put("Filter", EventLevel.fromNameOrWarning(configuration.getFilter()).toString());
         } else {
             map.put("Enabled", FALSE.toString());
             map.put("Filter", EventLevel.WARNING.toString());

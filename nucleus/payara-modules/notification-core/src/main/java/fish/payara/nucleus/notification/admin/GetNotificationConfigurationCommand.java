@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import fish.payara.internal.notification.EventLevel;
 import jakarta.inject.Inject;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -153,7 +154,7 @@ public class GetNotificationConfigurationCommand implements AdminCommand {
                 values[3] = PayaraNotifierConfiguration.DEFAULT_EVENT_FILTER;
             } else {
                 values[2] = notifierConfig.getEnabled();
-                values[3] = notifierConfig.getFilter();
+                values[3] = EventLevel.fromNameOrWarning(notifierConfig.getFilter()).toString();
             }
 
             columnFormatter.addRow(values);
