@@ -1,12 +1,7 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
 version: 2
 updates:
   # Configuration for Maven
-  - package-ecosystem: "maven" 
+  - package-ecosystem: "maven"
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
@@ -18,7 +13,7 @@ updates:
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
       # Ignore major and minor version updates for dependencies with group IDs starting with org.eclipse.microprofile
-      - dependency-name: org.eclipse.microprofile*"
+      - dependency-name: "org.eclipse.microprofile.*"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
       # Ignore major version updates for dependencies with group ID starting with fish.payara
@@ -120,23 +115,23 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.eclipse.angus:angus-mail"
         update-types: ["version-update:semver-major"]
-      
+
       # Ignore major version updates for com.ibm.jbatch and related dependencies
       - dependency-name: "com.ibm.jbatch:com.ibm.jbatch.container"
         update-types: ["version-update:semver-major"]
       - dependency-name: "com.ibm.jbatch:com.ibm.jbatch.spi"
         update-types: ["version-update:semver-major"]
-      
+
       # Ignore major version updates for com.sun.xml.bind
       - dependency-name: "com.sun.xml.bind:jaxb-osgi"
         update-types: ["version-update:semver-major"]
-      
+
       # Ignore major version updates for org.hibernate.validator and related dependencies
       - dependency-name: "org.hibernate.validator:hibernate-validator"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.hibernate.validator:hibernate-validator-cdi"
         update-types: ["version-update:semver-major"]
-      
+
       # Ignore major version updates for org.jboss.weld and related dependencies
       - dependency-name: "org.jboss.weld:weld-osgi-bundle"
         update-types: ["version-update:semver-major"]
@@ -153,6 +148,7 @@ updates:
       - dependency-name: "org.jboss.weld.environment:weld-environment-common"
         update-types: ["version-update:semver-major"]
 
+  # Configuration for gitsubmodule
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
