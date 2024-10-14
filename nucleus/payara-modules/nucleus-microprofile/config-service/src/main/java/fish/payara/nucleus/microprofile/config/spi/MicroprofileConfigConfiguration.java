@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@ import org.jvnet.hk2.config.Element;
  */
 @Configured(name="microprofile-config")
 public interface MicroprofileConfigConfiguration extends ConfigExtension {
-    
+
     @Attribute(defaultValue = DirConfigSource.DEFAULT_DIR, dataType = String.class)
     String getSecretDir();
     void setSecretDir(String directory);
@@ -71,6 +71,10 @@ public interface MicroprofileConfigConfiguration extends ConfigExtension {
     @Attribute(defaultValue = "90", dataType = Integer.class)
     String getSecretDirOrdinality();
     void setSecretDirOrdinality(String message);
+
+    @Attribute(defaultValue = "95", dataType = Integer.class)
+    String getTomlOrdinality();
+    void setTomlOrdinality(String value);
 
     @Attribute(defaultValue = "105", dataType = Integer.class)
     String getPasswordOrdinality();
