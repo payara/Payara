@@ -172,7 +172,7 @@ public class TOMLConfigSource extends ConfiguredExtensionConfigSource<TOMLConfig
 
     private void flattenTomlArray(ArrayList<?> array, String prefix, Map<String, String> resultMap, int depth, int maxDepth) {
         if (depth > maxDepth) {
-            throw new IllegalArgumentException("Exceeded maximum depth of " + maxDepth);
+            throw new IllegalArgumentException(String.format("Exceeded maximum depth of %s with depth of %s", maxDepth, depth));
         }
         for (int i = 0; i < array.size(); i++) {
             Object arrayValue = array.get(i);
