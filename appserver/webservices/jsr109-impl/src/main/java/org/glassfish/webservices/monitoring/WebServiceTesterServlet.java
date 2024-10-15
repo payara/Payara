@@ -538,24 +538,24 @@ public class WebServiceTesterServlet extends HttpServlet {
             logger.log(Level.SEVERE, LogUtils.CREATE_DIR_FAILED, classesDir);
         }
 
-        String[] wsimportArgs = new String[14];
-        wsimportArgs[0] = "-d";
-        wsimportArgs[1] = classesDir.getAbsolutePath();
-        wsimportArgs[2] = "-keep";
-        wsimportArgs[3] = wsdlLocation.toExternalForm();
-        wsimportArgs[4] = "-Xendorsed";
-        wsimportArgs[5] = "-target";
-        wsimportArgs[6] = "2.1";
-        wsimportArgs[7] = "-extension";
+        List<String> wsimportArgs = new ArrayList<>(13);
+        wsimportArgs.add("-d");
+        wsimportArgs.add(classesDir.getAbsolutePath());
+        wsimportArgs.add("-keep");
+        wsimportArgs.add(wsdlLocation.toExternalForm());
+        wsimportArgs.add("-Xendorsed");
+        wsimportArgs.add("-target");
+        wsimportArgs.add("2.1");
+        wsimportArgs.add("-extension");
         String modulesDir = System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator;
-        wsimportArgs[8] = modulesDir + "jakarta.jws-api.jar";
-        wsimportArgs[10] = modulesDir + "webservices-osgi.jar";
-        wsimportArgs[11] = modulesDir + "jaxb-osgi.jar";
-        wsimportArgs[12] = modulesDir + "jakarta.xml.ws-api.jar";
-        wsimportArgs[13] = modulesDir + "jakarta.activation-api.jar";
+        wsimportArgs.add(modulesDir + "jakarta.jws-api.jar");
+        wsimportArgs.add(modulesDir + "webservices-osgi.jar");
+        wsimportArgs.add(modulesDir + "jaxb-osgi.jar");
+        wsimportArgs.add(modulesDir + "jakarta.xml.ws-api.jar");
+        wsimportArgs.add(modulesDir + "jakarta.activation-api.jar");
         WSToolsObjectFactory tools = WSToolsObjectFactory.newInstance();
         logger.log(Level.INFO, LogUtils.WSIMPORT_INVOKE, wsdlLocation);
-        boolean success = tools.wsimport(System.out, wsimportArgs);
+        boolean success = tools.wsimport(System.out, wsimportArgs.toArray(new String[]{}));
 
         if (success) {
             logger.log(Level.INFO, LogUtils.WSIMPORT_OK);

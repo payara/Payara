@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -48,7 +48,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -126,7 +126,7 @@ public class AsadminInput {
      * @throws IOException
      */
     public static InputReader reader(final InputStream is) throws IOException {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         final String version = readVersionFromFirstLine(reader);
         return newReader(reader, version);
     }

@@ -210,7 +210,6 @@ public class OpenMetricsExporterTest {
         assertEquals("# TYPE common gauge\n" +
                 "# HELP common description\n" +
                 "common{a=\"b\"} 1\n" +
-                "# HELP common description\n"+
                 "common{some=\"other\"} 2\n", actual.getBuffer().toString());
     }
 

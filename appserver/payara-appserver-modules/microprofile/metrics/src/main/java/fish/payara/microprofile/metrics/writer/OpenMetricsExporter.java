@@ -285,16 +285,17 @@ public class OpenMetricsExporter implements MetricExporter {
     }
 
     protected void appendTYPE(String globalName, OpenMetricsType type) {
-        if (typeWrittenByGlobalName.contains(globalName)) {
+        if (!typeWrittenByGlobalName.add(globalName)) {
+            // write metadata only once per metric
             return;
         }
-        typeWrittenByGlobalName.add(globalName);
         out.append("# TYPE ").append(globalName).append(' ').append(type.name()).append('\n');
     }
 
     protected void appendHELP(String globalName, Metadata metadata) {
-        if(!helpWrittenByGlobalName.contains(globalName)) {
-            helpWrittenByGlobalName.add(globalName);
+        if (!helpWrittenByGlobalName.add(globalName)) {
+            // write metadata only once per metric
+           return;
         }
         Optional<String> description = metadata.description();
         out.append("# HELP ").append(globalName).append(' ').append(description.isPresent() ? description.get(): "").append('\n');

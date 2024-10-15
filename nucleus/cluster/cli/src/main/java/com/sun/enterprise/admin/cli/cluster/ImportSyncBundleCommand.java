@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -55,14 +55,13 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-
+import org.glassfish.common.util.RandomUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FileInputStream;
-import java.security.SecureRandom;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.admin.payload.PayloadFilesManager.Perm;
 import org.glassfish.hk2.api.PerLookup;
@@ -334,8 +333,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private void backupInstanceDir() {
         File f = getServerDirs().getServerDir();
         if (f != null && f.isDirectory()) {
-            SecureRandom r = new SecureRandom();
-            setBackupDir(r.nextInt());
+            setBackupDir(RandomUtils.nextInt());
             File backup = getBackupDir();
             if (!f.renameTo(backup)) {
                 logger.warning(Strings.get("import.sync.bundle.backupInstanceDirFailed", f.getAbsolutePath(), backup.getAbsolutePath()));

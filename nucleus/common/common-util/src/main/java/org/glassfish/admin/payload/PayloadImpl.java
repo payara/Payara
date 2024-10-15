@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Poritons Copyright [2019] Payara Foundation and/or affiliates
+// Poritons Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -679,7 +680,7 @@ public class PayloadImpl implements Payload {
                      * Some parts might not have content.
                      */
                     final byte[] data = (content != null) ?
-                        content.getBytes() : new byte[0];
+                        content.getBytes(StandardCharsets.UTF_8) : new byte[0];
                     is = new ByteArrayInputStream(data);
                 }
                 return is;

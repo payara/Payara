@@ -2,7 +2,7 @@
 <!--
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2022-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,10 @@
     <artifactId>smallrye-config-repackaged</artifactId>
     <version>3.9.1</version>
     <name>Payara Samples - Payara - smallrye-config repackaged as a module</name>
+
+    <properties>
+        <smallrye-common.version>2.7.0</smallrye-common.version>
+    </properties>
 
     <build>
         <plugins>
@@ -134,43 +138,43 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-            <version>3.6.0.Final</version>
+            <version>3.6.1.Final</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-annotation</artifactId>
-            <version>2.6.0</version>
+            <version>${smallrye-common.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-expression</artifactId>
-            <version>2.6.0</version>
+            <version>${smallrye-common.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-function</artifactId>
-            <version>2.6.0</version>
+            <version>${smallrye-common.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-constraint</artifactId>
-            <version>2.5.0</version>
+            <version>${smallrye-common.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.common</groupId>
             <artifactId>smallrye-common-classloader</artifactId>
-            <version>2.5.0</version>
+            <version>${smallrye-common.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>9.7</version>
+            <version>9.7.1</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

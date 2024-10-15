@@ -52,6 +52,8 @@ import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstant
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.PASSWORD;
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SECRETS;
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.TOML;
+
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,7 +92,7 @@ import org.glassfish.config.support.CommandTarget;
 })
 public class GetConfigOrdinal implements AdminCommand {
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,toml,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -136,6 +138,10 @@ public class GetConfigOrdinal implements AdminCommand {
                 }
                 case SECRETS: {
                     result = Integer.parseInt(serviceConfig.getSecretDirOrdinality());
+                    break;
+                }
+                case TOML: {
+                    result = Integer.parseInt(serviceConfig.getTomlOrdinality());
                     break;
                 }
                 case PASSWORD: {

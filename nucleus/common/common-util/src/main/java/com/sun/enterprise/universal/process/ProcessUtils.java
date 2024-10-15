@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 package com.sun.enterprise.universal.process;
 
 import java.io.*;
@@ -172,6 +173,16 @@ public final class ProcessUtils {
     }
 
     /**
+     * The deprecated isProcessingRunning method
+     *
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ProcessUtils#getProcessRunningState(int)}.
+     */
+    @Deprecated(forRemoval = true, since = "6.21.0")
+    public static Boolean isProcessRunning(int aPid) {
+        return false;
+    }
+
+    /**
      * If we can determine it -- find out if the process that owns the given
      * process id is running.
      *
@@ -179,7 +190,7 @@ public final class ProcessUtils {
      * @return true if it's running, false if not and null if we don't know. I.e
      * the return value is a true tri-state Boolean.
      */
-    public static Boolean isProcessRunning(int aPid) {
+    public static ProcessState getProcessRunningState(int aPid) {
         try {
             if (OS.isWindowsForSure())
                 return isProcessRunningWindows(aPid);
@@ -187,7 +198,7 @@ public final class ProcessUtils {
                 return isProcessRunningUnix(aPid);
         }
         catch (Exception e) {
-            return null;
+            return ProcessState.ERROR;
         }
     }
     //////////////////////////////////////////////////////////////////////////
@@ -197,7 +208,7 @@ public final class ProcessUtils {
     private static final String[] paths;
    private static boolean debug;
 
-   private static boolean isProcessRunningWindows(int aPid) throws ProcessManagerException {
+   private static ProcessState isProcessRunningWindows(int aPid) throws ProcessManagerException {
         String pidString = Integer.toString(aPid);
         ProcessManager pm = new ProcessManager("tasklist", "/NH", "/FI", "\"pid eq " + pidString + "\"");
         pm.setEcho(false);
@@ -222,20 +233,20 @@ public final class ProcessUtils {
             // be reusing the pid. This isn't a guarantee because some other
             // java process might be reusing the pid.
             if (out.indexOf("java.exe") >= 0 && out.indexOf(pidString) >= 0)
-                return true;
+                return ProcessState.RUNNING;
             else
-                return false;
+                return ProcessState.STOPPED;
         }
 
         throw new ProcessManagerException("unknown");
     }
 
-    private static Boolean isProcessRunningUnix(int aPid) throws ProcessManagerException {
+    private static ProcessState isProcessRunningUnix(int aPid) throws ProcessManagerException {
         ProcessManager pm = new ProcessManager("kill", "-0", "" + aPid);
         pm.setEcho(false);
         pm.execute();
         int retval = pm.getExitValue();
-        return retval == 0 ? Boolean.TRUE : Boolean.FALSE;
+        return retval == 0 ? ProcessState.RUNNING : ProcessState.STOPPED;
     }
 
     static {

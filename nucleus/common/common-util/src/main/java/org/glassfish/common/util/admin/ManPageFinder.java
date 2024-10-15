@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -45,7 +45,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -111,11 +111,7 @@ public class ManPageFinder {
         if (s == null)
             return null;
         Reader r;
-        try {
-            r = new InputStreamReader(s, "utf-8");
-        } catch (UnsupportedEncodingException ex) {
-            r = new InputStreamReader(s);
-        }
+        r = new InputStreamReader(s, StandardCharsets.UTF_8);
         return new BufferedReader(r);
     }
 

@@ -38,10 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -53,7 +54,15 @@ import java.util.logging.LogRecord;
 public class GFLogRecord extends LogRecord {
 
     private static final String FAST_LOGGER_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.fastLogging";
+    /**
+     * The deprecated fastLogging attribute
+     *
+     * DO NOT USE! Retained for semantic versioning. Replaced by {@link GFLogRecord#fastLoggingAtomic}.
+     */
+    @Deprecated(forRemoval = true, since = "6.21.0")
     public static Boolean fastLogging = Boolean.parseBoolean(LogManager.getLogManager().getProperty(FAST_LOGGER_PROPERTY));
+
+    public static final AtomicBoolean fastLoggingAtomic = new AtomicBoolean(Boolean.parseBoolean(LogManager.getLogManager().getProperty(FAST_LOGGER_PROPERTY)));
 
     /**
      * SVUID for serialization compatibility
@@ -131,7 +140,7 @@ public class GFLogRecord extends LogRecord {
         if (params == null) {
             return null;
         }
-        if (fastLogging) {
+        if (fastLoggingAtomic.get()) {
             return params;
         }
         Object[] result = new Object[params.length * 2];

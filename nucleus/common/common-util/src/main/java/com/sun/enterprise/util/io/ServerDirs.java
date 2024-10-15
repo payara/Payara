@@ -37,10 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 package com.sun.enterprise.util.io;
 
 import java.io.*;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
@@ -127,24 +130,13 @@ public class ServerDirs {
         localPasswordFile = new File(configDir, "local-password");
 
         String localPasswordBuffer = null;  // need an atomic assign tor localPassword
-        BufferedReader r = null;
-        try {
-            r = new BufferedReader(new FileReader(localPasswordFile));
+        try (BufferedReader r = new BufferedReader(new FileReader(localPasswordFile, StandardCharsets.UTF_8))) {
             localPasswordBuffer = r.readLine();
-        }
-        catch (Exception e) {
-            // needs no handling
-        }
-        finally {
+        } catch (Exception e) {
+            LOGGER.fine("Error reading local password file: " + localPasswordFile);
+        } finally {
             localPassword = localPasswordBuffer;
-            if (r != null) {
-                try {
-                    r.close();
-                }
-                catch (IOException ex) {
-                    // ignore
-                }
-            }
+            // ignore
         }
 
         // bnevins May 17 -- perhaps we should have a NodeAgentDirs ???
@@ -262,6 +254,7 @@ public class ServerDirs {
     ///////////////////////////////////////////////////////////////////////////
     ///////////           All Private Below           /////////////////////////
     ///////////////////////////////////////////////////////////////////////////
+    private static final Logger LOGGER = Logger.getLogger(ServerDirs.class.getName());
     private final String serverName;
     private final File serverDir;
     private final File parentDir;

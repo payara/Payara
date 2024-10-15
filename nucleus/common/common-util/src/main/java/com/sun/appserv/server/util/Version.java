@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,7 +90,7 @@ public class Version {
                 })) {
                     FileReader fr = null;
                     try {
-                        fr = new FileReader(f);
+                        fr = new FileReader(f, StandardCharsets.UTF_8);
                         Properties p = new Properties();
                         p.load(fr);
                         VERSION_PROPS.add(p);
