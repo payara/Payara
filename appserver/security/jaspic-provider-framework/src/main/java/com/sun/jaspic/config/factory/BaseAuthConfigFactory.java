@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2024 Payara Foundation and/or its affiliates
 package com.sun.jaspic.config.factory;
 
 import static com.sun.jaspic.config.helper.JASPICLogManager.JASPIC_LOGGER;
 import static com.sun.jaspic.config.helper.JASPICLogManager.RES_BUNDLE;
 import static java.util.logging.Level.WARNING;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,8 +64,6 @@ import jakarta.security.auth.message.config.AuthConfigProvider;
 import jakarta.security.auth.message.config.RegistrationListener;
 import jakarta.security.auth.message.module.ServerAuthModule;
 import jakarta.servlet.ServletContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import static org.glassfish.soteria.Utils.isEmpty;
 
 
@@ -174,7 +171,8 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * @return a String identifier assigned by the factory to the provider registration, and that may be used to remove the
      * registration from the provider.
      *
-     * @exception SecurityException if the caller does not have permission to register a provider at the factory.
+     * @exception SecurityException If the provider construction (given a non-null <code>className</code>) or
+     * registration fails.
      *
      * @exception AuthException if the provider construction or registration fails.
      */
@@ -182,15 +180,11 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     @SuppressWarnings("unchecked")
     public String registerConfigProvider(String className, @SuppressWarnings("rawtypes") Map properties, String layer, String appContext,
                                          String description) {
-        tryCheckPermission(providerRegistrationSecurityPermission);
-
         return _register(_constructProvider(className, properties, null), properties, layer, appContext, description, true);
     }
 
     @Override
     public String registerConfigProvider(AuthConfigProvider provider, String layer, String appContext, String description) {
-        tryCheckPermission(providerRegistrationSecurityPermission);
-
         return _register(provider, null, layer, appContext, description, false);
     }
 
@@ -203,13 +197,9 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * @return true if there was a registration with the specified identifier and it was removed. Return false if the
      * registraionID was invalid.
      *
-     * @exception SecurityException if the caller does not have permission to unregister the provider at the factory.
-     *
      */
     @Override
     public boolean removeRegistration(String registrationID) {
-        tryCheckPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
-
         return _unRegister(registrationID);
     }
 
@@ -227,13 +217,9 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      * removed. This method never returns null; it returns an empty array if the listener was not removed from any
      * registrations.
      *
-     * @exception SecurityException if the caller does not have permission to detach the listener from the factory.
-     *
      */
     @Override
     public String[] detachListener(RegistrationListener listener, String layer, String appContext) {
-        tryCheckPermission(providerRegistrationSecurityPermission);
-
         List<String> removedListenerIds = new ArrayList<>();
         String registrationId = getRegistrationID(layer, appContext);
 
@@ -308,12 +294,10 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      *
      * @exception AuthException if an error occurred during the reinitialization.
      *
-     * @exception SecurityException if the caller does not have permission to refresh the factory.
+     * @exception SecurityException If an error occurred during the reinitialization.
      */
     @Override
     public void refresh() {
-        tryCheckPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
-
         Map<String, List<RegistrationListener>> preExistingListenersMap = doWriteLocked(() -> loadFactory());
 
         // Notify pre-existing listeners after (re)loading factory
@@ -674,13 +658,6 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
         return effectedListeners;
     }
 
-    private static void tryCheckPermission(Permission permission) {
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager != null) {
-            securityManager.checkPermission(permission);
-        }
-    }
-
     protected <T> T doReadLocked(Supplier<T> supplier) {
         readLock.lock();
         try {
@@ -730,11 +707,8 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             ServletContext servletContext = (ServletContext) context;
 
             String appContext = servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
-            registrationId = AccessController.doPrivileged((PrivilegedAction<String>) () -> registerConfigProvider(
-                    new DefaultAuthConfigProvider(sam),
-                    "HttpServlet",
-                    appContext,
-                    "Default authentication config provider"));
+            registrationId = registerConfigProvider(new DefaultAuthConfigProvider(sam), "HttpServlet", appContext,
+                    "Default authentication config provider");
 
             servletContext.setAttribute(CONTEXT_REGISTRATION_ID, registrationId);
         }
@@ -747,7 +721,7 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
             ServletContext servletContext = (ServletContext) context;
             String registrationId = (String) servletContext.getAttribute(CONTEXT_REGISTRATION_ID);
             if (!isEmpty(registrationId)) {
-                AccessController.doPrivileged((PrivilegedAction<Boolean>) () -> removeRegistration(registrationId));
+                removeRegistration(registrationId);
             }
         }
     }
