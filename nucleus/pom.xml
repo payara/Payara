@@ -99,7 +99,7 @@
         <maven.plugin.api.version>3.9.9</maven.plugin.api.version>
 
         <!-- Servlet -->
-        <grizzly-npn-osgi.version>2.0.0</grizzly-npn-osgi.version>
+        <grizzly-npn-osgi.version>2.0.0.payara-p1</grizzly-npn-osgi.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.0</classmate.version>
