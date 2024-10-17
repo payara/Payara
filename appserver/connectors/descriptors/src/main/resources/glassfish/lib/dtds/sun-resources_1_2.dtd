@@ -21,6 +21,7 @@
  
  Copyright 2006 Sun Microsystems, Inc. All rights reserved.
 -->
+<!-- Portions Copyright [2024] [Payara Foundation and/or affiliates] -->
 
 <!--
   A resources instance document referring to this DTD should have 
@@ -225,9 +226,9 @@
 <!ATTLIST mail-resource
     jndi-name CDATA #REQUIRED
     store-protocol CDATA "imap"
-    store-protocol-class CDATA "com.sun.mail.imap.IMAPStore"
+    store-protocol-class CDATA "org.eclipse.angus.mail.imap.IMAPStore"
     transport-protocol CDATA "smtp"
-    transport-protocol-class CDATA "com.sun.mail.smtp.SMTPTransport"
+    transport-protocol-class CDATA "org.eclipse.angus.mail.smtp.SMTPTransport"
     host CDATA #REQUIRED
     user CDATA #REQUIRED
     from CDATA #REQUIRED

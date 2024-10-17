@@ -21,6 +21,8 @@
  "Portions Copyrighted [year] [name of copyright owner]"
 
  Copyright 2009 Sun Microsystems, Inc. All rights reserved.-->
+<!-- Portions Copyright [2024] [Payara Foundation and/or affiliates] -->
+
 <!--  
   A resources instance document referring to this DTD should have a DOCTYPE as follows:
  <!DOCTYPE resources PUBLIC "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Resource Definitions//EN" "http://www.sun.com/software/appserver/dtds/sun-resources_1_4.dtd">-->
@@ -157,9 +159,9 @@
 <!ATTLIST mail-resource
     jndi-name CDATA #REQUIRED
     store-protocol CDATA "imap"
-    store-protocol-class CDATA "com.sun.mail.imap.IMAPStore"
+    store-protocol-class CDATA "org.eclipse.angus.mail.imap.IMAPStore"
     transport-protocol CDATA "smtp"
-    transport-protocol-class CDATA "com.sun.mail.smtp.SMTPTransport"
+    transport-protocol-class CDATA "org.eclipse.angus.mail.smtp.SMTPTransport"
     host CDATA #REQUIRED
     user CDATA #REQUIRED
     from CDATA #REQUIRED
