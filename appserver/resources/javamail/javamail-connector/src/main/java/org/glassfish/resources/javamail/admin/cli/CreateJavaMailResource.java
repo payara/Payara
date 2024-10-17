@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or its affiliates
+ * Portions Copyright [2017-2024] Payara Foundation and/or its affiliates
  */
 
 package org.glassfish.resources.javamail.admin.cli;
@@ -105,13 +105,13 @@ public class CreateJavaMailResource implements AdminCommand {
     @Param(name="storeprotocol", optional=true, defaultValue="imap", alias="storeProtocol")
     private String storeProtocol;
 
-    @Param(name="storeprotocolclass", optional=true, defaultValue="com.sun.mail.imap.IMAPStore", alias="storeProtocolClass")
+    @Param(name = "storeprotocolclass", optional = true, defaultValue = "org.eclipse.angus.mail.imap.IMAPStore", alias = "storeProtocolClass")
     private String storeProtocolClass;
 
     @Param(name="transprotocol", optional=true, defaultValue="smtp", alias="transportProtocol")
     private String transportProtocol;
 
-    @Param(name="transprotocolclass", optional=true, defaultValue="com.sun.mail.smtp.SMTPTransport", alias="transportProtocolClass")
+    @Param(name = "transprotocolclass", optional = true, defaultValue = "org.eclipse.angus.mail.smtp.SMTPTransport", alias = "transportProtocolClass")
     private String transportProtocolClass;
 
     @Param(optional=true, defaultValue="true")

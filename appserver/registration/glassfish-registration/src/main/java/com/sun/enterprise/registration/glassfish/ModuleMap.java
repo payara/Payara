@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.registration.glassfish;
 
@@ -89,7 +89,7 @@ public class ModuleMap {
                 put("com.sun.jersey.jersey-grizzly", 30);
                 put("com.sun.jersey.jersey-json", 31);
                 put("org.glassfish.jsftemplating", 32);
-                put("com.sun.mail.jakarta.mail", 33);
+                put("org.eclipse.angus.mail.jakarta.mail", 33);
                 put("com.sun.pkg.client", 34);
                 put("com.sun.xml.bind.jaxb-osgi", 35);
                 put("commonj.sdo", 36);
