@@ -33,7 +33,7 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
-	<!--  Portions Copyright [2022-2024] Payara Foundation and/or affiliates -->
+<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
 
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
@@ -570,10 +570,10 @@
 <!-- The mail-resource element describes a javax.mail.Session resource -->
 <!ELEMENT mail-resource (description?, property*)> 
 <!ATTLIST mail-resource jndi-name                CDATA        #REQUIRED 
-                        store-protocol           CDATA        "imap"
-	store-protocol-class     CDATA        "org.eclipse.angus.mail.imap.IMAPStore"
-                        transport-protocol       CDATA        "smtp"
-	transport-protocol-class CDATA        "org.eclipse.angus.mail.smtp.SMTPTransport"
+                        store-protocol           CDATA        "imap" 
+                        store-protocol-class     CDATA        "com.sun.mail.imap.IMAPStore"
+                        transport-protocol       CDATA        "smtp" 
+                        transport-protocol-class CDATA        "com.sun.mail.smtp.SMTPTransport" 
                         host                     CDATA        #REQUIRED 
                         user                     CDATA        #REQUIRED 
                         from                     CDATA        #REQUIRED 

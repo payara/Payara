@@ -40,10 +40,11 @@
     holder.
 
 -->
+<!-- Portions Copyright [2024] Payara Foundation and/or affiliates -->
 
 <!--  
   A resources instance document referring to this DTD should have a DOCTYPE as follows:
- <!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">-->
+ <!DOCTYPE resources PUBLIC "-//Payara.fish//DTD Payara Server 4 Resource Definitions//EN" "http://docs.payara.fish/schemas/payara-resources_1_8.dtd">-->
 <!-- ENTITIES -->
 <!-- boolean
 
@@ -51,7 +52,7 @@
     admin-object-resource, connector-connection-pool,                 
     connector-resource, custom-resource, external-jndi-resource,      
     jdbc-connection-pool, jdbc-resource, mail-resource,
-    work-security-map              
+    work-security-map, managed-executor-service         
 -->
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
 
@@ -61,7 +62,7 @@
     jdbc-connection-pool                                              
 -->
 <!ENTITY % isolation
-    "(read-uncommitted | read-committed | repeatable-read | serializable)">    
+    "(read-uncommitted | read-committed | repeatable-read | serializable | snapshot)">
 
 
 <!-- object-type
@@ -89,10 +90,12 @@
     Application server, using portable JNDI names.                    
 -->
 <!ELEMENT resources
-    ((custom-resource | external-jndi-resource | jdbc-resource | mail-resource 
-    | admin-object-resource | connector-resource
-    | resource-adapter-config | jdbc-connection-pool      
-    | connector-connection-pool | work-security-map)*)>                                              
+    ((custom-resource | external-jndi-resource | jdbc-resource | mail-resource
+        | admin-object-resource | connector-resource
+        | resource-adapter-config | jdbc-connection-pool
+        | connector-connection-pool | work-security-map
+        | managed-executor-service | managed-scheduled-executor-service
+        | managed-thread-factory)*)>
 
 
 
@@ -103,7 +106,8 @@
     admin-object-resource, connector-connection-pool,                 
     connector-resource, custom-resource, external-jndi-resource,      
     jdbc-connection-pool, jdbc-resource, mail-resource,               
-    work-security-map, property                    
+    work-security-map, property, managed-executor-service,
+    managed-scheduled-executor-service, managed-thread-factory             
 -->
 <!ELEMENT description (#PCDATA)>
 
@@ -177,9 +181,9 @@
 <!ATTLIST mail-resource
     jndi-name CDATA #REQUIRED
     store-protocol CDATA "imap"
-    store-protocol-class CDATA "com.sun.mail.imap.IMAPStore"
+    store-protocol-class CDATA "org.eclipse.angus.mail.imap.IMAPStore"
     transport-protocol CDATA "smtp"
-    transport-protocol-class CDATA "com.sun.mail.smtp.SMTPTransport"
+    transport-protocol-class CDATA "org.eclipse.angus.mail.smtp.SMTPTransport"
     host CDATA #REQUIRED
     user CDATA #REQUIRED
     from CDATA #REQUIRED
@@ -350,7 +354,7 @@
     connection-validation-method                                               
         specifies the type of validation to be performed when         
         is-connection-validation-required is true. Default value of
-	this attribute is table. (see validation-table-name). The following      
+    this attribute is table. (see validation-table-name). The following      
         types of validation are supported:                            
         auto-commit                                                            
             using connection.autoCommit()                             
@@ -416,7 +420,11 @@
         used in a method, which avoids enlistment of connections that 
         are not used in a transaction. This also prevents unnecessary 
         enlistment of connections cached in the calling components.   
-        Default value is false.                                       
+        Default value is false.
+    log-jdbc-calls
+        Log all SQL calls made through a JDBC connection pool, with 
+        the time taken to execute the call also recorded and logged to
+        the server at the FINE level. Default value is false.
     match-connections                                                          
         To switch on/off connection matching for the pool. It can be  
         set to false if the administrator knows that the connections  
@@ -461,22 +469,22 @@
         configuration of JDBC drivers and applications that use
         java.sql.Driver implementations, set this attribute to
         java.sql.Driver. This optional attribute must be specified to 
-	disambiguate when a Datasource class implements two or more of 
-	these interfaces or when a driver classname is to be provided. 
-	An error is produced when this attribute has a legal value and the        
+    disambiguate when a Datasource class implements two or more of 
+    these interfaces or when a driver classname is to be provided. 
+    An error is produced when this attribute has a legal value and the        
         indicated interface is not implemented by the datasource      
         class. This attribute has no default value. (see also driver-classname).
     sql-trace-listeners
         Used to set if the SQL statements executed by applications need to be traced, 
-	enabling easy filtering of SQL statements executed as log messages. 
+    enabling easy filtering of SQL statements executed as log messages. 
         Aids administrators in analysing the statements. Multiple listeners can be
         specified as comma separated list of listener implementation class names,
-	to enable different means of recording the SQL trace records.
+    to enable different means of recording the SQL trace records.
     statement-cache-size
         Specifies the number of statements to be cached. The only cache
-	eviction strategy supported in this release is "Least Recently Used".
-	The default value is 0 and statement caching is not enabled. Specify a
-	non-zero integer value to enable statement caching.
+    eviction strategy supported in this release is "Least Recently Used".
+    The default value is 0 and statement caching is not enabled. Specify a
+    non-zero integer value to enable statement caching.
     statement-timeout-in-seconds                                               
         Sets the timeout property of a connection to enable           
         termination of abnormally long running queries. Default value 
@@ -514,15 +522,15 @@
         not enabled. TBD: Documentation is to be corrected.           
     validation-classname
         Specifies the custom validation implementation class name to be used
-	for validation. This parameter is mandatory if the 
-	connection-validation-type is set to custom-validation. The specified
-	class must implement the org.glassfish.api.jdbc.ConnectionValidation
-	interface and must be accessible by the application server.
+    for validation. This parameter is mandatory if the 
+    connection-validation-type is set to custom-validation. The specified
+    class must implement the org.glassfish.api.jdbc.ConnectionValidation
+    interface and must be accessible by the application server.
     validation-table-name                                                      
         specifies the table name to be used to perform a query to     
         validate a connection. This parameter is mandatory, if        
-	is-connection-validation-required is set to true and 
-	connection-validation-type set to table. Verification by      
+    is-connection-validation-required is set to true and 
+    connection-validation-type set to table. Verification by      
         accessing a user specified table may become necessary for     
         connection validation, particularly if database driver caches 
         calls to setAutoCommit() and getMetaData().                   
@@ -541,7 +549,7 @@
     datasource-classname CDATA #IMPLIED
     res-type (javax.sql.DataSource | javax.sql.XADataSource | javax.sql.ConnectionPoolDataSource | java.sql.Driver) #IMPLIED
     driver-classname CDATA #IMPLIED
-    ping %boolean; "false"   
+    ping %boolean; "false"
     steady-pool-size CDATA "8"
     max-pool-size CDATA "32"
     max-wait-time-in-millis CDATA "60000"
@@ -553,7 +561,7 @@
     connection-validation-method (auto-commit | meta-data | table | custom-validation) "table"
     validation-table-name CDATA #IMPLIED
     validation-classname CDATA #IMPLIED
-    init-sql CDATA #IMPLIED	      
+    init-sql CDATA #IMPLIED
     fail-all-connections %boolean; "false"
     non-transactional-connections %boolean; "false"
     allow-non-component-callers %boolean; "false"
@@ -567,10 +575,11 @@
     statement-timeout-in-seconds CDATA "-1"
     lazy-connection-enlistment %boolean; "false"
     lazy-connection-association %boolean; "false"
+    log-jdbc-calls %boolean; "false"
     associate-with-thread %boolean; "false"
     match-connections %boolean; "false"
     max-connection-usage-count CDATA "0"
-    sql-trace-listeners CDATA #IMPLIED 
+    sql-trace-listeners CDATA #IMPLIED
     statement-cache-size CDATA "0"
     pooling %boolean; "true"
     wrap-jdbc-objects %boolean; "true">
@@ -819,11 +828,11 @@
 
 <!ELEMENT work-security-map (description?, (principal-map*, group-map*)+) >
 
-<!ATTLIST work-security-map 
-name CDATA #REQUIRED
-resource-adapter-name CDATA #REQUIRED
-object-type %object-type; "user"
-enabled %boolean; "true">
+<!ATTLIST work-security-map
+    name CDATA #REQUIRED
+    resource-adapter-name CDATA #REQUIRED
+    object-type %object-type; "user"
+    enabled %boolean; "true">
 
 <!-- principal-map
   Performs mapping from a Principal in the EIS security domain to
@@ -842,8 +851,8 @@ enabled %boolean; "true">
 <!ELEMENT principal-map EMPTY >
 
 <!ATTLIST principal-map
-eis-principal CDATA #REQUIRED
-mapped-principal CDATA #REQUIRED>
+    eis-principal CDATA #REQUIRED
+    mapped-principal CDATA #REQUIRED>
 
 <!-- group-map
   Group map to map eis-group name to application server domain's group name
@@ -861,6 +870,226 @@ mapped-principal CDATA #REQUIRED>
 <!ELEMENT group-map EMPTY >
 
 <!ATTLIST group-map
-eis-group CDATA #REQUIRED
-mapped-group CDATA #REQUIRED>
+    eis-group CDATA #REQUIRED
+    mapped-group CDATA #REQUIRED>
+
+<!-- managed-executor-service
+    ManagedExecutorService resource definition                 
+
+  attributes
+    jndi_name
+        The JNDI name of this resource.
+
+    enabled
+        Determines whether the resource is enabled at runtime. The default
+        value is true.
+
+    context-info-enabled
+        Determines whether container contexts are propagated to threads. If
+        set to true, the contexts specified in the contextinfo option are
+        propagated. If set to false, no contexts are propagated and the
+        contextinfo option is ignored. The default value is true.
+
+    context-info
+        Specifies individual container contexts to propagate to threads.
+        Valid values are Classloader, JNDI, Security, and WorkArea. Values
+        are specified in a comma-separated list and are case-insensitive.
+        All contexts are propagated by default.
+
+    thread-priority
+        Specifies the priority to assign to created threads. The default
+        value is 5.
+
+    long-runnings-tasks
+        Specifies whether the resource should be used for long-running
+        tasks. The default value is false. If set to true, long-running
+        tasks are not reported as stuck.
+
+    hung-after-seconds
+        Specifies the number of seconds that a task can execute before it
+        is considered unresponsive. The default value is 0, which means
+        that tasks are never considered unresponsive.
+
+    core-pool-size
+        Specifies the number of threads to keep in a thread pool, even if
+        they are idle. The default value is 0.
+
+        When a new task is submitted and the number of running threads is
+        less than corepoolsize, a new thread is created to handle the
+        request. When the value for corepoolsize is 0 (the default), new
+        threads are never created unless the task queue is full or the
+        resource is using direct queuing. Direct queuing occurs when
+        taskqueuecapacity is 0, or when taskqueuecapacity is 2147483647 and
+        corepoolsize is 0.
+
+    maximum-pool-size
+        Specifies the maximum number of threads that a thread pool can
+        contain. The default value is 2147483647, which means that the
+        thread pool is essentially unbounded and can contain any number of
+        threads.
+
+    keep-alive-seconds
+        Specifies the number of seconds that threads can remain idle when
+        the number of threads is greater than corepoolsize. The default
+        value is 60.
+
+    thread-lifetime-seconds
+        Specifies the number of seconds that threads can remain in a thread
+        pool before being purged, regardless of whether the number of
+        threads is greater than corepoolsize or whether the threads are
+        idle. The default value is 0, which means that threads are never
+        purged.
+
+    task-queue-capacity
+        Specifies the number of submitted tasks that can be stored in the
+        task queue awaiting execution. The default value is 2147483647,
+        which means that the task queue is essentially unbounded and can
+        store any number of submitted tasks.
+
+  children
+        description                                                            
+            Textual Description                                       
+
+  Used in:
+    resources                                                         
+-->
+<!ELEMENT managed-executor-service (description?)>
+
+<!ATTLIST managed-executor-service
+    jndi-name CDATA #REQUIRED
+    enabled %boolean; "true"
+    context-info-enabled %boolean; "true"
+    context-info CDATA "Classloader,JNDI,Security,WorkArea"
+    core-pool-size CDATA "0"
+    maximum-pool-size CDATA "2147483647"
+    thread-priority CDATA "5"
+    long-runnings-tasks %boolean; "false"
+    hung-after-seconds CDATA "0"
+    core-pool-size CDATA "0"
+    keep-alive-seconds CDATA "60"
+    thread-lifetime-seconds CDATA "0"
+    task-queue-capacity CDATA "2147483647"
+    >
+
+<!-- managed-scheduled-executor-service
+    ManagedScheduledExecutorService resource definition                 
+
+  attributes
+    jndi_name
+        The JNDI name of this resource.
+
+    enabled
+        Determines whether the resource is enabled at runtime. The default
+        value is true.
+
+    context-info-enabled
+        Determines whether container contexts are propagated to threads. If
+        set to true, the contexts specified in the contextinfo option are
+        propagated. If set to false, no contexts are propagated and the
+        contextinfo option is ignored. The default value is true.
+
+    context-info
+        Specifies individual container contexts to propagate to threads.
+        Valid values are Classloader, JNDI, Security, and WorkArea. Values
+        are specified in a comma-separated list and are case-insensitive.
+        All contexts are propagated by default.
+
+    thread-priority
+        Specifies the priority to assign to created threads. The default
+        value is 5.
+
+    long-runnings-tasks
+        Specifies whether the resource should be used for long-running
+        tasks. The default value is false. If set to true, long-running
+        tasks are not reported as stuck.
+
+    hung-after-seconds
+        Specifies the number of seconds that a task can execute before it
+        is considered unresponsive. The default value is 0, which means
+        that tasks are never considered unresponsive.
+
+    core-pool-size
+        Specifies the number of threads to keep in a thread pool, even if
+        they are idle. The default value is 0, which means that a thread is
+        created when the first task is scheduled.
+
+    keep-alive-seconds
+        Specifies the number of seconds that threads can remain idle when
+        the number of threads is greater than corepoolsize. The default
+        value is 60.
+
+    thread-lifetime-seconds
+        Specifies the number of seconds that threads can remain in a thread
+        pool before being purged, regardless of whether the number of
+        threads is greater than corepoolsize or whether the threads are
+        idle. The default value is 0, which means that threads are never
+        purged.
+
+  children
+        description                                                            
+            Textual Description                                       
+
+  Used in:
+    resources                                                         
+-->
+<!ELEMENT managed-scheduled-executor-service (description?)>
+
+<!ATTLIST managed-scheduled-executor-service
+    jndi-name CDATA #REQUIRED
+    enabled %boolean; "true"
+    context-info-enabled %boolean; "true"
+    context-info CDATA "Classloader,JNDI,Security,WorkArea"
+    core-pool-size CDATA "0"
+    thread-priority CDATA "5"
+    long-runnings-tasks %boolean; "false"
+    hung-after-seconds CDATA "0"
+    core-pool-size CDATA "0"
+    keep-alive-seconds CDATA "60"
+    thread-lifetime-seconds CDATA "0"
+    >
+
+<!-- managed-thread-factory
+    ManagedThreadFactory resource definition                 
+
+  attributes
+    jndi_name
+        The JNDI name of this resource.
+
+    enabled
+        Determines whether the resource is enabled at runtime. The default
+        value is true.
+
+    context-info-enabled
+        Determines whether container contexts are propagated to threads. If
+        set to true, the contexts specified in the contextinfo option are
+        propagated. If set to false, no contexts are propagated and the
+        contextinfo option is ignored. The default value is true.
+
+    context-info
+        Specifies individual container contexts to propagate to threads.
+        Valid values are Classloader, JNDI, Security, and WorkArea. Values
+        are specified in a comma-separated list and are case-insensitive.
+        All contexts are propagated by default.
+
+    thread-priority
+        Specifies the priority to assign to created threads. The default
+        value is 5.
+
+  children
+        description                                                            
+            Textual Description                                       
+
+  Used in:
+    resources                                                         
+-->
+<!ELEMENT managed-thread-factory (description?)>
+
+<!ATTLIST managed-thread-factory
+    jndi-name CDATA #REQUIRED
+    enabled %boolean; "true"
+    context-info-enabled %boolean; "true"
+    context-info CDATA "Classloader,JNDI,Security,WorkArea"
+    core-pool-size CDATA "0"
+    thread-priority CDATA "5"
+    >
 
