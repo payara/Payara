@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
 import javax.naming.NamingException;
 
+import com.sun.enterprise.deployment.Application;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamespacePrefixes;
@@ -93,7 +95,9 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
 
                 if( inv != null ) {
 
-                    JndiNameEnvironment componentEnv = compEnvManager.getJndiNameEnvironment(inv.getComponentId());
+                    JndiNameEnvironment componentEnv = inv.getComponentId() != null
+                            ? compEnvManager.getJndiNameEnvironment(inv.getComponentId())
+                            : null;
 
                     if( componentEnv != null ) {
 
@@ -122,7 +126,9 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
                             throw new IllegalStateException("Cannot resolve bean manager");
                         }
 
-
+                    } else if (inv.getComponentId() == null) {
+                        // EAR deployment
+                        beanManager = inv.getInstance();
                     } else {
                         throw new IllegalStateException("No invocation context found");
                     }
