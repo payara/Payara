@@ -267,7 +267,9 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
      * Perform the session backgroud process to validate values from session storage.
      */
     public void backgroundSessionUpdate() {
-        this.updateSession();
+        if (store.isHighAvailability()) {
+            this.updateSession();
+        }
     }
 
     /**
@@ -607,15 +609,17 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         final List<Session> sessions = findSessions();
         for (final Session session1 : sessions) {
             StandardSession session = (StandardSession) session1;
-            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
-            StandardSession sessionFromStore = null;
-            try {
-                sessionFromStore = (StandardSession) swapIn(session.getId());
-            } catch (IOException e) {
-                log.log(Level.INFO, "Caught exception attempting to swap in session from store", e);
-            }
-            if (sessionFromStore != null) {
-                compareAndUpdateAccessedTime(session, sessionFromStore);
+            if (store.isHighAvailability()) {
+                try {
+                    //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+                    StandardSession sessionFromStore = (StandardSession)
+                            processWithinWebClassLoader(() -> store.load(session.getId()));
+                    if (sessionFromStore != null) {
+                        compareAndUpdateAccessedTime(session, sessionFromStore);
+                    }
+                } catch (Exception e) {
+                    log.log(Level.INFO, "Caught exception attempting to load session from store", e);
+                }
             }
             if(!session.getIsValid() || session.hasExpired()) {
                 if(session.lockBackground()) {
@@ -637,17 +641,17 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         final List<Session> sessions = findSessions();
         for (final Session session1 : sessions) {
             StandardSession session = (StandardSession) session1;
-            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
-            StandardSession sessionFromStore = null;
             try {
                 if(session != null) {
-                    sessionFromStore = (StandardSession) swapIn(session.getId());
+                    //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+                    StandardSession sessionFromStore = (StandardSession)
+                            processWithinWebClassLoader(() -> store.load(session.getId()));
+                    if (sessionFromStore != null) {
+                        compareAndUpdateAccessedTime(session, sessionFromStore);
+                    }
                 }
-            } catch (IOException e) {
-                log.log(Level.INFO, "Caught exception attempting to swap in session from store", e);
-            }
-            if (sessionFromStore != null) {
-                compareAndUpdateAccessedTime(session, sessionFromStore);
+            } catch (Exception e) {
+                log.log(Level.INFO, "Caught exception attempting to load session from store", e);
             }
         }
     }
@@ -770,18 +774,22 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
         Session session = super.findSession(id);
 
         if (session != null) {
-            //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
-            Session sessionFromStore = swapIn(id);
-            if (sessionFromStore != null) {
-                compareAndUpdateAccessedTime((StandardSession) session, (StandardSession) sessionFromStore);
+            if (store.isHighAvailability()) {
+                try {
+                    //verify if session also is on the store and compare lastAccessTime and thisAccessedTime
+                    Session sessionFromStore = processWithinWebClassLoader(() -> store.load(session.getId()));
+                    if (sessionFromStore != null) {
+                        compareAndUpdateAccessedTime((StandardSession) session, (StandardSession) sessionFromStore);
+                    }
+                } catch (Exception e) {
+                    log.log(Level.INFO, "Caught exception attempting to load session from store", e);
+                }
             }
             return (session);
         }
 
         // See if the Session is in the Store
-        session = swapIn(id);
-        return (session);
-
+        return swapIn(id);
     }
 
     /**
@@ -1050,7 +1058,15 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
      * @param version The requested session version
      */
     protected Session swapIn(String id, String version) throws IOException {
+        return processWithinWebClassLoader(() -> doSwapIn(id, version));
+    }
 
+    @FunctionalInterface
+    interface ThrowingSupplier<T, E extends Exception> {
+        T get() throws E;
+    }
+
+    private <T, E extends Exception> T processWithinWebClassLoader(ThrowingSupplier<T, E> supplier) throws E {
         ClassLoader webappCl = null;
         ClassLoader curCl = null;
 
@@ -1060,20 +1076,20 @@ public abstract class PersistentManagerBase extends ManagerBase implements Lifec
             curCl = Thread.currentThread().getContextClassLoader();
         }
 
-        Session sess = null;
+        T result = null;
 
         if (webappCl != null && curCl != webappCl) {
             try {
                 Thread.currentThread().setContextClassLoader(webappCl);
-                sess = doSwapIn(id, version);
+                result = supplier.get();
             } finally {
                 Thread.currentThread().setContextClassLoader(curCl);
             }
         } else {
-            sess = doSwapIn(id, version);
+            result = supplier.get();
         }
 
-        return sess;
+        return result;
     }
 
     /**
