@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.util.io;
 
@@ -69,6 +69,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -780,7 +781,6 @@ public class FileUtils  {
                 } catch (InterruptedException ex) {
                 	_utillogger.log(Level.SEVERE, "Thread Interrupted Exception", ex);
                 }
-                System.gc();
                 work.run();
             }
         }
@@ -1207,7 +1207,7 @@ public class FileUtils  {
     public static String readSmallFile(final File file)
             throws IOException {
         final StringBuilder sb = new StringBuilder();
-        try (final BufferedReader bf = new BufferedReader(new FileReader(file))) {
+        try (final BufferedReader bf = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
             String line;
             while ( (line = bf.readLine()) != null ) {
                 sb.append(line);
@@ -1288,7 +1288,7 @@ public class FileUtils  {
         Writer writer = null;
 
         try {
-            writer = new PrintWriter(f);
+            writer = new PrintWriter(f, StandardCharsets.UTF_8);
             writer.write(s);
         }
         finally {
@@ -1336,7 +1336,7 @@ public class FileUtils  {
     public static String resourceToString(String resourceName) {
         byte[] bytes = resourceToBytes(resourceName);
 
-        return bytes == null ? null : new String(bytes);
+        return bytes == null ? null : new String(bytes, StandardCharsets.UTF_8);
     }
 
     /**

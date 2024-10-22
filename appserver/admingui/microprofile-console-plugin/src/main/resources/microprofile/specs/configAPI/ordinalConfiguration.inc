@@ -118,6 +118,12 @@
                            text="#{pageSession.microprofileConfigMap['secretDirOrdinality']}"/>
         </sun:property>
 
+        <sun:property id="tomlOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                      label="$resource{i18n_microprofile.config.ordinal.configuration.toml}">
+              <sun:textField id="endPoint" columns="$int{40}" maxLength="250"
+                           text="#{pageSession.microprofileConfigMap['tomlOrdinality']}"/>
+        </sun:property>
+
         <sun:property id="serverOrdinalProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                       label="$resource{i18n_microprofile.config.ordinal.configuration.server}">
               <sun:textField id="endPoint" columns="$int{40}" maxLength="250" 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,7 @@ import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstant
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.PASSWORD;
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SECRETS;
 import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.SERVER;
+import static fish.payara.nucleus.microprofile.config.admin.ConfigSourceConstants.TOML;
 
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -94,7 +95,7 @@ public class SetConfigOrdinal implements AdminCommand {
     @Param()
     int ordinal;
 
-    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
+    @Param(optional = true, acceptableValues = "domain,config,server,application,module,cluster,jndi,secrets,toml,password,jdbc,cloud,ldap", defaultValue = DOMAIN)
     String source;
 
     @Param(optional = true, defaultValue = "server") // if no target is specified it will be the DAS
@@ -146,6 +147,10 @@ public class SetConfigOrdinal implements AdminCommand {
                             }
                             case SECRETS: {
                                 config.setSecretDirOrdinality(Integer.toString(ordinal));
+                                break;
+                            }
+                            case TOML: {
+                                config.setTomlOrdinality(Integer.toString(ordinal));
                                 break;
                             }
                             case PASSWORD : {

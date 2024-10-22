@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.process;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -171,7 +172,7 @@ public class ProcessManager {
             throw new ProcessManagerException(Strings.get("null.process"));
         }
 
-        try (PrintWriter pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream())))) {
+        try (PrintWriter pipe = new PrintWriter(new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8)))) {
             for (String stdinLine : stdinLines) {
                 debug("InputLine ->" + stdinLine + "<-");
                 pipe.println(stdinLine);
@@ -185,7 +186,7 @@ public class ProcessManager {
 
     ////////////////////////////////////////////////////////////////////////////
     private void readStream(String name, InputStream stream, StringBuffer sb) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
         Thread thread = new Thread(new ReaderThread(reader, sb, echo), name);
         threads.add(thread);
         thread.start();
