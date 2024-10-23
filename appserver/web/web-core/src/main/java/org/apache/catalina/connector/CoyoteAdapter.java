@@ -55,10 +55,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2022-2024] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -68,6 +67,8 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -131,6 +132,8 @@ public class CoyoteAdapter extends HttpHandler {
     private static final boolean COLLAPSE_ADJACENT_SLASHES =
         Boolean.valueOf(System.getProperty(
             "com.sun.enterprise.web.collapseAdjacentSlashes", "true"));
+
+    private static String INVALID_PATTERNS_RFC_9110 = "(\\\\n)|(\\\\0)|(\\\\r)|(\\\\x00)|(\\\\x0A)|(\\\\x0D)";
 
     /**
      * When mod_jk is used, the adapter must be invoked the same way 
@@ -303,7 +306,16 @@ public class CoyoteAdapter extends HttpHandler {
 //        if (connector.isXpoweredBy()) {
 //            response.addHeader("X-Powered-By", POWERED_BY);
 //        }
-
+        //adding validation to reject request if invalid characters available RFC-9110
+        if (!validateHeaderValues(req)) {
+            String msg = LogFacade.INVALID_HEADER_VALUE_RFC_9110;
+            
+            if (log.isLoggable(Level.INFO)) {
+                log.log(Level.INFO, msg);
+            }
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+            return;
+        }
 
         // Parse and set Catalina and configuration specific 
         // request parameters
@@ -1029,6 +1041,27 @@ public class CoyoteAdapter extends HttpHandler {
      */
     public int getPort() {
         return connector.getPort();
+    }
+
+    /**
+     * Method to validate invalid characters on header values based on the specification RFC-9110
+     * @param req represents the Request that contains the Header values
+     * @return boolean false if any of the evaluated characters is available in any of the header values, true if the headers 
+     * don't contain any of the problematic characters
+     */
+    private boolean validateHeaderValues(final org.glassfish.grizzly.http.server.Request req) {
+        Iterable<String> headers = req.getHeaderNames();
+        if (headers != null) {
+            for (String nameHeader : headers) {
+                String headerValue = req.getHeader(nameHeader);
+                Pattern p = Pattern.compile(INVALID_PATTERNS_RFC_9110);
+                Matcher matcher = p.matcher(headerValue);
+                if (matcher.find()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

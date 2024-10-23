@@ -56,6 +56,8 @@
  * limitations under the License.
  */
 
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+
 package org.apache.catalina;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -3635,5 +3637,11 @@ public class LogFacade {
             level = "WARNING"
     )
     public static final String NONCACHEABLE_UNSAFE_PUSH_METHOD_EXCEPTION = prefix + "00548";
+    
+    @LogMessageInfo(
+            message = "Invalid Header value, you cannot include CR, LF or NUL characters, please refer to RFC-9110",
+            level = "WARNING"
+    )
+    public static final String INVALID_HEADER_VALUE_RFC_9110 = prefix + "00549";
 
 }

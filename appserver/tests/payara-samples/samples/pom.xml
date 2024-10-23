@@ -90,6 +90,7 @@
         <module>reproducers</module>
         <module>opentelemetry</module>
         <module>use-bundled-jsf-primefaces</module>
+        <module>rfc-9110</module>
     </modules>
 
     <dependencyManagement>
