@@ -1051,10 +1051,10 @@ public class CoyoteAdapter extends HttpHandler {
      */
     private boolean validateHeaderValues(final org.glassfish.grizzly.http.server.Request req) {
         Iterable<String> headers = req.getHeaderNames();
+        Pattern p = Pattern.compile(INVALID_PATTERNS_RFC_9110);
         if (headers != null) {
             for (String nameHeader : headers) {
                 String headerValue = req.getHeader(nameHeader);
-                Pattern p = Pattern.compile(INVALID_PATTERNS_RFC_9110);
                 Matcher matcher = p.matcher(headerValue);
                 if (matcher.find()) {
                     return false;
