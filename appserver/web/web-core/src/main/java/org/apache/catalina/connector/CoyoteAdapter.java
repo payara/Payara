@@ -308,12 +308,11 @@ public class CoyoteAdapter extends HttpHandler {
 //        }
         //adding validation to reject request if invalid characters available RFC-9110
         if (!validateHeaderValues(req)) {
-            String msg = LogFacade.INVALID_HEADER_VALUE_RFC_9110;
             
             if (log.isLoggable(Level.INFO)) {
-                log.log(Level.INFO, msg);
+                log.log(Level.INFO, LogFacade.INVALID_HEADER_VALUE_RFC_9110);
             }
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, msg);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, LogFacade.INVALID_HEADER_VALUE_RFC_9110);
             return;
         }
 
