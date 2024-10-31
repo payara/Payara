@@ -123,6 +123,7 @@
         <jbi.version>1.0</jbi.version>
         <okhttp3-version>4.12.0</okhttp3-version>
         <kotlin-version>2.0.21</kotlin-version>
+        <epyciro.version>3.1.0</epyciro.version>
         
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
@@ -912,6 +913,11 @@
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
                 <version>${jakarta.authentication-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.epicyro</groupId>
+                <artifactId>epicyro</artifactId>
+                <version>${epyciro.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>

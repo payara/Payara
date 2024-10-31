@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static java.util.Collections.synchronizedMap;
@@ -47,7 +47,7 @@ import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
+import org.glassfish.epicyro.services.AuthConfigRegistrationWrapper;
 
 public class ClientPipeCloser {
     

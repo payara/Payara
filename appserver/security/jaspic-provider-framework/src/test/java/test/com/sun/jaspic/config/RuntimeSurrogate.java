@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package test.com.sun.jaspic.config;
 
-import com.sun.jaspic.config.factory.AuthConfigFileFactory;
 import com.sun.jaspic.config.servlet.JAASServletAuthConfigProvider;
 import java.io.IOException;
 import java.util.HashMap;
@@ -59,6 +58,7 @@ import jakarta.security.auth.message.config.AuthConfigProvider;
 import jakarta.security.auth.message.config.RegistrationListener;
 import jakarta.security.auth.message.config.ServerAuthConfig;
 import jakarta.security.auth.message.config.ServerAuthContext;
+import org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory;
 
 /**
  *

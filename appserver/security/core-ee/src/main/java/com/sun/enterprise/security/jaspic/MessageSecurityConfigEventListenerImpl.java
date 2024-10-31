@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright [2016-2024] [Payara Foundation]
 
 package com.sun.enterprise.security.jaspic;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 
+import jakarta.security.auth.message.config.AuthConfigFactory;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 
@@ -62,7 +63,6 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
 import com.sun.logging.LogDomains;
 
 /**
@@ -80,59 +80,7 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private SecurityService service;
-
-    /**
-     * @param event - Event to be processed.
-     * @throws AdminEventListenerException when the listener is unable to process the event.
-     */
-    public <T extends ConfigBeanProxy> NotProcessed handleUpdate(T instance) {
-        NotProcessed notProcessed = null;
-        logger.fine("MessageSecurityConfigEventListenerImpl - handleUpdate called");
-        
-        // Handle only the MessageSecurityConfig.
-        if (instance instanceof MessageSecurityConfig) {
-            GFServerConfigProvider.loadConfigContext(service);
-        } else {
-            notProcessed = new NotProcessed("unimplemented: unknown instance: " + instance.getClass().getName());
-        }
-
-        return notProcessed;
-    }
-
-    /**
-     * @param event Event to be processed.
-     * @throws AdminEventListenerException when the listener is unable to process the event.
-     */
-    public <T extends ConfigBeanProxy> NotProcessed handleDelete(T instance) {
-        NotProcessed notProcessed = null;
-        logger.fine("MessageSecurityConfigEventListenerImpl - handleDelete called");
-
-        if (instance instanceof MessageSecurityConfig) {
-            GFServerConfigProvider.loadConfigContext(service);
-        } else {
-            notProcessed = new NotProcessed("unimplemented: unknown instance: " + instance.getClass().getName());
-        }
-
-        return notProcessed;
-    }
-
-    /**
-     * @param event Event to be processed.
-     * @throws AdminEventListenerException when the listener is unable to process the event.
-     */
-    public <T extends ConfigBeanProxy> NotProcessed handleCreate(T instance) {
-        NotProcessed notProcessed = null;
-        logger.fine("MessageSecurityConfigEventListenerImpl - handleCreate called");
-
-        if (instance instanceof MessageSecurityConfig) {
-            GFServerConfigProvider.loadConfigContext(service);
-        } else {
-            notProcessed = new NotProcessed("unimplemented: unknown instance: " + instance.getClass().getName());
-        }
-
-        return notProcessed;
-    }
-
+    
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
         ConfigSupport.sortAndDispatch(events, new Changed() {
@@ -151,15 +99,15 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
                 switch (type) {
                 case ADD:
                     logger.fine("A new " + changedType.getName() + " was added : " + " " + changedInstance);
-                    notProcessed = handleCreate(changedInstance);
+                    notProcessed = handle(changedInstance);
                     break;
                 case CHANGE:
                     logger.fine("A " + changedType.getName() + " was changed : " + changedInstance);
-                    notProcessed = handleUpdate(changedInstance);
+                    notProcessed = handle(changedInstance);
                     break;
                 case REMOVE:
                     logger.fine("A " + changedType.getName() + " was removed : " + changedInstance);
-                    notProcessed = handleDelete(changedInstance);
+                    notProcessed = handle(changedInstance);
                     break;
                 }
                 
@@ -168,5 +116,17 @@ public class MessageSecurityConfigEventListenerImpl implements ConfigListener {
         }, logger);
 
         return null;
+    }
+
+    private <T extends ConfigBeanProxy> NotProcessed handle(T instance) {
+        if (instance instanceof MessageSecurityConfig) {
+            AuthConfigFactory factory = AuthConfigFactory.getFactory();
+            if (factory != null) {
+                factory.refresh();
+            }
+            return null;
+        }
+
+        return new NotProcessed("unimplemented: unknown instance: " + instance.getClass().getName());
     }
 }

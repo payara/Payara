@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package test.com.sun.jaspic.config;
 
 import java.util.concurrent.TimeUnit;
@@ -48,9 +48,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.ArrayList;
 import java.util.List;
 import com.sun.jaspic.config.factory.EntryInfo;
-import com.sun.jaspic.config.factory.AuthConfigFileFactory;
-import com.sun.jaspic.config.factory.BaseAuthConfigFactory;
-import com.sun.jaspic.config.factory.RegStoreFileParser;
 import java.security.Security;
 import org.junit.After;
 import java.util.HashMap;

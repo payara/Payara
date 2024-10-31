@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient;
 
 import com.sun.enterprise.security.SecurityServicesUtil;
@@ -50,7 +50,6 @@ import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.ee.J2EESecurityManager;
 import com.sun.enterprise.security.integration.AppClientSSL;
-import com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.logging.LogDomains;
 import jakarta.inject.Inject;
@@ -60,6 +59,7 @@ import org.glassfish.appclient.client.acc.config.Security;
 import org.glassfish.appclient.client.acc.config.Ssl;
 import org.glassfish.appclient.client.acc.config.TargetServer;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
+import org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.security.auth.Subject;
@@ -147,7 +147,7 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
 	    if (defaultFactory == null) {
 		java.security.Security.setProperty
 		    (AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY,
-		     GFAuthConfigFactory.class.getName());
+                    AuthConfigFileFactory.class.getName());
 	    }
 
 	} catch (Exception e) {

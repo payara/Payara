@@ -38,7 +38,7 @@
  *   only if the new code is made subject to such option by the copyright
  *   holder.
  */
-
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 /**
  * This package contains much of the implementation code for JACC.
  * 
@@ -59,7 +59,7 @@
  * 
  * <p>
  * The pluggable JACC components are loaded by a class in nucleus: 
- * {@link com.sun.enterprise.security.PolicyLoader}
+ * {@link com.sun.enterprise.security.ee.authorize.PolicyLoader}
  *
  */
 package com.sun.enterprise.security.jacc;

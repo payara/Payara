@@ -37,17 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth.jaspic.provider.config;
 
-import static com.sun.enterprise.security.jaspic.AuthMessagePolicy.getMessageSecurityBinding;
 import static com.sun.enterprise.security.webservices.PipeConstants.BINDING;
 import static com.sun.enterprise.security.webservices.PipeConstants.ENDPOINT;
 import static com.sun.enterprise.security.webservices.PipeConstants.SEI_MODEL;
 import static com.sun.enterprise.security.webservices.PipeConstants.SERVICE_ENDPOINT;
-import static com.sun.enterprise.security.webservices.PipeConstants.SOAP_LAYER;
 import static com.sun.xml.ws.api.SOAPVersion.SOAP_11;
 
+import com.sun.enterprise.security.appclient.ConfigXMLParser;
+import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
+import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
+import jakarta.security.auth.message.MessagePolicy;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.AccessController;
@@ -55,6 +57,8 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Map;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import jakarta.security.auth.message.AuthException;
@@ -72,6 +76,8 @@ import jakarta.xml.ws.handler.MessageContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
+import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 import org.glassfish.internal.api.Globals;
 
 import com.sun.enterprise.deployment.Application;
@@ -88,10 +94,9 @@ import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authorize.EJBPolicyContextDelegate;
-import com.sun.enterprise.security.jaspic.WebServicesDelegate;
-import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
+import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
 import com.sun.enterprise.security.jaspic.config.HandlerContext;
-import com.sun.enterprise.security.jaspic.config.PayaraJaspicServices;
+import com.sun.enterprise.security.jaspic.config.PayaraEpicyroServices;
 import com.sun.enterprise.security.webservices.PipeConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -106,7 +111,7 @@ import com.sun.xml.ws.api.model.SEIModel;
 import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.server.WSEndpoint;
 
-public class PipeHelper extends PayaraJaspicServices {
+public class PipeHelper extends PayaraEpicyroServices {
     
     protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PipeConstants.class);
     
@@ -118,7 +123,7 @@ public class PipeHelper extends PayaraJaspicServices {
     private EJBPolicyContextDelegate ejbDelegate;
 
     public PipeHelper(String layer, Map<String, Object> properties, CallbackHandler callbackHandler) {
-        init(layer, getAppCtxt(properties), properties, callbackHandler, Globals.get(WebServicesDelegate.class));
+        init(layer, getAppCtxt(properties), properties, callbackHandler, (RegistrationWrapperRemover) Globals.get(WebServicesDelegate.class));
 
         isEjbEndpoint = processSunDeploymentDescriptor();
         seiModel = (SEIModel) properties.get(SEI_MODEL);
@@ -402,24 +407,44 @@ public class PipeHelper extends PayaraJaspicServices {
     }
 
     private boolean processSunDeploymentDescriptor() {
-        if (factory == null) {
+        if (authConfigFactory == null) {
             return false;
         }
 
-        MessageSecurityBindingDescriptor binding = getMessageSecurityBinding(SOAP_LAYER, map);
+        MessageSecurityBindingDescriptor binding = AuthMessagePolicy.getMessageSecurityBinding(com.sun.xml.wss.provider.wsit.PipeConstants.SOAP_LAYER, map);
+
+        Function<MessageInfo, String> authContextIdGenerator =
+                e -> Globals.get(WebServicesDelegate.class).getAuthContextID(e);
+
+        BiFunction<String, Map<String, Object>, MessagePolicy[]> soapPolicyGenerator =
+                (authContextId, properties) -> AuthMessagePolicy.getSOAPPolicies(
+                        AuthMessagePolicy.getMessageSecurityBinding("SOAP", properties),
+                        authContextId, true);
+
+        String authModuleId = AuthMessagePolicy.getProviderID(binding);
+
+        map.put("authContextIdGenerator", authContextIdGenerator);
+        map.put("soapPolicyGenerator", soapPolicyGenerator);
+
+        if (authModuleId != null) {
+            map.put("authModuleId", authModuleId);
+        }
 
         if (binding != null) {
             if (!hasExactMatchAuthProvider()) {
-                String jaspicProviderRegisID = factory.registerConfigProvider(
-                    new GFServerConfigProvider(null, null), 
-                    layer, appCtxt, "GF AuthConfigProvider bound by Sun Specific Descriptor");
-                
-                setRegistrationId(jaspicProviderRegisID);
+                String jmacProviderRegisID = authConfigFactory.registerConfigProvider(
+                        new GFServerConfigProvider(
+                                map,
+                                isACC()? new ConfigXMLParser() : new ConfigDomainParser(),
+                                authConfigFactory),
+                        messageLayer, appContextId,
+                        "GF AuthConfigProvider bound by Sun Specific Descriptor");
+
+                setRegistrationId(jmacProviderRegisID);
             }
         }
 
         WebServiceEndpoint webServiceEndpoint = (WebServiceEndpoint) map.get(SERVICE_ENDPOINT);
-
         return webServiceEndpoint == null ? false : webServiceEndpoint.implementedByEjbComponent();
     }
 
@@ -537,5 +562,9 @@ public class PipeHelper extends PayaraJaspicServices {
     private String ejbName() {
         WebServiceEndpoint wSE = (WebServiceEndpoint) getProperty(PipeConstants.SERVICE_ENDPOINT);
         return (wSE == null ? "unknown" : wSE.getEjbComponentImpl().getName());
+    }
+
+    private static boolean isACC() {
+        return SecurityServicesUtil.getInstance() == null || SecurityServicesUtil.getInstance().isACC();
     }
 }

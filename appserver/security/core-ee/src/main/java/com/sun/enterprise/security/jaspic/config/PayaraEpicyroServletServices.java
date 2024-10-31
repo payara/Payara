@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.enterprise.deployment.web.LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION;
-import static com.sun.enterprise.security.jaspic.config.GFServerConfigProvider.HTTPSERVLET;
+import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.POLICY_CONTEXT;
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.WEB_BUNDLE;
 
@@ -58,15 +58,18 @@ import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
-import com.sun.enterprise.security.jaspic.WebServicesDelegate;
+import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
+import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 
-public class PayaraJaspicServletServices extends PayaraJaspicServices {
+public class PayaraEpicyroServletServices extends PayaraEpicyroServices {
     
     public static final String AUTH_TYPE = "jakarta.servlet.http.authType";
+
+    public static final String HTTPSERVLET = "HttpServlet";
     
     private String realmName;
 
-    public PayaraJaspicServletServices(String appContext, Map<String, Object> map, CallbackHandler callbackHandler, String realmName, boolean isSystemApp, String defaultSystemProviderID) {
+    public PayaraEpicyroServletServices(String appContext, Map<String, Object> map, CallbackHandler callbackHandler, String realmName, boolean isSystemApp, String defaultSystemProviderID) {
 
         WebBundleDescriptor webBundle = null;
         
@@ -84,7 +87,7 @@ public class PayaraJaspicServletServices extends PayaraJaspicServices {
         }
 
         // Set realmName before init
-        init(HTTPSERVLET, appContext, map, callbackHandler, Globals.get(WebServicesDelegate.class));
+        init(HTTPSERVLET, appContext, map, callbackHandler, (RegistrationWrapperRemover) Globals.get(WebServicesDelegate.class));
 
         if (webBundle != null) {
             String policyContextId = JaccWebAuthorizationManager.getContextID(webBundle);
@@ -106,7 +109,7 @@ public class PayaraJaspicServletServices extends PayaraJaspicServices {
                 
                 // Register the Payara JASPIC provider
                 
-                String jaspicRegistrationId = factory.registerConfigProvider(
+                String jaspicRegistrationId = authConfigFactory.registerConfigProvider(
                     configProvider, HTTPSERVLET, appContext,
                     "Payara provider: " + HTTPSERVLET + ":" + appContext);
                 

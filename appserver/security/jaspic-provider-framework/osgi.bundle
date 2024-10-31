@@ -37,8 +37,8 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
--exportcontents: \
-                        com.sun.jaspic.services; \
+# Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+-exportcontents: \                        
                         com.sun.jaspic.config.delegate; \
                         com.sun.jaspic.config.factory; \
                         com.sun.jaspic.config.jaas; \
