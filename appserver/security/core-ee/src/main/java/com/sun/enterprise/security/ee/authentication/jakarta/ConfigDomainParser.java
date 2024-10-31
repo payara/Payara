@@ -37,18 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
-package com.sun.enterprise.security.jaspic.config;
+package com.sun.enterprise.security.ee.authentication.jakarta;
 
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 import com.sun.enterprise.config.serverbeans.ProviderConfig;
 import com.sun.enterprise.config.serverbeans.RequestPolicy;
 import com.sun.enterprise.config.serverbeans.ResponsePolicy;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
 import com.sun.logging.LogDomains;
 import jakarta.security.auth.message.MessagePolicy;
+import org.glassfish.epicyro.config.factory.ConfigParser;
+import org.glassfish.epicyro.config.helper.AuthMessagePolicy;
+import org.glassfish.epicyro.data.AuthModuleConfig;
+import org.glassfish.epicyro.data.AuthModulesLayerConfig;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.config.types.Property;
 
@@ -78,10 +81,10 @@ public class ConfigDomainParser implements ConfigParser {
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{\\{(.*?)}}|\\$\\{(.*?)}");
 
     // configuration info
-    private Map<String, GFServerConfigProvider.InterceptEntry> configMap = new HashMap<>();
+    private Map<String, AuthModulesLayerConfig> configMap = new HashMap<>();
     private Set<String> layersWithDefault = new HashSet<String>();
 
-    public ConfigDomainParser() throws IOException {
+    public ConfigDomainParser() {
     }
 
     public void initialize(Object service) throws IOException {
@@ -94,7 +97,12 @@ public class ConfigDomainParser implements ConfigParser {
         }
     }
 
-    private void processServerConfig(SecurityService service, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
+    @Override
+    public Map<String, AuthModulesLayerConfig> getAuthModuleLayers() {
+        return configMap;
+    }
+
+    private void processServerConfig(SecurityService service, Map<String, AuthModulesLayerConfig> newConfig) throws IOException {
         List<MessageSecurityConfig> configList = service.getMessageSecurityConfig();
 
         if (configList != null) {
@@ -119,7 +127,7 @@ public class ConfigDomainParser implements ConfigParser {
         }
     }
 
-    public Map<String, GFServerConfigProvider.InterceptEntry> getConfigMap() {
+    public Map<String, AuthModulesLayerConfig> getConfigMap() {
         return configMap;
     }
 
@@ -127,7 +135,7 @@ public class ConfigDomainParser implements ConfigParser {
         return layersWithDefault;
     }
 
-    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map<String, GFServerConfigProvider.InterceptEntry> newConfig) throws IOException {
+    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map<String, AuthModulesLayerConfig> newConfig) throws IOException {
         String intercept = null;
         String defaultServerID = null;
         String defaultClientID = null;
@@ -145,19 +153,19 @@ public class ConfigDomainParser implements ConfigParser {
             layersWithDefault.add(intercept);
         }
 
-        GFServerConfigProvider.InterceptEntry intEntry = newConfig.get(intercept);
+        AuthModulesLayerConfig authModulesLayerConfig = (AuthModulesLayerConfig) newConfig.get(intercept);
 
-        if (intEntry != null) {
+        if (authModulesLayerConfig != null) {
             throw new IOException("found multiple MessageSecurityConfig " + "entries with the same auth-layer");
         }
 
         // create new intercept entry
-        intEntry = new GFServerConfigProvider.InterceptEntry(defaultClientID, defaultServerID, null);
-        newConfig.put(intercept, intEntry);
+        authModulesLayerConfig = new AuthModulesLayerConfig(defaultClientID, defaultServerID, null);
+        newConfig.put(intercept, authModulesLayerConfig);
         return intercept;
     }
 
-    private void parseIDEntry(ProviderConfig pConfig, Map<String, GFServerConfigProvider.InterceptEntry> newConfig, String intercept) throws IOException {
+    private void parseIDEntry(ProviderConfig pConfig, Map<String, AuthModulesLayerConfig> newConfig, String intercept) throws IOException {
 
         String id = pConfig.getProviderId();
         String type = pConfig.getProviderType();
@@ -194,20 +202,20 @@ public class ConfigDomainParser implements ConfigParser {
         }
 
         // create ID entry
-        GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy, responsePolicy,
+        AuthModuleConfig idEntry = new AuthModuleConfig(type, moduleClass, requestPolicy, responsePolicy,
                 options);
 
-        GFServerConfigProvider.InterceptEntry intEntry = newConfig.get(intercept);
+        AuthModulesLayerConfig intEntry = (AuthModulesLayerConfig) newConfig.get(intercept);
         if (intEntry == null) {
             throw new IOException("intercept entry for " + intercept + " must be specified before ID entries");
         }
 
-        if (intEntry.idMap == null) {
-            intEntry.idMap = new HashMap<>();
+        if (intEntry.getAuthModules() == null) {
+            intEntry.setIdMap(new HashMap());
         }
 
         // map id to Intercept
-        intEntry.idMap.put(id, idEntry);
+        intEntry.getAuthModules().put(id, idEntry);
     }
 
     private String expand(String rawProperty) {

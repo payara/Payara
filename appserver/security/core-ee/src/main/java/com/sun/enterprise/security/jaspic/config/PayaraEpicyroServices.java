@@ -37,20 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jaspic.config;
 
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
-import com.sun.jaspic.services.JaspicServices;
+import org.glassfish.epicyro.config.helper.AuthMessagePolicy;
+import org.glassfish.epicyro.services.BaseAuthenticationService;
 
 /**
  * This is based Helper class for 196 Configuration.
  */
-public abstract class PayaraJaspicServices extends JaspicServices {
+public abstract class PayaraEpicyroServices extends BaseAuthenticationService {
 
     /**
      * Get the default callback handler

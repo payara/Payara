@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 package com.sun.web.security.realmadapter;
 
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.AUTH_TYPE;
@@ -93,7 +93,7 @@ import org.apache.catalina.deploy.LoginConfig;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.jaspic.config.PayaraJaspicServletServices;
+import com.sun.enterprise.security.jaspic.config.PayaraEpicyroServletServices;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.jaspic.config.servlet.HttpMessageInfo;
 import com.sun.logging.LogDomains;
@@ -130,7 +130,7 @@ public class JaspicRealm {
 
     private Container virtualServer;
 
-    private PayaraJaspicServletServices jaspicServices;
+    private PayaraEpicyroServletServices jaspicServices;
     private AtomicBoolean initialised = new AtomicBoolean();
 
     public JaspicRealm(String realmName, boolean isSystemApp, WebBundleDescriptor webDescriptor, RequestTracingService requestTracing) {
@@ -291,11 +291,11 @@ public class JaspicRealm {
     /**
      * This must be invoked after virtualServer is set.
      */
-    private PayaraJaspicServletServices getConfigHelper(ServletContext servletContext) {
+    private PayaraEpicyroServletServices getConfigHelper(ServletContext servletContext) {
         Map<String, Object> map = new HashMap<>();
         map.put(WEB_BUNDLE, webDescriptor);
 
-        return new PayaraJaspicServletServices(
+        return new PayaraEpicyroServletServices(
                 getAppContextID(servletContext), map, null, // null handler
                 realmName, isSystemApp, jaspicSystemConfigProviderID);
     }
