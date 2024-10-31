@@ -151,7 +151,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      * Commit the authentication.
      *
      * <P>
-     * Commit is called after all necessary login modules have succeeded. It adds (if not present) a UserPrincipal principal
+     * Commit is called after all necessary login modules have succeeded. It adds (if not present) a PrincipalImpl principal
      * and a LocalCredentials public credential to the Subject.
      *
      * @throws LoginException If commit fails.
