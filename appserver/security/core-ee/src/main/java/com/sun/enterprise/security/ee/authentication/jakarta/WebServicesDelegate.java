@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jaspic;
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.ee.authentication.jakarta;
 
 import java.util.Map;
 
@@ -50,7 +50,7 @@ import org.jvnet.hk2.annotations.Contract;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.security.jauth.AuthParam;
-import com.sun.jaspic.services.RegistrationWrapperRemover;
+import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 
 /**
  * A Delegate interface for handling WebServices specific security and JASPIC (JSR 196) providers. 
