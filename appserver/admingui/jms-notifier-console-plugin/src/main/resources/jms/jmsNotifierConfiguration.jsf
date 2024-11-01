@@ -109,7 +109,7 @@ holder.
             <sun:property id="filter" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                           label="$resource{i18nn.notification.configuration.filter}"
                           helpText="$resource{i18nn.notification.configuration.notifier.filterHelp}">
-                <sun:dropDown id="filterDropdown" selected="#{pageSession.valueMap['filter']}" labels={"INFO", "WARNING", "SEVERE"} />
+                <sun:dropDown id="filterDropdown" selected="#{pageSession.valueMap['filter']}" labels={"SEVERE", "WARNING", "INFO"} />
             </sun:property>
             <sun:property id="contextFactoryClassProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" 
                           label="$resource{i18njn.notifier.jms.configuration.contextFactoryClassLabel}"  
