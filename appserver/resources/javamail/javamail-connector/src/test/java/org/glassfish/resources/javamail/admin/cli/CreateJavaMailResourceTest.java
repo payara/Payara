@@ -232,9 +232,9 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
      * asadmin create-javamail-resource --mailuser=test --mailhost=localhost
      * --fromaddress=test@sun.com  --enabled=false --debug=true
      * --storeprotocol=pop
-     * --storeprotocolclass=org.eclipse.angus.mail.pop.POPStore
-     * --transprotocol=lmtp
-     * --transprotocolclass=org.eclipse.angus.mail.lmtop.LMTPTransport
+     * --storeprotocolclass=org.eclipse.angus.mail.pop.POP3Store
+     * --transprotocol=smtp
+     * --transprotocolclass=org.eclipse.angus.mail.smtp.SMTPTransport
      * mail/MyMailSession
      */
     @Test
@@ -245,9 +245,9 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
         parameters.set("enabled", "false");
         parameters.set("debug", "true");
         parameters.set("storeprotocol", "pop");
-        parameters.set("storeprotocolclass", "org.eclipse.angus.mail.pop.POPStore");
-        parameters.set("transprotocol", "lmtp");
-        parameters.set("transprotocolclass", "org.eclipse.angus.mail.lmtp.LMTPTransport");
+        parameters.set("storeprotocolclass", "org.eclipse.angus.mail.pop.POP3Store");
+        parameters.set("transprotocol", "smtp");
+        parameters.set("transprotocolclass", "org.eclipse.angus.mail.smtp.SMTPTransport");
         parameters.set("jndi_name", "mail/MyMailSession");
         org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource command = habitat.getService(org.glassfish.resources.javamail.admin.cli.CreateJavaMailResource.class);
         assertTrue(command != null);
@@ -263,9 +263,9 @@ public class CreateJavaMailResourceTest extends ConfigApiTest {
                     assertEquals("true", r.getEnabled());
                     assertEquals("true", r.getDebug());
                     assertEquals("pop", r.getStoreProtocol());
-                    assertEquals("org.eclipse.angus.mail.pop.POPStore", r.getStoreProtocolClass());
-                    assertEquals("lmtp", r.getTransportProtocol());
-                    assertEquals("org.eclipse.angus.mail.lmtp.LMTPTransport", r.getTransportProtocolClass());
+                    assertEquals("org.eclipse.angus.mail.pop.POP3Store", r.getStoreProtocolClass());
+                    assertEquals("smtp", r.getTransportProtocol());
+                    assertEquals("org.eclipse.angus.mail.smtp.SMTPTransport", r.getTransportProtocolClass());
                     assertEquals("false", r.getAuth());
                     isCreated = true;
                     break;

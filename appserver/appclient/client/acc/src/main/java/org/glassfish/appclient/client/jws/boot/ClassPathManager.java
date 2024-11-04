@@ -209,7 +209,7 @@ public abstract class ClassPathManager {
                 "jakarta.ejb.EJB," /* jakarta ee */ +
                 "jakarta.security.auth.message.module.ServerAuthModule," /* jaspic-api */ +
                 "com.sun.appserv.management.ext.logging.LogAnalyzer," /* appserv-ext */ +
-                    "org.eclipse.angus.mail.iap.Argument," /* mail */ +
+                "org.eclipse.angus.mail.iap.Argument," /* mail */ +
                 "com.sun.activation.viewers.ImageViewer," /* activation */ +
                 "com.sun.xml.ws.api.server.WSEndpoint," /* webservices-rt */ +
                 "com.sun.tools.ws.wsdl.parser.W3CAddressingExtensionHandler," /* webservices-tools */ +
