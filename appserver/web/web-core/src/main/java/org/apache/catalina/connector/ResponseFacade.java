@@ -285,13 +285,6 @@ public class ResponseFacade
         if (response == null) {
             throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
         }
-
-        if (isCommitted()) {
-            throw new IllegalStateException
-                (/*sm.getString("responseBase.reset.ise")*/);
-        }
-
-        response.setBufferSize(size);
     }
 
     @Override
