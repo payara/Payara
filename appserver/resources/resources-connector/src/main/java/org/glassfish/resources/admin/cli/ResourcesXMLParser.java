@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2024 [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -146,6 +146,7 @@ public class ResourcesXMLParser implements EntityResolver
     private static final String publicID_ges31 = "GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions";
     private static final String publicId_py4 = "Payara.fish//DTD Payara Server 4 Resource Definitions";
 
+    private static final String DTD_1_8 = "payara-resources_1_8.dtd";
     private static final String DTD_1_7 = "payara-resources_1_7.dtd";
     private static final String DTD_1_6 = "payara-resources_1_6.dtd";
     private static final String DTD_1_5 = "glassfish-resources_1_5.dtd";
@@ -157,6 +158,7 @@ public class ResourcesXMLParser implements EntityResolver
 
     private static final List<String> systemIDs = Collections.unmodifiableList(
             Arrays.asList(
+                    DTD_1_8,
                     DTD_1_7,
                     DTD_1_6,
                     DTD_1_5,
@@ -1870,7 +1872,7 @@ public class ResourcesXMLParser implements EntityResolver
             }else if(publicId.contains(publicID_ges31)){
                 dtdFileName = DTD_1_5;
             } else if (publicId.contains(publicId_py4)) {
-                dtdFileName = DTD_1_7;
+                dtdFileName = DTD_1_8;
             }
         }
 
