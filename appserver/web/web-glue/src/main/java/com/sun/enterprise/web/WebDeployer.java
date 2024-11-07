@@ -136,6 +136,16 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             if (contextRoot == null)
                 contextRoot = ((GenericHandler)dc.getArchiveHandler()).getDefaultApplicationNameFromArchiveName(dc.getOriginalSource());
 
+
+            if (this.env.getRuntimeType().isMicro()) {
+                String globalContextRoot = getProperty("payaramicro.globalContextRoot");
+                if (globalContextRoot != null && !globalContextRoot.isBlank()) {
+                    globalContextRoot = globalContextRoot.replaceAll("^/|/$", "");
+                    contextRoot = contextRoot.replaceAll("^/|/$", "");
+
+                    contextRoot = "/" + globalContextRoot + "/" + contextRoot;
+                }
+            }
             if (!contextRoot.startsWith("/")) {
                 contextRoot = "/" + contextRoot;
             }
@@ -239,4 +249,14 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             throw de;
         }
     }
+
+    private String getProperty(String value) {
+        String result;
+        result = System.getProperty(value);
+        if (result == null) {
+            result = System.getenv(value.replace('.', '_'));
+        }
+        return result;
+    }
+
 }
