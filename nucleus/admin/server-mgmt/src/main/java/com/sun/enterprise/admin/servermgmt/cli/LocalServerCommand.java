@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -50,6 +50,7 @@ import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.process.Jps;
+import com.sun.enterprise.universal.process.ProcessState;
 import com.sun.enterprise.universal.process.ProcessUtils;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
@@ -386,12 +387,12 @@ public abstract class LocalServerCommand extends CLICommand {
             return isRunningByCheckingForPidFile();
         }
 
-        Boolean b = ProcessUtils.isProcessRunning(pp);
+        ProcessState b = ProcessUtils.getProcessRunningState(pp);
 
-        if (b == null) { // this means it couldn't find out!
+        if (b == ProcessState.ERROR) { // this means it couldn't find out!
             return isRunningUsingJps();
         } else {
-            return b;
+            return b == ProcessState.RUNNING;
         }
     }
 

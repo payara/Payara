@@ -46,7 +46,7 @@
   <parent>
     <artifactId>fish372-tests</artifactId>
     <groupId>fish.payara.server</groupId>
-    <version>6.2024.10-SNAPSHOT</version>
+    <version>6.2024.11-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>datagrid-tests</artifactId>
@@ -62,7 +62,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.1</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
           <forkCount>0</forkCount>
@@ -186,7 +186,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>3.5.0</version>
+        <version>3.5.1</version>
         <executions>
           <execution>
             <id>integration-test</id>

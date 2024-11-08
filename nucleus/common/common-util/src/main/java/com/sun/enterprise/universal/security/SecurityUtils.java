@@ -48,9 +48,9 @@ import java.security.SecureRandom;
  * @author Byron Nevins
  */
 public final class SecurityUtils {
+    private static SecureRandom random = new SecureRandom();
 
     public static String getSecureRandomHexString(int numBytes) {
-        SecureRandom random = new SecureRandom();
         byte[] bb = new byte[numBytes];
         random.nextBytes(bb);
         return toHexString(bb);

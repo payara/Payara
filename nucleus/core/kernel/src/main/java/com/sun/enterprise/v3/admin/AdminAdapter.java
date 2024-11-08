@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -52,6 +52,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
@@ -541,8 +542,8 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
                 for (int i = 0; i < capacity; i++) {
                     path[i] = contentBuffer.get(i);
                 }
-                
-                parameters.add("path", new String(path)); //path as passed in
+
+                parameters.add("path", new String(path, UTF_8)); //path as passed in
                 parameters.remove("upload"); //remove to prevent exception as this is not a param in the command class
                 
             }

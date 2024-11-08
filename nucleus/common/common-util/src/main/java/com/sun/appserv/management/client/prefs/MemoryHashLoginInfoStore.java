@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 package com.sun.appserv.management.client.prefs;
 
 
@@ -48,6 +48,7 @@ import org.glassfish.security.common.FileProtectionUtility;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /** A {@link LoginInfoStore} that reads the information from the default file ".gfclient/pass"
@@ -76,13 +77,13 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             store = new File(dir, DEFAULT_STORE_NAME);
 
             if (store.createNewFile()) {
-                try (BufferedWriter bw = new BufferedWriter(new FileWriter(store))) {
+                try (BufferedWriter bw = new BufferedWriter(new FileWriter(store, StandardCharsets.UTF_8))) {
                     FileMapTransform.writePreamble(bw);
                 }
                 state = new HashMap<> ();
             }
             else {
-                try (BufferedReader br = new BufferedReader(new FileReader(store))) {
+                try (BufferedReader br = new BufferedReader(new FileReader(store, StandardCharsets.UTF_8))) {
                     state = FileMapTransform.readAll(br);
                 }
             }
@@ -149,12 +150,12 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
 
     ///// PRIVATE METHODS /////
     private void commit(final HostPortKey key, LoginInfo old) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(store))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(store, StandardCharsets.UTF_8))) {
             FileMapTransform.writeAll(state.values(), writer);
         } catch(final Exception e) {
             state.put(key, old); //try to roll back, first memory
             if (old != null) {
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(store))) { // then disk, if the old value is not null
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(store, StandardCharsets.UTF_8))) { // then disk, if the old value is not null
                     FileMapTransform.writeAll(state.values(), writer);
                 } catch (final Exception ae) {
                     throw new RuntimeException("catastrophe, can't write it to file");

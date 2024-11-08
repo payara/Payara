@@ -37,13 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.StringUtils;
+import org.glassfish.common.util.RandomUtils;
+
 import java.net.*;
-import java.security.SecureRandom;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.io.*;
 import java.util.logging.Level;
@@ -469,9 +471,8 @@ public class NetUtils {
         int range = endingPort - startingPort;
         int port = 0;
         if (range > 0) {
-            SecureRandom r = new SecureRandom();
             while (true) {
-                port = r.nextInt(range + 1) + startingPort;
+                port = RandomUtils.nextInt(range + 1) + startingPort;
                 if (isPortFree(hostName, port)) {
                     break;
                 }
@@ -736,7 +737,7 @@ public class NetUtils {
             // Determine protocol from result
             // Can't read https response w/ OpenSSL (or equiv), so use as
             // default & try to detect an http response.
-            String response = new String(input).toLowerCase(Locale.ENGLISH);
+            String response = new String(input, StandardCharsets.UTF_8).toLowerCase(Locale.ENGLISH);
             boolean isSecure = true;
             if (read <= 0 || response.length() == 0) {
                 isSecure = false;

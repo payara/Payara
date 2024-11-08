@@ -2,7 +2,7 @@
 <!--
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2019-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) 2019-2024 Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2024.10-SNAPSHOT</version>
+        <version>6.2024.11-SNAPSHOT</version>
     </parent>
     <artifactId>appserver-core</artifactId>
     <name>Payara Appserver Core Modules</name>
@@ -273,6 +273,10 @@
         <dependency>
             <groupId>jakarta.jws</groupId>
             <artifactId>jakarta.jws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
         </dependency>
     </dependencies>
 </project>
