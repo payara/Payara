@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.nucleus.notification.admin;
 
 import java.util.List;
 
+import fish.payara.internal.notification.EventLevel;
 import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
@@ -105,7 +106,8 @@ public class TestNotifier implements AdminCommand {
         PayaraNotificationBuilder builder = factory.newBuilder()
                 .eventType(EVENT_TYPE)
                 .subject(SUBJECT)
-                .message(MESSAGE);
+                .message(MESSAGE)
+                .level(EventLevel.SEVERE);
 
         if (all == null || !all) {
             if (notifiers == null || notifiers.isEmpty()) {

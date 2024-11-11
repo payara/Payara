@@ -1,7 +1,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) [2017-2024] Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -55,7 +55,7 @@
                 method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.notifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "noisy", "dynamic", "loopback"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "loopback"});
 
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
@@ -66,9 +66,6 @@
         if (#{pageSession.valueMap['hazelcastEnabled']}=true) {
             setPageSessionAttribute(key="hazelcastEnabled", value="true");
         }
-        if (#{pageSession.valueMap['noisy']}=true) {
-			setPageSessionAttribute(key="noisy", value="true");
-		}	
         setPageSessionAttribute(key="dynamic", value="true");
     /> 
 </event>
@@ -83,7 +80,6 @@
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                     <!command
                         mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                        mapPut(map="#{pageSession.valueMap}" key="noisy" value="#{pageSession.noisy}");
                         mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                         mapPut(map="#{pageSession.valueMap}" key="loopBack" value="#{pageSession.loopBackSelected}");
                         mapPut(map="#{pageSession.valueMap}" key="hazelcastEnabled" value="#{pageSession.hazelcastEnabled}");
@@ -105,17 +101,16 @@
                           helpText="$resource{i18ncebn.notifier.cdieventbus.configuration.enabledLabelHelpText}">
                 <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
             </sun:property>
-            <sun:property id="noisy" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
-                          rendered="#{pageSession.hazelcastEnabled == true}"
-                          label="$resource{i18nn.notification.configuration.notifier.noisyLabel}"  
-                          helpText="$resource{i18nn.notification.configuration.notifier.noisyLabelHelpText}">
-                <sun:checkbox id="noisy" selected="#{pageSession.noisy}" selectedValue="true" />
-            </sun:property>
             <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                           rendered="#{pageSession.hazelcastEnabled == true}"
                           label="$resource{i18nn.notification.configuration.dynamic}"
                           helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
                 <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="filter" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
+                          label="$resource{i18nn.notification.configuration.filter}"
+                          helpText="$resource{i18nn.notification.configuration.notifier.filterHelp}">
+                <sun:dropDown id="filterDropdown" selected="#{pageSession.valueMap['filter']}" labels={"SEVERE", "WARNING", "INFO"} />
             </sun:property>
             <sun:property id="loopBackProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                           rendered="#{pageSession.hazelcastEnabled == true}"
