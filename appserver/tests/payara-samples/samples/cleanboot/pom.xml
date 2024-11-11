@@ -41,7 +41,7 @@
     </parent>
 
     <properties>
-      <playwright.version>1.47.0</playwright.version>
+      <playwright.version>1.48.0</playwright.version>
     </properties>
 
 
@@ -80,7 +80,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.4.1</version>
+                        <version>3.5.0</version>
                         <executions>
                           <execution>
                             <id>install-playwright-dependencies</id>

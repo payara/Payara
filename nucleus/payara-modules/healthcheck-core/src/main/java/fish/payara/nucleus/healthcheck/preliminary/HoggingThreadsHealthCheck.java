@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
+import fish.payara.internal.notification.EventLevel;
 import fish.payara.nucleus.healthcheck.HealthCheckHoggingThreadsExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.monitoring.collect.MonitoringData;
@@ -222,6 +223,14 @@ public class HoggingThreadsHealthCheck
                 record.startOfIntervalCpuTime = cpuTime;
             }
         }
+    }
+
+    @Override
+    protected EventLevel createNotificationEventLevel (HealthCheckResultStatus checkResult) {
+        if (checkResult == HealthCheckResultStatus.FINE) {
+            return EventLevel.INFO;
+        }
+        return EventLevel.WARNING;
     }
 
     private static void acceptHoggingThread(final ThreadMXBean bean, final long now, final int retryCount, final int threshold,

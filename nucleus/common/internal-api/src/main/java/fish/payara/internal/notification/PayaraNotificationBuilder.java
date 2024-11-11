@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,7 @@ public class PayaraNotificationBuilder {
 
     private String subject;
     private String eventType;
+    private EventLevel eventLevel = EventLevel.INFO;
 
     private List<String> notifierWhitelist;
     private List<String> notifierBlacklist;
@@ -95,6 +96,11 @@ public class PayaraNotificationBuilder {
 
     public PayaraNotificationBuilder eventType(String eventType) {
         this.eventType = eventType;
+        return this;
+    }
+
+    public PayaraNotificationBuilder level (EventLevel eventLevel) {
+        this.eventLevel = eventLevel;
         return this;
     }
 
@@ -138,6 +144,6 @@ public class PayaraNotificationBuilder {
 
     public PayaraNotification build() {
         return new PayaraNotification(eventType, serverName, hostName, domainName, instanceName, subject, message, data,
-                notifierWhitelist, notifierBlacklist);
+            eventLevel, notifierWhitelist, notifierBlacklist);
     }
 }
