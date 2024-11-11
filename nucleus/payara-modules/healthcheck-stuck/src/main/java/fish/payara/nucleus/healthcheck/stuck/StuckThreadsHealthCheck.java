@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.nucleus.healthcheck.stuck;
 
+import fish.payara.internal.notification.EventLevel;
 import fish.payara.monitoring.collect.MonitoringData;
 import fish.payara.monitoring.collect.MonitoringDataCollector;
 import fish.payara.monitoring.collect.MonitoringDataSource;
@@ -137,6 +138,14 @@ public class StuckThreadsHealthCheck extends
         acceptStuckThreads((workStartedTime, timeWorkingInMillis, thresholdInMillis, info) ->
             result.add(new HealthCheckResultEntry(HealthCheckResultStatus.WARNING, "Stuck Thread: " + info.toString())));
         return result;
+    }
+
+    @Override
+    protected EventLevel createNotificationEventLevel (HealthCheckResultStatus checkResult) {
+        if (checkResult == HealthCheckResultStatus.FINE) {
+            return EventLevel.INFO;
+        }
+        return EventLevel.WARNING;
     }
 
     @Override
