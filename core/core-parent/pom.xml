@@ -617,6 +617,7 @@
                                     <exclude>io.opentelemetry.extension</exclude>
                                     <exclude>io.opentelemetry.instrumentation</exclude>
                                     <exclude>fish.payara.shaded</exclude>
+                                    <exclude>org.glassfish.grizzly.http</exclude>
                                 </excludes>
                             </parameter>
                         </configuration>
