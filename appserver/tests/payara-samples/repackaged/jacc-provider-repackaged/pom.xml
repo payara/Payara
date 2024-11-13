@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>repackaged</artifactId>
-        <version>7.2024.1.Alpha2-SNAPSHOT</version>
+        <version>7.2024.1.Alpha2</version>
     </parent>
     <groupId>org.omnifaces</groupId>
     <artifactId>jacc-provider-repackaged</artifactId>
