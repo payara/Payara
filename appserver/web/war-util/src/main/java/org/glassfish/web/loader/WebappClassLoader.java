@@ -2674,8 +2674,16 @@ public class WebappClassLoader
     private void clearBeanResolver(Class<?> elUtilsClass) throws Exception {
         Optional<Class<?>> elResolverClass = Optional.ofNullable(CachingReflectionUtil
                 .getClassFromCache("jakarta.el.BeanELResolver", this));
-        Object resolver = CachingReflectionUtil.getFieldFromCache(elUtilsClass, "BEAN_RESOLVER",
-                false).get(null);
+
+        Field field = CachingReflectionUtil.getFieldFromCache(elUtilsClass, "BEAN_RESOLVER", false);
+        if (field == null) {
+            logger.log(Level.FINE, "Could not find BEAN_RESOLVER field on {0}", elUtilsClass.getName());
+            return;
+        }
+
+        // TODO: Review whether this is still required; Mojarra may have fixed this themselves in PR#5479?
+        // Is there solution enough? Do we need to retain this for cases where another Faces implementation is being provided?
+        Object resolver = field.get(null);
         if (resolver != null && elResolverClass.isPresent()) {
             logger.fine(String.format("Fields: %s", Arrays.stream(elResolverClass.get().getDeclaredFields())
                     .map(Field::toString).collect(Collectors.toList())));
