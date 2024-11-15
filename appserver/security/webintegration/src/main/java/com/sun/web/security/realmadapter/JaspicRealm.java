@@ -95,7 +95,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.jaspic.config.PayaraEpicyroServletServices;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.jaspic.config.servlet.HttpMessageInfo;
 import com.sun.logging.LogDomains;
 import com.sun.web.security.HttpRequestWrapper;
 import com.sun.web.security.HttpResponseWrapper;
@@ -104,6 +103,7 @@ import com.sun.web.security.RealmAdapter.IOSupplier;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import org.glassfish.epicyro.config.servlet.HttpMessageInfo;
 
 public class JaspicRealm {
 

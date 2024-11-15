@@ -37,31 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
-import static com.sun.enterprise.security.webservices.LogUtils.CLIENT_CERT_ERROR;
-import static com.sun.enterprise.security.webservices.LogUtils.EJB_SEC_CONFIG_FAILURE;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
-import static org.apache.catalina.Globals.CERTIFICATES_ATTR;
-import static org.apache.catalina.Globals.SSL_CERTIFICATE_ATTR;
-
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.WebServiceEndpoint;
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
+import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
+import com.sun.enterprise.web.WebModule;
+import com.sun.web.security.RealmAdapter;
+import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.soap.SOAPMessage;
 import java.lang.ref.WeakReference;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import jakarta.security.jacc.PolicyContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.xml.soap.SOAPMessage;
-
 import org.apache.catalina.util.Base64;
 import org.glassfish.webservices.EjbRuntimeEndpointInfo;
 import org.glassfish.webservices.SecurityService;
@@ -71,18 +69,12 @@ import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
-import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
-import com.sun.enterprise.security.jauth.AuthConfig;
-import com.sun.enterprise.security.jauth.jaspic.provider.ServerAuthConfig;
-import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.enterprise.web.WebModule;
-import com.sun.web.security.RealmAdapter;
-import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
+import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
+import static com.sun.enterprise.security.webservices.LogUtils.CLIENT_CERT_ERROR;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.WARNING;
+import static org.apache.catalina.Globals.CERTIFICATES_ATTR;
+import static org.apache.catalina.Globals.SSL_CERTIFICATE_ATTR;
 
 /**
  *
@@ -100,18 +92,6 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Inject
     private AppServerAuditManager auditManager;
-
-    @Override
-    public Object mergeSOAPMessageSecurityPolicies(MessageSecurityBindingDescriptor desc) {
-        try {
-            // Merge message security policy from domain.xml and sun-specific
-            // deployment descriptor
-            return ServerAuthConfig.getConfig(AuthConfig.SOAP, desc, null);
-        } catch (Exception ae) {
-            _logger.log(SEVERE, EJB_SEC_CONFIG_FAILURE, ae);
-        }
-        return null;
-    }
 
     @Override
     public boolean doSecurity(HttpServletRequest hreq, EjbRuntimeEndpointInfo epInfo, String realmName, WebServiceContextImpl context) {
@@ -238,7 +218,7 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public ClientPipelineHook getClientPipelineHook(ServiceReferenceDescriptor ref) {
-        return new ClientPipeCreator(ref);
+        return new ClientSecurityPipeCreator(ref);
     }
 
 

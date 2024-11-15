@@ -372,8 +372,6 @@
         <module>../api/payara-api</module>
         <!--        fish.payara.server.internal.flashlight  flashlight-framework-->
         <module>../nucleus/flashlight/framework</module>
-        <!--        fish.payara.server.internal.security    jaspic.provider.framework-->
-        <module>../appserver/security/jaspic-provider-framework</module>
         <!--        fish.payara.server.internal.security    security-ee-->
         <module>../appserver/security/core-ee</module>
         <!--        fish.payara.server.internal.security    websecurity-->

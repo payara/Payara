@@ -44,7 +44,7 @@ import com.sun.enterprise.security.ContainerSecurityLifecycle;
 import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
 import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
-import com.sun.enterprise.security.ee.authorize.PolicyLoader;
+import com.sun.enterprise.security.PolicyLoader;
 import com.sun.logging.LogDomains;
 
 import jakarta.inject.Inject;

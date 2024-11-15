@@ -111,7 +111,7 @@ import com.sun.xml.ws.api.model.SEIModel;
 import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.server.WSEndpoint;
 
-public class PipeHelper extends PayaraEpicyroServices {
+public class SoapAuthenticationService extends PayaraEpicyroServices {
     
     protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PipeConstants.class);
     
@@ -122,7 +122,7 @@ public class PipeHelper extends PayaraEpicyroServices {
     private InvocationManager invManager;
     private EJBPolicyContextDelegate ejbDelegate;
 
-    public PipeHelper(String layer, Map<String, Object> properties, CallbackHandler callbackHandler) {
+    public SoapAuthenticationService(String layer, Map<String, Object> properties, CallbackHandler callbackHandler) {
         init(layer, getAppCtxt(properties), properties, callbackHandler, (RegistrationWrapperRemover) Globals.get(WebServicesDelegate.class));
 
         isEjbEndpoint = processSunDeploymentDescriptor();
