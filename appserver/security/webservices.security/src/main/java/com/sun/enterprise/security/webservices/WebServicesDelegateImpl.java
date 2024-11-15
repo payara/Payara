@@ -50,6 +50,7 @@ import jakarta.security.auth.message.MessageInfo;
 import javax.xml.namespace.QName;
 import jakarta.xml.soap.MimeHeaders;
 import jakarta.xml.soap.Name;
+import jakarta.xml.soap.Node;
 import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPElement;
 import jakarta.xml.soap.SOAPEnvelope;
@@ -64,7 +65,6 @@ import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
-import com.sun.enterprise.security.jauth.AuthParam;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.SOAPAuthParam;
 import org.glassfish.epicyro.services.AuthConfigRegistrationWrapper;
@@ -144,12 +144,6 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
 
     }
 
-    @Override
-    public AuthParam newSOAPAuthParam(MessageInfo messageInfo) {
-        return new SOAPAuthParam((SOAPMessage) messageInfo.getRequestMessage(), (SOAPMessage) messageInfo.getResponseMessage());
-
-    }
-
     private String getOpName(SOAPMessage message) {
         if (message == null) {
             return null;
@@ -193,11 +187,11 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
                 if (envelope != null) {
                     SOAPBody body = envelope.getBody();
                     if (body != null) {
-                        Iterator it = body.getChildElements();
+                        Iterator<Node> it = body.getChildElements();
                         while (it.hasNext()) {
-                            Object o = it.next();
-                            if (o instanceof SOAPElement) {
-                                rvalue = ((SOAPElement) o).getElementName();
+                            Node node = it.next();
+                            if (node instanceof SOAPElement) {
+                                rvalue = ((SOAPElement) node).getElementName();
                                 break;
                             }
                         }
@@ -211,21 +205,4 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
         }
         return rvalue;
     }
-
-    @Override
-    public Object getSOAPMessage(ComponentInvocation inv) {
-        /*
-         * V3 commented getting this from EJBPolicyContextDelegate instead currently getting this from
-         * EjbPolicyContextDelegate which might be OK SOAPMessage soapMessage = null; MessageContext
-         * msgContext = inv.messageContext;
-         *
-         * if (msgContext != null) { if (msgContext instanceof SOAPMessageContext) { SOAPMessageContext smc
-         * = (SOAPMessageContext) msgContext; soapMessage = smc.getMessage(); } } else { soapMessage =
-         * inv.getSOAPMessage(); }
-         *
-         * return soapMessage;
-         */
-        return null;
-    }
-
 }

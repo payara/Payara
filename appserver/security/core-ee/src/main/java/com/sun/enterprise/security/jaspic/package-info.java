@@ -52,7 +52,7 @@
  * 
  * <p>
  * Code in this package builds upon the general (server independent) JASPIC Provider 
- * Framework Reference Implementation (<code>org.glassfish.main.security:jaspic.provider.framework</code>).
+ * Framework Reference Implementation.
  * It adds to this framework by implementing the Payara specific bits.
  * 
  * <p>

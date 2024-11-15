@@ -52,7 +52,7 @@
     <artifactId>webservices.security</artifactId>
     <packaging>glassfish-jar</packaging>
 
-    <name>WebServices Security and JSR 196 implementation</name>
+    <name>WebServices Security and Jakarta Authentication implementation</name>
 
     <developers>
         <developer>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.util.HashMap;
@@ -59,17 +59,17 @@ import com.sun.xml.ws.policy.PolicyMapKey;
 import com.sun.xml.wss.provider.wsit.PipeConstants;
 
 /**
- * This is used by JAXWSContainer to return proper 196 security and app server monitoing pipes to
+ * This is used by JAXWSContainer to return proper Jakarta Authentication security and app server monitoing pipes to
  * the StandAlonePipeAssembler and TangoPipeAssembler
  */
 @Service
 @Singleton
-public class GFServerPipeCreator extends org.glassfish.webservices.ServerPipeCreator {
+public class ServerSecurityPipeCreator extends org.glassfish.webservices.ServerPipeCreator {
 
     private static final String SECURITY_POLICY_NAMESPACE_URI_SUBMISSION = "http://schemas.xmlsoap.org/ws/2005/07/securitypolicy";
     private static final String SECURITY_POLICY_NAMESPACE_URI_SPECVERSION = "http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702";
 
-    public GFServerPipeCreator() {
+    public ServerSecurityPipeCreator() {
         super();
     }
 
@@ -81,20 +81,20 @@ public class GFServerPipeCreator extends org.glassfish.webservices.ServerPipeCre
     @Override
     public Pipe createSecurityPipe(PolicyMap map, SEIModel sei, WSDLPort port, WSEndpoint owner, Pipe tail) {
 
-        HashMap<String, Object> props = new HashMap<>();
+        HashMap<String, Object> properties = new HashMap<>();
 
-        props.put(PipeConstants.POLICY, map);
-        props.put(PipeConstants.SEI_MODEL, sei);
-        props.put(PipeConstants.WSDL_MODEL, port);
-        props.put(PipeConstants.ENDPOINT, owner);
-        props.put(PipeConstants.SERVICE_ENDPOINT, endpoint);
-        props.put(PipeConstants.NEXT_PIPE, tail);
-        props.put(PipeConstants.CONTAINER, owner.getContainer());
+        properties.put(PipeConstants.POLICY, map);
+        properties.put(PipeConstants.SEI_MODEL, sei);
+        properties.put(PipeConstants.WSDL_MODEL, port);
+        properties.put(PipeConstants.ENDPOINT, owner);
+        properties.put(PipeConstants.SERVICE_ENDPOINT, endpoint);
+        properties.put(PipeConstants.NEXT_PIPE, tail);
+        properties.put(PipeConstants.CONTAINER, owner.getContainer());
         if (isSecurityEnabled(map, port)) {
             endpoint.setSecurePipeline();
         }
 
-        return new CommonServerSecurityPipe(props, tail, isHttpBinding);
+        return new CommonServerSecurityPipe(properties, tail, isHttpBinding);
     }
 
 //    @Override

@@ -233,10 +233,6 @@
             <artifactId>jakarta.security.enterprise-api</artifactId>
             <scope>provided</scope>
         </dependency>
-         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
-            <artifactId>jaspic.provider.framework</artifactId>
-        </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>

@@ -59,7 +59,7 @@
  * 
  * <p>
  * The pluggable JACC components are loaded by a class in nucleus: 
- * {@link com.sun.enterprise.security.ee.authorize.PolicyLoader}
+ * {@link com.sun.enterprise.security.PolicyLoader}
  *
  */
 package com.sun.enterprise.security.jacc;

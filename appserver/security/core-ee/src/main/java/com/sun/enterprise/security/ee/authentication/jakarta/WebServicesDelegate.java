@@ -49,7 +49,6 @@ import org.jvnet.hk2.annotations.Contract;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.jauth.AuthParam;
 import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 
 /**
@@ -88,18 +87,5 @@ public interface WebServicesDelegate extends RegistrationWrapperRemover {
      * @return the AuthContextID computed from the argument MessageInfo
      */
     String getAuthContextID(MessageInfo messageInfo);
-
-    /**
-     * @param messageInfo TheMessageInfo
-     * @return a new instance of SOAPAuthParam
-     */
-    AuthParam newSOAPAuthParam(MessageInfo messageInfo);
-
-    /**
-     * Return the SOAP Message from the invocation, to be used by JACC PolicyContextHandler
-     * 
-     * @param componentInvocation the invocation
-     * @return the SOAP Message
-     */
-    Object getSOAPMessage(ComponentInvocation componentInvocation);
+    
 }

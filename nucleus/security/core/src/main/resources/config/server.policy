@@ -119,6 +119,7 @@ grant {
     permission java.io.SerializablePermission "enableSubstitution";
     permission java.security.SecurityPermission "getProperty.package.definition";
     permission java.security.SecurityPermission "createPolicy.JavaPolicy";
+    permission java.security.SecurityPermission "getProperty.authconfigprovider.factory.providers";
 };
 
 

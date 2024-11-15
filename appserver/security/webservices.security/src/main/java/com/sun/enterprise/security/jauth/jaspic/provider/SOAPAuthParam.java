@@ -37,10 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth.jaspic.provider;
 
-import com.sun.enterprise.security.jauth.AuthParam;
 import java.util.Map;
 import java.util.HashMap;
 import jakarta.xml.soap.*;
@@ -64,7 +63,7 @@ import com.sun.xml.ws.api.message.Packet;
   *
   * @version 1.12, 06/08/04
   */
-public class SOAPAuthParam implements AuthParam {
+public class SOAPAuthParam {
     
     private HashMap infoMap;
 

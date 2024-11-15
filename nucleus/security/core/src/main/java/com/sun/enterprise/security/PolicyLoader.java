@@ -38,11 +38,10 @@
  * holder.
  */
 // Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee.authorize;
+package com.sun.enterprise.security;
 
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.util.i18n.StringManager;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
