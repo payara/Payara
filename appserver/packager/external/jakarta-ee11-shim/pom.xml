@@ -142,7 +142,7 @@
                                     <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security Connectors upgraded -->
                                     jakarta.security.enterprise-api,
                                     <!-- Downgrade shim for Soteria 3.0, required by security-connector-oauth2-client. Remove once Security Connectors upgraded -->
-                                    org.glassfish.jakarta.security.enterprise
+                                    org.glassfish.soteria
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
                                 <!-- Note the "shortened" syntax here: For every API the packages are delimited with
@@ -269,7 +269,7 @@
                                     org.glassfish.soteria.mechanisms.openid;
                                     org.glassfish.soteria.mechanisms.openid.controller;
                                     org.glassfish.soteria.mechanisms.openid.domain;
-                                    org.glassfish.soteria.servletversion="3.0.99";shim=true
+                                    org.glassfish.soteria.servlet;version="3.0.99";shim=true
                                 </Export-Package>
                             </instructions>
                         </configuration>
