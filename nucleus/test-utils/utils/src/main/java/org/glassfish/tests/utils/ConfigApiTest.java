@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 package org.glassfish.tests.utils;
 
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
@@ -51,6 +50,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.security.common.UserNameAndPassword;
 import org.junit.Ignore;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigModel;
@@ -125,21 +125,9 @@ public abstract class ConfigApiTest extends HK2Runner {
             }
         }
         final Subject s = new Subject();
-        s.getPrincipals().add(new PrincipalImpl("asadmin"));
-        s.getPrincipals().add(new PrincipalImpl("_InternalSystemAdministrator_"));
+        s.getPrincipals().add(new UserNameAndPassword("asadmin"));
+        s.getPrincipals().add(new UserNameAndPassword("_InternalSystemAdministrator_"));
         return s;
-    }
-    
-    private static class PrincipalImpl implements Principal {
-        private final String name;
-        
-        private PrincipalImpl(final String name) {
-            this.name = name;
-        }
-        @Override
-        public String getName() {
-            return name;
-        }
     }
     
     protected Subject adminSubject() {

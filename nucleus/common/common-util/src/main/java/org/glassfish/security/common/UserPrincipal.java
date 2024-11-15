@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  */
 
-package com.sun.enterprise.security.common;
+package org.glassfish.security.common;
 
 import java.io.Serializable;
 import java.security.Principal;

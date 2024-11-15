@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -69,7 +69,9 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.x500.X500Principal;
 
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
+
 
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
@@ -312,7 +314,7 @@ public final class WebAndEjbToJaasBridge {
         }
 
         Subject subject = new Subject();
-        PrincipalImpl callerPrincipal = new PrincipalImpl(username);
+        UserPrincipal callerPrincipal = new UserNameAndPassword(username);
         GSSUPName name = new GSSUPName(username, realmName);
 
         privileged(() -> {

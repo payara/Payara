@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2018-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.iiop.security;
 
@@ -248,7 +248,7 @@ public class SecClientRequestInterceptor extends org.omg.CORBA.LocalObject imple
 
             // Create a DER encoding of the principal name as a GSSUPName - realm is not currently factored into the
             // parsing of the principal name from the IdentityToken so is left blank.
-            GSSUPName gssupName = new GSSUPName(distinguishedPrincipalCredential.getPrincipal().getName(), "");
+            GSSUPName gssupName = new GSSUPName(distinguishedPrincipalCredential.principal().getName(), "");
             byte[] expname = gssupName.getExportedName();
             GSS_NT_ExportedNameHelper.insert(any, expname);
 

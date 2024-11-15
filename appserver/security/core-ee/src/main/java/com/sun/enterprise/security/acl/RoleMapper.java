@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 // Portions Copyright [2024] Contributors to the Eclipse Foundation
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
@@ -66,7 +66,6 @@ import java.util.logging.Logger;
 import javax.security.auth.Subject;
 
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
-import com.sun.security.auth.UserPrincipal;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
@@ -74,7 +73,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.common.Role;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
@@ -82,6 +81,8 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.logging.LogDomains;
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
 
 /**
  * This class maintains a mapping of users and groups to application specific roles.
@@ -159,8 +160,8 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
             Enumeration<Principal> users = r.getUsersAssignedTo(new Role(role));
             Set<Principal> usersToRole = new HashSet<Principal>();
             for (; users.hasMoreElements();) {
-                PrincipalImpl gp = (PrincipalImpl) users.nextElement();
-                usersToRole.add(new PrincipalImpl(gp.getName()));
+                UserPrincipal gp = (UserPrincipal) users.nextElement();
+                usersToRole.add(new UserNameAndPassword(gp.getName()));
                 addRoleToPrincipal(gp, role);
             }
             this.roleToPrincipal.put(role, usersToRole);

@@ -37,15 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.security.services.api.authorization;
 
 
+import org.glassfish.security.common.UserNameAndPassword;
 import org.glassfish.security.services.impl.authorization.*;
 import java.net.URI;
 
 import javax.security.auth.Subject;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.services.api.common.Attributes;
 import org.glassfish.security.services.api.context.SecurityContextService;
 import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
@@ -114,7 +115,7 @@ public class SimpleAtzProviderTest extends HK2Runner {
     
     private Subject adminSubject() {
         final Subject result = new Subject();
-        result.getPrincipals().add(new PrincipalImpl("asadmin"));
+        result.getPrincipals().add(new UserNameAndPassword("asadmin"));
         return result;
     }
 }

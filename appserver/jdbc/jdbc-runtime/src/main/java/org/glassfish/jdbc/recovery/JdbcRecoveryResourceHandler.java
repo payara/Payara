@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 
 package org.glassfish.jdbc.recovery;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -287,8 +286,8 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
                 PasswordCredential pc = new PasswordCredential(
                         dbUser, dbPassword.toCharArray());
                 pc.setManagedConnectionFactory(fac);
-                Principal prin = new ResourcePrincipal(dbUser, dbPassword);
-                subject.getPrincipals().add(prin);
+                ResourcePrincipal prin = new ResourcePrincipal(dbUser, dbPassword);
+                subject.getPrincipals().add(prin.toPrincipalNameAndPassword());
                 subject.getPrivateCredentials().add(pc);
                 ManagedConnection mc = fac.createManagedConnection(subject, null);
                 connList.add(mc);

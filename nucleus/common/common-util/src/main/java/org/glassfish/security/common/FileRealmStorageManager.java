@@ -38,6 +38,8 @@
  * holder.
  */
 // Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.security.common;
 
@@ -52,13 +54,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serial;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.attribute.UserPrincipal;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -726,8 +732,9 @@ public final class FileRealmStorageManager {
     /**
      * Represents a FileRealm user.
      */
-    public static class User extends PrincipalImpl {
+    public static class User implements UserPrincipal, Serializable {
         
+        @Serial
         private static final long serialVersionUID = 5310671725001301966L;
         
         private String[] groups;
@@ -735,13 +742,14 @@ public final class FileRealmStorageManager {
         private byte[] salt;
         private byte[] hash;
         private String algo;
+        private final String name;
 
         /**
          * Constructor.
          *
          */
         public User(String name) {
-            super(name);
+            this.name = Objects.requireNonNull(name);
         }
 
         /**
@@ -755,7 +763,7 @@ public final class FileRealmStorageManager {
          *
          */
         public User(String name, String[] groups, String realm, byte[] salt, byte[] hash, String algo) {
-            super(name);
+            this.name = Objects.requireNonNull(name);
             this.groups = groups;
             this.realm = realm;
             this.hash = hash;
@@ -807,6 +815,11 @@ public final class FileRealmStorageManager {
             hc = 17 * hc + (this.algo != null ? this.algo.hashCode() : 0);
             hc = 17 * hc + super.hashCode();
             return hc;
+        }
+
+        @Override
+        public String getName() {
+            return name;
         }
 
         /**

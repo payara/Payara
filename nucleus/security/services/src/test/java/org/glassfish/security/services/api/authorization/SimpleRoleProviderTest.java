@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.security.services.api.authorization;
 
 import java.net.URI;
 import javax.security.auth.Subject;
 
+import org.glassfish.security.common.UserNameAndPassword;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +51,7 @@ import org.junit.Test;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
 import org.glassfish.security.services.spi.authorization.RoleMappingProvider;
 
@@ -78,7 +80,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 
 	private Subject adminSubject() {
 		Subject result = new Subject();
-		result.getPrincipals().add(new PrincipalImpl("admin"));
+		result.getPrincipals().add(new UserNameAndPassword("admin"));
 		result.getPrincipals().add(new Group("asadmin"));
 		return result;
 	}
@@ -95,7 +97,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 
 	private Subject nonAdminSubject() {
 		Subject result = new Subject();
-		result.getPrincipals().add(new PrincipalImpl("joe"));
+		result.getPrincipals().add(new UserNameAndPassword("joe"));
 		result.getPrincipals().add(new Group("myGroup"));
 		return result;
 	}

@@ -41,22 +41,12 @@
 
 package com.sun.enterprise.security.auth.login;
 
-import com.sun.enterprise.security.common.UserPrincipal;
+import org.glassfish.security.common.UserPrincipal;
 
 import java.io.Serializable;
 import java.security.Principal;
 
-public class DistinguishedPrincipalCredential implements UserPrincipal, Serializable {
-
-    private final Principal principal;
-
-    public DistinguishedPrincipalCredential(Principal principal) {
-        this.principal = principal;
-    }
-
-    public Principal getPrincipal() {
-        return principal;
-    }
+public record DistinguishedPrincipalCredential(Principal principal) implements UserPrincipal, Serializable {
 
     @Override
     public String toString() {
