@@ -92,7 +92,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security API upgraded -->
+        <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security Connectors upgraded -->
         <dependency>
             <groupId>jakarta.security.enterprise</groupId>
             <artifactId>jakarta.security.enterprise-api</artifactId>
@@ -132,7 +132,7 @@
                                     jakarta.security.jacc-api,
                                     <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
                                     jakarta.ws.rs-api,
-                                    <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security API upgraded -->
+                                    <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security Connectors upgraded -->
                                     jakarta.security.enterprise-api
                                 </Require-Bundle>
                                 <!-- Manually specify the shim versions of packages to be exported via this bundle -->
@@ -237,7 +237,7 @@
                                     jakarta.ws.rs.core;
                                     jakarta.ws.rs.ext;
                                     jakarta.ws.rs.sse;version="3.1.99";shim=true,
-                                    <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security API upgraded -->
+                                    <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security Connectors upgraded -->
                                     jakarta.security.enterprise;
                                     jakarta.security.enterprise.authentication.mechanism.http;
                                     jakarta.security.enterprise.authentication.mechanism.http.openid;
