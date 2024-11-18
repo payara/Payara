@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.defaultSecurityContextError;
@@ -64,7 +64,8 @@ import javax.security.auth.Subject;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.security.common.PrincipalImpl;
+
+import org.glassfish.security.common.UserNameAndPassword;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
@@ -159,7 +160,7 @@ public class SecurityContext extends AbstractSecurityContext {
                     }
                 }
                 
-                defaultSecurityContext.callerPrincipal = new PrincipalImpl(guestUser);
+                defaultSecurityContext.callerPrincipal = new UserNameAndPassword(guestUser);
             }
         }
         return defaultSecurityContext.callerPrincipal;
@@ -235,7 +236,7 @@ public class SecurityContext extends AbstractSecurityContext {
     public SecurityContext(String username, Subject subject) {
         Subject localSubject = nullSafeSubject(subject);
         
-        this.callerPrincipal = new PrincipalImpl(username);
+        this.callerPrincipal = new UserNameAndPassword(username);
         this.subject = privileged(() -> {localSubject.getPrincipals().add(callerPrincipal); return localSubject;});
     }
 
@@ -257,7 +258,7 @@ public class SecurityContext extends AbstractSecurityContext {
             for (Object publicCredential : localSubject.getPublicCredentials()) {
                 if (publicCredential instanceof DistinguishedPrincipalCredential) {
                     DistinguishedPrincipalCredential distinguishedCredential = (DistinguishedPrincipalCredential) publicCredential;
-                    principal = distinguishedCredential.getPrincipal();
+                    principal = distinguishedCredential.principal();
                     break;
                 }
             }

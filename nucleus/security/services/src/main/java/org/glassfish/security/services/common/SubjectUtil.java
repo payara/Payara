@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.security.services.common;
 
 import java.util.Set;
@@ -47,17 +47,18 @@ import java.util.ArrayList;
 import javax.security.auth.Subject;
 import java.security.Principal;
 
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserPrincipal;
+
 import org.glassfish.security.common.Group;
 
 public class SubjectUtil {
 
     /**
      * Utility method to find the user names from a subject. The method assumes the user name is
-     * represented by {@link org.glassfish.security.common.PrincipalImpl PrincipalImpl } inside the Subject's principal set.
+     * represented by {@link org.glassfish.security.common.UserPrincipal UserPrincipal } inside the Subject's principal set.
      * @param subject the subject from which to find the user name
      * @return a list of strings representing the user name. The list may have more than one entry if the subject's principal set
-     * contains more than one PrincipalImpl instances, or empty entry (i.e., anonymous user) if the subject's principal set contains no PrincipalImpl instances.
+     * contains more than one UserPrincipal instances, or empty entry (i.e., anonymous user) if the subject's principal set contains no UserPrincipal instances.
      */
     public static List<String> getUsernamesFromSubject(Subject subject) {
 
@@ -66,11 +67,10 @@ public class SubjectUtil {
         Set<Principal> princSet = null;
 
         if (subject != null) {
-
             princSet = subject.getPrincipals();
             for (Principal p : princSet) {
                 if ((p != null) && (
-                  p.getClass().isAssignableFrom(PrincipalImpl.class)  ||
+                  p instanceof UserPrincipal  ||
                   "weblogic.security.principal.WLSUserImpl".equals(p.getClass().getCanonicalName())
                 		)) {
                     String uName = p.getName();
@@ -99,7 +99,7 @@ public class SubjectUtil {
         if (subject != null) {
 
             princSet = subject.getPrincipals(Group.class);
-            for (PrincipalImpl g : princSet) {
+            for (Group g : princSet) {
                 String gName = g.getName();
                 groupList.add(gName);
             }

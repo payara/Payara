@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
-
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 package com.sun.enterprise.resource.recovery;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
@@ -58,7 +57,6 @@ import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.resource.deployer.ConnectorResourceDeployer;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
-import com.sun.enterprise.v3.server.ApplicationLoaderService;
 import com.sun.logging.LogDomains;
 import org.glassfish.connectors.config.ConnectorConnectionPool;
 import org.glassfish.connectors.config.ConnectorResource;
@@ -68,7 +66,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Named;
 import jakarta.inject.Provider;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -78,7 +75,6 @@ import jakarta.resource.spi.ManagedConnectionFactory;
 import jakarta.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
-import java.security.Principal;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -295,9 +291,9 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
                         PasswordCredential pc = new PasswordCredential(
                                 dbUser, dbPassword.toCharArray());
                         pc.setManagedConnectionFactory(mcfs[i]);
-                        Principal prin =
+                        ResourcePrincipal prin =
                                 new ResourcePrincipal(dbUser, dbPassword);
-                        subject.getPrincipals().add(prin);
+                        subject.getPrincipals().add(prin.toPrincipalNameAndPassword());
                         subject.getPrivateCredentials().add(pc);
                         ManagedConnection mc = mcfs[i].
                                 createManagedConnection(subject, null);
@@ -318,8 +314,8 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
                     PasswordCredential pc = new PasswordCredential(
                             dbUser, dbPassword.toCharArray());
                     pc.setManagedConnectionFactory(mcf);
-                    Principal prin = new ResourcePrincipal(dbUser, dbPassword);
-                    subject.getPrincipals().add(prin);
+                    ResourcePrincipal prin = new ResourcePrincipal(dbUser, dbPassword);
+                    subject.getPrincipals().add(prin.toPrincipalNameAndPassword());
                     subject.getPrivateCredentials().add(pc);
                     ManagedConnection mc = mcf.createManagedConnection(subject, null);
                     connList.add(mc);

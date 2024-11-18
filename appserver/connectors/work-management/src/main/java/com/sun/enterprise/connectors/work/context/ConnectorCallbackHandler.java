@@ -37,15 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 package com.sun.enterprise.connectors.work.context;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.connectors.work.LogFacade;
 
+import org.glassfish.security.common.UserNameAndPassword;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserPrincipal;
+
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -276,12 +278,12 @@ public class ConnectorCallbackHandler implements CallbackHandler {
     private Principal getMappedPrincipal(Principal eisPrincipal, String eisName) {
         Principal asPrincipal = null;
         if (eisPrincipal != null) {
-            asPrincipal = (PrincipalImpl) securityMap.get(eisPrincipal);
+            asPrincipal = (UserPrincipal) securityMap.get(eisPrincipal);
             if(logger.isLoggable(Level.FINEST)){
                 logger.finest("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisPrincipal.getName() + "]");
             }
         } else if (eisName != null) {
-            asPrincipal = ((PrincipalImpl) securityMap.get(new PrincipalImpl(eisName)));
+            asPrincipal = ((UserPrincipal) securityMap.get(new UserNameAndPassword(eisName)));
             if(logger.isLoggable(Level.FINEST)){
                 logger.finest("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisName + "]");
             }

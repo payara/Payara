@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024] Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.LogUtils.BASIC_AUTH_ERROR;
@@ -52,8 +54,6 @@ import static org.apache.catalina.Globals.SSL_CERTIFICATE_ATTR;
 import java.lang.ref.WeakReference;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import jakarta.inject.Inject;
@@ -63,6 +63,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.SOAPMessage;
 
 import org.apache.catalina.util.Base64;
+import org.glassfish.security.common.UserNameAndPassword;
 import org.glassfish.webservices.EjbRuntimeEndpointInfo;
 import org.glassfish.webservices.SecurityService;
 import org.glassfish.webservices.WebServiceContextImpl;
@@ -144,10 +145,9 @@ public class SecurityServiceImpl implements SecurityService {
                     return false;
                 }
 
-                List<Object> usernamePassword = parseUsernameAndPassword(rawAuthInfo);
+                UserNameAndPassword usernamePassword = parseUsernameAndPassword(rawAuthInfo);
                 if (usernamePassword != null) {
-                    webPrincipal = new WebPrincipal((String) usernamePassword.get(0), (char[]) usernamePassword.get(1),
-                            SecurityContext.init());
+                    webPrincipal = new WebPrincipal(usernamePassword, SecurityContext.init());
                 } else {
                     _logger.log(WARNING, BASIC_AUTH_ERROR, endpointName);
                 }
@@ -242,21 +242,24 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
 
-    private List<Object> parseUsernameAndPassword(String rawAuthInfo) {
-
-        List usernamePassword = null;
-        if ((rawAuthInfo != null) && (rawAuthInfo.startsWith("Basic "))) {
-            String authString = rawAuthInfo.substring(6).trim();
-            // Decode and parse the authorization credentials
-            String unencoded = new String(Base64.decode(authString.getBytes()));
-            int colon = unencoded.indexOf(':');
-            if (colon > 0) {
-                usernamePassword = new ArrayList();
-                usernamePassword.add(unencoded.substring(0, colon).trim());
-                usernamePassword.add(unencoded.substring(colon + 1).trim().toCharArray());
-            }
+    private UserNameAndPassword parseUsernameAndPassword(String rawAuthInfo) {
+        if (rawAuthInfo == null || !rawAuthInfo.startsWith("Basic ")) {
+            return null;
         }
-        return usernamePassword;
+
+        String authString = rawAuthInfo.substring(6).trim();
+
+        // Decode and parse the authorization credentials
+        String unencoded = new String(Base64.decode(authString.getBytes()));
+        int colon = unencoded.indexOf(':');
+
+        if (colon <= 0) {
+            return null;
+        }
+
+        String user = unencoded.substring(0, colon).trim();
+        String password = unencoded.substring(colon + 1).trim();
+        return new UserNameAndPassword(user, password);
     }
 
     private void sendAuthenticationEvents(boolean success, String url, Principal principal) {

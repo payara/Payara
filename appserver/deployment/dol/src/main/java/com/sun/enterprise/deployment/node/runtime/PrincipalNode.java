@@ -37,13 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.deployment.node.runtime;
 
 import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.runtime.common.PrincipalNameDescriptor;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.w3c.dom.Node;
 
 /**
@@ -52,14 +55,14 @@ import org.w3c.dom.Node;
  * @author Jerome Dochez
  * @version 
  */
-public class PrincipalNode extends DeploymentDescriptorNode {
+public class PrincipalNode extends DeploymentDescriptorNode<PrincipalNameDescriptor> {
     
-    PrincipalImpl principal=null;
+    PrincipalNameDescriptor principal=null;
         
    /**
     * @return the descriptor instance to associate with this XMLNode
     */    
-    public Object getDescriptor() {
+    public PrincipalNameDescriptor getDescriptor() {
         return principal;
     }
     
@@ -72,7 +75,7 @@ public class PrincipalNode extends DeploymentDescriptorNode {
     public void setElementValue(XMLElement element, String value) {
         
         if (RuntimeTagNames.NAME.equals(element.getQName())) {
-            principal = new PrincipalImpl(value);
+            principal = new PrincipalNameDescriptor(value);
         } else super.setElementValue(element, value);
     }     
     
@@ -84,7 +87,7 @@ public class PrincipalNode extends DeploymentDescriptorNode {
      * @param the descriptor to write
      * @return the DOM tree top node
      */    
-    public Node writeDescriptor(Node parent, String nodeName, PrincipalImpl descriptor) {      
+    public Node writeDescriptor(Node parent, String nodeName, PrincipalNameDescriptor descriptor) {
         Node principal = appendChild(parent, nodeName);     
 	appendTextChild(principal, RuntimeTagNames.NAME, descriptor.getName());
         return principal;

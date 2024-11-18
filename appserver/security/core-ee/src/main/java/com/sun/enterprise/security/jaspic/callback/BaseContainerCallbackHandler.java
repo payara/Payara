@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 /*
  * BaseContainerCallbackHandler.java
@@ -54,6 +54,7 @@ import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.common.AppservAccessController;
+import org.glassfish.security.common.UserNameAndPassword;
 import com.sun.enterprise.security.jaspic.config.CallbackHandlerConfig;
 import com.sun.enterprise.security.jaspic.config.HandlerContext;
 import com.sun.enterprise.security.ssl.SSLUtils;
@@ -71,7 +72,6 @@ import jakarta.security.auth.message.callback.TrustStoreCallback;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.MasterPassword;
-import org.glassfish.security.common.PrincipalImpl;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -221,7 +221,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
      *
      * A. handling of CPCB by CBH:
      *
-     * 1. handling of CPC by CBH modifies subject a. constructs principalImpl if called by name b. uses LoginContextDriver
+     * 1. handling of CPC by CBH modifies subject a. constructs UserPrincipal if called by name b. uses LoginContextDriver
      * to add group principals for name c. puts principal in principal set, and DPC in public credentials
      *
      * B. construction of WebPrincipal by RealmAdapter (occurs after SAM uses CBH to set other than an unauthenticated
@@ -264,7 +264,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
                 Set<DistinguishedPrincipalCredential> distinguishedCreds = wps.getPublicCredentials(DistinguishedPrincipalCredential.class);
                 if (distinguishedCreds.size() == 1) {
                     for (DistinguishedPrincipalCredential cred : distinguishedCreds) {
-                        if (cred.getPrincipal().equals(callerPrincipal)) {
+                        if (cred.principal().equals(callerPrincipal)) {
                             hasObject = true;
                         }
                     }
@@ -383,7 +383,7 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
                 if (isCertRealm) {
                     principal = new X500Principal(callerPrincipalCallback.getName());
                 } else {
-                    principal = new PrincipalImpl(callerPrincipalCallback.getName());
+                    principal = new UserNameAndPassword(callerPrincipalCallback.getName());
                 }
             } else {
                 // Jakarta Authentication unauthenticated caller principal

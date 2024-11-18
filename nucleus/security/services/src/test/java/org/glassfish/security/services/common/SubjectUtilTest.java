@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.security.services.common;
 
+import org.glassfish.security.common.UserNameAndPassword;
 import org.junit.Test;
 import javax.security.auth.Subject;
 
@@ -48,7 +49,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.glassfish.security.common.PrincipalImpl;
 
 import junit.framework.Assert;
 
@@ -113,7 +113,7 @@ public class SubjectUtilTest {
     public void testUserNameUtil_multi() {
         
         Subject sub = createSub(USERNAME, GROUPS);
-        sub.getPrincipals().add(new PrincipalImpl(USERNAME2));
+        sub.getPrincipals().add(new UserNameAndPassword(USERNAME2));
         
         List<String> usernames = SubjectUtil.getUsernamesFromSubject(sub);
         
@@ -130,7 +130,7 @@ public class SubjectUtilTest {
         Set<Principal> pset = new HashSet<Principal>();
         
         if (username != null) {
-            Principal u = new PrincipalImpl(username);
+            Principal u = new UserNameAndPassword(username);
             pset.add(u);
         }
         

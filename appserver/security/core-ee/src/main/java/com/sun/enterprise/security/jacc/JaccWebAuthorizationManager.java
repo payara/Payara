@@ -55,6 +55,7 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
+import org.glassfish.security.common.UserNameAndPassword;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.jacc.cache.CachedPermission;
@@ -80,10 +81,9 @@ import jakarta.security.jacc.WebUserDataPermission;
 import jakarta.servlet.http.HttpServletRequest;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.exousia.AuthorizationService;
-import org.glassfish.exousia.mapping.DefaultPrincipalMapper;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.common.Role;
 
 import javax.security.auth.Subject;
@@ -220,7 +220,7 @@ public class JaccWebAuthorizationManager {
                 GlassFishToExousiaConverter.getConstraintsFromBundle(webBundleDescriptor),
                 webBundleDescriptor.getRoles()
                         .stream()
-                        .map(PrincipalImpl::getName)
+                        .map(Role::getName)
                         .collect(Collectors.toSet()),
                 webBundleDescriptor.isDenyUncoveredHttpMethods(),
                 GlassFishToExousiaConverter.getSecurityRoleRefsFromBundle(webBundleDescriptor));
@@ -434,8 +434,8 @@ public class JaccWebAuthorizationManager {
         return isGranted;
     }
 
-    /* If the principal set contains CallerPrincipal, replace it with PrincipalImpl. 
-       This is because CallerPrincipal isn't equal to PrincipalImpl and doesn't imply it.
+    /* If the principal set contains CallerPrincipal, replace it with UserPrincipal. 
+       This is because CallerPrincipal isn't equal to UserPrincipal and doesn't imply it.
        CallerPrincipal doesn't even implement equals method, so 2 CallerPrincipals with the same name are not equal. 
        Because CallerPrincipal is from Jakarta EE, we can't change it.
     */
@@ -445,7 +445,7 @@ public class JaccWebAuthorizationManager {
         for (Principal p : principalSetFromSecurityContext) {
             if (p instanceof CallerPrincipal) {
                 principalSetContainsCallerPrincipal = true;
-                modifiedPrincipalSet.add(new PrincipalImpl(p.getName()));
+                modifiedPrincipalSet.add(new UserNameAndPassword(p.getName()));
             } else {
                 modifiedPrincipalSet.add(p);
             }
@@ -524,7 +524,7 @@ public class JaccWebAuthorizationManager {
                     if (roleMappings != null) {
                         for (SecurityRoleMapping roleMapping : roleMappings) {
                             for (String principal : roleMapping.getPrincipalName()) {
-                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
+                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new UserNameAndPassword(principal));
                             }
                             for (String group : roleMapping.getGroupNames()) {
                                 webSecurityManagerFactory.addAdminGroup(group, realmName, new Group(group));
@@ -541,7 +541,7 @@ public class JaccWebAuthorizationManager {
                             }
 
                             for (String principal : roleAssignment.getPrincipalNames()) {
-                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
+                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new UserNameAndPassword(principal));
                             }
                         }
                     }

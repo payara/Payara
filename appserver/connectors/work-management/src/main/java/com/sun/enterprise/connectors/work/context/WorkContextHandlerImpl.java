@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package com.sun.enterprise.connectors.work.context;
 
 import com.sun.appserv.connectors.internal.api.WorkContextHandler;
@@ -48,8 +48,9 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import org.glassfish.connectors.config.GroupMap;
 import org.glassfish.connectors.config.PrincipalMap;
 import org.glassfish.connectors.config.WorkSecurityMap;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.common.Group;
+import org.glassfish.security.common.UserNameAndPassword;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -533,7 +534,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
                     int delimiterLocation = nameValue.indexOf("=");
                     String eisPrincipal = nameValue.substring(0, delimiterLocation);
                     String appserverPrincipal = nameValue.substring(delimiterLocation + 1);
-                    eisASMap.put(new PrincipalImpl(eisPrincipal), new PrincipalImpl(appserverPrincipal));
+                    eisASMap.put(new UserNameAndPassword(eisPrincipal), new UserNameAndPassword(appserverPrincipal));
                 }
             }
         }
@@ -571,7 +572,7 @@ public class WorkContextHandlerImpl implements WorkContextHandler {
         HashMap eisASMap = new HashMap();
 
         for(PrincipalMap map : principalsMap){
-            eisASMap.put(new PrincipalImpl(map.getEisPrincipal()), new PrincipalImpl(map.getMappedPrincipal()));
+            eisASMap.put(new UserNameAndPassword(map.getEisPrincipal()), new UserNameAndPassword(map.getMappedPrincipal()));
         }
 
         for(GroupMap map : groupsMap){
