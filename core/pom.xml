@@ -172,7 +172,7 @@
         <maven.surefire.plugin.version>3.5.1</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.8.0</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.7</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.3</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
