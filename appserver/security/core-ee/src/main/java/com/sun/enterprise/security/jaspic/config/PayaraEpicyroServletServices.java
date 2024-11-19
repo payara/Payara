@@ -41,6 +41,8 @@
 package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.enterprise.deployment.web.LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION;
+
+import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.POLICY_CONTEXT;
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.WEB_BUNDLE;
@@ -51,15 +53,10 @@ import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import jakarta.security.auth.message.config.AuthConfigProvider;
 
-import org.glassfish.internal.api.Globals;
-
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
-import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
-import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 
 public class PayaraEpicyroServletServices extends PayaraEpicyroServices {
     
@@ -87,10 +84,10 @@ public class PayaraEpicyroServletServices extends PayaraEpicyroServices {
         }
 
         // Set realmName before init
-        init(HTTPSERVLET, appContext, map, callbackHandler, (RegistrationWrapperRemover) Globals.get(WebServicesDelegate.class));
+        init(HTTPSERVLET, appContext, map, callbackHandler, null);
 
         if (webBundle != null) {
-            String policyContextId = JaccWebAuthorizationManager.getContextID(webBundle);
+            String policyContextId = WebAuthorizationManagerService.getContextID(webBundle);
             map.put(POLICY_CONTEXT, policyContextId);
 
             SunWebApp sunWebApp = webBundle.getSunDescriptor();

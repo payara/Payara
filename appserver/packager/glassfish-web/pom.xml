@@ -246,5 +246,9 @@
             <artifactId>realm-stores</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.epicyro</groupId>
+            <artifactId>epicyro</artifactId>
+        </dependency>
     </dependencies>
 </project>

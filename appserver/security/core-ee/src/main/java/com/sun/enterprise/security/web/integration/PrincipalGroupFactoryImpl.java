@@ -46,6 +46,7 @@
 
 package com.sun.enterprise.security.web.integration;
 
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import java.lang.ref.WeakReference;
 
 import org.glassfish.internal.api.Globals;

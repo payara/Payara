@@ -40,7 +40,7 @@
 // Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
-package com.sun.enterprise.security.jacc;
+package com.sun.enterprise.security.ee.authorization;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -55,8 +55,10 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.common.UserPrincipal;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
+import com.sun.enterprise.security.jacc.JaccWebConstraintsTranslator;
 import com.sun.enterprise.security.jacc.cache.CachedPermission;
 import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl;
 import com.sun.enterprise.security.jacc.cache.PermissionCache;
@@ -64,7 +66,7 @@ import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
 import com.sun.enterprise.security.web.integration.GlassFishPrincipalMapper;
 import com.sun.enterprise.security.web.integration.GlassFishToExousiaConverter;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import com.sun.logging.LogDomains;
 import fish.payara.jacc.JaccConfigurationFactory;
 import jakarta.security.enterprise.CallerPrincipal;
@@ -132,7 +134,7 @@ import static org.glassfish.api.web.Constants.ADMIN_VS;
  * @todo introduce a new class called AbstractSecurityManager. Move functionality from this class and EJBSecurityManager
  * class and extend this class from AbstractSecurityManager
  */
-public class JaccWebAuthorizationManager {
+public class WebAuthorizationManagerService {
 
     private static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
 
@@ -186,7 +188,7 @@ public class JaccWebAuthorizationManager {
     private final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
     private AuthorizationService authorizationService;
 
-    public JaccWebAuthorizationManager(WebBundleDescriptor webBundleDescriptor, ServerContext serverContext, WebSecurityManagerFactory webSecurityManagerFactory, boolean register) throws PolicyContextException {
+    public WebAuthorizationManagerService(WebBundleDescriptor webBundleDescriptor, ServerContext serverContext, WebSecurityManagerFactory webSecurityManagerFactory, boolean register) throws PolicyContextException {
         this.register = register;
         this.webBundleDescriptor = webBundleDescriptor;
         this.CONTEXT_ID = getContextID(webBundleDescriptor);
@@ -223,6 +225,13 @@ public class JaccWebAuthorizationManager {
                         .collect(Collectors.toSet()),
                 webBundleDescriptor.isDenyUncoveredHttpMethods(),
                 GlassFishToExousiaConverter.getSecurityRoleRefsFromBundle(webBundleDescriptor));
+    }
+
+    public WebAuthorizationManagerService(WebBundleDescriptor webBundleDescriptor, boolean register) throws PolicyContextException {
+        this.CONTEXT_ID = getContextID(webBundleDescriptor);
+        this.webSecurityManagerFactory = null;
+        this.serverContext = null;
+        this.webBundleDescriptor = webBundleDescriptor;
     }
     
     private void preprocessParams(WebBundleDescriptor webBundleDescriptor) {
@@ -474,7 +483,7 @@ public class JaccWebAuthorizationManager {
 
         PermissionCacheFactory.removePermissionCache(uncheckedPermissionCache);
         uncheckedPermissionCache = null;
-        webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
+        //webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
     }
 
     public void destroy() throws PolicyContextException {
@@ -495,7 +504,7 @@ public class JaccWebAuthorizationManager {
             ((JaccConfigurationFactory) policyFactory).removeContextIdMappingByPolicyContextId(CONTEXT_ID);
         }
 
-        webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
+        //webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
     }
 
 
@@ -521,29 +530,9 @@ public class JaccWebAuthorizationManager {
 
                     SecurityRoleMapping[] roleMappings = sunDes.getSecurityRoleMapping();
                     if (roleMappings != null) {
-                        for (SecurityRoleMapping roleMapping : roleMappings) {
-                            for (String principal : roleMapping.getPrincipalName()) {
-                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
-                            }
-                            for (String group : roleMapping.getGroupNames()) {
-                                webSecurityManagerFactory.addAdminGroup(group, realmName, new Group(group));
-                            }
-                        }
                     }
 
                     SecurityRoleAssignment[] roleAssignments = sunDes.getSecurityRoleAssignments();
-                    if (roleAssignments != null) {
-                        for (SecurityRoleAssignment roleAssignment : roleAssignments) {
-                            if (roleAssignment.isExternallyDefined()) {
-                                webSecurityManagerFactory.addAdminGroup(roleAssignment.getRoleName(), realmName, new Group(roleAssignment.getRoleName()));
-                                continue;
-                            }
-
-                            for (String principal : roleAssignment.getPrincipalNames()) {
-                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
-                            }
-                        }
-                    }
                 }
             }
         }

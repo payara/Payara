@@ -41,13 +41,13 @@
 package com.sun.enterprise.security.ee;
 
 import com.sun.enterprise.security.ContainerSecurityLifecycle;
+import com.sun.enterprise.security.PolicyLoader;
 import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
 import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
-import com.sun.enterprise.security.PolicyLoader;
 import com.sun.logging.LogDomains;
-
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.security.auth.message.MessageInfo;
 import jakarta.security.auth.message.MessagePolicy;
 import java.security.Provider;
@@ -56,14 +56,12 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Logger;
-
-import jakarta.inject.Singleton;
-
 import org.glassfish.common.util.Constants;
 import org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory;
 import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -82,10 +80,13 @@ import static org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory.DE
 @Singleton
 public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, PostConstruct {
 
-    private static final Logger LOG = LogDomains.getLogger(JavaEESecurityLifecycle.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger LOG = LogDomains.getLogger(JavaEESecurityLifecycle.class, LogDomains.SECURITY_LOGGER, false);
 
     @Inject
     PolicyLoader policyLoader;
+
+    @Inject
+    private ServiceLocator habitat;
 
     @Override
     public void postConstruct() {
@@ -109,7 +110,8 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
         }
 
         String defaultProvidersString = null;
-        WebServicesDelegate delegate = Globals.get(WebServicesDelegate.class);
+        //WebServicesDelegate delegate = Globals.get(WebServicesDelegate.class);
+        WebServicesDelegate delegate = habitat.getService(WebServicesDelegate.class);
         if (delegate == null) {
             defaultProvidersString = GFServerConfigProvider.class.getName();
         } else {

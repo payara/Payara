@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.web.integration;
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.ee.web.integration;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
-import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.jacc.context.PolicyContextRegistration;
 
@@ -59,10 +58,11 @@ import jakarta.inject.Singleton;
 import jakarta.security.jacc.PolicyContextException;
 
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.security.common.Group;
+import org.glassfish.security.common.UserPrincipal;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
-import static java.util.logging.Level.CONFIG;
 
 /**
  * @author JeanFrancois Arcand
@@ -76,6 +76,9 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
     private final WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
 
+    private final Map<String, UserPrincipal> adminPrincipals = new ConcurrentHashMap<>();
+    private final Map<String, Group> adminGroups = new ConcurrentHashMap<>();
+
     public final PolicyContextHandlerImpl pcHandlerImpl = (PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance();
 
     public final Map<String, Principal> adminPrincipalsPerApp = new ConcurrentHashMap<>();
@@ -83,29 +86,29 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
     // Stores the Context IDs to application names for standalone web applications
     private final Map<String, List<String>> CONTEXT_IDS = new HashMap<>();
-    private final Map<String, Map<String, JaccWebAuthorizationManager>> SECURITY_MANAGERS = new HashMap<>();
+    private final Map<String, Map<String, WebSecurityManager>> SECURITY_MANAGERS = new HashMap<>();
 
     public WebSecurityManagerFactory() {
         // Registers the JACC policy handlers, which provide objects JACC Providers and other code can use
         PolicyContextRegistration.registerPolicyHandlers();
     }
 
-    public JaccWebAuthorizationManager createManager(WebBundleDescriptor webBundleDescriptor, boolean register, ServerContext context) {
-        String contextId = JaccWebAuthorizationManager.getContextID(webBundleDescriptor);
+    public WebSecurityManager createManager(WebBundleDescriptor webBundleDescriptor, boolean register, ServerContext context) {
+        String contextId = AuthorizationUtil.getContextID(webBundleDescriptor);
 
-        JaccWebAuthorizationManager manager = null;
+        WebSecurityManager manager = null;
         if (register) {
-            manager = getManager(contextId, null, false);
+            manager = getManager(contextId, false);
         }
 
         if (manager == null || !register) {
             try {
-                // Create a new JaccWebAuthorizationManager for this context
+                // Create a new WebAuthorizationManagerService for this context
                 probeProvider.securityManagerCreationStartedEvent(webBundleDescriptor.getModuleID());
 
                 // As "side-effect" of constructing the manager, the web constraints in the web bundle
                 // descriptor will be translated to permissions and loaded into a JACC policy configuration
-                manager = new JaccWebAuthorizationManager(webBundleDescriptor, context, this, register);
+                manager = new WebSecurityManager(webBundleDescriptor, context, this, register);
 
                 probeProvider.securityManagerCreationEndedEvent(webBundleDescriptor.getModuleID());
 
@@ -121,15 +124,23 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
         return manager;
     }
 
-    public JaccWebAuthorizationManager getManager(String ctxId, String name, boolean remove) {
-        return getManager(SECURITY_MANAGERS, ctxId, name, remove);
+    public <T> void addManagerToApp(String ctxId, String name, String appName, WebSecurityManager manager) {
+        addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, ctxId, name, appName, manager);
     }
 
-    public <T> ArrayList<JaccWebAuthorizationManager> getManagers(String ctxId, boolean remove) {
-        return getManagers(SECURITY_MANAGERS, ctxId, remove);
+    public WebSecurityManager getManager(String contextId) {
+        return getManager(SECURITY_MANAGERS, contextId, null, false);
     }
 
-    public <T> List<JaccWebAuthorizationManager> getManagersForApp(String appName, boolean remove) {
+    public WebSecurityManager getManager(String contextId, boolean remove) {
+        return getManager(SECURITY_MANAGERS, contextId, null, remove);
+    }
+
+    public <T> ArrayList<WebSecurityManager> getManagers(String contextId, boolean remove) {
+        return getManagers(SECURITY_MANAGERS, contextId, remove);
+    }
+
+    public <T> ArrayList<WebSecurityManager> getManagersForApp(String appName, boolean remove) {
         return getManagersForApp(SECURITY_MANAGERS, CONTEXT_IDS, appName, remove);
     }
 
@@ -137,27 +148,24 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
         return getContextsForApp(CONTEXT_IDS, appName, remove);
     }
 
-    public <T> void addManagerToApp(String contextId, String name, String appName, JaccWebAuthorizationManager manager) {
-        addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, contextId, name, appName, manager);
+    public UserPrincipal getAdminPrincipal(String username, String realmName) {
+        // FIXME: can be hacked: "ab+cd" = "a+bcd"
+        return adminPrincipals.get(realmName + username);
     }
 
-
-    // ### PrincipalGroupFactoryImpl backing
-
-    public void addAdminPrincipal(String username, String realmName, Principal principal) {
-        adminPrincipalsPerApp.put(realmName + username, principal);
+    public void putAdminPrincipal(String realmName, UserPrincipal principal) {
+        // FIXME: can be hacked: "ab+cd" = "a+bcd"
+        adminPrincipals.put(realmName + principal.getName(), principal);
     }
 
-    public void addAdminGroup(String group, String realmName, Principal principal) {
-        adminGroupsPerApp.put(realmName + group, principal);
+    public Group getAdminGroup(String group, String realmName) {
+        // FIXME: can be hacked: "ab+cd" = "a+bcd"
+        return adminGroups.get(realmName + group);
     }
 
-    public Principal getAdminPrincipal(String username, String realmName) {
-        return adminPrincipalsPerApp.get(realmName + username);
-    }
-
-    public Principal getAdminGroup(String group, String realmName) {
-        return adminGroupsPerApp.get(realmName + group);
+    public void putAdminGroup(String group, String realmName, Group principal) {
+        // FIXME: can be hacked: "ab+cd" = "a+bcd"
+        adminGroups.put(realmName + group, principal);
     }
 
 }

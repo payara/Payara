@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.ee;
 
@@ -51,9 +51,10 @@ import com.sun.enterprise.security.CNonceCacheFactory;
 import com.sun.enterprise.security.EjbSecurityPolicyProbeProvider;
 import com.sun.enterprise.security.SecurityLifecycle;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
-import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
+import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManager;
 import com.sun.enterprise.security.util.IASSecurityException;
-import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import com.sun.logging.LogDomains;
 
 import java.util.ArrayList;
@@ -259,8 +260,8 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         }
         try {
             if (remove) {
-                JaccWebAuthorizationManager authorizationManager = webSecurityManagerFactory
-                    .getManager(getContextID(webDescriptor), null, true);
+                WebSecurityManager authorizationManager = webSecurityManagerFactory
+                    .getManager(getContextID(webDescriptor), true);
                 if (authorizationManager != null) {
                     authorizationManager.release();
                 }
@@ -401,12 +402,12 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     private boolean cleanSecurityContext(String appName) {
         boolean cleanUpDone = false;
 
-        List<JaccWebAuthorizationManager> managers = webSecurityManagerFactory.getManagersForApp(appName, false);
+        List<WebSecurityManager> managers = webSecurityManagerFactory.getManagersForApp(appName, false);
         if (managers == null) {
             return false;
         }
 
-        for (JaccWebAuthorizationManager manager : managers) {
+        for (WebSecurityManager manager : managers) {
             try {
                 websecurityProbeProvider.securityManagerDestructionStartedEvent(appName);
                 manager.destroy();

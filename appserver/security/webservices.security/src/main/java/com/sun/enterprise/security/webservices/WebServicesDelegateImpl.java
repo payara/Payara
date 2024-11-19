@@ -40,14 +40,17 @@
 // Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.sun.enterprise.deployment.ServiceRefPortInfo;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
+import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
+import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
+import com.sun.xml.ws.api.message.Message;
+import com.sun.xml.ws.api.message.Packet;
+import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
+import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import jakarta.inject.Singleton;
 import jakarta.security.auth.message.MessageInfo;
-import javax.xml.namespace.QName;
 import jakarta.xml.soap.MimeHeaders;
 import jakarta.xml.soap.Name;
 import jakarta.xml.soap.Node;
@@ -57,21 +60,12 @@ import jakarta.xml.soap.SOAPEnvelope;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
-
-import org.glassfish.api.invocation.ComponentInvocation;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.namespace.QName;
 import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.deployment.ServiceRefPortInfo;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
-import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jauth.jaspic.provider.SOAPAuthParam;
-import org.glassfish.epicyro.services.AuthConfigRegistrationWrapper;
-import com.sun.xml.ws.api.message.Message;
-import com.sun.xml.ws.api.message.Packet;
-import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 
 /**
  *
@@ -86,7 +80,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
     private static final String DEFAULT_WEBSERVICES_PROVIDER = "com.sun.xml.wss.provider.wsit.WSITAuthConfigProvider";
 
     @Override
-    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map<String, ?> properties) {
+    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties) {
         MessageSecurityBindingDescriptor binding = null;
         WSDLPort p = (WSDLPort) properties.get("WSDL_MODEL");
         QName portName = null;
@@ -101,13 +95,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
         }
         return binding;
     }
-
-    @Override
-    public void removeListener(AuthConfigRegistrationWrapper listener) {
-        // TODO:V3 convert the pipes to Tubes.
-        ClientPipeCloser.getInstance().removeListenerWrapper(listener);
-    }
-
+    
     @Override
     public String getDefaultWebServicesProvider() {
         return DEFAULT_WEBSERVICES_PROVIDER;
