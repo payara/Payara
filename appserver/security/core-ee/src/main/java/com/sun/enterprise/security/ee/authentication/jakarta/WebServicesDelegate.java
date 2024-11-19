@@ -44,12 +44,10 @@ import java.util.Map;
 
 import jakarta.security.auth.message.MessageInfo;
 
-import org.glassfish.api.invocation.ComponentInvocation;
 import org.jvnet.hk2.annotations.Contract;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 
 /**
  * A Delegate interface for handling WebServices specific security and JASPIC (JSR 196) providers. 
@@ -61,7 +59,7 @@ import org.glassfish.epicyro.services.RegistrationWrapperRemover;
  * @author kumar.jayanti
  */
 @Contract
-public interface WebServicesDelegate extends RegistrationWrapperRemover {
+public interface WebServicesDelegate {
      
     /**
      * 
@@ -69,7 +67,7 @@ public interface WebServicesDelegate extends RegistrationWrapperRemover {
      * @param properties The Properties Map passed to WebServices Code Via PipeCreator
      * @return The MessageSecurityBindingDescriptor
      */
-    MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor serviceReference, Map<String, ?> properties);
+    MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor serviceReference, Map properties);
 
     /**
      * This method returns the class name of the default JASPIC (JSR 196) WebServices security provider.

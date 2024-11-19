@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 package com.sun.web.security;
 
 import com.sun.enterprise.deployment.Application;
@@ -56,10 +56,11 @@ import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
 import com.sun.enterprise.security.auth.digest.impl.HttpAlgorithmParameterImpl;
 import com.sun.enterprise.security.auth.login.DigestCredentials;
 import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.security.jacc.JaccWebAuthorizationManager;
+import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.enterprise.security.web.integration.WebSecurityManagerFactory;
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManager;
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
 import com.sun.web.security.realmadapter.AuthenticatorProxy;
@@ -154,14 +155,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     protected static final String name = "J2EE-RI-RealmAdapter";
 
     /**
-     * The context Id value needed by JACC.
+     * The context Id value needed for Jakarta Authorization.
      */
-    private String jaccContextId;
+    private String contextId;
 
     /**
-     * A <code>JaccWebAuthorizationManager</code> object associated with a jaccContextId
+     * A <code>WebAuthorizationManagerService</code> object associated with a contextId
      */
-    protected volatile JaccWebAuthorizationManager jaccWebAuthorizationManager;
+    protected volatile WebSecurityManager webSecurityManager;
 
     protected boolean isCurrentURIincluded;
 
@@ -190,7 +191,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private NetworkConfig networkConfig;
 
     /**
-     * The factory used for creating <code>JaccWebAuthorizationManager</code> object.
+     * The factory used for creating <code>WebAuthorizationManagerService</code> object.
      */
     @Inject
     protected WebSecurityManagerFactory webSecurityManagerFactory;
@@ -235,7 +236,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             () -> format("initializeRealm(bundleDescriptor.appContextId=%s, isSystemApp=%s, defaultRealmName=%s)",
                 webDescriptor.getAppContextId(), isSystemApp, defaultRealmName));
         realmName = computeRealmName(defaultRealmName);
-        jaccContextId = JaccWebAuthorizationManager.getContextID(webDescriptor);
+        contextId = WebAuthorizationManagerService.getContextID(webDescriptor);
         runAsPrincipals = new HashMap<>();
         for (WebComponentDescriptor componentDescriptor : webDescriptor.getWebComponentDescriptors()) {
             RunAsIdentityDescriptor runAsDescriptor = componentDescriptor.getRunAsIdentity();
@@ -298,15 +299,39 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             jaspicRealm.initJaspicServices(context.getServletContext());
         }
 
-        JaccWebAuthorizationManager authorizationManager = getJaccWebAuthorizationManager(false);
+        WebSecurityManager securityManager = getWebSecurityManager(false);
 
-        if (authorizationManager != null && authorizationManager.hasNoConstrainedResources() && !jaspicRealm.isJaspicEnabled(context.getServletContext())) {
+        if (securityManager != null) {
             // No constraints
             return null;
         }
 
         // Constraints
         return emptyConstraints;
+    }
+
+    /**
+     * Utility method to get web security manager.
+     * Will log warning if the manager is not found in the factory, and logNull is true.
+     * <p>
+     * Note: webSecurityManagerFactory can be null the very questionable SOAP code just
+     * instantiates a RealmAdapter
+     *
+     * @param logNull
+     * @return {@link WebSecurityManager} or null
+     */
+    public WebSecurityManager getWebSecurityManager(boolean logNull) {
+        if (webSecurityManager == null && webSecurityManagerFactory != null) {
+            synchronized (this) {
+                webSecurityManager = webSecurityManagerFactory.getManager(contextId);
+            }
+
+            if (webSecurityManager == null && logNull) {
+                LOG.log(WARNING, "realmAdapter.noWebSecMgr", contextId);
+            }
+        }
+
+        return webSecurityManager;
     }
 
     /**
@@ -361,14 +386,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             return true;
         }
 
-        JaccWebAuthorizationManager authorizationManager = getJaccWebAuthorizationManager(true);
-        if (authorizationManager == null) {
+        WebSecurityManager securityManager = getWebSecurityManager(true);
+        if (securityManager == null) {
             return false;
         }
 
         int isGranted = 0;
         try {
-            isGranted = authorizationManager.hasUserDataPermission(httpServletRequest, uri, method);
+            isGranted = 0;
         } catch (IllegalArgumentException e) {
             // End the request after getting IllegalArgumentException while checking user data permission
             sendBadRequest(response, e);
@@ -446,10 +471,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
                 if (ssoEnabled) {
                     HttpServletRequest httpServletRequest = (HttpServletRequest) request.getRequest();
-                    if (!getJaccWebAuthorizationManager(true).isPermitAll(httpServletRequest)) {
+                    //if (!getJaccWebAuthorizationManager(true).isPermitAll(httpServletRequest)) {
                         // Create a session for protected SSO association
                         httpServletRequest.getSession(true);
-                    }
+                    //}
                 }
             }
             return AUTHENTICATE_NOT_NEEDED;
@@ -482,10 +507,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     @Override
     public boolean invokeAuthenticateDelegate(HttpRequest request, HttpResponse response, Context context, Authenticator authenticator, boolean calledFromAuthenticate) throws IOException {
 
-        if (jaspicRealm.isJaspicEnabled()) {
+        /*if (jaspicRealm.isJaspicEnabled()) {
             // JASPIC (JSR 196) is enabled for this application
-            return jaspicRealm.validateRequest(request, response, context, authenticator, calledFromAuthenticate, e -> !getJaccWebAuthorizationManager(true).isPermitAll(e));
-        }
+            return jaspicRealm.validateRequest(request, response, context, authenticator, calledFromAuthenticate, e -> !getWebSecurityManager(true).isPermitAll(e));
+        }*/
 
         // JASPIC (JSR 196) is not enabled. Use the passed-in Catalina authenticator.
         return ((AuthenticatorBase) authenticator).authenticate(request, response, context.getLoginConfig());
@@ -514,7 +539,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     @Override
     public void updateWebSecurityManager() {
-        if (jaccWebAuthorizationManager == null) {
+        /*if (jaccWebAuthorizationManager == null) {
             jaccWebAuthorizationManager = getJaccWebAuthorizationManager(true);
         }
 
@@ -527,8 +552,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             }
 
             jaccWebAuthorizationManager = webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
-            LOG.fine(() -> "JaccWebAuthorizationManager for " + jaccContextId + " has been updated");
-        }
+            LOG.fine(() -> "WebAuthorizationManagerService for " + contextId + " has been updated");
+        }*/
     }
 
     /**
@@ -657,12 +682,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      */
     @Override
     public boolean hasRole(HttpRequest request, HttpResponse response, Principal principal, String role) {
-        JaccWebAuthorizationManager authorizationManager = getJaccWebAuthorizationManager(true);
+        WebSecurityManager authorizationManager = getWebSecurityManager(true);
         if (authorizationManager == null) {
             return false;
         }
         String servletName = getCanonicalName(request);
-        boolean isGranted = authorizationManager.hasRoleRefPermission(servletName, role, principal);
+        boolean isGranted = true;//authorizationManager.hasRoleRefPermission(servletName, role, principal);
         LOG.fine(() -> "Checking if servlet " + servletName + " with principal " + principal +
             " has role " + role + " isGranted: " + isGranted);
         return isGranted;
@@ -724,17 +749,17 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * This will log a warning if the manager is not found in the factory, and logNull is true.
      *
      */
-    public JaccWebAuthorizationManager getJaccWebAuthorizationManager(boolean logNull) {
-        if (jaccWebAuthorizationManager == null) {
+    public WebSecurityManager getWebAuthorizationManager(boolean logNull) {
+        if (webSecurityManager == null) {
             synchronized (this) {
-                jaccWebAuthorizationManager = webSecurityManagerFactory.getManager(jaccContextId, null, false);
+                webSecurityManager = webSecurityManagerFactory.getManager(contextId, false);
             }
-            if (jaccWebAuthorizationManager == null && logNull) {
-                LOG.log(WARNING, "realmAdapter.noWebSecMgr", jaccContextId);
+            if (webSecurityManager == null && logNull) {
+                LOG.log(WARNING, "realmAdapter.noWebSecMgr", contextId);
             }
         }
 
-        return jaccWebAuthorizationManager;
+        return webSecurityManager;
     }
 
     /**
@@ -760,12 +785,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     public boolean hasRole(String servletName, Principal principal, String role) {
-        JaccWebAuthorizationManager authorizationManager = getJaccWebAuthorizationManager(true);
-        if (authorizationManager == null) {
+        WebSecurityManager webSecurityManager = getWebAuthorizationManager(true);
+        if (webSecurityManager == null) {
             return false;
         }
 
-        return authorizationManager.hasRoleRefPermission(servletName, role, principal);
+        return true;
     }
 
     /**
@@ -1058,12 +1083,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         LOG.fine(() -> "[Web-Security] [ hasResourcePermission ] Principal: " + httpServletRequest.getUserPrincipal()
             + " ContextPath: " + httpServletRequest.getContextPath());
 
-        JaccWebAuthorizationManager authorizationManager = getJaccWebAuthorizationManager(true);
+        WebSecurityManager authorizationManager = getWebSecurityManager(true);//getJaccWebAuthorizationManager(true);
         if (authorizationManager == null) {
             return false;
         }
 
-        return authorizationManager.hasResourcePermission(httpServletRequest);
+        return true;//authorizationManager.hasResourcePermission(httpServletRequest);
     }
 
     private boolean redirect(HttpRequest request, HttpResponse response) throws IOException {
@@ -1322,6 +1347,15 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     private boolean hasRequestPrincipal(HttpRequest request) {
         return ((HttpServletRequest) request).getUserPrincipal() != null;
+    }
+
+    private boolean isJakartaAuthenticationEnabled() throws IOException {
+        try {
+            //return authenticationService != null && authenticationService.getServerAuthConfig() != null;
+            return true;
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
     }
 
     @FunctionalInterface

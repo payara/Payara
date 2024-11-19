@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.ee.authorize;
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.ee.authorization;
 
 import java.lang.reflect.Method;
 

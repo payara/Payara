@@ -93,7 +93,7 @@ import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
-import com.sun.enterprise.security.ee.authorize.EJBPolicyContextDelegate;
+import com.sun.enterprise.security.ee.authorization.EJBPolicyContextDelegate;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
 import com.sun.enterprise.security.jaspic.config.HandlerContext;
 import com.sun.enterprise.security.jaspic.config.PayaraEpicyroServices;
