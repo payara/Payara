@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import fish.payara.internal.notification.EventLevel;
+import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
@@ -122,6 +124,11 @@ public class MicroProfileMetricsCheck
             result.add(new HealthCheckResultEntry(CRITICAL, "Failed to write metrics to stream."));
         }
         return result;
+    }
+
+    @Override
+    protected EventLevel createNotificationEventLevel (HealthCheckResultStatus checkResult) {
+        return EventLevel.INFO;
     }
 
     private synchronized String write() throws IOException {

@@ -31,17 +31,17 @@
 
     
     <artifactId>cleanboot</artifactId>
-    <version>6.2024.11-SNAPSHOT</version>
+    <version>6.2024.12-SNAPSHOT</version>
     <name>Payara Samples - Payara - Clean boot test</name>
 
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2024.11-SNAPSHOT</version>
+        <version>6.2024.12-SNAPSHOT</version>
     </parent>
 
     <properties>
-      <playwright.version>1.47.0</playwright.version>
+      <playwright.version>1.48.0</playwright.version>
     </properties>
 
 
@@ -80,7 +80,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.4.1</version>
+                        <version>3.5.0</version>
                         <executions>
                           <execution>
                             <id>install-playwright-dependencies</id>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,40 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.internal.notification;
 
-import org.glassfish.config.support.GlassFishStubBean;
-import org.jvnet.hk2.annotations.Contract;
+import java.util.function.BiPredicate;
+import java.util.logging.Level;
 
 /**
- * A notifier that is backed by a configuration in the domain.xml
- * 
- * @param <C> the configuration class for the notifier
+ *
  */
-@Contract
-public abstract class PayaraConfiguredNotifier<C extends PayaraNotifierConfiguration> implements PayaraNotifier {
+public enum EventLevel {
+    INFO(800),
+    WARNING(900),
+    SEVERE(1000);
 
-    private final Class<C> configClass;
+    private final int severityLevel;
 
-    protected C configuration;
-
-    public PayaraConfiguredNotifier() {
-        this.configClass = NotifierUtils.getConfigurationClass(getClass());
-    }
-
-    public final void setConfiguration(C configuration) {
-        this.configuration = GlassFishStubBean.cloneBean(configuration, configClass);
-    }
-
-    public final C getConfiguration() {
-        return configuration;
-    }
-
-    @Override
-    public void tryHandleNotification (PayaraNotification event) {
-        EventLevel filterLevel = EventLevel.fromNameOrWarning(this.configuration.getFilter());
-        if (event.getLevel().compare(filterLevel, (a, b) -> a >= b)) {
-            this.handleNotification(event);
+    public static EventLevel fromNameOrWarning (String name) {
+        try {
+            return EventLevel.valueOf(name.toUpperCase());
+        } catch (Exception e) {
+            return WARNING;
         }
+    }
+
+    public static EventLevel fromLogLevel (Level level) {
+        if (level.intValue() <= INFO.severityLevel) {
+            return INFO;
+        }
+        if (level.intValue() <= WARNING.severityLevel) {
+            return WARNING;
+        }
+        return SEVERE;
+    }
+
+    EventLevel (int severityLevel) {
+        this.severityLevel = severityLevel;
+    }
+
+    public int getSeverityLevel () {
+        return severityLevel;
+    }
+
+    public boolean compare (EventLevel other, BiPredicate<Integer, Integer> predicate) {
+        return predicate.test(this.severityLevel, other.severityLevel);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,12 +58,19 @@ public class PayaraNotification implements Serializable {
     private final String subject;
     private final String message;
     private final Serializable data;
+    private final EventLevel level;
 
     private final List<String> notifierWhitelist;
     private final List<String> notifierBlacklist;
 
     public PayaraNotification(String eventType, String serverName, String hostName, String domainName,
-            String instanceName, String subject, String message, Serializable data, List<String> notifierWhitelist,
+                              String instanceName, String subject, String message, Serializable data, List<String> notifierWhitelist,
+                              List<String> notifierBlacklist) {
+        this(eventType, serverName, hostName, domainName, instanceName, subject, message, data, EventLevel.INFO, notifierWhitelist, notifierBlacklist);
+    }
+
+    public PayaraNotification (String eventType, String serverName, String hostName, String domainName,
+                               String instanceName, String subject, String message, Serializable data, EventLevel level, List<String> notifierWhitelist,
             List<String> notifierBlacklist) {
         this.eventType = eventType;
         this.serverName = serverName;
@@ -73,6 +80,7 @@ public class PayaraNotification implements Serializable {
         this.subject = subject;
         this.message = message;
         this.data = data;
+        this.level = level;
         this.notifierWhitelist = (notifierWhitelist == null) ? null : Collections.unmodifiableList(notifierWhitelist);
         this.notifierBlacklist = (notifierBlacklist == null) ? null : Collections.unmodifiableList(notifierBlacklist);
     }
@@ -103,6 +111,10 @@ public class PayaraNotification implements Serializable {
 
     public String getMessage() {
         return message;
+    }
+
+    public EventLevel getLevel () {
+        return level;
     }
 
     public List<String> getNotifierWhitelist() {

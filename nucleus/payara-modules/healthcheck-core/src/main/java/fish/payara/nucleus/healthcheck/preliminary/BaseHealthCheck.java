@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
+import fish.payara.internal.notification.EventLevel;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
@@ -125,6 +126,8 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     }
 
     protected abstract HealthCheckResult doCheckInternal();
+
+    protected abstract EventLevel createNotificationEventLevel (HealthCheckResultStatus checkResult);
     public abstract O constructOptions(C c);
 
     public HealthCheckResultStatus getMostRecentCumulativeStatus() {
@@ -302,6 +305,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
             .message(messageFormatted)
             .data(new HealthCheckNotificationData(checkResult.getEntries()))
             .eventType(level.getName())
+            .level(this.createNotificationEventLevel(checkResult.getCumulativeStatus()))
             .build();
         notificationEventBus.publish(notification);
 

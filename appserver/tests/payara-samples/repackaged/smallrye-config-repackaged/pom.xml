@@ -43,11 +43,11 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>repackaged</artifactId>
-        <version>6.2024.11-SNAPSHOT</version>
+        <version>6.2024.12-SNAPSHOT</version>
     </parent>
     <groupId>io.smallrye.config</groupId>
     <artifactId>smallrye-config-repackaged</artifactId>
-    <version>3.9.1</version>
+    <version>3.10.0</version>
     <name>Payara Samples - Payara - smallrye-config repackaged as a module</name>
 
     <properties>
