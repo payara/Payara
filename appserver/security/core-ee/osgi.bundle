@@ -47,6 +47,7 @@
                         com.sun.enterprise.security.auth.realm.jdbc; \
                         com.sun.enterprise.security.ee.authorization; \
                         com.sun.enterprise.security.ee.authentication.jakarta; \
+                        com.sun.enterprise.security.ee.authentication.jakarta.callback; \
                         com.sun.enterprise.security.ee.web; \
                         com.sun.enterprise.security.ee.web.integration; \
                         com.sun.enterprise.security.jauth; \

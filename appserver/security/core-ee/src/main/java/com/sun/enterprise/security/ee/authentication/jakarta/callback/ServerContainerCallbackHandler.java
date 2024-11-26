@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 /*
  * ServerContainerCallbackHandler.java
@@ -45,7 +45,7 @@
  * Created on September 14, 2004, 12:56 PM
  */
 
-package com.sun.enterprise.security.jaspic.callback;
+package com.sun.enterprise.security.ee.authentication.jakarta.callback;
 
 import java.io.IOException;
 
@@ -58,6 +58,8 @@ import jakarta.security.auth.message.callback.PasswordValidationCallback;
 import jakarta.security.auth.message.callback.PrivateKeyCallback;
 import jakarta.security.auth.message.callback.SecretKeyCallback;
 import jakarta.security.auth.message.callback.TrustStoreCallback;
+import com.sun.enterprise.security.auth.login.LoginContextDriver;
+import com.sun.enterprise.security.auth.login.common.LoginException;
 
 /**
  * Callback Handler for ServerContainer
@@ -65,9 +67,15 @@ import jakarta.security.auth.message.callback.TrustStoreCallback;
  * @author Harpreet Singh
  * @author Shing Wai Chan
  */
-final class ServerContainerCallbackHandler extends BaseContainerCallbackHandler {
+final public class ServerContainerCallbackHandler extends BaseContainerCallbackHandler {
+
+    private String realmName;
 
     ServerContainerCallbackHandler() {
+    }
+
+    public ServerContainerCallbackHandler(String realmName) {
+        this.realmName = realmName;
     }
 
     protected void handleSupportedCallbacks(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -84,5 +92,30 @@ final class ServerContainerCallbackHandler extends BaseContainerCallbackHandler 
                 || callback instanceof SecretKeyCallback 
                 || callback instanceof PrivateKeyCallback
                 || callback instanceof TrustStoreCallback; 
+    }
+
+    @Override
+    protected void processPasswordValidation(PasswordValidationCallback pwdCallback) {
+        String username = pwdCallback.getUsername();
+        char[] password = pwdCallback.getPassword();
+
+        try {
+            LoginContextDriver.jmacLogin(pwdCallback.getSubject(), username, password, realmName);
+            ditchPassword(password);
+
+            pwdCallback.setResult(true);
+        } catch (LoginException le) {
+            // Login failed
+            pwdCallback.setResult(false);
+        }
+    }
+
+    private void ditchPassword(char[] passwd) {
+        // Explicitly ditch the password
+        if (passwd != null) {
+            for (int i = 0; i < passwd.length; i++) {
+                passwd[i] = ' ';
+            }
+        }
     }
 }

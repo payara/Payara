@@ -384,7 +384,7 @@ public class WebAuthorizationManagerService {
         setSecurityInfo(request);
         return authorizationService.checkWebResourcePermission(request, (Subject) null);
     }
-
+    
     public void setSecurityInfo(HttpServletRequest httpRequest) {
         if (httpRequest != null) {
             currentRequest.set(httpRequest);
@@ -483,7 +483,7 @@ public class WebAuthorizationManagerService {
 
         PermissionCacheFactory.removePermissionCache(uncheckedPermissionCache);
         uncheckedPermissionCache = null;
-        //webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
+        webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
     }
 
     public void destroy() throws PolicyContextException {
@@ -504,7 +504,7 @@ public class WebAuthorizationManagerService {
             ((JaccConfigurationFactory) policyFactory).removeContextIdMappingByPolicyContextId(CONTEXT_ID);
         }
 
-        //webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
+        webSecurityManagerFactory.getManager(CONTEXT_ID, null, true);
     }
 
 
@@ -530,9 +530,29 @@ public class WebAuthorizationManagerService {
 
                     SecurityRoleMapping[] roleMappings = sunDes.getSecurityRoleMapping();
                     if (roleMappings != null) {
+                        for (SecurityRoleMapping roleMapping : roleMappings) {
+                            for (String principal : roleMapping.getPrincipalName()) {
+                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
+                            }
+                            for (String group : roleMapping.getGroupNames()) {
+                                webSecurityManagerFactory.addAdminGroup(group, realmName, new Group(group));
+                            }
+                        }
                     }
 
                     SecurityRoleAssignment[] roleAssignments = sunDes.getSecurityRoleAssignments();
+                    if (roleAssignments != null) {
+                        for (SecurityRoleAssignment roleAssignment : roleAssignments) {
+                            if (roleAssignment.isExternallyDefined()) {
+                                webSecurityManagerFactory.addAdminGroup(roleAssignment.getRoleName(), realmName, new Group(roleAssignment.getRoleName()));
+                                continue;
+                            }
+
+                            for (String principal : roleAssignment.getPrincipalNames()) {
+                                webSecurityManagerFactory.addAdminPrincipal(principal, realmName, new PrincipalImpl(principal));
+                            }
+                        }
+                    }
                 }
             }
         }

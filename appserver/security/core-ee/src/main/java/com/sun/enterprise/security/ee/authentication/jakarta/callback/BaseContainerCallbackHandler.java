@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 /*
  * BaseContainerCallbackHandler.java
@@ -45,7 +45,7 @@
  * Created on April 21, 2004, 11:56 AM
  */
 
-package com.sun.enterprise.security.jaspic.callback;
+package com.sun.enterprise.security.ee.authentication.jakarta.callback;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
@@ -68,6 +68,8 @@ import jakarta.security.auth.message.callback.PasswordValidationCallback;
 import jakarta.security.auth.message.callback.PrivateKeyCallback;
 import jakarta.security.auth.message.callback.SecretKeyCallback;
 import jakarta.security.auth.message.callback.TrustStoreCallback;
+import org.glassfish.epicyro.config.helper.Caller;
+import org.glassfish.epicyro.services.InMemoryStore;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.MasterPassword;
@@ -429,8 +431,8 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
         }
     }
 
-    private void processPasswordValidation(PasswordValidationCallback pwdCallback) {
-        if (SecurityServicesUtil.getInstance().isACC()) {
+    protected void processPasswordValidation(PasswordValidationCallback pwdCallback) {
+        /*if (SecurityServicesUtil.getInstance().isACC()) {
             _logger.log(Level.FINE, "JASPIC: In PasswordValidationCallback Processor for appclient - will do nothing");
             pwdCallback.setResult(true);
             return;
@@ -462,7 +464,26 @@ abstract class BaseContainerCallbackHandler implements CallbackHandler, Callback
             // login failed
             _logger.log(Level.INFO, "jaspic.loginfail", username);
             pwdCallback.setResult(false);
+        }*/
+        // Default to a very basic in memory identity store.
+        // Clients may want to override this for more advanced features.
+        Caller caller = InMemoryStore.validate(pwdCallback.getUsername(), getPassword(pwdCallback));
+        if (caller != null) {
+            processCallerPrincipal(new CallerPrincipalCallback(pwdCallback.getSubject(), caller.getCallerPrincipal()));
+            if (!caller.getGroups().isEmpty()) {
+                processGroupPrincipal(new GroupPrincipalCallback(pwdCallback.getSubject(), caller.getGroupsAsArray()));
+            }
+            pwdCallback.setResult(true);
         }
+    }
+
+    private String getPassword(PasswordValidationCallback pwdCallback) {
+        char[] password = pwdCallback.getPassword();
+        if (password == null) {
+            return null;
+        }
+
+        return new String(password);
     }
 
     private void processPrivateKey(PrivateKeyCallback privKeyCallback) {
