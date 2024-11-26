@@ -103,33 +103,32 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
 
     @Override
     public String getAuthContextID(MessageInfo messageInfo) {
+        if (!(messageInfo instanceof PacketMessageInfo)) {
+            return getOpName((SOAPMessage) messageInfo.getRequestMessage());
+        }
 
-        // make this more efficient by operating on packet
-        String rvalue = null;
-        if (messageInfo instanceof PacketMessageInfo) {
-            PacketMessageInfo pmi = (PacketMessageInfo) messageInfo;
-            Packet p = pmi.getRequestPacket();
-            if (p != null) {
-                Message m = p.getMessage();
-                if (m != null) {
-                    WSDLPort port = (WSDLPort) messageInfo.getMap().get("WSDL_MODEL");
-                    if (port != null) {
-                        WSDLBoundOperation w = m.getOperation(port);
-                        if (w != null) {
-                            QName n = w.getName();
-                            if (n != null) {
-                                rvalue = n.getLocalPart();
-                            }
+        // Make this more efficient by operating on packet
+        String authContextID = null;
+        PacketMessageInfo pmi = (PacketMessageInfo) messageInfo;
+
+        Packet requestPacket = pmi.getRequestPacket();
+        if (requestPacket != null) {
+            Message message = requestPacket.getMessage();
+            if (message != null) {
+                WSDLPort port = (WSDLPort) messageInfo.getMap().get("WSDL_MODEL");
+                if (port != null) {
+                    WSDLBoundOperation boundOperation = message.getOperation(port);
+                    if (boundOperation != null) {
+                        QName name = boundOperation.getName();
+                        if (name != null) {
+                            authContextID = name.getLocalPart();
                         }
                     }
                 }
             }
-            return rvalue;
-        } else {
-            // make this more efficient by operating on packet
-            return getOpName((SOAPMessage) messageInfo.getRequestMessage());
         }
 
+        return authContextID;
     }
 
     private String getOpName(SOAPMessage message) {
@@ -137,33 +136,33 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
             return null;
         }
 
-        String rvalue = null;
+        String opName = null;
 
-        // first look for a SOAPAction header.
+        // First look for a SOAPAction header.
         // this is what .net uses to identify the operation
 
         MimeHeaders headers = message.getMimeHeaders();
         if (headers != null) {
             String[] actions = headers.getHeader("SOAPAction");
             if (actions != null && actions.length > 0) {
-                rvalue = actions[0];
-                if (rvalue != null && rvalue.equals("\"\"")) {
-                    rvalue = null;
+                opName = actions[0];
+                if (opName != null && opName.equals("\"\"")) {
+                    opName = null;
                 }
             }
         }
 
-        // if that doesn't work then we default to trying the name
+        // If that doesn't work then we default to trying the name
         // of the first child element of the SOAP envelope.
 
-        if (rvalue == null) {
+        if (opName == null) {
             Name name = getName(message);
             if (name != null) {
-                rvalue = name.getLocalName();
+                opName = name.getLocalName();
             }
         }
 
-        return rvalue;
+        return opName;
     }
 
     private Name getName(SOAPMessage message) {

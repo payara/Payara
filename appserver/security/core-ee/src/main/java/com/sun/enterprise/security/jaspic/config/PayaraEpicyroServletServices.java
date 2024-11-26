@@ -42,6 +42,7 @@ package com.sun.enterprise.security.jaspic.config;
 
 import static com.sun.enterprise.deployment.web.LoginConfiguration.CLIENT_CERTIFICATION_AUTHENTICATION;
 
+import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
 import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.POLICY_CONTEXT;
@@ -57,6 +58,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import org.glassfish.internal.api.Globals;
 
 public class PayaraEpicyroServletServices extends PayaraEpicyroServices {
     

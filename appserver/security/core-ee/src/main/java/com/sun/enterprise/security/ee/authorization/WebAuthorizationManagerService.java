@@ -188,7 +188,7 @@ public class WebAuthorizationManagerService {
     private final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
     private AuthorizationService authorizationService;
 
-    public JaccWebAuthorizationManager(WebBundleDescriptor webBundleDescriptor, ServerContext serverContext, WebSecurityManagerFactory webSecurityManagerFactory, boolean register) throws PolicyContextException {
+    public WebAuthorizationManagerService(WebBundleDescriptor webBundleDescriptor, ServerContext serverContext, WebSecurityManagerFactory webSecurityManagerFactory, boolean register) throws PolicyContextException {
         this.register = register;
         this.webBundleDescriptor = webBundleDescriptor;
         this.CONTEXT_ID = getContextID(webBundleDescriptor);

@@ -101,8 +101,8 @@ public class SecurityContext extends AbstractSecurityContext {
 
     // Did the client log in as or did the server generate the context
     private boolean serverGeneratedCredentials;
-    
-    
+
+    private Principal sessionPrincipal;
     
     // ### Static public methods
     
@@ -326,6 +326,14 @@ public class SecurityContext extends AbstractSecurityContext {
     @Override
     public Subject getSubject() {
         return subject;
+    }
+
+    public Principal getSessionPrincipal() {
+        return sessionPrincipal;
+    }
+
+    public void setSessionPrincipal(Principal sessionPrincipal) {
+        this.sessionPrincipal = sessionPrincipal;
     }
 
     public Set<Principal> getPrincipalSet() {

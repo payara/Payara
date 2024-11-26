@@ -45,6 +45,7 @@ import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
 import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.jacc.context.PolicyContextRegistration;
+import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -86,17 +87,17 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
     // Stores the Context IDs to application names for standalone web applications
     private final Map<String, List<String>> CONTEXT_IDS = new HashMap<>();
-    private final Map<String, Map<String, WebSecurityManager>> SECURITY_MANAGERS = new HashMap<>();
+    private final Map<String, Map<String, WebAuthorizationManagerService>> SECURITY_MANAGERS = new HashMap<>();
 
     public WebSecurityManagerFactory() {
         // Registers the JACC policy handlers, which provide objects JACC Providers and other code can use
         PolicyContextRegistration.registerPolicyHandlers();
     }
 
-    public WebSecurityManager createManager(WebBundleDescriptor webBundleDescriptor, boolean register, ServerContext context) {
+    public WebAuthorizationManagerService createManager(WebBundleDescriptor webBundleDescriptor, boolean register, ServerContext context) {
         String contextId = AuthorizationUtil.getContextID(webBundleDescriptor);
 
-        WebSecurityManager manager = null;
+        WebAuthorizationManagerService manager = null;
         if (register) {
             manager = getManager(contextId, false);
         }
@@ -108,7 +109,7 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
                 // As "side-effect" of constructing the manager, the web constraints in the web bundle
                 // descriptor will be translated to permissions and loaded into a JACC policy configuration
-                manager = new WebSecurityManager(webBundleDescriptor, context, this, register);
+                manager = new WebAuthorizationManagerService(webBundleDescriptor, context, this, register);
 
                 probeProvider.securityManagerCreationEndedEvent(webBundleDescriptor.getModuleID());
 
@@ -124,23 +125,27 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
         return manager;
     }
 
-    public <T> void addManagerToApp(String ctxId, String name, String appName, WebSecurityManager manager) {
+    public <T> void addManagerToApp(String ctxId, String name, String appName, WebAuthorizationManagerService manager) {
         addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, ctxId, name, appName, manager);
     }
 
-    public WebSecurityManager getManager(String contextId) {
+    public WebAuthorizationManagerService getManager(String ctxId, String name, boolean remove) {
+        return getManager(SECURITY_MANAGERS, ctxId, name, remove);
+    }
+
+    public WebAuthorizationManagerService getManager(String contextId) {
         return getManager(SECURITY_MANAGERS, contextId, null, false);
     }
 
-    public WebSecurityManager getManager(String contextId, boolean remove) {
+    public WebAuthorizationManagerService getManager(String contextId, boolean remove) {
         return getManager(SECURITY_MANAGERS, contextId, null, remove);
     }
 
-    public <T> ArrayList<WebSecurityManager> getManagers(String contextId, boolean remove) {
+    public <T> ArrayList<WebAuthorizationManagerService> getManagers(String contextId, boolean remove) {
         return getManagers(SECURITY_MANAGERS, contextId, remove);
     }
-
-    public <T> ArrayList<WebSecurityManager> getManagersForApp(String appName, boolean remove) {
+    
+    public <T> ArrayList<WebAuthorizationManagerService> getManagersForApp(String appName, boolean remove) {
         return getManagersForApp(SECURITY_MANAGERS, CONTEXT_IDS, appName, remove);
     }
 
@@ -166,6 +171,14 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
     public void putAdminGroup(String group, String realmName, Group principal) {
         // FIXME: can be hacked: "ab+cd" = "a+bcd"
         adminGroups.put(realmName + group, principal);
+    }
+
+    public void addAdminPrincipal(String username, String realmName, Principal principal) {
+        adminPrincipalsPerApp.put(realmName + username, principal);
+    }
+
+    public void addAdminGroup(String group, String realmName, Principal principal) {
+        adminGroupsPerApp.put(realmName + group, principal);
     }
 
 }

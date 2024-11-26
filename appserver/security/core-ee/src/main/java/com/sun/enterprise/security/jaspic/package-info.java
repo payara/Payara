@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) [2019] Payara Foundation and/or its affiliates.
+ *   Copyright (c) [2019-2024] Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -62,7 +62,6 @@
  * <p>
  * The pluggable authentication mechanisms are managed by the 
  * {@link jakarta.security.auth.message.config.AuthConfigFactory}. The Payara specific implementation of this is
- * {@link com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory}, which is installed by
  * <code>com.sun.enterprise.security.ee.JavaEESecurityLifecycle</code>.
  *
  */

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -577,5 +577,25 @@ public final class Utility {
         for (int i = 0; i < chars.length; i++) {
             chars[i] = '0';
         }
+    }
+
+    /**
+     * Returns true if the given string is null or is empty.
+     *
+     * @param string The string to be checked on emptiness.
+     * @return True if the given string is null or is empty.
+     */
+    public static boolean isEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
+
+    public static boolean isAllNull(Object... values) {
+        for (Object value : values) {
+            if (value != null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

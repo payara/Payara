@@ -68,6 +68,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import static jakarta.security.auth.message.config.AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY;
 import static org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory.DEFAULT_FACTORY_DEFAULT_PROVIDERS;
+import static java.util.logging.Level.WARNING;
 
 
 /**
@@ -85,22 +86,34 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
     @Inject
     PolicyLoader policyLoader;
 
-    @Inject
-    private ServiceLocator habitat;
-
     @Override
     public void postConstruct() {
         onInitialization();
-    }
-
-    @Override
-    public void onInitialization() {
         initializeJakartaAuthentication();
         initializeJakartaAuthorization();
     }
 
-    private void initializeJakartaAuthentication() {
+    @Override
+    public void onInitialization() {
+        LOG.finest(() -> "Initializing " + getClass());
 
+        // TODO: Need some way to not override the security manager if the EmbeddedServer was
+        // run with a different non-default security manager.
+        //
+        // Right now there seems no way to find out if the security manager is the VM's default security manager.
+        final SecurityManager systemSecurityManager = System.getSecurityManager();
+        if (systemSecurityManager != null && !(J2EESecurityManager.class.equals(systemSecurityManager.getClass()))) {
+            J2EESecurityManager eeSecurityManager = new J2EESecurityManager();
+            try {
+                System.setSecurityManager(eeSecurityManager);
+                LOG.config(() -> "System security manager has been set to " + eeSecurityManager);
+            } catch (SecurityException ex) {
+                LOG.log(WARNING, "security.secmgr.could.not.override", ex);
+            }
+        }
+    }
+
+    private void initializeJakartaAuthentication() {
         // Define default factory if it is not already defined.
         // The factory will be constructed on first getFactory call.
 
@@ -110,8 +123,7 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
         }
 
         String defaultProvidersString = null;
-        //WebServicesDelegate delegate = Globals.get(WebServicesDelegate.class);
-        WebServicesDelegate delegate = habitat.getService(WebServicesDelegate.class);
+        WebServicesDelegate delegate = Globals.get(WebServicesDelegate.class);
         if (delegate == null) {
             defaultProvidersString = GFServerConfigProvider.class.getName();
         } else {

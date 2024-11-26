@@ -260,8 +260,8 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         }
         try {
             if (remove) {
-                WebSecurityManager authorizationManager = webSecurityManagerFactory
-                    .getManager(getContextID(webDescriptor), true);
+                WebAuthorizationManagerService authorizationManager = webSecurityManagerFactory
+                    .getManager(getContextID(webDescriptor), null,true);
                 if (authorizationManager != null) {
                     authorizationManager.release();
                 }
@@ -402,12 +402,12 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     private boolean cleanSecurityContext(String appName) {
         boolean cleanUpDone = false;
 
-        List<WebSecurityManager> managers = webSecurityManagerFactory.getManagersForApp(appName, false);
+        List<WebAuthorizationManagerService> managers = webSecurityManagerFactory.getManagersForApp(appName, false);
         if (managers == null) {
             return false;
         }
 
-        for (WebSecurityManager manager : managers) {
+        for (WebAuthorizationManagerService manager : managers) {
             try {
                 websecurityProbeProvider.securityManagerDestructionStartedEvent(appName);
                 manager.destroy();
