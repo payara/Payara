@@ -2051,7 +2051,6 @@ public class WebappClassLoader
         // START SJSAS 6258619
         ClassLoaderUtil.releaseLoader(this);
         // END SJSAS 6258619
-        clearBeanELResolverCache();
         clearJaxRSCache();
 
         synchronized(jarFilesLock) {
@@ -2657,61 +2656,6 @@ public class WebappClassLoader
                         contextName), e);
             }
         }
-    }
-
-    private void clearBeanELResolverCache() {
-        try {
-            Class<?> elUtilsClass = CachingReflectionUtil.getClassFromCache("com.sun.faces.el.ELUtils", this);
-            if (elUtilsClass != null) {
-                clearBeanResolver(elUtilsClass);
-            }
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Error clearing BeanELResolver cache", e);
-        }
-    }
-
-    private void clearBeanResolver(Class<?> elUtilsClass) throws Exception {
-        Optional<Class<?>> elResolverClass = Optional.ofNullable(CachingReflectionUtil
-                .getClassFromCache("jakarta.el.BeanELResolver", this));
-        Object resolver = CachingReflectionUtil.getFieldFromCache(elUtilsClass, "BEAN_RESOLVER",
-                false).get(null);
-        if (resolver != null && elResolverClass.isPresent()) {
-            logger.fine(String.format("Fields: %s", Arrays.stream(elResolverClass.get().getDeclaredFields())
-                    .map(Field::toString).collect(Collectors.toList())));
-            Method clearPropertiesMethod = CachingReflectionUtil.getMethodFromCache(elResolverClass.get(),
-                    "clearProperties", false, ClassLoader.class);
-            if (clearPropertiesMethod != null) {
-                clearPropertiesMethod.invoke(resolver, this);
-            } else {
-                clearBeanELResolverPropertiesCache(resolver, elResolverClass.get());
-            }
-        } else {
-            logger.warning("BeanELResolver not found");
-        }
-    }
-
-    /**
-     * Workaround until clearProperties() is available in Jakarta EL
-     * @see <a href="https://github.com/jakartaee/expression-language/pull/215">Jakarta EL Pull Request</a>
-     */
-    private void clearBeanELResolverPropertiesCache(Object resolver, Class<?> elResolverClass) throws Exception {
-        Optional<Class<?>> elResolverCacheClass = Optional.ofNullable(CachingReflectionUtil
-                .getClassFromCache("jakarta.el.BeanELResolver$SoftConcurrentHashMap", this));
-        var propertiesField = Optional.ofNullable(CachingReflectionUtil
-                .getFieldFromCache(elResolverClass, "properties", true));
-        @SuppressWarnings("unchecked")
-        ConcurrentHashMap<Class<?>, Object> properties =
-                (ConcurrentHashMap<Class<?>, Object>) propertiesField.get().get(resolver);
-        properties.entrySet().removeIf(entry -> entry.getKey().getClassLoader() == this);
-        var mapField = Optional.ofNullable(CachingReflectionUtil
-                .getFieldFromCache(elResolverCacheClass.get(), "map", true));
-        @SuppressWarnings("unchecked")
-        ConcurrentHashMap<Class<?>, Object> map =
-                (ConcurrentHashMap<Class<?>, Object>) mapField.get().get(propertiesField.get().get(resolver));
-        map.entrySet().removeIf(entry -> entry.getKey().getClassLoader() == this);
-        var cleanupMethod = Optional.ofNullable(CachingReflectionUtil
-                .getMethodFromCache(elResolverCacheClass.get(), "cleanup", true));
-        cleanupMethod.get().invoke(propertiesField.get().get(resolver));
     }
 
     private void clearJaxRSCache() {
