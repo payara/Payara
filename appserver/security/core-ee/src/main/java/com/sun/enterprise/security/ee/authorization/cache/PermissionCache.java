@@ -38,7 +38,7 @@
  * holder.
  */
 // Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jacc.cache;
+package com.sun.enterprise.security.ee.authorization.cache;
 
 import static java.util.Collections.list;
 import static java.util.logging.Level.SEVERE;
@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 import jakarta.security.jacc.PolicyContext;
 
 import com.sun.enterprise.security.common.AppservAccessController;
-import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl.Epoch;
 import com.sun.logging.LogDomains;
 import jakarta.security.jacc.PolicyFactory;
 
@@ -75,7 +74,6 @@ public class PermissionCache extends Object {
     private static AllPermission allPermission = new AllPermission();
 
     private Permissions cache;
-    private CodeSource codesource;
     private Permission[] protoPerms;
     private Class<? extends Permission>[] classes;
     private String name;
@@ -105,12 +103,7 @@ public class PermissionCache extends Object {
      * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
      * does not factor into the permission caching.
      */
-    public PermissionCache(Integer key, String pcID, CodeSource codesource, Permission[] perms, String name) {
-        if (codesource == null) {
-            this.codesource = new CodeSource(null, (java.security.cert.Certificate[]) null);
-        } else {
-            this.codesource = codesource;
-        }
+    public PermissionCache(Integer key, String pcID, Permission[] perms, String name) {
         this.factoryKey = key;
         this.cache = null;
         this.pcID = pcID;
@@ -150,12 +143,7 @@ public class PermissionCache extends Object {
      * value matches the name parameter will be included in the cache. This value may be null, in which case permission name
      * does not factor into the permission caching.
      */
-    public PermissionCache(Integer key, String pcID, CodeSource codesource, Class<? extends Permission> clazz, String name) {
-        if (codesource == null) {
-            this.codesource = new CodeSource(null, (java.security.cert.Certificate[]) null);
-        } else {
-            this.codesource = codesource;
-        }
+    public PermissionCache(Integer key, String pcID, Class<?> clazz, String name) {
         this.factoryKey = key;
         this.cache = null;
         this.pcID = pcID;
@@ -177,7 +165,7 @@ public class PermissionCache extends Object {
         return factoryKey;
     }
 
-    private boolean checkLoadedCache(Permission permission, Epoch e) {
+    private boolean checkLoadedCache(Permission permission, CachedPermissionImpl.Epoch e) {
         if (e == null) {
             return cache.implies(permission);
         }
@@ -190,7 +178,7 @@ public class PermissionCache extends Object {
         return e.granted;
     }
 
-    private boolean checkCache(Permission permissionToCheck, Epoch epoch) {
+    private boolean checkCache(Permission permissionToCheck, CachedPermissionImpl.Epoch epoch) {
 
         // Test-and-set to guard critical section
         rLock.lock();
@@ -324,7 +312,7 @@ public class PermissionCache extends Object {
         }
     }
 
-    boolean checkPermission(Permission permission, Epoch e) {
+    boolean checkPermission(Permission permission, CachedPermissionImpl.Epoch e) {
         return checkCache(permission, e);
     }
 

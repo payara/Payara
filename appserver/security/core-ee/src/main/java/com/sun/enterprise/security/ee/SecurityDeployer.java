@@ -52,7 +52,6 @@ import com.sun.enterprise.security.EjbSecurityPolicyProbeProvider;
 import com.sun.enterprise.security.SecurityLifecycle;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
-import com.sun.enterprise.security.ee.web.integration.WebSecurityManager;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import com.sun.logging.LogDomains;
@@ -88,7 +87,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.deployment.WebBundleDescriptor.AFTER_SERVLET_CONTEXT_INITIALIZED_EVENT;
 import static com.sun.enterprise.security.ee.SecurityUtil.getContextID;
-import static java.util.logging.Level.CONFIG;
+import static com.sun.enterprise.security.ee.SecurityUtil.removeRoleMapper;
 import static java.util.logging.Level.WARNING;
 import static org.glassfish.internal.deployment.Deployment.APPLICATION_LOADED;
 import static org.glassfish.internal.deployment.Deployment.APPLICATION_PREPARED;
@@ -155,7 +154,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                     return;
                 }
                 WebBundleDescriptor webBD = (WebBundleDescriptor) moduleInfo.getMetaData("org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl");
-                loadPolicy(webBD, false);
+                loadWebPolicy(webBD, false);
             } else if (APPLICATION_LOADED.equals(event.type())) {
                 ApplicationInfo appInfo = (ApplicationInfo) event.hook();
                 app = appInfo.getMetaData(Application.class);
@@ -205,7 +204,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
 
             for (WebBundleDescriptor webBundleDescriptor : webBundleDescriptors) {
                 webBundleDescriptor.setApplicationClassLoader(context.getFinalClassLoader());
-                loadPolicy(webBundleDescriptor, false);
+                loadWebPolicy(webBundleDescriptor, false);
             }
 
         } catch (Exception se) {
@@ -216,11 +215,11 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     // removes security policy if needed
     @Override
     protected void cleanArtifacts(DeploymentContext context) throws DeploymentException {
-        removePolicy(context);
-        SecurityUtil.removeRoleMapper(context);
+        deletePolicy(context);
+        removeRoleMapper(context);
 
         OpsParams params = context.getCommandParameters(OpsParams.class);
-        if (this.appCnonceMap != null) {
+        if (appCnonceMap != null) {
             CNonceCache cache = appCnonceMap.remove(params.name());
             if (cache != null) {
                 cache.destroy();
@@ -250,39 +249,31 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     /**
      * Translate Web Bundle Policy
      *
-     * @param webDescriptor
+     * @param webBundleDescriptor
      * @param remove boolean indicated whether any existing policy statements are removed form context before translation
      * @throws DeploymentException
      */
-    public void loadPolicy(WebBundleDescriptor webDescriptor, boolean remove) throws DeploymentException {
-        if (webDescriptor == null) {
-            return;
-        }
+    private void loadWebPolicy(WebBundleDescriptor webBundleDescriptor, boolean remove) throws DeploymentException {
         try {
-            if (remove) {
-                WebAuthorizationManagerService authorizationManager = webSecurityManagerFactory
-                    .getManager(getContextID(webDescriptor), null,true);
-                if (authorizationManager != null) {
-                    authorizationManager.release();
+            if (webBundleDescriptor != null) {
+                if (remove) {
+                    String contextId = getContextID(webBundleDescriptor);
+                    WebAuthorizationManagerService webAuthorizationManagerService = webSecurityManagerFactory.getManager(contextId, true);
+                    if (webAuthorizationManagerService != null) {
+                        webAuthorizationManagerService.release();
+                    }
                 }
+                webSecurityManagerFactory.createManager(webBundleDescriptor, true, serverContext);
             }
-            webSecurityManagerFactory.createManager(webDescriptor, true, serverContext);
-        } catch (Exception e) {
-            // log stacktrace and throw, because stacktrace of causes will be lost in DeploymentException
-            _logger.log(CONFIG,
-                "[Web-Security] FATAL Exception. Unable to create WebSecurityManager: " + e.getMessage(), e);
+
+        } catch (Exception se) {
             throw new DeploymentException(
-                "Error in generating security policy for " + webDescriptor.getModuleDescriptor().getModuleName(), e);
+                    "Error in generating security policy for " + webBundleDescriptor.getModuleDescriptor().getModuleName(), se);
         }
     }
 
-
-
-    // ### Private methods
-
-
     /**
-     * Puts Web Bundle Policy In Service, repeats translation is Descriptor indicate policy was changed by ContextListener.
+     * Puts Web Bundle Policy In Service, repeats translation if Descriptor indicates policy was changed by ContextListener.
      *
      * @param webBundleDescriptor
      * @throws DeploymentException
@@ -291,20 +282,22 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
         try {
             if (webBundleDescriptor != null) {
                 if (webBundleDescriptor.isPolicyModified()) {
-                    // redo policy translation for web module
-                    loadPolicy(webBundleDescriptor, true);
+                    // Redo policy translation for web module
+                    loadWebPolicy(webBundleDescriptor, true);
                 }
 
-                String contextId = SecurityUtil.getContextID(webBundleDescriptor);
-
+                String contextId = getContextID(webBundleDescriptor);
                 websecurityProbeProvider.policyCreationStartedEvent(contextId);
-                SecurityUtil.generatePolicyFile(contextId);
+
+                commitViaManager(contextId);
+
                 websecurityProbeProvider.policyCreationEndedEvent(contextId);
                 websecurityProbeProvider.policyCreationEvent(contextId);
+
             }
         } catch (Exception se) {
-            String msg = "Error in generating security policy for " + webBundleDescriptor.getModuleDescriptor().getModuleName();
-            throw new DeploymentException(msg, se);
+            throw new DeploymentException(
+                    "Error in generating security policy for " + webBundleDescriptor.getModuleDescriptor().getModuleName(), se);
         }
     }
 
@@ -317,7 +310,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
     private void commitEjbPolicies(Application app) throws DeploymentException {
         try {
             for (EjbBundleDescriptor ejbBD : app.getBundleDescriptors(EjbBundleDescriptor.class)) {
-                String contextId = SecurityUtil.getContextID(ejbBD);
+                String contextId = getContextID(ejbBD);
 
                 ejbProbeProvider.policyCreationStartedEvent(contextId);
                 SecurityUtil.generatePolicyFile(contextId);
@@ -336,28 +329,34 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * @param app
      * @param webBundleDescriptors
      */
-    private void linkPolicies(Application app, Collection<WebBundleDescriptor> webBundleDescriptors) throws DeploymentException {
+    private void linkPolicies(Application application, Collection<WebBundleDescriptor> webBundleDescriptors) throws DeploymentException {
         try {
-
-            String linkName = null;
+            String linkedContextId = null;
             boolean lastInService = false;
+
             for (WebBundleDescriptor webBundleDescriptor : webBundleDescriptors) {
-                String name = SecurityUtil.getContextID(webBundleDescriptor);
-                lastInService = SecurityUtil.linkPolicyFile(name, linkName, lastInService);
-                linkName = name;
+                String contextId = getContextID(webBundleDescriptor);
+
+                WebAuthorizationManagerService webAuthorizationManagerService = webSecurityManagerFactory.getManager(contextId);
+                if (webAuthorizationManagerService != null) {
+                    lastInService = WebAuthorizationManagerService.linkPolicy(contextId, linkedContextId, lastInService);
+                    linkedContextId = contextId;
+                }
             }
 
-            linkName = null; // reset link name
-            Set<EjbBundleDescriptor> ejbs = app.getBundleDescriptors(EjbBundleDescriptor.class);
-            for (EjbBundleDescriptor ejbd : ejbs) {
-                String name = SecurityUtil.getContextID(ejbd);
-                lastInService = SecurityUtil.linkPolicyFile(name, linkName, lastInService);
-                linkName = name;
-            }
-            // extra commit (see above)
+            Set<EjbBundleDescriptor> ejbBundleDescriptors = application.getBundleDescriptors(EjbBundleDescriptor.class);
+            for (EjbBundleDescriptor ejbBundleDescriptor : ejbBundleDescriptors) {
+                String contextId = getContextID(ejbBundleDescriptor);
 
-        } catch (IASSecurityException se) {
-            throw new DeploymentException( "Error in linking security policy for " + app.getRegistrationName(), se);
+                WebAuthorizationManagerService manager = webSecurityManagerFactory.getManager(contextId);
+                if (manager != null) {
+                    lastInService = WebAuthorizationManagerService.linkPolicy(contextId, linkedContextId, lastInService);
+                    linkedContextId = contextId;
+                }
+            }
+
+        } catch (IllegalStateException se) {
+            throw new DeploymentException("Error in linking security policy for " + application.getRegistrationName(), se);
         }
     }
 
@@ -390,6 +389,34 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
 
         // Destroy the managers if present
         cleanSecurityContext(appName);
+    }
+
+    boolean linkViaManager(String contextId, String linkedContextId, boolean lastInService) {
+        WebAuthorizationManagerService webAuthorizationManagerService = webSecurityManagerFactory.getManager(contextId);
+        if (webAuthorizationManagerService != null) {
+            return webAuthorizationManagerService.linkPolicy(linkedContextId, lastInService);
+        }
+
+        return WebAuthorizationManagerService.linkPolicy(contextId, linkedContextId, lastInService);
+
+    }
+
+    void commitViaManager(String contextId) {
+        WebAuthorizationManagerService webAuthorizationManagerService = webSecurityManagerFactory.getManager(contextId);
+        if (webAuthorizationManagerService != null) {
+            webAuthorizationManagerService.commitPolicy();
+        } else {
+            WebAuthorizationManagerService.commitPolicy(contextId);
+        }
+    }
+
+    void deleteViaManager(String contextId) {
+        WebAuthorizationManagerService webAuthorizationManagerService = webSecurityManagerFactory.getManager(contextId);
+        if (webAuthorizationManagerService != null) {
+            webAuthorizationManagerService.deletePolicy();
+        } else {
+            WebAuthorizationManagerService.deletePolicy(contextId);
+        }
     }
 
     /**
@@ -453,6 +480,39 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
                 this.appCnonceMap.put(appName, cache);
             }
         }
+    }
+
+    private void deletePolicy(DeploymentContext deploymentContext) throws DeploymentException {
+        OpsParams params = deploymentContext.getCommandParameters(OpsParams.class);
+        if (!params.origin.needsCleanArtifacts()) {
+            return;
+        }
+
+        String applicationName = params.name();
+
+        // Remove policy files only if managers are not destroyed by cleanup
+        try {
+            String[] contextIds = webSecurityManagerFactory.getContextsForApp(applicationName, false);
+            if (contextIds != null) {
+                for (String contextId : contextIds) {
+                    if (contextId != null) {
+                        websecurityProbeProvider.policyDestructionStartedEvent(contextId);
+
+                        deleteViaManager(contextId);
+
+                        websecurityProbeProvider.policyDestructionEndedEvent(contextId);
+                        websecurityProbeProvider.policyDestructionEvent(contextId);
+                    }
+                }
+            }
+        } catch (IllegalStateException ex) {
+            String msg = "Error in removing security policy for " + applicationName;
+            _logger.log(WARNING, msg, ex);
+            throw new DeploymentException(msg, ex);
+        }
+
+        // Destroy the managers if present
+        cleanSecurityContext(applicationName);
     }
 
     private boolean isHaEnabled() {

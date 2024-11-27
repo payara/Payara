@@ -58,17 +58,16 @@ import com.sun.enterprise.security.auth.login.DigestCredentials;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
 import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.callback.ServerContainerCallbackHandler;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
-import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
-import com.sun.web.security.realmadapter.AuthenticatorProxy;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import jakarta.security.auth.message.AuthStatus;
 import jakarta.security.auth.message.MessageInfo;
@@ -138,7 +137,6 @@ import static com.sun.enterprise.security.auth.digest.impl.DigestParameterGenera
 import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.REGISTER_WITH_AUTHENTICATOR;
 import static com.sun.enterprise.util.Utility.isAllNull;
 import static com.sun.logging.LogDomains.WEB_LOGGER;
-import static com.sun.web.security.realmadapter.AuthenticatorProxy.PROXY_AUTH_TYPE;
 import static java.lang.String.format;
 import static java.net.URLEncoder.encode;
 import static java.security.AccessController.doPrivileged;
@@ -151,7 +149,7 @@ import static org.apache.catalina.Globals.WRAPPED_RESPONSE;
 import static org.apache.catalina.realm.Constants.FORM_METHOD;
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
-import static com.sun.enterprise.security.ee.web.integration.AuthorizationUtil.getContextID;
+
 import static org.glassfish.epicyro.config.helper.HttpServletConstants.POLICY_CONTEXT;
 import static org.glassfish.epicyro.config.helper.HttpServletConstants.REGISTER_SESSION;
 import static com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy.WEB_BUNDLE;
@@ -339,7 +337,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private BaseAuthenticationService createAuthenticationService(final ServletContext servletContext) throws IOException {
         Map<String, Object> properties = new HashMap<>();
 
-        String policyContextId = getContextID(webDescriptor);
+        String policyContextId = SecurityUtil.getContextID(webDescriptor);
         if (policyContextId != null) {
             properties.put(POLICY_CONTEXT, policyContextId);
         }
@@ -582,7 +580,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 disableProxyCaching(request, response, disableProxyCaching, securePagesWithPragma);
                 if (ssoEnabled) {
                     HttpServletRequest httpServletRequest = (HttpServletRequest) request.getRequest();
-                    if (!getWebSecurityManager(true).isPermitAll(httpServletRequest)) {
+                    if (!getWebSecurityManager(true).permitAll(httpServletRequest)) {
                         // Create a session for protected SSO association
                         httpServletRequest.getSession(true);
                     }
@@ -636,7 +634,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
 
         try {
-            isMandatory = this.webAuthorizationManagerService.isPermitAll(servletRequest);
+            isMandatory = this.webAuthorizationManagerService.permitAll(servletRequest);
             // Produce caller challenge if call originates from HttpServletRequest#authenticate
             if (isMandatory || calledFromAuthenticate) {
                 messageInfo.getMap().put(HttpServletConstants.IS_MANDATORY, Boolean.TRUE.toString());
@@ -1165,10 +1163,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public void logout() {
         setSecurityContext(null);
 
-        doPrivileged((PrivilegedAction<Void>) () -> {
-            resetPolicyContext();
-            return null;
-        });
+        // Sets the security context for Jakarta Authorization
+        WebAuthorizationManagerService webAuthorizationManagerService = getWebSecurityManager(false);
+        if (webAuthorizationManagerService != null) {
+            webAuthorizationManagerService.onLogout();
+        }
     }
 
     @Override
@@ -1475,8 +1474,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      *
      * @exception IOException if an input/output error occurs
      */
-    private boolean invokeWebSecurityManager(HttpRequest request, HttpResponse response, SecurityConstraint[] constraints) throws IOException {
-
+    private boolean invokeWebSecurityManager(HttpRequest request, HttpResponse response, 
+                                             SecurityConstraint[] constraints) throws IOException {
         if (isRequestFormPage(request)) {
             return true;
         }
@@ -1488,12 +1487,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 " Principal: " + httpServletRequest.getUserPrincipal() +
                 " ContextPath: " + httpServletRequest.getContextPath());
 
-        //WebSecurityManager webSecurityManager = getWebSecurityManager(true);
-        //if (webSecurityManager == null) {
-        //    return false;
-        //}
+        WebAuthorizationManagerService webAuthorizationManagerService = getWebSecurityManager(true);
+        if (webAuthorizationManagerService == null) {
+            return false;
+        }
 
-        return true;
+        return webAuthorizationManagerService.hasResourcePermission(httpServletRequest);
     }
 
     private void setServletPath(HttpRequest request) {
@@ -1748,11 +1747,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         HttpServletResponse httpServletResponse  = (HttpServletResponse) response.getResponse();
         httpServletResponse.sendError(SC_SERVICE_UNAVAILABLE);
         response.setDetailMessage(resourceBundle.getString("realmBase.forbidden"));
-    }
-
-    private void resetPolicyContext() {
-        ((PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance()).reset();
-        PolicyContext.setContextID(null);
     }
 
     private SecurityContext getSecurityContextForPrincipal(Principal principal) {

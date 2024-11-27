@@ -14,28 +14,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  */
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
-package com.sun.enterprise.security.ee.web.integration;
+package com.sun.enterprise.security.ee.authorization;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
 import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
 import jakarta.security.jacc.PolicyContextException;
 import jakarta.security.jacc.PolicyFactory;
-
 import java.util.Collection;
-
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.deployment.versioning.VersioningUtils;
-
-import static org.glassfish.deployment.versioning.VersioningUtils.getRepositoryName;
 
 /**
  * This utility class contains several methods for working with (Jakarta) Authorization.
@@ -55,36 +48,7 @@ public class AuthorizationUtil {
     // The repository is defined in PolicyFileMgr.
     // It is repeated here since JACC provider is not reference directly.
     public static final String repository = System.getProperty(REPOSITORY_HOME_PROP);
-
-    public static String getContextID(EjbBundleDescriptor ejbBundleDesc) {
-        if (ejbBundleDesc == null) {
-            return null;
-        }
-
-        // Detect special case of EJBs embedded in a war, and make sure pseudo policy context id is
-        // unique within application.
-        Object root = ejbBundleDesc.getModuleDescriptor().getDescriptor();
-        if (root != ejbBundleDesc && root instanceof WebBundleDescriptor) {
-            return createUniquePseudoModuleID(ejbBundleDesc);
-        }
-
-        return getRepositoryName(
-                   ejbBundleDesc.getApplication().getRegistrationName()) +
-                   '/' +
-                   ejbBundleDesc.getUniqueFriendlyId();
-    }
-
-    public static String getContextID(WebBundleDescriptor webBundleDescriptor) {
-        if (webBundleDescriptor == null) {
-            return null;
-        }
-
-        return getRepositoryName(
-                   webBundleDescriptor.getApplication().getRegistrationName()) +
-                   '/' +
-                   webBundleDescriptor.getUniqueFriendlyId();
-    }
-
+    
     /**
      * Inform the policy module to take the named policy context out of service. The policy context is transitioned to the
      * deleted state. In our provider implementation, the corresponding policy file is deleted, as the presence of a policy
@@ -118,26 +82,7 @@ public class AuthorizationUtil {
             throw new IASSecurityException(pce.toString());
         }
     }
-
-    public static SecurityRoleMapperFactory getRoleMapperFactory() {
-        SecurityRoleMapperFactory factory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
-        if (factory == null) {
-            throw new IllegalArgumentException("This application has no role mapper factory defined");
-        }
-
-        return factory;
-    }
-
-    public static void removeRoleMapper(DeploymentContext deploymentContext) {
-        OpsParams params = deploymentContext.getCommandParameters(OpsParams.class);
-        if (params.origin != OpsParams.Origin.undeploy) {
-            return;
-        }
-
-        getRoleMapperFactory().removeRoleMapper(params.name());
-
-    }
-
+    
     /**
      * create pseudo module context id, and make sure it is unique, by chacking it against the names of all the other
      * modules in the app.

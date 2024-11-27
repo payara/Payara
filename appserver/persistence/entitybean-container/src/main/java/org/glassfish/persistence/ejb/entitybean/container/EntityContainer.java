@@ -847,7 +847,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
 	throws Throwable
     {
 	Object pKeys = super.invokeTargetBeanMethod(method,
-	    inv, inv.ejb, args, null);
+	    inv, inv.ejb, args);
 	return postFind(inv, pKeys, null);
     }
 

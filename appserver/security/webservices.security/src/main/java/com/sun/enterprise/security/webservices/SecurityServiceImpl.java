@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
-import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.web.WebModule;
 import com.sun.web.security.RealmAdapter;
@@ -212,7 +211,6 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public void resetPolicyContext() {
-        ((PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance()).reset();
         PolicyContext.setContextID(null);
     }
 

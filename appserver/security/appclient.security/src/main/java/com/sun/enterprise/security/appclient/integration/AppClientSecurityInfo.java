@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient.integration;
 
 import java.util.List;
@@ -76,7 +76,6 @@ public interface AppClientSecurityInfo {
             List<TargetServer> tServers,
             List<MessageSecurityConfig> msgSecConfigs,
             CallbackHandler handler,
-            CredentialType appclientCredType,
             String username, char[] password,
             boolean isJWS, boolean useGUIAuth);
 

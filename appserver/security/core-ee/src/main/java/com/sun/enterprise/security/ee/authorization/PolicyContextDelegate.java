@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,25 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
-package com.sun.enterprise.security.jacc.cache;
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+package com.sun.enterprise.security.ee.authorization;
 
-import java.security.Permission;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.jvnet.hk2.annotations.Contract;
 
-/**
- * This class is.
- * 
- * @author Ron Monzillo
- */
-public interface CachedPermission {
+import java.lang.reflect.Method;
 
-    // Every implementation class should implement a constructor that
-    // takes 2 arguments as follows:
-    //
-    // public CachedPermissionImpl(PermissionCache cache, Permission permission);
+@Contract
+public interface PolicyContextDelegate {
+    Object getEnterpriseBean(ComponentInvocation inv);
 
-    Permission getPermission();
-    PermissionCache getPermissionCache();
-    boolean checkPermission();
+    Object getEJbArguments(ComponentInvocation inv);
 
+    Object getSOAPMessage(ComponentInvocation inv);
+
+    void setSOAPMessage(Object message, ComponentInvocation invocation);
+
+    boolean authorize(ComponentInvocation invocation, Method method) throws Exception;
 }
