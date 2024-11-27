@@ -41,7 +41,7 @@
 package com.sun.enterprise.security.ee;
 
 import com.sun.enterprise.security.ContainerSecurityLifecycle;
-import com.sun.enterprise.security.PolicyLoader;
+import com.sun.enterprise.security.ee.authorization.PolicyLoader;
 import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
 import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
@@ -61,14 +61,12 @@ import org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory;
 import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import static jakarta.security.auth.message.config.AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY;
 import static org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory.DEFAULT_FACTORY_DEFAULT_PROVIDERS;
-import static java.util.logging.Level.WARNING;
 
 
 /**
@@ -89,28 +87,12 @@ public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, Post
     @Override
     public void postConstruct() {
         onInitialization();
-        initializeJakartaAuthentication();
-        initializeJakartaAuthorization();
     }
 
     @Override
     public void onInitialization() {
-        LOG.finest(() -> "Initializing " + getClass());
-
-        // TODO: Need some way to not override the security manager if the EmbeddedServer was
-        // run with a different non-default security manager.
-        //
-        // Right now there seems no way to find out if the security manager is the VM's default security manager.
-        final SecurityManager systemSecurityManager = System.getSecurityManager();
-        if (systemSecurityManager != null && !(J2EESecurityManager.class.equals(systemSecurityManager.getClass()))) {
-            J2EESecurityManager eeSecurityManager = new J2EESecurityManager();
-            try {
-                System.setSecurityManager(eeSecurityManager);
-                LOG.config(() -> "System security manager has been set to " + eeSecurityManager);
-            } catch (SecurityException ex) {
-                LOG.log(WARNING, "security.secmgr.could.not.override", ex);
-            }
-        }
+        initializeJakartaAuthentication();
+        initializeJakartaAuthorization();
     }
 
     private void initializeJakartaAuthentication() {

@@ -42,9 +42,8 @@ package com.sun.enterprise.security.ee.web.integration;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
+import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
-import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
-import com.sun.enterprise.security.jacc.context.PolicyContextRegistration;
 import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 
 import java.security.Principal;
@@ -80,22 +79,12 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
     private final Map<String, UserPrincipal> adminPrincipals = new ConcurrentHashMap<>();
     private final Map<String, Group> adminGroups = new ConcurrentHashMap<>();
 
-    public final PolicyContextHandlerImpl pcHandlerImpl = (PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance();
-
-    public final Map<String, Principal> adminPrincipalsPerApp = new ConcurrentHashMap<>();
-    public final Map<String, Principal> adminGroupsPerApp = new ConcurrentHashMap<>();
-
     // Stores the Context IDs to application names for standalone web applications
     private final Map<String, List<String>> CONTEXT_IDS = new HashMap<>();
     private final Map<String, Map<String, WebAuthorizationManagerService>> SECURITY_MANAGERS = new HashMap<>();
 
-    public WebSecurityManagerFactory() {
-        // Registers the JACC policy handlers, which provide objects JACC Providers and other code can use
-        PolicyContextRegistration.registerPolicyHandlers();
-    }
-
     public WebAuthorizationManagerService createManager(WebBundleDescriptor webBundleDescriptor, boolean register, ServerContext context) {
-        String contextId = AuthorizationUtil.getContextID(webBundleDescriptor);
+        String contextId = SecurityUtil.getContextID(webBundleDescriptor);
 
         WebAuthorizationManagerService manager = null;
         if (register) {
@@ -109,7 +98,7 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
 
                 // As "side-effect" of constructing the manager, the web constraints in the web bundle
                 // descriptor will be translated to permissions and loaded into a JACC policy configuration
-                manager = new WebAuthorizationManagerService(webBundleDescriptor, context, this, register);
+                manager = new WebAuthorizationManagerService(webBundleDescriptor, register);
 
                 probeProvider.securityManagerCreationEndedEvent(webBundleDescriptor.getModuleID());
 
@@ -172,13 +161,5 @@ public class WebSecurityManagerFactory extends SecurityManagerFactory {
         // FIXME: can be hacked: "ab+cd" = "a+bcd"
         adminGroups.put(realmName + group, principal);
     }
-
-    public void addAdminPrincipal(String username, String realmName, Principal principal) {
-        adminPrincipalsPerApp.put(realmName + username, principal);
-    }
-
-    public void addAdminGroup(String group, String realmName, Principal principal) {
-        adminGroupsPerApp.put(realmName + group, principal);
-    }
-
+    
 }

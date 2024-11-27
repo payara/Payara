@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.persistence.ejb.entitybean.container;
 
@@ -572,7 +573,7 @@ public class ReadOnlyBeanContainer
             	    value = finderResultsCache.get(key);
 	                if (value == null) {
 	                    returnValue = super.invokeTargetBeanMethod(
-	                        beanClassMethod, inv, target, params, mgr);
+	                        beanClassMethod, inv, target, params);
 	                    finderResultsCache.put(key, new FinderResultsValue(returnValue,
 	                        currentTimeInMillis));
 	                } else {
@@ -583,7 +584,7 @@ public class ReadOnlyBeanContainer
 
         } else {
             returnValue =  super.invokeTargetBeanMethod(beanClassMethod, inv,
-                                                        target, params, mgr);
+                                                        target, params);
         }
 
         return returnValue;

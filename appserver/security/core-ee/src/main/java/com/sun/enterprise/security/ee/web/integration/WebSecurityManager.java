@@ -27,9 +27,9 @@ import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
 
 
+import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 import jakarta.security.jacc.PolicyContextException;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -65,7 +65,7 @@ public class WebSecurityManager {
         this.authorizationService = new WebAuthorizationManagerService(webBundleDescriptor, register);
 
         this.webSecurityManagerFactory = webSecurityManagerFactory;
-        this.contextId = AuthorizationUtil.getContextID(webBundleDescriptor);
+        this.contextId = SecurityUtil.getContextID(webBundleDescriptor);
 
         if (ADMIN_VS.equals(getVirtualServers(webBundleDescriptor, serverContext))) {
             handleAdminVirtualServer(webBundleDescriptor, webSecurityManagerFactory);
@@ -83,15 +83,7 @@ public class WebSecurityManager {
     public WebAuthorizationManagerService getAuthorizationService() {
         return authorizationService;
     }
-
-    public void onLogin(HttpServletRequest httpServletRequest) {
-        authorizationService.setSecurityInfo(httpServletRequest);
-    }
-
-    public void onLogout() {
-        //authorizationService.resetSecurityInfo();
-    }
-
+    
     /**
      * Analogous to destroy, except does not remove links from Policy Context, and does not remove context_id from role mapper
      * factory. Used to support Policy Changes that occur via ServletContextListener.

@@ -4237,7 +4237,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,
-            Object[] params, com.sun.enterprise.security.SecurityManager mgr)
+            Object[] params)
             throws Throwable {
         try {
             onEjbMethodStart(inv.invocationInfo.str_method_sig);
@@ -4245,8 +4245,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 return inv.getBeanMethod().invoke(inv.ejb, inv.methodParams);
             } else {
 
-                return securityManager.invoke(beanClassMethod, inv.isLocal, target,
-                        params);
+                return securityManager.invoke(target, beanClassMethod, params);
             }
         } catch (InvocationTargetException ite) {
             inv.exception = ite.getCause();
@@ -4813,7 +4812,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             }
         } else { // invoke() has the same exc. semantics as Method.invoke
             result = this.invokeTargetBeanMethod(inv.getBeanMethod(), inv, inv.ejb,
-                    inv.methodParams, null);
+                    inv.methodParams);
         }
 
         return result;
@@ -4832,8 +4831,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     {
         try {
 
-            return securityManager.invoke(inv.getBeanMethod(), inv.isLocal, inv.ejb,
-                                       inv.getParameters());
+            return securityManager.invoke(inv.ejb, inv.getBeanMethod(), inv.getParameters());
 
         } catch(InvocationTargetException ite) {
             throw ite.getCause();

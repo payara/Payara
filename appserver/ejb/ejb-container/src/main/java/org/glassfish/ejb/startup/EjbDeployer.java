@@ -89,7 +89,7 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.security.PolicyLoader;
+import com.sun.enterprise.security.ee.authorization.PolicyLoader;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
