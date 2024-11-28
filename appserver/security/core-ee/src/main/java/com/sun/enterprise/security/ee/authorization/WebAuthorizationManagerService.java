@@ -48,6 +48,7 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
+import org.glassfish.security.common.Role;
 import org.glassfish.security.common.UserNameAndPassword;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
@@ -77,6 +78,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.glassfish.exousia.AuthorizationService;
 
