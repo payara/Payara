@@ -115,10 +115,8 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.security.AccessController;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1756,16 +1754,9 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             return ((WebPrincipal) principal).getSecurityContext();
         }
 
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-
-            @Override
-            public SecurityContext run() {
-                Subject subject = new Subject();
-                subject.getPrincipals().add(principal);
-                return new SecurityContext(principal.getName(), subject);
-            }
-        });
-
+        Subject subject = new Subject();
+        subject.getPrincipals().add(principal);
+        return new SecurityContext(principal.getName(), subject);
     }
 
     public void setCurrentSecurityContextWithWebPrincipal(Principal principal) {
