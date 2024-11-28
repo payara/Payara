@@ -77,6 +77,7 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
+import org.glassfish.epicyro.services.BaseAuthenticationService;
 import org.glassfish.epicyro.services.RegistrationWrapperRemover;
 import org.glassfish.internal.api.Globals;
 
@@ -95,8 +96,6 @@ import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authorization.EJBPolicyContextDelegate;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
-import com.sun.enterprise.security.jaspic.config.HandlerContext;
-import com.sun.enterprise.security.jaspic.config.PayaraEpicyroServices;
 import com.sun.enterprise.security.webservices.PipeConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -111,7 +110,7 @@ import com.sun.xml.ws.api.model.SEIModel;
 import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.server.WSEndpoint;
 
-public class SoapAuthenticationService extends PayaraEpicyroServices {
+public class SoapAuthenticationService extends BaseAuthenticationService {
     
     protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PipeConstants.class);
     
@@ -381,29 +380,6 @@ public class SoapAuthenticationService extends PayaraEpicyroServices {
     @Override
     public void disable() {
         getRegistrationWrapper().disableWithRefCount();
-    }
-
-    @Override
-    protected HandlerContext getHandlerContext(Map map) {
-        String realmName = null;
-        WebServiceEndpoint wSE = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
-        if (wSE != null) {
-            Application app = wSE.getBundleDescriptor().getApplication();
-            if (app != null) {
-                realmName = app.getRealm();
-            }
-            if (realmName == null) {
-                realmName = wSE.getRealm();
-            }
-        }
-
-        final String fRealmName = realmName;
-        return new HandlerContext() {
-            @Override
-            public String getRealmName() {
-                return fRealmName;
-            }
-        };
     }
 
     private boolean processSunDeploymentDescriptor() {

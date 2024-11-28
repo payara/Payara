@@ -134,7 +134,6 @@ final class ClientContainerCallbackHandler extends BaseContainerCallbackHandler 
                         // Let control flow to the callback processors
                         callbackHandler.handle(callbacks);
                     }
-                    
                     processedSomeAppclientCallbacks = true;
                     break;
                 }
@@ -146,15 +145,10 @@ final class ClientContainerCallbackHandler extends BaseContainerCallbackHandler 
     }
 
     protected boolean isSupportedCallback(Callback callback) {
-        return callback instanceof NameCallback 
-                || callback instanceof PasswordCallback 
-                || callback instanceof ChoiceCallback
-                || callback instanceof CallerPrincipalCallback 
-                || callback instanceof GroupPrincipalCallback
-                || callback instanceof CertStoreCallback 
-                || callback instanceof PasswordValidationCallback
-                || callback instanceof SecretKeyCallback 
-                || callback instanceof PrivateKeyCallback
+        return callback instanceof NameCallback || callback instanceof PasswordCallback || callback instanceof ChoiceCallback
+                || callback instanceof CallerPrincipalCallback || callback instanceof GroupPrincipalCallback
+                || callback instanceof CertStoreCallback || callback instanceof PasswordValidationCallback
+                || callback instanceof SecretKeyCallback || callback instanceof PrivateKeyCallback
                 || callback instanceof TrustStoreCallback;
     }
 

@@ -131,7 +131,7 @@ import java.util.logging.Logger;
 import static com.sun.enterprise.security.SecurityContext.setUnauthenticatedContext;
 import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
 import static com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator.HTTP_DIGEST;
-import static com.sun.enterprise.security.jaspic.config.HttpServletConstants.REGISTER_WITH_AUTHENTICATOR;
+
 import static com.sun.enterprise.util.Utility.isAllNull;
 import static com.sun.logging.LogDomains.WEB_LOGGER;
 import static java.lang.String.format;
@@ -168,6 +168,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     private static final Logger LOG = LogDomains.getLogger(RealmAdapter.class, WEB_LOGGER);
     private static final ResourceBundle resourceBundle = LOG.getResourceBundle();
 
+    private static final String REGISTER_WITH_AUTHENTICATOR = "com.sun.web.RealmAdapter.register";
     public static final String SERVER_AUTH_CONTEXT = "__jakarta.security.auth.message.ServerAuthContext";
     private static final String MESSAGE_INFO = "__jakarta.security.auth.message.MessageInfo";
 

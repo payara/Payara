@@ -48,8 +48,6 @@
 package com.sun.enterprise.security.ee.authentication.jakarta.callback;
 
 import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.jaspic.config.CallbackHandlerConfig;
-import com.sun.enterprise.security.jaspic.config.HandlerContext;
 
 import java.io.IOException;
 
@@ -66,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @ContractsProvided({ ContainerCallbackHandler.class, CallbackHandler.class })
-public final class ContainerCallbackHandler implements CallbackHandler, CallbackHandlerConfig {
+public final class ContainerCallbackHandler implements CallbackHandler {
     
     private final CallbackHandler handler;
 
@@ -81,12 +79,5 @@ public final class ContainerCallbackHandler implements CallbackHandler, Callback
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         handler.handle(callbacks);
     }
-
-    public void setHandlerContext(HandlerContext handlerContext) {
-        ((CallbackHandlerConfig) handler).setHandlerContext(handlerContext);
-    }
-
-    public void setHandlerContext(String realm) {
-        ((BaseContainerCallbackHandler) handler).setHandlerContext(() -> realm);
-    }
+    
 }

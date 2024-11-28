@@ -85,12 +85,9 @@ final public class ServerContainerCallbackHandler extends BaseContainerCallbackH
     }
 
     protected boolean isSupportedCallback(Callback callback) {
-        return callback instanceof CertStoreCallback 
-                || callback instanceof PasswordValidationCallback
-                || callback instanceof CallerPrincipalCallback 
-                || callback instanceof GroupPrincipalCallback
-                || callback instanceof SecretKeyCallback 
-                || callback instanceof PrivateKeyCallback
+        return callback instanceof CertStoreCallback || callback instanceof PasswordValidationCallback
+                || callback instanceof CallerPrincipalCallback || callback instanceof GroupPrincipalCallback
+                || callback instanceof SecretKeyCallback || callback instanceof PrivateKeyCallback
                 || callback instanceof TrustStoreCallback; 
     }
 

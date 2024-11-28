@@ -39,7 +39,7 @@
  */
 // Portions Copyright [2016-2024] [Payara Foundation]
 
-package com.sun.enterprise.security.jaspic;
+package com.sun.enterprise.security.ee.authentication.jakarta;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 
