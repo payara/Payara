@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -91,7 +91,7 @@ class DomainXmlPreParser {
     private List<String> configNames = new LinkedList<>();
     private Map<String, String> mapServerConfig = new HashMap<>();
     private ClusterData cluster;
-    private DeploymentGroupData deploymentGroup;
+    private DeploymentGroupData deploymentGroup; // Refers to the FIRST deployment group for this instance.
     private String instanceName;
     private String serverConfigRef;
     private boolean valid = false;
@@ -129,14 +129,6 @@ class DomainXmlPreParser {
         return cluster.name;
     }
 
-
-    final String getDeploymentGroupName() {
-        if(!validDG) {
-            return null;
-        }
-        return deploymentGroup.name;
-    }
-
     final List<String> getServerNames() {
         if(!valid) {
             return null;
@@ -146,9 +138,16 @@ class DomainXmlPreParser {
 
     final List<String> getDGServerNames() {
         if(!validDG) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        return deploymentGroup.dgServerRefs;
+
+        Set<String> deploymentGroupNeighbours = new HashSet<>();
+        deploymentGroups.forEach(groupData -> {
+            if (groupData.dgServerRefs.contains(instanceName)) {
+                deploymentGroupNeighbours.addAll(groupData.dgServerRefs);
+            }
+        });
+        return new ArrayList<>(deploymentGroupNeighbours);
     }
 
     public Map<String, String> getMapServerConfig() {
