@@ -846,7 +846,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         Set<DistinguishedPrincipalCredential> distinguishedCreds = securityContextSubject.getPublicCredentials(DistinguishedPrincipalCredential.class);
         if (distinguishedCreds.size() == 1) {
             for (DistinguishedPrincipalCredential cred : distinguishedCreds) {
-                if (cred.getPrincipal().equals(callerPrincipal)) {
+                if (cred.principal().equals(callerPrincipal)) {
                     hasObject = true;
                 }
 
@@ -857,7 +857,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             Set<DistinguishedPrincipalCredential> distinguishedPrincipals = securityContextSubject.getPrincipals(DistinguishedPrincipalCredential.class);
             if (distinguishedPrincipals.size() == 1) {
                 for (DistinguishedPrincipalCredential cred : distinguishedPrincipals) {
-                    if (cred.getPrincipal().equals(callerPrincipal)) {
+                    if (cred.principal().equals(callerPrincipal)) {
                         hasObject = true;
                     }
                 }
