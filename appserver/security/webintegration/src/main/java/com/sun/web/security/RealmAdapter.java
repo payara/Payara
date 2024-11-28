@@ -426,7 +426,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * instantiates a RealmAdapter
      *
      * @param logNull
-     * @return {@link webAuthorizationManagerService} or null
+     * @return {@link WebAuthorizationManagerService} or null
      */
     public WebAuthorizationManagerService getWebSecurityManager(boolean logNull) {
         if (webAuthorizationManagerService == null && webSecurityManagerFactory != null) {
