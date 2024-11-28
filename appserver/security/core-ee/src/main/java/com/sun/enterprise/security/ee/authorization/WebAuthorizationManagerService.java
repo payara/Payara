@@ -49,7 +49,6 @@ import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
 import org.glassfish.security.common.Role;
-import org.glassfish.security.common.UserNameAndPassword;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authorization.cache.CachedPermission;
@@ -86,7 +85,6 @@ import static com.sun.enterprise.security.ee.authorization.GlassFishToExousiaCon
 import static com.sun.enterprise.security.ee.authorization.GlassFishToExousiaConverter.getSecurityRoleRefsFromBundle;
 import static com.sun.enterprise.security.ee.authorization.cache.PermissionCacheFactory.createPermissionCache;
 import static java.util.logging.Level.FINE;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * This class is the entry point for authorization decisions in the web container. It implements JACC,
