@@ -634,7 +634,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
 
         try {
-            isMandatory = this.webAuthorizationManagerService.permitAll(servletRequest);
+            isMandatory = !this.webAuthorizationManagerService.permitAll(servletRequest);
             // Produce caller challenge if call originates from HttpServletRequest#authenticate
             if (isMandatory || calledFromAuthenticate) {
                 messageInfo.getMap().put(HttpServletConstants.IS_MANDATORY, Boolean.TRUE.toString());
