@@ -293,7 +293,7 @@ public class WebAuthorizationManagerService {
      *
      * @param servletRequest the request that may be redirected
      * @param uri the request URI (minus the context path) to check
-     * @param method the request method to check
+     * @param httpMethod the request method to check
      *
      * @return 1 if access is permitted (as is or without SSL). -1 if the the access will be permitted after a redirect to
      * SSL. return 0 if access will be denied independent of whether a redirect to SSL is done.
