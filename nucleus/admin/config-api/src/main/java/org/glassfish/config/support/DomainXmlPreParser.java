@@ -48,6 +48,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -141,13 +142,11 @@ class DomainXmlPreParser {
             return Collections.emptyList();
         }
 
-        Set<String> deploymentGroupNeighbours = new HashSet<>();
-        deploymentGroups.forEach(groupData -> {
-            if (groupData.dgServerRefs.contains(instanceName)) {
-                deploymentGroupNeighbours.addAll(groupData.dgServerRefs);
-            }
-        });
-        return new ArrayList<>(deploymentGroupNeighbours);
+        return deploymentGroups
+            .stream()
+            .filter(groupData -> groupData.dgServerRefs.contains(instanceName))
+            .flatMap(groupData -> groupData.dgServerRefs.stream())
+            .collect(Collectors.toList());
     }
 
     public Map<String, String> getMapServerConfig() {
