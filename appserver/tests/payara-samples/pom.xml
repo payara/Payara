@@ -332,7 +332,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.omnifaces</groupId>
+                <groupId>fish.payara.server.internal.tests</groupId>
                 <artifactId>jacc-provider-repackaged</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -350,7 +350,7 @@
             </dependency>
             <!-- Used to automatically configure microprofile rest client in tests -->
             <dependency>
-                <groupId>io.smallrye.config</groupId>
+                <groupId>fish.payara.server.internal.tests</groupId>
                 <artifactId>smallrye-config-repackaged</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
@@ -397,7 +397,7 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.valid4j</groupId>
+                <groupId>fish.payara.server.internal.tests</groupId>
                 <artifactId>http-matchers-repackaged</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>

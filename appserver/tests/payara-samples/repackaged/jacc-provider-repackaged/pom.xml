@@ -46,7 +46,6 @@
         <artifactId>repackaged</artifactId>
         <version>6.2024.12-SNAPSHOT</version>
     </parent>
-    <groupId>org.omnifaces</groupId>
     <artifactId>jacc-provider-repackaged</artifactId>
     <name>Payara Samples - Payara - jacc-provider repackaged as a module</name>
 

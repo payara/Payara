@@ -55,7 +55,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.omnifaces</groupId>
+            <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>jacc-provider-repackaged</artifactId>
             <scope>compile</scope>
         </dependency>

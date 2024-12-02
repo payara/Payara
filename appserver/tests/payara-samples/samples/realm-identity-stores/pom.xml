@@ -57,7 +57,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.smallrye.config</groupId>
+            <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>smallrye-config-repackaged</artifactId>
         </dependency>
         <dependency>
@@ -108,7 +108,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.valid4j</groupId>
+            <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>http-matchers-repackaged</artifactId>
             <scope>test</scope>
         </dependency>

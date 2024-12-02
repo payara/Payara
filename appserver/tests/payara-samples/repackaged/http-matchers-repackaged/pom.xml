@@ -45,7 +45,6 @@
         <artifactId>repackaged</artifactId>
         <version>6.2024.12-SNAPSHOT</version>
     </parent>
-    <groupId>org.valid4j</groupId>
     <artifactId>http-matchers-repackaged</artifactId>
 
     <name>Payara Samples - Payara - http-matchers repackaged as a module</name>

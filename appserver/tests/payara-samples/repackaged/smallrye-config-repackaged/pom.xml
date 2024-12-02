@@ -45,7 +45,6 @@
         <artifactId>repackaged</artifactId>
         <version>6.2024.12-SNAPSHOT</version>
     </parent>
-    <groupId>io.smallrye.config</groupId>
     <artifactId>smallrye-config-repackaged</artifactId>
     <name>Payara Samples - Payara - smallrye-config repackaged as a module</name>
 
