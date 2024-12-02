@@ -73,6 +73,7 @@
         <dependency>
             <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>http-matchers-repackaged</artifactId>
+            <classifier>jakartaee9</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>

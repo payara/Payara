@@ -335,6 +335,7 @@
                 <groupId>fish.payara.server.internal.tests</groupId>
                 <artifactId>jacc-provider-repackaged</artifactId>
                 <version>${project.version}</version>
+                <classifier>jakartaee9</classifier>
             </dependency>
             <!-- JSON Web Token implementation -->
             <dependency>
@@ -353,6 +354,7 @@
                 <groupId>fish.payara.server.internal.tests</groupId>
                 <artifactId>smallrye-config-repackaged</artifactId>
                 <version>${project.version}</version>
+                <classifier>jakartaee9</classifier>
                 <scope>test</scope>
                 <exclusions>
                     <exclusion>
@@ -400,6 +402,7 @@
                 <groupId>fish.payara.server.internal.tests</groupId>
                 <artifactId>http-matchers-repackaged</artifactId>
                 <version>${project.version}</version>
+                <classifier>jakartaee9</classifier>
                 <scope>test</scope>
             </dependency>
         </dependencies>
