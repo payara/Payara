@@ -59,7 +59,6 @@
         <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config-repackaged</artifactId>
-            <classifier>jakartaee9</classifier>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext.microprofile</groupId>
@@ -111,7 +110,6 @@
         <dependency>
             <groupId>org.valid4j</groupId>
             <artifactId>http-matchers-repackaged</artifactId>
-            <classifier>jakartaee9</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
