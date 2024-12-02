@@ -472,6 +472,7 @@
                         <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
+                        <payara.version>${payara.version}</payara.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -488,6 +489,7 @@
                         <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
+                        <payara.version>${payara.version}</payara.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
