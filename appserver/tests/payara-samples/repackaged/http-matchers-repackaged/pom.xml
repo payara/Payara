@@ -47,7 +47,7 @@
     </parent>
     <groupId>org.valid4j</groupId>
     <artifactId>http-matchers-repackaged</artifactId>
-    <version>1.1</version>
+
     <name>Payara Samples - Payara - http-matchers repackaged as a module</name>
 
     <build>
@@ -116,7 +116,7 @@
         <dependency>
             <groupId>org.valid4j</groupId>
             <artifactId>http-matchers</artifactId>
-            <version>${project.version}</version>
+            <version>${http-matchers.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

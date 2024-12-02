@@ -48,7 +48,6 @@
     </parent>
     <groupId>org.omnifaces</groupId>
     <artifactId>jacc-provider-repackaged</artifactId>
-    <version>0.3</version>
     <name>Payara Samples - Payara - jacc-provider repackaged as a module</name>
 
     <build>
@@ -73,7 +72,7 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <Export-Package>*;version=${http-matchers.version}</Export-Package>
+                        <Export-Package>*;version=${jacc-provider.version}</Export-Package>
                         <Private-Package>!*</Private-Package>
                     </instructions>
                     <unpackBundle>true</unpackBundle>
@@ -117,21 +116,8 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>jacc-provider</artifactId>
-            <version>${project.version}</version>
+            <version>${jacc-provider.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>payara-nexus-artifacts</id>
-            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>
