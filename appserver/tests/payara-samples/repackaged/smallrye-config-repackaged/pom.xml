@@ -45,14 +45,8 @@
         <artifactId>repackaged</artifactId>
         <version>6.2024.12-SNAPSHOT</version>
     </parent>
-    <groupId>io.smallrye.config</groupId>
     <artifactId>smallrye-config-repackaged</artifactId>
-    <version>3.10.0</version>
     <name>Payara Samples - Payara - smallrye-config repackaged as a module</name>
-
-    <properties>
-        <smallrye-common.version>2.8.0</smallrye-common.version>
-    </properties>
 
     <build>
         <plugins>
@@ -76,7 +70,7 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <Export-Package>*;version=${project.version}</Export-Package>
+                        <Export-Package>*;version=${smallrye-config.version}</Export-Package>
                         <Private-Package>!*</Private-Package>
                     </instructions>
                     <unpackBundle>true</unpackBundle>
@@ -120,19 +114,19 @@
         <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config</artifactId>
-            <version>${project.version}</version>
+            <version>${smallrye-config.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config-core</artifactId>
-            <version>${project.version}</version>
+            <version>${smallrye-config.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.smallrye.config</groupId>
             <artifactId>smallrye-config-common</artifactId>
-            <version>${project.version}</version>
+            <version>${smallrye-config.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
