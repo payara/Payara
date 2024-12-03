@@ -83,7 +83,7 @@ public class InstallJaccProviderTest {
         assertNotNull("System property pomPath", pomPath);
         MavenResolvedArtifact jaccLibrary = Maven.resolver()
              .loadPomFromFile(pomPath)
-             .resolve("org.omnifaces:jacc-provider-repackaged:jar:jakartaee9:0.3")
+             .resolve("fish.payara.server.internal.tests:jacc-provider-repackaged:jar:jakartaee9:" + System.getProperty("payara.version"))
              .withTransitivity()
              .asSingleResolvedArtifact();
         WebArchive archive =
