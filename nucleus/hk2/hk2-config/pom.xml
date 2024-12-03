@@ -130,7 +130,7 @@
                     <instructions>
                         <Import-Package>
                             jakarta.validation.*;resolution:=optional;version="${range;[==,${jakarta.validation.version.upperbound});${jakarta.validation.version}}",
-                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.version}}",
+                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.osgi.version}}",
                             *
                         </Import-Package>
                     </instructions>
