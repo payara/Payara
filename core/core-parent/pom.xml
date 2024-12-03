@@ -617,8 +617,6 @@
                                     <exclude>io.opentelemetry.extension</exclude>
                                     <exclude>io.opentelemetry.instrumentation</exclude>
                                     <exclude>fish.payara.shaded</exclude>
-                                    <exclude>com.sun.enterprise.security</exclude>
-                                    <exclude>com.sun.jaspic.services</exclude>
                                 </excludes>
                             </parameter>
                         </configuration>
