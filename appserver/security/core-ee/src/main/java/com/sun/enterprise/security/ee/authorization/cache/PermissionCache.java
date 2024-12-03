@@ -40,27 +40,22 @@
 // Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.authorization.cache;
 
-import static java.util.Collections.list;
-import static java.util.logging.Level.SEVERE;
-
+import com.sun.logging.LogDomains;
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyFactory;
 import java.security.AllPermission;
-import java.security.CodeSource;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.security.Permissions;
-import jakarta.security.jacc.Policy;
 import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
-import jakarta.security.jacc.PolicyContext;
-
-import com.sun.enterprise.security.common.AppservAccessController;
-import com.sun.logging.LogDomains;
-import jakarta.security.jacc.PolicyFactory;
+import static java.util.Collections.list;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * This class is
@@ -335,13 +330,7 @@ public class PermissionCache extends Object {
     }
 
     private void setPolicyContextID(final String newID) throws PrivilegedActionException {
-        AppservAccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
-            @Override
-            public Object run() throws Exception {
-                PolicyContext.setContextID(newID);
-                return null;
-            }
-        });
+        PolicyContext.setContextID(newID);
     }
 
     // Use implies to resolve unresolved permissions

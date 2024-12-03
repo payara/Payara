@@ -40,47 +40,6 @@
 // Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jauth.jaspic.provider.config;
 
-import static com.sun.enterprise.security.webservices.PipeConstants.BINDING;
-import static com.sun.enterprise.security.webservices.PipeConstants.ENDPOINT;
-import static com.sun.enterprise.security.webservices.PipeConstants.SEI_MODEL;
-import static com.sun.enterprise.security.webservices.PipeConstants.SERVICE_ENDPOINT;
-import static com.sun.xml.ws.api.SOAPVersion.SOAP_11;
-
-import com.sun.enterprise.security.appclient.ConfigXMLParser;
-import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
-import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
-import jakarta.security.auth.message.MessagePolicy;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.Map;
-
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import jakarta.security.auth.message.AuthException;
-import jakarta.security.auth.message.AuthStatus;
-import jakarta.security.auth.message.MessageInfo;
-import jakarta.security.auth.message.config.ClientAuthConfig;
-import jakarta.security.auth.message.config.ClientAuthContext;
-import jakarta.security.auth.message.config.ServerAuthConfig;
-import jakarta.security.auth.message.config.ServerAuthContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.xml.bind.UnmarshalException;
-import jakarta.xml.ws.WebServiceException;
-import jakarta.xml.ws.handler.MessageContext;
-
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.deployment.common.ModuleDescriptor;
-import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
-import org.glassfish.epicyro.services.BaseAuthenticationService;
-import org.glassfish.epicyro.services.RegistrationWrapperRemover;
-import org.glassfish.internal.api.Globals;
-
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -90,12 +49,14 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.appclient.ConfigXMLParser;
 import com.sun.enterprise.security.audit.AuditManager;
-import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
-import com.sun.enterprise.security.ee.authorization.EJBPolicyContextDelegate;
+import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
+import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
+import com.sun.enterprise.security.ee.authorization.EJBPolicyContextDelegate;
 import com.sun.enterprise.security.webservices.PipeConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
@@ -109,6 +70,35 @@ import com.sun.xml.ws.api.model.JavaMethod;
 import com.sun.xml.ws.api.model.SEIModel;
 import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.server.WSEndpoint;
+import jakarta.security.auth.message.AuthException;
+import jakarta.security.auth.message.AuthStatus;
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
+import jakarta.security.auth.message.config.ClientAuthConfig;
+import jakarta.security.auth.message.config.ClientAuthContext;
+import jakarta.security.auth.message.config.ServerAuthConfig;
+import jakarta.security.auth.message.config.ServerAuthContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.UnmarshalException;
+import jakarta.xml.ws.WebServiceException;
+import jakarta.xml.ws.handler.MessageContext;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
+import org.glassfish.epicyro.services.BaseAuthenticationService;
+import org.glassfish.epicyro.services.RegistrationWrapperRemover;
+import org.glassfish.internal.api.Globals;
+
+import static com.sun.enterprise.security.webservices.PipeConstants.*;
+import static com.sun.xml.ws.api.SOAPVersion.SOAP_11;
 
 public class SoapAuthenticationService extends BaseAuthenticationService {
     
@@ -183,9 +173,6 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
             if (clientSecurityContext != null) {
                 subject = clientSecurityContext.getSubject();
             }
-            if (subject == null) {
-                subject = Subject.getSubject(AccessController.getContext());
-            }
         } else {
             SecurityContext securityContext = SecurityContext.getCurrent();
             if (securityContext != null && !securityContext.didServerGenerateCredentials()) {
@@ -253,17 +240,12 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
                     final String ejbImplClassName = ejbDescriptor.getEjbImplClassName();
                     if (ejbImplClassName != null) {
                         try {
-                            m = (Method) AppservAccessController.doPrivileged(new PrivilegedExceptionAction() {
+                            m = Class.forName(ejbImplClassName, true, Thread.currentThread()
+                                    .getContextClassLoader())
+                                    .getMethod("invoke", new Class[]{Object.class});
 
-                                @Override
-                                public Object run() throws Exception {
-                                    ClassLoader loader = Thread.currentThread().getContextClassLoader();
-                                    Class clazz = Class.forName(ejbImplClassName, true, loader);
-                                    return clazz.getMethod("invoke", new Class[] { Object.class });
-                                }
-                            });
-                        } catch (PrivilegedActionException pae) {
-                            throw new RuntimeException(pae.getException());
+                        } catch (ReflectiveOperationException pae) {
+                            throw new RuntimeException(pae);
                         }
                     }
                 }

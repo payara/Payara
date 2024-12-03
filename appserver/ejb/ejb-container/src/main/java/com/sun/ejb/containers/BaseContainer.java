@@ -81,15 +81,50 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.loader.ASURLClassLoader;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
-
 import fish.payara.cluster.DistributedLockType;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import jakarta.ejb.AccessLocalException;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBAccessException;
+import jakarta.ejb.EJBContext;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.EJBHome;
+import jakarta.ejb.EJBLocalHome;
+import jakarta.ejb.EJBLocalObject;
+import jakarta.ejb.EJBMetaData;
+import jakarta.ejb.EJBObject;
+import jakarta.ejb.EJBTransactionRequiredException;
+import jakarta.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.LockType;
+import jakarta.ejb.NoSuchEJBException;
+import jakarta.ejb.NoSuchObjectLocalException;
+import jakarta.ejb.PostActivate;
+import jakarta.ejb.PrePassivate;
+import jakarta.ejb.RemoveException;
+import jakarta.ejb.TransactionRequiredLocalException;
+import jakarta.ejb.TransactionRolledbackLocalException;
+import jakarta.enterprise.inject.Vetoed;
+import jakarta.interceptor.AroundConstruct;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.UserTransaction;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -99,32 +134,26 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.rmi.AccessException;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import jakarta.ejb.*;
-import jakarta.enterprise.inject.Vetoed;
-import jakarta.interceptor.AroundConstruct;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.Status;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.Transaction;
-import jakarta.transaction.UserTransaction;
-
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -150,7 +179,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import static com.sun.enterprise.deployment.MethodDescriptor.EJB_WEB_SERVICE;
-import com.sun.enterprise.loader.ASURLClassLoader;
 import static java.util.logging.Level.FINE;
 import static java.util.stream.Collectors.toList;
 
@@ -1156,51 +1184,29 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
      *           Otherwise, this is for the RemoteHome view
      */
     public java.rmi.Remote createRemoteReferenceWithId
-        (byte[] instanceKey, String generatedRemoteBusinessIntf) {
+    (byte[] instanceKey, String generatedRemoteBusinessIntf) {
 
         final Thread currentThread = Thread.currentThread();
         final ClassLoader previousClassLoader =
-            currentThread.getContextClassLoader();
+                currentThread.getContextClassLoader();
         final ClassLoader myClassLoader = loader;
-	try {
-            if (System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(myClassLoader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    @Override
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(myClassLoader);
-                        return null;
-                    }
-                });
-            }
-            java.rmi.Remote remoteRef = null;
-            if ( generatedRemoteBusinessIntf == null ) {
+        try {
+            currentThread.setContextClassLoader(myClassLoader);
+            java.rmi.Remote remoteRef;
+            if (generatedRemoteBusinessIntf == null) {
                 remoteRef = remoteHomeRefFactory.createRemoteReference
-                    (instanceKey);
+                        (instanceKey);
             } else {
                 RemoteReferenceFactory remoteBusinessRefFactory =
-                   remoteBusinessIntfInfo.get(generatedRemoteBusinessIntf).
-                    referenceFactory;
+                        remoteBusinessIntfInfo.get(generatedRemoteBusinessIntf).
+                                referenceFactory;
 
                 remoteRef = remoteBusinessRefFactory.createRemoteReference
-                    (instanceKey);
+                        (instanceKey);
             }
             return remoteRef;
         } finally {
-            if (System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(previousClassLoader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    @Override
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(previousClassLoader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(previousClassLoader);
         }
     }
 
@@ -1883,58 +1889,35 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     @Override
     public void externalPreInvoke() {
-        BeanContext bc = new BeanContext();
+        BeanContext beanContext = new BeanContext();
         final Thread currentThread = Thread.currentThread();
-        bc.previousClassLoader = currentThread.getContextClassLoader();
-        if ( getClassLoader().equals(bc.previousClassLoader) == false ) {
-
-	    if (System.getSecurityManager() == null) {
-	        currentThread.setContextClassLoader( getClassLoader());
-	    } else {
-	        java.security.AccessController.doPrivileged(
-			      new java.security.PrivilegedAction() {
-		                  @Override
-                        public java.lang.Object run() {
-				      currentThread.setContextClassLoader( getClassLoader());
-				      return null;
-				  }
-		});
-	    }
-            bc.classLoaderSwitched = true;
+        beanContext.previousClassLoader = currentThread.getContextClassLoader();
+        if (getClassLoader().equals(beanContext.previousClassLoader) == false) {
+            currentThread.setContextClassLoader(getClassLoader());
+            beanContext.classLoaderSwitched = true;
         }
 
         ArrayDeque beanContextStack =
-            (ArrayDeque) threadLocalContext.get();
+                (ArrayDeque) threadLocalContext.get();
 
-        if ( beanContextStack == null ) {
+        if (beanContextStack == null) {
             beanContextStack = new ArrayDeque();
             threadLocalContext.set(beanContextStack);
         }
-        beanContextStack.push(bc);
+        beanContextStack.push(beanContext);
     }
 
     @Override
     public void externalPostInvoke() {
         try {
-          ArrayDeque beanContextStack =
-                (ArrayDeque) threadLocalContext.get();
+            ArrayDeque beanContextStack =
+                    (ArrayDeque) threadLocalContext.get();
 
             final BeanContext bc = (BeanContext) beanContextStack.pop();
-            if ( bc.classLoaderSwitched == true ) {
-	            if (System.getSecurityManager() == null) {
-		            Thread.currentThread().setContextClassLoader(bc.previousClassLoader);
-		        } else {
-		            java.security.AccessController.doPrivileged(
-				        new java.security.PrivilegedAction() {
-		                      @Override
-                            public java.lang.Object run() {
-					  Thread.currentThread().setContextClassLoader(
-								    bc.previousClassLoader);
-					  return null;
-                              }});
-		        }
+            if (bc.classLoaderSwitched == true) {
+                Thread.currentThread().setContextClassLoader(bc.previousClassLoader);
             }
-        } catch ( Exception ex ) {
+        } catch (Exception ex) {
             _logger.log(Level.FINE, "externalPostInvoke ex", ex);
         }
     }
@@ -2284,21 +2267,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             final Method ejbTimeoutAccessible = method;
             // Since timeout method can have any kind of access
             // setAccessible to true.
-            if (System.getSecurityManager() == null) {
-                if ( !ejbTimeoutAccessible.isAccessible() ) {
-                    ejbTimeoutAccessible.setAccessible(true);
-                }
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedExceptionAction() {
-                    @Override
-                    public java.lang.Object run() throws Exception {
-                        if ( !ejbTimeoutAccessible.isAccessible() ) {
-                            ejbTimeoutAccessible.setAccessible(true);
-                        }
-                        return null;
-                    }
-                });
+            if ( !ejbTimeoutAccessible.isAccessible() ) {
+                ejbTimeoutAccessible.setAccessible(true);
             }
         } else {
             throw new EJBException(localStrings.getLocalString(
@@ -4351,14 +4321,14 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void doContainerCleanup() {
 
-        if ( baseContainerCleanupDone ) {
+        if (baseContainerCleanupDone) {
             return;
         }
 
         try {
-            if ( isWebServiceEndpoint && (webServiceEndpoint != null) ) {
+            if (isWebServiceEndpoint && (webServiceEndpoint != null)) {
                 String endpointAddress =
-                    webServiceEndpoint.getEndpointAddressUri();
+                        webServiceEndpoint.getEndpointAddressUri();
                 if (wsejbEndpointRegistry != null) {
                     wsejbEndpointRegistry.unregisterEndpoint(endpointAddress);
                 }
@@ -4367,56 +4337,45 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             // NOTE : Pipe cleanup that used to done here is now encapsulated within
             // endpoint registry unregisterEndpoint operation
 
-        } catch(Exception e) {
+        } catch (Exception e) {
             _logger.log(Level.FINE, "Error unregistering ejb endpoint for " +
-                        ejbDescriptor.getName(), e);
+                    ejbDescriptor.getName(), e);
         }
 
 
-        if ( hasAsynchronousInvocations ) {
+        if (hasAsynchronousInvocations) {
             EjbAsyncInvocationManager asyncManager =
-                ((EjbContainerUtilImpl) ejbContainerUtilImpl).getEjbAsyncInvocationManager();
+                    ((EjbContainerUtilImpl) ejbContainerUtilImpl).getEjbAsyncInvocationManager();
             asyncManager.cleanupContainerTasks(this);
         }
 
 
         final Thread currentThread = Thread.currentThread();
         final ClassLoader previousClassLoader =
-            currentThread.getContextClassLoader();
+                currentThread.getContextClassLoader();
 
         // Unpublish all portable and non-portable JNDI names
-        for(Map.Entry<String, JndiInfo> entry : jndiInfoMap.entrySet()) {
+        for (Map.Entry<String, JndiInfo> entry : jndiInfoMap.entrySet()) {
             JndiInfo jndiInfo = entry.getValue();
 
             try {
                 jndiInfo.unpublish(this.namingManager);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 _logger.log(Level.FINE, "Error while unbinding JNDI name " + jndiInfo.name +
                         " for EJB : " + this.ejbDescriptor.getName(), e);
-             }
+            }
         }
 
         try {
-            if (System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(loader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    @Override
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(loader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(loader);
 
-            if ( isRemote ) {
+            if (isRemote) {
                 try {
 
-                    if ( hasRemoteHomeView ) {
+                    if (hasRemoteHomeView) {
 
                         remoteHomeRefFactory.destroyReference(ejbHomeStub,
-                                                              ejbHome);
+                                ejbHome);
 
                         // Hints to release stub-related meta-data in ORB
                         remoteHomeRefFactory.cleanupClass(homeIntf);
@@ -4428,20 +4387,20 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         remoteHomeRefFactory.destroy();
                     }
 
-                    if ( hasRemoteBusinessView ) {
+                    if (hasRemoteBusinessView) {
 
                         // Home related cleanup
                         RemoteReferenceFactory remoteBusinessRefFactory =
-                        remoteBusinessIntfInfo.values().iterator().
-                            next().referenceFactory;
+                                remoteBusinessIntfInfo.values().iterator().
+                                        next().referenceFactory;
                         remoteBusinessRefFactory.destroyReference
-                            (ejbRemoteBusinessHomeStub, ejbRemoteBusinessHome);
+                                (ejbRemoteBusinessHomeStub, ejbRemoteBusinessHome);
 
                         remoteBusinessRefFactory.cleanupClass(remoteBusinessHomeIntf);
                         remoteBusinessRefFactory.cleanupClass(ejbRemoteBusinessHome.getClass());
 
                         // Cleanup for each remote business interface
-                        for(RemoteBusinessIntfInfo next : remoteBusinessIntfInfo.values()) {
+                        for (RemoteBusinessIntfInfo next : remoteBusinessIntfInfo.values()) {
 
                             next.referenceFactory.cleanupClass(next.generatedRemoteIntf);
 
@@ -4453,44 +4412,33 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
                     }
 
-                } catch ( Exception ex ) {
+                } catch (Exception ex) {
                     _logger.log(Level.FINE, "Exception during undeploy", logParams);
                     _logger.log(Level.FINE, "", ex);
                 }
             }
 
-	        try {
-		        ejbContainerUtilImpl.getComponentEnvManager().
-                            unbindFromComponentNamespace(ejbDescriptor);
-	        } catch (javax.naming.NamingException namEx) {
-		        _logger.log(Level.FINE, "Exception during undeploy", logParams);
-		        _logger.log(Level.FINE, "", namEx);
-	        }
+            try {
+                ejbContainerUtilImpl.getComponentEnvManager().
+                        unbindFromComponentNamespace(ejbDescriptor);
+            } catch (javax.naming.NamingException namEx) {
+                _logger.log(Level.FINE, "Exception during undeploy", logParams);
+                _logger.log(Level.FINE, "", namEx);
+            }
 
             ejbContainerUtilImpl.unregisterContainer(this);
 
             unregisterProbeListeners();
 
         } finally {
-            if (System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(previousClassLoader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    @Override
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(previousClassLoader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(previousClassLoader);
         }
 
 
         baseContainerCleanupDone = true;
 
         _logger.log(Level.FINE, "**** [BaseContainer]: Successfully Undeployed " +
-                    ejbDescriptor.getName() + " ...");
+                ejbDescriptor.getName() + " ...");
 
 
     }

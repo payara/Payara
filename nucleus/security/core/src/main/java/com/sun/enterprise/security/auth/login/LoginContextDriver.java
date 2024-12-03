@@ -42,7 +42,6 @@
 package com.sun.enterprise.security.auth.login;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
-import static com.sun.enterprise.security.SecurityLoggerInfo.securityAccessControllerActionError;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import static com.sun.enterprise.security.common.SecurityConstants.ALL;
 import static com.sun.enterprise.security.common.SecurityConstants.CERTIFICATE;
@@ -276,14 +275,7 @@ public class LoginContextDriver {
         Iterator<?> credentialsIterator = privileged(() -> subject.getPrivateCredentials(clazz)).iterator();
 
         while (credentialsIterator.hasNext()) {
-            Object credential = null;
-
-            try {
-                credential = privileged(() -> credentialsIterator.next());
-            } catch (Exception e) {
-                // Should never come here
-                LOGGER.log(SEVERE, securityAccessControllerActionError, e);
-            }
+            Object credential = credentialsIterator.next();
 
             if (credential instanceof PasswordCredential) {
                 PasswordCredential passwordCredential = (PasswordCredential) credential;

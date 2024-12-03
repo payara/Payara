@@ -1751,8 +1751,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             return null;
         }
 
-        if (principal instanceof WebPrincipal) {
-            return ((WebPrincipal) principal).getSecurityContext();
+        if (principal instanceof WebPrincipal webPrincipal) {
+            return webPrincipal.getSecurityContext();
         }
 
         Subject subject = new Subject();

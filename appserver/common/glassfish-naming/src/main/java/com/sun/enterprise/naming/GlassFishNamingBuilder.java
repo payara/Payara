@@ -38,31 +38,28 @@
  * holder.
  */
 
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.naming;
 
 import com.sun.enterprise.naming.impl.SerialInitContextFactory;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.InitRunLevel;
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.PreDestroy;
-
 import jakarta.inject.Inject;
+import java.lang.reflect.Field;
+import java.util.Hashtable;
+import java.util.logging.Level;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
 import javax.naming.spi.InitialContextFactory;
 import javax.naming.spi.InitialContextFactoryBuilder;
 import javax.naming.spi.NamingManager;
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.Hashtable;
-import java.util.logging.Level;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.InitRunLevel;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.naming.util.LogFacade.logger;
 
@@ -160,60 +157,20 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
         }
     }
 
-    public void postConstruct()
-    {
-        try
-        {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null)
-            {
-                try
-                {
-                    AccessController.doPrivileged(new PrivilegedExceptionAction<Void>()
-                    {
-                        public Void run() throws NamingException
-                        {
-                            if (isUsingBuilder()) {
-                                NamingManager.setInitialContextFactoryBuilder(GlassFishNamingBuilder.this);
-                            }
-                            return null;  //Nothing to return
-                        }
-                    });
-                }
-                catch (PrivilegedActionException e)
-                {
-                    throw (NamingException) e.getCause();
-                }
+    public void postConstruct() {
+        try {
+            if (isUsingBuilder()) {
+                NamingManager.setInitialContextFactoryBuilder(this);
             }
-            else
-            {
-                if (isUsingBuilder()) {
-                    NamingManager.setInitialContextFactoryBuilder(this);
-                }
-            }
-        }
-        catch (NamingException e)
-        {
+        } catch (NamingException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void preDestroy()
     {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            AccessController.doPrivileged(new PrivilegedAction<Void>(){
-                public Void run() {
-                    if (isUsingBuilder()) {
-                        resetInitialContextFactoryBuilder();
-                    }
-                    return null;
-                }
-            });
-        } else {
-            if (isUsingBuilder()) {
-                resetInitialContextFactoryBuilder();
-            }
+        if (isUsingBuilder()) {
+            resetInitialContextFactoryBuilder();
         }
     }
 
