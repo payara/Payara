@@ -123,6 +123,10 @@ public class WebAuthorizationManagerService {
     private static Permission[] protoPerms = { allResources, allConnections };
     private static Set<Principal> defaultPrincipalSet = SecurityContext.getDefaultSecurityContext().getPrincipalSet();
 
+    public String getContextID() {
+        return CONTEXT_ID;
+    }
+
     // The context ID associated with this instance. This is the name
     // of the application
     private final String CONTEXT_ID;

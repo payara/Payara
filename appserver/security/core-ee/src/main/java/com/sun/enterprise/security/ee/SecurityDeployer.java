@@ -438,6 +438,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
             try {
                 websecurityProbeProvider.securityManagerDestructionStartedEvent(appName);
                 manager.destroy();
+                webSecurityManagerFactory.getManagers(manager.getContextID(), true);
                 websecurityProbeProvider.securityManagerDestructionEndedEvent(appName);
                 websecurityProbeProvider.securityManagerDestructionEvent(appName);
 

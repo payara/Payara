@@ -134,14 +134,6 @@ public class PolicyConfigurationFactoryImpl extends DefaultPolicyConfigurationFa
           return contextToContextProviderMap.remove(policyContextId);
     }
     
-    protected List<PolicyConfiguration> getPolicyConfigurations() {
-        return new ArrayList<>(contextToConfigurationMap.values());
-    }
-
-    protected PolicyConfiguration removePolicyConfiguration(String contextID) {
-        return contextToConfigurationMap.remove(contextID);
-    }
-
     
     /**
      * This method is used to obtain an instance of the provider specific class that implements the PolicyConfiguration
@@ -225,16 +217,6 @@ public class PolicyConfigurationFactoryImpl extends DefaultPolicyConfigurationFa
         
         return super.inService(contextId);
         
-    }
-
-
-
-    protected List<PolicyConfiguration> getPolicyConfigurationImpls() {
-        return new ArrayList<>(contextToConfigurationMap.values());
-    }
-    
-    protected PolicyConfiguration removePolicyConfigurationImpl(String contextID) {
-        return contextToConfigurationMap.remove(contextID);
     }
     
 }
