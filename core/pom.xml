@@ -77,7 +77,7 @@
         <jackson.version>2.18.2</jackson.version>
         <jersey.version>3.1.7.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
-        <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
+        <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
         <jaxb-impl.version>4.0.2</jaxb-impl.version>
         <jsonp-api.version>2.1.0</jsonp-api.version>
         <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
