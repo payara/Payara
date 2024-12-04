@@ -120,4 +120,20 @@
             <artifactId>glassfish</artifactId>
         </dependency>
    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.siom79.japicmp</groupId>
+                <artifactId>japicmp-maven-plugin</artifactId>
+                <configuration>
+                    <parameter>
+                        <excludes>
+                            <exclude>org.glassfish.web.loader.CachingReflectionUtil</exclude>
+                        </excludes>
+                    </parameter>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

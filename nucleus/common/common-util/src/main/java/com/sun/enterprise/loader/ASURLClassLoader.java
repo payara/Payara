@@ -208,6 +208,8 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             // because we've taken the snapshot.
             doneCalled = true;
 
+            CacheCleaner.clearJaxRSCache(this);
+
             // closes the jar handles and sets the url entries to null
             for (URLEntry u : this.urlSet) {
                 u.close();
@@ -725,9 +727,14 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
                     // set all spec and impl data for the package,
                     // so just use null.  This is consistent will the
                     // JDK code that does the same.
-                    definePackage(packageName, null, null, null,
-                                  null, null, null, null);
-                } catch(IllegalArgumentException iae) {
+                    var manifest = classData.jarFile == null ? null : classData.jarFile.getManifest();
+                    if (manifest == null) {
+                        definePackage(packageName, null, null, null,
+                                null, null, null, null);
+                    } else {
+                        definePackage(packageName, manifest, classData.pd.getCodeSource().getLocation());
+                    }
+                } catch(IllegalArgumentException | IOException iae) {
                     // duplicate attempt to define same package.
                     // safe to ignore.
                     _logger.log(Level.FINE, "duplicate package " +
@@ -802,14 +809,14 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             byte[] result = loadClassData0(u, entryName);
             if (result != null) {
                 if (System.getSecurityManager() == null) {
-                    return new ClassData(result, u.pd);
+                    return new ClassData(result, u.pd, u.zip);
                 } else {
                     //recreate the pd to include the declared permissions
                     CodeSource cs = u.pd.getCodeSource();
                     PermissionCollection pc = this.getPermissions(cs);
                     ProtectionDomain pdWithPemissions =
                         new ProtectionDomain(u.pd.getCodeSource(), pc, u.pd.getClassLoader(), u.pd.getPrincipals());
-                    return new ClassData(result, pdWithPemissions);
+                    return new ClassData(result, pdWithPemissions, u.zip);
                 }
             }
         }
@@ -1321,10 +1328,12 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
         /** must be 'final' to ensure thread visibility */
         private final ProtectionDomain pd;
+        private final JarFile jarFile;
 
-        ClassData(byte[] classBytes, ProtectionDomain pd) {
+        ClassData(byte[] classBytes, ProtectionDomain pd, JarFile jarFile) {
             this.classBytes = classBytes;
             this.pd = pd;
+            this.jarFile = jarFile;
         }
         private synchronized byte[] getClassBytes() {
             return classBytes;
