@@ -58,34 +58,21 @@
     </description>
 
     <dependencies>
-        <!-- Downgrade shim for Annotations 2.1 (currently 3.0) required by Soteria but not yet provided by the Server.
-        Remove or update this comment once Soteria has been upgraded. -->
+        <!-- Downgrade shim for Annotations 2.1 (currently 3.0) required by MicroProfile Rest Client.
+        Remove or update this comment once MicroProfile Rest Client has been upgraded. -->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- Downgrade shim for Jakarta EL as Soteria not yet upgraded -->
+        <!-- Downgrade shim for Jakarta EL, required by Jersey-HK2/Hibernate Validator(?). Remove once Jersey-HK2/Hibernate Validator(?) upgraded -->
         <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
             <scope>provided</scope>
         </dependency>
 
-
-        <!-- Weld -->
-        <dependency>
-            <groupId>org.jboss.weld</groupId>
-            <artifactId>weld-osgi-bundle</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- Downgrade shim for Jakarta Authorization as Soteria not yet upgraded -->
-        <dependency>
-            <groupId>jakarta.authorization</groupId>
-            <artifactId>jakarta.authorization-api</artifactId>
-        </dependency>
-
-        <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+        <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
@@ -125,19 +112,11 @@
                                 <_fixupmessages>set to different values in the source,JAR is empty</_fixupmessages>
                                 <!-- Add symbolic bundle names of API bundles here -->
                                 <Require-Bundle>
-                                    <!-- Upgrade shim for Annotations 3.0 (currently 2.1) required by HK2 4.0 but not
-                                    yet provided by the Server. Remove or replace with a downgrade shim once
-                                    Annotations API upgraded to 4.0 in the server. -->
+                                    <!-- Downgrade shim for Annotations 2.1 (currently 3.0), required by MicroProfile Rest Client -->
                                     jakarta.annotation-api,
-                                    <!-- jakarta.el-->
+                                    <!-- Downgrade shim for Jakarta EL, required by Jersey-HK2/Hibernate Validator(?). Remove once Jersey-HK2/Hibernate Validator(?) upgraded -->
                                     jakarta.el-api,
-                                    <!-- jakarta.authorization -->
-                                    jakarta.security.jacc-api,
-                                    <!-- weld-osgi-bundle -->
-                                    org.jboss.weld.osgi-bundle,
-                                    <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
-                                    jakarta.security.jacc-api,
-                                    <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+                                    <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
                                     jakarta.ws.rs-api,
                                     <!-- Downgrade shim for Jakarta Security API 3.0, required by security-connector-oidc-client. Remove once Security Connectors upgraded -->
                                     jakarta.security.enterprise-api,
@@ -150,96 +129,13 @@
                                 informational though). Spares from repeating the version for every package of the api.
                                  We drop uses attributes as well. -->
                                 <Export-Package>
-                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0), required by Soteria -->
+                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0), required by MicroProfile Rest Client -->
                                     jakarta.annotation;
                                     jakarta.annotation.security;
                                     jakarta.annotation.sql;version="2.1.99";shim=true,
-                                    <!-- el previous version-->
+                                    <!-- Downgrade shim for Jakarta EL, required by Jersey-HK2/Hibernate Validator(?). Remove once Jersey-HK2/Hibernate Validator(?) upgraded-->
                                     jakarta.el;version="5.0.99";shim=true,
-                                    <!-- authorization previous version-->
-                                    jakarta.security.jacc;version="2.1.99";shim=true,
-                                    <!-- weld-osgi-bundle -->
-                                    org.jboss.weld.bootstrap.api;
-                                    org.jboss.weld.bootstrap.api.helpers;
-                                    org.jboss.weld.construction.api;
-                                    org.jboss.weld.context.api;
-                                    org.jboss.weld.ejb.api;
-                                    org.jboss.weld.manager.api;
-                                    org.jboss.weld.servlet.api;
-                                    org.jboss.weld.servlet.api.helpers;
-                                    org.jboss.weld.bootstrap.spi;
-                                    org.jboss.weld.bootstrap.spi.helpers;
-                                    org.jboss.weld.configuration.spi;
-                                    org.jboss.weld.configuration.spi.helpers;
-                                    org.jboss.weld.ejb.spi;
-                                    org.jboss.weld.ejb.spi.helpers;
-                                    org.jboss.weld.injection.spi;
-                                    org.jboss.weld.injection.spi.helpers;
-                                    org.jboss.weld.interceptor.spi.metadata;
-                                    org.jboss.weld.interceptor.spi.model;
-                                    org.jboss.weld.resources.spi;
-                                    org.jboss.weld.resources.spi.helpers;
-                                    org.jboss.weld.security.spi;
-                                    org.jboss.weld.serialization.spi;
-                                    org.jboss.weld.serialization.spi.helpers;
-                                    org.jboss.weld.servlet.spi;
-                                    org.jboss.weld.servlet.spi.helpers;
-                                    org.jboss.weld.transaction.spi;
-                                    org.jboss.weld.bootstrap.event;
-                                    org.jboss.weld.context;
-                                    org.jboss.weld.context.activator;
-                                    org.jboss.weld.context.bound;
-                                    org.jboss.weld.context.ejb;
-                                    org.jboss.weld.context.http;
-                                    org.jboss.weld.context.unbound;
-                                    org.jboss.weld.events;
-                                    org.jboss.weld.inject;
-                                    org.jboss.weld.interceptor;
-                                    org.jboss.weld.proxy;
-                                    org.jboss.weld.lite.extension.translator;
-                                    org.jboss.weld.lite.extension.translator.logging;
-                                    org.jboss.weld.lite.extension.translator.util;
-                                    org.jboss.weld.lite.extension.translator.util.reflection;
-                                    org.jboss.weld.module.ejb;
-                                    org.jboss.weld.module.ejb.context;
-                                    org.jboss.weld.module.ejb.context.beanstore;
-                                    org.jboss.weld.module.jsf;
-                                    org.jboss.weld.module.jsf.servlet;
-                                    org.jboss.weld.module.jta;
-                                    org.jboss.weld.module.web;
-                                    org.jboss.weld.module.web.context.beanstore.http;
-                                    org.jboss.weld.module.web.context.http;
-                                    org.jboss.weld.module.web.el;
-                                    org.jboss.weld.module.web.logging;
-                                    org.jboss.weld.module.web.servlet;
-                                    org.jboss.weld.module.web.util.el;
-                                    org.jboss.weld.module.web.util.servlet;
-                                    org.jboss.weld;
-                                    org.jboss.weld.bean;
-                                    org.jboss.weld.bean.builtin;
-                                    org.jboss.weld.bean.proxy;
-                                    org.jboss.weld.bootstrap;
-                                    org.jboss.weld.config;
-                                    org.jboss.weld.contexts;
-                                    org.jboss.weld.contexts.activator;
-                                    org.jboss.weld.contexts.bound;
-                                    org.jboss.weld.contexts.cache;
-                                    org.jboss.weld.contexts.conversation;
-                                    org.jboss.weld.contexts.unbound;
-                                    org.jboss.weld.event;
-                                    org.jboss.weld.exceptions;
-                                    org.jboss.weld.injection;
-                                    org.jboss.weld.interceptor.proxy;
-                                    org.jboss.weld.interceptor.util.proxy;
-                                    org.jboss.weld.logging;
-                                    org.jboss.weld.manager;
-                                    org.jboss.weld.module;
-                                    org.jboss.weld.security;
-                                    org.jboss.weld.util;
-                                    org.jboss.weld.xml;version="5.0.99";shim=true,
-                                    <!-- Downgrade shim for Jakarta Authorization, required by Soteria 3.0 -->
-                                    jakarta.security.jacc;version="2.1.99";shim=true,
-                                    <!-- Downgrade shim for JAX-RS, required by Soteria. Remove once Soteria upgraded -->
+                                    <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
                                     jakarta.ws.rs;
                                     jakarta.ws.rs.client;
                                     jakarta.ws.rs.container;
