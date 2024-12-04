@@ -123,7 +123,7 @@
         <jbi.version>1.0</jbi.version>
         <okhttp3-version>4.12.0</okhttp3-version>
         <kotlin-version>2.0.21</kotlin-version>
-        <epyciro.version>3.1.0</epyciro.version>
+        <epicyro.version>3.1.0</epicyro.version>
         
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
@@ -915,7 +915,7 @@
             <dependency>
                 <groupId>org.glassfish.epicyro</groupId>
                 <artifactId>epicyro</artifactId>
-                <version>${epyciro.version}</version>
+                <version>${epicyro.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>
