@@ -165,10 +165,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
-            <artifactId>jaspic.provider.framework</artifactId>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>libpam4j-repackaged</artifactId>
         </dependency>

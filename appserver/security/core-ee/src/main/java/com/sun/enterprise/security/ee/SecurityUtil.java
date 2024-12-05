@@ -63,7 +63,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 
 /**
- * This utility class contains JACC related utilities.
+ * This utility class contains Jakarta Authorization related utilities.
  * 
  * <p>
  * This is mostly used by the SecurityDeployer, but the getContextID method
@@ -163,8 +163,7 @@ public class SecurityUtil {
             return;
         }
         String appName = params.name();
-        SecurityRoleMapperFactory factory = getRoleMapperFactory();
-        factory.removeRoleMapper(appName);
+        getRoleMapperFactory().removeRoleMapper(appName);
     }
     
     

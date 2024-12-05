@@ -40,32 +40,27 @@
 // Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
-import static com.sun.corba.ee.spi.presentation.rmi.StubAdapter.isLocal;
-import static com.sun.corba.ee.spi.presentation.rmi.StubAdapter.isStub;
-import static com.sun.enterprise.security.common.AppservAccessController.privilegedAlways;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
-
-import java.net.Socket;
-import jakarta.security.jacc.Policy;
-import java.util.logging.Level;
-
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import javax.security.auth.Subject;
-
-import jakarta.security.jacc.PolicyFactory;
-import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-import org.glassfish.enterprise.iiop.api.ProtocolManager;
-import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.annotations.Service;
-
 import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.enterprise.common.iiop.security.SecurityContext;
 import com.sun.enterprise.security.CORBAObjectPermission;
 import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
 import com.sun.logging.LogDomains;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.security.jacc.PolicyFactory;
+import java.net.Socket;
+import java.util.logging.Level;
+import javax.security.auth.Subject;
+import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
+import org.glassfish.enterprise.iiop.api.ProtocolManager;
+import org.glassfish.hk2.api.PostConstruct;
+import org.jvnet.hk2.annotations.Service;
+
+import static com.sun.corba.ee.spi.presentation.rmi.StubAdapter.isLocal;
+import static com.sun.corba.ee.spi.presentation.rmi.StubAdapter.isStub;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.SEVERE;
 
 /**
  * This class provides has the helper methods to deal with the SecurityContext. This represents the
@@ -84,7 +79,6 @@ public class SecurityContextUtil implements PostConstruct {
     private static java.util.logging.Logger _logger = LogDomains.getLogger(SecurityContextUtil.class, LogDomains.SECURITY_LOGGER);
 
     private static String IS_A = "_is_a";
-    private Policy policy;
 
     @Inject
     private GlassFishORBHelper orbHelper;
@@ -94,7 +88,6 @@ public class SecurityContextUtil implements PostConstruct {
 
     @Override
     public void postConstruct() {
-        privilegedAlways(() -> policy = PolicyFactory.getPolicyFactory().getPolicy());
     }
 
     /**
@@ -108,7 +101,7 @@ public class SecurityContextUtil implements PostConstruct {
         
         if (isStub(effectiveTarget) && isLocal(effectiveTarget)) {
             // XXX: Workaround for non-null connection object ri for local invocation.
-            ConnectionExecutionContext.setClientThreadID(Thread.currentThread().getId());
+            ConnectionExecutionContext.setClientThreadID(Thread.currentThread().threadId());
             return null;
         }
 
@@ -143,7 +136,9 @@ public class SecurityContextUtil implements PostConstruct {
             _logger.log(FINE, "Failed status");
             // what kind of exception should we throw?
             throw new RuntimeException("Target did not accept security context");
-        } else if (reply_status == STATUS_RETRY) {
+        } 
+        
+        if (reply_status == STATUS_RETRY) {
             _logger.log(FINE, "Retry status");
         } else {
             _logger.log(FINE, "Passed status");
@@ -198,8 +193,7 @@ public class SecurityContextUtil implements PostConstruct {
      */
     private void authenticate(Subject subject, Class<?> credentialClass) throws SecurityMechanismException {
         try {
-            privilegedAlways(() -> WebAndEjbToJaasBridge.login(subject, credentialClass));
-            
+            WebAndEjbToJaasBridge.login(subject, credentialClass);
         } catch (Exception e) {
             if (_logger.isLoggable(SEVERE)) {
                 _logger.log(SEVERE, "iiop.login_exception", e.toString());
@@ -212,30 +206,32 @@ public class SecurityContextUtil implements PostConstruct {
 
     // return true if authorization succeeds, false otherwise.
     private boolean authorizeCORBA(byte[] objectId, String method) throws Exception {
-        
+
         ProtocolManager protocolManager = orbHelper.getProtocolManager();
-        
+
         // Check to make sure protocolManager is not null.
         // This could happen during server initialization or if this call
         // is on a callback object in the client VM.
         if (protocolManager == null) {
             return true;
         }
-        
+
         // Check if target is an EJB
         if (protocolManager.getEjbDescriptor(objectId) != null) {
             return true; // an EJB object
         }
-        // Create the permission we want to check for
-        CORBAObjectPermission permission = new CORBAObjectPermission("*", method);
-        
+
+        com.sun.enterprise.security.SecurityContext securityContext = com.sun.enterprise.security.SecurityContext.getCurrent();
+
         // Check if policy gives principal the permissions
-        boolean result = policy.implies(permission, com.sun.enterprise.security.SecurityContext.getCurrent().getPrincipalSet());
+        boolean result = PolicyFactory.getPolicyFactory().getPolicy().implies(
+                new CORBAObjectPermission("*", method),
+                securityContext.getPrincipalSet());
 
         if (_logger.isLoggable(FINE)) {
             _logger.log(FINE, "CORBA Object permission evaluation result=" + result + " for method=" + method);
         }
-        
+
         return result;
     }
 

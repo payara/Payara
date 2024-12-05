@@ -41,29 +41,6 @@
 
 package com.sun.enterprise.container.common.impl.util;
 
-import static java.util.logging.Level.FINE;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jakarta.inject.Inject;
-import javax.naming.NamingException;
-
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.jvnet.hk2.annotations.Service;
-
 import com.sun.enterprise.container.common.spi.JCDIService;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
@@ -74,6 +51,26 @@ import com.sun.enterprise.deployment.InjectionInfo;
 import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import jakarta.inject.Inject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.NamingException;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
+
+import static java.util.logging.Level.FINE;
 
 /**
  * Implementation of InjectionManager.
@@ -543,20 +540,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                                     "Injecting dependency with logical name: {0} into field: {1} on class: {2}", next.getComponentEnvName(),
                                     f, clazz));
                         }
-
-                        final Object value = injectedValue;
-                        // Wrap actual value insertion in doPrivileged to
-                        // allow for private/protected field access.
-                        if (System.getSecurityManager() != null) {
-                            java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                                public java.lang.Object run() throws Exception {
-                                    f.set(instance, value);
-                                    return null;
-                                }
-                            });
-                        } else {
-                            f.set(instance, value);
-                        }
+                        f.set(instance, injectedValue);
                     } else if (target.isMethodInjectable()) {
 
                         final Method m = getMethod(next, target, clazz);
@@ -579,18 +563,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                         }
 
                         final Object value = injectedValue;
-                        if (System.getSecurityManager() != null) {
-                            // Wrap actual value insertion in doPrivileged to
-                            // allow for private/protected field access.
-                            java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                                public java.lang.Object run() throws Exception {
-                                    m.invoke(instance, new Object[] { value });
-                                    return null;
-                                }
-                            });
-                        } else {
-                            m.invoke(instance, new Object[] { value });
-                        }
+                        m.invoke(instance, new Object[] { value });
 
                     }
                 }
@@ -613,17 +586,10 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                         "Calling lifecycle method: {0} on class: {1}", lifecycleMethod, lifecycleMethod.getDeclaringClass()));
             }
 
-            // Wrap actual value insertion in doPrivileged to
-            // allow for private/protected field access.
-            java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                public java.lang.Object run() throws Exception {
-                    if (!lifecycleMethod.isAccessible()) {
-                        lifecycleMethod.setAccessible(true);
-                    }
-                    lifecycleMethod.invoke(instance);
-                    return null;
-                }
-            });
+            if (!lifecycleMethod.isAccessible()) {
+                lifecycleMethod.setAccessible(true);
+            }
+            lifecycleMethod.invoke(instance);
         } catch (Throwable t) {
             String msg = localStrings.getLocalString("injection-manager.exception-invoke-lifecycle-method",
                     "Exception attempting invoke lifecycle method: {0}", lifecycleMethod);
@@ -639,9 +605,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
     }
 
     private Field getField(InjectionTarget target, Class resourceClass) throws Exception {
-
         Field f = target.getField();
-
         if (f == null) {
             try {
                 // Check for the given field within the resourceClass only.
@@ -649,14 +613,9 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                 f = resourceClass.getDeclaredField(target.getFieldName());
 
                 final Field finalF = f;
-                java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                    public java.lang.Object run() throws Exception {
-                        if (!finalF.isAccessible()) {
-                            finalF.setAccessible(true);
-                        }
-                        return null;
-                    }
-                });
+                if (!finalF.isAccessible()) {
+                    finalF.setAccessible(true);
+                }
 
             } catch (java.lang.NoSuchFieldException nsfe) {
             }
@@ -689,14 +648,9 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                     target.setMethod(m);
 
                     final Method finalM = m;
-                    java.security.AccessController.doPrivileged(new java.security.PrivilegedExceptionAction() {
-                        public java.lang.Object run() throws Exception {
-                            if (!finalM.isAccessible()) {
-                                finalM.setAccessible(true);
-                            }
-                            return null;
-                        }
-                    });
+                    if (!finalM.isAccessible()) {
+                        finalM.setAccessible(true);
+                    }
 
                     break;
                 }

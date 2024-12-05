@@ -64,6 +64,7 @@ import org.glassfish.security.common.UserPrincipal;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
 
+
 import com.sun.enterprise.security.auth.login.LoginCallbackHandler;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.Realm;
@@ -151,7 +152,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      * Commit the authentication.
      *
      * <P>
-     * Commit is called after all necessary login modules have succeeded. It adds (if not present) a UserPrincipal principal
+     * Commit is called after all necessary login modules have succeeded. It adds (if not present) a PrincipalImpl principal
      * and a LocalCredentials public credential to the Subject.
      *
      * @throws LoginException If commit fails.

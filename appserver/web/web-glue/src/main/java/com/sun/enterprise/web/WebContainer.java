@@ -51,7 +51,6 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
-import com.sun.enterprise.security.ee.SecurityDeployer;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
@@ -316,9 +315,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     ServerConfigLookup serverConfigLookup;
-
-    @Inject
-    private SecurityDeployer securityDeployer;
 
     protected JspProbeProvider jspProbeProvider;
     protected RequestProbeProvider requestProbeProvider;
@@ -1483,7 +1479,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected void loadStandaloneWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig) {
         try {
             loadWebModule(virtualServer, webModuleConfig, "null", null);
-            securityDeployer.loadPolicy(webModuleConfig.getDescriptor(), false);
         } catch (Throwable t) {
             logger.log(SEVERE, format(rb.getString(LOAD_WEB_MODULE_ERROR), webModuleConfig.getName()), t);
         }

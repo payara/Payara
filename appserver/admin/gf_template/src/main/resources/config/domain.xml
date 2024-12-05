@@ -147,7 +147,7 @@
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
                     <property value="true" name="certificate-validation"/>
                 </auth-realm>
-                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
+                <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -279,6 +279,7 @@
                 <!-- Hotswap Agent -->
                 <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
                 <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
+                <jvm-options>-Djakarta.security.jacc.policy.provider=org.glassfish.exousia.modules.def.DefaultPolicy</jvm-options>
             </java-config>
             <availability-service>
                 <web-container-availability />
@@ -377,7 +378,7 @@
                 <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
                     <property name="certificate-validation" value="true" />
                 </auth-realm>
-                <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
+                <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
@@ -516,6 +517,7 @@
                 <!-- Hotswap Agent -->
                 <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
                 <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
+                <jvm-options>-Djakarta.security.jacc.policy.provider=org.glassfish.exousia.modules.def.DefaultPolicy</jvm-options>
             </java-config>
             <availability-service>
                 <web-container-availability />

@@ -37,40 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright [2016-2024] [Payara Foundation]
 
 package com.sun.enterprise.container.common.impl.managedbean;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jakarta.inject.Inject;
-import javax.naming.InitialContext;
-
-import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.Events;
-import org.glassfish.api.naming.GlassfishNamingManager;
-import org.glassfish.api.naming.NamingObjectProxy;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.glassfish.internal.api.PostStartupRunLevel;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.deployment.Deployment;
-import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.container.common.spi.InterceptorInvoker;
 import com.sun.enterprise.container.common.spi.JCDIService;
@@ -91,6 +60,32 @@ import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.logging.LogDomains;
+import jakarta.inject.Inject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.InitialContext;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.naming.GlassfishNamingManager;
+import org.glassfish.api.naming.NamingObjectProxy;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  */
@@ -623,14 +618,9 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
                 Field proxyField = managedBean.getClass().getDeclaredField("__ejb31_delegate");
 
-                final Field finalF = proxyField;
-                PrivilegedExceptionAction<Void> action = () -> {
-                    if (!finalF.isAccessible()) {
-                        finalF.setAccessible(true);
-                    }
-                    return null;
-                };
-                AccessController.doPrivileged(action);
+                if (!proxyField.isAccessible()) {
+                    proxyField.setAccessible(true);
+                }
 
                 Proxy proxy = (Proxy) proxyField.get(managedBean);
 

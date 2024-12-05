@@ -124,7 +124,7 @@
           <property value="fileRealm" name="jaas-context" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
+        <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -225,6 +225,7 @@
         <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
         <!-- allow asadmin command enable-monitoring -->
         <jvm-options>-Djdk.attach.allowAttachSelf=true</jvm-options>
+        <jvm-options>-Djakarta.security.jacc.policy.provider=org.glassfish.exousia.modules.def.DefaultPolicy</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />
@@ -328,7 +329,7 @@
           <property name="jaas-context" value="fileRealm" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
+        <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -438,6 +439,7 @@
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         <!-- Grizzly NPN Bootstrap compatible with used JDK version -->
         <jvm-options>-Xbootclasspath/a:${com.sun.aas.installRoot}/lib/grizzly-npn-api.jar</jvm-options>
+        <jvm-options>-Djakarta.security.jacc.policy.provider=org.glassfish.exousia.modules.def.DefaultPolicy</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -273,7 +273,7 @@ public class EJBLocalHomeInvocationHandler extends EJBLocalHomeImpl implements I
             Method beanClassMethod, EjbInvocation inv, Object target, Object[] params)
             throws Throwable {
 
-        return container.invokeTargetBeanMethod(beanClassMethod, inv, target, params, null);
+        return container.invokeTargetBeanMethod(beanClassMethod, inv, target, params);
     }
 
 }

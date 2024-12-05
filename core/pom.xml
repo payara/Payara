@@ -123,6 +123,7 @@
         <jbi.version>1.0</jbi.version>
         <okhttp3-version>4.12.0</okhttp3-version>
         <kotlin-version>2.0.21</kotlin-version>
+        <epicyro.version>3.1.0</epicyro.version>
         
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
@@ -371,8 +372,6 @@
         <module>../api/payara-api</module>
         <!--        fish.payara.server.internal.flashlight  flashlight-framework-->
         <module>../nucleus/flashlight/framework</module>
-        <!--        fish.payara.server.internal.security    jaspic.provider.framework-->
-        <module>../appserver/security/jaspic-provider-framework</module>
         <!--        fish.payara.server.internal.security    security-ee-->
         <module>../appserver/security/core-ee</module>
         <!--        fish.payara.server.internal.security    websecurity-->
@@ -912,6 +911,11 @@
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
                 <version>${jakarta.authentication-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.epicyro</groupId>
+                <artifactId>epicyro</artifactId>
+                <version>${epicyro.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>

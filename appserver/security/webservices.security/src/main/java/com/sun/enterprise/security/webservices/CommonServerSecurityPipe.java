@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.security.PrivilegedActionException;
@@ -54,7 +54,7 @@ import jakarta.xml.ws.WebServiceException;
 
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jauth.jaspic.provider.config.PipeHelper;
+import com.sun.enterprise.security.jauth.jaspic.provider.config.SoapAuthenticationService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.pipe.Pipe;
@@ -72,14 +72,14 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 
     private final boolean isHttpBinding;
 
-    private PipeHelper helper;
+    private SoapAuthenticationService helper;
 
     private static final String WSIT_SERVER_AUTH_CONTEXT = "com.sun.xml.wss.provider.wsit.WSITServerAuthContext";
 
     public CommonServerSecurityPipe(Map props, final Pipe next, boolean isHttpBinding) {
         super(next);
         props.put(PipeConstants.SECURITY_PIPE, this);
-        this.helper = new PipeHelper(PipeConstants.SOAP_LAYER, props, null);
+        this.helper = new SoapAuthenticationService(PipeConstants.SOAP_LAYER, props, null);
         this.isHttpBinding = isHttpBinding;
     }
 
@@ -274,7 +274,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
             s = (Subject) p.invocationProperties.get(PipeConstants.CLIENT_SUBJECT);
         }
         if (s == null) {
-            s = PipeHelper.getClientSubject();
+            s = SoapAuthenticationService.getClientSubject();
             if (p != null) {
                 p.invocationProperties.put(PipeConstants.CLIENT_SUBJECT, s);
             }
