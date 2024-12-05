@@ -156,6 +156,8 @@
         <mojarra.version>4.0.9.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
 
+        <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
+        <krazo.version>3.0.1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>4.0.1.payara-p3</eclipselink.version>
         <eclipselink.asm.version>9.7.1</eclipselink.asm.version>
