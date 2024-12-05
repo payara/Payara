@@ -45,9 +45,8 @@
         <artifactId>repackaged</artifactId>
         <version>7.2024.1.Alpha3-SNAPSHOT</version>
     </parent>
-    <groupId>org.valid4j</groupId>
     <artifactId>http-matchers-repackaged</artifactId>
-    <version>1.1</version>
+
     <name>Payara Samples - Payara - http-matchers repackaged as a module</name>
 
     <build>
@@ -90,7 +89,7 @@
             <plugin>
                 <groupId>org.eclipse.transformer</groupId>
                 <artifactId>org.eclipse.transformer.maven</artifactId>
-                <version>0.2.0</version>
+                <version>0.2.9</version>
                 <configuration>
                     <classifier>jakartaee9</classifier>
                 </configuration>
@@ -116,7 +115,7 @@
         <dependency>
             <groupId>org.valid4j</groupId>
             <artifactId>http-matchers</artifactId>
-            <version>${project.version}</version>
+            <version>${http-matchers.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

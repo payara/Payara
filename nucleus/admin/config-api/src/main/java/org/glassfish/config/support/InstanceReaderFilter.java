@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.config.support;
 
@@ -98,10 +98,6 @@ class InstanceReaderFilter extends ServerReaderFilter {
             if (elementName.equals(CLUSTER)){
                 return handleCluster(reader);
             }
-
-            if (elementName.equals(DEPLOYMENT_GROUP)){
-                return handleDeploymentGroup(reader);
-            }
             
             // keep everything else
             return false;
@@ -158,19 +154,6 @@ class InstanceReaderFilter extends ServerReaderFilter {
         String myCluster = dxpp.getClusterName();
 
         return !(StringUtils.ok(myCluster) && myCluster.equals(name));
-    }
-
-    /**
-     * Note that dxpp.getClusterName() will definitely return null
-     * for stand-alone instances.  This is normal.
-     *
-     * @return true if we want to filter out this DEPLOYMENT GROUP element
-     */
-    private boolean handleDeploymentGroup(XMLStreamReader reader) {
-        String name = reader.getAttributeValue(null, NAME);
-        String myDG = dxpp.getDeploymentGroupName();
-
-        return !(StringUtils.ok(myDG) && myDG.equals(name));
     }
 
     private final DomainXmlPreParser dxpp;
