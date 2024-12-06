@@ -72,8 +72,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
-import java.io.Closeable;
-import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
