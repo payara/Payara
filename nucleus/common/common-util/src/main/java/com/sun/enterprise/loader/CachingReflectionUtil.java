@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.web.loader;
+package com.sun.enterprise.loader;
 
 
+import com.sun.enterprise.util.CULoggerInfo;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -48,7 +49,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class CachingReflectionUtil {
-    private static final Logger logger = LogFacade.getLogger();
+    private static final Logger logger = CULoggerInfo.getLogger();
+
     private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
     private static final Map<String, Method> methodCache = new ConcurrentHashMap<>();
     private static final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
@@ -62,6 +64,9 @@ public class CachingReflectionUtil {
                 return null;
             }
         });
+        if (cls != null && cls.getClassLoader() == classLoader) {
+            classCache.remove(cls.getName());
+        }
         return cls;
     }
 
