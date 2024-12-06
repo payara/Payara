@@ -2052,7 +2052,7 @@ public class WebappClassLoader
         // START SJSAS 6258619
         ClassLoaderUtil.releaseLoader(this);
         // END SJSAS 6258619
-        CacheCleaner.clearJaxRSCache(this);
+        CacheCleaner.clearCaches(this);
 
         synchronized(jarFilesLock) {
             started = false;

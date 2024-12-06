@@ -208,7 +208,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             // because we've taken the snapshot.
             doneCalled = true;
 
-            CacheCleaner.clearJaxRSCache(this);
+            CacheCleaner.clearCaches(this);
 
             // closes the jar handles and sets the url entries to null
             for (URLEntry u : this.urlSet) {

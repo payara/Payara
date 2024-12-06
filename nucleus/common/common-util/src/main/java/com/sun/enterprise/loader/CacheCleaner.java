@@ -47,7 +47,16 @@ import java.util.logging.Logger;
 public class CacheCleaner {
     private static final Logger logger = CULoggerInfo.getLogger();
 
-    public static void clearJaxRSCache(ClassLoader classLoader) {
+    public static void clearCaches(ClassLoader classLoader) {
+        clearOmniFacesCache(classLoader);
+        clearJNACache(classLoader);
+        while (classLoader != null) {
+            clearJaxRSCache(classLoader);
+            classLoader = classLoader.getParent();
+        }
+    }
+
+    private static void clearJaxRSCache(ClassLoader classLoader) {
         try {
             Class<?> cdiComponentProvider = CachingReflectionUtil
                     .getClassFromCache("org.glassfish.jersey.ext.cdi1x.internal.CdiComponentProvider", classLoader);
@@ -61,6 +70,34 @@ public class CacheCleaner {
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error clearing Jax-Rs cache", e);
+        }
+    }
+
+    private static void clearOmniFacesCache(ClassLoader classLoader) {
+        try {
+            Class<?> eagerBeans = CachingReflectionUtil
+                    .getClassFromCache("org.omnifaces.cdi.eager.EagerBeansRepository", classLoader);
+            if (eagerBeans != null && eagerBeans.getClassLoader() instanceof CurrentBeforeParentClassLoader) {
+                Field instance = CachingReflectionUtil.getFieldFromCache(eagerBeans, "instance", true);
+                instance.set(null, null);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error clearing OmniFaces cache", e);
+        }
+    }
+
+    private static void clearJNACache(ClassLoader classLoader) {
+        try {
+            Class<?> cleanerClass = CachingReflectionUtil
+                    .getClassFromCache("com.sun.jna.internal.Cleaner", classLoader);
+            if (cleanerClass != null && cleanerClass.getClassLoader() instanceof CurrentBeforeParentClassLoader) {
+                Field instanceField = CachingReflectionUtil.getFieldFromCache(cleanerClass, "INSTANCE", true);
+                Object instance = instanceField.get(null);
+                CachingReflectionUtil.getFieldFromCache(instance.getClass(), "cleanerThread", true)
+                        .set(instance, null);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error clearing JNA cache", e);
         }
     }
 }

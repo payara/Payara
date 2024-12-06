@@ -64,6 +64,9 @@ public class CachingReflectionUtil {
                 return null;
             }
         });
+        if (cls != null && cls.getClassLoader() == classLoader) {
+            classCache.remove(cls.getName());
+        }
         return cls;
     }
 
