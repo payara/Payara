@@ -76,7 +76,7 @@
             <artifactId>htmlunit</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.valid4j</groupId>
+            <groupId>fish.payara.server.internal.tests</groupId>
             <artifactId>http-matchers-repackaged</artifactId>
             <classifier>jakartaee9</classifier>
             <scope>test</scope>
