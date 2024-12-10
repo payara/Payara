@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>6.2024.12</version>
+        <version>6.2024.13-SNAPSHOT</version>
     </parent>
     
     <artifactId>nucleus-hk2</artifactId>

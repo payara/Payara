@@ -44,7 +44,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>6.2024.12</version>
+        <version>6.2024.13-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-rest-endpoints</artifactId>
