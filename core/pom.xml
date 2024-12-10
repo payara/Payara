@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.core</groupId>
     <artifactId>core-aggregator</artifactId>
-    <version>7.0.0.Alpha3</version>
+    <version>7.0.0.Alpha4-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>Payara Core Aggregator</name>
@@ -54,7 +54,7 @@
     <description>All of Payara Core modules</description>
 
     <properties>
-        <payara.core.version>7.0.0.Alpha3</payara.core.version>
+        <payara.core.version>7.0.0.Alpha4-SNAPSHOT</payara.core.version>
         <payara.core.compare-version>7.0.0.Alpha2</payara.core.compare-version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.1.1</payara.security-connectors.version>
