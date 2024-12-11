@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.transaction</groupId>
         <artifactId>transaction</artifactId>
-        <version>6.2024.12</version>
+        <version>6.2025.1-SNAPSHOT</version>
     </parent>
     <artifactId>transaction-internal-api-l10n</artifactId>
     
