@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>7.2024.1.Alpha3</version>
+        <version>7.2025.1.Alpha1-SNAPSHOT</version>
     </parent>
     <artifactId>rest-monitoring-parent</artifactId>
     <packaging>pom</packaging>
