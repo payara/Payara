@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://github.com/payara/Payara/blob/main/LICENSE.txt
+ See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at glassfish/legal/LICENSE.txt.
+
+ GPL Classpath Exception:
+ The Payara Foundation designates this particular file as subject to the "Classpath"
+ exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ file that accompanied this code.
+
+ Modifications:
+ If applicable, add the following below the License Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyright [year] [name of copyright owner]"
+
+ Contributor(s):
+ If you wish your version of this file to be governed by only the CDDL or
+ only the GPL Version 2, indicate your decision by adding "[Contributor]
+ elects to include this software in this distribution under the [CDDL or GPL
+ Version 2] license."  If you don't indicate a single choice of license, a
+ recipient has the option to distribute your version of this file under
+ either the CDDL, the GPL Version 2 or to extend the choice of license to
+ its licensees as provided above.  However, if you add GPL Version 2 code
+ and therefore, elected the GPL Version 2 license, then the option applies
+ only if the new code is made subject to such option by the copyright
+ holder.
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.server.internal.batch</groupId>
+        <artifactId>batch</artifactId>
+        <version>6.2024.13-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>payara-jbatch</artifactId>
+    <name>IBM JBatch Combined</name>
+    <description>Combining of all IBM JBatch jars</description>
+
+    <developers>
+        <developer>
+            <id>smillide</id>
+            <name>Steve Millidge</name>
+            <organization>Payara</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>consolidatedbundle-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>processhk2headers</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>hk2-generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <markersDirectory>${project.build.directory}/dependencies/dependency-maven-plugin-markers</markersDirectory>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.ibm.jbatch</groupId>
+                                    <artifactId>com.ibm.jbatch.container</artifactId>
+                                    <outputDirectory>${project.build.directory}/dependencies/com.ibm.jbatch.container</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            com.ibm.jbatch.jsl.model,
+                            com.ibm.jbatch.spi.services,
+                            com.ibm.jbatch.container.services,
+                            com.ibm.jbatch.container.servicesmanager,
+                            com.ibm.jbatch.container.cdi,
+                            com.ibm.jbatch.container.context.impl,
+                            com.ibm.jbatch.container.impl,
+                            com.ibm.jbatch.container.jobinstance,
+                            com.ibm.jbatch.container.persistence,
+                            com.ibm.jbatch.container.util,
+                            com.ibm.jbatch.container.exception,
+                            com.ibm.jbatch.container.status,
+                            com.ibm.jbatch.spi
+                        </Export-Package>
+                        <Import-Package>
+                            com.ibm.websphere.asynchbeans;resolution:=optional,
+                            jakarta.annotation;version="[2.0,3)";resolution:=optional,
+                            jakarta.batch.api,
+                            jakarta.batch.api.chunk,
+                            jakarta.batch.api.chunk.listener,
+                            jakarta.batch.api.listener,
+                            jakarta.batch.api.partition,
+                            jakarta.batch.operations,
+                            jakarta.batch.runtime,
+                            jakarta.batch.runtime.context,
+                            jakarta.enterprise.context;resolution:=optional,
+                            jakarta.enterprise.context.spi;resolution:=optional,
+                            jakarta.enterprise.inject;resolution:=optional,
+                            jakarta.enterprise.event;version="[3.0,4)";resolution:=optional,
+                            jakarta.enterprise.inject.spi;resolution:=optional,
+                            jakarta.enterprise.util;resolution:=optional,
+                            jakarta.inject;version="[2.0,3)",
+                            javax.naming,
+                            javax.naming.spi,
+                            javax.sql,
+                            jakarta.transaction;version="2.0.0";resolution:=optional,
+                            jakarta.transaction.cdi;version="[4.0,5)";resolution:=optional,
+                            javax.xml,
+                            jakarta.xml.bind,
+                            jakarta.xml.bind.annotation,
+                            jakarta.xml.bind.annotation.adapters,
+                            javax.xml.namespace,
+                            javax.xml.stream,
+                            javax.xml.transform,
+                            javax.xml.transform.stream,
+                            javax.xml.validation,
+                            org.xml.sax,
+                            org.w3c.dom,
+                            org.glassfish.weld,
+                            org.jboss.weld.environment.se;resolution:=optional
+                        </Import-Package>
+                        <Private-Package>*</Private-Package>
+                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                        <Include-Resource>META-INF/services/=${project.build.directory}/dependencies/com.ibm.jbatch.container/META-INF/services</Include-Resource>
+                    </instructions>
+
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+
+                    <unpackBundle>true</unpackBundle>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.spi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.container</artifactId>
+        </dependency>
+    </dependencies>
+</project>

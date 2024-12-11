@@ -1,0 +1,504 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011-2015 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+    Portions Copyright 2017-2024 Payara Foundation and/or affiliates
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fish.payara.server</groupId>
+    <artifactId>payara-aggregator</artifactId>
+    <version>6.2024.13-SNAPSHOT</version>
+    <parent>
+        <groupId>fish.payara.server.core</groupId>
+        <artifactId>core-aggregator</artifactId>
+        <version>6.23.0-SNAPSHOT</version>
+        <relativePath>core</relativePath>
+    </parent>
+    <packaging>pom</packaging>
+
+    <name>Payara Project</name>
+
+    <modules>
+        <module>nucleus</module>
+        <module>appserver</module>
+        <module>api</module>
+    </modules>
+
+    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+         Maven where to download it from -->
+    <repositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+         Maven where to download it from -->
+    <pluginRepositories>
+        <!-- Try Maven central first, not last, which happens when omitted here -->
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>payara-nexus-artifacts</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>payara-nexus-distributions</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-community/</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+        <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
+
+        <javase.version>${jdk.version}</javase.version>
+        <!-- BOM-referenced versions -->
+
+        <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
+        <snakeyaml.version>2.3</snakeyaml.version>
+        <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
+        <mojarra.version>4.0.9.payara-p1</mojarra.version>
+        <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
+
+        <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
+        <krazo.version>3.0.1</krazo.version>
+        <yasson.version>3.0.4</yasson.version>
+        <eclipselink.version>4.0.1.payara-p3</eclipselink.version>
+        <eclipselink.asm.version>9.7.1</eclipselink.asm.version>
+        <openmq.version>6.3.0.payara-p3</openmq.version>
+        <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
+        <webservices.version>4.0.3.payara-p1</webservices.version>
+        <santuario.version>4.0.0</santuario.version>
+        <woodstox.version>6.6.2</woodstox.version>
+        <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
+        <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
+        <angus-activation.version>1.1.0</angus-activation.version>
+        <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
+        <wsdl4j.version>1.6.3</wsdl4j.version>
+        <microprofile-release.version>6.1</microprofile-release.version>
+        <payara-arquillian-container.version>3.0</payara-arquillian-container.version>
+        <h2db.version>2.2.224</h2db.version>
+        <concurro.version>3.0.2.payara-p1</concurro.version>
+        <monitoring-console-process.version>2.0.2</monitoring-console-process.version>
+        <monitoring-console-webapp.version>2.0.2</monitoring-console-webapp.version>
+        <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
+
+        <deploy.skip>true</deploy.skip>
+        <javadoc.skip>true</javadoc.skip>
+        <source.skip>true</source.skip>
+        <license-maven-plugin.version>2.5.0</license-maven-plugin.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>source</id>
+            <activation>
+                <property>
+                    <name>source</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <excludeResources>true</excludeResources>
+                            <excludes>**/*.properties</excludes>
+                            <excludes>**/*.jnlp</excludes>
+                            <excludes>**/*.class</excludes>
+                            <excludes>**/*.html</excludes>
+                            <includePom>false</includePom>
+                            <finalName>payara-${project.version}</finalName>
+                            <includePom>false</includePom>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-sources-aggregate</id>
+                                <phase>pre-site</phase>
+                                <inherited>false</inherited>
+                                <goals>
+                                    <goal>aggregate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>javadoc</id>
+            <activation>
+                <property>
+                    <name>javadoc</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <finalName>payara-${project.version}</finalName>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <docencoding>UTF-8</docencoding>
+                            <includeDependencySources>false</includeDependencySources>
+                            <!-- This parameter is to be added when using JDK8 -->
+                            <additionalOptions>
+                                <additionalOption>-Xdoclint:none</additionalOption>
+                            </additionalOptions>
+                            <finalName>payara-${project.version}</finalName>
+                            <minmemory>512m</minmemory>
+                            <maxmemory>2g</maxmemory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadoc-aggregate</id>
+                                <phase>pre-site</phase>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <verbose>true</verbose>
+                                </configuration>
+                                <goals>
+                                    <goal>aggregate-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>javadoc-jar</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <phase>pre-site</phase>
+                                <inherited>false</inherited>
+                                <configuration>
+                                    <classesDirectory>${project.build.directory}/site/apidocs</classesDirectory>
+                                    <classifier>javadoc</classifier>
+                                    <archive>
+                                        <manifestFile />
+                                    </archive>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>gpgsign</id>
+            <activation>
+                <property>
+                    <name>gpgsign</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>BuildCore</id>
+            <activation>
+                <property>
+                    <name>build.core.skip</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>core</module>
+            </modules>
+        </profile>
+
+        <!-- Duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
+             Maven where to download it from -->
+        <profile>
+            <id>payara-nexus-staging</id>
+            <repositories>
+                <repository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>payara-nexus-staging</id>
+                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+
+        <profile>
+            <id>GenerateThirdPartyLicenseFile</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>download-and-aggregate-licenses</id>
+                                <goals>
+                                    <goal>aggregate-add-third-party</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <defaultGoal>install</defaultGoal>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>${maven.site.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>fish.payara.maven.plugins</groupId>
+                <artifactId>dynamic-build-properties-maven-plugin</artifactId>
+                <version>${dynamic-build-properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>split-version-by-delimiter</goal>
+                        </goals>
+                        <configuration>
+                            <parameterNames>
+                                <param>major_version</param>
+                                <param>minor_version</param>
+                                <param>update_version</param>
+                            </parameterNames>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven.jar.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven.source.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven.javadoc.plugin.version}</version>
+                    <configuration>
+                        <additionalOptions>
+                            <additionalOption>-Xdoclint:none</additionalOption>
+                        </additionalOptions>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${maven.gpg.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${maven.install.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven.release.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven.compiler.plugin.version}</version>
+                    <configuration>
+                        <source>${javase.version}</source>
+                        <target>${javase.version}</target>
+                        <excludes>
+                            <exclude>**/.ade_path/**</exclude>
+                        </excludes>
+                        <testExcludes>
+                            <testExclude>**/.ade_path/**</testExclude>
+                        </testExcludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${license-maven-plugin.version}</version>
+                    <configuration>
+                        <outputDirectory>${project.basedir}/appserver/packager/legal/src/main/resources/glassfish/legal</outputDirectory>
+                        <thirdPartyFilename>3RD-PARTY-LICENSE.txt</thirdPartyFilename>
+                        <excludedGroups>fish.payara.*</excludedGroups>
+                        <fileTemplate>appserver/packager/legal/src/main/resources/license-template.ftl</fileTemplate>
+                        <missingFile>${project.basedir}/appserver/packager/legal/src/main/resources/THIRD-PARTY.properties</missingFile>
+                        <force>true</force>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>xml-maven-plugin</artifactId>
+                    <version>1.1.0</version>
+                    <executions>
+                        <execution>
+                            <id>validate-xml-files</id>
+                            <goals>
+                                <goal>validate</goal>
+                            </goals>
+                            <phase>test</phase>
+                            <configuration>
+                                <validationSets>
+                                    <validationSet>
+                                        <dir>${validation.xml.root}</dir>
+                                        <includes>
+                                            <include>**/*.xml</include>
+                                        </includes>
+                                        <excludes>
+                                            <!-- these files contain templates with placeholders -->
+                                            <exclude>**/glassfish/lib/install/templates/resources/custom/**</exclude>
+                                            <!-- no xml in file yet -->
+                                            <exclude>**/payara6/mq/etc/registry/servicetag.xml</exclude>
+                                        </excludes>
+                                    </validationSet>
+                                </validationSets>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
