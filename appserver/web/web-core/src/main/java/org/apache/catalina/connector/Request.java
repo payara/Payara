@@ -3157,17 +3157,9 @@ public class Request implements HttpRequest, HttpServletRequest {
             }
         }
 
-        return new Cookie(name, sanitizeCookieValue(value));
+        return new Cookie(name, value);
     }
     // END GlassFish 898
-
-    private String sanitizeCookieValue(String value) {
-        if (value != null && value.startsWith("\"") && value.endsWith("\"")) {
-            return value.substring(1, value.length() - 1);
-        }
-
-        return value;
-    }
 
     // START SJSAS 6346738
     /**
