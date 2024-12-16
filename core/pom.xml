@@ -77,7 +77,6 @@
         <jackson.version>2.18.2</jackson.version>
         <jersey.version>4.0.0-M1.payara-p1-SNAPSHOT</jersey.version>
         <jakarta.validation.version>3.1.0</jakarta.validation.version>
-        <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
         <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
         <hibernate.validator.osgi.version>8.0.1.Final</hibernate.validator.osgi.version>
         <jaxb-impl.version>4.0.2</jaxb-impl.version>
