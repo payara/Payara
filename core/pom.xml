@@ -55,7 +55,7 @@
 
     <properties>
         <payara.core.version>7.0.0.Alpha3</payara.core.version>
-        <payara.core.compare-version>7.0.0.Alpha2</payara.core.compare-version>
+        <payara.core.compare-version>6.20.0</payara.core.compare-version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.1.1</payara.security-connectors.version>
         <hk2.version>4.0.0-M2.payara-p2</hk2.version>
