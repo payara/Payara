@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -61,7 +62,7 @@ public class CLIUtil {
         return config;
     }
     
-    static SystemPropertyBag chooseTarget(final Domain domain, final String target) {
+    public static SystemPropertyBag chooseTarget (final Domain domain, final String target) {
         SystemPropertyBag spb = null;
         Property domainProp = domain.getProperty("administrative.domain.name");
         String domainName = domainProp.getValue();
