@@ -88,7 +88,7 @@
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.8.1</maven.invoker.plugin.version>
+        <maven.invoker.plugin.version>3.9.0</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
