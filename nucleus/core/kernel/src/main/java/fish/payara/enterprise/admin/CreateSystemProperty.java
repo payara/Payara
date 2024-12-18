@@ -79,11 +79,8 @@ public class CreateSystemProperty implements AdminCommand, AdminCommandSecurity.
     @Param(optional=true, defaultValue=SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
-    @Param(name="name")
-    String propertyName;
-
-    @Param(name="value")
-    String propertyValue;
+    @Param(name="name_value", primary=true)
+    String propertyAssignment;
 
     @Inject
     Domain domain;
@@ -93,8 +90,13 @@ public class CreateSystemProperty implements AdminCommand, AdminCommandSecurity.
     @Override
     public void execute (AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
+        String[] assignment = propertyAssignment.split("=");
+        String propertyName;
+        String propertyValue;
 
         try {
+            propertyName = assignment[0];
+            propertyValue = assignment[1];
             ConfigSupport.apply(propertyBag -> {
                 // update existing system property
                 for (SystemProperty property : propertyBag.getSystemProperty()) {
@@ -116,7 +118,7 @@ public class CreateSystemProperty implements AdminCommand, AdminCommandSecurity.
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch(Exception e) {
             report.setMessage(localStrings.getLocalString("create.system.property.failed",
-                "System property {0} creation failed", propertyName));
+                "System property {0} creation failed", propertyAssignment));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }

@@ -33,12 +33,6 @@ OPTIONS
        --target
            The target on which you are creating the system property.
 
-       --name
-          The name of the property to add or update.
-
-       --value
-          The value to assign to the named property.
-
 OPERANDS
        target
            The valid targets for this subcommand are instance, cluster,
@@ -63,18 +57,15 @@ OPERANDS
            instance_name
                Creates the property on a specified server instance.
 
-       name
-           The name of the property to add or update.
-
-       value
-           The value to assign to the named property.
+       name_value
+           The system property to assign. In the form of "PropertyName=PropertyValue"
 
 EXAMPLES
        Example 1, Creating System Property
            This example creates a system property associated with an HTTP
            listener on a server instance named myserver.
 
-               asadmin> create-system-property --target myserver --name http-listener-port --value 1088
+               asadmin> create-system-property --target myserver http-listener-port=1088
                Command create-system-property executed successfully.
 
 EXIT STATUS
