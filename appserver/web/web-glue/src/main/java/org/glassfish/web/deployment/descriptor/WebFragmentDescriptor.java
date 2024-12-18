@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -60,6 +60,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
     private String jarName = null;
     private OrderingDescriptor ordering = null;
     private boolean exists = true;
+    private String warLibraryPath;
 
     /**
      * Constrct an empty web app [{0}].
@@ -91,6 +92,18 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
 
     public void setExists(boolean exists) {
         this.exists = exists;
+    }
+
+    public boolean isWarLibrary() {
+        return warLibraryPath != null;
+    }
+
+    public String getWarLibraryPath() {
+        return warLibraryPath;
+    }
+
+    public void setWarLibraryPath(String warLibraryPath) {
+        this.warLibraryPath = warLibraryPath;
     }
 
     @Override
