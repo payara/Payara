@@ -1,0 +1,83 @@
+create-system-property(1)  asadmin Utility Subcommands  create-system-property(1)
+
+NAME
+       create-system-property - adds or updates a single system property
+       of the domain, configuration, cluster, or server instance
+
+SYNOPSIS
+           create-system-property [--help]
+           [--target target]
+           [name=value]
+
+DESCRIPTION
+       The create-system-property subcommand adds or updates a single system
+       property that can be referenced elsewhere on the server.
+
+       Payara Server provides hooks where tokens (system properties) can be
+       specified. Because Payara Server does not have multiple server
+       elements, you can specify a particular token at any level. When a
+       domain supports multiple servers, the override potential can be
+       exploited. When a domain is started or restarted, all <system-property>
+       elements are resolved and available to the Java Virtual Machine by
+       using the System.setProperty() call on each of them (with its name and
+       value derived from the corresponding attributes of the element). This
+       is analogous to sending the elements as -D parameters on the Java
+       command line.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           The target on which you are creating the system property.
+
+OPERANDS
+       target
+           The valid targets for this subcommand are instance, cluster,
+           configuration, domain, and server. Server is the default option.
+           Valid values are:
+
+           server
+               Creates the property on the default server instance. This is
+               the default value.
+
+           domain
+               Creates the property for all server instances in the default
+               domain.
+
+           configuration_name
+               Creates the property in the specified configuration.
+
+           cluster_name
+               Creates the property on all server instances in the specified
+               cluster.
+
+           instance_name
+               Creates the property on a specified server instance.
+
+       name_value
+           The system property to assign. In the form of "PropertyName=PropertyValue"
+
+EXAMPLES
+       Example 1, Creating System Property
+           This example creates a system property associated with an HTTP
+           listener on a server instance named myserver.
+
+               asadmin> create-system-property --target myserver http-listener-port=1088
+               Command create-system-property executed successfully.
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-system-properties(1), delete-system-property(1), list-system-properties(1)
+
+       asadmin(1M)
+
+Java EE 8                  17 Dec 2024            create-system-property(1)
