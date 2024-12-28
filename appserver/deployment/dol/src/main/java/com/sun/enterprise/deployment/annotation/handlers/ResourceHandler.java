@@ -46,6 +46,8 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContextImpl;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.glassfish.apf.AnnotationHandlerFor;
@@ -246,7 +248,7 @@ public class ResourceHandler extends AbstractResourceHandler {
             
             //if value is empty we need to verify any other available descriptor that use same field with not empty value
             if (!ok(desc.getValue())) {
-                String valueFound = searchValueIfAvailable(target.getFieldName(), target.getClassName(), descriptors);
+                String valueFound = searchValueIfAvailable(target.getFieldName(), descriptors);
                 if (!valueFound.isEmpty()) {
                     desc.setValue(valueFound);
                 }
@@ -304,17 +306,15 @@ public class ResourceHandler extends AbstractResourceHandler {
     /**
      * Method to verify any other Environment Properties that contain same field name and return value if not empty
      * @param fieldName field to search
-     * @param className class to search
      * @param descriptors available descriptors for EJB
      * @return String value
      */
-    public String searchValueIfAvailable(String fieldName, String className, EnvironmentProperty[] descriptors) {
-        for (EnvironmentProperty desc : descriptors) {
-            Set<InjectionTarget> result = desc.getInjectionTargets().stream()
-                    .filter(i -> i.getFieldName().equals(fieldName) && i.getClassName().equals(className)).collect(Collectors.toSet());
-            if (!desc.getValue().isEmpty() && !result.isEmpty()) {
-                return desc.getValue();
-            }
+    public String searchValueIfAvailable(String fieldName, EnvironmentProperty[] descriptors) {
+        Optional<EnvironmentProperty> notEmptyValueOptional = Arrays.stream(descriptors)
+                .filter(d -> d.getDisplayName().equalsIgnoreCase(fieldName))
+                .filter(EnvironmentProperty::hasAValue).findFirst();
+        if(notEmptyValueOptional.isPresent()) {
+            return notEmptyValueOptional.get().getValue();
         }
         return "";
     }
