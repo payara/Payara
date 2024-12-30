@@ -48,8 +48,6 @@ import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContextImpl;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
