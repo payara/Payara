@@ -308,15 +308,14 @@ public class ResourceHandler extends AbstractResourceHandler {
      * @param descriptors available descriptors for EJB
      * @return String value
      */
-    public String searchValueIfAvailable(String fieldName, EnvironmentProperty[] descriptors) {
-        Optional<EnvironmentProperty> notEmptyValueOptional = Arrays.stream(descriptors)
+    private String searchValueIfAvailable(String fieldName, EnvironmentProperty[] descriptors) {
+        return Arrays.stream(descriptors)
                 .filter(d -> d.getDisplayName().equalsIgnoreCase(fieldName) ||
                         fieldName.toLowerCase().contains(d.getDisplayName().toLowerCase()))
-                .filter(EnvironmentProperty::hasAValue).findFirst();
-        if (notEmptyValueOptional.isPresent()) {
-            return notEmptyValueOptional.get().getValue();
-        }
-        return "";
+                .filter(EnvironmentProperty::hasAValue)
+                .findFirst()
+                .map(EnvironmentProperty::getValue)
+                .orElse("");
     }
 
     private EnvironmentProperty[] getDescriptors(Class resourceType,
