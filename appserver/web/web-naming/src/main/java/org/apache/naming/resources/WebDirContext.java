@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 
 package org.apache.naming.resources;
 
@@ -322,6 +323,9 @@ public class WebDirContext extends FileDirContext {
             String jeName = getAbsoluteJarResourceName(name);
             for (JarFile jarFile : jarFiles) {
                 JarEntry jarEntry = null;
+                if (jarFile == null) {
+                    return null;
+                }
                 if (jeName.charAt(jeName.length() - 1) != '/') {
                     jarEntry = jarFile.getJarEntry(jeName + '/');
                     if (jarEntry != null) {
