@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -125,7 +125,6 @@ import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
-import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
@@ -976,28 +975,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
         externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
-        deploymentImpl.addDynamicExtension(createProbeExtension());
     }
 
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
         configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
-    }
-
-    private Metadata<Extension> createProbeExtension() {
-        ProbeExtension probeExtension;
-        Class<ProbeExtension> probeExtensionClass = ProbeExtension.class;
-        try {
-            if (System.getSecurityManager() != null) {
-                probeExtension = AccessController.doPrivileged(NewInstanceAction.of(probeExtensionClass));
-            } else {
-                probeExtension = probeExtensionClass.newInstance();
-            }
-        } catch (Exception e) {
-            throw new WeldException(e.getCause());
-        }
-
-        return new MetadataImpl<Extension>(probeExtension, "N/A");
     }
 
     private void addWeldListenerToAllWars(DeploymentContext context) {
