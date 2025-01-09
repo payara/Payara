@@ -111,5 +111,4 @@ RUN true \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs \
     && true
 
-ENTRYPOINT ["tini", "--"]
-CMD "${SCRIPT_DIR}/entrypoint.sh"
+ENTRYPOINT ["tini", "--", "/opt/payara/scripts/entrypoint.sh"]

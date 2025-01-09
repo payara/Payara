@@ -47,4 +47,7 @@ for f in ${SCRIPT_DIR}/init_* ${SCRIPT_DIR}/init.d/*; do
       echo
 done
 
+# Doing a Graceful Shutdown before container stops
+trap 'echo "Received SIGTERM. Stopping Payara..."; timeout 30 ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME}; exit 0' SIGTERM
+
 exec ${SCRIPT_DIR}/startInForeground.sh $PAYARA_ARGS
