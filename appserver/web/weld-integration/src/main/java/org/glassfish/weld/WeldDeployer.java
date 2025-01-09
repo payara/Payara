@@ -125,6 +125,7 @@ import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
@@ -975,6 +976,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
         externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
         externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
+        deploymentImpl.addDynamicExtension(createProbeExtension());
     }
 
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
@@ -982,6 +984,22 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
     }
 
+    private Metadata<Extension> createProbeExtension() {
+        ProbeExtension probeExtension;
+        Class<ProbeExtension> probeExtensionClass = ProbeExtension.class;
+        try {
+            if (System.getSecurityManager() != null) {
+                probeExtension = AccessController.doPrivileged(NewInstanceAction.of(probeExtensionClass));
+            } else {
+                probeExtension = probeExtensionClass.newInstance();
+            }
+        } catch (Exception e) {
+            throw new WeldException(e.getCause());
+        }
+
+        return new MetadataImpl<Extension>(probeExtension, "N/A");
+    }
+    
     private void addWeldListenerToAllWars(DeploymentContext context) {
         // if there's at least 1 ejb jar then add the listener to all wars
         ApplicationHolder applicationHolder = context.getModuleMetaData(ApplicationHolder.class);
