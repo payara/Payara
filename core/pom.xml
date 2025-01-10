@@ -134,7 +134,7 @@
         <junit.version>4.13.2</junit.version>
         <mockito.version>2.28.2</mockito.version>
         <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
-        <jline.version>3.27.1</jline.version>
+        <jline.version>3.28.0</jline.version>
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
         <mimepull.version>1.10.0</mimepull.version>
