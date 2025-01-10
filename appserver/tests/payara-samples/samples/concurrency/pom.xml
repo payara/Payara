@@ -61,7 +61,7 @@
         <junit-jupiter.version>5.11.4</junit-jupiter.version>
         <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.4</jakarta-concurrent.version>
-        <shrinkwrap.version>3.3.2</shrinkwrap.version>
+        <shrinkwrap.version>3.3.3</shrinkwrap.version>
     </properties>
 
     <dependencyManagement>
