@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2023] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -901,14 +901,11 @@ public class Response
      */
     @Override
     public void setBufferSize(int size) {
-
-        if (isCommitted() || !outputBuffer.isNew())
+        if (isCommitted()) {
             throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CHANGE_BUFFER_SIZE_EXCEPTION));
-
+        }
         outputBuffer.setBufferSize(size);
-
     }
-
 
     /**
      * Set the content length (in bytes) for this Response.
