@@ -111,6 +111,7 @@ import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.glassfish.internal.deployment.analysis.TraceContext;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
+import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -685,8 +686,12 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
             Boolean skipScanExternalLibProp = Boolean.valueOf(context.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
 
-            if (skipScanExternalLibProp && jandexIndexer.getIndexFromArchive(context.getSource()) == null) {
-                return null;
+            if (skipScanExternalLibProp) {
+                Index index = jandexIndexer.getIndexFromArchive(context.getSource());
+                if (index != null) {
+                    context.addTransientAppMetaData(Index.class.getName(), index);
+                    return null;
+                }
             }
             Parser parser = getDeployableParser(context.getSource(), skipScanExternalLibProp, false, tracing,
                     context.getLogger(), context);
