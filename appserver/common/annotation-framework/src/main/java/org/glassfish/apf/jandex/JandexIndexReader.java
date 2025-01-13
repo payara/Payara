@@ -39,15 +39,34 @@
  */
 package org.glassfish.apf.jandex;
 
+import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.deployment.JandexIndexer;
 import org.jboss.jandex.Index;
+import org.jboss.jandex.IndexReader;
 import org.jvnet.hk2.annotations.Service;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class JandexIndexReader implements JandexIndexer {
     @Override
     public Index getIndexFromArchive(ReadableArchive archive) {
+        Index index = readIndex(archive, "META-INF/jandex.idx");
+        if (index == null) {
+            index = readIndex(archive, "WEB-INF/classes/META-INF/jandex.idx");
+        }
+        return index;
+    }
+
+    private Index readIndex(ReadableArchive archive, String path) {
+        try (InputStream stream = archive.getEntry(path)) {
+            if (stream != null) {
+                return new IndexReader(stream).read();
+            }
+        } catch (IOException e) {
+            AnnotationUtils.getLogger().warning(String.format("Unable to read jandex %s from archive %s ", path, archive.getName()));
+        }
         return null;
     }
 }
