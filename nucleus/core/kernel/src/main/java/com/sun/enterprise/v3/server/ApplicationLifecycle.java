@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
@@ -104,6 +104,7 @@ import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
 import org.glassfish.internal.deployment.analysis.SpanSequence;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
@@ -208,6 +209,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     private HotDeployService hotDeployService;
+
+    @Inject @org.jvnet.hk2.annotations.Optional
+    JandexIndexer jandexIndexer;
 
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
@@ -681,6 +685,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(context);
             Boolean skipScanExternalLibProp = Boolean.valueOf(context.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
 
+            if (skipScanExternalLibProp && jandexIndexer.getIndexFromArchive(context.getSource()) == null) {
+                return null;
+            }
             Parser parser = getDeployableParser(context.getSource(), skipScanExternalLibProp, false, tracing,
                     context.getLogger(), context);
             ParsingContext parsingContext = parser.getContext();
