@@ -190,7 +190,7 @@
         <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
         <maven.build.helper.plugin.version>3.6.0</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.6.0</maven.flatten.plugin.version>
-        <japicmp.maven.plugin.version>0.22.0</japicmp.maven.plugin.version>
+        <japicmp.maven.plugin.version>0.23.1</japicmp.maven.plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
