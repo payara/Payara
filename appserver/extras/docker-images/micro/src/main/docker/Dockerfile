@@ -55,8 +55,7 @@ ENV PAYARA_DIR=${HOME_DIR} \
 RUN true \
     && apk update \
     && apk del openssl \
-    && apk add --no-cache tini \
-    && rm -rf /var/lib/apt/lists/* \
+    && apk add --no-cache tini bash \
     && mkdir -p "${HOME_DIR}" \
     && addgroup --gid 1000 payara \
     && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
