@@ -99,6 +99,7 @@
                     <include>com/sun/enterprise/v3/**/statusNotDAS.html</include>
                     <include>com/sun/enterprise/v3/**/asynch-1F.gif</include>
                     <include>com/sun/enterprise/v3/**/backimage.jpg</include>
+                    <include>fish/payara/enterprise/admin/**/*.properties</include>
                 </includes>
             </resource>
             <resource>
