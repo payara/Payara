@@ -53,10 +53,9 @@ ENV PAYARA_DIR=${HOME_DIR} \
     MEM_XSS="512k"
 
 RUN true \
-    && apt-get update \
-    # OpenSSL contains security vulnerabilities and is unused by Payara. To prevent recurring issues simply remove OpenSSL
-    && apt-get remove -y openssl \
-    && apt-get install -y tini \
+    && apk update \
+    && apk del openssl \
+    && apk add --no-cache tini \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p "${HOME_DIR}" \
     && addgroup --gid 1000 payara \
@@ -66,7 +65,6 @@ RUN true \
     && mkdir -p "${SCRIPT_DIR}" \
     && mkdir -p "${DEPLOY_DIR}" \
     && chown -R payara:payara ${HOME_DIR} \
-    && true
 
 USER payara
 WORKDIR ${HOME_DIR}
@@ -74,6 +72,5 @@ WORKDIR ${HOME_DIR}
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
-# Use tini como entrypoint para garantir que os sinais sejam propagados corretamente
 ENTRYPOINT ["tini", "--", "/opt/payara/entrypoint.sh"]
 CMD ["--deploymentDir", "/opt/payara/deployments"]
