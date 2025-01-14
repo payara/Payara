@@ -75,5 +75,5 @@ COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
 # Use tini como entrypoint para garantir que os sinais sejam propagados corretamente
-ENTRYPOINT ["tini", "--", "entrypoint.sh"]
+ENTRYPOINT ["tini", "--", "/opt/payara/entrypoint.sh"]
 CMD ["--deploymentDir", "/opt/payara/deployments"]
