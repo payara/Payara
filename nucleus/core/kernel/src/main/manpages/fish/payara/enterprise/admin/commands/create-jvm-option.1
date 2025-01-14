@@ -1,17 +1,18 @@
-create-jvm-options(1)     asadmin Utility Subcommands    create-jvm-options(1)
+create-jvm-option(1)     asadmin Utility Subcommands    create-jvm-option(1)
 
 NAME
-       create-jvm-options - creates options for the Java application launcher
+       create-jvm-option - creates a single option for the Java application launcher
 
 SYNOPSIS
-           create-jvm-options [--help] [--target target] [--profiler={true|false}]
-           (jvm-option-name=jvm-option-value) [:jvm-option-name=jvm-option-value*]
+           create-jvm-option [--help] [--target target] [--profiler={true|false}]
+           (assignment=jvm-option)
 
 DESCRIPTION
-       The create-jvm-options subcommand creates command-line options that are
-       passed to the Java application launcher when GlassFish Server is
+       The create-jvm-option subcommand is a singular version of the
+       create-jvm-options(1) subcommand and creates command-line options that
+       are passed to the Java application launcher when Payara Server is
        started. The options that this subcommand creates are in addition to
-       the options that are preset with GlassFish Server. Java application
+       the options that are preset with Payara Server. Java application
        launcher options are stored in the Java configuration java—config
        element or the profiler profiler element of the domain.xml file. The
        options are sent to the command line in the order they appear in the
@@ -114,14 +115,14 @@ OPTIONS
                Specifies a named configuration.
 
        --profiler
-           Indicates whether the Java application launcher options are for the
+           Indicates whether the Java application launcher option is for the
            profiler. The profiler must exist for this option to be true.
            Default is false.
 
 OPERANDS
-       jvm-option-name
-           One or more options delimited by a colon (:). The format of an
-           option depends on the following:
+       assignment
+           A single option assignment. The format of an option depends
+           on the following:
 
            *   If the option has a name and a value, the format is
                option-name=value.
@@ -135,57 +136,45 @@ OPERANDS
                misinterpreted as -se, the asadmin short forms for --secure and
                --echo:
 
-                   create-jvm-options -server
+                   create-jvm-option -server
                To create the JVM option -server, instead use the command:
 
-                   create-jvm-options -- -server
+                   create-jvm-option -- -server
 
                Note
-               +----------------------------------------+
-               |If an option name or option value       |
-               |contains a colon, the backslash (\)     |
-               |must be used to escape the colon in the |
-               |name or value. Other characters might   |
-               |also require an escape character. For   |
-               |more information about escape           |
-               |characters in subcommand options, see   |
-               |the asadmin(1M) man page.               |
-               +----------------------------------------+
+               +-----------------------------------------+
+               | If an option name or option value       |
+               | contains a colon, the backslash (\)     |
+               | must be used to escape the colon in the |
+               | name or value. Other characters might   |
+               | also require an escape character. For   |
+               | more information about escape           |
+               | characters in subcommand options, see   |
+               | the asadmin(1M) man page.               |
+               +-----------------------------------------+
 
 EXAMPLES
-       Example 1, Setting Java System Properties
-           This example sets multiple Java system properties.
+       Example 1, Setting system property
 
-               asadmin> create-jvm-options -Dunixlocation=/root/example:
-               -Dvariable=\$HOME:-Dwindowslocation=d\:\\sun\\appserver:-Doption1=-value1
-               created 4 option(s)
-               Command create-jvm-options executed successfully.
+               asadmin> create-jvm-option -Dunixlocation=/root/example
+               Successfully added JVM option: -Dunixlocation=/root/example
+               Command create-jvm-option executed successfully.
 
        Example 2, Setting a Startup Parameter for the Java Application
        Launcher
            This example sets the maximum available heap size to 1024.
 
-               asadmin> create-jvm-options -Xmx1024m
-               created 1 option(s)
-               Command create-jvm-options executed successfully.
+               asadmin> create-jvm-option -Xmx1024m
+               Successfully added JVM option: -Xmx1024m
+               The previously configured maximum heap size (-Xmx512m) will be replaced by the new configuration: -Xmx1024m
+               Command create-jvm-option executed successfully.
 
-       Example 3, Setting Multiple Startup Parameters for the Java Application
-       Launcher
-           This example sets the maximum available heap size to 1024 and
-           requests details about garbage collection.
-
-               asadmin> create-jvm-options "-Xmx1024m:-XX\:+PrintGCDetails"
-               created 1 option(s)
-               Command create-jvm-options executed successfully.
-           In this case, one of the two parameters already exists, so the
-           subcommand reports that only one option was set.
-
-       Example 4, Setting a JVM Startup Parameter for the Profiler
+       Example 3, Setting a JVM Startup Parameter for the Profiler
            This example sets a JVM startup parameter for the profiler.
 
-               asadmin> create-jvm-options --profiler=true -XX\:MaxPermSize=192m
-               created 1 option(s)
-               Command create-jvm-options executed successfully.
+               asadmin> create-jvm-option --profiler=true -XX:MaxPermSize=192m
+               Successfully added JVM option: -XX:MaxPermSize=192m
+               Command create-jvm-option executed successfully.
 
 EXIT STATUS
        0
@@ -196,7 +185,7 @@ EXIT STATUS
 
 SEE ALSO
        delete-jvm-options(1), list-jvm-options(1), create-profiler(1),
-       restart-domain(1), create-jvm-option(1)
+       restart-domain(1), create-jvm-options(1)
 
        asadmin(1M)
 
@@ -209,4 +198,4 @@ SEE ALSO
        *   Windows: java - the Java application launcher
            (http://docs.oracle.com/javase/6/docs/technotes/tools/windows/java.html)
 
-Java EE 8                         18 Dec 2024            create-jvm-options(1)
+Java EE 8                         19 Dec 2024            create-jvm-option(1)
