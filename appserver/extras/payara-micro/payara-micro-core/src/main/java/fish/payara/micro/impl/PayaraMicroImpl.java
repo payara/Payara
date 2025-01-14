@@ -1750,6 +1750,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             @Override
             public void run() {
                 try {
+                    LOGGER.log(Level.INFO, "Trying to shut down micro...");
                     if (gf != null) {
                         gf.stop();
                         gf.dispose();
