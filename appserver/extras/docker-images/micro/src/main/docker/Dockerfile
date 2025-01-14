@@ -40,7 +40,7 @@
 FROM @docker.java.image@
 
 # Default payara ports to expose
-EXPOSE 6900 8080
+EXPOSE 6900 8080 5005
 
 # PAYARA_HOME is deprecated - it is here for backward compatibility
 ENV PAYARA_HOME=/opt/payara

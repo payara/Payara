@@ -41,11 +41,12 @@ set -e
 
 # Doing a Graceful Shutdown before container stops
 trap 'echo "Received SIGTERM. Stopping Payara-Micro...";
-      pid=$!; wait $pid;
+      kill -TERM "$child" 2>/dev/null;
+      wait "$child";
       echo "Payara-Micro stopped. Exiting gracefully";' SIGTERM
 
 exec java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005 -jar payara-micro.jar "$@" &
-micro_pid=$!
+child=$!
 
 # Wait Payara-Micro Process before finish the container
-wait $micro_pid
+wait $child
