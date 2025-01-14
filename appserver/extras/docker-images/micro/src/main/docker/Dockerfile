@@ -52,10 +52,10 @@ ENV PAYARA_DIR=${HOME_DIR} \
     MEM_MAX_RAM_PERCENTAGE="70.0" \
     MEM_XSS="512k"
 
+# Add Tini
+RUN apk add --no-cache tini
+
 RUN true \
-    && apk update \
-    && apk del openssl \
-    && apk add --no-cache tini bash \
     && mkdir -p "${HOME_DIR}" \
     && addgroup --gid 1000 payara \
     && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
@@ -64,6 +64,7 @@ RUN true \
     && mkdir -p "${SCRIPT_DIR}" \
     && mkdir -p "${DEPLOY_DIR}" \
     && chown -R payara:payara ${HOME_DIR} \
+    && true
 
 USER payara
 WORKDIR ${HOME_DIR}
@@ -71,5 +72,5 @@ WORKDIR ${HOME_DIR}
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
-ENTRYPOINT ["tini", "--", "/opt/payara/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "--", "/opt/payara/entrypoint.sh"]
 CMD ["--deploymentDir", "/opt/payara/deployments"]
