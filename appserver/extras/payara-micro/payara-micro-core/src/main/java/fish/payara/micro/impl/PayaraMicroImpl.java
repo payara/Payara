@@ -1746,7 +1746,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(
-                "GlassFish Shutdown Hook") {
+                "Micro Shutdown Hook") {
             @Override
             public void run() {
                 try {
