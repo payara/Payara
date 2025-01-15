@@ -45,7 +45,7 @@ trap 'echo "Stopping Payara-Micro...";
       pid=$!; wait $pid;
       echo "Payara-Micro stopped. Exiting gracefully";' SIGTERM
 
-exec java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} "$@" &
+exec java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar "$@" &
 child=$!
 
 # Wait Payara-Micro Process before finish the container
