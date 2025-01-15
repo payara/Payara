@@ -42,7 +42,7 @@ set -e
 # Doing a Graceful Shutdown before container stops
 trap 'echo "Stopping Payara-Micro...";
       kill -TERM "$child" 2>/dev/null;
-      pid=$!; wait $pid;
+      wait $child;
       echo "Payara-Micro stopped. Exiting gracefully";' SIGTERM
 
 exec java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar "$@" &
