@@ -5168,25 +5168,6 @@ public class StandardContext
                 fireContainerEvent(ContainerEvent.BEFORE_CONTEXT_INITIALIZED,
                                    listener);
                 listener.contextInitialized(event);
-            } catch (IllegalStateException illegalStateException) {
-                /**
-                 * Workaround for Spring.
-                 *
-                 * The Spring classes which reference Faces will be detected,
-                 * which will add the Faces servlet context listener to the contextListeners list.
-                 * Since CDI is not available in this scenario (and isn't expected to be), attempt to continue.
-                 *
-                 * Another workaround to investigate would be adding some sort of flag to force skipping of Faces initialisation,
-                 * either via deployment configuration or via a Spring application sniffer.
-                 */
-                if (listener.getClass().getName().equals("com.sun.faces.config.ConfigureListener")
-                        && illegalStateException.getMessage().contains("CDI is not available")) {
-                    log.log(Level.WARNING,
-                            "Failed to initialise Mojarra Faces servlet context listener due to CDI not being available, attempting to continue with application deployment",
-                            illegalStateException);
-                } else {
-                    throw illegalStateException;
-                }
             } finally {
                 context.setRestricted(false);
                 fireContainerEvent(ContainerEvent.AFTER_CONTEXT_INITIALIZED,

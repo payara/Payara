@@ -97,5 +97,27 @@
             <artifactId>dol</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            org.glassfish.faces.integration.*,
+                            fish.payara.faces.integration;
+                            version=${project.osgi.version}
+                        </Export-Package>
+                        <Import-Package>
+                            com.sun.logging.enterprise.system.container.web,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
 
