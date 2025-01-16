@@ -128,7 +128,7 @@ public class HelloJSPTestNG {
         int responseCode = conn.getResponseCode();
         boolean result = false;
         if (responseCode == 200) {
-            result = true
+            result = true;
         }
 
         Assert.assertEquals(result, true, "Unexpected HTML");
