@@ -245,7 +245,7 @@ public class ResourceHandler extends AbstractResourceHandler {
             }
             
             //if value is empty we need to verify any other available descriptor that use same field with not empty value
-            if (target.getFieldName() != null && !ok(desc.getValue())) {
+            if (target != null && target.getFieldName() != null && !ok(desc.getValue())) {
                 String valueFound = searchValueIfAvailable(target.getFieldName(), descriptors);
                 if (!valueFound.isEmpty()) {
                     desc.setValue(valueFound);
