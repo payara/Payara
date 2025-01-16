@@ -115,34 +115,23 @@ public class HelloJSPTestNG {
 
     }
 
-    @Test(groups={"pulse"}) //test method for server
-    public void testServerRunning() throws Exception{
-	    //Your server is up and running!
-	    //
-	String testurl = "http://" + host  + ":" + port;
+    @Test(groups = {"pulse"}) //test method for server
+    public void testServerRunning() throws Exception {
+        //Your server is up and running!
+        //
+        String testurl = "http://" + host + ":" + port;
         //System.out.println("URL is: "+testurl);
         URL url = new URL(testurl);
         //echo("Connecting to: " + url.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.connect();
         int responseCode = conn.getResponseCode();
+        boolean result = false;
+        if (responseCode == 200) {
+            result = true
+        }
 
-	InputStream is = conn.getInputStream();
-        BufferedReader input = new BufferedReader(new InputStreamReader(is));
-
-        String line = null;
-        boolean result=false;
-        String testLine = null;        
-        while ((line = input.readLine()) != null) {
-            if(line.indexOf("now running")!=-1){
-                result=true;
-             testLine = line;
-           //echo(testLine);
-            }
-          
-        }        
-                
-        Assert.assertEquals(result, true,"Unexpected HTML");
+        Assert.assertEquals(result, true, "Unexpected HTML");
     }
     
     
@@ -171,7 +160,7 @@ public class HelloJSPTestNG {
             if(line.indexOf("Welcome to HTML Test Program")!=-1){
                 result=true;
              testLine = line;
-           //System.out.println(testLine);
+           System.out.println(testLine);
             }
           
         }        

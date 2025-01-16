@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2022-2024] [Payara Foundation and/or its affiliates] -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
@@ -102,16 +102,16 @@
        <class name="test.jdbc.jdbcusertx.JdbcUserTxTestNG" />
     </classes>
   </test>
-  <!--test name="jpa_inject_emf">
+  <test name="jpa_inject_emf">
     <classes>
        <class name="test.jpa.jpainjectemf.JpaInjectEMFTestNG" />
     </classes>
-  </test-->
-  <!--test name="jpa_validation">
+  </test>
+  <test name="jpa_validation">
     <classes>
        <class name="test.jpa.jpavalidation.JpaValidationTestNG" />
     </classes>
-  </test-->
+  </test>
   <test name="security_hello_jsp">
     <classes>
        <class name="test.security.hellojsp.HelloSecurityTestNG" />
@@ -196,11 +196,11 @@
         <class name="test.clustersetup.ClusterSetupTest"/>
     </classes>
   </test-->
-  <!--<test name="cluster_helloworld">
+  <test name="cluster_helloworld">
     <classes>
         <class name="test.hellocluster.ClusterHelloworldTest"/>
     </classes>
-  </test>-->
+  </test>
   <!--test name="cluster_teardown">
     <classes>
         <class name="test.clusterteardown.ClusterTeardownTest"/>

@@ -108,7 +108,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
         Assert.assertEquals(retStatus, true, "Create instance failed ...");
     }
 
-    //@Test(dependsOnMethods = { "createInstanceTest" })
+    @Test(dependsOnMethods = { "createInstanceTest" })
     public void startInstanceTest() throws Exception {
         // Start the instances
         report(tn + "start-local-instance1", asadmin("start-local-instance", "--node", "localhost-" + domain, i1name));
