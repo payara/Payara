@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.weld.WeldDeployer;
+import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.config.cdi.ConfigCdiExtension;
@@ -81,6 +82,21 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
             final boolean classFound = classType != null;
 
             if (annotationFound || annotation2Found || classFound) {
+                // Register the CDI extension
+                final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+                if (snifferExtensions != null) {
+                    snifferExtensions.add(ConfigCdiExtension::new);
+                }
+            }
+        }
+
+        Index index = deploymentContext.getTransientAppMetaData(Index.class.getName(), Index.class);
+        if (index != null) {
+            boolean found = false;
+            found |= !index.getAnnotations(ConfigProperty.class).isEmpty();
+            found |= !index.getAnnotations(ConfigProperties.class).isEmpty();
+            found |= !index.getAnnotations(Config.class).isEmpty();
+            if (found) {
                 // Register the CDI extension
                 final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
                 if (snifferExtensions != null) {

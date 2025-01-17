@@ -54,6 +54,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -132,35 +133,36 @@ class HK2ClassModel implements AnnotationClassModel {
     public Collection<String> getInjectionTargetClassNames(DeploymentContext deploymentContext, Collection<String> knownClassNames) {
         final Set<String> result = new HashSet<>();
 
-        Types types = deploymentContext.getTransientAppMetaData(Types.class.getName(), Types.class);
-        if (types != null) {
-            for (String knownClassName : knownClassNames) {
-                Type type = types.getBy(knownClassName);
+        List<Type> types = getAllTypes(deploymentContext, List.of());
+        Map<String, Type> byClassName = new HashMap<>();
+        types.stream().filter(type -> type instanceof ClassModel)
+                .forEach(type -> byClassName.put(type.getName(), type));
+        for (String knownClassName : knownClassNames) {
+            Type type = byClassName.get(knownClassName);
 
-                if (type != null && type instanceof ClassModel) {
-                    boolean injectionTarget = false;
+            if (type != null && type instanceof ClassModel) {
+                boolean injectionTarget = false;
 
-                    Collection<FieldModel> fieldModels = ((ClassModel) type).getFields();
-                    for (FieldModel fieldModel : fieldModels) {
-                        injectionTarget = annotatedWithInject(fieldModel.getAnnotations());
+                Collection<FieldModel> fieldModels = ((ClassModel) type).getFields();
+                for (FieldModel fieldModel : fieldModels) {
+                    injectionTarget = annotatedWithInject(fieldModel.getAnnotations());
+                    if (injectionTarget) {
+                        break;
+                    }
+                }
+
+                if (!injectionTarget) {
+                    Collection<MethodModel> methodModels = type.getMethods();
+                    for (MethodModel methodModel : methodModels) {
+                        injectionTarget = annotatedWithInject(methodModel.getAnnotations());
                         if (injectionTarget) {
                             break;
                         }
                     }
+                }
 
-                    if (!injectionTarget) {
-                        Collection<MethodModel> methodModels = type.getMethods();
-                        for (MethodModel methodModel : methodModels) {
-                            injectionTarget = annotatedWithInject(methodModel.getAnnotations());
-                            if (injectionTarget) {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (injectionTarget) {
-                        result.add(type.getName());
-                    }
+                if (injectionTarget) {
+                    result.add(type.getName());
                 }
             }
         }
@@ -170,11 +172,19 @@ class HK2ClassModel implements AnnotationClassModel {
 
     private static List<Type> getAllTypes(DeploymentContext context, Collection<URI> paths) {
         final Types types = getTypes(context);
+
+        List<Type> allTypes;
         if (types == null) {
-            return List.of();
+            allTypes = new ArrayList<>();
+        } else {
+            allTypes = new ArrayList<>(types.getAllTypes().size());
+            if (paths.isEmpty()) {
+                allTypes.addAll(types.getAllTypes());
+            } else {
+                allTypes.addAll(types.getAllTypes().stream().filter(type -> type.wasDefinedIn(paths)).collect(Collectors.toList()));
+            }
         }
 
-        List<Type> allTypes = new ArrayList<>(types.getAllTypes());
         Map<String, DeploymentUtils.WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
         for (URI path : paths.isEmpty() ? cache.keySet().stream().map(Path::of).map(Path::toUri)
                 .collect(Collectors.toList()) : paths) {
@@ -184,7 +194,6 @@ class HK2ClassModel implements AnnotationClassModel {
             }
         }
         return allTypes;
-
     }
 
     private static Types getTypes(DeploymentContext context) {

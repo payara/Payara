@@ -39,11 +39,16 @@
  */
 package org.glassfish.weld.connector;
 
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.Index;
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import static org.glassfish.weld.connector.WeldUtils.cdiEnablingAnnotationClasses;
 
 public class JandexClassModel implements AnnotationClassModel {
     /**
@@ -51,7 +56,14 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public boolean hasCDIEnablingAnnotations(DeploymentContext deploymentContext, Collection<URI> paths) {
-        return false;
+        if (isRootPackage(deploymentContext, paths)) {
+//            var index = deploymentContext.getTransientAppMetaData(Index.class.getName(), Index.class);
+//            return cdiEnablingAnnotationClasses.stream()
+//                    .anyMatch(annotationClass -> !index.getAnnotations(annotationClass).isEmpty());
+            return false;
+        } else {
+            return hk2ClassModel.hasCDIEnablingAnnotations(deploymentContext, paths);
+        }
     }
 
     /**
@@ -59,7 +71,14 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public Set<String> getCDIEnablingAnnotations(DeploymentContext context) {
-        return Set.of();
+        var index = context.getTransientAppMetaData(Index.class.getName(), Index.class);
+        Set<String> result = new HashSet<>();
+        result.addAll(cdiEnablingAnnotationClasses.stream()
+                .filter(annotationClass -> !index.getAnnotations(annotationClass).isEmpty())
+                .map(Class::getName)
+                .collect(Collectors.toSet()));
+        result.addAll(hk2ClassModel.getCDIEnablingAnnotations(context));
+        return result;
     }
 
     /**
@@ -67,7 +86,13 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public Collection<String> getCDIAnnotatedClassNames(DeploymentContext context, Set<String> cdiEnablingAnnotations) {
-        return List.of();
+        var index = context.getTransientAppMetaData(Index.class.getName(), Index.class);
+        Set<String> result = new HashSet<>();
+        cdiEnablingAnnotations.forEach(annotation -> result.addAll(index.getAnnotations(annotation).stream()
+                .map(annotationInstance -> annotationInstance.target().asClass().name().toString())
+                .collect(Collectors.toSet())));
+        result.addAll(hk2ClassModel.getCDIAnnotatedClassNames(context, cdiEnablingAnnotations));
+        return result;
     }
 
     /**
@@ -75,6 +100,39 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public Collection<String> getInjectionTargetClassNames(DeploymentContext deploymentContext, Collection<String> knownClassNames) {
-        return List.of();
+        var index = deploymentContext.getTransientAppMetaData(Index.class.getName(), Index.class);
+        Set<String> result = new HashSet<>();
+        for (AnnotationInstance annotationInstance : index.getAnnotations(Inject.class)) {
+            String className = null;
+            switch (annotationInstance.target().kind()) {
+                case CLASS:
+                    className = annotationInstance.target().asClass().name().toString();
+                    break;
+                case FIELD:
+                    className = annotationInstance.target().asField().declaringClass().name().toString();
+                    break;
+                case METHOD:
+                    className = annotationInstance.target().asMethod().receiverType().name().toString();
+                    break;
+                case METHOD_PARAMETER:
+                    className = annotationInstance.target().asMethodParameter().method().receiverType().name().toString();
+                    break;
+                case TYPE:
+                    className = annotationInstance.target().asType().asClass().toString();
+                    break;
+                case  RECORD_COMPONENT:
+                    className = annotationInstance.target().asRecordComponent().declaringClass().name().toString();
+                    break;
+            }
+            if (className != null && knownClassNames.contains(className)) {
+                result.add(className);
+            }
+        }
+        result.addAll(hk2ClassModel.getInjectionTargetClassNames(deploymentContext, knownClassNames));
+        return result;
+    }
+
+    private boolean isRootPackage(DeploymentContext deploymentContext, Collection<URI> paths) {
+        return paths.size() == 1 && paths.stream().findFirst().get().equals(deploymentContext.getSource().getURI());
     }
 }

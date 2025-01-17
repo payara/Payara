@@ -60,9 +60,9 @@ interface AnnotationClassModel {
      */
     static AnnotationClassModel getClassModel(DeploymentContext deploymentContext) {
         if (deploymentContext.getTransientAppMetadata().get(Types.class.getName()) != null) {
-            return jandexClassModel;
+            return hk2ClassModel;
         }
-        return hk2ClassModel;
+        return jandexClassModel;
     }
 
     boolean hasCDIEnablingAnnotations(DeploymentContext deploymentContext, Collection<URI> paths);
