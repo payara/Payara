@@ -56,6 +56,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.enterprise.deploy.shared.ModuleType;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -98,17 +99,22 @@ public class MojarraSniffer extends GenericSniffer {
             context.getSource().setExtraData(ArchiveType.class, archiveType);
         }
 
+        logger.fine("Checking if application has a faces-config.xml file...");
         boolean handles = hasFacesXml(context);
 
         // Don't bother scanning the classes if we've already found a faces-config.xml file
         if (!handles) {
+            logger.fine("No faces-config.xml file found, checking if application contains a class which the Mojarra ServletContainerInitializers should handle");
             handles = hasFacesEnablingClass(context);
         }
 
         if (handles) {
+            logger.fine("Faces content has been detected in application, setting fish.payara.faces.integration.ForceCdiInitialisation to true");
             context.addTransientAppMetaData("fish.payara.faces.integration.ForceCdiInitialisation", Boolean.TRUE);
             return true;
         }
+
+        logger.fine("No Faces content detected");
         return false;
     }
 
@@ -119,9 +125,10 @@ public class MojarraSniffer extends GenericSniffer {
     private boolean isEntryPresent(ReadableArchive archive, String entry) {
         boolean entryPresent = false;
         try {
+            logger.finer("Checking if " + entry + " exists in " + archive.getName());
             entryPresent = archive.exists(entry);
         } catch (IOException ioException) {
-            logger.log(Level.FINE, "Ignoring exception encountered while checking if faces-config.xml file is present.", ioException);
+            logger.log(Level.FINE, "Ignoring exception encountered while checking if faces-config.xml file is present", ioException);
         }
         return entryPresent;
     }
@@ -142,6 +149,13 @@ public class MojarraSniffer extends GenericSniffer {
 
         for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initialiserEntry : initialiserList.entrySet()) {
             if (initialiserEntry.getValue() != null && !initialiserEntry.getValue().isEmpty()) {
+                if (logger.isLoggable(Level.FINE)) {
+                    List<String> classNames = new ArrayList<>();
+                    initialiserEntry.getValue().stream().forEach(clazz -> classNames.add(clazz.getName()));
+                    logger.fine(initialiserEntry.getKey().getName()
+                            + " container initialiser has an interest in the following classes detected within the application: "
+                            + Arrays.toString(classNames.toArray()));
+                }
                 result = true;
                 break;
             }
@@ -153,9 +167,11 @@ public class MojarraSniffer extends GenericSniffer {
     private List<ServletContainerInitializer> getMojarraServletContextInitialisers(DeploymentContext context) {
         ArrayList<ServletContainerInitializer> facesInitialisers = new ArrayList<>();
 
+        logger.finer("Getting Mojarra FacesInitializer and FacesInitializer2 servlet context initialisers");
         Iterable<ServletContainerInitializer> servletContainerInitialisers = ServiceLoader.load(ServletContainerInitializer.class);
         for (ServletContainerInitializer servletContainerInitialiser : servletContainerInitialisers) {
             if (servletContainerInitialiser instanceof FacesInitializer || servletContainerInitialiser instanceof FacesInitializer2) {
+                logger.finer("Found " + servletContainerInitialiser.getClass().getName());
                 facesInitialisers.add(servletContainerInitialiser);
             }
         }
@@ -174,6 +190,10 @@ public class MojarraSniffer extends GenericSniffer {
             } else {
                 break;
             }
+        }
+
+        if (types == null) {
+            logger.fine("No types found!");
         }
 
         return types;
