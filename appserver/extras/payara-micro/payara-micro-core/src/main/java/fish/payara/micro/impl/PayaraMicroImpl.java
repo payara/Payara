@@ -1763,7 +1763,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     if (gf != null) {
                         gf.stop();
                         gf.dispose();
-                        LOGGER.log(Level.INFO, "Payara Micro STOPPED");
+                        LOGGER.log(Level.INFO, "Payara Micro STOPPED.");
                         handler.flush();
                     }
                 } catch (GlassFishException ex) {
