@@ -40,7 +40,7 @@
 set -e
 
 # Doing a Graceful Shutdown before container stops
-trap 'echo "Stopping Payara-Micro...";
+trap 'echo "Stopping Payara-Micro Gracefully";
       kill -TERM "$child" 2>/dev/null;
       wait $child;
       echo "Payara-Micro stopped. Exiting gracefully";' SIGTERM
