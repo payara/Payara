@@ -151,6 +151,7 @@ import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
@@ -260,6 +261,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             action = "Trying to invoke the ejb application"
     )
     private static final String INTERNAL_ERROR = "AS-EJB-00052";
+    
+    private static final String NAME_ALREADY_BOUND_MESSAGE = "The name of the bean was already bound on the context, skipping exception";
 
     protected static final Class[] NO_PARAMS = new Class[] {};
 
@@ -1599,20 +1602,24 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             JndiInfo jndiInfo = entry.getValue();
             try {
                 jndiInfo.publish(this.namingManager);
-                if ( jndiInfo.internal ) {
+                if (jndiInfo.internal) {
                     publishedInternalGlobalJndiNames.add(jndiInfo.name);
                 } else {
-                    if ( jndiInfo.portable ) {
+                    if (jndiInfo.portable) {
                         publishedPortableGlobalJndiNames.add(jndiInfo.name);
-                    }  else {
+                    } else {
                         publishedNonPortableGlobalJndiNames.add(jndiInfo.name);
                     }
                 }
-            } catch(Exception e) {
-                throw new RuntimeException(localStrings.getLocalString(
-                        "ejb.error_binding_jndi_name",
-                        "Error while binding JNDI name {0} for EJB {1}",
-                        jndiInfo.name, this.ejbDescriptor.getName()), e);
+            } catch (Exception e) {
+                if (e instanceof NameAlreadyBoundException) {
+                    _logger.log(Level.WARNING, NAME_ALREADY_BOUND_MESSAGE);
+                } else {
+                    throw new RuntimeException(localStrings.getLocalString(
+                            "ejb.error_binding_jndi_name",
+                            "Error while binding JNDI name {0} for EJB {1}",
+                            jndiInfo.name, this.ejbDescriptor.getName()), e);
+                }
             }
         }
 
