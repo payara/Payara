@@ -53,7 +53,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Service;
 
@@ -67,6 +67,8 @@ public class MetricsSniffer extends MicroProfileSniffer {
 
     @Inject
     private ServerEnvironment serverEnv;
+    @Inject
+    JandexIndexer jandexIndexer;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -86,7 +88,7 @@ public class MetricsSniffer extends MicroProfileSniffer {
 
     @Override
     public boolean handles(DeploymentContext context) {
-        Index index = context.getTransientAppMetaData(Index.class.getName(), Index.class);
+        Index index = jandexIndexer.getRootIndex(context);
         if (index != null) {
             if (!index.getAnnotations(MetricRegistry.class).isEmpty()) {
                 return true;
