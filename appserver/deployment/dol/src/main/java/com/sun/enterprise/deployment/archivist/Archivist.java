@@ -598,14 +598,7 @@ public abstract class Archivist<T extends BundleDescriptor> {
             return null;
         }
 
-        Parser parser = null;
-        if (archive.getParentArchive() != null) {
-            parser = archive.getParentArchive().getExtraData(Parser.class);
-        } else {
-            parser = archive.getExtraData(Parser.class);
-        }
-
-        scanner.process(archive, bundleDesc, classLoader, parser);
+        scanner.process(archive, bundleDesc, classLoader, null);
 
         if (!scanner.getElements().isEmpty()) {
             if (((BundleDescriptor) bundleDesc).isDDWithNoAnnotationAllowed()) {

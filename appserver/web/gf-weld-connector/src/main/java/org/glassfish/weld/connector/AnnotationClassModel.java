@@ -40,7 +40,6 @@
 package org.glassfish.weld.connector;
 
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
@@ -49,7 +48,6 @@ import java.util.Set;
  * Encapsulates either HK2 or Jandex class model.
  */
 interface AnnotationClassModel {
-    HK2ClassModel hk2ClassModel = new HK2ClassModel();
     JandexClassModel jandexClassModel = new JandexClassModel();
 
     /**
@@ -59,9 +57,6 @@ interface AnnotationClassModel {
      * @return the class model
      */
     static AnnotationClassModel getClassModel(DeploymentContext deploymentContext) {
-        if (deploymentContext.getTransientAppMetadata().get(Types.class.getName()) != null) {
-            return hk2ClassModel;
-        }
         return jandexClassModel;
     }
 

@@ -44,11 +44,12 @@ package com.sun.enterprise.deployment.deploy.shared;
 import java.net.URI;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.zip.ZipEntry;
 import java.util.jar.JarEntry;
 import java.io.IOException;
 
@@ -166,14 +167,23 @@ public abstract class JarArchive implements Archive {
      * type dataType registered.
      */
     public synchronized <U> U getExtraData(Class<U> dataType) {
+        if (dataType == Types.class || dataType == Parser.class) {
+            throw new IllegalArgumentException("Cannot set Types or Parser as extra data - Deprecated");
+        }
         return dataType.cast(extraData.get(dataType));
     }
 
     public synchronized <U> void setExtraData(Class<U> dataType, U instance) {
+        if (dataType == Types.class || dataType == Parser.class) {
+            throw new IllegalArgumentException("Cannot set Types or Parser as extra data - Deprecated");
+        }
         extraData.put(dataType, instance);
     }
 
     public synchronized <U> void removeExtraData(Class<U> dataType) {
+        if (dataType == Types.class || dataType == Parser.class) {
+            throw new IllegalArgumentException("Cannot set Types or Parser as extra data - Deprecated");
+        }
         extraData.remove(dataType);
     }
 

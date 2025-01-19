@@ -41,8 +41,9 @@ package org.glassfish.weld.connector;
 
 import jakarta.inject.Inject;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.Index;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
@@ -51,18 +52,19 @@ import java.util.stream.Collectors;
 import static org.glassfish.weld.connector.WeldUtils.cdiEnablingAnnotationClasses;
 
 public class JandexClassModel implements AnnotationClassModel {
+    private final JandexIndexer jandexIndexer = Globals.getDefaultHabitat().getService(JandexIndexer.class);
     /**
      * {@inheritDoc}
      */
     @Override
     public boolean hasCDIEnablingAnnotations(DeploymentContext deploymentContext, Collection<URI> paths) {
         if (isRootPackage(deploymentContext, paths)) {
-//            var index = deploymentContext.getTransientAppMetaData(Index.class.getName(), Index.class);
+//            var index = getIndex(deploymentContext);
 //            return cdiEnablingAnnotationClasses.stream()
 //                    .anyMatch(annotationClass -> !index.getAnnotations(annotationClass).isEmpty());
             return false;
         } else {
-            return hk2ClassModel.hasCDIEnablingAnnotations(deploymentContext, paths);
+            return false;
         }
     }
 
@@ -71,13 +73,12 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public Set<String> getCDIEnablingAnnotations(DeploymentContext context) {
-        var index = context.getTransientAppMetaData(Index.class.getName(), Index.class);
+        var index = jandexIndexer.getRootIndex(context);
         Set<String> result = new HashSet<>();
         result.addAll(cdiEnablingAnnotationClasses.stream()
                 .filter(annotationClass -> !index.getAnnotations(annotationClass).isEmpty())
                 .map(Class::getName)
                 .collect(Collectors.toSet()));
-        result.addAll(hk2ClassModel.getCDIEnablingAnnotations(context));
         return result;
     }
 
@@ -86,12 +87,11 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public Collection<String> getCDIAnnotatedClassNames(DeploymentContext context, Set<String> cdiEnablingAnnotations) {
-        var index = context.getTransientAppMetaData(Index.class.getName(), Index.class);
+        var index = jandexIndexer.getRootIndex(context);
         Set<String> result = new HashSet<>();
         cdiEnablingAnnotations.forEach(annotation -> result.addAll(index.getAnnotations(annotation).stream()
                 .map(annotationInstance -> annotationInstance.target().asClass().name().toString())
                 .collect(Collectors.toSet())));
-        result.addAll(hk2ClassModel.getCDIAnnotatedClassNames(context, cdiEnablingAnnotations));
         return result;
     }
 
@@ -100,7 +100,7 @@ public class JandexClassModel implements AnnotationClassModel {
      */
     @Override
     public Collection<String> getInjectionTargetClassNames(DeploymentContext deploymentContext, Collection<String> knownClassNames) {
-        var index = deploymentContext.getTransientAppMetaData(Index.class.getName(), Index.class);
+        var index = jandexIndexer.getRootIndex(deploymentContext);
         Set<String> result = new HashSet<>();
         for (AnnotationInstance annotationInstance : index.getAnnotations(Inject.class)) {
             String className = null;
@@ -128,7 +128,6 @@ public class JandexClassModel implements AnnotationClassModel {
                 result.add(className);
             }
         }
-        result.addAll(hk2ClassModel.getInjectionTargetClassNames(deploymentContext, knownClassNames));
         return result;
     }
 

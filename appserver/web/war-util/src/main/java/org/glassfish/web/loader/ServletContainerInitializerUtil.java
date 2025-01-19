@@ -43,10 +43,10 @@ package org.glassfish.web.loader;
 
 import fish.payara.web.loader.ServletContainerInitializerBlacklist;
 import org.glassfish.deployment.common.ClassDependencyBuilder;
-import org.glassfish.hk2.classmodel.reflect.*;
 
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.annotation.HandlesTypes;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -245,7 +245,7 @@ public class ServletContainerInitializerUtil {
     public  static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> getInitializerList(
             Iterable<ServletContainerInitializer> initializers,
             Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
-            Types types,
+            @Deprecated Types types,
             ClassLoader cl, boolean isStandalone) {
 
         if (interestList == null) {
@@ -282,7 +282,7 @@ public class ServletContainerInitializerUtil {
              * the information for every class in this app
              *
              */
-            if (types==null || Boolean.getBoolean("org.glassfish.web.parsing")) {
+            if (true || Boolean.getBoolean("org.glassfish.web.parsing")) {
                 ClassDependencyBuilder classInfo = new ClassDependencyBuilder();
                 if (cl instanceof URLClassLoader) {
                     URLClassLoader ucl = (URLClassLoader) cl;
@@ -351,7 +351,7 @@ public class ServletContainerInitializerUtil {
 
                 initializerList = checkAgainstInterestList(classInfo, interestList, initializerList, cl, isStandalone);
             } else {
-                initializerList = checkAgainstInterestList(types, interestList, initializerList, cl, isStandalone);
+                initializerList = checkAgainstInterestList(interestList, initializerList, cl, isStandalone);
             }
         }
 
@@ -441,75 +441,74 @@ public class ServletContainerInitializerUtil {
      *
      */
     private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstInterestList(
-                                Types classInfo,
                                 Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
                                 Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
                                 ClassLoader cl, boolean isStandalone) {
 
-        if (classInfo==null) {
+        if (true) {
             return initializerList;
         }
-        for (Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e:
-                interestList.entrySet()) {
-
-            Class<?> c = e.getKey();
-            Type type = classInfo.getBy(c.getName());
-            if (type==null)
-                continue;
-
-            Set<Class<?>> resultSet = new HashSet<Class<?>>();
-            if (type instanceof AnnotationType) {
-                for (AnnotatedElement ae : ((AnnotationType) type).allAnnotatedTypes()) {
-                    if (ae instanceof Member) {
-                        ae = ((Member) ae).getDeclaringType();
-                    } else if (ae instanceof Parameter) {
-                        ae = ((Parameter) ae).getMethod().getDeclaringType();
-                    }
-                    if (ae instanceof Type) {
-                        try {
-                            resultSet.add(cl.loadClass(ae.getName()));
-                        } catch (Throwable t) {
-                            if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
-                                log.log(getStandaloneWarningLevel(isStandalone),
-                                    LogFacade.CLASS_LOADING_ERROR,
-                                    new Object[] {ae.getName(), t.toString()});
-                            }
-                        }     
-                    }
-                }
-            } else {
-                Collection<ClassModel> classes;
-                if (type instanceof InterfaceModel) {
-                    classes = ((InterfaceModel) type).allImplementations();
-                } else {
-                    classes = ((ClassModel) type).allSubTypes();
-                }
-                for (ClassModel classModel : classes) {
-                    try {
-                        resultSet.add(cl.loadClass(classModel.getName()));
-                    } catch (Throwable t) {
-                        if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
-                            log.log(getStandaloneWarningLevel(isStandalone),
-                                LogFacade.CLASS_LOADING_ERROR,
-                                new Object[] {classModel.getName(), t.toString()});
-                        }
-                    }
-                }
-            }
-            if(initializerList == null) {
-                initializerList = new HashMap<Class<? extends ServletContainerInitializer>, Set<Class<?>>>();
-            }
-            List<Class<? extends ServletContainerInitializer>> containerInitializers = e.getValue();
-            for(Class<? extends ServletContainerInitializer> initializer : containerInitializers) {
-                Set<Class<?>> classSet = initializerList.get(initializer);
-                if(classSet == null) {
-                    classSet = new HashSet<Class<?>>();
-                }
-                classSet.addAll(resultSet);
-                initializerList.put(initializer, classSet);
-            }
-            
-        }
+//        for (Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e:
+//                interestList.entrySet()) {
+//
+//            Class<?> c = e.getKey();
+//            Type type = classInfo.getBy(c.getName());
+//            if (type==null)
+//                continue;
+//
+//            Set<Class<?>> resultSet = new HashSet<Class<?>>();
+//            if (type instanceof AnnotationType) {
+//                for (AnnotatedElement ae : ((AnnotationType) type).allAnnotatedTypes()) {
+//                    if (ae instanceof Member) {
+//                        ae = ((Member) ae).getDeclaringType();
+//                    } else if (ae instanceof Parameter) {
+//                        ae = ((Parameter) ae).getMethod().getDeclaringType();
+//                    }
+//                    if (ae instanceof Type) {
+//                        try {
+//                            resultSet.add(cl.loadClass(ae.getName()));
+//                        } catch (Throwable t) {
+//                            if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+//                                log.log(getStandaloneWarningLevel(isStandalone),
+//                                    LogFacade.CLASS_LOADING_ERROR,
+//                                    new Object[] {ae.getName(), t.toString()});
+//                            }
+//                        }
+//                    }
+//                }
+//            } else {
+//                Collection<ClassModel> classes;
+//                if (type instanceof InterfaceModel) {
+//                    classes = ((InterfaceModel) type).allImplementations();
+//                } else {
+//                    classes = ((ClassModel) type).allSubTypes();
+//                }
+//                for (ClassModel classModel : classes) {
+//                    try {
+//                        resultSet.add(cl.loadClass(classModel.getName()));
+//                    } catch (Throwable t) {
+//                        if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+//                            log.log(getStandaloneWarningLevel(isStandalone),
+//                                LogFacade.CLASS_LOADING_ERROR,
+//                                new Object[] {classModel.getName(), t.toString()});
+//                        }
+//                    }
+//                }
+//            }
+//            if(initializerList == null) {
+//                initializerList = new HashMap<Class<? extends ServletContainerInitializer>, Set<Class<?>>>();
+//            }
+//            List<Class<? extends ServletContainerInitializer>> containerInitializers = e.getValue();
+//            for(Class<? extends ServletContainerInitializer> initializer : containerInitializers) {
+//                Set<Class<?>> classSet = initializerList.get(initializer);
+//                if(classSet == null) {
+//                    classSet = new HashSet<Class<?>>();
+//                }
+//                classSet.addAll(resultSet);
+//                initializerList.put(initializer, classSet);
+//            }
+//
+//        }
 
         return initializerList;
     }

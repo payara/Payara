@@ -39,11 +39,20 @@
  */
 package org.glassfish.internal.deployment;
 
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Contract;
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
 
 @Contract
 public interface JandexIndexer {
-    Index getIndexFromArchive(ReadableArchive archive);
+    void index(DeploymentContext deploymentContext) throws IOException;
+    void reindex(DeploymentContext deploymentContext) throws IOException;
+    boolean isJakartaEEApplication(DeploymentContext deploymentContext) throws IOException;
+    Index getRootIndex(DeploymentContext deploymentContext);
+    Index getIndexFromArchive(ReadableArchive archive) throws IOException;
+    boolean hasAnyAnnotations(DeploymentContext deploymentContext, List<URI> uris, String... annotations);
 }

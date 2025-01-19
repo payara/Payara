@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -50,9 +50,6 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.deployment.annotation.impl.WarScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
@@ -368,15 +365,14 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                         ReadableArchive warArchive = null;
                         try {
                             warArchive = archiveFactory.openArchive(new File(wfDesc.getWarLibraryPath()));
-                            warArchive.setExtraData(Parser.class, archive.getExtraData(Parser.class));
                             super.readAnnotations(warArchive, wfDesc, localExtensions);
                         } finally {
                             if (warArchive != null) {
                                 warArchive.close();
                             }
                         }
-                        DeploymentUtils.getWarLibraryCache().putIfAbsent(wfDesc.getWarLibraryPath(),
-                                new DeploymentUtils.WarLibraryDescriptor(wfDesc, filterTypesByWarLibrary(wfDesc)));
+//                        DeploymentUtils.getWarLibraryCache().putIfAbsent(wfDesc.getWarLibraryPath(),
+//                                new DeploymentUtils.WarLibraryDescriptor(wfDesc, filterTypesByWarLibrary(wfDesc)));
                     }
                 } else {
                     super.readAnnotations(archive, wfDesc, localExtensions);
@@ -418,14 +414,14 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         descriptor.addDefaultWebBundleDescriptor(defaultWebBundleDescriptor);
     }
 
-    private List<Type> filterTypesByWarLibrary(WebFragmentDescriptor wfDesc) {
-        Types types = deployment.getCurrentDeploymentContext().getTransientAppMetaData(Types.class.getName(), Types.class);
-        if (types == null) {
-            return List.of();
-        }
-        return types.getAllTypes().stream().filter(key -> key.wasDefinedIn(
-                List.of(Path.of(wfDesc.getWarLibraryPath()).toUri()))).collect(Collectors.toList());
-    }
+//    private List<Type> filterTypesByWarLibrary(WebFragmentDescriptor wfDesc) {
+//        Types types = null; // deployment.getCurrentDeploymentContext().getTransientAppMetaData(Types.class.getName(), Types.class);
+//        if (types == null) {
+//            return List.of();
+//        }
+//        return types.getAllTypes().stream().filter(key -> key.wasDefinedIn(
+//                List.of(Path.of(wfDesc.getWarLibraryPath()).toUri()))).collect(Collectors.toList());
+//    }
 
     /**
      * This method will return the list of web fragment in the desired order.
