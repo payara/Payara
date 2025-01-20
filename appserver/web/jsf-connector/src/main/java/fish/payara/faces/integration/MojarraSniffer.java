@@ -68,6 +68,9 @@ import java.util.logging.Logger;
 @Singleton
 public class MojarraSniffer extends GenericSniffer {
 
+    private static final String SKIP_FORCE_CDI_INITIALISATION_SYSTEM_PROPERTY = "fish.payara.faces.integration.skipForceCdiInitialisationCheck";
+    private static final String SKIP_FORCE_CDI_INITIALISATION_DEPLOY_PROPERTY = "skipForceCdiInitialisationCheck";
+
     // If faces is detected, we need to force Weld to initialise (even in cases where bean discovery has been disabled)
     private static final String[] containers = { "org.glassfish.weld.WeldContainer" };
     private static final Logger logger = Logger.getLogger(MojarraSniffer.class.getName());
@@ -91,6 +94,10 @@ public class MojarraSniffer extends GenericSniffer {
 
     @Override
     public boolean handles(DeploymentContext context) {
+        if (skipHandler(context)) {
+            return false;
+        }
+
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
         if (archiveType != null && !supportsArchiveType(archiveType)) {
             return false;
@@ -116,6 +123,15 @@ public class MojarraSniffer extends GenericSniffer {
 
         logger.fine("No Faces content detected");
         return false;
+    }
+
+    private boolean skipHandler(DeploymentContext context) {
+        if (Boolean.getBoolean(SKIP_FORCE_CDI_INITIALISATION_SYSTEM_PROPERTY)) {
+            return true;
+        }
+
+        Object propValue = context.getAppProps().get(SKIP_FORCE_CDI_INITIALISATION_DEPLOY_PROPERTY);
+        return propValue != null && Boolean.parseBoolean((String) propValue);
     }
 
     private boolean hasFacesXml(DeploymentContext context) {
