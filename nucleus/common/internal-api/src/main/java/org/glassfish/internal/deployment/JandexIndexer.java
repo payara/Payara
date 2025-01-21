@@ -45,7 +45,9 @@ import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Contract;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Contract
 public interface JandexIndexer {
@@ -53,6 +55,7 @@ public interface JandexIndexer {
     void reindex(DeploymentContext deploymentContext) throws IOException;
     boolean isJakartaEEApplication(DeploymentContext deploymentContext) throws IOException;
     Index getRootIndex(DeploymentContext deploymentContext);
-    Index getIndexFromArchive(ReadableArchive archive) throws IOException;
+    Map<String, Index> getAllIndexes(DeploymentContext deploymentContext);
+    Map<String, Index> getIndexesByURI(DeploymentContext deploymentContext, Collection<URI> uris);
     boolean hasAnyAnnotations(DeploymentContext deploymentContext, List<URI> uris, String... annotations);
 }

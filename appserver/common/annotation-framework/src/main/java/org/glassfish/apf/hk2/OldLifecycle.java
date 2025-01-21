@@ -92,7 +92,7 @@ class OldLifecycle {
             Boolean skipScanExternalLibProp = Boolean.valueOf(context.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
 
             if (skipScanExternalLibProp) {
-                Index index = jandexIndexer.getIndexFromArchive(context.getSource());
+                Index index = null; // jandexIndexer.getIndexFromArchive(context.getSource());
                 if (index != null) {
                     context.addTransientAppMetaData(Index.class.getName(), index);
                     return null;

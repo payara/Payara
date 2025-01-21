@@ -39,8 +39,11 @@
  */
 package org.glassfish.apf.jandex;
 
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import jakarta.inject.Inject;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.JandexIndexer;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexReader;
@@ -49,6 +52,8 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,16 +62,19 @@ import java.util.Map;
 public class JandexIndexReader implements JandexIndexer {
     private static final String JANDEX_INDEX_METADATA_KEY = JandexIndexer.class.getName() + ".index";
 
+    @Inject
+    ArchiveFactory archiveFactory;
+
     @Override
     public void index(DeploymentContext deploymentContext) throws IOException {
         if (getIndexMap(deploymentContext) == null) {
-            Index index = getIndexFromArchive(deploymentContext.getSource());
-            if (index == null) {
-                index = indexArchive(deploymentContext);
-            }
             Map<String, Index> indexMap = new HashMap<>();
-            indexMap.put(deploymentContext.getSource().getName(), index);
             deploymentContext.addTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, indexMap);
+            indexMap.put(deploymentContext.getSource().getURI().toString(), indexArchive(deploymentContext));
+            if (DeploymentUtils.useWarLibraries(deploymentContext)) {
+                DeploymentUtils.getWarLibraryCache().keySet()
+                        .forEach(path -> getOrCreateIndex(deploymentContext, Path.of(path).toUri()));
+            }
         }
     }
 
@@ -78,16 +86,19 @@ public class JandexIndexReader implements JandexIndexer {
 
     @Override
     public Index getRootIndex(DeploymentContext deploymentContext) {
-        return getIndexMap(deploymentContext).get(deploymentContext.getSource().getName());
+        return getIndexMap(deploymentContext).get(deploymentContext.getSource().getURI().toString());
     }
 
     @Override
-    public Index getIndexFromArchive(ReadableArchive archive) throws IOException {
-        Index index = readIndex(archive, "META-INF/jandex.idx");
-        if (index == null) {
-            index = readIndex(archive, "WEB-INF/classes/META-INF/jandex.idx");
-        }
-        return index;
+    public Map<String, Index> getAllIndexes(DeploymentContext deploymentContext) {
+        return getIndexMap(deploymentContext);
+    }
+
+    @Override
+    public Map<String, Index> getIndexesByURI(DeploymentContext deploymentContext, Collection<URI> uris) {
+        Map<String, Index> result = new HashMap<>();
+        uris.forEach(uri ->  result.put(uri.toString(), getOrCreateIndex(deploymentContext, uri)));
+        return result;
     }
 
     @Override
@@ -122,6 +133,26 @@ public class JandexIndexReader implements JandexIndexer {
         return deploymentContext.getTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, Map.class);
     }
 
+    Index getIndexFromArchive(ReadableArchive archive) throws IOException {
+        Index index = readIndex(archive, "META-INF/jandex.idx");
+        if (index == null) {
+            index = readIndex(archive, "WEB-INF/classes/META-INF/jandex.idx");
+        }
+        return index;
+    }
+
+    private Index getOrCreateIndex(DeploymentContext deploymentContext, URI uri) {
+        Map<String, Index> indexMap = getIndexMap(deploymentContext);
+        return indexMap.computeIfAbsent(uri.toString(), key -> {
+            try {
+                DeploymentUtils.WarLibraryDescriptor descriptor = DeploymentUtils.getWarLibraryCache().get(uri.getPath());
+                return descriptor != null ? descriptor.getIndex() : indexArchive(deploymentContext, archiveFactory.openArchive(uri));
+            } catch (IOException e) {
+                return null;
+            }
+        });
+    }
+
     private Index readIndex(ReadableArchive archive, String path) throws IOException {
         try (InputStream stream = archive.getEntry(path)) {
             if (stream != null) {
@@ -131,18 +162,42 @@ public class JandexIndexReader implements JandexIndexer {
         return null;
     }
 
-    private static Index indexArchive(DeploymentContext deploymentContext) throws IOException {
+    private Index indexArchive(DeploymentContext deploymentContext) throws IOException {
+        Index index = getIndexFromArchive(deploymentContext.getSource());
+        if (index == null) {
+            index = indexArchive(deploymentContext, deploymentContext.getSource());
+        }
+        return index;
+    }
+
+    private Index indexArchive(DeploymentContext context, ReadableArchive archive) throws IOException {
         Indexer indexer = new Indexer();
         StringBuilder errors = new StringBuilder();
-        deploymentContext.getSource().entries().asIterator().forEachRemaining(entry -> {
+        archive.entries().asIterator().forEachRemaining(entry -> {
             if (entry.endsWith(".class")) {
-                try (InputStream stream = deploymentContext.getSource().getEntry(entry)) {
+                try (InputStream stream = archive.getEntry(entry)) {
                     if (stream != null) {
                         indexer.index(stream);
                     }
                 } catch (IOException e) {
                     if (errors.length() == 0) {
-                        errors.append(String.format("Unable to index %s from archive %s ", entry, deploymentContext.getSource().getName()));
+                        errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
+                    }
+                }
+            }
+            if (entry.endsWith(".jar")) {
+                try {
+                    // we need to check that there is no exploded directory by this name.
+                    String explodedName = entry.replaceAll("[/ ]", "__").replace(".jar", "_jar");
+                    if (!archive.exists(explodedName)) {
+                        ReadableArchive subArchive = archive.getSubArchive(entry);
+                        if (subArchive != null) {
+                            getIndexMap(context).put(subArchive.getURI().toString(), indexArchive(context, subArchive));
+                        }
+                    }
+                } catch (IOException e) {
+                    if (errors.length() == 0) {
+                        errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
                     }
                 }
             }
@@ -151,5 +206,6 @@ public class JandexIndexReader implements JandexIndexer {
             throw new IOException(errors.toString());
         }
         return indexer.complete();
+
     }
 }
