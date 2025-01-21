@@ -61,6 +61,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 @Service
 public class JandexIndexReader implements JandexIndexer {
@@ -244,7 +246,7 @@ public class JandexIndexReader implements JandexIndexer {
         if (Long.parseLong(Files.readString(getCachePath(archive, "crc"))) != getChecksum(archive)) {
             return null;
         }
-        try (var stream = Files.newInputStream(getCachePath(archive,"idx"))) {
+        try (var stream = new GZIPInputStream(Files.newInputStream(getCachePath(archive,"idx")))) {
             return new IndexReader(stream).read();
         }
     }
@@ -252,7 +254,7 @@ public class JandexIndexReader implements JandexIndexer {
     private void cacheIndex(ReadableArchive archive, Index index) throws IOException {
         Files.writeString(getCachePath(archive, "size"), String.valueOf(archive.getArchiveSize()));
         Files.writeString(getCachePath(archive, "crc"), String.valueOf(getChecksum(archive)));
-        try (var stream = Files.newOutputStream(getCachePath(archive, "idx"))) {
+        try (var stream = new GZIPOutputStream(Files.newOutputStream(getCachePath(archive, "idx")))) {
             IndexWriter indexWriter = new IndexWriter(stream);
             indexWriter.write(index);
         }
