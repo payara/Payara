@@ -254,12 +254,11 @@ public class ServletContainerInitializerUtil {
 
         // This contains the final list of initializers and the set of
         // classes to be passed to them as arg
-        Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList = null;
+        Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList = new HashMap<>();
 
         // If an initializer was present without any @HandleTypes, it 
         // must be called with a null set of classes
         if(interestList.containsKey(ServletContainerInitializerUtil.class)) {
-            initializerList = new HashMap<Class<? extends ServletContainerInitializer>, Set<Class<?>>>();
             List<Class<? extends ServletContainerInitializer>> initializersWithoutHandleTypes =
                     interestList.get(ServletContainerInitializerUtil.class);
             for(Class<? extends ServletContainerInitializer> c : initializersWithoutHandleTypes) {
@@ -496,9 +495,6 @@ public class ServletContainerInitializerUtil {
                     }
                 }
             }
-            if(initializerList == null) {
-                initializerList = new HashMap<Class<? extends ServletContainerInitializer>, Set<Class<?>>>();
-            }
             List<Class<? extends ServletContainerInitializer>> containerInitializers = e.getValue();
             for(Class<? extends ServletContainerInitializer> initializer : containerInitializers) {
                 Set<Class<?>> classSet = initializerList.get(initializer);
@@ -549,9 +545,6 @@ public class ServletContainerInitializerUtil {
                             new Object[] {className, t.toString()});
                     }
                 }
-            }
-            if(initializerList == null) {
-                initializerList = new HashMap<Class<? extends ServletContainerInitializer>, Set<Class<?>>>();
             }
             List<Class<? extends ServletContainerInitializer>> containerInitializers = e.getValue();
             for(Class<? extends ServletContainerInitializer> initializer : containerInitializers) {
