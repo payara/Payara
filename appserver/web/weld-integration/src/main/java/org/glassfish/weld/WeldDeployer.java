@@ -1051,10 +1051,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     }
 
     private boolean forceInitialisation(DeploymentContext context) {
-        Boolean force = context.getTransientAppMetaData("fish.payara.faces.integration.ForceCdiInitialisation", Boolean.class);
+        Boolean force = context.getTransientAppMetaData("fish.payara.faces.integration.allowFacesCdiInitialisation", Boolean.class);
         if (force != null && force) {
             if (logger.isLoggable(FINE)) {
-                logger.fine("fish.payara.faces.integration.ForceCdiInitialisation enabled, forcing initialisation of Weld");
+                logger.fine("allowFacesCdiInitialisation enabled, forcing initialisation of Weld");
             }
             return true;
         }

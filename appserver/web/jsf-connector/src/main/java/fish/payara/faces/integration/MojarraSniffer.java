@@ -68,8 +68,8 @@ import java.util.logging.Logger;
 @Singleton
 public class MojarraSniffer extends GenericSniffer {
 
-    private static final String SKIP_FORCE_CDI_INITIALISATION_SYSTEM_PROPERTY = "fish.payara.faces.integration.skipForceCdiInitialisationCheck";
-    private static final String SKIP_FORCE_CDI_INITIALISATION_DEPLOY_PROPERTY = "skipForceCdiInitialisationCheck";
+    private static final String ALLOW_FACES_CDI_INITIALISATION_SYSTEM_PROPERTY = "fish.payara.faces.integration.allowFacesCdiInitialisation";
+    private static final String ALLOW_FACES_CDI_INITIALISATION_DEPLOY_PROPERTY = "allowFacesCdiInitialisation";
 
     // If faces is detected, we need to force Weld to initialise (even in cases where bean discovery has been disabled)
     private static final String[] containers = { "org.glassfish.weld.WeldContainer" };
@@ -116,8 +116,8 @@ public class MojarraSniffer extends GenericSniffer {
         }
 
         if (handles) {
-            logger.fine("Faces content has been detected in application, setting fish.payara.faces.integration.ForceCdiInitialisation to true");
-            context.addTransientAppMetaData("fish.payara.faces.integration.ForceCdiInitialisation", Boolean.TRUE);
+            logger.fine("Faces content has been detected in application, setting " + ALLOW_FACES_CDI_INITIALISATION_SYSTEM_PROPERTY + " to true");
+            context.addTransientAppMetaData(ALLOW_FACES_CDI_INITIALISATION_SYSTEM_PROPERTY, Boolean.TRUE);
             return true;
         }
 
@@ -126,12 +126,18 @@ public class MojarraSniffer extends GenericSniffer {
     }
 
     private boolean skipHandler(DeploymentContext context) {
-        if (Boolean.getBoolean(SKIP_FORCE_CDI_INITIALISATION_SYSTEM_PROPERTY)) {
-            return true;
+        boolean skip = true;
+        if (Boolean.getBoolean(ALLOW_FACES_CDI_INITIALISATION_SYSTEM_PROPERTY)) {
+            skip = false;
         }
 
-        Object propValue = context.getAppProps().get(SKIP_FORCE_CDI_INITIALISATION_DEPLOY_PROPERTY);
-        return propValue != null && Boolean.parseBoolean((String) propValue);
+        // Deploy command property takes precedence over system property
+        Object propValue = context.getAppProps().get(ALLOW_FACES_CDI_INITIALISATION_DEPLOY_PROPERTY);
+        if (propValue != null) {
+            skip = !Boolean.parseBoolean((String) propValue);
+        }
+
+        return skip;
     }
 
     private boolean hasFacesXml(DeploymentContext context) {

@@ -868,9 +868,9 @@ public class DeploymentImpl implements CDI11Deployment {
     }
 
     private boolean forceInitialisation(DeploymentContext context) {
-        Boolean force = context.getTransientAppMetaData("fish.payara.faces.integration.ForceCdiInitialisation", Boolean.class);
+        Boolean force = context.getTransientAppMetaData("fish.payara.faces.integration.allowFacesCdiInitialisation", Boolean.class);
         if (force != null && force) {
-            logger.fine("fish.payara.faces.integration.ForceCdiInitialisation enabled, forcing initialisation of Weld");
+            logger.fine("allowFacesCdiInitialisation enabled, forcing initialisation of Weld");
             return true;
         }
 
