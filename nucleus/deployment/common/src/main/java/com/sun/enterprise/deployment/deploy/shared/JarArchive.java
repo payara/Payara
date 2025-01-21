@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -203,5 +204,9 @@ public abstract class JarArchive implements Archive {
 
     public void removeArchiveMetaData(String metaDataKey) {
         archiveMetaData.remove(metaDataKey);
+    }
+
+    public long getArchiveCrc() {
+        throw new UnsupportedOperationException("Not Supported");
     }
 }

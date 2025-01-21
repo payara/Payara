@@ -40,18 +40,22 @@
 package org.glassfish.apf.jandex;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import com.sun.enterprise.deployment.deploy.shared.JarArchive;
 import jakarta.inject.Inject;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.JandexIndexer;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexReader;
+import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
 import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,6 +68,8 @@ public class JandexIndexReader implements JandexIndexer {
 
     @Inject
     ArchiveFactory archiveFactory;
+    @Inject
+    ServerEnvironment serverEnvironment;
 
     @Override
     public void index(DeploymentContext deploymentContext) throws IOException {
@@ -162,9 +168,11 @@ public class JandexIndexReader implements JandexIndexer {
         return null;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private Index indexArchive(DeploymentContext deploymentContext) throws IOException {
         Index index = getIndexFromArchive(deploymentContext.getSource());
         if (index == null) {
+            getCachePath(deploymentContext.getSource(), "none").getParent().toFile().mkdirs();
             index = indexArchive(deploymentContext, deploymentContext.getSource());
         }
         return index;
@@ -186,26 +194,72 @@ public class JandexIndexReader implements JandexIndexer {
                 }
             }
             if (entry.endsWith(".jar")) {
-                try {
-                    // we need to check that there is no exploded directory by this name.
-                    String explodedName = entry.replaceAll("[/ ]", "__").replace(".jar", "_jar");
-                    if (!archive.exists(explodedName)) {
-                        ReadableArchive subArchive = archive.getSubArchive(entry);
-                        if (subArchive != null) {
-                            getIndexMap(context).put(subArchive.getURI().toString(), indexArchive(context, subArchive));
-                        }
-                    }
-                } catch (IOException e) {
-                    if (errors.length() == 0) {
-                        errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
-                    }
-                }
+                indexArchiveInnerJAR(context, archive, entry, errors);
             }
         });
         if (errors.length() > 0) {
             throw new IOException(errors.toString());
         }
         return indexer.complete();
+    }
 
+    private void indexArchiveInnerJAR(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
+        try {
+            // we need to check that there is no exploded directory by this name.
+            String explodedName = entry.replaceAll("[/ ]", "__").replace(".jar", "_jar");
+            if (!archive.exists(explodedName)) {
+                ReadableArchive subArchive = archive.getSubArchive(entry);
+                if (subArchive != null) {
+                    Index index = getCachedIndex(subArchive);
+                    if (index == null) {
+                        index = indexArchive(context, subArchive);
+                        cacheIndex(subArchive, index);
+                    }
+                    getIndexMap(context).put(subArchive.getURI().toString(), index);
+                }
+            }
+        } catch (IOException e) {
+            if (errors.length() == 0) {
+                errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
+            }
+        }
+    }
+
+    private Index getCachedIndex(ReadableArchive archive) throws IOException {
+        if (!getCachePath(archive, "size").toFile().exists()
+                || !getCachePath(archive, "crc").toFile().exists()) {
+            return null;
+        }
+        if (Long.parseLong(Files.readString(getCachePath(archive, "size"))) != archive.getArchiveSize()) {
+            return null;
+        }
+        if (Long.parseLong(Files.readString(getCachePath(archive, "crc"))) != getChecksum(archive)) {
+            return null;
+        }
+        try (var stream = Files.newInputStream(getCachePath(archive,"idx"))) {
+            return new IndexReader(stream).read();
+        }
+    }
+
+    private void cacheIndex(ReadableArchive archive, Index index) throws IOException {
+        Files.writeString(getCachePath(archive, "size"), String.valueOf(archive.getArchiveSize()));
+        Files.writeString(getCachePath(archive, "crc"), String.valueOf(getChecksum(archive)));
+        try (var stream = Files.newOutputStream(getCachePath(archive, "idx"))) {
+            IndexWriter indexWriter = new IndexWriter(stream);
+            indexWriter.write(index);
+        }
+    }
+
+    private long getChecksum(ReadableArchive archive) {
+        long crc = 0;
+        if (archive instanceof JarArchive) {
+            var jarArchive = (JarArchive) archive;
+            crc = jarArchive.getArchiveCrc();
+        }
+        return crc;
+    }
+
+    private Path getCachePath(ReadableArchive archive, String suffix) {
+        return Path.of(serverEnvironment.getInstanceRoot() + "/jandex-cache/" + archive.getName() + "." + suffix);
     }
 }
