@@ -152,7 +152,7 @@ public class JandexIndexReader implements JandexIndexer {
         return indexMap.computeIfAbsent(uri.toString(), key -> {
             try {
                 DeploymentUtils.WarLibraryDescriptor descriptor = DeploymentUtils.getWarLibraryCache().get(uri.getPath());
-                return descriptor != null ? descriptor.getIndex() : indexArchive(deploymentContext, archiveFactory.openArchive(uri));
+                return descriptor != null ? descriptor.getIndex() : indexOrGetFromCache(deploymentContext, archiveFactory.openArchive(uri));
             } catch (IOException e) {
                 return null;
             }
@@ -210,11 +210,7 @@ public class JandexIndexReader implements JandexIndexer {
             if (!archive.exists(explodedName)) {
                 ReadableArchive subArchive = archive.getSubArchive(entry);
                 if (subArchive != null) {
-                    Index index = getCachedIndex(subArchive);
-                    if (index == null) {
-                        index = indexArchive(context, subArchive);
-                        cacheIndex(subArchive, index);
-                    }
+                    Index index = indexOrGetFromCache(context, subArchive);
                     getIndexMap(context).put(subArchive.getURI().toString(), index);
                 }
             }
@@ -223,6 +219,18 @@ public class JandexIndexReader implements JandexIndexer {
                 errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
             }
         }
+    }
+
+    private Index indexOrGetFromCache(DeploymentContext context, ReadableArchive subArchive) throws IOException {
+        if (subArchive.getName().endsWith("classes")) {
+            return getRootIndex(context);
+        }
+        Index index = getCachedIndex(subArchive);
+        if (index == null) {
+            index = indexArchive(context, subArchive);
+            cacheIndex(subArchive, index);
+        }
+        return index;
     }
 
     private Index getCachedIndex(ReadableArchive archive) throws IOException {
