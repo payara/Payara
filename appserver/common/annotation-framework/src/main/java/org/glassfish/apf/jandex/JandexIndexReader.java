@@ -224,7 +224,7 @@ public class JandexIndexReader implements JandexIndexer {
     }
 
     private Index indexOrGetFromCache(DeploymentContext context, ReadableArchive subArchive) throws IOException {
-        if (subArchive.getName().endsWith("classes")) {
+        if (!subArchive.getURI().getPath().endsWith(".jar")) {
             return getRootIndex(context);
         }
         Index index = getCachedIndex(subArchive);
