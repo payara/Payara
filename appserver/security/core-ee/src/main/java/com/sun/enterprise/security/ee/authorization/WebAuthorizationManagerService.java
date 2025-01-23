@@ -48,6 +48,7 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
+import org.glassfish.exousia.modules.def.DefaultPolicy;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
@@ -134,7 +135,19 @@ public class WebAuthorizationManagerService {
 
     // The JACC policy provider. This is the pluggable lower level authorization module
     // to which this class delegates all authorization queries.
-    protected Policy policy = PolicyFactory.getPolicyFactory().getPolicy();
+    protected Policy policy = getPolicy();
+
+    private static Policy getPolicy() {
+        PolicyFactory policyFactory = PolicyFactory.getPolicyFactory();
+        Policy policy = policyFactory.getPolicy();
+        if (policy == null) {
+            String contextId = "__null___";
+            Policy defaultPolicy = new DefaultPolicy();
+            policyFactory.setPolicy(contextId, defaultPolicy);
+        }
+        return policy;
+    }
+
     protected PolicyConfigurationFactory policyConfigurationFactory;
     protected PolicyConfiguration policyConfiguration;
     protected CodeSource codesource;
