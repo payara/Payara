@@ -415,11 +415,11 @@ OPTIONS
                If set to true, preserves any application-scoped resources and
                restores them during redeployment. Default is false.
 
-           skipForceCdiInitialisationCheck={false|true}
-               If set to true, the check for if Payara should force an attempt
-               to initialise CDI and Weld if Jakarta Faces content was
-               detected in the application even if bean discovery is
-               set to "none" will be skipped. Default is false.
+           allowFacesCdiInitialisation={false|true}
+               If set to true, enables scanning for Jakarta Faces content
+               in the application, and if detected, forcing an attempt to
+               initialise CDI and Weld even if bean discovery is
+               set to "none". Default is false.
 
            Other available properties are determined by the implementation of
            the component that is being redeployed.
