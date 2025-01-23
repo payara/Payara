@@ -1611,15 +1611,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         publishedNonPortableGlobalJndiNames.add(jndiInfo.name);
                     }
                 }
+            } catch (NameAlreadyBoundException e) {
+                _logger.log(Level.WARNING, NAME_ALREADY_BOUND_MESSAGE);
             } catch (Exception e) {
-                if (e instanceof NameAlreadyBoundException) {
-                    _logger.log(Level.WARNING, NAME_ALREADY_BOUND_MESSAGE);
-                } else {
-                    throw new RuntimeException(localStrings.getLocalString(
-                            "ejb.error_binding_jndi_name",
-                            "Error while binding JNDI name {0} for EJB {1}",
-                            jndiInfo.name, this.ejbDescriptor.getName()), e);
-                }
+                throw new RuntimeException(localStrings.getLocalString(
+                        "ejb.error_binding_jndi_name",
+                        "Error while binding JNDI name {0} for EJB {1}",
+                        jndiInfo.name, this.ejbDescriptor.getName()), e);
             }
         }
 
