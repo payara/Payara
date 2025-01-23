@@ -112,7 +112,7 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
     private EJBPolicyContextDelegate ejbDelegate;
 
     public SoapAuthenticationService(String layer, Map<String, Object> properties, CallbackHandler callbackHandler) {
-        init(layer, getAppCtxt(properties), properties, callbackHandler, (RegistrationWrapperRemover) Globals.get(WebServicesDelegate.class));
+        init(layer, getAppCtxt(properties), properties, callbackHandler, null);
 
         isEjbEndpoint = processSunDeploymentDescriptor();
         seiModel = (SEIModel) properties.get(SEI_MODEL);
