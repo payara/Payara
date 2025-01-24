@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,6 +73,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -1744,15 +1745,26 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
+    private ConsoleHandler configureLogger(Logger logger) {
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        logger.addHandler(consoleHandler);
+        logger.setLevel(Level.ALL);
+        return consoleHandler;
+    }
+
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(
-                "GlassFish Shutdown Hook") {
+                "Payara Micro Shutdown Hook") {
             @Override
             public void run() {
                 try {
+                    ConsoleHandler handler = configureLogger(LOGGER);
                     if (gf != null) {
                         gf.stop();
                         gf.dispose();
+                        LOGGER.log(Level.INFO, "Payara Micro STOPPED.");
+                        handler.flush();
                     }
                 } catch (GlassFishException ex) {
                 } catch (IllegalStateException ex) {
