@@ -40,14 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates] -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.core</groupId>
         <artifactId>core-parent</artifactId>
-        <version>6.23.0-SNAPSHOT</version>
+        <version>6.24.0-SNAPSHOT</version>
         <relativePath>../../../core/core-parent</relativePath>
     </parent>
 
@@ -99,6 +99,7 @@
                     <include>com/sun/enterprise/v3/**/statusNotDAS.html</include>
                     <include>com/sun/enterprise/v3/**/asynch-1F.gif</include>
                     <include>com/sun/enterprise/v3/**/backimage.jpg</include>
+                    <include>fish/payara/enterprise/admin/**/*.properties</include>
                 </includes>
             </resource>
             <resource>
