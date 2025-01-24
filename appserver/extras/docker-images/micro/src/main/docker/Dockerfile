@@ -1,7 +1,7 @@
 #
 #    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#    Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+#    Copyright (c) 2023-2025 Payara Foundation and/or its affiliates. All rights reserved.
 #
 #    The contents of this file are subject to the terms of either the GNU
 #    General Public License Version 2 only ("GPL") or the Common Development
@@ -69,5 +69,5 @@ WORKDIR ${HOME_DIR}
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
-ENTRYPOINT ["/bin/sh", "entrypoint.sh"]
-CMD ["--deploymentDir","/opt/payara/deployments"]
+ENTRYPOINT java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar
+CMD ["--deploymentDir", "/opt/payara/deployments"]
