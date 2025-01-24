@@ -52,9 +52,6 @@ ENV PAYARA_DIR=${HOME_DIR} \
     MEM_MAX_RAM_PERCENTAGE="70.0" \
     MEM_XSS="512k"
 
-# Add Tini
-RUN apk add --no-cache tini
-
 RUN true \
     && mkdir -p "${HOME_DIR}" \
     && addgroup --gid 1000 payara \
@@ -72,5 +69,5 @@ WORKDIR ${HOME_DIR}
 COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
-ENTRYPOINT ["tini", "--", "/opt/payara/entrypoint.sh"]
+ENTRYPOINT java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar
 CMD ["--deploymentDir", "/opt/payara/deployments"]
