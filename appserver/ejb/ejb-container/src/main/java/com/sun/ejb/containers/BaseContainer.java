@@ -151,7 +151,6 @@ import java.util.Vector;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.NameAlreadyBoundException;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
@@ -261,8 +260,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             action = "Trying to invoke the ejb application"
     )
     private static final String INTERNAL_ERROR = "AS-EJB-00052";
-    
-    private static final String NAME_ALREADY_BOUND_MESSAGE = "The name of the bean was already bound on the context, skipping exception";
 
     protected static final Class[] NO_PARAMS = new Class[] {};
 
@@ -1611,8 +1608,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                         publishedNonPortableGlobalJndiNames.add(jndiInfo.name);
                     }
                 }
-            } catch (NameAlreadyBoundException e) {
-                _logger.log(Level.WARNING, NAME_ALREADY_BOUND_MESSAGE);
             } catch (Exception e) {
                 throw new RuntimeException(localStrings.getLocalString(
                         "ejb.error_binding_jndi_name",

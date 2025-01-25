@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -58,7 +58,6 @@ public class StatelessContainerFactory extends BaseContainerFactory implements
                                      DeploymentContext deployContext)
             throws Exception {
         StatelessSessionContainer slsbContainer = new StatelessSessionContainer(ejbDescriptor, loader, getSecurityManager(ejbDescriptor));
-        slsbContainer.initializeHome();
         slsbContainer.initializeHome();
         return slsbContainer;
     }
