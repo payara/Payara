@@ -161,7 +161,7 @@ public class HelloJSPTestNG {
             if(line.indexOf("Welcome to HTML Test Program")!=-1){
                 result=true;
              testLine = line;
-           System.out.println(testLine);
+           //System.out.println(testLine);
             }
           
         }        
