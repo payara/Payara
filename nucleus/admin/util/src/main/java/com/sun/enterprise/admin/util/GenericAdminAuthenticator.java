@@ -253,14 +253,17 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                     getDefaultAdminUser(),
                     localPassword
         );
-        Subject s;
         try {
-            s = authService.login(cbh, null);
             /*
              * Enforce remote access restrictions, if any.
              */
             rejectRemoteAdminIfDisabled(cbh);
-            consumeTokenIfPresent(req);
+
+            Subject subject = consumeTokenIfPresent(req);
+            if (subject == null) {
+                subject = authService.login(cbh, null);
+            }
+
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** Login worked\n  user={0}\n  dn={1}\n  tkn={2}\n  admInd={3}\n  host={4}\n",
                         new Object[] {cbh.pw().getUserName(),  
@@ -268,7 +271,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                                         cbh.tkn(), cbh.adminIndicator(), cbh.remoteHost()});
             }
 
-            return s;
+            return subject;
         } catch (RemoteAdminAccessException ex) {
             /*
              * Rethrow RemoteAdminAccessException explicitly to avoid it being
