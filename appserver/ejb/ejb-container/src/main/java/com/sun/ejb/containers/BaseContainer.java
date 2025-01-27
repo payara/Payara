@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -1599,16 +1599,16 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             JndiInfo jndiInfo = entry.getValue();
             try {
                 jndiInfo.publish(this.namingManager);
-                if ( jndiInfo.internal ) {
+                if (jndiInfo.internal) {
                     publishedInternalGlobalJndiNames.add(jndiInfo.name);
                 } else {
-                    if ( jndiInfo.portable ) {
+                    if (jndiInfo.portable) {
                         publishedPortableGlobalJndiNames.add(jndiInfo.name);
-                    }  else {
+                    } else {
                         publishedNonPortableGlobalJndiNames.add(jndiInfo.name);
                     }
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new RuntimeException(localStrings.getLocalString(
                         "ejb.error_binding_jndi_name",
                         "Error while binding JNDI name {0} for EJB {1}",

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package test.web.jsp.hello;
 import org.testng.annotations.Configuration;
@@ -115,34 +116,33 @@ public class HelloJSPTestNG {
 
     }
 
-    @Test(groups={"pulse"}) //test method for server
-    public void testServerRunning() throws Exception{
-	    //Your server is up and running!
-	    //
-	String testurl = "http://" + host  + ":" + port;
+    @Test(groups = {"pulse"}) //test method for server
+    public void testServerRunning() throws Exception {
+        //Your server is up and running!
+        //
+        String testurl = "http://" + host + ":" + port;
         //System.out.println("URL is: "+testurl);
         URL url = new URL(testurl);
         //echo("Connecting to: " + url.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.connect();
         int responseCode = conn.getResponseCode();
-
-	InputStream is = conn.getInputStream();
+        InputStream is = conn.getInputStream();
         BufferedReader input = new BufferedReader(new InputStreamReader(is));
 
         String line = null;
         boolean result=false;
-        String testLine = null;        
+        String testLine = null;
         while ((line = input.readLine()) != null) {
             if(line.indexOf("now running")!=-1){
                 result=true;
-             testLine = line;
-           //echo(testLine);
+                testLine = line;
+                //echo(testLine);
             }
-          
-        }        
-                
-        Assert.assertEquals(result, true,"Unexpected HTML");
+
+        }
+
+        Assert.assertEquals(result, true, "Unexpected HTML");
     }
     
     

@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2022-2025] [Payara Foundation and/or its affiliates] -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
@@ -102,16 +102,16 @@
        <class name="test.jdbc.jdbcusertx.JdbcUserTxTestNG" />
     </classes>
   </test>
-  <!--test name="jpa_inject_emf">
+  <test name="jpa_inject_emf">
     <classes>
        <class name="test.jpa.jpainjectemf.JpaInjectEMFTestNG" />
     </classes>
-  </test-->
-  <!--test name="jpa_validation">
+  </test>
+  <test name="jpa_validation">
     <classes>
        <class name="test.jpa.jpavalidation.JpaValidationTestNG" />
     </classes>
-  </test-->
+  </test>
   <test name="security_hello_jsp">
     <classes>
        <class name="test.security.hellojsp.HelloSecurityTestNG" />
@@ -127,11 +127,11 @@
        <class name="test.security.appperms.ApppermsTestNG" />
     </classes>
   </test>
-  <!--test name="ejb_remoteview">
+  <test name="ejb_remoteview">
     <classes>
         <class name="test.ejb.remoteview.RemoteViewTestNG"/>
     </classes>
-  </test-->
+  </test>
   <test name="ejb_singleton_ear_redeploy">
     <classes>
 	<class name="test.ejb.singleton.SingletonTestNG" />
@@ -191,21 +191,21 @@
       <class name="fromjava.client.CheckTesterUITestNG"/>
     </classes>
   </test>-->
-  <!--test name="cluster_setup">
+  <test name="cluster_setup">
     <classes>
         <class name="test.clustersetup.ClusterSetupTest"/>
     </classes>
-  </test-->
-  <!--<test name="cluster_helloworld">
+  </test>
+  <!--test name="cluster_helloworld">
     <classes>
         <class name="test.hellocluster.ClusterHelloworldTest"/>
     </classes>
-  </test>-->
-  <!--test name="cluster_teardown">
+  </test-->
+  <test name="cluster_teardown">
     <classes>
         <class name="test.clusterteardown.ClusterTeardownTest"/>
     </classes>
-  </test-->
+  </test>
   <test name="jms_injection_jmsContext">
     <classes>
 	    <class name="test.jms.injection.ClientTestNG"/>
