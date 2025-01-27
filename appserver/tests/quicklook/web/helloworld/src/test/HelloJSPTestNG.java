@@ -127,9 +127,19 @@ public class HelloJSPTestNG {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.connect();
         int responseCode = conn.getResponseCode();
-        boolean result = false;
-        if (responseCode == 200) {
-            result = true;
+        InputStream is = conn.getInputStream();
+        BufferedReader input = new BufferedReader(new InputStreamReader(is));
+
+        String line = null;
+        boolean result=false;
+        String testLine = null;
+        while ((line = input.readLine()) != null) {
+            if(line.indexOf("now running")!=-1){
+                result=true;
+                testLine = line;
+                //echo(testLine);
+            }
+
         }
 
         Assert.assertEquals(result, true, "Unexpected HTML");
