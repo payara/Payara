@@ -58,6 +58,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.Policy;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1016,6 +1017,8 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
         }
 
+        configurePolicyFactory();
+
         long start = System.currentTimeMillis();
 
         // Build the runtime directory
@@ -1113,6 +1116,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, null, ex1);
             }
             throw new BootstrapException(ex.getMessage(), ex);
+        }
+    }
+
+    private void configurePolicyFactory() {
+        if (System.getProperty("jakarta.security.jacc.PolicyFactory.provider") == null) {
+            System.setProperty("jakarta.security.jacc.PolicyFactory.provider", "org.glassfish.exousia.modules.def.DefaultPolicyFactory");
         }
     }
 
