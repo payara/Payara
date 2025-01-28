@@ -395,7 +395,7 @@
             <dependency>
                 <groupId>org.omnifaces</groupId>
                 <artifactId>omniutils</artifactId>
-                <version>0.14</version>
+                <version>0.16</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
