@@ -46,7 +46,6 @@ EXPOSE 6900 8080
 ENV PAYARA_HOME=/opt/payara
 ENV HOME_DIR=${PAYARA_HOME}
 ENV PAYARA_DIR=${HOME_DIR} \
-    SCRIPT_DIR=${HOME_DIR} \
     DEPLOY_DIR=/opt/payara/deployments \
     JVM_ARGS="-Djdk.util.zip.disableZip64ExtraFieldValidation=true" \
     MEM_MAX_RAM_PERCENTAGE="70.0" \
@@ -58,7 +57,6 @@ RUN true \
     && adduser --system --uid 1000 --no-create-home --shell /bin/bash --home "${HOME_DIR}" --gecos "" --ingroup payara payara \
     && echo payara:payara | chpasswd \
     && mkdir -p "${PAYARA_DIR}" \
-    && mkdir -p "${SCRIPT_DIR}" \
     && mkdir -p "${DEPLOY_DIR}" \
     && chown -R payara:payara ${HOME_DIR} \
     && true
@@ -66,7 +64,6 @@ RUN true \
 USER payara
 WORKDIR ${HOME_DIR}
 
-COPY --chown=payara:payara maven/bin/* ${SCRIPT_DIR}/
 COPY --chown=payara:payara maven/artifacts/payara-micro.jar .
 
 ENTRYPOINT java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar
