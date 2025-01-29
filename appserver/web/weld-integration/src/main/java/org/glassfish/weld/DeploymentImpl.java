@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -73,7 +73,6 @@ import org.glassfish.common.util.ObjectInputStreamWithLoader;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.weld.connector.WeldUtils;
@@ -946,14 +945,4 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
     public String getContextId() {
         return contextId;
     }
-
-    /**
-     * Gets the {@link Types} from the {@link DeploymentContext}'s transient metadata
-     *
-     * @return The {@link Types} from the {@link DeploymentContext}'s transient metadata
-     */
-    public Types getTypes() {
-        return context.getTransientAppMetaData(Types.class.getName(), Types.class);
-    }
-
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -50,10 +50,8 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.web.deployment.annotation.impl.WarScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFor;
@@ -81,6 +79,7 @@ import java.io.InputStream;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -117,6 +116,8 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     private ArchiveFactory archiveFactory;
     @Inject
     private Deployment deployment;
+    @Inject
+    JandexIndexer jandexIndexer;
 
     /**
      * @return the  module type handled by this archivist
@@ -368,7 +369,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                         ReadableArchive warArchive = null;
                         try {
                             warArchive = archiveFactory.openArchive(new File(wfDesc.getWarLibraryPath()));
-                            warArchive.setExtraData(Parser.class, archive.getExtraData(Parser.class));
                             super.readAnnotations(warArchive, wfDesc, localExtensions);
                         } finally {
                             if (warArchive != null) {
@@ -376,7 +376,10 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                             }
                         }
                         DeploymentUtils.getWarLibraryCache().putIfAbsent(wfDesc.getWarLibraryPath(),
-                                new DeploymentUtils.WarLibraryDescriptor(wfDesc, filterTypesByWarLibrary(wfDesc)));
+                                new DeploymentUtils.WarLibraryDescriptor(wfDesc,
+                                        jandexIndexer.getIndexesByURI(deployment.getCurrentDeploymentContext(),
+                                        Collections.singleton(Path.of(wfDesc.getWarLibraryPath()).toUri()))
+                                                .values().stream().findAny().orElse(null)));
                     }
                 } else {
                     super.readAnnotations(archive, wfDesc, localExtensions);
@@ -416,15 +419,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         // apply default from default-web.xml to web.xml
         WebBundleDescriptorImpl defaultWebBundleDescriptor = getPlainDefaultWebXmlBundleDescriptor();
         descriptor.addDefaultWebBundleDescriptor(defaultWebBundleDescriptor);
-    }
-
-    private List<Type> filterTypesByWarLibrary(WebFragmentDescriptor wfDesc) {
-        Types types = deployment.getCurrentDeploymentContext().getTransientAppMetaData(Types.class.getName(), Types.class);
-        if (types == null) {
-            return List.of();
-        }
-        return types.getAllTypes().stream().filter(key -> key.wasDefinedIn(
-                List.of(Path.of(wfDesc.getWarLibraryPath()).toUri()))).collect(Collectors.toList());
     }
 
     /**
