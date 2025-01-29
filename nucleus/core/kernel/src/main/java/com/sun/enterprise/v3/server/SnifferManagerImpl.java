@@ -42,8 +42,9 @@
 package com.sun.enterprise.v3.server;
 
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.*;
 import jakarta.inject.Inject;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.container.Sniffer;
@@ -75,6 +76,8 @@ public class SnifferManagerImpl implements SnifferManager {
 
     @Inject
     protected ServiceLocator habitat;
+    @Inject
+    JandexIndexer jandexIndexer;
 
     /**
      * Returns all the presently registered sniffers
@@ -132,17 +135,16 @@ public class SnifferManagerImpl implements SnifferManager {
         ReadableArchive archive = context.getSource();
         ArchiveHandler handler = context.getArchiveHandler();
         List<URI> uris = handler.getClassPathURIs(archive);
-        Types types = context.getTransientAppMetaData(Types.class.getName(), Types.class);
-        return getSniffers(context, uris, types);
+        return getSniffers(context, uris, null);
     }
 
-    public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, Types types) {
+    public Collection<Sniffer> getSniffers(DeploymentContext context, List<URI> uris, @Deprecated Types types) {
         // it is important to keep an ordered sequence here to keep sniffers
         Collection<Sniffer> regularSniffers = getSniffers();
 
         // in their natural order.
         // scan for registered annotations and retrieve applicable sniffers
-        List<Sniffer> appSniffers = this.getApplicableSniffers(context, uris, types, regularSniffers, true);
+        List<Sniffer> appSniffers = this.getApplicableSniffers(context, uris, regularSniffers);
         
         // call handles method of the sniffers
         for (Sniffer sniffer : regularSniffers) {
@@ -153,7 +155,7 @@ public class SnifferManagerImpl implements SnifferManager {
         return appSniffers;
     }
 
-    private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, List<URI> uris, Types types, Collection<T> sniffers, boolean checkPath) {
+    private <T extends Sniffer> List<T> getApplicableSniffers(DeploymentContext context, List<URI> uris, Collection<T> sniffers) {
         ArchiveType archiveType = habitat.getService(ArchiveType.class, context.getArchiveHandler().getArchiveType());
 
         if (sniffers == null || sniffers.isEmpty()) {
@@ -166,37 +168,8 @@ public class SnifferManagerImpl implements SnifferManager {
                 continue;
             }
             String[] annotationNames = sniffer.getAnnotationNames(context);
-            if (annotationNames == null || types == null) {
-                continue;
-            }
-            for (String annotationName : annotationNames) {
-                types.getAllTypes().stream()
-                        .filter(type -> type instanceof AnnotationType && type.getName().equals(annotationName))
-                        .findFirst().ifPresent(type -> {
-                            Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
-                            for (AnnotatedElement element : elements) {
-                                if (checkPath) {
-                                    Type t;
-                                    if (element instanceof Member) {
-                                        t = ((Member) element).getDeclaringType();
-                                    } else if (element instanceof Type) {
-                                        t = (Type) element;
-                                    } else if (element instanceof ParameterizedType) {
-                                        t = ((ParameterizedType) element).getType();
-                                    } else {
-                                        LOGGER.log(Level.WARNING, "Unrecognised type: {0}.", element);
-                                        continue;
-                                    }
-                                    if (t.wasDefinedIn(uris)) {
-                                        result.add(sniffer);
-                                        break;
-                                    }
-                                } else {
-                                    result.add(sniffer);
-                                    break;
-                                }
-                            }
-                        });
+            if (annotationNames != null && jandexIndexer.hasAnyAnnotations(context, uris, annotationNames)) {
+                result.add(sniffer);
             }
         }
         return result;

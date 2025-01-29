@@ -5824,7 +5824,7 @@ public class StandardContext
         Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList =
             ServletContainerInitializerUtil.getInitializerList(
                 servletContainerInitializers, interestList,
-                getTypes(),
+                null,
                 getClassLoader(), isStandalone());
         if (initializerList == null) {
             return;
