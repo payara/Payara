@@ -138,6 +138,12 @@
                 <type>pom</type>
             </dependency>
 
+            <dependency>
+                <groupId>jakarta.data</groupId>
+                <artifactId>jakarta.data-api</artifactId>
+                <version>${jakarta.data-api.version}</version>
+            </dependency>
+
             <!-- Microprofile API release aggregate. Can also be used as a BOM -->
             <dependency>
                 <groupId>org.eclipse.microprofile</groupId>
