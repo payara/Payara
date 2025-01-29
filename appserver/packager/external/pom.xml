@@ -69,6 +69,7 @@
         <module>metro-xmlsec</module>
         <module>jakarta-ee9-shim</module>
         <module>jakarta-ee11-shim</module>
+        <module>jakarta-data-api</module>
     </modules>
     <build>
         <plugins>
