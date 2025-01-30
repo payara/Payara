@@ -40,10 +40,14 @@
 // Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.authorization.cache;
 
+import com.sun.enterprise.security.ee.authorization.PolicyProvider;
 import com.sun.logging.LogDomains;
 import jakarta.security.jacc.Policy;
 import jakarta.security.jacc.PolicyContext;
 import jakarta.security.jacc.PolicyFactory;
+import org.glassfish.exousia.modules.def.DefaultPolicy;
+import org.glassfish.exousia.modules.def.DefaultPolicyFactory;
+
 import java.security.AllPermission;
 import java.security.Permission;
 import java.security.PermissionCollection;
@@ -65,7 +69,7 @@ import static java.util.logging.Level.SEVERE;
 public class PermissionCache extends Object {
 
     private static Logger _logger = LogDomains.getLogger(PermissionCache.class, LogDomains.SECURITY_LOGGER);
-    private static Policy policy = PolicyFactory.getPolicyFactory().getPolicy();
+    private static Policy policy = PolicyProvider.getInstance();
     private static AllPermission allPermission = new AllPermission();
 
     private Permissions cache;
@@ -79,7 +83,6 @@ public class PermissionCache extends Object {
     private ReadWriteLock rwLock;
     private Lock rLock;
     private Lock wLock;
-   
 
     /*
      * @param key - Integer that uniquely identifies the cache at the factory
