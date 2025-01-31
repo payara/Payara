@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>14.0.10</version>
+            <version>14.0.11</version>
             <classifier>jakarta</classifier>
         </dependency>
 
