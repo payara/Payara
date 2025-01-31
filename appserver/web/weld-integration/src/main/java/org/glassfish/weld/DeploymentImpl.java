@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.weld;
 
@@ -87,6 +87,7 @@ import org.jboss.weld.lite.extension.translator.LiteExtensionTranslator;
 import java.security.PrivilegedAction;
 import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
+
 import jakarta.enterprise.inject.build.compatible.spi.SkipIfPortableExtensionPresent;
 
 
@@ -815,7 +816,8 @@ public class DeploymentImpl implements CDI11Deployment {
 
             BeanDeploymentArchive moduleBda = rootBda.getModuleBda();
             BeansXml moduleBeansXml = moduleBda.getBeansXml();
-            if (moduleBeansXml == null || !moduleBeansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
+            if ((moduleBeansXml == null
+                    || (!moduleBeansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) || forceInitialisation(context))) {
                 addBdaToDeploymentBdas(rootBda);
                 addBdaToDeploymentBdas(moduleBda);
                 addBeanDeploymentArchives(rootBda);
@@ -867,6 +869,16 @@ public class DeploymentImpl implements CDI11Deployment {
      */
     public Types getTypes() {
         return context.getTransientAppMetaData(Types.class.getName(), Types.class);
+    }
+
+    private boolean forceInitialisation(DeploymentContext context) {
+        Boolean force = context.getTransientAppMetaData("fish.payara.faces.integration.allowFacesCdiInitialisation", Boolean.class);
+        if (force != null && force) {
+            logger.fine("allowFacesCdiInitialisation enabled, forcing initialisation of Weld");
+            return true;
+        }
+
+        return false;
     }
 
 }

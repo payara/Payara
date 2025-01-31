@@ -318,7 +318,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         deploymentImpl.getServices().add(ExternalConfiguration.class, externalConfiguration);
 
         BeanDeploymentArchive beanDeploymentArchive = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
-        if (beanDeploymentArchive != null && !beanDeploymentArchive.getBeansXml().getBeanDiscoveryMode().equals(NONE)) {
+        if (beanDeploymentArchive != null
+                && (!beanDeploymentArchive.getBeansXml().getBeanDiscoveryMode().equals(NONE) || forceInitialisation(context))) {
             if (setTransientAppMetaData[0]) {
                 // Do this only if we have a root BDA
                 appToBootstrap.put(context.getModuleMetaData(Application.class), bootstrap);
@@ -351,42 +352,39 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
 
             BundleDescriptor bundle = (webBundleDescriptor != null) ? webBundleDescriptor : ejbBundle;
-            if (bundle != null) {
+            if (bundle != null
+                    && (!beanDeploymentArchive.getBeansXml().getBeanDiscoveryMode().equals(NONE) || forceInitialisation(context))) {
+                // Register EE injection manager at the bean deployment archive level.
+                // We use the generic InjectionService service to handle all EE-style
+                // injection instead of the per-dependency-type InjectionPoint approach.
+                // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
 
-                if (!beanDeploymentArchive.getBeansXml().getBeanDiscoveryMode().equals(NONE)) {
+                InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
+                if (logger.isLoggable(FINE)) {
+                    logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[]{injectionServices, beanDeploymentArchive.getId()});
+                }
 
-                    // Register EE injection manager at the bean deployment archive level.
-                    // We use the generic InjectionService service to handle all EE-style
-                    // injection instead of the per-dependency-type InjectionPoint approach.
-                    // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
+                beanDeploymentArchive.getServices().add(InjectionServices.class, injectionServices);
+                EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive);
+                if (eeModuleDescriptor != null) {
+                    beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
+                }
 
-                    InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
+                // Relevant in WAR BDA - WEB-INF/lib BDA scenarios
+                for (BeanDeploymentArchive subBda : beanDeploymentArchive.getBeanDeploymentArchives()) {
                     if (logger.isLoggable(FINE)) {
-                        logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[] { injectionServices, beanDeploymentArchive.getId() });
+                        logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[]{injectionServices, subBda.getId()});
                     }
 
-                    beanDeploymentArchive.getServices().add(InjectionServices.class, injectionServices);
-                    EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive);
+                    subBda.getServices().add(InjectionServices.class, injectionServices);
+                    eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive); // Should not be subBda?
                     if (eeModuleDescriptor != null) {
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
                     }
-
-                    // Relevant in WAR BDA - WEB-INF/lib BDA scenarios
-                    for (BeanDeploymentArchive subBda : beanDeploymentArchive.getBeanDeploymentArchives()) {
-                        if (logger.isLoggable(FINE)) {
-                            logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[] { injectionServices, subBda.getId() });
-                        }
-
-                        subBda.getServices().add(InjectionServices.class, injectionServices);
-                        eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive); // Should not be subBda?
-                        if (eeModuleDescriptor != null) {
-                            beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
-                        }
-                    }
                 }
-
-                bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
             }
+
+            bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
         }
 
         context.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
@@ -969,5 +967,17 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private void addCdiServicesToBda(InjectionManager injectionMgr, BeanDeploymentArchive bda) {
         InjectionServices injectionServices = new NonModuleInjectionServices(injectionMgr);
         bda.getServices().add(InjectionServices.class, injectionServices);
+    }
+
+    private boolean forceInitialisation(DeploymentContext context) {
+        Boolean force = context.getTransientAppMetaData("fish.payara.faces.integration.allowFacesCdiInitialisation", Boolean.class);
+        if (force != null && force) {
+            if (logger.isLoggable(FINE)) {
+                logger.fine("allowFacesCdiInitialisation enabled, forcing initialisation of Weld");
+            }
+            return true;
+        }
+
+        return false;
     }
 }
