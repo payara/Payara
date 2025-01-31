@@ -37,30 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.impl;
 
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
-import com.sun.enterprise.deployment.web.AppListenerDescriptor;
-import com.sun.enterprise.deployment.web.ServletFilter;
-import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.web.deployment.descriptor.*;
 import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Vector;
-import java.util.logging.Level;
-
 
 /**
  * Implementation of the Scanner interface for war.
@@ -85,7 +76,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     @Override
     public void process(File archiveFile, WebBundleDescriptor webBundleDesc,
             ClassLoader classLoader) throws IOException {
-        throw new UnsupportedOperationException("Not supported.");
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
@@ -97,116 +88,6 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     @Override
     public void process(ReadableArchive readableArchive, WebBundleDescriptor webBundleDesc,
             ClassLoader classLoader, Parser parser) throws IOException {
-
-        WebFragmentDescriptor webFragmentDesc = new WebFragmentDescriptor();
-        if (webBundleDesc instanceof WebFragmentDescriptor) {
-            webFragmentDesc = (WebFragmentDescriptor) webBundleDesc;
-        }
-        if (webFragmentDesc.isWarLibrary()) {
-            this.archiveFile = new File(webFragmentDesc.getWarLibraryPath());
-        } else {
-            this.archiveFile = new File(readableArchive.getURI());
-        }
-        this.classLoader = classLoader;
-        setParser(parser);
-
-        if (AnnotationUtils.getLogger().isLoggable(Level.FINE)) {
-            AnnotationUtils.getLogger().log(Level.FINE, "archiveFile is {0}", archiveFile);
-            AnnotationUtils.getLogger().log(Level.FINE, "webBundle is {0}", webBundleDesc);
-            AnnotationUtils.getLogger().log(Level.FINE, "classLoader is {0}", classLoader);
-        }
-
-        if (!webFragmentDesc.isWarLibrary() && !archiveFile.isDirectory()) {
-            // on client side
-            return;
-        }
-
-        if (isScanOtherLibraries()) {
-            addLibraryJars(webBundleDesc, readableArchive);
-            calculateResults(webBundleDesc);
-            return;
-        }
-
-        File webinf = new File(archiveFile, "WEB-INF");
-        
-        if (webBundleDesc instanceof WebFragmentDescriptor) {
-            if (webFragmentDesc.isWarLibrary()) {
-                addScanJar(archiveFile);
-            } else {
-                File lib = new File(webinf, "lib");
-                if (lib.exists()) {
-                    File jarFile = new File(lib, webFragmentDesc.getJarName());
-                    if (jarFile.exists()) {
-                        // support exploded jar file
-                        if (jarFile.isDirectory()) {
-                            addScanDirectory(jarFile);
-                        } else {
-                            addScanJar(jarFile);
-                        }
-                    }
-                }
-            }
-        } else {
-            File classes = new File(webinf, "classes");
-            if (classes.exists()) {
-                addScanDirectory(classes);   
-            }
-        }
-        scanXmlDefinedClassesIfNecessary(webBundleDesc);
-        calculateResults(webBundleDesc);
-    }
-
-    // This is not mandated by the spec. It is for WSIT.
-    // We will also scan any servlets/filters/listeners classes specified
-    // in web.xml additionally if those classes are not resided in the wars.
-    private void scanXmlDefinedClassesIfNecessary(
-            WebBundleDescriptor webBundleDesc) 
-            throws IOException {
-
-        ClassLoader commonCL = clh.getCommonClassLoader();
-
-        for (Iterator webComponents =
-            webBundleDesc.getWebComponentDescriptors().iterator();
-            webComponents.hasNext();) {
-            WebComponentDescriptor webCompDesc =
-                (WebComponentDescriptor)webComponents.next();
-            if (webCompDesc.isServlet()) {
-                String servletName = webCompDesc.getWebComponentImplementation();
-                if (isScan(servletName, commonCL)) {
-                    addScanClassName(servletName);
-                }
-            }
-        }
-
-        Vector servletFilters = webBundleDesc.getServletFilters();
-        for (int i = 0; i < servletFilters.size(); i++) {
-            ServletFilter filter = (ServletFilter)servletFilters.elementAt(i);
-            String filterName = filter.getClassName();
-            if (isScan(filterName, commonCL)) {
-                addScanClassName(filter.getClassName());
-            }
-        }
-
-        Vector listeners = webBundleDesc.getAppListenerDescriptors();
-        for (int j = 0; j < listeners.size(); j++) {
-            AppListenerDescriptor listenerDesc =
-                (AppListenerDescriptor) listeners.elementAt(j);
-            String listenerName = listenerDesc.getListener();
-            if (isScan(listenerName, commonCL)) {
-                addScanClassName(listenerDesc.getListener());
-            }
-        }
-    }
-
-    /**
-     * Returns true if the class is accessible from the classloader
-     * @param className
-     * @param commonCL
-     * @return
-     * @throws IOException 
-     */
-    private boolean isScan(String className, ClassLoader commonCL) throws IOException {
-        return commonCL.getResource(className.replace(".", "/") + ".class") != null;
+        throw new UnsupportedOperationException("No longer supported.");
     }
 }
- 

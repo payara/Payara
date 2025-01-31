@@ -79,6 +79,7 @@ public class JandexIndexReader implements JandexIndexer {
             Map<String, Index> indexMap = new HashMap<>();
             deploymentContext.addTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, indexMap);
             indexMap.put(deploymentContext.getSource().getURI().toString(), indexArchive(deploymentContext));
+            indexSubArchives(deploymentContext, true);
             if (DeploymentUtils.useWarLibraries(deploymentContext)) {
                 DeploymentUtils.getWarLibraryCache().keySet()
                         .forEach(path -> getOrCreateIndex(deploymentContext, Path.of(path).toUri()));
@@ -170,21 +171,26 @@ public class JandexIndexReader implements JandexIndexer {
         return null;
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     private Index indexArchive(DeploymentContext deploymentContext) throws IOException {
         Index index = getIndexFromArchive(deploymentContext.getSource());
         if (index == null) {
-            getCachePath(deploymentContext.getSource(), "none").getParent().toFile().mkdirs();
-            index = indexArchive(deploymentContext, deploymentContext.getSource());
+            index = indexSubArchives(deploymentContext, false);
         }
         return index;
     }
 
-    private Index indexArchive(DeploymentContext context, ReadableArchive archive) throws IOException {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private Index indexSubArchives(DeploymentContext deploymentContext, boolean indexSubArchivesOnly) throws IOException {
+        getCachePath(deploymentContext.getSource(), "none").getParent().toFile().mkdirs();
+        return indexArchive(deploymentContext, deploymentContext.getSource(), indexSubArchivesOnly);
+    }
+
+    private Index indexArchive(DeploymentContext context, ReadableArchive archive,
+                               boolean indexSubArchivesOnly) throws IOException {
         Indexer indexer = new Indexer();
         StringBuilder errors = new StringBuilder();
         archive.entries().asIterator().forEachRemaining(entry -> {
-            if (entry.endsWith(".class")) {
+            if (!indexSubArchivesOnly && entry.endsWith(".class")) {
                 try (InputStream stream = archive.getEntry(entry)) {
                     if (stream != null) {
                         indexer.index(stream);
@@ -229,7 +235,7 @@ public class JandexIndexReader implements JandexIndexer {
         }
         Index index = getCachedIndex(subArchive);
         if (index == null) {
-            index = indexArchive(context, subArchive);
+            index = indexArchive(context, subArchive, false);
             cacheIndex(subArchive, index);
         }
         return index;

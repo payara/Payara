@@ -89,7 +89,6 @@ import java.util.Set;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 
 /**
@@ -469,6 +468,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                 }
             }
             wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));
+            wfDesc.setName(embeddedArchive.getURI().getPath());
             if (isWarLibrary) {
                 if (wfDesc.getClassLoader() != null) {
                     wfDesc.setClassLoader(wfDesc.getClassLoader().getParent());
