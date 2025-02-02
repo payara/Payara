@@ -190,19 +190,32 @@ public class JandexIndexReader implements JandexIndexer {
         Indexer indexer = new Indexer();
         StringBuilder errors = new StringBuilder();
         archive.entries().asIterator().forEachRemaining(entry -> {
-            if (!indexSubArchivesOnly && entry.endsWith(".class")) {
-                try (InputStream stream = archive.getEntry(entry)) {
-                    if (stream != null) {
-                        indexer.index(stream);
-                    }
-                } catch (IOException e) {
-                    if (errors.length() == 0) {
-                        errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
+            // we need to check that there is no exploded directory by this name.
+            String explodedName = entry
+                    .replace(".jar", "_jar")
+                    .replace(".war", "_war")
+                    .replace(".rar", "_rar");
+            int slashIndex = explodedName.indexOf('/');
+            if (slashIndex != -1) {
+                explodedName = explodedName.substring(0, slashIndex + 1);
+            }
+            try {
+                boolean explodedNameExists = archive.exists(explodedName);
+                if (!indexSubArchivesOnly && !explodedNameExists && entry.endsWith(".class")) {
+                    try (InputStream stream = archive.getEntry(entry)) {
+                        if (stream != null) {
+                            indexer.index(stream);
+                        }
+
                     }
                 }
-            }
-            if (entry.endsWith(".jar")) {
-                indexArchiveInnerJAR(context, archive, entry, errors);
+                if (!explodedNameExists || indexSubArchivesOnly && entry.endsWith(".jar")) {
+                    indexArchiveInnerJAR(context, archive, entry, errors);
+                } else if (indexSubArchivesOnly && explodedNameExists && entry.endsWith(".war") || entry.endsWith(".rar")) {
+                    indexArchiveInnerJAR(context, archive, entry, errors);
+                }
+            } catch (IOException e) {
+                appendError(archive, entry, errors);
             }
         });
         if (errors.length() > 0) {
@@ -211,34 +224,44 @@ public class JandexIndexReader implements JandexIndexer {
         return indexer.complete();
     }
 
+    private static void appendError(ReadableArchive archive, String entry, StringBuilder errors) {
+        if (errors.length() == 0) {
+            errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
+        }
+    }
+
     private void indexArchiveInnerJAR(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
         try {
-            // we need to check that there is no exploded directory by this name.
-            String explodedName = entry.replaceAll("[/ ]", "__").replace(".jar", "_jar");
-            if (!archive.exists(explodedName)) {
-                ReadableArchive subArchive = archive.getSubArchive(entry);
-                if (subArchive != null) {
-                    Index index = indexOrGetFromCache(context, subArchive);
-                    getIndexMap(context).put(subArchive.getURI().toString(), index);
-                }
+            ReadableArchive subArchive = archive.getSubArchive(entry);
+            if (subArchive != null) {
+                Index index = indexOrGetFromCache(context, subArchive);
+                getIndexMap(context).put(subArchive.getURI().toString(), index);
             }
         } catch (IOException e) {
-            if (errors.length() == 0) {
-                errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
-            }
+            appendError(archive, entry, errors);
         }
     }
 
     private Index indexOrGetFromCache(DeploymentContext context, ReadableArchive subArchive) throws IOException {
-        if (!subArchive.getURI().getPath().endsWith(".jar")) {
+        String subArchivePath = subArchive.getURI().getPath();
+        if (subArchivePath.endsWith(".jar") || subArchivePath.endsWith("_war/") || subArchivePath.endsWith("_rar/")) {
+            Index index;
+            boolean isExploded = subArchivePath.endsWith("/");
+            if (isExploded) {
+                index = getIndexFromArchive(subArchive);
+            } else {
+                index = getCachedIndex(subArchive);
+            }
+            if (index == null) {
+                index = indexArchive(context, subArchive, false);
+                if (!isExploded) {
+                    cacheIndex(subArchive, index);
+                }
+            }
+            return index;
+        } else {
             return getRootIndex(context);
         }
-        Index index = getCachedIndex(subArchive);
-        if (index == null) {
-            index = indexArchive(context, subArchive, false);
-            cacheIndex(subArchive, index);
-        }
-        return index;
     }
 
     private Index getCachedIndex(ReadableArchive archive) throws IOException {

@@ -467,8 +467,10 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                     embeddedArchive.close();
                 }
             }
-            wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));
-            wfDesc.setName(embeddedArchive.getURI().getPath());
+            if (embeddedArchive != null) {
+                wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));
+                wfDesc.setName(embeddedArchive.getURI().getPath());
+            }
             if (isWarLibrary) {
                 if (wfDesc.getClassLoader() != null) {
                     wfDesc.setClassLoader(wfDesc.getClassLoader().getParent());

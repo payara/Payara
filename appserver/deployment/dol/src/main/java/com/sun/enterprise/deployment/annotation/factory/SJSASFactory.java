@@ -116,13 +116,21 @@ public class SJSASFactory extends Factory {
             return;
         }
 
+        String archiveURI = bundleDesc.getModuleDescriptor().getArchiveUri();
+        if (archiveURI == null) {
+            archiveURI = bundleDesc.getName();
+        }
         Index index = jandexIndexer.getAllIndexes(deploymentContext)
-                .get(new File(bundleDesc.getName()).toURI().toString());
+                .get(new File(archiveURI).toURI().toString());
         if (index == null) {
-            // TODO: assuming there is only one file in the directory
-            URI uri = Files.list(Path.of(archive.getURI())).findAny().get().toFile().toURI();
+            File file = new File(archiveURI);
+            URI uri = file.toURI();
+            if (file.isDirectory()) {
+                // TODO: assuming there is only one file in the directory
+                // exploded WAR support for EAR
+                uri = Files.list(file.toPath()).findAny().get().toFile().toURI();
+            }
             index = jandexIndexer.getIndexesByURI(deploymentContext, Collections.singleton(uri)).values().stream().findAny().get();
-            logger.info("No index found for bundle: " + bundleDesc.getName());
         }
         AnnotationProcessingContext processingContext = new AnnotationProcessingContext(
                 AnnotatedElementHandlerFactory.createAnnotatedElementHandler(bundleDesc), archive);
