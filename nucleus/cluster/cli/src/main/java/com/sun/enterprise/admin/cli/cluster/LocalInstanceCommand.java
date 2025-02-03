@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portios Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portios Copyright [2019-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -407,8 +408,8 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
             StringBuilder sb = new StringBuilder();
             sb.append("whackee=").append(whackee.toString());
             sb.append(", files in parent:");
-            files = parent.listFiles();
-            for (File f : files) {
+            files = Objects.requireNonNull(parent).listFiles();
+            for (File f : Objects.requireNonNull(files)) {
                 sb.append(f.toString()).append(", ");
             }
             File f1 = new File(whackee.toString());

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -45,6 +45,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -295,7 +296,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         boolean connStatus = false;
 
         try {
-            File domainsDirFile = DomainDirs.getDefaultDomainsDir();
+            File domainsDirFile = Objects.requireNonNull(DomainDirs.getDefaultDomainsDir());
 
             //get the list of domains
             File[] files = domainsDirFile.listFiles(new FileFilter() {
@@ -304,8 +305,7 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     return f.isDirectory();
                 }
             });
-
-            for (File f : files) {
+            for (File f : Objects.requireNonNull(files)) {
                 //the following property is required for initializing the password helper
                 System.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, f.getAbsolutePath());
                 try {
