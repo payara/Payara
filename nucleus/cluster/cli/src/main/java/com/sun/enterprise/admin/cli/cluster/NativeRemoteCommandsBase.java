@@ -296,55 +296,59 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         boolean connStatus = false;
 
         try {
-            File domainsDirFile = Objects.requireNonNull(DomainDirs.getDefaultDomainsDir());
-
-            //get the list of domains
-            File[] files = domainsDirFile.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return f.isDirectory();
-                }
-            });
-            for (File f : Objects.requireNonNull(files)) {
-                //the following property is required for initializing the password helper
-                System.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, f.getAbsolutePath());
-                try {
-                    final PasswordAdapter pa = new PasswordAdapter(null);
-                    final boolean exists = pa.aliasExists(alias);
-                    if (exists) {
-                        String mPass = getMasterPassword(f.getName());
-                        expandedPassword = new PasswordAdapter(mPass.toCharArray()).getPasswordForAlias(alias);
+            File domainsDirFile = DomainDirs.getDefaultDomainsDir();
+            if (domainsDirFile != null) {
+                //get the list of domains
+                //if(domainsDirFile != null) {
+                File[] files = domainsDirFile.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.isDirectory();
                     }
-                } catch (Exception e) {
-                    if (logger.isLoggable(Level.FINER)) {
-                        logger.finer(StringUtils.cat(": ", alias, e.getMessage()));
-                    }
-                    logger.warning(Strings.get("GetPasswordFailure", f.getName()));
-                    continue;
-                }
-
-                if (expandedPassword != null) {
-                    SSHLauncher sshL = new SSHLauncher();
-                    if (host != null) {
-                        sshpassword = expandedPassword;
-                        sshL.init(getRemoteUser(), host, getRemotePort(), sshpassword, null, null, logger);
-                        connStatus = sshL.checkPasswordAuth();
-                        if (!connStatus) {
-                            logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
+                });
+                if (files != null) {
+                    for (File f : files) {
+                        //the following property is required for initializing the password helper
+                        System.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, f.getAbsolutePath());
+                        try {
+                            final PasswordAdapter pa = new PasswordAdapter(null);
+                            final boolean exists = pa.aliasExists(alias);
+                            if (exists) {
+                                String mPass = getMasterPassword(f.getName());
+                                expandedPassword = new PasswordAdapter(mPass.toCharArray()).getPasswordForAlias(alias);
+                            }
+                        } catch (Exception e) {
+                            if (logger.isLoggable(Level.FINER)) {
+                                logger.finer(StringUtils.cat(": ", alias, e.getMessage()));
+                            }
+                            logger.warning(Strings.get("GetPasswordFailure", f.getName()));
+                            continue;
                         }
-                    } else {
-                        sshkeypassphrase = expandedPassword;
-                        if (verifyConn) {
-                            sshL.init(getRemoteUser(), hosts[0], getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
-                            connStatus = sshL.checkConnection();
-                            if (!connStatus) {
-                                logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
+
+                        if (expandedPassword != null) {
+                            SSHLauncher sshL = new SSHLauncher();
+                            if (host != null) {
+                                sshpassword = expandedPassword;
+                                sshL.init(getRemoteUser(), host, getRemotePort(), sshpassword, null, null, logger);
+                                connStatus = sshL.checkPasswordAuth();
+                                if (!connStatus) {
+                                    logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
+                                }
+                            } else {
+                                sshkeypassphrase = expandedPassword;
+                                if (verifyConn) {
+                                    sshL.init(getRemoteUser(), hosts[0], getRemotePort(), sshpassword, getSshKeyFile(), sshkeypassphrase, logger);
+                                    connStatus = sshL.checkConnection();
+                                    if (!connStatus) {
+                                        logger.warning(Strings.get("PasswordAuthFailure", f.getName()));
+                                    }
+                                }
+                            }
+
+                            if (connStatus) {
+                                break;
                             }
                         }
-                    }
-
-                    if (connStatus) {
-                        break;
                     }
                 }
             }

@@ -209,7 +209,7 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                     logger.log(Level.FINER, "Installed {0} into {1}:{2}", new Object[]{getArchiveName(), host, sshInstallDir});
             }
             catch (IOException ioe) {
-                logger.info(Strings.get("jar.failed", host, outStream.toString()));
+                logger.info(Strings.get("jar.failed", host, outStream.toString(StandardCharsets.UTF_8)));
                 throw new IOException(ioe);
             }
 
