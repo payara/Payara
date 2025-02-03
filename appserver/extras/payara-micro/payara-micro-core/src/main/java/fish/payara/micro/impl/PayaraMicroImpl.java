@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2023 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.Policy;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1017,8 +1016,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
         }
 
-        configurePolicyFactory();
-
         long start = System.currentTimeMillis();
 
         // Build the runtime directory
@@ -1116,12 +1113,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                 LOGGER.log(Level.SEVERE, null, ex1);
             }
             throw new BootstrapException(ex.getMessage(), ex);
-        }
-    }
-
-    private void configurePolicyFactory() {
-        if (System.getProperty("jakarta.security.jacc.PolicyFactory.provider") == null) {
-            System.setProperty("jakarta.security.jacc.PolicyFactory.provider", "org.glassfish.exousia.modules.def.DefaultPolicyFactory");
         }
     }
 
