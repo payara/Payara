@@ -196,17 +196,16 @@ public class JandexIndexReader implements JandexIndexer {
                     .replace(".war", "_war")
                     .replace(".rar", "_rar");
             int slashIndex = explodedName.indexOf('/');
-            if (slashIndex != -1) {
+            if (slashIndex != -1 && (entry.endsWith(".jar") || entry.endsWith(".war") || entry.endsWith(".rar"))) {
                 explodedName = explodedName.substring(0, slashIndex + 1);
             }
             try {
                 boolean explodedNameExists = archive.exists(explodedName);
-                if (!indexSubArchivesOnly && !explodedNameExists && entry.endsWith(".class")) {
+                if (!indexSubArchivesOnly && entry.endsWith(".class")) {
                     try (InputStream stream = archive.getEntry(entry)) {
                         if (stream != null) {
                             indexer.index(stream);
                         }
-
                     }
                 }
                 if (!explodedNameExists || indexSubArchivesOnly && entry.endsWith(".jar")) {
@@ -254,7 +253,7 @@ public class JandexIndexReader implements JandexIndexer {
             }
             if (index == null) {
                 index = indexArchive(context, subArchive, false);
-                if (!isExploded) {
+                if (!isExploded && !subArchivePath.endsWith("-SNAPSHOT.jar")) {
                     cacheIndex(subArchive, index);
                 }
             }
