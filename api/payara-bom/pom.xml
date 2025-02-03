@@ -1,7 +1,7 @@
 <!--
   ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~    Copyright (c) 2019-2024 Payara Foundation and/or its affiliates. All rights reserved.
+  ~    Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~    The contents of this file are subject to the terms of either the GNU
   ~    General Public License Version 2 only ("GPL") or the Common Development
@@ -136,6 +136,12 @@
                 <artifactId>jakarta.jakartaee-bom</artifactId>
                 <version>${jakartaee.api.version}</version>
                 <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.data</groupId>
+                <artifactId>jakarta.data-api</artifactId>
+                <version>${jakarta.data-api.version}</version>
             </dependency>
 
             <!-- Microprofile API release aggregate. Can also be used as a BOM -->

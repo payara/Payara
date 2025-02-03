@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2024 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2025 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -184,6 +184,7 @@
         <payara-arquillian-container.version>4.0.alpha1</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.1.0-SNAPSHOT</concurro.version>
+        <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
 
         <monitoring-console-process.version>3.0.0-SNAPSHOT</monitoring-console-process.version>
         <monitoring-console-webapp.version>3.0.0-SNAPSHOT</monitoring-console-webapp.version>
