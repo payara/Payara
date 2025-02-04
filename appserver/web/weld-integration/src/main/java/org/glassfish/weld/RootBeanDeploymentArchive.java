@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -49,10 +49,12 @@ import org.glassfish.weld.connector.WeldUtils;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 
+import java.io.ObjectStreamException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * A root BDA represents the root of a module where a module is a war, ejb, rar, ear lib
@@ -70,7 +72,7 @@ import java.util.Collections;
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
-    private BeanDeploymentArchiveImpl moduleBda;
+    BeanDeploymentArchiveImpl moduleBda;
 
     public RootBeanDeploymentArchive(ReadableArchive archive,
                                      Collection<EjbDescriptor> ejbs,
@@ -88,6 +90,11 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
               new ArrayList<EjbDescriptor>(),
               deploymentContext);
         createModuleBda(archive, ejbs, deploymentContext, moduleBdaID);
+    }
+
+    public RootBeanDeploymentArchive(RootBeanDeploymentArchive rootBeanDeploymentArchive) {
+        super(rootBeanDeploymentArchive);
+        moduleBda = rootBeanDeploymentArchive.moduleBda;
     }
 
     private void createModuleBda(ReadableArchive archive,
@@ -149,5 +156,22 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
 
     public WeldUtils.BDAType getModuleBDAType() {
         return moduleBda.getBDAType();
+    }
+
+    Object readResolve() throws ObjectStreamException {
+        return new RootBeanDeploymentArchive(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RootBeanDeploymentArchive)) return false;
+        RootBeanDeploymentArchive that = (RootBeanDeploymentArchive) o;
+        return Objects.equals(moduleBda, that.moduleBda);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(moduleBda);
     }
 }
