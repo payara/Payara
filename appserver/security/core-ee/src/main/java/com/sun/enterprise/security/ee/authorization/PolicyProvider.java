@@ -50,7 +50,22 @@ public class PolicyProvider {
     private static Policy initializePolicy() {
         PolicyFactory policyFactory = PolicyFactory.getPolicyFactory();
         if (policyFactory == null) {
-            policyFactory = new DefaultPolicyFactory();
+            final String className = System.getProperty(PolicyFactory.FACTORY_NAME);
+            if (className != null) {
+                try {
+                    policyFactory = (PolicyFactory) Class.forName(
+                                    className,
+                                    true,
+                                    Thread.currentThread().getContextClassLoader())
+                            .getDeclaredConstructor()
+                            .newInstance();
+                } catch (ReflectiveOperationException e) {
+                    throw new SecurityException("Failed to load PolicyFactory: " + className, e);
+                }
+            }
+            if (policyFactory == null) {
+                policyFactory = new DefaultPolicyFactory();
+            }
         }
         Policy policy = policyFactory.getPolicy();
         if (policy == null) {
