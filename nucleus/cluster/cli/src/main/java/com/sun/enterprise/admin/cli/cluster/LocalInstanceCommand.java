@@ -51,7 +51,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -411,7 +410,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
             if (parent != null) {
                 files = parent.listFiles();
                 if (files != null) {
-                    for (File f : Objects.requireNonNull(files)) {
+                    for (File f : files) {
                         sb.append(f.toString()).append(", ");
                     }
                 }
@@ -424,15 +423,17 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         // now see if the parent dir is empty.  If so wipe it out.
         // Don't be too picky with throwin errors here...
         try {
-            files = parent.listFiles();
+            if (parent != null) {
+                files = parent.listFiles();
 
-            if (noInstancesRemain(files)) {
-                File tmpwhackee = File.createTempFile("oldnode", null, grandParent);
-                if (!tmpwhackee.delete()) {
-                    throw new IOException(Strings.get("cantdelete", tmpwhackee));
+                if (noInstancesRemain(files)) {
+                    File tmpwhackee = File.createTempFile("oldnode", null, grandParent);
+                    if (!tmpwhackee.delete()) {
+                        throw new IOException(Strings.get("cantdelete", tmpwhackee));
+                    }
+                    FileUtils.renameFile(parent, tmpwhackee);
+                    FileUtils.whack(tmpwhackee);
                 }
-                FileUtils.renameFile(parent, tmpwhackee);
-                FileUtils.whack(tmpwhackee);
             }
         } catch (IOException ioe) {
             // we tried!!!
