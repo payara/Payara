@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -286,10 +286,12 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             sr.instance = instanceName;
             sr.dir = "config-specific";
             File configDir = new File(instanceDir, "config");
-            for (File f : configDir.listFiles()) {
-                if (!f.isDirectory())
-                    continue;
-                getFileModTimes(f, configDir, sr, SyncLevel.DIRECTORY);
+            if(configDir.exists()) {
+                for (File f : Objects.requireNonNull(configDir.listFiles())) {
+                    if (!f.isDirectory())
+                        continue;
+                    getFileModTimes(f, configDir, sr, SyncLevel.DIRECTORY);
+                }
             }
             /*
              * Before sending the last sync request revert to using the original
@@ -372,7 +374,7 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             sr.files.add(mt);
             return;
         }
-        for (String file : dir.list()) {
+        for (String file : Objects.requireNonNull(dir.list())) {
             File f = new File(dir, file);
             long time = f.lastModified();
             if (time == 0)
