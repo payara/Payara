@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portios Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portios Copyright [2019-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -407,9 +407,13 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
             StringBuilder sb = new StringBuilder();
             sb.append("whackee=").append(whackee.toString());
             sb.append(", files in parent:");
-            files = parent.listFiles();
-            for (File f : files) {
-                sb.append(f.toString()).append(", ");
+            if (parent != null) {
+                files = parent.listFiles();
+                if (files != null) {
+                    for (File f : files) {
+                        sb.append(f.toString()).append(", ");
+                    }
+                }
             }
             File f1 = new File(whackee.toString());
             sb.append(", new wackee.exists=").append(f1.exists());
@@ -419,15 +423,17 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         // now see if the parent dir is empty.  If so wipe it out.
         // Don't be too picky with throwin errors here...
         try {
-            files = parent.listFiles();
+            if (parent != null) {
+                files = parent.listFiles();
 
-            if (noInstancesRemain(files)) {
-                File tmpwhackee = File.createTempFile("oldnode", null, grandParent);
-                if (!tmpwhackee.delete()) {
-                    throw new IOException(Strings.get("cantdelete", tmpwhackee));
+                if (noInstancesRemain(files)) {
+                    File tmpwhackee = File.createTempFile("oldnode", null, grandParent);
+                    if (!tmpwhackee.delete()) {
+                        throw new IOException(Strings.get("cantdelete", tmpwhackee));
+                    }
+                    FileUtils.renameFile(parent, tmpwhackee);
+                    FileUtils.whack(tmpwhackee);
                 }
-                FileUtils.renameFile(parent, tmpwhackee);
-                FileUtils.whack(tmpwhackee);
             }
         } catch (IOException ioe) {
             // we tried!!!
