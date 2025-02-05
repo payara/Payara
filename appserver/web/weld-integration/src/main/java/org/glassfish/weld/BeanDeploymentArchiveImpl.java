@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -62,9 +62,12 @@ import jakarta.enterprise.inject.spi.InjectionTarget;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -79,37 +82,37 @@ import static org.glassfish.web.loader.NonCachedJarStreamHandler.forceNonCachedJ
 import static org.glassfish.weld.WeldDeployer.WELD_BOOTSTRAP;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
-
-
 /*
  * The means by which Weld Beans are discovered on the classpath.
  */
-public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
+public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Serializable {
+    private static final long serialVersionUID = 1L;
 
     private static final Logger logger = Logger.getLogger(BeanDeploymentArchiveImpl.class.getName());
 
-    private ReadableArchive archive;
-    private String id;
-    private List<String> moduleClassNames = null; // Names of classes in the module
-    private List<String> beanClassNames = null; // Names of bean classes in the module
-    private List<Class<?>> moduleClasses = null; // Classes in the module
-    private List<Class<?>> beanClasses = null; // Classes identified as Beans through Weld SPI
-    private List<URL> beansXmlURLs = null;
-    private final Collection<EjbDescriptor<?>> ejbDescImpls;
-    private List<BeanDeploymentArchive> beanDeploymentArchives;
+    private transient ReadableArchive archive;
+    private final String id;
+    private final List<String> moduleClassNames; // Names of classes in the module
+    private final List<String> beanClassNames; // Names of bean classes in the module
+    private transient List<Class<?>> moduleClasses; // Classes in the module
+    private transient List<Class<?>> beanClasses; // Classes identified as Beans through Weld SPI
+    private final List<URL> beansXmlURLs;
+    private transient Collection<EjbDescriptor<?>> ejbDescImpls;
+    private transient Set<BeanDeploymentArchive> beanDeploymentArchives;
+    private transient List<BeanDeploymentArchive> deserializedBDAs;
 
-    private SimpleServiceRegistry simpleServiceRegistry = null;
+    private transient SimpleServiceRegistry simpleServiceRegistry = null;
+    private int originalIdentity;
 
     private BDAType bdaType = BDAType.UNKNOWN;
 
-    private DeploymentContext context;
+    transient DeploymentContext context;
+    transient WeldBootstrap weldBootstrap;
 
-    private WeldBootstrap weldBootstrap;
-
-    private final Map<AnnotatedType<?>, InjectionTarget<?>> itMap = new HashMap<>();
+    private transient Map<AnnotatedType<?>, InjectionTarget<?>> itMap = new HashMap<>();
 
     //workaround: WELD-781
-    private ClassLoader moduleClassLoaderForBDA = null;
+    private transient ClassLoader moduleClassLoaderForBDA;
 
     private String friendlyId = "";
 
@@ -147,8 +150,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
 
         this.friendlyId = this.id;
-        this.ejbDescImpls = new HashSet<>();
-        this.beanDeploymentArchives = new ArrayList<>();
+        this.ejbDescImpls = new LinkedHashSet<>();
+        this.beanDeploymentArchives = new LinkedHashSet<>();
         this.context = ctx;
         this.weldBootstrap = context.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
 
@@ -184,8 +187,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
 
         this.beansXmlURLs = beansXmlUrls;
-        this.ejbDescImpls = new HashSet<>();
-        this.beanDeploymentArchives = new ArrayList<>();
+        this.ejbDescImpls = new LinkedHashSet<>();
+        this.beanDeploymentArchives = new LinkedHashSet<>();
         this.context = ctx;
         this.weldBootstrap = context.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
         populateEJBsForThisBDA(ejbs);
@@ -194,6 +197,39 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         getClassLoader();
     }
 
+    public BeanDeploymentArchiveImpl(BeanDeploymentArchiveImpl beanDeploymentArchive) {
+        this.id = beanDeploymentArchive.id;
+        this.originalIdentity = beanDeploymentArchive.originalIdentity;
+        this.moduleClassNames = new ArrayList<>(beanDeploymentArchive.moduleClassNames);
+        this.beanClassNames = new ArrayList<>(beanDeploymentArchive.beanClassNames);
+        this.beansXmlURLs = new CopyOnWriteArrayList<>(beanDeploymentArchive.beansXmlURLs);
+        this.deserializedBDAs = beanDeploymentArchive.deserializedBDAs;
+        this.friendlyId = beanDeploymentArchive.friendlyId;
+        this.bdaType = beanDeploymentArchive.bdaType;
+        this.deploymentComplete = beanDeploymentArchive.deploymentComplete;
+
+        initializeFromOriginal();
+    }
+
+    void initializeFromOriginal() {
+        if (context == null) {
+            this.context = DeploymentImpl.currentDeploymentContext.get();
+            this.weldBootstrap = context.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
+            this.moduleClasses = getOriginal().moduleClasses;
+            this.beanClasses = getOriginal().beanClasses;
+            getServices().addAll(getOriginal().getServices().entrySet());
+            this.moduleClassLoaderForBDA = getOriginal().moduleClassLoaderForBDA;
+            this.ejbDescImpls = new LinkedHashSet<>(getOriginal().ejbDescImpls);
+            if (this.itMap == null) {
+                this.itMap = new HashMap<>();
+            }
+            this.itMap.putAll(getOriginal().itMap);
+        }
+    }
+
+    BeanDeploymentArchiveImpl getOriginal() {
+        return DeploymentImpl.currentBDAs.get().get(originalIdentity);
+    }
 
     private void populateEJBsForThisBDA(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
         for (com.sun.enterprise.deployment.EjbDescriptor next : ejbs) {
@@ -208,11 +244,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     @Override
     public Collection<BeanDeploymentArchive> getBeanDeploymentArchives() {
+        if (beanDeploymentArchives == null && deserializedBDAs != null) {
+            beanDeploymentArchives = new LinkedHashSet<>(deserializedBDAs);
+        }
         return beanDeploymentArchives;
     }
 
     @Override
     public Collection<String> getBeanClasses() {
+        initializeFromOriginal();
         //This method is called during BeanDeployment.deployBeans, so this would
         //be the right time to place the module classloader for the BDA as the TCL
         if (logger.isLoggable(FINER)) {
@@ -230,6 +270,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     public Collection<Class<?>> getBeanClassObjects() {
+        initializeFromOriginal();
         return beanClasses;
     }
 
@@ -238,6 +279,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     public Collection<Class<?>> getModuleBeanClassObjects() {
+        initializeFromOriginal();
         return moduleClasses;
     }
 
@@ -272,7 +314,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         if (beansXmlURLs.size() == 1) {
             result = weldBootstrap.parse(beansXmlURLs.get(0));
         } else {
-            // This method attempts to performs a merge, but loses some
+            // This method attempts to perform a merge, but loses some
             // information (e.g., version, bean-discovery-mode)
             result = weldBootstrap.parse(beansXmlURLs);
         }
@@ -287,11 +329,12 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
      */
     @Override
     public Collection<EjbDescriptor<?>> getEjbs() {
-
+        initializeFromOriginal();
         return ejbDescImpls;
     }
 
     public EjbDescriptor getEjbDescriptor(String ejbName) {
+        initializeFromOriginal();
         EjbDescriptor match = null;
 
         for (EjbDescriptor next : ejbDescImpls) {
@@ -306,6 +349,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     @Override
     public ServiceRegistry getServices() {
+        initializeFromOriginal();
         if (simpleServiceRegistry == null) {
             simpleServiceRegistry = new SimpleServiceRegistry();
         }
@@ -328,10 +372,36 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     @Override
     public Collection<Class<?>> getLoadedBeanClasses() {
+        initializeFromOriginal();
         return beanClasses;
     }
 
+    Object readResolve() throws ObjectStreamException {
+        return new BeanDeploymentArchiveImpl(this);
+    }
 
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        originalIdentity = System.identityHashCode(this);
+        if (DeploymentImpl.currentBDAs.get().put(originalIdentity, this) != null) {
+            throw new IllegalStateException("Duplicate BDA detected: " + this);
+        }
+        out.writeInt(originalIdentity);
+        out.writeInt(beanDeploymentArchives.size());
+        for (BeanDeploymentArchive bda : beanDeploymentArchives) {
+            out.writeObject(bda);
+        }
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        originalIdentity = in.readInt();
+        int size = in.readInt();
+        deserializedBDAs = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            deserializedBDAs.add((BeanDeploymentArchive) in.readObject());
+        }
+    }
 
     //A graphical representation of the BDA hierarchy to aid in debugging
     //and to provide a better representation of how Weld treats the deployed
@@ -601,14 +671,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             }
             //update modified BDA
             if (modified) {
-                int idx = this.beanDeploymentArchives.indexOf(firstBDA);
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE,
                                CDILoggerInfo.ENSURE_WEB_LIB_JAR_VISIBILITY_ASSOCIATION_UPDATING,
                                new Object[]{firstBDA.getFriendlyId()});
                 }
-                if (idx >= 0) {
-                    this.beanDeploymentArchives.set(idx, firstBDA);
+                if (this.beanDeploymentArchives.remove(firstBDA)) {
+                    this.beanDeploymentArchives.add(firstBDA);
                 }
             }
         }
@@ -622,9 +691,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                            CDILoggerInfo.ENSURE_WEB_LIB_JAR_VISIBILITY_ASSOCIATION_INCLUDING,
                            new Object[]{subBDA.getId(), this.getId()});
             }
-            int idx = this.beanDeploymentArchives.indexOf(subBDA);
-            if (idx >= 0) {
-                this.beanDeploymentArchives.set(idx, subBDA);
+            if (this.beanDeploymentArchives.remove(subBDA)) {
+                this.beanDeploymentArchives.add(subBDA);
             }
         }
     }
@@ -741,14 +809,17 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     public InjectionTarget<?> getInjectionTarget(AnnotatedType<?> annotatedType) {
+        initializeFromOriginal();
         return itMap.get(annotatedType);
     }
 
     void putInjectionTarget(AnnotatedType<?> annotatedType, InjectionTarget<?> it) {
+        initializeFromOriginal();
         itMap.put(annotatedType, it);
     }
 
     public ClassLoader getModuleClassLoaderForBDA() {
+        initializeFromOriginal();
         return moduleClassLoaderForBDA;
     }
 
@@ -852,5 +923,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             }
         }
         return name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BeanDeploymentArchiveImpl)) return false;
+        BeanDeploymentArchiveImpl that = (BeanDeploymentArchiveImpl) o;
+        return Objects.equals(id, that.id) && Objects.equals(beanClasses, that.beanClasses);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, beanClasses);
     }
 }
