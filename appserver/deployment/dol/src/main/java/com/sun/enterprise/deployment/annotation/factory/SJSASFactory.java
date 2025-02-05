@@ -46,6 +46,7 @@ import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessor;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
+import org.glassfish.apf.context.AnnotationContext;
 import org.glassfish.apf.factory.Factory;
 import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -70,7 +71,6 @@ import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -80,7 +80,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 
 /**
  * This factory is responsible for initializing a ready to use
@@ -138,14 +137,14 @@ public class SJSASFactory extends Factory {
         for (Map.Entry<String, AnnotationHandler> entry : annotationHandlers.entrySet()) {
             Class<? extends Annotation> annotationClass = entry.getValue().getAnnotationType();
             index.getAnnotations(entry.getKey()).forEach(annotationInstance -> {
-                int size = processingContext.handlersSize();
                 if (annotationInstances.add(annotationInstance)) {
                     try {
                         Class<?> cls = deploymentContext.getClassLoader().loadClass(mapAnnotationToClassName(annotationInstance));
-                        logger.info("Processing annotation: " + annotationInstance + " on class: " + cls
+                        logger.fine("Processing annotation: " + annotationInstance + " on class: " + cls
                         + " bundleDesc: " + bundleDesc.getName() + " of type: " + bundleDesc.getClass()
                         + " with id: " + System.identityHashCode(bundleDesc));
                         processingContext.getProcessor().process(processingContext, new Class<?>[] { cls });
+                        ((AnnotationContext) processingContext.getHandler()).setProcessingContext(processingContext);
                         AnnotatedElement element = mapAnnotationToElement(cls, annotationInstance);
                         AnnotationInfo annotationInfo = new AnnotationInfo(processingContext,
                                 element, element.getAnnotation(annotationClass), mapAnnotationToElementType(annotationInstance));
@@ -155,10 +154,7 @@ public class SJSASFactory extends Factory {
                     } finally {
                         try {
                             processingContext.getProcessor().process(processingContext, new Class<?>[] { null });
-                            IntStream.range(0, processingContext.handlersSize() - size).forEach(var -> {
-                                logger.info("*** popped handler: " + processingContext.popHandler());
-                            });
-                            logger.info("Old Size of handlers: " + size + " after processing annotation: " + processingContext.handlersSize());
+                            ((AnnotationContext) processingContext.getHandler()).setProcessingContext(null);
                         } catch (AnnotationProcessorException e) {
                             logger.log(Level.FINE, "Error processing annotation", e);
                         }
