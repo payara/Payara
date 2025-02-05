@@ -41,7 +41,7 @@
     </parent>
 
     <properties>
-      <playwright.version>1.49.0</playwright.version>
+      <playwright.version>1.50.0</playwright.version>
     </properties>
 
 
