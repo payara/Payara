@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.security.ee.authorization;
@@ -48,6 +48,8 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
+import org.glassfish.exousia.modules.def.DefaultPolicy;
+import org.glassfish.exousia.modules.def.DefaultPolicyFactory;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
@@ -134,7 +136,8 @@ public class WebAuthorizationManagerService {
 
     // The JACC policy provider. This is the pluggable lower level authorization module
     // to which this class delegates all authorization queries.
-    protected Policy policy = PolicyFactory.getPolicyFactory().getPolicy();
+    protected Policy policy = PolicyProvider.getInstance();
+
     protected PolicyConfigurationFactory policyConfigurationFactory;
     protected PolicyConfiguration policyConfiguration;
     protected CodeSource codesource;
