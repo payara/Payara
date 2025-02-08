@@ -107,6 +107,14 @@
             <artifactId>common-util</artifactId>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.core.deployment</groupId>
+            <artifactId>deployment-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.core.nucleus</groupId>
+            <artifactId>kernel</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
         </dependency>
