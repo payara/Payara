@@ -150,7 +150,7 @@
         <javase.version>${jdk.version}</javase.version>
         <!-- BOM-referenced versions -->
 
-        <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
+        <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
         <snakeyaml.version>2.3</snakeyaml.version>
         <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
         <mojarra.version>4.0.9.payara-p1</mojarra.version>
