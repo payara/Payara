@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -140,8 +140,8 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             if (this.env.getRuntimeType().isMicro()) {
                 String globalContextRoot = getProperty("payaramicro.globalContextRoot");
                 if (globalContextRoot != null && !globalContextRoot.isBlank()) {
-                    globalContextRoot = globalContextRoot.replaceAll("^/|/$", "");
-                    contextRoot = contextRoot.replaceAll("^/|/$", "");
+                    globalContextRoot = removeSlashes(globalContextRoot);
+                    contextRoot = removeSlashes(contextRoot);
 
                     contextRoot = "/" + globalContextRoot + "/" + contextRoot;
                 }
@@ -257,6 +257,10 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
             result = System.getenv(value.replace('.', '_'));
         }
         return result;
+    }
+
+    private String removeSlashes(String value) {
+        return value.replaceAll("^/|/$", "");
     }
 
 }
