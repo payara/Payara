@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -77,7 +77,10 @@ public class CreateManagedExecutorService extends CreateManagedExecutorServiceBa
     @Param(name="taskqueuecapacity", alias="taskQueueCapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
     private Integer taskqueuecapacity;
 
-    @Param(name="useforkjoinpool", alias="useForkJoinPool", defaultValue="false", optional=true)
+    @Param(name = "usevirtualthreads", alias = "useVirtualThreads", defaultValue = "false", optional = true)
+    protected Boolean usevirtualthreads;
+
+    @Param(name = "useforkjoinpool", alias = "useForkJoinPool", defaultValue = "false", optional = true)
     protected Boolean useforkjoinpool;
 
     @Inject
@@ -92,6 +95,8 @@ public class CreateManagedExecutorService extends CreateManagedExecutorServiceBa
             maximumpoolsize.toString());
         attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY,
             taskqueuecapacity.toString());
+        attrList.put(ResourceConstants.USE_VIRTUAL_THREADS,
+                usevirtualthreads.toString());
         attrList.put(ResourceConstants.USE_FORK_JOIN_POOL,
                 useforkjoinpool.toString());
     }
