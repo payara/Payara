@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -104,7 +104,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     public static final String CONTEXT_INFO_ALL = CONTEXT_INFO_CLASSLOADER + "," + CONTEXT_INFO_JNDI + "," + CONTEXT_INFO_SECURITY + "," + CONTEXT_INFO_WORKAREA;
 
     private ScheduledExecutorService internalScheduler;
-    private static final Logger logger  = LogFacade.getLogger();
+    private static final Logger logger = LogFacade.getLogger();
 
     @Inject
     InvocationManager invocationManager;
@@ -231,27 +231,42 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
-        AbstractManagedExecutorService mes;
-        if (config.getUseVirtualThread()) {
-            mes = new VirtualThreadsManagedExecutorService(config.getJndiName(),
-                    null,
-                    config.getHungAfterSeconds() * 1_000L, // in milliseconds
-                    config.isLongRunningTasks(),
-                    config.getMaximumPoolSize(),
-                    config.getTaskQueueCapacity(),
-                    contextService,
-                    AbstractManagedExecutorService.RejectPolicy.ABORT);
-        } else if (config.getUseForkJoinPool()) {
-            mes = new ForkJoinManagedExecutorService(config.getJndiName(),
-                    managedThreadFactory,
-                    config.getHungAfterSeconds() * 1_000L, // in milliseconds
-                    config.isLongRunningTasks(),
-                    config.getMaximumPoolSize(),
-                    config.getKeepAliveSeconds(), TimeUnit.SECONDS,
-                    config.getThreadLifeTimeSeconds(),
-                    contextService,
-                    AbstractManagedExecutorService.RejectPolicy.ABORT);
-        } else {
+        AbstractManagedExecutorService mes = null;
+        boolean useVirtualThread = config.getUseVirtualThread();
+        boolean useForkJoinPool = config.getUseForkJoinPool();
+        if (useVirtualThread) {
+            try {
+                mes = new VirtualThreadsManagedExecutorService(config.getJndiName(),
+                        null,
+                        config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                        config.isLongRunningTasks(),
+                        config.getMaximumPoolSize(),
+                        config.getTaskQueueCapacity(),
+                        contextService,
+                        AbstractManagedExecutorService.RejectPolicy.ABORT);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to start virtual threads managed executor service, JNDI '" + config.getJndiName() + "', fallback to " + (useVirtualThread ? "virtual threads" : "platform threads"), e);
+            }
+        }
+        if (mes == null && useForkJoinPool) {
+            try {
+                if (config.getMaximumPoolSize() > 0x7fff /*ForkJoinPool.MAX_CAP*/) {
+                    throw new IllegalArgumentException("Maximum size for ForkJoinPool managed executor service is too high, " + config.getMaximumPoolSize() + " > " + 0x7fff);
+                }
+                mes = new ForkJoinManagedExecutorService(config.getJndiName(),
+                        managedThreadFactory,
+                        config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                        config.isLongRunningTasks(),
+                        config.getMaximumPoolSize(),
+                        config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                        config.getThreadLifeTimeSeconds(),
+                        contextService,
+                        AbstractManagedExecutorService.RejectPolicy.ABORT);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to start ForkJoinPool managed executor service, JNDI '" + config.getJndiName() + "', fallback to platform threads", e);
+            }
+        }
+        if (mes == null) {
             mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                     managedThreadFactory,
                     config.getHungAfterSeconds() * 1_000L, // in milliseconds
