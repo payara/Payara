@@ -20,7 +20,7 @@ package fish.payara.concurrent.monitoring;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
-import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.AbstractManagedExecutorService;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
@@ -41,9 +41,8 @@ public class ManagedScheduledExecutorServiceStatsProvider
 {
     private final String name;
     private boolean registered = false;
-    private final ManagedScheduledExecutorServiceImpl 
-            managedScheduledExecutorServiceImpl;
-    
+    private final AbstractManagedExecutorService managedScheduledExecutorServiceImpl;
+
     private CountStatisticImpl completedTaskCount = new CountStatisticImpl(
             "CompletedTaskCount", "count", 
             "Number of tasks completed");
