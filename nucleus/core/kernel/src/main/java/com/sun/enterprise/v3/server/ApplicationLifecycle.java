@@ -606,6 +606,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if(appInfo == null) {
             return;
         }
+        if (currentDeploymentContext.get().peek() != context) {
+            currentDeploymentContext.get().push(context);
+        }
         appRegistry.removeTransient(appInfo.getName());
         final ActionReport report = context.getActionReport();
         ProgressTracker tracker = context.getTransientAppMetaData(ExtendedDeploymentContext.TRACKER, ProgressTracker.class);
