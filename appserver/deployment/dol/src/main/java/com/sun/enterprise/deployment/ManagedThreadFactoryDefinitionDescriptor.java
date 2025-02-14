@@ -50,6 +50,7 @@ public class ManagedThreadFactoryDefinitionDescriptor extends ConcurrencyQualifi
 
     private String name;
     private String context;
+    private Boolean virtual = null;
     private int priority = Thread.NORM_PRIORITY;
     private Properties properties = new Properties();
 
@@ -94,6 +95,14 @@ public class ManagedThreadFactoryDefinitionDescriptor extends ConcurrencyQualifi
 
     public void setProperties(Properties properties) {
         this.properties = properties;
+    }
+
+    public Boolean getVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(Boolean virtual) {
+        this.virtual = virtual;
     }
 
     @Override

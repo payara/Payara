@@ -49,16 +49,22 @@ import org.glassfish.concurrent.config.ManagedThreadFactory;
 public class ManagedThreadFactoryConfig extends BaseConfig {
 
     private int threadPriority;
+    private boolean useVirtualThread;
     private String context;
 
     public ManagedThreadFactoryConfig(ManagedThreadFactory config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
+        useVirtualThread = Boolean.valueOf(config.getUseVirtualThreads());
         context = config.getContext();
     }
 
     public int getThreadPriority() {
         return threadPriority;
+    }
+
+    public boolean getUseVirtualThread() {
+        return useVirtualThread;
     }
 
     public String getContext() {

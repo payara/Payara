@@ -49,6 +49,7 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
 
     private int hungAfterSeconds;
     private boolean longRunningTasks;
+    private boolean useVirtualThread;
     private int threadPriority;
     private int corePoolSize;
     private long keepAliveSeconds;
@@ -59,6 +60,7 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
+        useVirtualThread = Boolean.valueOf(config.getUseVirtualThreads());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
         keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
@@ -72,6 +74,10 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
 
     public boolean isLongRunningTasks() {
         return longRunningTasks;
+    }
+
+    public boolean getUseVirtualThread() {
+        return useVirtualThread;
     }
 
     public int getThreadPriority() {

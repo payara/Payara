@@ -95,6 +95,7 @@ public class ManagedThreadFactoryDefinitionHandler extends AbstractConcurrencyHa
         mtfdd.setMetadataSource(MetadataSource.ANNOTATION);
         mtfdd.setName(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.name()));
         mtfdd.setContext(TranslatedConfigView.expandValue(managedThreadFactoryDefinition.context()));
+        mtfdd.setVirtual(managedThreadFactoryDefinition.virtual());
         if(managedThreadFactoryDefinition.priority() <= 0) {
             mtfdd.setPriority(Thread.NORM_PRIORITY);
         } else {

@@ -62,8 +62,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
+import org.glassfish.concurro.AbstractManagedExecutorService;
 import org.glassfish.concurro.ContextServiceImpl;
-import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
 
 @Service
 @ResourceDeployerInfo(ManagedScheduledExecutorDefinitionDescriptor.class)
@@ -94,7 +94,7 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
                 mseDefinitionDescriptor.getName(), mseDefinitionDescriptor.getResourceType());
         ResourceInfo resourceInfo = new ResourceInfo(customNameOfResource, applicationName, moduleName);
 
-        ManagedScheduledExecutorServiceImpl managedScheduledExecutorService = concurrentRuntime.createManagedScheduledExecutorService(resourceInfo, mseConfig, contextService);
+        AbstractManagedExecutorService managedScheduledExecutorService = concurrentRuntime.createManagedScheduledExecutorService(resourceInfo, mseConfig, contextService);
         resourceNamingService.publishObject(resourceInfo, customNameOfResource, managedScheduledExecutorService, true);
     }
 
@@ -185,7 +185,7 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
 
         @Override
         public String getDescription() {
-            return null;
+            return "Managed Scheduled Executor Definition";
         }
 
         @Override
@@ -241,6 +241,15 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
         @Override
         public void setThreadPriority(String value) throws PropertyVetoException {
 
+        }
+
+        @Override
+        public String getUseVirtualThreads() {
+            return Boolean.toString(descriptor.getVirtual());
+        }
+
+        @Override
+        public void setUseVirtualThreads(String value) throws PropertyVetoException {
         }
 
         @Override

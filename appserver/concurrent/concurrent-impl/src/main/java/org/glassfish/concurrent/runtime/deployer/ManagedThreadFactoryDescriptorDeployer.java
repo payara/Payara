@@ -317,6 +317,14 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
             return null;
         }
 
+        @Override
+        public String getUseVirtualThreads() {
+            return Boolean.toString(descriptor.getVirtual());
+        }
+
+        @Override
+        public void setUseVirtualThreads(String value) throws PropertyVetoException {
+        }
 
     }
 }
