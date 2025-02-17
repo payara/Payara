@@ -57,6 +57,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -70,6 +71,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.common.util.ObjectInputStreamWithLoader;
 import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -798,28 +800,16 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
                 for ( URI oneAppLib : appLibs ) {
                     for ( String oneInstalledLibrary : installedLibraries ) {
                         if ( oneAppLib.getPath().endsWith( oneInstalledLibrary ) ) {
-                            ReadableArchive libArchive = null;
-                            try {
-                                libArchive = archiveFactory.openArchive(oneAppLib);
-                                if ( libArchive.exists( WeldUtils.META_INF_BEANS_XML ) ) {
-                                    String bdaId = archive.getName() + "_" + libArchive.getName();
-                                    RootBeanDeploymentArchive rootBda =
-                                        new RootBeanDeploymentArchive(libArchive,
-                                                                      Collections.emptyList(),
-                                                                      context,
-                                                                      bdaId );
-                                    libBdas.add(rootBda);
-                                }
-                            } finally {
-                                if ( libArchive != null ) {
-                                    try {
-                                        libArchive.close();
-                                    } catch ( Exception ignore ) {}
-                                }
-                            }
+                            addLibBDA(archive, context, oneAppLib, libBdas);
                             break;
                         }
                     }
+                }
+            }
+
+            if (DeploymentUtils.useWarLibraries(context)) {
+                for (Path warLibrary : InstalledLibrariesResolver.getWarLibraries()) {
+                    addLibBDA(archive, context, warLibrary.toUri(), libBdas);
                 }
             }
         } catch (URISyntaxException | IOException e) {
@@ -828,6 +818,28 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
 
         for ( RootBeanDeploymentArchive oneBda : libBdas ) {
             createLibJarBda(oneBda );
+        }
+    }
+
+    private void addLibBDA(ReadableArchive archive, DeploymentContext context, URI oneAppLib, List<RootBeanDeploymentArchive> libBdas) throws IOException {
+        ReadableArchive libArchive = null;
+        try {
+            libArchive = archiveFactory.openArchive(oneAppLib);
+            if ( libArchive.exists( WeldUtils.META_INF_BEANS_XML ) || WeldUtils.isImplicitBeanArchive(context, libArchive) ) {
+                String bdaId = archive.getName() + "_" + libArchive.getName();
+                RootBeanDeploymentArchive rootBda =
+                        new RootBeanDeploymentArchive(libArchive,
+                                Collections.emptyList(),
+                                context,
+                                bdaId );
+                libBdas.add(rootBda);
+            }
+        } finally {
+            if ( libArchive != null ) {
+                try {
+                    libArchive.close();
+                } catch ( Exception ignore ) {}
+            }
         }
     }
 
