@@ -69,7 +69,6 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
 
     private String maximumPoolSize = ""+Integer.MAX_VALUE;
     private String taskQueueCapacity = ""+Integer.MAX_VALUE;
-    private String useVirtualThreads = Boolean.FALSE.toString();
     private String useForkJoinPool = Boolean.FALSE.toString();
 
     @Override
@@ -77,7 +76,6 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
         super.setAttributes(attributes, target);
         maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);
         taskQueueCapacity = (String) attributes.get(TASK_QUEUE_CAPACITY);
-        useVirtualThreads = (String) attributes.getOrDefault(USE_VIRTUAL_THREADS, Boolean.FALSE.toString());
         useForkJoinPool = (String) attributes.getOrDefault(USE_FORK_JOIN_POOL, Boolean.FALSE.toString());
     }
 

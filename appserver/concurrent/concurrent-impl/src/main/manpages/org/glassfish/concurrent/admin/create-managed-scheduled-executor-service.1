@@ -15,6 +15,7 @@ SYNOPSIS
            [--corepoolsize corepoolsize]
            [--keepaliveseconds keepaliveseconds]
            [--threadlifetimeseconds threadlifetimeseconds]
+           [--usevirtualthreads={false|true}]
            [--description description]
            [--property property]
            [--target target]
@@ -76,6 +77,15 @@ OPTIONS
            threads is greater than corepoolsize or whether the threads are
            idle. The default value is 0, which means that threads are never
            purged.
+
+       --usevirtualthreads
+           If enabled, virtual threads will be used instead of the default
+           thread pool. They provide a quick creation, minimal overhead and
+           fast thread switching, but executed on a limited "carrying threads".
+           Use virtual threads for tasks, which depend on external resources
+           like database, microservices etc. Do not use them for long
+           calculation. Available only on Java 21 and later.
+           The default value is false.
 
        --description
            Descriptive details about the resource.

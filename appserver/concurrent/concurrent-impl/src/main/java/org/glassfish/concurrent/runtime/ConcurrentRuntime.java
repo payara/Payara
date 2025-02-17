@@ -316,7 +316,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     public AbstractManagedExecutorService createManagedScheduledExecutorService(ResourceInfo resource,
             ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper( // FIXME: move to the next if
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());

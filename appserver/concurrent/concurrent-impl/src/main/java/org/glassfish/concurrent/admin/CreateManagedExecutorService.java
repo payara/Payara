@@ -77,9 +77,6 @@ public class CreateManagedExecutorService extends CreateManagedExecutorServiceBa
     @Param(name="taskqueuecapacity", alias="taskQueueCapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
     private Integer taskqueuecapacity;
 
-    @Param(name = "usevirtualthreads", alias = "useVirtualThreads", defaultValue = "false", optional = true)
-    protected Boolean usevirtualthreads;
-
     @Param(name = "useforkjoinpool", alias = "useForkJoinPool", defaultValue = "false", optional = true)
     protected Boolean useforkjoinpool;
 
@@ -95,8 +92,6 @@ public class CreateManagedExecutorService extends CreateManagedExecutorServiceBa
             maximumpoolsize.toString());
         attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY,
             taskqueuecapacity.toString());
-        attrList.put(ResourceConstants.USE_VIRTUAL_THREADS,
-                usevirtualthreads.toString());
         attrList.put(ResourceConstants.USE_FORK_JOIN_POOL,
                 useforkjoinpool.toString());
     }
