@@ -418,7 +418,7 @@ public class ComponentEnvManagerImpl
                     _logger.severe(() -> "Unexpected Concurrency type! Expected ConcurrencyQualifiedDescriptor, got " + desc);
                 }
             }
-            jndiBindings.add(new CompEnvBinding(ConcurrencyManagedCDIBeans.JDNI_NAME, setup));
+            jndiBindings.add(new CompEnvBinding(ConcurrencyManagedCDIBeans.JNDI_NAME, setup));
         }
     }
 
