@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.session;
 
@@ -56,8 +57,13 @@ public final class WebSessionCookieConfig extends SessionCookieConfigImpl {
         TRUE, FALSE, DYNAMIC
     };
 
+    public enum CookieSameSiteType {
+        NONE, LAX, STRICT
+    }
+
     // default web.xml(secure=false) = glassfish-web.xml(cookieSecure=dynamic)
     private CookieSecureType secureCookieType = CookieSecureType.DYNAMIC;
+    private CookieSameSiteType sameSiteCookie = null;
 
     public WebSessionCookieConfig(StandardContext context) {
         super(context);
@@ -86,5 +92,19 @@ public final class WebSessionCookieConfig extends SessionCookieConfigImpl {
 
     public CookieSecureType getSecure() {
         return secureCookieType;
+    }
+
+    public void setSameSite(String value) {
+        if (CookieSameSiteType.STRICT.name().equalsIgnoreCase(value)) {
+            sameSiteCookie = CookieSameSiteType.STRICT;
+        } else if (CookieSameSiteType.LAX.name().equalsIgnoreCase(value)) {
+            sameSiteCookie = CookieSameSiteType.LAX;
+        } else {
+            sameSiteCookie = CookieSameSiteType.NONE;
+        }
+    }
+
+    public CookieSameSiteType getSameSite() {
+        return sameSiteCookie;
     }
 }
