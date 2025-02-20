@@ -185,7 +185,7 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
 
         @Override
         public String getDescription() {
-            return "Managed Scheduled Executor Definition";
+            return descriptor.getDescription();
         }
 
         @Override

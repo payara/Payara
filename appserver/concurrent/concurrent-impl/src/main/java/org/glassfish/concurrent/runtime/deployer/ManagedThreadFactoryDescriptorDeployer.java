@@ -184,7 +184,7 @@ public class ManagedThreadFactoryDescriptorDeployer implements ResourceDeployer 
 
         @Override
         public String getDescription() {
-            return null;
+            return descriptor.getDescription();
         }
 
         @Override

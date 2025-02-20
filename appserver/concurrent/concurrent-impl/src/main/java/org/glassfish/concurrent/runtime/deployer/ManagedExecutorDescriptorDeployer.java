@@ -313,7 +313,7 @@ public class ManagedExecutorDescriptorDeployer implements ResourceDeployer {
 
         @Override
         public String getDescription() {
-            return "Managed Executor Definition";
+            return managedExecutorDefinitionDescriptor.getDescription();
         }
 
         @Override
