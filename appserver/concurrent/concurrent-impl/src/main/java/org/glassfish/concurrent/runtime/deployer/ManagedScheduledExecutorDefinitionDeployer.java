@@ -245,7 +245,8 @@ public class ManagedScheduledExecutorDefinitionDeployer implements ResourceDeplo
 
         @Override
         public String getUseVirtualThreads() {
-            return Boolean.toString(descriptor.getVirtual());
+            Boolean virtualFromDefinition = descriptor.getVirtual();
+            return (virtualFromDefinition == null ? Boolean.FALSE : virtualFromDefinition).toString();
         }
 
         @Override
