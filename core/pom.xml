@@ -107,7 +107,7 @@
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.6</hazelcast.version>
-        <jakartaee.api.version>11.0.0-M1</jakartaee.api.version>
+        <jakartaee.api.version>11.0.0-M5</jakartaee.api.version>
         <weld-api.version>6.0.Beta5</weld-api.version>
         <weld.version>6.0.0.Beta4</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
@@ -126,7 +126,7 @@
         <okhttp3-version>4.12.0</okhttp3-version>
         <kotlin-version>2.1.0</kotlin-version>
         <epicyro.version>3.1.0</epicyro.version>
-        
+
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
         <glassfish-corba.version>4.2.4.payara-p2</glassfish-corba.version>
