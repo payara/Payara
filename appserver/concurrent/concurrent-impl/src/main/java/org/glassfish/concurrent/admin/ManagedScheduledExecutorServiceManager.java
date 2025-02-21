@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates 
 
 package org.glassfish.concurrent.admin;
 
@@ -68,6 +69,7 @@ public class ManagedScheduledExecutorServiceManager extends ManagedExecutorServi
 
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
         ManagedScheduledExecutorService managedExecutorService = param.createChild(ManagedScheduledExecutorService.class);
+        managedExecutorService.setUseVirtualThreads(useVirtualThreads);
         setAttributesOnConfigBean(managedExecutorService, properties);
         return managedExecutorService;
     }

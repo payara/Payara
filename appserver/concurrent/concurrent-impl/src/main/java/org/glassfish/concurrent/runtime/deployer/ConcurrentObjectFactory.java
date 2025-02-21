@@ -37,17 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
 import jakarta.enterprise.concurrent.ManagedExecutorService;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurro.AbstractManagedExecutorService;
 import org.glassfish.concurro.ContextServiceImpl;
-import org.glassfish.concurro.ManagedScheduledExecutorServiceAdapter;
-import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
-import org.glassfish.concurro.ManagedThreadFactoryImpl;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 
 import javax.naming.Context;
@@ -95,8 +93,8 @@ public class ConcurrentObjectFactory implements ObjectFactory {
         return contextService;
     }
 
-    private ManagedThreadFactoryImpl getManagedThreadFactory(ManagedThreadFactoryConfig config, ResourceInfo resourceInfo) {
-        ManagedThreadFactoryImpl managedThreadFactory = getRuntime().getManagedThreadFactory(resourceInfo, config);
+    private ManagedThreadFactory getManagedThreadFactory(ManagedThreadFactoryConfig config, ResourceInfo resourceInfo) {
+        ManagedThreadFactory managedThreadFactory = getRuntime().getManagedThreadFactory(resourceInfo, config);
         return managedThreadFactory;
     }
 
@@ -105,8 +103,8 @@ public class ConcurrentObjectFactory implements ObjectFactory {
         return mes.getAdapter();
     }
 
-    private ManagedScheduledExecutorServiceAdapter getManagedScheduledExecutorService(ManagedScheduledExecutorServiceConfig config, ResourceInfo resourceInfo) {
-        ManagedScheduledExecutorServiceImpl mes = getRuntime().getManagedScheduledExecutorService(resourceInfo, config);
+    private ManagedExecutorService getManagedScheduledExecutorService(ManagedScheduledExecutorServiceConfig config, ResourceInfo resourceInfo) {
+        AbstractManagedExecutorService mes = getRuntime().getManagedScheduledExecutorService(resourceInfo, config);
         return mes.getAdapter();
     }
 

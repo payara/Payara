@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.config;
 
@@ -159,6 +159,21 @@ public interface ManagedExecutorServiceBase extends ConfigBeanProxy,
      * @param value allowed object is {@link String }
      */
     void setThreadLifetimeSeconds(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the useVirtualThreads property.
+     *
+     * @return possible object is {@link String }
+     */
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getUseVirtualThreads();
+
+    /**
+     * Sets the value of the useVirtualThreads property.
+     *
+     * @param value allowed object is {@link String }
+     */
+    void setUseVirtualThreads(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the context property.

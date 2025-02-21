@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -89,7 +89,10 @@ public class CreateManagedExecutorServiceBase {
     @Param(name="threadlifetimeseconds", alias="threadLifetimeSeconds", defaultValue="0", optional=true)
     protected Integer threadlifetimeseconds;
 
-    @Param(optional=true)
+    @Param(name = "usevirtualthreads", alias = "useVirtualThreads", defaultValue = "false", optional = true)
+    protected Boolean usevirtualthreads;
+
+    @Param(optional = true)
     protected String description;
 
     @Param(name="property", optional=true, separator=':')
@@ -114,6 +117,8 @@ public class CreateManagedExecutorServiceBase {
             keepaliveseconds.toString());
         attrList.put(ResourceConstants.THREAD_LIFETIME_SECONDS, 
             threadlifetimeseconds.toString());
+        attrList.put(ResourceConstants.USE_VIRTUAL_THREADS,
+                usevirtualthreads.toString());
         attrList.put(ServerTags.DESCRIPTION, description);
         attrList.put(ResourceConstants.ENABLED, enabled.toString());
     }

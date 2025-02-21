@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- concurrent/managedThreadFactoryEdit.jsf -->
 <!initPage
@@ -63,12 +64,13 @@
 
     gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled"});
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "useVirtualThreads"});
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
     
     gf.restRequest(endpoint="#{pageSession.selfUrl}/property" method="GET" result="#{requestScope.propTable}");
     setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
     setPageSessionAttribute(key="edit" value="#{true}" );
+    setPageSessionAttribute(key="showVirtualThreads" value="#{true}");
 
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
     />

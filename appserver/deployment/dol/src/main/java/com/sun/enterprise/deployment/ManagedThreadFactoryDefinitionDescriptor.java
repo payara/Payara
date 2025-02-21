@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ public class ManagedThreadFactoryDefinitionDescriptor extends ConcurrencyQualifi
 
     private String name;
     private String context;
+    private Boolean virtual = null;
     private int priority = Thread.NORM_PRIORITY;
     private Properties properties = new Properties();
 
@@ -94,6 +95,14 @@ public class ManagedThreadFactoryDefinitionDescriptor extends ConcurrencyQualifi
 
     public void setProperties(Properties properties) {
         this.properties = properties;
+    }
+
+    public Boolean getVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(Boolean virtual) {
+        this.virtual = virtual;
     }
 
     @Override

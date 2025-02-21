@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- concurrent/managedThreadFactoryAttr.inc -->
 
@@ -81,6 +82,10 @@
                 
        <sun:property id="threadPriorityProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.threadPriorityLabel}"  helpText="$resource{i18ncon.threadPriorityLabelHelp}">
             <sun:textField id="threadPriorityProp" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['threadPriority']}" />
+       </sun:property>
+
+       <sun:property id="usevirtualthreads" rendered="#{pageSession.showVirtualThreads}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.usevirtualthreads}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['useVirtualThreads']}" selectedValue="true"  />
        </sun:property>
 
        <sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  rendered="#{edit}" label="$resource{i18n.common.resource.deploymentOrder}" helpText="$resource{i18n.common.resource.deploymentOrderHelp}" >
