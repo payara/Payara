@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.appclient.client.acc;
 
+import org.glassfish.appclient.common.ClassPathUtils;
 import org.glassfish.appclient.common.ClientClassLoaderDelegate;
 
 import java.io.ByteArrayOutputStream;
@@ -86,7 +87,7 @@ public class ACCClassLoader extends URLClassLoader {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         boolean currentCLWasAgentCL = currentClassLoader.getClass().getName().equals(AGENT_LOADER_CLASS_NAME);
         ClassLoader parentForACCCL = currentCLWasAgentCL ? currentClassLoader.getParent() : currentClassLoader;
-        PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(userClassPath(), parentForACCCL,
+        PrivilegedAction<ACCClassLoader> action = () -> new ACCClassLoader(ClassPathUtils.getJavaClassPathForAppClient(), parentForACCCL,
                 shouldTransform);
         instance = AccessController.doPrivileged(action);
 

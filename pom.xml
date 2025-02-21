@@ -169,7 +169,7 @@
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>5.0.0-B02</eclipselink.version>
         <eclipselink.asm.version>9.7.1</eclipselink.asm.version>
-        <openmq.version>6.3.0.payara-p3</openmq.version>
+        <openmq.version>6.5.1.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.4</webservices.version>
