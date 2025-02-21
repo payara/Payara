@@ -636,7 +636,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         versionIdentifier = parser.getElementText();
                     } else if (RuntimeTagNames.PAYARA_WHITELIST_PACKAGE.equals(name)) {
                         application.addWhitelistPackage(parser.getElementText());
-                    } else if ("session-config".equals(name)) {
+                    } else if (RuntimeTagNames.SESSION_CONFIG.equals(name)) {
                         readCookieConfig();
                     } else {
                         skipSubTree(name);
