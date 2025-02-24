@@ -398,9 +398,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
                     }
                 }
+                bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
             }
-
-            bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
         }
 
         applicationInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
