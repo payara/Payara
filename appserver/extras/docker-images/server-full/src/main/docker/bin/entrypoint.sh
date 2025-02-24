@@ -2,7 +2,7 @@
 ################################################################################
 #    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#    Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+#    Copyright (c) 2023-2025 Payara Foundation and/or its affiliates. All rights reserved.
 #
 #    The contents of this file are subject to the terms of either the GNU
 #    General Public License Version 2 only ("GPL") or the Common Development
@@ -47,4 +47,13 @@ for f in ${SCRIPT_DIR}/init_* ${SCRIPT_DIR}/init.d/*; do
       echo
 done
 
-exec ${SCRIPT_DIR}/startInForeground.sh $PAYARA_ARGS
+# Doing a Graceful Shutdown before container stops
+trap 'echo "Stopping Payara Server domain..."; ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME} &
+      pid=$!; wait $pid;
+      echo "Payara Server domain stopped.";' SIGTERM
+
+exec ${SCRIPT_DIR}/startInForeground.sh $PAYARA_ARGS &
+payara_pid=$!
+
+# Wait Payara Process before finish the container
+wait $payara_pid

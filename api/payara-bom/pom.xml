@@ -143,6 +143,12 @@
                 <artifactId>jakarta.data-api</artifactId>
                 <version>${jakarta.data-api.version}</version>
             </dependency>
+            <!-- Jakarta MVC, which isn't a part of the Jakarta Platform BOM -->
+            <dependency>
+                <groupId>jakarta.mvc</groupId>
+                <artifactId>jakarta.mvc-api</artifactId>
+                <version>${jakarta.mvc.version}</version>
+            </dependency>
 
             <!-- Microprofile API release aggregate. Can also be used as a BOM -->
             <dependency>
@@ -479,6 +485,17 @@
                 <groupId>org.eclipse.angus</groupId>
                 <artifactId>angus-activation</artifactId>
                 <version>${angus-activation.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.krazo</groupId>
+                <artifactId>krazo-core</artifactId>
+                <version>${krazo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.krazo</groupId>
+                <artifactId>krazo-jersey</artifactId>
+                <version>${krazo.version}</version>
             </dependency>
 
             <!-- Other libraries -->

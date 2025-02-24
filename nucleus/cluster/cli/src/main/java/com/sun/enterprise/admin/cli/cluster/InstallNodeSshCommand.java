@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
@@ -200,14 +201,15 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                 String unzipCommand = "cd '" + sshInstallDir + "'; jar -xvf " + getArchiveName();
                 int status = sshLauncher.runCommand(unzipCommand, outStream);
                 if (status != 0) {
-                    logger.info(Strings.get("jar.failed", host, outStream.toString()));
-                    throw new CommandException("Remote command output: " + outStream.toString());
+                    String outStreamToString = outStream.toString(StandardCharsets.UTF_8);
+                    logger.info(Strings.get("jar.failed", host, outStreamToString));
+                    throw new CommandException("Remote command output: " + outStreamToString);
                 }
                 if (logger.isLoggable(Level.FINER))
                     logger.log(Level.FINER, "Installed {0} into {1}:{2}", new Object[]{getArchiveName(), host, sshInstallDir});
             }
             catch (IOException ioe) {
-                logger.info(Strings.get("jar.failed", host, outStream.toString()));
+                logger.info(Strings.get("jar.failed", host, outStream.toString(StandardCharsets.UTF_8)));
                 throw new IOException(ioe);
             }
 
@@ -311,11 +313,11 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             int status = sshLauncher.runCommand(cmd, outStream);
             if (status == 0) {
                 if (logger.isLoggable(Level.FINER))
-                    logger.log(Level.FINER, "{0}:''{1}'' returned [{2}]", new Object[]{host, cmd, outStream.toString()});
+                    logger.log(Level.FINER, "{0}:''{1}'' returned [{2}]", new Object[]{host, cmd, outStream.toString(StandardCharsets.UTF_8)});
                 throw new CommandException(Strings.get("install.dir.exists", sshInstallDir));
             } else {
                 if (logger.isLoggable(Level.FINER))
-                    logger.log(Level.FINER, "{0}:''{1}'' failed [{2}]", new Object[]{host, cmd, outStream.toString()});
+                    logger.log(Level.FINER, "{0}:''{1}'' failed [{2}]", new Object[]{host, cmd, outStream.toString(StandardCharsets.UTF_8)});
             }
         }
         catch (IOException ex) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.universal.io.SmartFile;
@@ -45,6 +46,7 @@ import com.sun.enterprise.util.io.FileListerRelative;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.zip.ZipFileException;
 import com.sun.enterprise.util.zip.ZipWriter;
+import java.nio.charset.StandardCharsets;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.hk2.api.PerLookup;
@@ -224,7 +226,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
 
     public static String toString(InputStream ins) throws IOException {
         StringWriter sw = new StringWriter();
-        InputStreamReader reader = new InputStreamReader(ins);
+        InputStreamReader reader = new InputStreamReader(ins, StandardCharsets.UTF_8);
 
         char[] buffer = new char[4096];
         int n;
