@@ -202,7 +202,7 @@
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
         <payara.transformer.version>0.2.13</payara.transformer.version>
 
-        <awaitility.version>4.2.2</awaitility.version>
+        <awaitility.version>4.3.0</awaitility.version>
     </properties>
 
     <issueManagement>
