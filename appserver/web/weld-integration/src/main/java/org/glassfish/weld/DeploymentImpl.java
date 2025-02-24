@@ -274,7 +274,9 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
-        rootBDAs(bda).add(bda);
+        if (bda.getModuleBDAType() != BDAType.UNKNOWN) {
+            rootBDAs(bda).add(bda);
+        }
     }
 
     private Set<RootBeanDeploymentArchive> rootBDAs(RootBeanDeploymentArchive bda) {
