@@ -121,5 +121,20 @@
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.core.web</groupId>
+            <artifactId>web-glue</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>weld-integration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.persistence</groupId>
+            <artifactId>data-core</artifactId>
+            <version>7.2025.1.Alpha1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

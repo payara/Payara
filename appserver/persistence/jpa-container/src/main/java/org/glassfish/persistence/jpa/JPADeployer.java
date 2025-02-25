@@ -53,6 +53,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.ExceptionUtil;
 import com.sun.logging.LogDomains;
+import jakarta.enterprise.inject.spi.Extension;
+import java.util.function.Supplier;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -86,6 +88,7 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.InternalSystemAdministrator;
+import org.glassfish.weld.WeldDeployer;
 
 
 /**
@@ -406,6 +409,11 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
      */
     //@Override
     public JPApplicationContainer load(JPAContainer container, DeploymentContext context) {
+        //adding extension to load Jakarta Data registry
+        Collection<Supplier<Extension>> snifferExtensions = context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+        //if(snifferExtensions != null) {
+        //    snifferExtensions.add(JakartaDataCDIExtension::new);
+       // }
         return new JPApplicationContainer();
     }
 
