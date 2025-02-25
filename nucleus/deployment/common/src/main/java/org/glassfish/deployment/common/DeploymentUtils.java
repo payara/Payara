@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -54,7 +54,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -86,6 +85,7 @@ import java.util.logging.Level;
 
 
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.jboss.jandex.Index;
 
 /** 
  * Utility methods for deployment. 
@@ -117,19 +117,19 @@ public class DeploymentUtils {
 
     public static class WarLibraryDescriptor {
         private final Descriptor descriptor;
-        private final List<Type> types;
+        private final Index index;
 
-        public WarLibraryDescriptor(Descriptor descriptor, List<Type> types) {
+        public WarLibraryDescriptor(Descriptor descriptor, Index index) {
             this.descriptor = descriptor;
-            this.types = types;
+            this.index = index;
         }
 
         public Descriptor getDescriptor() {
             return descriptor;
         }
 
-        public List<Type> getTypes() {
-            return types;
+        public Index getIndex() {
+            return index;
         }
     }
 

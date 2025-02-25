@@ -1,23 +1,23 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at glassfish/legal/LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,39 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
+package org.glassfish.weld.connector;
 
- /*
- * JavaEEScanner.java
- *
- * Created on November 1, 2005, 5:30 PM
- */
-package org.glassfish.apf.impl;
-
-import org.glassfish.apf.ComponentInfo;
-import org.glassfish.hk2.classmodel.reflect.Types;
-
-import java.io.File;
-import java.io.IOException;
+import org.glassfish.api.deployment.DeploymentContext;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Set;
 
 /**
- * Super class for all JavaEE scanners
- *
- * @author Jerome Dochez
+ * Encapsulates either HK2 or Jandex class model.
  */
-public abstract class JavaEEScanner {
+interface AnnotationClassModel {
+    JandexClassModel jandexClassModel = new JandexClassModel();
 
-    Types types;
+    /**
+     * Get the class model based on the deployment context.
 
-    public ComponentInfo getComponentInfo(Class componentImpl) {
-        throw new UnsupportedOperationException("No longer supported");
+     * @param deploymentContext
+     * @return the class model
+     */
+    static AnnotationClassModel getClassModel(DeploymentContext deploymentContext) {
+        return jandexClassModel;
     }
 
-    protected void initTypes(File file) throws IOException {
-        throw new UnsupportedOperationException("No longer supported");
-    }
-
-    public Types getTypes() {
-        throw new UnsupportedOperationException("No longer supported");
-    }
+    boolean hasCDIEnablingAnnotations(DeploymentContext deploymentContext, Collection<URI> paths);
+    Set<String> getCDIEnablingAnnotations(DeploymentContext context);
+    Collection<String> getCDIAnnotatedClassNames(DeploymentContext context, Set<String> cdiEnablingAnnotations);
+    Collection<String> getInjectionTargetClassNames(DeploymentContext deploymentContext, Collection<String> knownClassNames);
 }
