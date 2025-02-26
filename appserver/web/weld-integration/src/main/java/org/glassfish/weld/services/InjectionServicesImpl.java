@@ -41,6 +41,7 @@
 
 package org.glassfish.weld.services;
 
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -214,7 +215,7 @@ public class InjectionServicesImpl implements InjectionServices {
                   } else {
                     injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
                   }
-                } else {
+                } else if (!(bundleContext instanceof Application)){
                   if ( target == null ) {
                     injectionManager.injectClass(targetClass, injectionEnv, false);
                   } else {
@@ -244,6 +245,10 @@ public class InjectionServicesImpl implements InjectionServices {
         // We are only validating producer fields of resources.  See spec section 3.7.1
         Class annotatedClass = annotatedType.getJavaClass();
         JndiNameEnvironment jndiNameEnvironment = (JndiNameEnvironment) bundleContext;
+
+        if (bundleContext instanceof Application) {
+            return;
+        }
 
         InjectionInfo injectionInfo = jndiNameEnvironment.getInjectionInfoByClass(annotatedClass);
         List<InjectionCapable> injectionResources = injectionInfo.getInjectionResources();
