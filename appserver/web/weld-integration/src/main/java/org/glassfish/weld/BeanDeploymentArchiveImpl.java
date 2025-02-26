@@ -92,7 +92,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
     private transient ReadableArchive archive;
     private final String id;
-    final List<String> moduleClassNames; // Names of classes in the module
+    private final List<String> moduleClassNames; // Names of classes in the module
     private final List<String> beanClassNames; // Names of bean classes in the module
     private transient List<Class<?>> moduleClasses; // Classes in the module
     private transient List<Class<?>> beanClasses; // Classes identified as Beans through Weld SPI

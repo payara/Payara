@@ -520,7 +520,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     try {
                         DeploymentImpl filtered = deploymentImpl.filter(rootBDA, applicationInfo);
                         completeDeployment(filtered);
-                        removeDuplicateBeanClassNames(filtered);
                         WeldBootstrap bootstrap = filtered.context.getTransientAppMetaData(WELD_BOOTSTRAP, WeldBootstrap.class);
                         startWeldBootstrap(applicationInfo, rootBDA, bootstrap, filtered, componentInvocation);
                     } finally {
@@ -531,7 +530,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 }
             } else if (!deploymentImpl.getRootBDAs().isEmpty()) {
                 completeDeployment(deploymentImpl);
-                removeDuplicateBeanClassNames(deploymentImpl);
                 // Legacy EJB-Jar scenario, one Weld instance per EAR
                 RootBeanDeploymentArchive bda = deploymentImpl.getRootBDAs().iterator().next();
                 WeldBootstrap bootstrap = unifyBootstrap(bda, applicationInfo);
@@ -555,21 +553,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // for Bean classloading to succeed.
             // The TCL is reset to its old value here.
             Thread.currentThread().setContextClassLoader(oldTCL);
-        }
-    }
-
-    private static void removeDuplicateBeanClassNames(DeploymentImpl deploymentImpl) {
-        Set<String> allModuleClassNames = new HashSet<>();
-        for (BeanDeploymentArchive bda : deploymentImpl.getBeanDeploymentArchives()) {
-            if (bda instanceof BeanDeploymentArchiveImpl) {
-                BeanDeploymentArchiveImpl bdaImpl = (BeanDeploymentArchiveImpl) bda;
-                for (int ii = 0; ii < bdaImpl.moduleClassNames.size(); ii++) {
-                    if (!allModuleClassNames.add(bdaImpl.moduleClassNames.get(ii))) {
-                        bdaImpl.moduleClassNames.remove(ii);
-                        --ii;
-                    }
-                }
-            }
         }
     }
 
