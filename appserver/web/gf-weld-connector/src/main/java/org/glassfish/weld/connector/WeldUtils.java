@@ -138,7 +138,6 @@ public class WeldUtils {
         cdi.add(Dependent.class);
         cdi.add(Singleton.class);
         cdi.add(Model.class);
-        cdi.add(Inject.class);
 
         cdiScopeAnnotationClasses = Collections.unmodifiableSet(cdi);
         cdiScopeAnnotations = cdiScopeAnnotationClasses.stream().map(Class::getName).collect(Collectors.toSet());
