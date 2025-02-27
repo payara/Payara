@@ -156,7 +156,7 @@ public class InjectionServicesImpl implements InjectionServices {
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass )
+            if ( isInterceptor( targetClass ) && !(bundleContext instanceof Application)
                     && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
@@ -235,7 +235,7 @@ public class InjectionServicesImpl implements InjectionServices {
 
     @Override
     public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
-        if ( bundleContext instanceof EjbBundleDescriptor ) {
+        if ( bundleContext instanceof EjbBundleDescriptor || bundleContext instanceof Application ) {
             // we can't handle validting producer fields for ejb bundles because the JNDI environment is not setup
             // yet for ejbs and so we can't get the correct JndiNameEnvironment to call getInjectionInfoByClass.
             // getInjectionInfoByClass caches the results and so causes subsequent calls to return invalid information.
@@ -245,10 +245,6 @@ public class InjectionServicesImpl implements InjectionServices {
         // We are only validating producer fields of resources.  See spec section 3.7.1
         Class annotatedClass = annotatedType.getJavaClass();
         JndiNameEnvironment jndiNameEnvironment = (JndiNameEnvironment) bundleContext;
-
-        if (bundleContext instanceof Application) {
-            return;
-        }
 
         InjectionInfo injectionInfo = jndiNameEnvironment.getInjectionInfoByClass(annotatedClass);
         List<InjectionCapable> injectionResources = injectionInfo.getInjectionResources();
