@@ -64,7 +64,7 @@
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <jakarta.security.enterprise.version>4.0.0.payara-p1</jakarta.security.enterprise.version>
+        <soteria.version>4.0.0</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
         <grizzly.version>4.1.0-M1</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
@@ -107,8 +107,8 @@
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.6</hazelcast.version>
         <jakartaee.api.version>11.0.0-M5</jakartaee.api.version>
-        <weld-api.version>6.0.Beta5</weld-api.version>
-        <weld.version>6.0.0.Beta4</weld.version>
+        <weld-api.version>6.0.Final</weld-api.version>
+        <weld.version>6.0.1.Final</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
         <jsp-impl.version>4.0.0-M2</jsp-impl.version>
         <asm.version>9.7.1</asm.version>
@@ -790,8 +790,8 @@
 
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${jakarta.security.enterprise.version}</version>
+                <artifactId>soteria</artifactId>
+                <version>${soteria.version}</version>
             </dependency>
 
             <dependency>
@@ -1053,6 +1053,11 @@
             <dependency>
                 <groupId>org.jboss.weld.environment</groupId>
                 <artifactId>weld-environment-common</artifactId>
+                <version>${weld.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.weld.se</groupId>
+                <artifactId>weld-se-core</artifactId>
                 <version>${weld.version}</version>
             </dependency>
 

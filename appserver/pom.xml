@@ -233,7 +233,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>${jakarta.security.enterprise-spec.version}</specVersion>
-                            <specImplVersion>${jakarta.security.enterprise.version}</specImplVersion>
+                            <specImplVersion>${soteria.version}</specImplVersion>
                             <apiPackage>jakarta.security.enterprise</apiPackage>
                             <implNamespace>org.glassfish.soteria</implNamespace>
                         </spec>

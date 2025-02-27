@@ -158,7 +158,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // change there as well. The reason it is duplicated is so that a dependency from web-core to
     // gf-weld-connector
     // is not necessary.
-    private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldListener";
+    private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldInitialListener";
     static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.module.web.servlet.WeldTerminalListener";
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 

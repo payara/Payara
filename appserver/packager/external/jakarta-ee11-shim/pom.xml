@@ -89,7 +89,7 @@
         <!-- Downgrade shim for Soteria 3.0, required by security-connector-oauth2-client. Remove once Security Connectors upgraded -->
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>jakarta.security.enterprise</artifactId>
+            <artifactId>soteria</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
