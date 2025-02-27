@@ -409,11 +409,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
      */
     //@Override
     public JPApplicationContainer load(JPAContainer container, DeploymentContext context) {
-        //adding extension to load Jakarta Data registry
-        Collection<Supplier<Extension>> snifferExtensions = context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
-        //if(snifferExtensions != null) {
-        //    snifferExtensions.add(JakartaDataCDIExtension::new);
-       // }
         return new JPApplicationContainer();
     }
 
