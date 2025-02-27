@@ -43,6 +43,10 @@ import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
 import org.glassfish.api.deployment.DeploymentContext;
 
+/**
+ * Application container used to create Deployer for Jakarta Data Annotation processing
+ * @author Alfonso Valdez
+ */
 public class JakartaDataApplicationContainer implements ApplicationContainer<Object> {
 
     protected final DeploymentContext ctx;

@@ -44,6 +44,11 @@ import org.glassfish.api.deployment.Deployer;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
+
+/**
+ * This container will help to process Jakarta Data annotations
+ * @author Alfonso Valdez
+ */
 @Service(name = "fish.payara.jakarta.data.core.connector.JakartaDataContainer")
 @PerLookup
 public class JakartaDataContainer implements Container {

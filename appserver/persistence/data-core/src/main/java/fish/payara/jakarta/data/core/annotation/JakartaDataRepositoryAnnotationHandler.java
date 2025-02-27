@@ -37,51 +37,36 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.jakarta.data.core.connector;
+package fish.payara.jakarta.data.core.annotation;
 
-import org.glassfish.api.deployment.Deployer;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.MetaData;
-import org.glassfish.hk2.api.PerLookup;
+import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import jakarta.data.repository.Repository;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.apf.AnnotationHandlerFor;
+import org.glassfish.apf.AnnotationInfo;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.HandlerProcessingResult;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Deployer create to process Jakarta Data annotations, here we can declare information related to process the annotations 
- * and also here we can register an extension if needed
+ * Service that identify the Repository annotation from Jakarta Data
  * @author Alfonso Valdez
  */
 @Service
-@PerLookup
-public class JakartaDataRepositoryDeployer implements Deployer<JakartaDataContainer, JakartaDataApplicationContainer> {
-
+@AnnotationHandlerFor(Repository.class)
+public class JakartaDataRepositoryAnnotationHandler extends AbstractResourceHandler {
+    
+    private static final Logger logger = Logger.getLogger(JakartaDataRepositoryAnnotationHandler.class.getName());
+    
+    public JakartaDataRepositoryAnnotationHandler() {}
+    
     @Override
-    public MetaData getMetaData() {
-        return null;
-    }
-
-    @Override
-    public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
-        return null;
-    }
-
-    @Override
-    public boolean prepare(DeploymentContext context) {
-        return true;
-    }
-
-    @Override
-    public JakartaDataApplicationContainer load(JakartaDataContainer container, DeploymentContext context) {
-        //Here we can declare extension to process beans
-        return new JakartaDataApplicationContainer(context);
-    }
-
-    @Override
-    public void unload(JakartaDataApplicationContainer appContainer, DeploymentContext context) {
-
-    }
-
-    @Override
-    public void clean(DeploymentContext context) {
-
+    protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts) throws AnnotationProcessorException {
+        logger.log(Level.FINE,"JakartaDataRepositoryAnnotationHandler");
+        logger.log(Level.FINE,"starting with the processing of annotation " + ainfo);
+        JakartaDataRepositoryUtilityParsing.processAnnotation(ainfo, rcContexts);
+        return getDefaultProcessedResult();
     }
 }

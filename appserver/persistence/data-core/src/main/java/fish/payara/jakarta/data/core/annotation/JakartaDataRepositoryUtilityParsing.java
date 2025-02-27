@@ -37,51 +37,33 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.jakarta.data.core.connector;
+package fish.payara.jakarta.data.core.annotation;
 
-import org.glassfish.api.deployment.Deployer;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.MetaData;
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
+import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
+import org.glassfish.apf.AnnotationInfo;
 
 /**
- * Deployer create to process Jakarta Data annotations, here we can declare information related to process the annotations 
- * and also here we can register an extension if needed
+ * Utility class to parse data related to the Repository annotation
  * @author Alfonso Valdez
  */
-@Service
-@PerLookup
-public class JakartaDataRepositoryDeployer implements Deployer<JakartaDataContainer, JakartaDataApplicationContainer> {
-
-    @Override
-    public MetaData getMetaData() {
-        return null;
-    }
-
-    @Override
-    public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
-        return null;
-    }
-
-    @Override
-    public boolean prepare(DeploymentContext context) {
-        return true;
-    }
-
-    @Override
-    public JakartaDataApplicationContainer load(JakartaDataContainer container, DeploymentContext context) {
-        //Here we can declare extension to process beans
-        return new JakartaDataApplicationContainer(context);
-    }
-
-    @Override
-    public void unload(JakartaDataApplicationContainer appContainer, DeploymentContext context) {
-
-    }
-
-    @Override
-    public void clean(DeploymentContext context) {
-
+public class JakartaDataRepositoryUtilityParsing {
+    
+    public static void processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)  {
+        Annotation annotation = ainfo.getAnnotation();
+        AnnotatedElement annotatedElement = ainfo.getAnnotatedElement();
+        //Convert the annotated element to class to explore additional details like extension of other interfaces and declared methods
+        Class<?> cl = (Class<?>)ainfo.getAnnotatedElement();
+        //get Additional interfaces used
+        Class<?>[] interfacesArray = cl.getInterfaces();
+        //get Declared methods on the interface
+        Method[] methods = cl.getDeclaredMethods();
+        //explore annotated methods
+        for (Method m : methods) {
+            //for additional annotations like insert, find and others from the Jakarta Data specification
+            Annotation[] annotations = m.getAnnotations();
+        }
     }
 }
