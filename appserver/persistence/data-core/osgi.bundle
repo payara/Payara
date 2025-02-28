@@ -38,4 +38,5 @@
  # holder.
  #
 -exportcontents: fish.payara.jakarta.data.core.activation; \
+                 fish.payara.jakarta.data.core.annotation; \
                  fish.payara.jakarta.data.core.connector; version=${project.osgi.version}

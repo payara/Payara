@@ -63,9 +63,6 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 public class JakartaDataRepositorySniffer implements Sniffer {
     
-    private static final Logger logger = Logger.getLogger(JakartaDataRepositorySniffer.class.getName());
-
-
     @Override
     public boolean handles(DeploymentContext context) {
         final ReadableArchive archive = context.getSource();
