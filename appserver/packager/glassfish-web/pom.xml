@@ -169,12 +169,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>jakarta.security.enterprise</artifactId>
+            <artifactId>soteria</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>soteria.spi.bean.decorator.weld</artifactId>
-            <version>${jakarta.security.enterprise.version}</version>
+            <version>${soteria.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.el</groupId>
