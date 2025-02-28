@@ -159,6 +159,7 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
         this.archiveFactory = archiveFactory;
         this.context = context;
         this.injectionManager = injectionManager;
+        this.contextId = moduleName != null? moduleName : archive.getName();
 
         // Collect /lib Jar BDAs (if any) from the parent module.
         // If we've produced BDA(s) from any /lib jars, <code>return</code> as
@@ -177,7 +178,6 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
             this.appName = "CDIApp";
         }
 
-        this.contextId = moduleName != null? moduleName : archive.getName();
         createModuleBda(archive, ejbs, context, contextId);
     }
 
@@ -274,7 +274,9 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
-        rootBDAs(bda).add(bda);
+        if (bda.getModuleBDAType() != BDAType.UNKNOWN) {
+            rootBDAs(bda).add(bda);
+        }
     }
 
     private Set<RootBeanDeploymentArchive> rootBDAs(RootBeanDeploymentArchive bda) {
