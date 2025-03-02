@@ -41,10 +41,15 @@ package org.glassfish.apf.jandex;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
+import org.glassfish.apf.impl.AnnotationUtils;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.JandexIndexer;
 import org.jboss.jandex.Index;
@@ -57,26 +62,48 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_SUCCESS;
 
 @Service
-public class JandexIndexReader implements JandexIndexer {
+public class JandexIndexReader implements JandexIndexer, EventListener {
     private static final String JANDEX_INDEX_METADATA_KEY = JandexIndexer.class.getName() + ".index";
 
     @Inject
     ArchiveFactory archiveFactory;
     @Inject
     ServerEnvironment serverEnvironment;
+    @Inject
+    Events events;
+    @Inject
+    PayaraExecutorService payaraExecutorService;
+
+    private static final Lock errorsLock = new ReentrantLock();
+    private static final Queue<Runnable> delayedCacheAdditions = new ConcurrentLinkedQueue<>();
+
+    @PostConstruct
+    public void init() {
+        events.register(this);
+    }
 
     @Override
     public void index(DeploymentContext deploymentContext) throws IOException {
         if (getIndexMap(deploymentContext) == null) {
-            Map<String, Index> indexMap = new HashMap<>();
+            Map<String, Index> indexMap = new ConcurrentHashMap<>();
             deploymentContext.addTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, indexMap);
             indexMap.put(deploymentContext.getSource().getURI().toString(), indexArchive(deploymentContext));
             indexSubArchives(deploymentContext, true);
@@ -189,6 +216,8 @@ public class JandexIndexReader implements JandexIndexer {
                                boolean indexSubArchivesOnly) throws IOException {
         Indexer indexer = new Indexer();
         StringBuilder errors = new StringBuilder();
+        List<Callable<Void>> innerJarTasks = new ArrayList<>();
+
         archive.entries().asIterator().forEachRemaining(entry -> {
             // we need to check that there is no exploded directory by this name.
             String explodedName = entry
@@ -209,14 +238,15 @@ public class JandexIndexReader implements JandexIndexer {
                     }
                 }
                 if (!explodedNameExists || indexSubArchivesOnly && entry.endsWith(".jar")) {
-                    indexArchiveInnerJAR(context, archive, entry, errors);
-                } else if (indexSubArchivesOnly && explodedNameExists && entry.endsWith(".war") || entry.endsWith(".rar")) {
-                    indexArchiveInnerJAR(context, archive, entry, errors);
+                    innerJarTasks.add(() -> indexArchiveInnerJAR(context, archive, entry, errors));
+                } else if (indexSubArchivesOnly && entry.endsWith(".war") || entry.endsWith(".rar")) {
+                    innerJarTasks.add(() -> indexArchiveInnerJAR(context, archive, entry, errors));
                 }
             } catch (IOException e) {
                 appendError(archive, entry, errors);
             }
         });
+        ForkJoinPool.commonPool().invokeAll(innerJarTasks);
         if (errors.length() > 0) {
             throw new IOException(errors.toString());
         }
@@ -224,12 +254,17 @@ public class JandexIndexReader implements JandexIndexer {
     }
 
     private static void appendError(ReadableArchive archive, String entry, StringBuilder errors) {
-        if (errors.length() == 0) {
-            errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
+        errorsLock.lock();
+        try {
+            if (errors.length() == 0) {
+                errors.append(String.format("Unable to index %s from archive %s ", entry, archive.getName()));
+            }
+        } finally {
+            errorsLock.unlock();
         }
     }
 
-    private void indexArchiveInnerJAR(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
+    private Void indexArchiveInnerJAR(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
         try {
             ReadableArchive subArchive = archive.getSubArchive(entry);
             if (subArchive != null) {
@@ -239,6 +274,7 @@ public class JandexIndexReader implements JandexIndexer {
         } catch (IOException e) {
             appendError(archive, entry, errors);
         }
+        return null;
     }
 
     private Index indexOrGetFromCache(DeploymentContext context, ReadableArchive subArchive) throws IOException {
@@ -254,7 +290,8 @@ public class JandexIndexReader implements JandexIndexer {
             if (index == null) {
                 index = indexArchive(context, subArchive, false);
                 if (!isExploded && !subArchivePath.endsWith("-SNAPSHOT.jar")) {
-                    cacheIndex(subArchive, index);
+                    var finalIndex = index;
+                    delayedCacheAdditions.offer(() -> cacheIndex(subArchive, finalIndex));
                 }
             }
             return index;
@@ -279,12 +316,14 @@ public class JandexIndexReader implements JandexIndexer {
         }
     }
 
-    private void cacheIndex(ReadableArchive archive, Index index) throws IOException {
-        Files.writeString(getCachePath(archive, "size"), String.valueOf(archive.getArchiveSize()));
-        Files.writeString(getCachePath(archive, "crc"), String.valueOf(getChecksum(archive)));
+    private void cacheIndex(ReadableArchive archive, Index index) {
         try (var stream = new GZIPOutputStream(Files.newOutputStream(getCachePath(archive, "idx")))) {
             IndexWriter indexWriter = new IndexWriter(stream);
             indexWriter.write(index);
+            Files.writeString(getCachePath(archive, "crc"), String.valueOf(getChecksum(archive)));
+            Files.writeString(getCachePath(archive, "size"), String.valueOf(archive.getArchiveSize()));
+        } catch (IOException e) {
+            AnnotationUtils.getLogger().log(Level.WARNING, e, () -> "Failed to cache Jandex index for " + archive.getName());
         }
     }
 
@@ -299,5 +338,15 @@ public class JandexIndexReader implements JandexIndexer {
 
     private Path getCachePath(ReadableArchive archive, String suffix) {
         return Path.of(serverEnvironment.getInstanceRoot() + "/jandex-cache/" + archive.getName() + "." + suffix);
+    }
+
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(DEPLOYMENT_SUCCESS)) {
+            // drain the queue of delayed cache additions
+            while (!delayedCacheAdditions.isEmpty()) {
+                payaraExecutorService.submit(delayedCacheAdditions.poll());
+            }
+        }
     }
 }
