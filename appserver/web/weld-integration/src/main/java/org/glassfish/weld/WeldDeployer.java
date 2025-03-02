@@ -398,9 +398,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
                     }
                 }
+                if (beanDeploymentArchive instanceof BeanDeploymentArchiveImpl
+                        && ((BeanDeploymentArchiveImpl) beanDeploymentArchive)
+                        .getBDAType() != WeldUtils.BDAType.UNKNOWN) {
+                        bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
+                }
             }
-
-            bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
         }
 
         applicationInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
@@ -880,7 +883,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // From the spec: "The container must also fire an event for every Jakarta EE component class supporting
             // injection that may be instantiated by the container at runtime". Stress on the "may".
             Collection<String> injectionTargetClassNames = WeldUtils.getInjectionTargetClassNames(
-                    deploymentImpl.getTypes(), beanDeploymentArchive.getKnownClasses());
+                    deploymentImpl.context, beanDeploymentArchive.getKnownClasses());
             for (String injectionTargetClassName : injectionTargetClassNames) {
                 // Don't fire twice
                 if (beanDeploymentArchive.getBeanClasses().contains(injectionTargetClassName)) {
