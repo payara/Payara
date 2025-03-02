@@ -208,7 +208,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private Index indexSubArchives(DeploymentContext deploymentContext, boolean indexSubArchivesOnly) throws IOException {
-        getCachePath(deploymentContext.getSource(), "none").getParent().toFile().mkdirs();
+        getCachePath(deploymentContext.getSource().getName(), "none").getParent().toFile().mkdirs();
         return indexArchive(deploymentContext, deploymentContext.getSource(), indexSubArchivesOnly);
     }
 
@@ -265,8 +265,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     }
 
     private Void indexArchiveInnerJAR(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
-        try {
-            ReadableArchive subArchive = archive.getSubArchive(entry);
+        try (ReadableArchive subArchive = archive.getSubArchive(entry)) {
             if (subArchive != null) {
                 Index index = indexOrGetFromCache(context, subArchive);
                 getIndexMap(context).put(subArchive.getURI().toString(), index);
@@ -291,7 +290,10 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
                 index = indexArchive(context, subArchive, false);
                 if (!isExploded && !subArchivePath.endsWith("-SNAPSHOT.jar")) {
                     var finalIndex = index;
-                    delayedCacheAdditions.offer(() -> cacheIndex(subArchive, finalIndex));
+                    var archiveName = subArchive.getName();
+                    var archiveSize = subArchive.getArchiveSize();
+                    var archiveChecksum = getChecksum(subArchive);
+                    delayedCacheAdditions.offer(() -> cacheIndex(archiveName, archiveSize, archiveChecksum, finalIndex));
                 }
             }
             return index;
@@ -301,29 +303,29 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     }
 
     private Index getCachedIndex(ReadableArchive archive) throws IOException {
-        if (!getCachePath(archive, "size").toFile().exists()
-                || !getCachePath(archive, "crc").toFile().exists()) {
+        if (!getCachePath(archive.getName(), "size").toFile().exists()
+                || !getCachePath(archive.getName(), "crc").toFile().exists()) {
             return null;
         }
-        if (Long.parseLong(Files.readString(getCachePath(archive, "size"))) != archive.getArchiveSize()) {
+        if (Long.parseLong(Files.readString(getCachePath(archive.getName(), "size"))) != archive.getArchiveSize()) {
             return null;
         }
-        if (Long.parseLong(Files.readString(getCachePath(archive, "crc"))) != getChecksum(archive)) {
+        if (Long.parseLong(Files.readString(getCachePath(archive.getName(), "crc"))) != getChecksum(archive)) {
             return null;
         }
-        try (var stream = new GZIPInputStream(Files.newInputStream(getCachePath(archive,"idx")))) {
+        try (var stream = new GZIPInputStream(Files.newInputStream(getCachePath(archive.getName(),"idx")))) {
             return new IndexReader(stream).read();
         }
     }
 
-    private void cacheIndex(ReadableArchive archive, Index index) {
-        try (var stream = new GZIPOutputStream(Files.newOutputStream(getCachePath(archive, "idx")))) {
+    private void cacheIndex(String archiveName, long archiveSize, long archiveChecksum, Index index) {
+        try (var stream = new GZIPOutputStream(Files.newOutputStream(getCachePath(archiveName, "idx")))) {
             IndexWriter indexWriter = new IndexWriter(stream);
             indexWriter.write(index);
-            Files.writeString(getCachePath(archive, "crc"), String.valueOf(getChecksum(archive)));
-            Files.writeString(getCachePath(archive, "size"), String.valueOf(archive.getArchiveSize()));
+            Files.writeString(getCachePath(archiveName, "crc"), String.valueOf(archiveChecksum));
+            Files.writeString(getCachePath(archiveName, "size"), String.valueOf(archiveSize));
         } catch (IOException e) {
-            AnnotationUtils.getLogger().log(Level.WARNING, e, () -> "Failed to cache Jandex index for " + archive.getName());
+            AnnotationUtils.getLogger().log(Level.WARNING, e, () -> "Failed to cache Jandex index for " + archiveName);
         }
     }
 
@@ -336,8 +338,8 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         return crc;
     }
 
-    private Path getCachePath(ReadableArchive archive, String suffix) {
-        return Path.of(serverEnvironment.getInstanceRoot() + "/jandex-cache/" + archive.getName() + "." + suffix);
+    private Path getCachePath(String archiveName, String suffix) {
+        return Path.of(serverEnvironment.getInstanceRoot() + "/jandex-cache/" + archiveName + "." + suffix);
     }
 
     @Override
