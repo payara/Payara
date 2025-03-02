@@ -51,6 +51,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.decorator.Decorator;
@@ -72,13 +73,15 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.deployment.JandexIndexer;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.Index;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import static org.glassfish.weld.connector.AnnotationClassModel.getClassModel;
 
 public class WeldUtils {
 
@@ -218,7 +221,15 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified paths
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
-        return getClassModel(context).hasCDIEnablingAnnotations(context, paths);
+        if (isRootPackage(context, paths)) {
+            return false;
+        }
+        Map<String, Index> indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, paths);
+        boolean result = cdiEnablingAnnotationClasses.stream()
+                .anyMatch(annotationClass -> indexes.values().stream()
+                        .anyMatch(index -> !index.getAnnotations(annotationClass).isEmpty()));
+        return result;
     }
 
     /**
@@ -230,7 +241,12 @@ public class WeldUtils {
      * @return An array of annotation type names; The array could be empty if none are found.
      */
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
-        Set<String> result = getClassModel(context).getCDIEnablingAnnotations(context);
+        var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
+        Set<String> result = new HashSet<>();
+        indexes.values().forEach(index -> result.addAll(cdiEnablingAnnotationClasses.stream()
+                .filter(annotationClass -> !index.getAnnotations(annotationClass).isEmpty())
+                .map(Class::getName)
+                .collect(Collectors.toSet())));
         return result.toArray(new String[0]);
     }
 
@@ -245,7 +261,14 @@ public class WeldUtils {
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
         final Set<String> cdiEnablingAnnotations = new HashSet<>();
         Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
-        return getClassModel(context).getCDIAnnotatedClassNames(context, cdiEnablingAnnotations);
+        var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
+        Set<String> result = new HashSet<>();
+        indexes.values().forEach(index -> cdiEnablingAnnotations
+                .forEach(annotation -> result.addAll(index.getAnnotations(annotation).stream()
+                        .map(WeldUtils::mapAnnotationToClassName)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()))));
+        return result;
     }
 
     /**
@@ -258,7 +281,17 @@ public class WeldUtils {
      */
     public static Collection<String> getInjectionTargetClassNames(DeploymentContext deploymentContext,
                                                                   Collection<String> knownClassNames) {
-        return getClassModel(deploymentContext).getInjectionTargetClassNames(deploymentContext, knownClassNames);
+        var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(deploymentContext);
+        Set<String> result = new HashSet<>();
+        indexes.values().forEach(index -> {
+            for (AnnotationInstance annotationInstance : index.getAnnotations(Inject.class)) {
+                String className = mapAnnotationToClassName(annotationInstance);
+                if (className != null && knownClassNames.contains(className)) {
+                    result.add(className);
+                }
+            }
+        });
+        return result;
     }
 
     /**
@@ -570,5 +603,34 @@ public class WeldUtils {
         private SAXStoppedIntentionallyException() {
             super();
         }
+    }
+
+    private static String mapAnnotationToClassName(AnnotationInstance annotationInstance) {
+        String className = null;
+        switch (annotationInstance.target().kind()) {
+            case CLASS:
+                className = annotationInstance.target().asClass().name().toString();
+                break;
+            case FIELD:
+                className = annotationInstance.target().asField().declaringClass().name().toString();
+                break;
+            case METHOD:
+                className = annotationInstance.target().asMethod().receiverType().name().toString();
+                break;
+            case METHOD_PARAMETER:
+                className = annotationInstance.target().asMethodParameter().method().receiverType().name().toString();
+                break;
+            case TYPE:
+                className = annotationInstance.target().asType().asClass().toString();
+                break;
+            case RECORD_COMPONENT:
+                className = annotationInstance.target().asRecordComponent().declaringClass().name().toString();
+                break;
+        }
+        return className;
+    }
+
+    private static boolean isRootPackage(DeploymentContext deploymentContext, Collection<URI> paths) {
+        return paths.size() == 1 && paths.stream().findAny().get().equals(deploymentContext.getSource().getURI());
     }
 }
