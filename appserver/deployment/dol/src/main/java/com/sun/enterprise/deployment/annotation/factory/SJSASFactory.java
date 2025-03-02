@@ -127,7 +127,7 @@ public class SJSASFactory extends Factory {
             if (file.isDirectory()) {
                 // TODO: assuming there is only one file in the directory
                 // exploded WAR support for EAR
-                uri = Files.list(file.toPath()).findAny().get().toFile().toURI();
+                uri = Files.list(file.toPath()).filter(path -> path.toString().endsWith("ar")).findAny().get().toUri();
             }
             index = jandexIndexer.getIndexesByURI(deploymentContext, Collections.singleton(uri)).values().stream().findAny().get();
         }
