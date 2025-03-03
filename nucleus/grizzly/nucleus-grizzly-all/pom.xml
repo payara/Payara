@@ -70,7 +70,6 @@
     </developers>
 
     <properties>
-        <gmbal.grizzly.version>4.0.3</gmbal.grizzly.version>
         <jar.manifest></jar.manifest>
     </properties>    
 
@@ -146,7 +145,7 @@
         <dependency>
             <groupId>org.glassfish.gmbal</groupId>
             <artifactId>gmbal-api-only</artifactId>
-            <version>${gmbal.grizzly.version}</version>
+            <version>${gmbal.version}</version>
             <scope>provided</scope>
         </dependency>        
     </dependencies>

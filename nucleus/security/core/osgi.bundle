@@ -57,7 +57,8 @@
                         com.sun.enterprise.security.auth.login.common; \
                         com.sun.enterprise.security.common; \
                         com.sun.logging.enterprise.system.core.security; \
-                        com.sun.enterprise.security.ssl; version=${project.osgi.version}
+                        com.sun.enterprise.security.ssl; version=${project.osgi.version}, \
+                        org.glassfish.gmbal; version=4.1.0
 Bundle-NativeCode: \
         libsolsparcauth.so ; \
         osname=SunOS ; \
