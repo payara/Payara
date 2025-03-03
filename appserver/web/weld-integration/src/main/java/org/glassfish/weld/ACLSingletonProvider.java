@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2024] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -108,11 +108,11 @@ public class ACLSingletonProvider extends SingletonProvider
       @Override
       public T get( String id )
       {
-        ClassLoader acl = getClassLoader();
-        T instance = store.get(acl);
+        T instance = storeById.get(id);
         if (instance == null)
         {
-            instance = storeById.get(id);
+            ClassLoader acl = getClassLoader();
+            instance = store.get(acl);
             if (instance == null) {
                 throw new IllegalStateException("Singleton not set for " + acl);
             }

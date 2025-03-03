@@ -159,9 +159,9 @@ public class HttpRedirectTest extends BaseTestGrizzlyConfig {
         try {
             Socket s = socketFactory.createSocket("localhost", 48480);
             OutputStream out = s.getOutputStream();
-            out.write(("GET " + resourceURL + " HTTP/1.1\n").getBytes());
-            out.write(("Host: " + host + ':' + Integer.toString(port) + '\n').getBytes());
-            out.write("\n".getBytes());
+            out.write(("GET " + resourceURL + " HTTP/1.1\r\n").getBytes());
+            out.write(("Host: " + host + ':' + Integer.toString(port) + "\r\n").getBytes());
+            out.write("\r\n".getBytes());
             out.flush();
             InputStream in = s.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(in));

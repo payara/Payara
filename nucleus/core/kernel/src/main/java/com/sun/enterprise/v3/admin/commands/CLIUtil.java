@@ -57,9 +57,9 @@ public class CLIUtil {
         
     }
     
-    static Config updateConfigIfNeeded(final Config initConfig,
-            final Target targetUtil,
-            final String target) {
+    public static Config updateConfigIfNeeded (final Config initConfig,
+                                               final Target targetUtil,
+                                               final String target) {
         Config result = initConfig;
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig!=null) {

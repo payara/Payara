@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.session;
 
@@ -104,6 +105,8 @@ public final class SessionCookieConfig {
      * The domain for which the cookie is valid.
      */
     private String _domain = null;
+
+    private String sameSite = null;
 
     /**
      * The comment that identifies the session tracking cookie in the
@@ -214,6 +217,14 @@ public final class SessionCookieConfig {
         return _domain;
     }
 
+    public void setSameSite(String sameSite) {
+        this.sameSite = sameSite;
+    }
+
+    public String getSameSite() {
+        return sameSite;
+    }
+
     /**
      * Set the comment that identifies the session cookie.
      */
@@ -281,6 +292,10 @@ public final class SessionCookieConfig {
         if (_domain != null) {
             sb.append(", domain=");
             sb.append(_domain);
+        }
+        if (sameSite != null) {
+            sb.append(", sameSite=");
+            sb.append(sameSite);
         }
         if (_comment != null) {
             sb.append(", comment=");

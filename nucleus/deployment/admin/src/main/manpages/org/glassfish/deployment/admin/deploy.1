@@ -415,6 +415,12 @@ OPTIONS
                If set to true, preserves any application-scoped resources and
                restores them during redeployment. Default is false.
 
+           allowFacesCdiInitialisation={false|true}
+               If set to true, enables scanning for Jakarta Faces content
+               in the application, and if detected, forcing an attempt to
+               initialise CDI and Weld even if bean discovery is
+               set to "none". Default is false.
+
            Other available properties are determined by the implementation of
            the component that is being redeployed.
 
