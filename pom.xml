@@ -161,7 +161,7 @@
         <javase.version>${jdk.version}</javase.version>
         <!-- BOM-referenced versions -->
 
-        <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
+        <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
         <snakeyaml.version>2.3</snakeyaml.version>
         <mojarra.version>4.1.2</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
@@ -175,8 +175,8 @@
         <webservices.version>4.0.4</webservices.version>
         <santuario.version>4.0.0</santuario.version>
         <woodstox.version>7.1.0</woodstox.version>
-        <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
+        <woodstock-jsf.version>6.0.1</woodstock-jsf.version>
+        <woodstock-jsf-suntheme.version>6.0.1</woodstock-jsf-suntheme.version>
         <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>

@@ -58,7 +58,7 @@
         <payara.core.compare-version>6.20.0</payara.core.compare-version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>4.0.0.Alpha2</payara.security-connectors.version>
-        <hk2.version>4.0.0-M2.payara-p2</hk2.version>
+        <hk2.version>4.0.0-M3.payara-p1</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
@@ -69,20 +69,20 @@
         <grizzly.version>4.1.0-M1</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
-        <expressly.version>6.0.0-M1</expressly.version>
+        <expressly.version>6.0.0-M2</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <jaxb-api.version>4.0.2</jaxb-api.version>
         <jackson.version>2.18.2</jackson.version>
-        <jersey.version>4.0.0-M1.payara-p1-SNAPSHOT</jersey.version>
-        <jakarta.validation.version>3.1.0</jakarta.validation.version>
+        <jersey.version>4.0.0-M2.payara-p1</jersey.version>
+        <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
         <hibernate.validator.osgi.version>8.0.1.Final</hibernate.validator.osgi.version>
         <jaxb-impl.version>4.0.2</jaxb-impl.version>
         <jsonp-api.version>2.1.3</jsonp-api.version>
         <jakarta.authentication-api.version>3.1.0</jakarta.authentication-api.version>
-        <jakarta.authorization-api.version>3.0.0-M4</jakarta.authorization-api.version>
+        <jakarta.authorization-api.version>3.0.0</jakarta.authorization-api.version>
         <jakarta.security.enterprise-api.version>4.0.0</jakarta.security.enterprise-api.version>
         <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
@@ -106,11 +106,11 @@
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.6</hazelcast.version>
-        <jakartaee.api.version>11.0.0-M5</jakartaee.api.version>
+        <jakartaee.api.version>11.0.0-RC1</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
         <weld.version>6.0.1.Final</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
-        <jsp-impl.version>4.0.0-M2</jsp-impl.version>
+        <jsp-impl.version>4.0.0</jsp-impl.version>
         <asm.version>9.7.1</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
@@ -127,11 +127,11 @@
         <epicyro.version>3.1.0</epicyro.version>
 
         <!-- implementation and build dependencies -->
-        <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
+        <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
         <glassfish-corba.version>4.2.4.payara-p2</glassfish-corba.version>
         <junit.version>4.13.2</junit.version>
         <mockito.version>2.28.2</mockito.version>
-        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
         <jline.version>3.27.1</jline.version>
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
@@ -157,8 +157,8 @@
         <opentelemetry.alpha26.version>1.26.0-alpha</opentelemetry.alpha26.version>
         <testng.version>7.4.0</testng.version>
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
-        <jsftemplating.version>3.0.0</jsftemplating.version>
-        <jakarta.faces-api.version>4.1.0</jakarta.faces-api.version>
+        <jsftemplating.version>4.1.0-M1</jsftemplating.version>
+        <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <concurro.version>3.1.0-M5</concurro.version>
 
         <!-- build versions -->
