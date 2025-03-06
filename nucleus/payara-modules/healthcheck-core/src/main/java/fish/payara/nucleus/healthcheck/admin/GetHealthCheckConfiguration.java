@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,15 +114,15 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
     final static String monitoredMicroProfileMetricHeaders[] = {"Monitored Metric Name", "Description" };
     final static String notifierHeaders[] = {"Name", "Notifier Enabled"};
     
-    private final String garbageCollectorPropertyName = "garbageCollector";
-    private final String cpuUsagePropertyName = "cpuUsage";
-    private final String connectionPoolPropertyName = "connectionPool";
-    private final String heapMemoryUsagePropertyName = "heapMemoryUsage";
-    private final String machineMemoryUsagePropertyName = "machineMemoryUsage";
-    private final String hoggingThreadsPropertyName = "hoggingThreads";
-    private final String stuckThreadsPropertyName = "stuckThreads";
-    private final String mpHealthcheckPropertyName = "mpHealth";
-    private final String microProfileMetricsPropertyName = "microProfileMetrics";
+    private static final String garbageCollectorPropertyName = "garbageCollector";
+    private static final String cpuUsagePropertyName = "cpuUsage";
+    private static final String connectionPoolPropertyName = "connectionPool";
+    private static final String heapMemoryUsagePropertyName = "heapMemoryUsage";
+    private static final String machineMemoryUsagePropertyName = "machineMemoryUsage";
+    private static final String hoggingThreadsPropertyName = "hoggingThreads";
+    private static final String stuckThreadsPropertyName = "stuckThreads";
+    private static final String mpHealthcheckPropertyName = "mpHealth";
+    private static final String microProfileMetricsPropertyName = "microProfileMetrics";
     
     @Inject
     ServiceLocator habitat;
@@ -508,7 +508,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
             case STUCK_THREAD:
                 thresholdDiagnosticsExtraProps.put(stuckThreadsPropertyName, extraPropsMap);
                 break;
-                
+            default:
+                break;
         }
     }
     
@@ -572,6 +573,8 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
                     extraPropsMap = new HashMap<>(7);
                     extraPropsMap.put("checkerName", DEFAULT_MICROPROFILE_METRICS_NAME);
                     extraProps.put(checkerName, populateDefaultValuesMap(extraPropsMap));
+                    break;
+                default:
                     break;
             }
         }

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -343,20 +343,20 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
 
     private void configureDynamically(BaseThresholdHealthCheck<?, ?> service) {
         if (thresholdCritical != null) {
-            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+            service.getOptions().setThresholdCritical(Integer.parseInt(thresholdCritical));
             report.appendMessage(strings.getLocalString(
                     "healthcheck.service.configure.threshold.critical.success",
                     "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
             report.appendMessage("\n");
         }
         if (thresholdWarning != null) {
-            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+            service.getOptions().setThresholdWarning(Integer.parseInt(thresholdWarning));
             report.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
                     "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
             report.appendMessage("\n");
         }
         if (thresholdGood != null) {
-            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+            service.getOptions().setThresholdGood(Integer.parseInt(thresholdGood));
             report.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
                     "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
             report.appendMessage("\n");

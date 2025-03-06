@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -215,13 +215,12 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     private void executeTasks() {
-        for (String registeredTaskKey : registeredTasks.keySet()) {
-            HealthCheckTask registeredTask = registeredTasks.get(registeredTaskKey);
-            HealthCheckExecutionOptions healthCheckExecutionOptions = registeredTask.getCheck().getOptions();
-            logger.info("Scheduling Health Check for task: " + registeredTask.getName());
+        for (Entry<String, HealthCheckTask> registeredTask : registeredTasks.entrySet()) {
+            HealthCheckExecutionOptions healthCheckExecutionOptions = registeredTask.getValue().getCheck().getOptions();
+            logger.info("Scheduling Health Check for task: " + registeredTask.getValue().getName());
 
             if (healthCheckExecutionOptions.isEnabled()) {
-                ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask, 0,
+                ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask.getValue(), 0,
                         healthCheckExecutionOptions.getTime(),
                         healthCheckExecutionOptions.getUnit());
                 if (scheduledCheckers != null) {
@@ -229,7 +228,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 }
             }
 
-            exposeToMicroProfileHealthEndPoint(healthCheckExecutionOptions, registeredTask);
+            exposeToMicroProfileHealthEndPoint(healthCheckExecutionOptions, registeredTask.getValue());
         }
     }
 
