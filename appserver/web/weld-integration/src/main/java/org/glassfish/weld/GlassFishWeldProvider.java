@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -55,6 +55,7 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.enterprise.inject.spi.CDIProvider;
 import java.util.Map;
 import java.util.Set;
+import static org.glassfish.weld.JaxRSJsonContextResolver.currentType;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
@@ -102,6 +103,15 @@ public class GlassFishWeldProvider implements CDIProvider {
             }
 
             return super.unsatisfiedBeanManager(callerClassName);
+        }
+
+        @Override
+        protected String getCallingClassName() {
+            if (currentType.get() != null) {
+                return currentType.get().getName();
+            } else {
+                return super.getCallingClassName();
+            }
         }
     }
 
