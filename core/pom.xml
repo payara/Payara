@@ -126,7 +126,7 @@
         <kotlin-version>2.1.10</kotlin-version>
         
         <!-- implementation and build dependencies -->
-        <glassfish-management-api.version>3.2.3.payara-p1</glassfish-management-api.version>
+        <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
         <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
         <junit.version>4.13.2</junit.version>
         <mockito.version>2.28.2</mockito.version>
