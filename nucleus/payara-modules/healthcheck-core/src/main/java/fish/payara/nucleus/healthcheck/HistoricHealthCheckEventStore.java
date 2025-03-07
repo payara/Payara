@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,7 +101,7 @@ public class HistoricHealthCheckEventStore {
     public HistoricHealthCheckEvent[] getTraces(Integer limit) {
         HistoricHealthCheckEvent[] result = null;
         if (historicStore != null) {
-            HistoricHealthCheckEvent[] historicEvents = historicStore.toArray(new HistoricHealthCheckEvent[historicStore.size()]);
+            HistoricHealthCheckEvent[] historicEvents = historicStore.toArray(new HistoricHealthCheckEvent[0]);
             if (limit < historicEvents.length) {
                 result = new HistoricHealthCheckEvent[limit];
                 System.arraycopy(historicEvents, 0, result, 0, limit);

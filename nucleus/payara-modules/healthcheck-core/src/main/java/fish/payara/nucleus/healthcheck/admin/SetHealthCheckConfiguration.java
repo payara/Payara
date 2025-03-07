@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -175,7 +175,7 @@ public class SetHealthCheckConfiguration implements AdminCommand {
                         configProxy.setHistoricalTraceEnabled(historicalTraceEnabled.toString());
                     }
                     if (historicalTraceStoreTimeout != null) {
-                        configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout.toString());
+                        configProxy.setHistoricalTraceStoreTimeout(historicalTraceStoreTimeout);
                     }
                     List<String> notifiers = configProxy.getNotifierList();
                     if (enableNotifiers != null) {
@@ -239,14 +239,14 @@ public class SetHealthCheckConfiguration implements AdminCommand {
 
         Set<String> notifiers = healthCheck.getEnabledNotifiers();
         if (enableNotifiers != null) {
-            enableNotifiers.forEach(notifiers::add);
+            notifiers.addAll(enableNotifiers);
         }
         if (disableNotifiers != null) {
             disableNotifiers.forEach(notifiers::remove);
         }
         if (setNotifiers != null) {
             notifiers.clear();
-            setNotifiers.forEach(notifiers::add);
+            notifiers.addAll(setNotifiers);
         }
     }
 }

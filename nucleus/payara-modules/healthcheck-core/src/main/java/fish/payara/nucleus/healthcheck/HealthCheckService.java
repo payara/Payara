@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -164,7 +164,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             if (Boolean.parseBoolean(configuration.getEnabled())) {
                 enabled = true;
             }
-            historicalTraceEnabled = Boolean.valueOf(configuration.getHistoricalTraceEnabled());
+            historicalTraceEnabled = Boolean.parseBoolean(configuration.getHistoricalTraceEnabled());
             String historicalTraceStoreSizeConfig = configuration.getHistoricalTraceStoreSize();
             if (historicalTraceStoreSizeConfig != null) {
                 this.historicalTraceStoreSize = Integer.parseInt(historicalTraceStoreSizeConfig);
@@ -205,23 +205,22 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     /**
-     * Starts all notifiers that have been enable with the healthcheck service.
+     * Starts all notifiers that have been enabled with the healthcheck service.
      */
     public synchronized void bootstrapNotifierList() {
         enabledNotifiers.clear();
         if (configuration.getNotifierList() != null) {
-            configuration.getNotifierList().forEach(enabledNotifiers::add);
+            enabledNotifiers.addAll(configuration.getNotifierList());
         }
     }
 
     private void executeTasks() {
-        for (String registeredTaskKey : registeredTasks.keySet()) {
-            HealthCheckTask registeredTask = registeredTasks.get(registeredTaskKey);
-            HealthCheckExecutionOptions healthCheckExecutionOptions = registeredTask.getCheck().getOptions();
-            logger.info("Scheduling Health Check for task: " + registeredTask.getName());
+        for (Entry<String, HealthCheckTask> registeredTask : registeredTasks.entrySet()) {
+            HealthCheckExecutionOptions healthCheckExecutionOptions = registeredTask.getValue().getCheck().getOptions();
+            logger.info("Scheduling Health Check for task: " + registeredTask.getValue().getName());
 
             if (healthCheckExecutionOptions.isEnabled()) {
-                ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask, 0,
+                ScheduledFuture<?> checker = executor.scheduleAtFixedRate(registeredTask.getValue(), 0,
                         healthCheckExecutionOptions.getTime(),
                         healthCheckExecutionOptions.getUnit());
                 if (scheduledCheckers != null) {
@@ -229,7 +228,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
                 }
             }
 
-            exposeToMicroProfileHealthEndPoint(healthCheckExecutionOptions, registeredTask);
+            exposeToMicroProfileHealthEndPoint(healthCheckExecutionOptions, registeredTask.getValue());
         }
     }
 
@@ -255,14 +254,18 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
      * If it is already enabled then healthcheck will be restarted.
      */
     public void setEnabled(Boolean enabled) {
-        if (this.enabled && !enabled) {
-            this.enabled = false;
-            shutdownHealthCheck();
-        } else if (!this.enabled && enabled) {
+        if (this.enabled) {
+            if (enabled) {
+                shutdownHealthCheck();
+                bootstrapHealthCheck();
+            }
+            else {
+                this.enabled = false;
+                shutdownHealthCheck();
+            }
+        }
+        else if (enabled) {
             this.enabled = true;
-            bootstrapHealthCheck();
-        } else if (this.enabled && enabled) {
-            shutdownHealthCheck();
             bootstrapHealthCheck();
         }
     }
@@ -275,7 +278,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
         if (configuration == null) {
             configuration = server.getConfigBean().getConfig().getExtensionByType(HealthCheckServiceConfiguration.class);
         }
-        if (Boolean.valueOf(configuration.getEnabled())) {
+        if (Boolean.parseBoolean(configuration.getEnabled())) {
             bootstrapHealthCheck();
         }
     }
@@ -306,8 +309,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
     
     /**
-     * Gets the current configuration of the healthcheck service
-     * @return 
+     * @return The current configuration of the healthcheck service.
      */
     public HealthCheckServiceConfiguration getConfiguration() {
         return configuration;
@@ -318,8 +320,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     /**
-     * Returns true if historic healthchecks are stored
-     * @return 
+     * @return True if historic healthchecks are stored
      */
     public boolean isHistoricalTraceEnabled() {
         return historicalTraceEnabled;
@@ -327,17 +328,16 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
 
     /**
      * Sets whether historic healthchecks are stored
-     * @param historicalTraceEnabled 
+     * @param historicalTraceEnabled Whether historic healthchecks should be stored.
      */
     public void setHistoricalTraceEnabled(boolean historicalTraceEnabled) {
         this.historicalTraceEnabled = historicalTraceEnabled;
     }
 
     /**
-     * Gets the number of healthchecks to be stored.
-     * This may be greater than 0 even if {@link isHistoricalTraceEnabled()} returns false
-     * as this can be set independently
-     * @return 
+     * @return The number of healthchecks to be stored.
+     * @implNote This may be greater than 0 even if {@link HealthCheckService#isHistoricalTraceEnabled} returns false
+     * as this can be set independently.
      */
     public Integer getHistoricalTraceStoreSize() {
         return historicalTraceStoreSize;
@@ -361,8 +361,7 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
     }
 
     /**
-     * Gets a list of all notifiers enabled the healthcheck service.
-     * @return 
+     * @return A list of all notifiers enabled the healthcheck service.
      */
     public Set<String> getEnabledNotifiers() {
         return enabledNotifiers;

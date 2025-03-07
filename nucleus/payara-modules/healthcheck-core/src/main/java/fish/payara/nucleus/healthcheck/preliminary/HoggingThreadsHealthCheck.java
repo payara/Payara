@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -130,9 +130,9 @@ public class HoggingThreadsHealthCheck
     
     @Override
     public HealthCheckHoggingThreadsExecutionOptions constructOptions(HoggingThreadsChecker checker) {
-        return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()),
+        return new HealthCheckHoggingThreadsExecutionOptions(Boolean.parseBoolean(checker.getEnabled()),
                 Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()),
-                Boolean.valueOf(checker.getAddToMicroProfileHealth()),
+                Boolean.parseBoolean(checker.getAddToMicroProfileHealth()),
                 Long.parseLong(checker.getThresholdPercentage()),
                 Integer.parseInt(checker.getRetryCount()));
     }
