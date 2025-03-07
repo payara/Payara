@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,6 +73,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -141,6 +142,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     private int minHttpThreads = Integer.MIN_VALUE;
     private String instanceName;
     private String contextRoot;
+    private String globalContextRoot;
     private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
@@ -1428,6 +1430,12 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         contextRoot = "/";
                     }
                     break;
+                case globalcontextroot:
+                    if (globalContextRoot != null) {
+                        LOGGER.warning("Multiple --globalContextRoot arguments only the last one will apply");
+                    }
+                    globalContextRoot = value;
+                    break;
                 case accessloginterval:
                     accessLogInterval = Integer.parseInt(value);
                     break;
@@ -1676,7 +1684,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                         }
                         deploymentParams.add("--contextroot=" + deploymentContext);
                     }
-
+                    addGlobalContextRootProperty(deploymentParams);
                     deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), deploymentParams.toArray(new String[0]));
 
                     deploymentCount++;
@@ -1736,6 +1744,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
                     }
                     deploymentParams.add("--contextroot=" + deploymentContext);
                 }
+                addGlobalContextRootProperty(deploymentParams);
                 deployer.deploy(deploymentURI, deploymentParams.toArray(new String[0]));
 
                 deploymentCount++;
@@ -1744,15 +1753,32 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         LOGGER.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
     }
 
+    private void addGlobalContextRootProperty(List<String> deploymentParams) {
+        if (globalContextRoot != null && !globalContextRoot.isBlank()) {
+            deploymentParams.add("--properties=" + "globalContextRoot="+globalContextRoot);
+        }
+    }
+
+    private ConsoleHandler configureLogger(Logger logger) {
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        logger.addHandler(consoleHandler);
+        logger.setLevel(Level.ALL);
+        return consoleHandler;
+    }
+
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(
-                "GlassFish Shutdown Hook") {
+                "Payara Micro Shutdown Hook") {
             @Override
             public void run() {
                 try {
+                    ConsoleHandler handler = configureLogger(LOGGER);
                     if (gf != null) {
                         gf.stop();
                         gf.dispose();
+                        LOGGER.log(Level.INFO, "Payara Micro STOPPED.");
+                        handler.flush();
                     }
                 } catch (GlassFishException ex) {
                 } catch (IllegalStateException ex) {
@@ -2317,6 +2343,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         showServletMappings = getBooleanProperty("payaramicro.showServletMappings", "false");
         publicAddress = getProperty("payaramicro.publicAddress");
         contextRoot = getProperty("payaramicro.contextRoot");
+        globalContextRoot = getProperty("payaramicro.globalContextRoot");
 
         // Set the rootDir file
         String rootDirFileStr = getProperty("payaramicro.rootDir");

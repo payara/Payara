@@ -1,7 +1,7 @@
 #!/bin/sh
 #    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#    Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+#    Copyright (c) 2023-2025 Payara Foundation and/or its affiliates. All rights reserved.
 #
 #    The contents of this file are subject to the terms of either the GNU
 #    General Public License Version 2 only ("GPL") or the Common Development
@@ -39,4 +39,14 @@
 
 set -e
 
-exec java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar "$@"
+# Doing a Graceful Shutdown before container stops
+trap 'echo "Stopping Payara Micro...";
+      kill -TERM "$child" 2>/dev/null;
+      wait $child;
+      echo "Payara Micro stopped.";' SIGTERM
+
+exec java -XX:MaxRAMPercentage=${MEM_MAX_RAM_PERCENTAGE} -Xss${MEM_XSS} -XX:+UseContainerSupport ${JVM_ARGS} -jar payara-micro.jar "$@" &
+child=$!
+
+# Wait Payara-Micro Process before finish the container
+wait $child

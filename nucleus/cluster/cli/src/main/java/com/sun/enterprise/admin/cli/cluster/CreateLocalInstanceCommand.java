@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -58,6 +58,7 @@ import fish.payara.util.cluster.PayaraServerNameGenerator;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
@@ -356,7 +357,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
         try {
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
-            p.setPasswordForAlias(MASTERPASSWORD_FILE, masterPassword.getBytes());
+            p.setPasswordForAlias(MASTERPASSWORD_FILE, masterPassword.getBytes(StandardCharsets.UTF_8));
             FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {
             throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile),
