@@ -233,8 +233,9 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         serviceType = parseServiceType(serviceName);
 
         if (serviceType == null) {
-            String values = Arrays.asList(CheckerType.values())
-                    .stream().map(type -> type.name().toLowerCase().replace('_', '-')).collect(Collectors.joining(", "));
+            String values = Arrays.stream(CheckerType.values())
+                    .map(type -> type.name().toLowerCase().replace('_', '-'))
+                    .collect(Collectors.joining(", "));
             report.setMessage("No such service: " + serviceName + ".\nChoose one of: " + values
                     + ".\nThe name can also be given in short form consisting only of the first letters of each word.");
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -255,7 +256,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     }
 
     /**
-     * Gives the {@link CheckerType} for its name case insensitive. Underscores in the enum name should be given as
+     * Gives the {@link CheckerType} for its name case-insensitive. Underscores in the enum name should be given as
      * dash.
      *
      * The name can also be given in short form consisting only of the first letters of each word.
@@ -263,7 +264,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
     private static CheckerType parseServiceType(String serviceName) {
         if (serviceName.length() < 4) {
             for (CheckerType type : CheckerType.values()) {
-                if (Arrays.asList(type.name().split("_")).stream().map(w -> w.charAt(0) + "")
+                if (Arrays.stream(type.name().split("_")).map(w -> w.charAt(0) + "")
                         .collect(Collectors.joining("")).equals(serviceName.toUpperCase())) {
                     return type;
                 }
@@ -511,7 +512,7 @@ public class SetHealthCheckServiceConfiguration implements AdminCommand {
         if (to != null && !to.equals(from)) {
             report.appendMessage(serviceName + "." + name +" was " + from + " set to " + to + "\n");
             try {
-                setter.accept(config, to.toString());
+                setter.accept(config, to);
             } catch (RuntimeException ex) {
                 if (ex.getCause() != null && PropertyVetoException.class.isAssignableFrom(ex.getCause().getClass())) {
                     throw (PropertyVetoException) ex.getCause();
