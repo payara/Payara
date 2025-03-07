@@ -178,5 +178,9 @@
             <artifactId>payara-executor-service</artifactId>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.core.common</groupId>
+            <artifactId>internal-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
