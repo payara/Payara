@@ -73,7 +73,7 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
 
     @Override
     public Jsonb getContext(Class<?> type) {
-        return jsonbMap.computeIfAbsent(type, classLoader -> {
+        return jsonbMap.computeIfAbsent(type, var -> {
             currentType.set(type);
             try {
                 return JsonbBuilder.create();
