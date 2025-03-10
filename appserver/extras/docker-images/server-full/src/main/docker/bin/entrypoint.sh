@@ -39,6 +39,12 @@
 #    holder.
 ################################################################################
 
+if [ "${ENABLE_FILE_LOGS:-false}" == "true" ]; then
+      echo "[Entrypoint] Enabling Logs into server.log"
+      sed -i 's/^com.sun.enterprise.server.logging.GFFileHandler.logtoFile=.*/com.sun.enterprise.server.logging.GFFileHandler.logtoFile=true/' \
+          ${PAYARA_DIR}/glassfish/domains/domain1/config/logging.properties
+fi
+
 for f in ${SCRIPT_DIR}/init_* ${SCRIPT_DIR}/init.d/*; do
       case "$f" in
         *.sh)  echo "[Entrypoint] running $f"; . "$f" ;;
