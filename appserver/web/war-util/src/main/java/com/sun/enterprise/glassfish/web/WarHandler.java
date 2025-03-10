@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.glassfish.web;
 
@@ -636,7 +636,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         versionIdentifier = parser.getElementText();
                     } else if (RuntimeTagNames.PAYARA_WHITELIST_PACKAGE.equals(name)) {
                         application.addWhitelistPackage(parser.getElementText());
-                    } else if ("cookie-properties".equals(name)) {
+                    } else if (RuntimeTagNames.SESSION_CONFIG.equals(name)) {
                         readCookieConfig();
                     } else {
                         skipSubTree(name);

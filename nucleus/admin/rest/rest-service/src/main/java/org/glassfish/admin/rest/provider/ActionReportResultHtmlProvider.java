@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.rest.provider;
 
@@ -330,7 +330,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
             result.append("<li><table border=\"1\" style=\"border-collapse: collapse\">")
                     .append("<tr><td>Message</td>")
                     .append("<td>")
-                    .append(part.getMessage())
+                    .append(ResourceUtil.encodeString(part.getMessage()))
                     .append("</td></tr><td>Properties</td><td>")
                     .append(getHtml(part.getProps()))
                     .append("</td></tr>");
@@ -369,7 +369,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
                 result = getHtml((Map) object);
             }
         } else {
-            result = object.toString();
+            result = ResourceUtil.encodeString(object.toString());
         }
 
         return result;

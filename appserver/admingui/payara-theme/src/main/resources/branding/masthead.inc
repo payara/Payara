@@ -38,13 +38,13 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-   Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates] 
+   Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 -->
 
 <sun:masthead id="Masthead" productImageURL="#{request.contextPath}/resource/community-theme/images/masthead-product_name_open-new.png" 
               style="border-width: 0px"
               productImageDescription="$resource{theme.productName}"
-              userInfo="#{userName}"  userInfoLabel="$resource{i18n.masthead.userInfoLabel}"
+              userInfo="#{sanitisedUserName}"  userInfoLabel="$resource{i18n.masthead.userInfoLabel}"
               roleInfo="#{domainName}" roleInfoLabel="$resource{i18n.masthead.domainInfoLabel}"
               serverInfo="#{hostName}" serverInfoLabel="$resource{i18n.masthead.serverInfoLabel}"
               dateTime="$boolean{false}" notificationMsg="$attribute{null}">

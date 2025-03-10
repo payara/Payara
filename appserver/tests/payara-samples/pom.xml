@@ -313,7 +313,7 @@
             <dependency>
                 <groupId>org.jboss.shrinkwrap.resolver</groupId>
                 <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>3.3.2</version>
+                <version>3.3.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -389,13 +389,13 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.26.3</version>
+                <version>3.27.3</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.omnifaces</groupId>
                 <artifactId>omniutils</artifactId>
-                <version>0.13</version>
+                <version>0.16</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -534,7 +534,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.16</version>
+            <version>2.0.17</version>
             <scope>test</scope>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->
