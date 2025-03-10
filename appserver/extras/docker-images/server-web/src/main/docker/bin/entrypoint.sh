@@ -2,7 +2,7 @@
 ################################################################################
 #    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-#    Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+#    Copyright (c) 2023-2025 Payara Foundation and/or its affiliates. All rights reserved.
 #
 #    The contents of this file are subject to the terms of either the GNU
 #    General Public License Version 2 only ("GPL") or the Common Development
@@ -38,6 +38,12 @@
 #    only if the new code is made subject to such option by the copyright
 #    holder.
 ################################################################################
+
+if [ "${ENABLE_FILE_LOGS:-false}" == "true" ]; then
+      echo "[Entrypoint] Enabling Logs into server.log"
+      sed -i 's/^com.sun.enterprise.server.logging.GFFileHandler.logtoFile=.*/com.sun.enterprise.server.logging.GFFileHandler.logtoFile=true/' \
+          ${PAYARA_DIR}/glassfish/domains/domain1/config/logging.properties
+fi
 
 for f in ${SCRIPT_DIR}/init_* ${SCRIPT_DIR}/init.d/*; do
       case "$f" in
