@@ -42,49 +42,60 @@ package org.glassfish.web.loader;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- * @deprecated This class is not used and will be removed in a future release.
- * Functionality has been moved to {@link com.sun.enterprise.loader.CachingReflectionUtil}.
- */
-@Deprecated(forRemoval = true)
 public class CachingReflectionUtil {
-    /**
-     * @deprecated This method is not used and will be removed in a future release.
-     * Functionality has been moved to {@link com.sun.enterprise.loader.CachingReflectionUtil}.
-     * @param className
-     * @param classLoader
-     * @return
-     */
-    @Deprecated(forRemoval = true)
+    private static final Logger logger = LogFacade.getLogger();
+    private static final Map<String, Class<?>> classCache = new ConcurrentHashMap<>();
+    private static final Map<String, Method> methodCache = new ConcurrentHashMap<>();
+    private static final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
+
     public static Class<?> getClassFromCache(String className, ClassLoader classLoader) {
-        return com.sun.enterprise.loader.CachingReflectionUtil.getClassFromCache(className, classLoader);
+        var cls = classCache.computeIfAbsent(className, k -> {
+            try {
+                return classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                logger.log(Level.FINE, "Class not found: " + className, e);
+                return null;
+            }
+        });
+        return cls;
     }
 
-    /**
-     * @deprecated This method is not used and will be removed in a future release.
-     * Functionality has been moved to {@link com.sun.enterprise.loader.CachingReflectionUtil}.
-     * @param cls
-     * @param methodName
-     * @param isPrivate
-     * @param parameterTypes
-     * @return
-     */
-    @Deprecated(forRemoval = true)
     public static Method getMethodFromCache(Class<?> cls, String methodName, boolean isPrivate, Class<?>... parameterTypes) {
-        return com.sun.enterprise.loader.CachingReflectionUtil.getMethodFromCache(cls, methodName, isPrivate, parameterTypes);
+        return methodCache.computeIfAbsent(methodName, k -> {
+            try {
+                if (isPrivate) {
+                    Method method = cls.getDeclaredMethod(methodName, parameterTypes);
+                    method.setAccessible(true);
+                    return method;
+                } else {
+                    return cls.getMethod(methodName, parameterTypes);
+                }
+            } catch (NoSuchMethodException e) {
+                logger.log(Level.FINE, "Method not found: " + methodName, e);
+                return null;
+            }
+        });
     }
 
-    /**
-     * @deprecated This method is not used and will be removed in a future release.
-     * Functionality has been moved to {@link com.sun.enterprise.loader.CachingReflectionUtil}.
-     * @param cls
-     * @param fieldName
-     * @param isPrivate
-     * @return
-     */
-    @Deprecated(forRemoval = true)
     public static Field getFieldFromCache(Class<?> cls, String fieldName, boolean isPrivate) {
-        return com.sun.enterprise.loader.CachingReflectionUtil.getFieldFromCache(cls, fieldName, isPrivate);
+        return fieldCache.computeIfAbsent(fieldName, k -> {
+            try {
+                if (isPrivate) {
+                    Field field = cls.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return field;
+                } else {
+                    return cls.getField(fieldName);
+                }
+            } catch (NoSuchFieldException e) {
+                logger.log(Level.FINE, "Field not found: " + fieldName, e);
+                return null;
+            }
+        });
     }
 }
