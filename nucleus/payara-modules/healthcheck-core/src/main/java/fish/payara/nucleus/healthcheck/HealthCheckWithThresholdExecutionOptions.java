@@ -40,11 +40,13 @@
 package fish.payara.nucleus.healthcheck;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
 public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecutionOptions {
+    private static final Logger _logger = Logger.getLogger(HealthCheckWithThresholdExecutionOptions.class.getName());
 
     private int thresholdCritical;
     private int thresholdWarning;
@@ -59,6 +61,7 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
         }
         catch (Exception e) {
             this.thresholdCritical = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL_INT;
+            _logger.warning("Could not parse critical threshold: " + thresholdCritical);
         }
 
         try {
@@ -66,6 +69,7 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
         }
         catch (Exception e) {
             this.thresholdWarning = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING_INT;
+            _logger.warning("Could not parse warning threshold: " + thresholdWarning);
         }
 
         try {
@@ -73,6 +77,7 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
         }
         catch (Exception e) {
             this.thresholdGood = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD_INT;
+            _logger.warning("Could not parse good threshold: " + thresholdGood);
         }
     }
 
