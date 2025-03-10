@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,24 +96,26 @@ public class JCDIServiceImplTest extends TestCase {
         Collection<String> emptyListNames = Collections.emptyList();
         Collection<BeanDeploymentArchive> emptyListOfArchives = Collections.emptyList();
         when(ejbDescriptor.getEjbBundleDescriptor()).thenReturn(ejbBundleDescriptor);
+        when(ejbBundleDescriptor.getApplication()).thenReturn(application);
         when(ejbBundleDescriptor.getModuleDescriptor()).thenReturn(moduleDescriptor);
         when(moduleDescriptor.getDescriptor()).thenReturn(bundleDescriptor);
         when(ejbDescriptor.getEjbClassName()).thenReturn("EjbName");
         when(weldDeployer.getBeanDeploymentArchiveForBundle(bundleDescriptor)).thenReturn(beanDeploymentArchive);
-        when(weldDeployer.getBootstrapForArchive(beanDeploymentArchive)).thenReturn(bootstrap);
+        when(weldDeployer.getBootstrapForApp(application)).thenReturn(bootstrap);
         when(beanDeploymentArchive.getBeanClasses()).thenReturn(emptyListNames);
         when(beanDeploymentArchive.getBeanDeploymentArchives()).thenReturn(emptyListOfArchives);
 
         Object obj = jcdiServiceImpl.createJCDIInjectionContext(ejbDescriptor, ejbInfo);
 
         assertNull(obj);
-        verify(ejbDescriptor, times(1)).getEjbBundleDescriptor();
+        verify(ejbDescriptor, times(2)).getEjbBundleDescriptor();
         verify(ejbBundleDescriptor, times(1)).getModuleDescriptor();
         verify(moduleDescriptor, times(1)).getDescriptor();
         verify(weldDeployer, times(1)).getBeanDeploymentArchiveForBundle(bundleDescriptor);
         verify(beanDeploymentArchive, times(1)).getBeanClasses();
         verify(beanDeploymentArchive, times(1)).getBeanDeploymentArchives();
-        verify(weldDeployer, times(1)).getBootstrapForArchive(beanDeploymentArchive);
+        verify(ejbBundleDescriptor, times(1)).getApplication();
+        verify(weldDeployer, times(1)).getBootstrapForApp(application);
         verify(bootstrap, times(1)).getManager(beanDeploymentArchive);
     }
 }

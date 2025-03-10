@@ -374,7 +374,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             restorer.endContext();
         }
 
-        Utility.setContextClassLoader(handle.getContextClassLoader());
+        if (handle.getContextClassLoader() != null) {
+            Utility.setContextClassLoader(handle.getContextClassLoader());
+        }
         if (handle.getSecurityContext() != null) {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
