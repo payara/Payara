@@ -41,10 +41,8 @@
 
 if [ "${ENABLE_FILE_LOGS:-false}" == "true" ]; then
       echo "[Entrypoint] Enabling Logs into server.log"
-      ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain ${DOMAIN_NAME}
-      ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} \
-            set-log-attributes com.sun.enterprise.server.logging.GFFileHandler.logtoFile=true
-      ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} stop-domain ${DOMAIN_NAME}
+      sed -i 's/^com.sun.enterprise.server.logging.GFFileHandler.logtoFile=.*/com.sun.enterprise.server.logging.GFFileHandler.logtoFile=true/' \
+          ${PAYARA_DIR}/glassfish/domains/domain1/config/logging.properties
 fi
 
 for f in ${SCRIPT_DIR}/init_* ${SCRIPT_DIR}/init.d/*; do
