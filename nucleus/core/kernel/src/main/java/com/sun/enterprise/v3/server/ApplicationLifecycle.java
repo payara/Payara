@@ -604,7 +604,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 context.postDeployClean(false /* not final clean-up yet */);
                 events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
-                currentDeploymentContext.get().pop();
             }
         }
         ApplicationDeployment depl = new ApplicationDeployment(appInfo, context);
@@ -647,8 +646,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                     events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
                 }
             }
+            currentDeploymentContext.get().pop();
         }
-        currentDeploymentContext.get().pop();
     }
     
     @Override

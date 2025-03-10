@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -49,6 +48,7 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
+import org.glassfish.api.naming.NamespacePrefixes;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -59,7 +59,9 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import javax.naming.NamingException;
+import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import jakarta.validation.ValidatorContext;
 import jakarta.validation.ValidatorFactory;
 import java.util.Set;
 
@@ -187,7 +189,7 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
                 if( bundle != null ) {
                     BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(bundle);
                     if( bda != null ) {
-                        WeldBootstrap bootstrap = weldDeployer.getBootstrapForArchive(bda);
+                        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
 
                         beanManager = bootstrap.getManager(bda);
                     }

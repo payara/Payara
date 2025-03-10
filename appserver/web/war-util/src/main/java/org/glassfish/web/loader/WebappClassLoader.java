@@ -65,7 +65,6 @@ import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.glassfish.bootstrap.MainHelper.HotSwapHelper;
-import com.sun.enterprise.loader.CacheCleaner;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.io.FileUtils;
@@ -2052,7 +2051,7 @@ public class WebappClassLoader
         // START SJSAS 6258619
         ClassLoaderUtil.releaseLoader(this);
         // END SJSAS 6258619
-        CacheCleaner.clearCaches(this);
+        clearJaxRSCache();
 
         synchronized(jarFilesLock) {
             started = false;
@@ -2656,6 +2655,23 @@ public class WebappClassLoader
                         getString(LogFacade.CLEAR_RMI_FAIL,
                         contextName), e);
             }
+        }
+    }
+
+    private void clearJaxRSCache() {
+        try {
+            Class<?> cdiComponentProvider = CachingReflectionUtil
+                    .getClassFromCache("org.glassfish.jersey.ext.cdi1x.internal.CdiComponentProvider", this);
+            if (cdiComponentProvider != null) {
+                Field runtimeSpecificsField = CachingReflectionUtil.getFieldFromCache(cdiComponentProvider,
+                        "runtimeSpecifics", true);
+                Object runtimeSpecifics = runtimeSpecificsField.get(null);
+                CachingReflectionUtil.getMethodFromCache(runtimeSpecifics.getClass(),
+                                "clearJaxRsResource", true, ClassLoader.class)
+                        .invoke(runtimeSpecifics, this);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error clearing Jax-Rs cache", e);
         }
     }
 
