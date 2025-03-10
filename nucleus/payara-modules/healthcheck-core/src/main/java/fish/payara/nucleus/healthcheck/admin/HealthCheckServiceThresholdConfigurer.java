@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2016-2021 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2025 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -120,7 +120,6 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -181,20 +180,20 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
 
     private void configureDynamically(ActionReport actionReport, BaseThresholdHealthCheck service) {
         if (thresholdCritical != null) {
-            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+            service.getOptions().setThresholdCritical(Integer.parseInt(thresholdCritical));
             actionReport.appendMessage(strings.getLocalString(
                     "healthcheck.service.configure.threshold.critical.success",
                     "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
             actionReport.appendMessage("\n");
         }
         if (thresholdWarning != null) {
-            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+            service.getOptions().setThresholdWarning(Integer.parseInt(thresholdWarning));
             actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
                     "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
             actionReport.appendMessage("\n");
         }
         if (thresholdGood != null) {
-            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+            service.getOptions().setThresholdGood(Integer.parseInt(thresholdGood));
             actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
                     "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
             actionReport.appendMessage("\n");
