@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.impl;
 
@@ -98,15 +98,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
     public void process(ReadableArchive readableArchive, WebBundleDescriptor webBundleDesc,
             ClassLoader classLoader, Parser parser) throws IOException {
 
-        WebFragmentDescriptor webFragmentDesc = new WebFragmentDescriptor();
-        if (webBundleDesc instanceof WebFragmentDescriptor) {
-            webFragmentDesc = (WebFragmentDescriptor) webBundleDesc;
-        }
-        if (webFragmentDesc.isWarLibrary()) {
-            this.archiveFile = new File(webFragmentDesc.getWarLibraryPath());
-        } else {
-            this.archiveFile = new File(readableArchive.getURI());
-        }
+        this.archiveFile =  new File(readableArchive.getURI()); 
         this.classLoader = classLoader;
         setParser(parser);
 
@@ -116,7 +108,7 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
             AnnotationUtils.getLogger().log(Level.FINE, "classLoader is {0}", classLoader);
         }
 
-        if (!webFragmentDesc.isWarLibrary() && !archiveFile.isDirectory()) {
+        if (!archiveFile.isDirectory()) {
             // on client side
             return;
         }
@@ -130,19 +122,16 @@ public class WarScanner extends ModuleScanner<WebBundleDescriptor> {
         File webinf = new File(archiveFile, "WEB-INF");
         
         if (webBundleDesc instanceof WebFragmentDescriptor) {
-            if (webFragmentDesc.isWarLibrary()) {
-                addScanJar(archiveFile);
-            } else {
-                File lib = new File(webinf, "lib");
-                if (lib.exists()) {
-                    File jarFile = new File(lib, webFragmentDesc.getJarName());
-                    if (jarFile.exists()) {
-                        // support exploded jar file
-                        if (jarFile.isDirectory()) {
-                            addScanDirectory(jarFile);
-                        } else {
-                            addScanJar(jarFile);
-                        }
+            WebFragmentDescriptor webFragmentDesc = (WebFragmentDescriptor)webBundleDesc;
+            File lib = new File(webinf, "lib");
+            if (lib.exists()) {
+                File jarFile = new File(lib, webFragmentDesc.getJarName());
+                if (jarFile.exists()) {
+                    // support exploded jar file
+                    if (jarFile.isDirectory()) {
+                        addScanDirectory(jarFile);
+                    } else {
+                        addScanJar(jarFile);
                     }
                 }
             }
