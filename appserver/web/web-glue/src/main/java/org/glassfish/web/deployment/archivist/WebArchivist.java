@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EarType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -76,10 +75,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Vector;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -298,33 +296,24 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
     /**
      * @return a list of libraries included in the archivist
      */
-    public Set<String> getLibraries(ReadableArchive archive) throws IOException {
-        Set<String> libraries = new LinkedHashSet<>();
-        // WAR libraries
-        extractLibraries(archive, true, libraries);
-        ReadableArchive parentArchive = archive.getParentArchive();
-        if (parentArchive != null && parentArchive.getExtraData(ArchiveType.class).toString().equals(EarType.ARCHIVE_TYPE)) {
-            // EAR shared libraries
-            extractLibraries(parentArchive.getSubArchive("lib"), false, libraries);
-        }
-        return libraries;
-    }
+    public Vector<String> getLibraries(Archive archive) {
 
-    private static void extractLibraries(Archive archive, boolean hasWebInfPrefix, Set<String> libs) {
-        Enumeration<String> entries = archive != null ? archive.entries() : null;
+        Enumeration<String> entries = archive.entries();
         if (entries==null)
-            return;
+            return null;
 
+        Vector<String> libs = new Vector<String>();
         while (entries.hasMoreElements()) {
 
             String entryName = entries.nextElement();
-            if (hasWebInfPrefix && !entryName.startsWith("WEB-INF/lib")) {
-                continue; // not in prefix (i.e. WEB-INF)...
+            if (!entryName.startsWith("WEB-INF/lib")) {
+                continue; // not in WEB-INF...
             }
             if (entryName.endsWith(".jar")) {
                 libs.add(entryName);
             }
         }
+        return libs;
     }
 
     @Override
@@ -392,50 +381,54 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             ReadableArchive archive) throws IOException {
 
         List<WebFragmentDescriptor> wfList = new ArrayList<WebFragmentDescriptor>();
-        for (String lib : getLibraries(archive)) {
-            Archivist wfArchivist = new WebFragmentArchivist(this, habitat);
-            wfArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
-            wfArchivist.setRuntimeXMLValidationLevel(
-                    this.getRuntimeXMLValidationLevel());
-            wfArchivist.setAnnotationProcessingRequested(false);
+        Vector libs = getLibraries(archive);
+        if (libs != null && libs.size() > 0) {
 
-            WebFragmentDescriptor wfDesc = null;
-            ReadableArchive embeddedArchive = lib.startsWith("WEB-INF")
-                    ? archive.getSubArchive(lib) : archive.getParentArchive().getSubArchive("lib").getSubArchive(lib);
-            try {
-                if (embeddedArchive != null &&
-                        wfArchivist.hasStandardDeploymentDescriptor(embeddedArchive)) {
-                    try {
-                        wfDesc = (WebFragmentDescriptor)wfArchivist.open(embeddedArchive);
-                    } catch(SAXParseException ex) {
-                        IOException ioex = new IOException();
-                        ioex.initCause(ex);
-                        throw ioex;
+            for (int i = 0; i < libs.size(); i++) {
+                String lib = (String)libs.get(i);
+                Archivist wfArchivist = new WebFragmentArchivist(this, habitat);
+                wfArchivist.setRuntimeXMLValidation(this.getRuntimeXMLValidation());
+                wfArchivist.setRuntimeXMLValidationLevel(
+                        this.getRuntimeXMLValidationLevel());
+                wfArchivist.setAnnotationProcessingRequested(false);
+
+                WebFragmentDescriptor wfDesc = null;
+                ReadableArchive embeddedArchive = archive.getSubArchive(lib);
+                try {
+                    if (embeddedArchive != null &&
+                            wfArchivist.hasStandardDeploymentDescriptor(embeddedArchive)) {
+                        try {
+                            wfDesc = (WebFragmentDescriptor)wfArchivist.open(embeddedArchive);
+                        } catch(SAXParseException ex) {
+                            IOException ioex = new IOException();
+                            ioex.initCause(ex);
+                            throw ioex;
+                        }
+                    } else {   
+                        wfDesc = new WebFragmentDescriptor();
+                        wfDesc.setExists(false);
                     }
-                } else {
-                    wfDesc = new WebFragmentDescriptor();
-                    wfDesc.setExists(false);
+                } finally {
+                    if (embeddedArchive != null) {
+                        embeddedArchive.close();
+                    }
                 }
-            } finally {
-                if (embeddedArchive != null) {
-                    embeddedArchive.close();
-                }
+                wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));    
+                wfList.add(wfDesc);
+
+                descriptor.putJarNameWebFragmentNamePair(wfDesc.getJarName(), wfDesc.getName());
+
             }
-            wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));
-            wfList.add(wfDesc);
 
-            descriptor.putJarNameWebFragmentNamePair(wfDesc.getJarName(), wfDesc.getName());
+            if (((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor() != null) {
+                wfList = ((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor().order(wfList);
+            } else {
+                OrderingDescriptor.sort(wfList);
+            }
 
-        }
-
-        if (((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor() != null) {
-            wfList = ((WebBundleDescriptorImpl)descriptor).getAbsoluteOrderingDescriptor().order(wfList);
-        } else {
-            OrderingDescriptor.sort(wfList);
-        }
-
-        for (WebFragmentDescriptor wf : wfList) {
-            descriptor.addOrderedLib(wf.getJarName());
+            for (WebFragmentDescriptor wf : wfList) {
+                descriptor.addOrderedLib(wf.getJarName());
+            }
         }
 
         return wfList;

@@ -37,15 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
 import org.jboss.weld.Container;
 import org.jboss.weld.SimpleCDI;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -60,16 +54,7 @@ import java.util.Set;
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class GlassFishWeldProvider implements CDIProvider {
-    private static final WeldDeployer weldDeployer = Globals.get(WeldDeployer.class);
-    private static final InvocationManager invocationManager = Globals.get(InvocationManager.class);
-
     private static class GlassFishEnhancedWeld extends SimpleCDI {
-        GlassFishEnhancedWeld() {
-        }
-
-        GlassFishEnhancedWeld(String contextId) {
-            super(contextId == null ? Container.instance() : Container.instance(contextId));
-        }
 
         @Override
         protected BeanManagerImpl unsatisfiedBeanManager(String callerClassName) {
@@ -107,30 +92,15 @@ public class GlassFishWeldProvider implements CDIProvider {
 
     @Override
     public CDI<Object> getCDI() {
-        try {
-            BundleDescriptor bundle = null;
-            Object componentEnv = invocationManager.getCurrentInvocation().getJNDIEnvironment();
-            if( componentEnv instanceof EjbDescriptor) {
-                bundle = (BundleDescriptor)
-                        ((EjbDescriptor) componentEnv).getEjbBundleDescriptor().
-                                getModuleDescriptor().getDescriptor();
-
-            } else if( componentEnv instanceof WebBundleDescriptor) {
-                bundle = (BundleDescriptor) componentEnv;
-            }
-
-            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(bundle);
-            if (bda == null) {
-                return new GlassFishEnhancedWeld();
-            } else {
-                return new GlassFishEnhancedWeld(weldDeployer.getContextIdForArchive(bda));
-            }
-        } catch ( Throwable throwable ) {
-            Throwable cause = throwable.getCause();
-            if ( cause instanceof IllegalStateException ) {
-                return null;
-            }
-            throw throwable;
+      try {
+        return new GlassFishEnhancedWeld();
+      } catch ( Throwable throwable ) {
+        Throwable cause = throwable.getCause();
+        if ( cause instanceof IllegalStateException ) {
+          return null;
         }
+        throw throwable;
+      }
     }
+
 }

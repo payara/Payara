@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -213,7 +213,7 @@ public class JCDIServiceImpl implements JCDIService {
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, ejb.getEjbClassName());
 
-        WeldBootstrap bootstrap = weldDeployer.getBootstrapForArchive(bda);
+        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(ejb.getEjbBundleDescriptor().getApplication());
         WeldManager weldManager = bootstrap.getManager(bda);
         //sanitizing the null reference of weldManager and returning null
         //when calling _createJCDIInjectionContext
@@ -350,8 +350,9 @@ public class JCDIServiceImpl implements JCDIService {
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
 
         // First get BeanDeploymentArchive for this ejb
-        BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, managedObject.getClass().getName());
-        WeldBootstrap bootstrap = weldDeployer.getBootstrapForArchive(bda);
+        BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
+        //BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, managedObject.getClass().getName());
+        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
         BeanManager beanManager = bootstrap.getManager(bda);
         @SuppressWarnings("unchecked")
         AnnotatedType<T> annotatedType = beanManager.createAnnotatedType((Class<T>) managedObject.getClass());
@@ -399,7 +400,7 @@ public class JCDIServiceImpl implements JCDIService {
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, ejb.getEjbClassName());
 
-        WeldBootstrap bootstrap = weldDeployer.getBootstrapForArchive(bda);
+        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(ejb.getEjbBundleDescriptor().getApplication());
         BeanManagerImpl beanManager = bootstrap.getManager(bda);
 
         org.jboss.weld.ejb.spi.EjbDescriptor<T> ejbDesc = beanManager.getEjbDescriptor( ejb.getName());
@@ -480,7 +481,7 @@ public class JCDIServiceImpl implements JCDIService {
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
 
-        WeldBootstrap bootstrap = weldDeployer.getBootstrapForArchive(bda);
+        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
 
         BeanManager beanManager = bootstrap.getManager(bda);
 
