@@ -303,7 +303,9 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         if (index == null) {
             List<String> innerArchives = new ArrayList<>();
             index = indexArchive(subArchive, innerArchives);
-            if (!subArchivePath.endsWith("-SNAPSHOT.jar")) {
+            if (!subArchivePath.endsWith("-SNAPSHOT.jar")
+                    && !subArchivePath.endsWith("-SNAPSHOT-tests.jar")
+                    && !isEndsWithSlash(subArchivePath)) {
                 var finalIndex = index;
                 var archiveName = subArchive.getName();
                 var archiveSize = subArchive.getArchiveSize();
