@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -93,7 +94,9 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
 
                 if( inv != null ) {
 
-                    JndiNameEnvironment componentEnv = compEnvManager.getJndiNameEnvironment(inv.getComponentId());
+                    JndiNameEnvironment componentEnv = inv.getComponentId() != null
+                            ? compEnvManager.getJndiNameEnvironment(inv.getComponentId())
+                            : null;
 
                     if( componentEnv != null ) {
 
@@ -112,7 +115,7 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
                         if( bundle != null ) {
                             BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(bundle);
                             if( bda != null ) {
-                                WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
+                                WeldBootstrap bootstrap = weldDeployer.getBootstrapForArchive(bda);
                                 //System.out.println("BeanManagerNamingProxy:: getting BeanManagerImpl for" + bda);
                                 beanManager = bootstrap.getManager(bda);
                             }
@@ -121,7 +124,6 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
                         if( beanManager == null) {
                             throw new IllegalStateException("Cannot resolve bean manager");
                         }
-
 
                     } else {
                         throw new IllegalStateException("No invocation context found");
@@ -137,6 +139,4 @@ public class BeanManagerNamingProxy implements NamedNamingObjectProxy {
 
         return beanManager;
     }
-
-
 }

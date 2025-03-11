@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -48,9 +48,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.decorator.Decorator;
@@ -60,6 +64,7 @@ import jakarta.ejb.Stateless;
 import jakarta.enterprise.context.*;
 import jakarta.enterprise.inject.Model;
 import jakarta.enterprise.inject.Stereotype;
+import jakarta.faces.flow.FlowScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
@@ -68,6 +73,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.AnnotationType;
@@ -83,6 +89,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class WeldUtils {
 
@@ -135,6 +142,7 @@ public class WeldUtils {
         cdi.add("jakarta.faces.view.ViewScoped");
         cdi.add("jakarta.faces.flow.FlowScoped");
         cdi.add(ConversationScoped.class.getName());
+        cdi.add(FlowScoped.class.getName());
         cdi.add(ApplicationScoped.class.getName());
         cdi.add(SessionScoped.class.getName());
         cdi.add(RequestScoped.class.getName());
@@ -218,16 +226,13 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified paths
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
-        final Types types = getTypes(context);
-        if (types != null) {
-            final Set<String> exclusions = new HashSet<>();
-            for (final Type type : types.getAllTypes()) {
-                if (!(type instanceof AnnotationType) && type.wasDefinedIn(paths)) {
-                    for (final AnnotationModel am : type.getAnnotations()) {
-                        final AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at, exclusions)) {
-                            return true;
-                        }
+        final Set<String> exclusions = new HashSet<>();
+        for (final Type type : getAllTypes(context, paths)) {
+            if (!(type instanceof AnnotationType) && type.wasDefinedIn(paths)) {
+                for (final AnnotationModel am : type.getAnnotations()) {
+                    final AnnotationType at = am.getType();
+                    if (isCDIEnablingAnnotation(at, exclusions)) {
+                        return true;
                     }
                 }
             }
@@ -235,7 +240,6 @@ public class WeldUtils {
 
         return false;
     }
-
 
     /**
      * Get the names of any annotation types that are applied to beans, which should enable CDI
@@ -248,16 +252,13 @@ public class WeldUtils {
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
         final Set<String> result = new HashSet<>();
 
-        final Types types = getTypes(context);
-        if (types != null) {
-            final Set<String> exclusions = new HashSet<>();
-            for (final Type type : types.getAllTypes()) {
-                if (!(type instanceof AnnotationType)) {
-                    for (final AnnotationModel am : type.getAnnotations()) {
-                        final AnnotationType at = am.getType();
-                        if (isCDIEnablingAnnotation(at, exclusions)) {
-                            result.add(at.getName());
-                        }
+        final Set<String> exclusions = new HashSet<>();
+        for (final Type type : getAllTypes(context, List.of())) {
+            if (!(type instanceof AnnotationType)) {
+                for (final AnnotationModel am : type.getAnnotations()) {
+                    final AnnotationType at = am.getType();
+                    if (isCDIEnablingAnnotation(at, exclusions)) {
+                        result.add(at.getName());
                     }
                 }
             }
@@ -280,16 +281,13 @@ public class WeldUtils {
         final Set<String> cdiEnablingAnnotations = new HashSet<>();
         Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
 
-        final Types types = getTypes(context);
-        if (types != null) {
-            for (final Type type : types.getAllTypes()) {
-                if (!(type instanceof AnnotationType)) {
-                    for (final AnnotationModel am : type.getAnnotations()) {
-                        final AnnotationType at = am.getType();
-                        if (cdiEnablingAnnotations.contains(at.getName())) {
-                            result.add(type.getName());
-                            break;
-                        }
+        for (final Type type : getAllTypes(context, List.of())) {
+            if (!(type instanceof AnnotationType)) {
+                for (final AnnotationModel am : type.getAnnotations()) {
+                    final AnnotationType at = am.getType();
+                    if (cdiEnablingAnnotations.contains(at.getName())) {
+                        result.add(type.getName());
+                        break;
                     }
                 }
             }
@@ -702,6 +700,24 @@ public class WeldUtils {
         }
 
         return beanDiscoveryMode;
+    }
+
+    private static List<Type> getAllTypes(DeploymentContext context, Collection<URI> paths) {
+        final Types types = getTypes(context);
+        if (types == null) {
+            return List.of();
+        }
+
+        List<Type> allTypes = new ArrayList<>(types.getAllTypes());
+        Map<String, DeploymentUtils.WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
+        for (URI path : paths.isEmpty() ? cache.keySet().stream().map(Path::of).map(Path::toUri)
+                .collect(Collectors.toList()) : paths) {
+            var descriptor = cache.get(path.getRawPath());
+            if (descriptor != null) {
+                allTypes.addAll(descriptor.getTypes());
+            }
+        }
+        return allTypes;
     }
 
     private static class LocalDefaultHandler extends DefaultHandler {
