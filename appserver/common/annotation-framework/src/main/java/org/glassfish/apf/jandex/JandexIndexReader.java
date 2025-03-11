@@ -57,6 +57,7 @@ import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
 import org.jvnet.hk2.annotations.Service;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -65,16 +66,21 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiPredicate;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_SUCCESS;
@@ -82,6 +88,7 @@ import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_SUCCESS;
 @Service
 public class JandexIndexReader implements JandexIndexer, EventListener {
     private static final String JANDEX_INDEX_METADATA_KEY = JandexIndexer.class.getName() + ".index";
+    private static final Pattern ARCHIVE_EXTENSION_PATTERN = Pattern.compile("\\.(?=\\war$)");
 
     @Inject
     ArchiveFactory archiveFactory;
@@ -101,12 +108,14 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     }
 
     @Override
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void index(DeploymentContext deploymentContext) throws IOException {
+        getCachePath(deploymentContext.getSource().getName(), "none").getParent().toFile().mkdirs();
+
         if (getIndexMap(deploymentContext) == null) {
             Map<String, Index> indexMap = new ConcurrentHashMap<>();
             deploymentContext.addTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, indexMap);
-            indexMap.put(deploymentContext.getSource().getURI().toString(), indexArchive(deploymentContext));
-            indexSubArchives(deploymentContext, true);
+            indexMap.put(deploymentContext.getSource().getURI().toString(), indexRootArchive(deploymentContext));
             if (DeploymentUtils.useWarLibraries(deploymentContext)) {
                 DeploymentUtils.getWarLibraryCache().keySet()
                         .forEach(path -> getOrCreateIndex(deploymentContext, Path.of(path).toUri()));
@@ -140,6 +149,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     @Override
     public boolean isJakartaEEApplication(DeploymentContext deploymentContext) throws IOException {
         // Check if the application contains any Jakarta EE specific annotations or classes
+        // TODO: doesn't work with EAR quite yet, root deployment for EARs is wrong
         return getRootIndex(deploymentContext).getKnownClasses().stream()
                 .flatMap(clazz -> clazz.annotations().stream())
                 .anyMatch(annotation -> annotation.name().toString().startsWith("jakarta."));
@@ -165,7 +175,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Index> getIndexMap(DeploymentContext deploymentContext) {
+    private static Map<String, Index> getIndexMap(DeploymentContext deploymentContext) {
         return deploymentContext.getTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, Map.class);
     }
 
@@ -178,79 +188,130 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     }
 
     private Index getOrCreateIndex(DeploymentContext deploymentContext, URI uri) {
+        if (isEndsWithSlash(uri.toString())) {
+            return getRootIndex(deploymentContext);
+        }
         Map<String, Index> indexMap = getIndexMap(deploymentContext);
         return indexMap.computeIfAbsent(uri.toString(), key -> {
             try {
                 DeploymentUtils.WarLibraryDescriptor descriptor = DeploymentUtils.getWarLibraryCache().get(uri.getPath());
-                return descriptor != null ? descriptor.getIndex() : indexOrGetFromCache(deploymentContext, archiveFactory.openArchive(uri));
+                return descriptor != null ? descriptor.getIndex() : indexOrGetFromCache(archiveFactory.openArchive(uri));
             } catch (IOException e) {
                 return null;
             }
         });
     }
 
-    private Index readIndex(ReadableArchive archive, String path) throws IOException {
-        try (InputStream stream = archive.getEntry(path)) {
-            if (stream != null) {
-                return new IndexReader(stream).read();
-            }
-        }
-        return null;
+    private static boolean isEndsWithSlash(String path) {
+        return path.endsWith(File.separator) || path.endsWith("/");
     }
 
-    private Index indexArchive(DeploymentContext deploymentContext) throws IOException {
+    private Index indexRootArchive(DeploymentContext deploymentContext) throws IOException {
         Index index = getIndexFromArchive(deploymentContext.getSource());
+        ArrayList<String> subArchives = new ArrayList<>();
         if (index == null) {
-            index = indexSubArchives(deploymentContext, false);
+            index = indexArchive(deploymentContext.getSource(), subArchives);
+        } else {
+            filterEntries(deploymentContext.getSource(), JandexIndexReader::checkIfSubArchive, subArchives);
         }
+        indexSubArchives(deploymentContext, deploymentContext.getSource(), subArchives);
         return index;
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private Index indexSubArchives(DeploymentContext deploymentContext, boolean indexSubArchivesOnly) throws IOException {
-        getCachePath(deploymentContext.getSource().getName(), "none").getParent().toFile().mkdirs();
-        return indexArchive(deploymentContext, deploymentContext.getSource(), indexSubArchivesOnly);
+    private void indexSubArchives(DeploymentContext deploymentContext, ReadableArchive rootArchive, List<String> subArchives) throws IOException {
+        List<Callable<Void>> innerJarTasks = new ArrayList<>();
+        StringBuilder errors = new StringBuilder();
+        subArchives.forEach(subArchive -> {
+            innerJarTasks.add(() -> indexSubArchive(deploymentContext, rootArchive, subArchive, errors));
+        });
+        ForkJoinPool.commonPool().invokeAll(innerJarTasks);
+        if (errors.length() > 0) {
+            throw new IOException(errors.toString());
+        }
     }
 
-    private Index indexArchive(DeploymentContext context, ReadableArchive archive,
-                               boolean indexSubArchivesOnly) throws IOException {
+    private Index indexArchive(ReadableArchive archive, List<String> innerArchives) throws IOException {
         Indexer indexer = new Indexer();
         StringBuilder errors = new StringBuilder();
-        List<Callable<Void>> innerJarTasks = new ArrayList<>();
 
-        archive.entries().asIterator().forEachRemaining(entry -> {
-            // we need to check that there is no exploded directory by this name.
-            String explodedName = entry
-                    .replace(".jar", "_jar")
-                    .replace(".war", "_war")
-                    .replace(".rar", "_rar");
-            int slashIndex = explodedName.indexOf('/');
-            if (slashIndex != -1 && (entry.endsWith(".jar") || entry.endsWith(".war") || entry.endsWith(".rar"))) {
-                explodedName = explodedName.substring(0, slashIndex + 1);
-            }
+        filterEntries(archive, (entry, performIndex) -> {
             try {
-                boolean explodedNameExists = archive.exists(explodedName);
-                if (!indexSubArchivesOnly && entry.endsWith(".class")) {
+                if (performIndex && entry.endsWith(".class")) {
                     try (InputStream stream = archive.getEntry(entry)) {
                         if (stream != null) {
                             indexer.index(stream);
                         }
                     }
                 }
-                if (!explodedNameExists || indexSubArchivesOnly && entry.endsWith(".jar")) {
-                    innerJarTasks.add(() -> indexArchiveInnerJAR(context, archive, entry, errors));
-                } else if (indexSubArchivesOnly && entry.endsWith(".war") || entry.endsWith(".rar")) {
-                    innerJarTasks.add(() -> indexArchiveInnerJAR(context, archive, entry, errors));
-                }
             } catch (IOException e) {
                 appendError(archive, entry, errors);
             }
-        });
-        ForkJoinPool.commonPool().invokeAll(innerJarTasks);
+            return checkIfSubArchive(entry, performIndex);
+        }, innerArchives);
+
         if (errors.length() > 0) {
             throw new IOException(errors.toString());
         }
         return indexer.complete();
+    }
+
+    private static void filterEntries(ReadableArchive archive, BiPredicate<String, Boolean> filter,
+                                      List<String> entries) {
+        Set<String> explodedEntries = new HashSet<>();
+        archive.entries().asIterator().forEachRemaining(entry -> {
+            String explodedEntry = toExplodedName(entry);
+            if (explodedEntry != null && archive.isDirectory(explodedEntry)) {
+                explodedEntries.add(explodedEntry);
+            }
+            if (filter.test(entry, !startsWithAny(entry, explodedEntries))) {
+                entries.add(entry);
+            }
+        });
+    }
+
+    private static boolean startsWithAny(String entry, Set<String> explodedEntries) {
+        return explodedEntries.stream().anyMatch(entry::startsWith);
+    }
+
+    private static String toExplodedName(String entry) {
+        Matcher matcher = ARCHIVE_EXTENSION_PATTERN.matcher(entry);
+        return matcher.find() ? matcher.replaceAll("_") : null;
+    }
+
+    private static boolean checkIfSubArchive(String entry, boolean doit) {
+        return ARCHIVE_EXTENSION_PATTERN.matcher(entry).find();
+    }
+
+    private Void indexSubArchive(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
+        try (ReadableArchive subArchive = archive.getSubArchive(entry)) {
+            if (subArchive != null) {
+                Index index = indexOrGetFromCache(subArchive);
+                getIndexMap(context).put(subArchive.getURI().toString(), index);
+            }
+        } catch (IOException e) {
+            appendError(archive, entry, errors);
+        }
+        return null;
+    }
+
+    private Index indexOrGetFromCache(ReadableArchive subArchive) throws IOException {
+        String subArchivePath = subArchive.getURI().getPath();
+        Index index = getIndexFromArchive(subArchive);
+        if (index == null) {
+            index = getCachedIndex(subArchive);
+        }
+        if (index == null) {
+            List<String> innerArchives = new ArrayList<>();
+            index = indexArchive(subArchive, innerArchives);
+            if (!subArchivePath.endsWith("-SNAPSHOT.jar")) {
+                var finalIndex = index;
+                var archiveName = subArchive.getName();
+                var archiveSize = subArchive.getArchiveSize();
+                var archiveChecksum = getChecksum(subArchive);
+                delayedCacheAdditions.offer(() -> cacheIndex(archiveName, archiveSize, archiveChecksum, finalIndex));
+            }
+        }
+        return index;
     }
 
     private static void appendError(ReadableArchive archive, String entry, StringBuilder errors) {
@@ -261,44 +322,6 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
             }
         } finally {
             errorsLock.unlock();
-        }
-    }
-
-    private Void indexArchiveInnerJAR(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
-        try (ReadableArchive subArchive = archive.getSubArchive(entry)) {
-            if (subArchive != null) {
-                Index index = indexOrGetFromCache(context, subArchive);
-                getIndexMap(context).put(subArchive.getURI().toString(), index);
-            }
-        } catch (IOException e) {
-            appendError(archive, entry, errors);
-        }
-        return null;
-    }
-
-    private Index indexOrGetFromCache(DeploymentContext context, ReadableArchive subArchive) throws IOException {
-        String subArchivePath = subArchive.getURI().getPath();
-        if (subArchivePath.endsWith(".jar") || subArchivePath.endsWith("_war/") || subArchivePath.endsWith("_rar/")) {
-            Index index;
-            boolean isExploded = subArchivePath.endsWith("/");
-            if (isExploded) {
-                index = getIndexFromArchive(subArchive);
-            } else {
-                index = getCachedIndex(subArchive);
-            }
-            if (index == null) {
-                index = indexArchive(context, subArchive, false);
-                if (!isExploded && !subArchivePath.endsWith("-SNAPSHOT.jar")) {
-                    var finalIndex = index;
-                    var archiveName = subArchive.getName();
-                    var archiveSize = subArchive.getArchiveSize();
-                    var archiveChecksum = getChecksum(subArchive);
-                    delayedCacheAdditions.offer(() -> cacheIndex(archiveName, archiveSize, archiveChecksum, finalIndex));
-                }
-            }
-            return index;
-        } else {
-            return getRootIndex(context);
         }
     }
 
@@ -340,6 +363,15 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
 
     private Path getCachePath(String archiveName, String suffix) {
         return Path.of(serverEnvironment.getInstanceRoot() + "/jandex-cache/" + archiveName + "." + suffix);
+    }
+
+    private Index readIndex(ReadableArchive archive, String path) throws IOException {
+        try (InputStream stream = archive.getEntry(path)) {
+            if (stream != null) {
+                return new IndexReader(stream).read();
+            }
+        }
+        return null;
     }
 
     @Override
