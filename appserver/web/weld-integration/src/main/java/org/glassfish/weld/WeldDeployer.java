@@ -191,6 +191,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String JERSEY_HK2_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.spi.Hk2CustomBoundTypesProvider";
     private static final String JERSEY_PROCESS_JAXRS_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessJAXRSAnnotatedTypes";
 
+    private static final String EAR_COMBINED_CDI_DEPLOYMENT = "fish.payara.ear-combined-cdi-deployment";
+
     @Inject
     private Events events;
 
@@ -398,9 +400,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                         beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
                     }
                 }
+                if (beanDeploymentArchive instanceof BeanDeploymentArchiveImpl
+                        && ((BeanDeploymentArchiveImpl) beanDeploymentArchive)
+                        .getBDAType() != WeldUtils.BDAType.UNKNOWN) {
+                        bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
+                }
             }
-
-            bundleToBeanDeploymentArchive.put(bundle, beanDeploymentArchive);
         }
 
         applicationInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
@@ -508,8 +513,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
         try {
             invocationManager.preInvoke(componentInvocation);
+            boolean earCombinedCDIDeployment = Boolean.parseBoolean(deploymentImpl.context.getAppProps()
+                    .getProperty(EAR_COMBINED_CDI_DEPLOYMENT)) || Boolean.getBoolean(EAR_COMBINED_CDI_DEPLOYMENT);
+
             // Modern, multiple WARs in an EAR scenario
-            if (deploymentImpl.ejbRootBdas.isEmpty()) {
+            if (deploymentImpl.ejbRootBdas.isEmpty() && !earCombinedCDIDeployment) {
                 for (RootBeanDeploymentArchive rootBDA : deploymentImpl.getRootBDAs()) {
                     DeploymentImpl.currentDeployment.set(deploymentImpl);
                     DeploymentImpl.currentBDAs.set(new HashMap<>());
@@ -528,9 +536,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             } else if (!deploymentImpl.getRootBDAs().isEmpty()) {
                 completeDeployment(deploymentImpl);
                 // Legacy EJB-Jar scenario, one Weld instance per EAR
-                RootBeanDeploymentArchive bda = deploymentImpl.getRootBDAs().iterator().next();
-                WeldBootstrap bootstrap = unifyBootstrap(bda, applicationInfo);
-                startWeldBootstrap(applicationInfo, bda, bootstrap, deploymentImpl, componentInvocation);
+                RootBeanDeploymentArchive firstBDA = deploymentImpl.getRootBDAs().stream().findFirst().get();
+                WeldBootstrap bootstrap = ensureWeldBootstrapCreated(firstBDA.context, applicationInfo);
+                deploymentImpl.getRootBDAs().forEach(bda -> unifyBootstrap(bda, bootstrap));
+                startWeldBootstrap(applicationInfo, firstBDA, bootstrap, deploymentImpl, componentInvocation);
             }
         } catch (Throwable t) {
             doBootstrapShutdown(applicationInfo);
@@ -563,11 +572,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         addCdiServicesToNonModuleBdas(deploymentImpl.getRarRootBdas(), services.getService(InjectionManager.class));
     }
 
-    private WeldBootstrap unifyBootstrap(BeanDeploymentArchiveImpl rootArchive, ApplicationInfo applicationInfo) {
-        WeldBootstrap bootstrap = ensureWeldBootstrapCreated(rootArchive.context, applicationInfo);
+    private void unifyBootstrap(BeanDeploymentArchiveImpl rootArchive, WeldBootstrap bootstrap) {
+        rootArchive.weldBootstrap = bootstrap;
         rootArchive.getBeanDeploymentArchives().stream().map(BeanDeploymentArchiveImpl.class::cast)
                 .forEach(bda -> bda.weldBootstrap = bootstrap);
-        return bootstrap;
     }
 
     private void startWeldBootstrap(ApplicationInfo applicationInfo, RootBeanDeploymentArchive rootBDA,

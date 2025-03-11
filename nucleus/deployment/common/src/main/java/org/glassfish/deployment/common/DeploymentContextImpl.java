@@ -289,7 +289,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
             // return the final classloader
             if (sharableTemp != null && sharableTemp.get() != cloader) {
                 try {
-                    PreDestroy.class.cast(sharableTemp).preDestroy();
+                    PreDestroy.class.cast(sharableTemp.get()).preDestroy();
                 } catch (Exception e) {
                     // ignore, the classloader does not need to be destroyed
                 }
