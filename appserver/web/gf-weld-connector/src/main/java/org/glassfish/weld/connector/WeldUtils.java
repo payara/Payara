@@ -221,9 +221,6 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified paths
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
-        if (isRootPackage(context, paths)) {
-            return false;
-        }
         Map<String, Index> indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class)
                 .getIndexesByURI(context, paths);
         boolean result = cdiEnablingAnnotationClasses.stream()
@@ -628,9 +625,5 @@ public class WeldUtils {
                 break;
         }
         return className;
-    }
-
-    private static boolean isRootPackage(DeploymentContext deploymentContext, Collection<URI> paths) {
-        return paths.size() == 1 && paths.stream().findAny().get().equals(deploymentContext.getSource().getURI());
     }
 }
