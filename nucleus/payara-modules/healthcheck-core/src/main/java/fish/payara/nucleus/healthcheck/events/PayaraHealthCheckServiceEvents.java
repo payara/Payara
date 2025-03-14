@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,5 +52,5 @@ public class PayaraHealthCheckServiceEvents {
             = EventTypes.create("healthcheck_service_checker_add_to_microprofile_health", HealthCheckTask.class);
     public static final EventTypes<HealthCheckTask> HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH
             = EventTypes.create("healthcheck_service_checker_remove_from_microprofile_health", HealthCheckTask.class);
-    public static final EventTypes HEALTHCHECK_SERVICE_DISABLED = EventTypes.create("healthcheck_service_disabled");
+    public static final EventTypes<?> HEALTHCHECK_SERVICE_DISABLED = EventTypes.create("healthcheck_service_disabled");
 }
