@@ -58,26 +58,23 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
 
         try {
             this.thresholdCritical = Integer.parseInt(thresholdCritical);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            _logger.warning("Using default value due to failure to parse critical threshold: " + thresholdCritical);
             this.thresholdCritical = HealthCheckConstants.THRESHOLD_DEFAULTVAL_CRITICAL_INT;
-            _logger.warning("Could not parse critical threshold: " + thresholdCritical);
         }
 
         try {
             this.thresholdWarning = Integer.parseInt(thresholdWarning);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            _logger.warning("Using default value due to failure to parse warning threshold: " + thresholdWarning);
             this.thresholdWarning = HealthCheckConstants.THRESHOLD_DEFAULTVAL_WARNING_INT;
-            _logger.warning("Could not parse warning threshold: " + thresholdWarning);
         }
 
         try {
             this.thresholdGood = Integer.parseInt(thresholdGood);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            _logger.warning("Using default value due to failure to parse good threshold: " + thresholdGood);
             this.thresholdGood = HealthCheckConstants.THRESHOLD_DEFAULTVAL_GOOD_INT;
-            _logger.warning("Could not parse good threshold: " + thresholdGood);
         }
     }
 
