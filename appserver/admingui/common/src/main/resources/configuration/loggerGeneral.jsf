@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates] -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -111,7 +111,11 @@
     <sun:propertySheetSection id="sheetSection">
           <sun:property id="writeSystemLogEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.WriteSystemLog}" helpText="$resource{i18nc.log.WriteSystemlogHelp}">
                 <sun:checkbox id="writeSystemLogEnabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging']}" selectedValue="true" />
-           </sun:property> 
+           </sun:property>
+
+          <sun:property id="systemLogHostProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.SystemlogHost}" helpText="$resource{i18nc.log.SystemlogHostHelp}">
+                <sun:textField id="systemLogHost" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.SystemLogHost']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.SyslogHandler.host']}"/>
+            </sun:property>
           
           <sun:property id="logtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">
                 <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.logAttributes['com.sun.enterprise.server.logging.GFFileHandler.logtoFile']}"  selectedValue="true" />
