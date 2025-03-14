@@ -234,7 +234,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             setupConnection(host);
             initializePump();
         } else {
-            if (pump.isAlive()) {
+            if (pump != null && pump.isAlive()) {
                 pump.interrupt();
             }
         }
