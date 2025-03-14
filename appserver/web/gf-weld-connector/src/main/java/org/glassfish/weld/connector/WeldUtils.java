@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -126,10 +127,10 @@ public class WeldUtils {
      */
     public enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
-    static final Set<Class<?>> cdiScopeAnnotationClasses;
+    static final Set<Class<? extends Annotation>> cdiScopeAnnotationClasses;
     protected static final Set<String> cdiScopeAnnotations;
     static {
-        final HashSet<Class<?>> cdi = new HashSet<>();
+        final HashSet<Class<? extends Annotation>> cdi = new HashSet<>();
         cdi.add(Scope.class);
         cdi.add(NormalScope.class);
         cdi.add(ConversationScoped.class);
@@ -147,10 +148,10 @@ public class WeldUtils {
     }
 
     static final Set<String> cdiEnablingAnnotations;
-    static final Set<Class<?>> cdiEnablingAnnotationClasses;
+    static final Set<Class<? extends Annotation>> cdiEnablingAnnotationClasses;
     static {
         // CDI scopes
-        final HashSet<Class<?>> cdi = new HashSet<>(cdiScopeAnnotationClasses);
+        final HashSet<Class<? extends Annotation>> cdi = new HashSet<>(cdiScopeAnnotationClasses);
 
         // 1.2 updates
         cdi.add(Decorator.class);
@@ -223,9 +224,9 @@ public class WeldUtils {
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
         Map<String, Index> indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class)
                 .getIndexesByURI(context, paths);
-        boolean result = cdiEnablingAnnotationClasses.stream()
-                .anyMatch(annotationClass -> indexes.values().stream()
-                        .anyMatch(index -> !index.getAnnotations(annotationClass).isEmpty()));
+        boolean result = Arrays.stream(getCDIEnablingAnnotations(context))
+                .anyMatch(annotation -> indexes.values().stream()
+                        .anyMatch(index -> !index.getAnnotations(annotation).isEmpty()));
         return result;
     }
 
@@ -239,12 +240,33 @@ public class WeldUtils {
      */
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
         var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
-        Set<String> result = new HashSet<>();
-        indexes.values().forEach(index -> result.addAll(cdiEnablingAnnotationClasses.stream()
-                .filter(annotationClass -> !index.getAnnotations(annotationClass).isEmpty())
-                .map(Class::getName)
-                .collect(Collectors.toSet())));
-        return result.toArray(new String[0]);
+        Set<String> appCdiEnablingAnnotations = indexes.values().stream()
+                .flatMap(index -> index.getKnownClasses().stream())
+                .flatMap(classInfo -> classInfo.annotations().stream())
+                .map(annotationClass -> annotationClass.name().toString())
+                .collect(Collectors.toSet());
+
+        Set<String> additionalAnnotations = new HashSet<>();
+        appCdiEnablingAnnotations.stream()
+                .filter(annotation -> !cdiEnablingAnnotations.contains(annotation))
+                .forEach(annotation -> {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends Annotation> cls = (Class<? extends Annotation>) context.getClassLoader()
+                        .loadClass(annotation);
+                for (var annotationClass : cdiEnablingAnnotationClasses) {
+                    if (cls.isAnnotationPresent(annotationClass)) {
+                        additionalAnnotations.add(annotation);
+                        break;
+                    }
+                }
+            } catch (ClassNotFoundException | NullPointerException e) {
+            }
+        });
+        return appCdiEnablingAnnotations.stream()
+                .filter(annotation -> cdiEnablingAnnotations.contains(annotation)
+                        || additionalAnnotations.contains(annotation))
+                .toArray(String[]::new);
     }
 
     /**
