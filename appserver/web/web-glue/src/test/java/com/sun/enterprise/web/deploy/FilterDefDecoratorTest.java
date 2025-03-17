@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2020-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -43,20 +43,16 @@ import com.sun.enterprise.deployment.web.ServletFilter;
 import java.util.Vector;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class FilterDefDecoratorTest {
-  @Mock
-  private ServletFilter filter;
 
   @Test
   public void nullAsyncSupportedFlagShallNotCauseException() {
+    ServletFilter filter = Mockito.mock(ServletFilter.class);
     when(filter.isAsyncSupported()).thenReturn(null);
     when(filter.getInitializationParameters()).thenReturn(new Vector());
 
@@ -64,5 +60,6 @@ public class FilterDefDecoratorTest {
 
     assertFalse(fdd.isAsyncSupported());
   }
+
 }
 
