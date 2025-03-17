@@ -85,7 +85,7 @@ import java.util.logging.Level;
 
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.jboss.jandex.Index;
+import static org.glassfish.internal.deployment.JandexIndexer.Index;
 
 /** 
  * Utility methods for deployment. 

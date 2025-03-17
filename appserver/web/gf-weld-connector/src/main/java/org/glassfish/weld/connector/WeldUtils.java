@@ -75,8 +75,8 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.Index;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -106,6 +106,9 @@ public class WeldUtils {
     // which does not have CDI implementation. So, we use the class name as a string.
     private static final String SERVICES_CLASSNAME = "jakarta.enterprise.inject.spi.Extension";
     private static final String BCE_SERVICES_CLASSNAME = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
+    private static final String CDI_ENABLING_ANNOTATIONS_CACHE_METADATA = "fish.payara.cdi.enabling.annotations.cache.metadata";
+    private static final String CDI_ANNOTATED_CLASS_NAMES_METADATA = "fish.payara.cdi.annotated.class.names.metadata";
+
     public static final String META_INF_SERVICES_EXTENSION = "META-INF" + SEPARATOR_CHAR + SERVICES_DIR +
             SEPARATOR_CHAR + SERVICES_CLASSNAME;
     public static final String META_INF_BCE_SERVICES_EXTENSION =  "META-INF" + SEPARATOR_CHAR + SERVICES_DIR +
@@ -179,10 +182,15 @@ public class WeldUtils {
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
-        if(!isValidBdaBasedOnExtensionAndBeansXml(archive)) {
-            return false;
-        }
-        return isImplicitBeanArchive(context, archive.getURI());
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archive.getURI()))
+                .values().stream().findAny().get();
+        return index.implicitBeanArchive(() -> {
+            if(!isValidBdaBasedOnExtensionAndBeansXml(context, archive)) {
+                return false;
+            }
+            return isImplicitBeanArchive(context, archive.getURI());
+        });
     }
 
     /**
@@ -194,9 +202,11 @@ public class WeldUtils {
      * @return true, if it is an implicit bean deployment archive; otherwise, false.
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, URI archivePath) {
-        return (isImplicitBeanDiscoveryEnabled(context) && hasCDIEnablingAnnotations(context, archivePath));
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archivePath))
+                .values().stream().findAny().get();
+        return index.implicitBeanArchive(() -> isImplicitBeanDiscoveryEnabled(context) && hasCDIEnablingAnnotations(context, archivePath));
     }
-
 
     /**
      * Determine whether there are any beans annotated with annotations that should enable CDI
@@ -208,7 +218,10 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified path
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, URI path) {
-        return hasCDIEnablingAnnotations(context, Collections.singleton(path));
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(path))
+                .values().stream().findAny().get();
+        return index.hasCDIEnablingAnnotations(() -> hasCDIEnablingAnnotations(context, Collections.singleton(path)));
     }
 
 
@@ -226,7 +239,7 @@ public class WeldUtils {
                 .getIndexesByURI(context, paths);
         boolean result = Arrays.stream(getCDIEnablingAnnotations(context))
                 .anyMatch(annotation -> indexes.values().stream()
-                        .anyMatch(index -> !index.getAnnotations(annotation).isEmpty()));
+                        .anyMatch(index -> !index.getIndex().getAnnotations(annotation).isEmpty()));
         return result;
     }
 
@@ -239,9 +252,13 @@ public class WeldUtils {
      * @return An array of annotation type names; The array could be empty if none are found.
      */
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
+        String[] annotations = context.getTransientAppMetaData(CDI_ENABLING_ANNOTATIONS_CACHE_METADATA, String[].class);
+        if (annotations != null) {
+            return annotations;
+        }
         var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
         Set<String> appCdiEnablingAnnotations = indexes.values().stream()
-                .flatMap(index -> index.getKnownClasses().stream())
+                .flatMap(index -> index.getIndex().getKnownClasses().stream())
                 .flatMap(classInfo -> classInfo.annotations().stream())
                 .map(annotationClass -> annotationClass.name().toString())
                 .collect(Collectors.toSet());
@@ -263,10 +280,12 @@ public class WeldUtils {
             } catch (ClassNotFoundException | NullPointerException e) {
             }
         });
-        return appCdiEnablingAnnotations.stream()
+        annotations = appCdiEnablingAnnotations.stream()
                 .filter(annotation -> cdiEnablingAnnotations.contains(annotation)
                         || additionalAnnotations.contains(annotation))
                 .toArray(String[]::new);
+        context.addTransientAppMetaData(CDI_ENABLING_ANNOTATIONS_CACHE_METADATA, annotations);
+        return annotations;
     }
 
     /**
@@ -278,15 +297,23 @@ public class WeldUtils {
      * @return A collection of class names; The collection could be empty if none are found.
      */
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
+        @SuppressWarnings("unchecked")
+        Set<String> result = context.getTransientAppMetaData(CDI_ANNOTATED_CLASS_NAMES_METADATA, Set.class);
+        if (result != null) {
+            return result;
+        }
+
         final Set<String> cdiEnablingAnnotations = new HashSet<>();
         Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
         var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
-        Set<String> result = new HashSet<>();
+        result = new HashSet<>();
+        var finalResult = result;
         indexes.values().forEach(index -> cdiEnablingAnnotations
-                .forEach(annotation -> result.addAll(index.getAnnotations(annotation).stream()
+                .forEach(annotation -> finalResult.addAll(index.getIndex().getAnnotations(annotation).stream()
                         .map(WeldUtils::mapAnnotationToClassName)
                         .filter(Objects::nonNull)
                         .collect(Collectors.toSet()))));
+        context.addTransientAppMetaData(CDI_ANNOTATED_CLASS_NAMES_METADATA, result);
         return result;
     }
 
@@ -303,7 +330,7 @@ public class WeldUtils {
         var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(deploymentContext);
         Set<String> result = new HashSet<>();
         indexes.values().forEach(index -> {
-            for (AnnotationInstance annotationInstance : index.getAnnotations(Inject.class)) {
+            for (AnnotationInstance annotationInstance : index.getIndex().getAnnotations(Inject.class)) {
                 String className = mapAnnotationToClassName(annotationInstance);
                 if (className != null && knownClassNames.contains(className)) {
                     result.add(className);
@@ -506,15 +533,20 @@ public class WeldUtils {
      * @return false if there is an extension and no beans.xml
      * true otherwise
      */
-    public static boolean isValidBdaBasedOnExtensionAndBeansXml(ReadableArchive archive) {
-        try {
-            if (hasExtension(archive) && !hasBeansXML(archive)) {
-                // Extensions and no beans.xml: not a bda
-                return false;
+    public static boolean isValidBdaBasedOnExtensionAndBeansXml(DeploymentContext context, ReadableArchive archive) {
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archive.getURI()))
+                .values().stream().findAny().get();
+        return index.isValidBdaBasedOnExtensionAndBeansXml(() -> {
+            try {
+                if (hasExtension(archive) && !hasBeansXML(archive)) {
+                    // Extensions and no beans.xml: not a bda
+                    return false;
+                }
+            } catch (IOException ignore) {
             }
-        } catch (IOException ignore) {
-        }
-        return true;
+            return true;
+        });
     }
 
     public static boolean hasExtension(ReadableArchive archive) {

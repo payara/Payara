@@ -52,7 +52,6 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.JandexIndexer;
-import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
@@ -60,6 +59,8 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -150,7 +151,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     public boolean isJakartaEEApplication(DeploymentContext deploymentContext) throws IOException {
         // Check if the application contains any Jakarta EE specific annotations or classes
         // TODO: doesn't work with EAR quite yet, root deployment for EARs is wrong
-        return getRootIndex(deploymentContext).getKnownClasses().stream()
+        return getRootIndex(deploymentContext).getIndex().getKnownClasses().stream()
                 .flatMap(clazz -> clazz.annotations().stream())
                 .anyMatch(annotation -> annotation.name().toString().startsWith("jakarta."));
     }
@@ -165,7 +166,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
             Index index = indexMap.get(uri.toString());
             if (index != null) {
                 for (String annotation : annotations) {
-                    if (!index.getAnnotations(annotation).isEmpty()) {
+                    if (!index.getIndex().getAnnotations(annotation).isEmpty()) {
                         return true;
                     }
                 }
@@ -196,7 +197,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
             try {
                 DeploymentUtils.WarLibraryDescriptor descriptor = DeploymentUtils.getWarLibraryCache().get(uri.getPath());
                 return descriptor != null ? descriptor.getIndex() : indexOrGetFromCache(archiveFactory.openArchive(uri));
-            } catch (IOException e) {
+            } catch (IOException | ClassNotFoundException e) {
                 return null;
             }
         });
@@ -252,7 +253,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         if (errors.length() > 0) {
             throw new IOException(errors.toString());
         }
-        return indexer.complete();
+        return new Index(indexer.complete());
     }
 
     private static void filterEntries(ReadableArchive archive, BiPredicate<String, Boolean> filter,
@@ -288,13 +289,13 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
                 Index index = indexOrGetFromCache(subArchive);
                 getIndexMap(context).put(subArchive.getURI().toString(), index);
             }
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             appendError(archive, entry, errors);
         }
         return null;
     }
 
-    private Index indexOrGetFromCache(ReadableArchive subArchive) throws IOException {
+    private Index indexOrGetFromCache(ReadableArchive subArchive) throws IOException, ClassNotFoundException {
         String subArchivePath = subArchive.getURI().getPath();
         Index index = getIndexFromArchive(subArchive);
         if (index == null) {
@@ -327,28 +328,31 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         }
     }
 
-    private Index getCachedIndex(ReadableArchive archive) throws IOException {
-        if (!getCachePath(archive.getName(), "size").toFile().exists()
-                || !getCachePath(archive.getName(), "crc").toFile().exists()) {
-            return null;
-        }
-        if (Long.parseLong(Files.readString(getCachePath(archive.getName(), "size"))) != archive.getArchiveSize()) {
-            return null;
-        }
-        if (Long.parseLong(Files.readString(getCachePath(archive.getName(), "crc"))) != getChecksum(archive)) {
+    private Index getCachedIndex(ReadableArchive archive) throws IOException, ClassNotFoundException {
+        if (!getCachePath(archive.getName(), "idx").toFile().exists()) {
             return null;
         }
         try (var stream = new GZIPInputStream(Files.newInputStream(getCachePath(archive.getName(),"idx")))) {
-            return new IndexReader(stream).read();
+            var objectInputStream = new ObjectInputStream(stream);
+            long archiveSize = objectInputStream.readLong();
+            long archiveChecksum = objectInputStream.readLong();
+            if (archiveSize != archive.getArchiveSize() || archiveChecksum != getChecksum(archive)) {
+                return null;
+            }
+            Index index = (Index) objectInputStream.readObject();
+            index.setIndex(new IndexReader(stream).read());
+            return index;
         }
     }
 
     private void cacheIndex(String archiveName, long archiveSize, long archiveChecksum, Index index) {
         try (var stream = new GZIPOutputStream(Files.newOutputStream(getCachePath(archiveName, "idx")))) {
+            var objectOutputStream = new ObjectOutputStream(stream);
+            objectOutputStream.writeLong(archiveSize);
+            objectOutputStream.writeLong(archiveChecksum);
+            objectOutputStream.writeObject(index);
             IndexWriter indexWriter = new IndexWriter(stream);
-            indexWriter.write(index);
-            Files.writeString(getCachePath(archiveName, "crc"), String.valueOf(archiveChecksum));
-            Files.writeString(getCachePath(archiveName, "size"), String.valueOf(archiveSize));
+            indexWriter.write(index.getIndex());
         } catch (IOException e) {
             AnnotationUtils.getLogger().log(Level.WARNING, e, () -> "Failed to cache Jandex index for " + archiveName);
         }
@@ -370,7 +374,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     private Index readIndex(ReadableArchive archive, String path) throws IOException {
         try (InputStream stream = archive.getEntry(path)) {
             if (stream != null) {
-                return new IndexReader(stream).read();
+                return new Index(new IndexReader(stream).read());
             }
         }
         return null;

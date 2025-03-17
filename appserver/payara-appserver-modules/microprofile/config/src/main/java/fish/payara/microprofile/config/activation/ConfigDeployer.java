@@ -51,8 +51,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.glassfish.weld.WeldDeployer;
-import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.config.cdi.ConfigCdiExtension;
@@ -74,9 +74,9 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
         Index index = jandexIndexer.getRootIndex(deploymentContext);
         if (index != null) {
             boolean found = false;
-            found |= !index.getAnnotations(ConfigProperty.class).isEmpty();
-            found |= !index.getAnnotations(ConfigProperties.class).isEmpty();
-            found |= !index.getAnnotations(Config.class).isEmpty();
+            found |= !index.getIndex().getAnnotations(ConfigProperty.class).isEmpty();
+            found |= !index.getIndex().getAnnotations(ConfigProperties.class).isEmpty();
+            found |= !index.getIndex().getAnnotations(Config.class).isEmpty();
             if (found) {
                 // Register the CDI extension
                 final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);

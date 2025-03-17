@@ -47,9 +47,9 @@ import org.glassfish.deployment.common.ClassDependencyBuilder;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.annotation.HandlesTypes;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.Index;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -465,9 +465,11 @@ public class ServletContainerInitializerUtil {
 
             Set<Class<?>> resultSet = new HashSet<Class<?>>();
             for (Index index : indexMap.values()) {
-                index.getAllKnownImplementors(e.getKey()).forEach(classInfo -> addClassToResult(classInfo, cl, isStandalone, resultSet));
-                index.getAllKnownSubclasses(e.getKey()).forEach(classInfo -> addClassToResult(classInfo, cl, isStandalone, resultSet));
-                index.getAnnotations(e.getKey()).forEach(annotation ->
+                index.getIndex().getAllKnownImplementors(e.getKey())
+                        .forEach(classInfo -> addClassToResult(classInfo, cl, isStandalone, resultSet));
+                index.getIndex().getAllKnownSubclasses(e.getKey())
+                        .forEach(classInfo -> addClassToResult(classInfo, cl, isStandalone, resultSet));
+                index.getIndex().getAnnotations(e.getKey()).forEach(annotation ->
                         addClassToResult(mapAnnotationToClassName(annotation), cl, isStandalone, resultSet));
             }
 

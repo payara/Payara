@@ -56,8 +56,8 @@ import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -136,7 +136,7 @@ public class SJSASFactory extends Factory {
         Set<AnnotationInstance> annotationInstances = new HashSet<>();
         for (Map.Entry<String, AnnotationHandler> entry : annotationHandlers.entrySet()) {
             Class<? extends Annotation> annotationClass = entry.getValue().getAnnotationType();
-            index.getAnnotations(entry.getKey()).forEach(annotationInstance -> {
+            index.getIndex().getAnnotations(entry.getKey()).forEach(annotationInstance -> {
                 if (annotationInstances.add(annotationInstance)) {
                     try {
                         Class<?> cls = deploymentContext.getClassLoader().loadClass(mapAnnotationToClassName(annotationInstance));

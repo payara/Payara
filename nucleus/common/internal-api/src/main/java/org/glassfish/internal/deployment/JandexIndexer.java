@@ -40,17 +40,78 @@
 package org.glassfish.internal.deployment;
 
 import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.jboss.jandex.Index;
 import org.jvnet.hk2.annotations.Contract;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 @Contract
 public interface JandexIndexer {
+    enum SettingType {
+        UNSET,
+        TRUE,
+        FALSE,
+        ;
+
+        public boolean isSet() {
+            return this != UNSET;
+        }
+
+        public boolean isTrue() {
+            return this == TRUE;
+        }
+
+        static SettingType of(BooleanSupplier supplier) {
+            return supplier.getAsBoolean() ? TRUE : FALSE;
+        }
+    }
+
+    class Index implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private transient org.jboss.jandex.Index jandexIndex;
+        private SettingType implicitBeanArchive = SettingType.UNSET;
+        private SettingType hasCDIEnablingAnnotations = SettingType.UNSET;
+        private SettingType isValidBdaBasedOnExtensionAndBeansXml = SettingType.UNSET;
+
+        public Index(org.jboss.jandex.Index index) {
+            this.jandexIndex = index;
+        }
+
+        public org.jboss.jandex.Index getIndex() {
+            return jandexIndex;
+        }
+
+        public void setIndex(org.jboss.jandex.Index index) {
+            this.jandexIndex = index;
+        }
+
+        public boolean implicitBeanArchive(BooleanSupplier settingTypeSupplier) {
+            if (!implicitBeanArchive.isSet()) {
+                implicitBeanArchive = SettingType.of(settingTypeSupplier);
+            }
+            return implicitBeanArchive.isTrue();
+        }
+
+        public boolean hasCDIEnablingAnnotations(BooleanSupplier settingTypeSupplier) {
+            if (!hasCDIEnablingAnnotations.isSet()) {
+                hasCDIEnablingAnnotations = SettingType.of(settingTypeSupplier);
+            }
+            return hasCDIEnablingAnnotations.isTrue();
+        }
+
+        public boolean isValidBdaBasedOnExtensionAndBeansXml(BooleanSupplier settingTypeSupplier) {
+            if (!isValidBdaBasedOnExtensionAndBeansXml.isSet()) {
+                isValidBdaBasedOnExtensionAndBeansXml = SettingType.of(settingTypeSupplier);
+            }
+            return isValidBdaBasedOnExtensionAndBeansXml.isTrue();
+        }
+    }
+
     void index(DeploymentContext deploymentContext) throws IOException;
     void reindex(DeploymentContext deploymentContext) throws IOException;
     boolean isJakartaEEApplication(DeploymentContext deploymentContext) throws IOException;
