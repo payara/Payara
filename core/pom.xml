@@ -135,7 +135,7 @@
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
         <mimepull.version>1.10.0</mimepull.version>
-        <gmbal.version>4.0.3</gmbal.version>
+        <gmbal.version>4.1.0</gmbal.version>
         <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
         <metainf-services.version>1.11</metainf-services.version>
         <ldapbp.version>1.0</ldapbp.version>
