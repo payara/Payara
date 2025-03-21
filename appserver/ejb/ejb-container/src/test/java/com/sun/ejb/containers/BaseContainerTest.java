@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,22 +40,26 @@
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BaseContainerTest extends TestCase {
+public class BaseContainerTest {
 
     @Mock
     private EJBContextImpl ejbContextImpl;
 
     @Mock
     private BaseContainer baseContainer;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void createEmptyContextAndInterceptorsWithoutNullPointerExceptionTest() throws Exception {
@@ -68,7 +72,7 @@ public class BaseContainerTest extends TestCase {
         } catch(NullPointerException e) {
             thrownExceptionFlag = true;
         }
-        assertFalse(thrownExceptionFlag);
+        Assert.assertFalse(thrownExceptionFlag);
         verify(baseContainer, times(1)).createEmptyContextAndInterceptors(ejbContextImpl);
     }
 
@@ -84,7 +88,7 @@ public class BaseContainerTest extends TestCase {
             thrownExceptionFlag = true;
         }
 
-        assertFalse(thrownExceptionFlag);
+        Assert.assertFalse(thrownExceptionFlag);
         verify(baseContainer, times(1)).intercept(LifecycleCallbackDescriptor.CallbackType.AROUND_CONSTRUCT,
                 ejbContextImpl);
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,9 +43,8 @@ import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 
 import static java.util.Arrays.asList;
 
@@ -53,7 +52,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
 public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
   @Mock
   private HZTimer timer1, timer2, timer3;
@@ -62,6 +60,7 @@ public class HazelcastTimerStoreTest extends HazelcastTimerStoreTestBase {
 
   @Before
   public void setUpTimers() {
+    MockitoAnnotations.initMocks(this);
     timers = asList(timer1, timer2, timer3);
     when(timer1.getMemberName()).thenReturn("jb");
     when(timer2.getMemberName()).thenReturn("hz");

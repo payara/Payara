@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,10 +46,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -67,7 +64,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * Testing the ExcludeField support.
  */
-@RunWith(MockitoJUnitRunner.class)
 public class LoggingExclusionTest {
 
     private static final String TEST_EXCEPTION_MESSAGE = "Test exception message";
@@ -94,7 +90,7 @@ public class LoggingExclusionTest {
     private static final String LINE_SEP = System.getProperty("line.separator");
 
     private static final String CURRENT_YEAR = LocalDate.now().getYear() + "-";
-    private static final String LEVEL = Level.SEVERE.getName();
+    private static final String LEVEL = Level.SEVERE.getLocalizedName();
     private static final String LEVEL_VALUE = String.valueOf(Level.SEVERE.intValue());
 
     private static final String ABBREVIATED_PRODUCT = "Payara Test";
@@ -112,10 +108,9 @@ public class LoggingExclusionTest {
 
     private static ConsoleHandler consoleHandler;
 
-    @Mock
-    private ServiceLocator serviceLocatorMock;
-
     private void initializeLoggingTest(String excludeFields) throws Exception {
+        ServiceLocator serviceLocatorMock = Mockito.mock(ServiceLocator.class);
+
         Globals.setDefaultHabitat(serviceLocatorMock);
 
         VersionInfo versionInfo = new VersionInfo() {
