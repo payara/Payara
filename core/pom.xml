@@ -123,7 +123,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.1.10</kotlin-version>
+        <kotlin-version>2.1.20</kotlin-version>
         
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
