@@ -159,6 +159,7 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
         this.archiveFactory = archiveFactory;
         this.context = context;
         this.injectionManager = injectionManager;
+        this.contextId = moduleName != null? moduleName : archive.getName();
 
         // Collect /lib Jar BDAs (if any) from the parent module.
         // If we've produced BDA(s) from any /lib jars, <code>return</code> as
@@ -177,7 +178,6 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
             this.appName = "CDIApp";
         }
 
-        this.contextId = moduleName != null? moduleName : archive.getName();
         createModuleBda(archive, ejbs, context, contextId);
     }
 
@@ -274,7 +274,9 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
-        rootBDAs(bda).add(bda);
+        if (bda.getModuleBDAType() != BDAType.UNKNOWN) {
+            rootBDAs(bda).add(bda);
+        }
     }
 
     private Set<RootBeanDeploymentArchive> rootBDAs(RootBeanDeploymentArchive bda) {
@@ -313,12 +315,16 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
      * <code>Deployment</code>.
      */
     public void buildDeploymentGraph() {
+        Set<BeanDeploymentArchive> ejbModuleAndRarBDAs = new HashSet<>();
+
         // Make jars accessible to each other - Example:
         //    /ejb1.jar <----> /ejb2.jar
         // If there are any application (/lib) jars, make them accessible
 
         for (RootBeanDeploymentArchive ejbRootBda : ejbRootBdas) {
             BeanDeploymentArchive ejbModuleBda = ejbRootBda.getModuleBda();
+            ejbModuleAndRarBDAs.add(ejbRootBda);
+            ejbModuleAndRarBDAs.add(ejbModuleBda);
 
             boolean modifiedArchive = false;
             for (RootBeanDeploymentArchive otherEjbRootBda : ejbRootBdas) {
@@ -345,6 +351,8 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
             // Make rars accessible to ejbs
             for (RootBeanDeploymentArchive rarRootBda : rarRootBdas) {
                 BeanDeploymentArchive rarModuleBda = rarRootBda.getModuleBda();
+                ejbModuleAndRarBDAs.add(rarRootBda);
+                ejbModuleAndRarBDAs.add(rarModuleBda);
                 ejbRootBda.getBeanDeploymentArchives().add(rarRootBda);
                 ejbRootBda.getBeanDeploymentArchives().add(rarModuleBda);
                 ejbModuleBda.getBeanDeploymentArchives().add(rarRootBda);
@@ -396,8 +404,9 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
                 beanDeploymentArchives.stream()
                         .filter(RootBeanDeploymentArchive.class::isInstance)
                         .map(RootBeanDeploymentArchive.class::cast)
-                        .forEach(bda -> recursivelyAdd(bda.getBeanDeploymentArchives(), warModuleBda, seen));
-                recursivelyAdd(beanDeploymentArchives, warModuleBda, seen);
+                        .forEach(bda ->
+                                recursivelyAdd(bda.getBeanDeploymentArchives(), warModuleBda, seen, ejbModuleAndRarBDAs));
+                recursivelyAdd(beanDeploymentArchives, warModuleBda, seen, ejbModuleAndRarBDAs);
                 libJarRootBda.getBeanDeploymentArchives().add(warRootBda);
                 libJarModuleBda.getBeanDeploymentArchives().add(warRootBda);
                 libJarRootBda.getBeanDeploymentArchives().add(warModuleBda);
@@ -458,11 +467,12 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
         }
     }
 
-    private void recursivelyAdd(Collection<BeanDeploymentArchive> bdas, BeanDeploymentArchive bda, Set<BeanDeploymentArchive> seen) {
+    private void recursivelyAdd(Collection<BeanDeploymentArchive> bdas, BeanDeploymentArchive bda, Set<BeanDeploymentArchive> seen,
+                                Set<BeanDeploymentArchive> excluded) {
         for (BeanDeploymentArchive subBda : new LinkedHashSet<>(bdas)) {
-            if (seen.add(subBda)) {
+            if (seen.add(subBda) && !excluded.contains(subBda)) {
                 subBda.getBeanDeploymentArchives().add(bda);
-                recursivelyAdd(subBda.getBeanDeploymentArchives(), bda, seen);
+                recursivelyAdd(subBda.getBeanDeploymentArchives(), bda, seen, excluded);
             }
         }
     }
