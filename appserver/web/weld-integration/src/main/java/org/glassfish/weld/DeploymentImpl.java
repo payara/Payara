@@ -46,6 +46,7 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.glassfish.weld.WeldDeployer.MAKE_WARS_VISIBLE_IN_EAR_LIBS;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
 import java.io.ByteArrayInputStream;
@@ -400,17 +401,21 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
                 warModuleBda.getBeanDeploymentArchives().add(libJarModuleBda);
 
                 // make WAR's BDAs accessible to libJar BDAs
-                Set<BeanDeploymentArchive> seen = Collections.newSetFromMap(new IdentityHashMap<>());
-                beanDeploymentArchives.stream()
-                        .filter(RootBeanDeploymentArchive.class::isInstance)
-                        .map(RootBeanDeploymentArchive.class::cast)
-                        .forEach(bda ->
-                                recursivelyAdd(bda.getBeanDeploymentArchives(), warModuleBda, seen, ejbModuleAndRarBDAs));
-                recursivelyAdd(beanDeploymentArchives, warModuleBda, seen, ejbModuleAndRarBDAs);
-                libJarRootBda.getBeanDeploymentArchives().add(warRootBda);
-                libJarModuleBda.getBeanDeploymentArchives().add(warRootBda);
-                libJarRootBda.getBeanDeploymentArchives().add(warModuleBda);
-                libJarModuleBda.getBeanDeploymentArchives().add(warModuleBda);
+                boolean makeWarBDAsAccessibleToEARLibs = Boolean.parseBoolean(context.getAppProps()
+                        .getProperty(MAKE_WARS_VISIBLE_IN_EAR_LIBS)) || Boolean.getBoolean(MAKE_WARS_VISIBLE_IN_EAR_LIBS);
+                if (makeWarBDAsAccessibleToEARLibs) {
+                    Set<BeanDeploymentArchive> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+                    beanDeploymentArchives.stream()
+                            .filter(RootBeanDeploymentArchive.class::isInstance)
+                            .map(RootBeanDeploymentArchive.class::cast)
+                            .forEach(bda ->
+                                    recursivelyAdd(bda.getBeanDeploymentArchives(), warModuleBda, seen, ejbModuleAndRarBDAs));
+                    recursivelyAdd(beanDeploymentArchives, warModuleBda, seen, ejbModuleAndRarBDAs);
+                    libJarRootBda.getBeanDeploymentArchives().add(warRootBda);
+                    libJarModuleBda.getBeanDeploymentArchives().add(warRootBda);
+                    libJarRootBda.getBeanDeploymentArchives().add(warModuleBda);
+                    libJarModuleBda.getBeanDeploymentArchives().add(warModuleBda);
+                }
 
                 for ( BeanDeploymentArchive oneBda : warModuleBda.getBeanDeploymentArchives() ) {
                     oneBda.getBeanDeploymentArchives().add( libJarRootBda );
