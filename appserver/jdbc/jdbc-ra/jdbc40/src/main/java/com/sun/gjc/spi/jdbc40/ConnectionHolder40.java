@@ -102,7 +102,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      */
     protected void init() {
         try {
-            if (isSupportClientInfo()) {
+            if (!skipClientInfoValidation && isSupportClientInfo()) {
                 defaultClientInfo = getClientInfo();
             }
         } catch (Exception e) {

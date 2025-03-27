@@ -102,7 +102,8 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
         setPageSessionAttribute(key="convertToFalseList" value={"wrapJdbcObjects" "pooling" "connectionLeakReclaim"
                                                                 "lazyConnectionAssociation" "lazyConnectionEnlistment"
                                                                 "associateWithThread" "matchConnections" "allowNonComponentCallers"
-                                                                "isConnectionValidationRequired" "failAllConnections" "logJdbcCalls"});
+                                                                "isConnectionValidationRequired" "failAllConnections" "logJdbcCalls"
+                                                                "skipClientInfoValidation"});
         setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
         gf.createAttributeMap(keys={"poolName"} values={"$pageSession{encodedName}"} map="#{pageSession.attrMap}");
         if(#{pageSession.isAppScopedRes}){

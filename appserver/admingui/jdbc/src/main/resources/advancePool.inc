@@ -148,6 +148,10 @@ Portions Copyright [2016] [Payara Foundation]
         <sun:textField id="p5" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.maxConnectionUsageCount']}" text="#{pageSession.valueMap['maxConnectionUsageCount']}"/> 
    </sun:property>
 
+   <sun:property id="p11"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.skipClientInfoValidation}" helpText="$resource{i18njdbc.jdbcPool.skipClientInfoValidationHelp}">
+        <sun:checkbox selected="#{pageSession.valueMap['skipClientInfoValidation']}" label=" " selectedValue="true" />
+    </sun:property>
+
 </sun:propertySheetSection>
 <!-- -------------------- Connection Validation ------------ -->
 

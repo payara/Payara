@@ -112,10 +112,11 @@ public class DataSourceSpec implements java.io.Serializable {
     public static final int SLOWSQLLOGTHRESHOLD = 48;
     public static final int LOGJDBCCALLS = 49;
     public static final int MAXCACHESIZE = 50;
+    public static final int SKIPCLIENTINFOVALIDATION = 51;
 
     private static final long serialVersionUID = 1L;
 
-    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL,LOGJDBCCALLS,SLOWSQLLOGTHRESHOLD, STATEMENTCACHESIZE, NUMBEROFTOPQUERIESTOREPORT,TIMETOKEEPQUERIESINMINUTES, STATEMENTTIMEOUT, PASSWORD, MAXCACHESIZE);
+    private final ConcurrentHashMap<Integer, String> details = new ConcurrentIgnoredHashMap(URL,LOGJDBCCALLS,SLOWSQLLOGTHRESHOLD, STATEMENTCACHESIZE, NUMBEROFTOPQUERIESTOREPORT,TIMETOKEEPQUERIESINMINUTES, STATEMENTTIMEOUT, PASSWORD, MAXCACHESIZE, SKIPCLIENTINFOVALIDATION);
 
     /**
      * Set the property.

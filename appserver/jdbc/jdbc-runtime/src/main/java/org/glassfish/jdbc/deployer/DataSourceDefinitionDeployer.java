@@ -911,6 +911,16 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         }
 
         @Override
+        public String getSkipClientInfoValidation() {
+            return getPropertyValue("fish.payara.skip-client-info-validation", "false");
+        }
+
+        @Override
+        public void setSkipClientInfoValidation(String value) throws PropertyVetoException {
+
+        }
+
+        @Override
         public String getMatchConnections() {
             return getPropertyValue("fish.payara.match-connections", "true");
         }

@@ -84,6 +84,7 @@ public abstract class ConnectionHolder implements Connection {
 
     protected int statementTimeout;
     protected boolean statementTimeoutEnabled;
+    protected boolean skipClientInfoValidation;
 
 
     private MethodExecutor executor = null;
@@ -121,6 +122,7 @@ public abstract class ConnectionHolder implements Connection {
         mcf_ = mc.getMcf();
         cxReqInfo_ = cxRequestInfo;
         statementTimeout = mc.getStatementTimeout();
+        skipClientInfoValidation = mc.isSkipClientInfoValidation();
         executor = new MethodExecutor();
         if (statementTimeout > 0) {
             statementTimeoutEnabled = true;

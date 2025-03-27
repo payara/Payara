@@ -1216,6 +1216,14 @@ public abstract class ManagedConnectionFactoryImpl implements jakarta.resource.s
     public String getLogJdbcCalls() {
          return spec.getDetail(DataSourceSpec.LOGJDBCCALLS);       
     }
+
+    public void setSkipClientInfoValidation(String enabled) {
+        spec.setDetail(DataSourceSpec.SKIPCLIENTINFOVALIDATION, enabled);
+    }
+
+    public String getSkipClientInfoValidation() {
+        return spec.getDetail(DataSourceSpec.SKIPCLIENTINFOVALIDATION);
+    }
     
     /**
      * Sets the description.

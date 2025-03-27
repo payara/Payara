@@ -115,6 +115,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
     private String description = null;
     private String jdbcconnectionpoolid = null;
+    private String skipClientInfoValidation = Boolean.FALSE.toString();
 
     public JDBCConnectionPoolManager() {
     }
@@ -250,6 +251,9 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         if(statementcachesize != null){
             newResource.setStatementCacheSize(statementcachesize);
         }
+        if (skipClientInfoValidation != null) {
+            newResource.setSkipClientInfoValidation(skipClientInfoValidation);
+        }
         if (validationclassname != null) {
             newResource.setValidationClassname(validationclassname);
         }
@@ -325,7 +329,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         validationclassname = (String) attrList.get(VALIDATION_CLASSNAME);
         initsql = (String) attrList.get(INIT_SQL);
         logJDBCCalls = (String) attrList.get(LOG_JDBC_CALLS);
-        
+
         // Can't be set to null as the default value is now the SilentSqlTraceListener class
         sqltracelisteners = (String) attrList.get(SQL_TRACE_LISTENERS);
         if (sqltracelisteners == null) {
@@ -335,6 +339,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         pooling = (String) attrList.get(POOLING);
         ping = (String) attrList.get(PING);
         driverclassname = (String) attrList.get(DRIVER_CLASSNAME);
+        skipClientInfoValidation = (String) attrList.get(SKIP_CLIENT_INFO_VALIDATION);
     }
 
     public ResourceStatus delete(Iterable<Server> servers, Iterable<Cluster> clusters, final Resources resources, final String cascade,

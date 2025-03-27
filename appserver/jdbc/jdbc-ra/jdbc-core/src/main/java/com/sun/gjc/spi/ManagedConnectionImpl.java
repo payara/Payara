@@ -135,6 +135,7 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
     private boolean lastAutoCommitValue = defaultAutoCommitValue;
 
     private boolean markedForRemoval = false;
+    private boolean skipClientInfoValidation;
 
     //private boolean statemntWrapping;
     private int statementTimeout;
@@ -226,6 +227,7 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
         tuneStatementLeakTracing(poolInfo, statementLeakTimeout, statementLeakReclaim);
         
         connectionPool = getJdbcConnectionPool(mcf);
+        skipClientInfoValidation = connectionPool != null && Boolean.parseBoolean(connectionPool.getSkipClientInfoValidation());
         try {
             RunLevelController runLevelController = Globals.getDefaultHabitat().getService(RunLevelController.class);
             if (runLevelController != null && runLevelController.getCurrentRunLevel() == StartupRunLevel.VAL) {
@@ -1379,5 +1381,10 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
             return -1;
         }
         return Math.round(parseDouble(thresholdInSeconds) * 1000);
+    }
+
+
+    public boolean isSkipClientInfoValidation() {
+        return skipClientInfoValidation;
     }
 }

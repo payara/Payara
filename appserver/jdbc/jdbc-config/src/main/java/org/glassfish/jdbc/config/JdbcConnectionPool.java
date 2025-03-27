@@ -745,6 +745,10 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      */
     void setStatementCacheSize(String value) throws PropertyVetoException;
 
+    @Attribute (defaultValue = "false", dataType = Boolean.class)
+    String getSkipClientInfoValidation();
+    void setSkipClientInfoValidation(String value) throws PropertyVetoException;
+
     /**
      * Gets the value of the statementCacheType property.
      *
