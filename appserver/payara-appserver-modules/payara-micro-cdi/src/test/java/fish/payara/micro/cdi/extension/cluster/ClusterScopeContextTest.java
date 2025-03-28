@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,16 +46,14 @@ import jakarta.enterprise.inject.spi.Bean;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import fish.payara.cluster.Clustered;
+import org.mockito.MockitoAnnotations;
 
 /**
  * @author Matt Gill
  */
-@RunWith(MockitoJUnitRunner.class)
 public class ClusterScopeContextTest {
 
     private static final String ANNOTATION_BEAN_NAME = "Annotation";
@@ -70,6 +68,7 @@ public class ClusterScopeContextTest {
 
     @Before
     public void initialiseMocks() {
+        MockitoAnnotations.initMocks(this);
         when(annotation.keyName()).thenReturn(ANNOTATION_BEAN_NAME);
         when(bean.getName()).thenReturn(CDI_BEAN_NAME);
         when(bean.getBeanClass()).thenReturn(BEAN_CLASS);

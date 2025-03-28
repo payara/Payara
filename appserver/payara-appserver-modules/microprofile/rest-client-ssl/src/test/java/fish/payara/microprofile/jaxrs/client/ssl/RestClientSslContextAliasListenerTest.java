@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,12 +41,12 @@ package fish.payara.microprofile.jaxrs.client.ssl;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.rest.client.RestClientBuilder;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -64,7 +64,6 @@ import static fish.payara.security.client.PayaraConstants.MP_CONFIG_CLIENT_CERTI
 import static fish.payara.security.client.PayaraConstants.REST_CLIENT_CERTIFICATE_ALIAS;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 public class RestClientSslContextAliasListenerTest {
 
     @Mock
@@ -80,6 +79,11 @@ public class RestClientSslContextAliasListenerTest {
     @Spy
     private RestClientSslContextAliasListener restClientSslContextAliasListener =
             new RestClientSslContextAliasListener();
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void restClientAliasPropertySslContextTest() throws Exception {
