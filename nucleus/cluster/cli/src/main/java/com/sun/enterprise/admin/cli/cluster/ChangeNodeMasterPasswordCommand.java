@@ -42,13 +42,14 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_LOCATION_FILE;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +66,7 @@ import com.sun.enterprise.util.HostAndPort;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
@@ -92,6 +94,9 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     @Param(name = "savemasterpassword", optional = true)
     private boolean saveMasterPassword;
+
+    @Param(name = "masterpasswordlocation", optional = true)
+    private String mpLocation;
 
     protected File selectedNodeDir;
 
@@ -154,7 +159,21 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     @Override
     protected int executeCommand() throws CommandException {
         // Find the master password file
-        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+        File mpLocation = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_LOCATION_FILE);
+        File pwdFile;
+        if (mpLocation.canRead()) {
+            try {
+                String mpPath = Files.readString(mpLocation.toPath(), Charsets.UTF8_CHARSET);
+                pwdFile = new File(mpPath);
+            } catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.WARNING,
+                    "Failed to read master-password-location file due error: " + e);
+                pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+            }
+        } else {
+            pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+        }
+
         try {
             // Write the master password file
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
