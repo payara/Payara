@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright (c) 2020-2021 Payara Foundation and/or affiliates
+// Portions Copyright (c) 2020-2025 Payara Foundation and/or affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -193,6 +193,9 @@ public class CreateJdbcConnectionPool implements AdminCommand {
     @Param(name="jdbc_connection_pool_id", alias = "name" /*Mapped to ResourceConstants.CONNECTION_POOL_NAME below */,  primary=true)
     String jdbc_connection_pool_id;
 
+    @Param(name = "skipClientInfoValidation", optional = true, defaultValue = "false")
+    Boolean skipClientInfoValidation;
+
     @Inject
     Domain domain;
 
@@ -249,6 +252,7 @@ public class CreateJdbcConnectionPool implements AdminCommand {
         attrList.put(ResourceConstants.VALIDATION_CLASSNAME, validationclassname);
         attrList.put(ResourceConstants.WRAP_JDBC_OBJECTS, wrapjdbcobjects.toString());
         attrList.put(ResourceConstants.LOG_JDBC_CALLS, logJdbcCalls.toString());
+        attrList.put(ResourceConstants.SKIP_CLIENT_INFO_VALIDATION, skipClientInfoValidation.toString());
         
         ResourceStatus rs;
 

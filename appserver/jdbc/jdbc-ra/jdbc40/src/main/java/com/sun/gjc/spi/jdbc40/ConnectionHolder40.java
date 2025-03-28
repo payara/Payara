@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright 2016-2022 Payara Foundation and/or affiliates
+ * Portions Copyright 2016-2025 Payara Foundation and/or affiliates
  */
 
 package com.sun.gjc.spi.jdbc40;
@@ -102,7 +102,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      */
     protected void init() {
         try {
-            if (isSupportClientInfo()) {
+            if (!skipClientInfoValidation && isSupportClientInfo()) {
                 defaultClientInfo = getClientInfo();
             }
         } catch (Exception e) {

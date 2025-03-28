@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.config;
 
@@ -744,6 +744,10 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setStatementCacheSize(String value) throws PropertyVetoException;
+
+    @Attribute (defaultValue = "false", dataType = Boolean.class)
+    String getSkipClientInfoValidation();
+    void setSkipClientInfoValidation(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the statementCacheType property.

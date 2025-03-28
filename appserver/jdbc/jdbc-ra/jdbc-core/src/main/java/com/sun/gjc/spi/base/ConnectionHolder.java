@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi.base;
 
@@ -84,6 +84,7 @@ public abstract class ConnectionHolder implements Connection {
 
     protected int statementTimeout;
     protected boolean statementTimeoutEnabled;
+    protected boolean skipClientInfoValidation;
 
 
     private MethodExecutor executor = null;
@@ -121,6 +122,7 @@ public abstract class ConnectionHolder implements Connection {
         mcf_ = mc.getMcf();
         cxReqInfo_ = cxRequestInfo;
         statementTimeout = mc.getStatementTimeout();
+        skipClientInfoValidation = mc.isSkipClientInfoValidation();
         executor = new MethodExecutor();
         if (statementTimeout > 0) {
             statementTimeoutEnabled = true;
