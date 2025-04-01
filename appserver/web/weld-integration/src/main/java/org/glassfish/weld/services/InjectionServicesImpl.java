@@ -43,6 +43,7 @@ package org.glassfish.weld.services;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.InjectionCapable;
@@ -156,7 +157,7 @@ public class InjectionServicesImpl implements InjectionServices {
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass ) && !(bundleContext instanceof Application)
+            if ( isInterceptor( targetClass ) && isValidBundleContext(false)
                     && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
@@ -215,7 +216,7 @@ public class InjectionServicesImpl implements InjectionServices {
                   } else {
                     injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
                   }
-                } else if (!(bundleContext instanceof Application)){
+                } else if (isValidBundleContext(false)) {
                   if ( target == null ) {
                     injectionManager.injectClass(targetClass, injectionEnv, false);
                   } else {
@@ -235,7 +236,7 @@ public class InjectionServicesImpl implements InjectionServices {
 
     @Override
     public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
-        if ( bundleContext instanceof EjbBundleDescriptor || bundleContext instanceof Application ) {
+        if ( bundleContext instanceof EjbBundleDescriptor || !isValidBundleContext(true) ) {
             // we can't handle validting producer fields for ejb bundles because the JNDI environment is not setup
             // yet for ejbs and so we can't get the correct JndiNameEnvironment to call getInjectionInfoByClass.
             // getInjectionInfoByClass caches the results and so causes subsequent calls to return invalid information.
@@ -475,7 +476,12 @@ public class InjectionServicesImpl implements InjectionServices {
         return jndiName;
     }
 
-
+    private boolean isValidBundleContext(boolean checkConnector) {
+        if (bundleContext instanceof Application) {
+            return false;
+        }
+        return !checkConnector || !(bundleContext instanceof ConnectorDescriptor);
+    }
 
     @Override
     public void cleanup() {
