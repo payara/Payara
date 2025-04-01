@@ -43,55 +43,36 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.packager</groupId>
-        <artifactId>packages</artifactId>
+        <groupId>fish.payara.server.internal.data</groupId>
+        <artifactId>data</artifactId>
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>data</artifactId>
-    <name>Payara Jakarta Data Package</name>
-    <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the Payara Jakarta Data package</description>
-
+    <artifactId>data-core</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
     <properties>
-        <temp.dir>${project.build.directory}/dependency</temp.dir>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>process-step1</id>
-                    </execution>
-                    <execution>
-                        <id>process-step2</id>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>process-step3</id>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>jakarta.data-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>fish.payara.server.core.deployment</groupId>
+            <artifactId>dol</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.data</groupId>
-            <artifactId>data-core</artifactId>
+            <groupId>jakarta.data</groupId>
+            <artifactId>jakarta.data-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.web</groupId>
+            <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

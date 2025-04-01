@@ -203,6 +203,8 @@
         <payara.transformer.version>0.2.13</payara.transformer.version>
 
         <awaitility.version>4.3.0</awaitility.version>
+        <!-- classgraph dependency used to solve issue when creating proxy implementations for jakarta data-->
+        <classgraph.version>4.8.179</classgraph.version>
     </properties>
 
     <issueManagement>
