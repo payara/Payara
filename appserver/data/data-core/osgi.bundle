@@ -37,6 +37,7 @@
  # only if the new code is made subject to such option by the copyright
  # holder.
  #
--exportcontents: fish.payara.jakarta.data.core.activation; \
-                 fish.payara.jakarta.data.core.annotation; \
+-exportcontents: fish.payara.jakarta.data.core; \
+                 fish.payara.jakarta.data.core.activation; \
+                 fish.payara.jakarta.data.core.cdi.extension; \
                  fish.payara.jakarta.data.core.connector; version=${project.osgi.version}

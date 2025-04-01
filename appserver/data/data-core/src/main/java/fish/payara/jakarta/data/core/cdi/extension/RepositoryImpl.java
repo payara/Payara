@@ -37,33 +37,31 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.jakarta.data.core.annotation;
+package fish.payara.jakarta.data.core.cdi.extension;
 
-import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import org.glassfish.apf.AnnotationInfo;
+import java.util.logging.Logger;
 
 /**
- * Utility class to parse data related to the Repository annotation
- * @author Alfonso Valdez
+ * This is a generic class that represent the proxy to be used during runtime 
+ * @param <T>
  */
-public class JakartaDataRepositoryUtilityParsing {
-    
-    public static void processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)  {
-        Annotation annotation = ainfo.getAnnotation();
-        AnnotatedElement annotatedElement = ainfo.getAnnotatedElement();
-        //Convert the annotated element to class to explore additional details like extension of other interfaces and declared methods
-        Class<?> cl = (Class<?>)ainfo.getAnnotatedElement();
-        //get Additional interfaces used
-        Class<?>[] interfacesArray = cl.getInterfaces();
-        //get Declared methods on the interface
-        Method[] methods = cl.getDeclaredMethods();
-        //explore annotated methods
-        for (Method m : methods) {
-            //for additional annotations like insert, find and others from the Jakarta Data specification
-            Annotation[] annotations = m.getAnnotations();
-        }
+public class RepositoryImpl <T> implements InvocationHandler {
+
+    public static final Logger logger = Logger.getLogger(RepositoryImpl.class.getName());
+
+    final Class<T> repositoryInterface;
+
+    public RepositoryImpl(Class<T> repositoryInterface) {
+        this.repositoryInterface = repositoryInterface;
     }
+    
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        //In this method we can add implementation to execute dynamic queries
+        logger.info("executing method:"+method.getName());
+        return "executing method:"+method.getName();
+    }
+
 }

@@ -96,11 +96,6 @@
            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.persistence</groupId>
-            <artifactId>data-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
            <groupId>fish.payara.server.internal.persistence</groupId>
            <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
            <version>${project.version}</version>

@@ -39,11 +39,17 @@
  */
 package fish.payara.jakarta.data.core.connector;
 
+import jakarta.enterprise.inject.spi.Extension;
+import java.util.Collection;
+import java.util.function.Supplier;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
+import fish.payara.jakarta.data.core.cdi.extension.JakartaDataExtension;
+
 
 /**
  * Deployer create to process Jakarta Data annotations, here we can declare information related to process the annotations 
@@ -72,6 +78,11 @@ public class JakartaDataRepositoryDeployer implements Deployer<JakartaDataContai
     @Override
     public JakartaDataApplicationContainer load(JakartaDataContainer container, DeploymentContext context) {
         //Here we can declare extension to process beans
+        Collection<Supplier<Extension>> snifferExtensions =
+                context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+        if (snifferExtensions != null) {
+            snifferExtensions.add(JakartaDataExtension::new);
+        }
         return new JakartaDataApplicationContainer(context);
     }
 
