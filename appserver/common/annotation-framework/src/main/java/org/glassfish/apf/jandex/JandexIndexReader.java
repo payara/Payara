@@ -50,6 +50,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.JandexIndexer;
@@ -64,10 +65,12 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,6 +87,8 @@ import java.util.function.BiPredicate;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import static org.glassfish.internal.deployment.Deployment.DEPLOYMENT_SUCCESS;
@@ -126,8 +131,8 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
                     DeploymentUtils.getWarLibraryCache().keySet()
                             .forEach(path -> getOrCreateIndex(deploymentContext, Path.of(path).toUri(), tracing));
                 }
+                indexExternalLibraries(deploymentContext, tracing);
             }
-
         }
     }
 
@@ -396,6 +401,31 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
             }
         }
         return null;
+    }
+
+    private void indexExternalLibraries(DeploymentContext deploymentContext,
+                                        StructuredDeploymentTracing tracing) throws IOException {
+        boolean skipScanExternalLibProp = Boolean.valueOf(deploymentContext.getAppProps()
+                .getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB));
+        for (URI externalLib : getExternalLibraries(skipScanExternalLibProp, deploymentContext)) {
+                getOrCreateIndex(deploymentContext, externalLib, tracing);
+        }
+    }
+
+    private List<URI> getExternalLibraries(boolean skipScanExternalLibProp,
+                                           DeploymentContext deploymentContext) {
+        if (skipScanExternalLibProp) {
+            // if we skip scanning external libraries, we should just
+            // return an empty list here
+            return Collections.emptyList();
+        }
+        try {
+            return Stream.concat(DeploymentUtils.getExternalLibraries(deploymentContext.getSource()).stream(),
+                    deploymentContext.getAppLibs().stream()).collect(Collectors.toList());
+        } catch (URISyntaxException e) {
+            AnnotationUtils.getLogger().log(Level.WARNING, e, () -> "Failed to get external libraries");
+            return Collections.emptyList();
+        }
     }
 
     @Override
