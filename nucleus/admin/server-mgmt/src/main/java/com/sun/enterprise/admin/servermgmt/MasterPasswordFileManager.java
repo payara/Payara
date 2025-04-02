@@ -123,13 +123,20 @@ public class MasterPasswordFileManager extends KeystoreManager {
         throws RepositoryException
     {
         final PEFileLayout layout = getFileLayout(config);
+        File mpLocation = layout.getMasterPasswordLocationFile();
         if (path != null) {
-            File mpLocation = layout.getMasterPasswordLocationFile();
             try (FileWriter writer = new FileWriter(mpLocation)) {
                 writer.write(path);
             } catch (IOException e) {
                 Logger.getAnonymousLogger().log(Level.SEVERE,
                     "Failed to write master-password-location file: ", e);
+            }
+        } else {
+            if (mpLocation.exists()) {
+                if (!mpLocation.delete()) {
+                    Logger.getAnonymousLogger().log(Level.WARNING,
+                        "Failed to delete old master-password-location file.");
+                }
             }
         }
 
