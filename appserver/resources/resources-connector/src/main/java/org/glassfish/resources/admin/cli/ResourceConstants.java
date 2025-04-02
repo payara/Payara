@@ -142,6 +142,8 @@ public final class ResourceConstants {
 
     public static final String STATEMENT_LEAK_RECLAIM = "statement-leak-reclaim";
 
+    public static final String SKIP_CLIENT_INFO_VALIDATION = "skip-client-info-validation";
+
     //Mail resource
     public static final String MAIL_HOST = "host";
 
@@ -259,7 +261,6 @@ public final class ResourceConstants {
     public static final String THREAD_LIFETIME_SECONDS = "thread-lifetime-seconds";
     public static final String TASK_QUEUE_CAPACITY = "task-queue-capacity";
     public static final String MAX_ASYNC = "max-async";
-    public static final String SKIP_CLIENT_INFO_VALIDATION = "skip-client-info-validation";
 
     public static final String SYSTEM_ALL_REQ = "system-all-req";
     

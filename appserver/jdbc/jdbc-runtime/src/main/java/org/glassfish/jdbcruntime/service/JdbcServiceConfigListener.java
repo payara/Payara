@@ -59,9 +59,6 @@ import java.util.List;
 public class JdbcServiceConfigListener implements ConfigListener {
 
     @Inject
-    private JdbcConnectionPool jdbcConnectionPool;
-
-    @Inject
     private Transactions transactions;
 
     @PostConstruct
