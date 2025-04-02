@@ -51,7 +51,9 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.jboss.jandex.IndexReader;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
@@ -111,16 +113,21 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     @Override
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void index(DeploymentContext deploymentContext) throws IOException {
-        getCachePath(deploymentContext.getSource().getName(), "none").getParent().toFile().mkdirs();
+        StructuredDeploymentTracing tracing = StructuredDeploymentTracing.load(deploymentContext);
+        try (var span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, deploymentContext.getSource().getName())) {
+            getCachePath(deploymentContext.getSource().getName(), "none").getParent().toFile().mkdirs();
 
-        if (getIndexMap(deploymentContext) == null) {
-            Map<String, Index> indexMap = new ConcurrentHashMap<>();
-            deploymentContext.addTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, indexMap);
-            indexMap.put(deploymentContext.getSource().getURI().toString(), indexRootArchive(deploymentContext));
-            if (DeploymentUtils.useWarLibraries(deploymentContext)) {
-                DeploymentUtils.getWarLibraryCache().keySet()
-                        .forEach(path -> getOrCreateIndex(deploymentContext, Path.of(path).toUri()));
+            if (getIndexMap(deploymentContext) == null) {
+                Map<String, Index> indexMap = new ConcurrentHashMap<>();
+                deploymentContext.addTransientAppMetaData(JANDEX_INDEX_METADATA_KEY, indexMap);
+                indexMap.put(deploymentContext.getSource().getURI().toString(),
+                        indexRootArchive(deploymentContext, tracing));
+                if (DeploymentUtils.useWarLibraries(deploymentContext)) {
+                    DeploymentUtils.getWarLibraryCache().keySet()
+                            .forEach(path -> getOrCreateIndex(deploymentContext, Path.of(path).toUri(), tracing));
+                }
             }
+
         }
     }
 
@@ -143,7 +150,8 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
     @Override
     public Map<String, Index> getIndexesByURI(DeploymentContext deploymentContext, Collection<URI> uris) {
         Map<String, Index> result = new HashMap<>();
-        uris.forEach(uri ->  result.put(uri.toString(), getOrCreateIndex(deploymentContext, uri)));
+        uris.forEach(uri ->  result.put(uri.toString(), getOrCreateIndex(deploymentContext, uri,
+                StructuredDeploymentTracing.createDisabled(uri.toString()))));
         return result;
     }
 
@@ -188,7 +196,7 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         return index;
     }
 
-    private Index getOrCreateIndex(DeploymentContext deploymentContext, URI uri) {
+    private Index getOrCreateIndex(DeploymentContext deploymentContext, URI uri, StructuredDeploymentTracing tracing) {
         if (isEndsWithSlash(uri.toString())) {
             return getRootIndex(deploymentContext);
         }
@@ -196,18 +204,25 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         return indexMap.computeIfAbsent(uri.toString(), key -> {
             try {
                 DeploymentUtils.WarLibraryDescriptor descriptor = DeploymentUtils.getWarLibraryCache().get(uri.getPath());
-                return descriptor != null ? descriptor.getIndex() : indexOrGetFromCache(archiveFactory.openArchive(uri));
+                return descriptor != null ? descriptor.getIndex() : indexOrGetFromCacheWithSpan(archiveFactory.openArchive(uri), tracing);
             } catch (IOException | ClassNotFoundException e) {
                 return null;
             }
         });
     }
 
+    private Index indexOrGetFromCacheWithSpan(ReadableArchive archive,
+                                              StructuredDeploymentTracing tracing) throws IOException, ClassNotFoundException {
+        try (var span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, archive.getName())) {
+            return indexOrGetFromCache(archive);
+        }
+    }
+
     private static boolean isEndsWithSlash(String path) {
         return path.endsWith(File.separator) || path.endsWith("/");
     }
 
-    private Index indexRootArchive(DeploymentContext deploymentContext) throws IOException {
+    private Index indexRootArchive(DeploymentContext deploymentContext, StructuredDeploymentTracing tracing) throws IOException {
         Index index = getIndexFromArchive(deploymentContext.getSource());
         ArrayList<String> subArchives = new ArrayList<>();
         if (index == null) {
@@ -215,16 +230,16 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         } else {
             filterEntries(deploymentContext.getSource(), JandexIndexReader::checkIfSubArchive, subArchives);
         }
-        indexSubArchives(deploymentContext, deploymentContext.getSource(), subArchives);
+        indexSubArchives(deploymentContext, deploymentContext.getSource(), subArchives, tracing);
         return index;
     }
 
-    private void indexSubArchives(DeploymentContext deploymentContext, ReadableArchive rootArchive, List<String> subArchives) throws IOException {
+    private void indexSubArchives(DeploymentContext deploymentContext, ReadableArchive rootArchive,
+                                  List<String> subArchives, StructuredDeploymentTracing tracing) throws IOException {
         List<Callable<Void>> innerJarTasks = new ArrayList<>();
         StringBuilder errors = new StringBuilder();
-        subArchives.forEach(subArchive -> {
-            innerJarTasks.add(() -> indexSubArchive(deploymentContext, rootArchive, subArchive, errors));
-        });
+        subArchives.forEach(subArchive -> innerJarTasks.add(
+                () -> indexSubArchive(deploymentContext, rootArchive, subArchive, errors, tracing)));
         ForkJoinPool.commonPool().invokeAll(innerJarTasks);
         if (errors.length() > 0) {
             throw new IOException(errors.toString());
@@ -283,8 +298,11 @@ public class JandexIndexReader implements JandexIndexer, EventListener {
         return ARCHIVE_EXTENSION_PATTERN.matcher(entry).find();
     }
 
-    private Void indexSubArchive(DeploymentContext context, ReadableArchive archive, String entry, StringBuilder errors) {
-        try (ReadableArchive subArchive = archive.getSubArchive(entry)) {
+    private Void indexSubArchive(DeploymentContext context, ReadableArchive archive,
+                                 String entry, StringBuilder errors, StructuredDeploymentTracing tracing) {
+        try (ReadableArchive subArchive = archive.getSubArchive(entry);
+             var span = subArchive != null
+                     ? tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, subArchive.getName()) : null) {
             if (subArchive != null) {
                 Index index = indexOrGetFromCache(subArchive);
                 getIndexMap(context).put(subArchive.getURI().toString(), index);
