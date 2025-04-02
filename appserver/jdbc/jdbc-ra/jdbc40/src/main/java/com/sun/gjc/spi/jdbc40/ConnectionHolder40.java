@@ -102,7 +102,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      */
     protected void init() {
         try {
-            if (!skipClientInfoValidation && isSupportClientInfo()) {
+            if (isSupportClientInfo()) {
                 defaultClientInfo = getClientInfo();
             }
         } catch (Exception e) {
@@ -400,6 +400,9 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * @since 1.6
      */
     private boolean isSupportClientInfo() {
+        if (skipClientInfoValidation) {
+            return false;
+        }
         Boolean isSupportClientInfo = getManagedConnection().isClientInfoSupported();
         if (isSupportClientInfo != null) {
             return isSupportClientInfo;
