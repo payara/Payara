@@ -135,10 +135,6 @@ public class InjectionServicesImpl implements InjectionServices {
 
     @Override
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
-        if (bundleContext instanceof ConnectorDescriptor) {
-            return;
-        }
-
         try {
             ServiceLocator serviceLocator = Globals.getDefaultHabitat();
             ComponentEnvManager compEnvManager = serviceLocator.getService(ComponentEnvManager.class);
@@ -154,14 +150,17 @@ public class InjectionServicesImpl implements InjectionServices {
 
             ManagedBeanDescriptor mbDesc = null;
 
-            JndiNameEnvironment injectionEnv = (JndiNameEnvironment) bundleContext;
+            JndiNameEnvironment injectionEnv = null;
+            if (bundleContext instanceof JndiNameEnvironment) {
+                injectionEnv = (JndiNameEnvironment) bundleContext;
+            }
 
             AnnotatedType annotatedType = injectionContext.getAnnotatedType();
             Class targetClass = annotatedType.getJavaClass();
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass ) && isValidBundleContext(false)
+            if ( isInterceptor( targetClass ) && isValidBundleContext(true)
                     && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
