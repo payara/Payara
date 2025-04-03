@@ -135,6 +135,10 @@ public class InjectionServicesImpl implements InjectionServices {
 
     @Override
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
+        if (!isValidBundleContext(true)) {
+            return;
+        }
+
         try {
             ServiceLocator serviceLocator = Globals.getDefaultHabitat();
             ComponentEnvManager compEnvManager = serviceLocator.getService(ComponentEnvManager.class);
