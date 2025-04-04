@@ -64,7 +64,7 @@
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <jakarta.security.enterprise.version>3.0.3.payara-p1</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise.version>3.0.3.payara-p2</jakarta.security.enterprise.version>
         <cdi-api.version>4.0.1</cdi-api.version>
         <grizzly.version>4.0.2.payara-p1</grizzly.version>
         <servlet-api.version>6.0.0</servlet-api.version>
