@@ -219,7 +219,7 @@ public class InjectionServicesImpl implements InjectionServices {
                   } else {
                     injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
                   }
-                } else if (isValidBundleContext(false)) {
+                } else if (isValidBundleContext(true)) {
                   if ( target == null ) {
                     injectionManager.injectClass(targetClass, injectionEnv, false);
                   } else {
