@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,10 +42,8 @@ package fish.payara.nucleus.requesttracing;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -54,12 +52,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 /**
  * @author mertcaliskan
  */
-@RunWith(MockitoJUnitRunner.class)
 public class RequestTracingServiceMockTest {
 
     @Mock
@@ -76,6 +75,7 @@ public class RequestTracingServiceMockTest {
 
     @Before
     public void configureService() {
+        MockitoAnnotations.initMocks(this);
         executionOptions.setEnabled(false);
         executionOptions.setSampleRate(1.0);
         executionOptions.setSampleRateFirstEnabled(false);
