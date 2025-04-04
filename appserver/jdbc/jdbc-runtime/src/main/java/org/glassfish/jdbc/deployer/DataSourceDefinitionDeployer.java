@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.jdbc.deployer;
 
@@ -908,6 +908,16 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public void setStatementCacheSize(String value) throws PropertyVetoException {
             //do nothing
+        }
+
+        @Override
+        public String getSkipClientInfoValidation() {
+            return getPropertyValue("fish.payara.skip-client-info-validation", "false");
+        }
+
+        @Override
+        public void setSkipClientInfoValidation(String value) throws PropertyVetoException {
+
         }
 
         @Override
