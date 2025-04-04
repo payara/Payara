@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
 import com.sun.enterprise.admin.servermgmt.*;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.util.i18n.StringManager;
+
 import java.io.File;
 import java.util.BitSet;
 
@@ -219,6 +220,10 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
         Boolean b = (Boolean)domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
         return b;
     }
+
+    protected static String getNewMasterPasswordLocation(DomainConfig domainConfig) {
+        return (String)domainConfig.get(DomainConfig.K_MASTER_PASSWORD_LOCATION);
+    }
     
     /**
      * Changes the master password for the domain
@@ -228,7 +233,9 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
     {                                      
         try {
             String oldPass = getMasterPasswordClear(config);
-            String newPass = getNewMasterPasswordClear(config);                        
+            String newPass = getNewMasterPasswordClear(config);
+            String mpLocation = getNewMasterPasswordLocation(config);
+            boolean saveMp = saveMasterPassword(config);
             
             //Change the password of the keystore alias file
             changePasswordAliasKeystorePassword(config, oldPass, newPass);
@@ -238,7 +245,7 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
 
             //Change the password in the masterpassword file or delete the file if it is 
             //not to be saved.
-            changeMasterPasswordInMasterPasswordFile(config, newPass, saveMasterPassword(config));
+            changeMasterPasswordInMasterPasswordFile(config, newPass, saveMp, mpLocation);
         } catch (Exception ex) {
             throw new DomainException(
                 STRINGS_MANAGER.getString("masterPasswordNotChanged"), ex);

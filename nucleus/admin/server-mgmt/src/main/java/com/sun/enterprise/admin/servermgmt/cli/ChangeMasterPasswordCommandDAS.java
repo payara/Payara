@@ -37,14 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.Arrays;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -73,6 +70,9 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
 
     @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
     protected boolean savemp;
+
+    @Param(name = "masterpasswordlocation", optional = true)
+    private String mpLocation;
 
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(ChangeMasterPasswordCommandDAS.class);
 
@@ -123,6 +123,9 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
             domainConfig.put(DomainConfig.K_MASTER_PASSWORD, mp);
             domainConfig.put(DomainConfig.K_NEW_MASTER_PASSWORD, nmp);
             domainConfig.put(DomainConfig.K_SAVE_MASTER_PASSWORD, savemp);
+            if (savemp && mpLocation != null) {
+                domainConfig.put(DomainConfig.K_MASTER_PASSWORD_LOCATION, mpLocation);
+            }
             manager.changeMasterPassword(domainConfig);
 
             try {

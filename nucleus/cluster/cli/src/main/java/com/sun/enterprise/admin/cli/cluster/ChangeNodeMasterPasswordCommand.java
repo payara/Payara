@@ -42,13 +42,15 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_LOCATION_FILE;
 import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +67,7 @@ import com.sun.enterprise.util.HostAndPort;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
+import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
@@ -92,6 +95,9 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     @Param(name = "savemasterpassword", optional = true)
     private boolean saveMasterPassword;
+
+    @Param(name = "masterpasswordlocation", optional = true)
+    private String mpLocation;
 
     protected File selectedNodeDir;
 
@@ -154,15 +160,50 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     @Override
     protected int executeCommand() throws CommandException {
         // Find the master password file
-        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+        File mpLocationFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_LOCATION_FILE);
+        File oldPasswordFile;
+        String newPasswordLocation = mpLocation == null ?
+            new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE).getAbsolutePath() :
+            mpLocation;
+
+        if (mpLocationFile.canRead()) {
+            try {
+                String mpPath = Files.readString(mpLocationFile.toPath(), Charsets.UTF8_CHARSET);
+                oldPasswordFile = new File(mpPath);
+            } catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.WARNING,
+                    "Failed to read master-password-location file due error: " + e);
+                oldPasswordFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+            }
+        } else {
+            oldPasswordFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+        }
+
         try {
             // Write the master password file
-            PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
-            p.setPasswordForAlias(MASTERPASSWORD_FILE, newPassword.getBytes(StandardCharsets.UTF_8));
-            FileProtectionUtility.chmod0600(pwdFile);
+            PasswordAdapter p = new PasswordAdapter(oldPasswordFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
+            p.setPasswordForAlias(MASTERPASSWORD_FILE, newPassword.getBytes(StandardCharsets.UTF_8), newPasswordLocation);
+
+            File newMpFile = mpLocation == null ? oldPasswordFile : new File(mpLocation);
+            FileProtectionUtility.chmod0600(newMpFile);
+
+            // Write the master password location if applicable
+            if (mpLocation != null) {
+                try (FileWriter writer = new FileWriter(mpLocationFile)) {
+                    writer.write(mpLocation);
+                } catch (IOException e) {
+                    Logger.getAnonymousLogger().log(Level.SEVERE,
+                        "Failed to write master-password-location file due to error: ", e);
+                }
+            } else if (mpLocationFile.exists()) {
+                if (!mpLocationFile.delete()) {
+                    Logger.getAnonymousLogger().log(Level.WARNING,
+                        "Failed to delete old master-password-location file.");
+                }
+            }
             return 0;
         } catch (Exception ex) {
-            throw new CommandException(STRINGS.get("masterPasswordFileNotCreated", pwdFile), ex);
+            throw new CommandException(STRINGS.get("masterPasswordFileNotCreated", oldPasswordFile), ex);
         }
     }
 
