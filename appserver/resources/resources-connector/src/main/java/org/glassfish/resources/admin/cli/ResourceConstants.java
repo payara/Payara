@@ -142,6 +142,8 @@ public final class ResourceConstants {
 
     public static final String STATEMENT_LEAK_RECLAIM = "statement-leak-reclaim";
 
+    public static final String SKIP_CLIENT_INFO_VALIDATION = "skip-client-info-validation";
+
     //Mail resource
     public static final String MAIL_HOST = "host";
 
