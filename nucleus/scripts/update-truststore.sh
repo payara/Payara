@@ -4,10 +4,17 @@ set -euo pipefail
 
 echo "🔍 Detecting Java trust store path..."
 
-# Set your custom Java trust store (already updated one)
-JAVA_TRUSTSTORE="/Users/abdulrahim/cacerts"
+# Detect Java trust store path dynamically
+if [ -f "${JAVA_HOME}/jre/lib/security/cacerts" ]; then
+    JAVA_TRUSTSTORE="${JAVA_HOME}/jre/lib/security/cacerts"
+elif [ -f "${JAVA_HOME}/lib/security/cacerts" ]; then
+    JAVA_TRUSTSTORE="${JAVA_HOME}/lib/security/cacerts"
+else
+    echo "❌ ERROR: Unable to find Java trust store. Exiting..."
+    exit 1
+fi
 
-echo "📌 Using custom trust store: $JAVA_TRUSTSTORE"
+echo "📌 Java Trust Store Path: $JAVA_TRUSTSTORE"
 
 # Generate Payara-compatible PKCS12 trust store
 echo "🛠️ Generating Payara truststore (cacerts.p12) from Java truststore..."
