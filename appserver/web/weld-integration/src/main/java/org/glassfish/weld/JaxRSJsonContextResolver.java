@@ -48,8 +48,11 @@ import jakarta.ws.rs.core.FeatureContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.ext.ContextResolver;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import static jakarta.ws.rs.RuntimeType.SERVER;
 import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;
 
@@ -65,18 +68,41 @@ import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORIT
 public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedAutoDiscoverable {
     private final Map<Class<?>, Jsonb> jsonbMap = new ConcurrentHashMap<>();
     static final ThreadLocal<Class<?>> currentType = new ThreadLocal<>();
+    private final List<ContextResolver<?>> existingResolvers;
+
+    public JaxRSJsonContextResolver() {
+        this.existingResolvers = Collections.emptyList();
+    }
+
+    private JaxRSJsonContextResolver(List<ContextResolver<?>> existingResolvers) {
+        this.existingResolvers = existingResolvers;
+    }
 
     @Override
     public void configure(FeatureContext context) {
-        context.register(JaxRSJsonContextResolver.class);
+        List<ContextResolver<?>> resolvers = context.getConfiguration().getInstances().stream()
+                .filter(o -> ContextResolver.class.isAssignableFrom(o.getClass()))
+                .map(o -> (ContextResolver<?>) o)
+                .collect(Collectors.toList());
+        context.register(new JaxRSJsonContextResolver(resolvers));
     }
 
     @Override
     public Jsonb getContext(Class<?> type) {
-        return jsonbMap.computeIfAbsent(type, var -> {
+        return jsonbMap.computeIfAbsent(type, unused -> {
             currentType.set(type);
             try {
-                return JsonbBuilder.create();
+                if (existingResolvers.isEmpty()) {
+                    return JsonbBuilder.create();
+                } else {
+                    for (ContextResolver<?> resolver : existingResolvers) {
+                        Object result = resolver.getContext(type);
+                        if (result instanceof Jsonb) {
+                            return (Jsonb) result;
+                        }
+                    }
+                    return JsonbBuilder.create();
+                }
             } finally {
                 currentType.remove();
             }
