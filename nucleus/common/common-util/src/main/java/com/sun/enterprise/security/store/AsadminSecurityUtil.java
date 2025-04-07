@@ -210,7 +210,7 @@ public class AsadminSecurityUtil {
         try {
             return openTruststore(password);
         } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
-            throw new RuntimeException(e);
+            logger.log(Level.WARNING, String.format("Error when opening truststore: %s", e));
         }
     }
 
@@ -218,7 +218,7 @@ public class AsadminSecurityUtil {
         try {
             return openKeystore(password);
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
-            throw new RuntimeException(e);
+            logger.log(Level.WARNING, String.format("Error when opening keystore: %s", e));
         }
     }
 
