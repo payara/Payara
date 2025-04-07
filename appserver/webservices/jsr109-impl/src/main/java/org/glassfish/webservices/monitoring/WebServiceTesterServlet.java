@@ -543,9 +543,8 @@ public class WebServiceTesterServlet extends HttpServlet {
         wsimportArgs.add(classesDir.getAbsolutePath());
         wsimportArgs.add("-keep");
         wsimportArgs.add(wsdlLocation.toExternalForm());
-        wsimportArgs.add("-Xendorsed");
         wsimportArgs.add("-target");
-        wsimportArgs.add("2.1");
+        wsimportArgs.add("3.0");
         wsimportArgs.add("-extension");
         String modulesDir = System.getProperty("com.sun.aas.installRoot") + File.separator + "modules" + File.separator;
         wsimportArgs.add(modulesDir + "jakarta.jws-api.jar");
