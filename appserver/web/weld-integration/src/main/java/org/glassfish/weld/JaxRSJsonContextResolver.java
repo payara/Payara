@@ -81,8 +81,8 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
     @Override
     public void configure(FeatureContext context) {
         List<ContextResolver<?>> resolvers = context.getConfiguration().getInstances().stream()
-                .filter(o -> ContextResolver.class.isAssignableFrom(o.getClass()))
-                .map(o -> (ContextResolver<?>) o)
+                .filter(ContextResolver.class::isInstance)
+                .map(resolver -> (ContextResolver<?>) resolver)
                 .collect(Collectors.toList());
         context.register(new JaxRSJsonContextResolver(resolvers));
     }
