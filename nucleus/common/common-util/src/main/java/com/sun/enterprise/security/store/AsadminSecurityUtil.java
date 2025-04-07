@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.store;
 
@@ -78,6 +78,7 @@ public class AsadminSecurityUtil {
 
     private static final Logger logger = CULoggerInfo.getLogger();
 
+    private char[] password;
 
     static {
 
@@ -206,16 +207,24 @@ public class AsadminSecurityUtil {
      * @return the AsadminTruststore object
      */
     public AsadminTruststore getAsadminTruststore() {
-        return asadminTruststore;
+        try {
+            return openTruststore(password);
+        } catch (CertificateException | KeyStoreException | NoSuchAlgorithmException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public KeyStore getAsadminKeystore() {
-        return asadminKeystore;
+        try {
+            return openKeystore(password);
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void init(final char[] commandLineMasterPassword, final boolean isPromptable)
             throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        char[] passwordToUse = chooseMasterPassword(commandLineMasterPassword);
+        password = chooseMasterPassword(commandLineMasterPassword);
         try {
             /*
              * Open the keystore if the user has specified one using
@@ -224,7 +233,7 @@ public class AsadminSecurityUtil {
              * asadmin to the DAS (if they have added the corresponding cert to
              * the DAS truststore).
              */
-            asadminKeystore = openKeystore(passwordToUse);
+            asadminKeystore = openKeystore(password);
             if (asadminKeystore == null) {
                 logger.finer("Skipped loading keystore - location null");
             } else {
@@ -239,11 +248,11 @@ public class AsadminSecurityUtil {
                 if ( ! isPromptable) {
                     throw ex;
                 }
-                passwordToUse = promptForPassword();
-                if (passwordToUse == null) {
+                password = promptForPassword();
+                if (password == null) {
                     throw new IllegalArgumentException();
                 }
-                asadminKeystore = openKeystore(passwordToUse);
+                asadminKeystore = openKeystore(password);
                 logger.finer("Loaded keystore using prompted master password");
             }
         } catch (Exception e) {
@@ -254,12 +263,12 @@ public class AsadminSecurityUtil {
          * Open the truststore with that password.
          */
         try {
-            asadminTruststore = openTruststore(passwordToUse);
+            asadminTruststore = openTruststore(password);
         } catch (IOException e) {
             //If we're using the default trust store try to recreate it, otherwise just throw the exception
             if (System.getProperty(SystemPropertyConstants.CLIENT_TRUSTSTORE_PROPERTY) == null) {
                 logger.log(Level.WARNING, String.format("Error when reading truststore, exception:%s. Now recreating file", e));
-                recreateDefaultTrustStore(passwordToUse);
+                recreateDefaultTrustStore(password);
             } else {
                 throw e;
             }

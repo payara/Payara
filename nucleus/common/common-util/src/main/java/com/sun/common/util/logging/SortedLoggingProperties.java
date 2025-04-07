@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.common.util.logging;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -52,7 +53,8 @@ public class SortedLoggingProperties extends Properties {
     private final Properties properties;
 
     public SortedLoggingProperties(Properties properties) {
-        this.properties = properties;
+        this.properties = new Properties();
+        this.properties.putAll(properties);
 
         patterns = Stream.of("handlers"
                 , "handlerServices"
@@ -109,7 +111,7 @@ public class SortedLoggingProperties extends Properties {
         return properties.get(key);
     }
 
-    private static class LoggingKeySorter implements Comparator<Object>{
+    private static class LoggingKeySorter implements Comparator<Object>, Serializable {
         private List<Object> keys;
         private List<Integer> keyPatternIndex;
 
@@ -128,5 +130,15 @@ public class SortedLoggingProperties extends Properties {
             }
             return result;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

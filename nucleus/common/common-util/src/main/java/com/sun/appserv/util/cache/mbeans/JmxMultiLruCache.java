@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache.mbeans;
 
@@ -57,7 +57,7 @@ public class JmxMultiLruCache extends JmxBaseCache
 
     public JmxMultiLruCache(MultiLruCache multiLruCache, String name) {
         super(multiLruCache,name);
-        this.multiLruCache = multiLruCache;
+        this.multiLruCache = new MultiLruCache(multiLruCache);
     }
 
     /**

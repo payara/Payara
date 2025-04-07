@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 /*
  * ZipFileTester.java
@@ -45,6 +46,8 @@
  */
 
 package com.sun.enterprise.util.zip;
+
+import java.io.File;
 
 /**
  *
@@ -64,7 +67,9 @@ public class ZipFileTester {
 	{
 		try
 		{
-			ZipFile zip = new ZipFile("C:\\temp\\petstore.ear", "C:\\temp\\petstore");
+			String tmpDir = System.getProperty("java.io.tmpdir");
+
+			ZipFile zip = new ZipFile(tmpDir + File.pathSeparator + "petstore.ear", tmpDir + File.pathSeparator + "petstore");
 			java.util.List l = zip.explode();
 			System.out.println("**** Filelist ****\n" + l);
 		}

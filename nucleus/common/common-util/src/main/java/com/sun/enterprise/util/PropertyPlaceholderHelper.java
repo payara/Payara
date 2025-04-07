@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@
  */
 package com.sun.enterprise.util;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -61,10 +62,10 @@ public class PropertyPlaceholderHelper {
 
     private final Map<String, String> properties;
 
-    private final int MAX_SUBSTITUTION_DEPTH = 100;
+    private static final int MAX_SUBSTITUTION_DEPTH = 100;
 
     public PropertyPlaceholderHelper(Map<String, String> properties, String regex) {
-        this.properties = properties;
+        this.properties = new HashMap<>(properties);
         this.pattern = Pattern.compile(regex);
     }
 

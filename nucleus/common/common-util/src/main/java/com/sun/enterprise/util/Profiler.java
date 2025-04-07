@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 /*
  * Profiler.java
@@ -44,6 +45,8 @@
  * Created on September 17, 2001, 12:42 PM
  */
 package com.sun.enterprise.util;
+
+import java.util.logging.Logger;
 
 /**
  * A easy-to-use class that wraps one global ProfilerImpl object.  Use it to begin
@@ -57,6 +60,8 @@ package com.sun.enterprise.util;
  * @version 
  */
 public class Profiler {
+
+    private static final Logger LOGGER = Logger.getLogger(Profiler.class.getName());
 
     private Profiler() {
     }
@@ -114,6 +119,7 @@ public class Profiler {
             profiler.endItem();
             System.out.println("" + profiler);
         } catch (Exception e) {
+            LOGGER.warning(e.getMessage());
         }
     }
     static ProfilerImpl profiler = new ProfilerImpl();

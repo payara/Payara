@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 package com.sun.common.util.logging;
 
 import java.io.ByteArrayOutputStream;
@@ -84,7 +84,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
      */
     public LoggingOutputStream(Logger logger, Level level) {
         super();
-        this.logger = logger;
+        this.logger = Logger.getLogger(logger.getName());
         this.level = level;
         lineSeparator = System.lineSeparator();
         initializePump();
@@ -118,7 +118,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
         logRecordWrapper.setThreadName(Thread.currentThread().getName());
 
-        pendingRecords.offer(logRecordWrapper);
+        if (!pendingRecords.offer(logRecordWrapper)) {
+            System.out.println("Queue is full");
+        }
     }
 
     private void initializePump() {
@@ -225,7 +227,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         }
 
         public void setLogger(Logger l) {
-            logger = l;
+            logger = Logger.getLogger(l.getName());
         }
 
         @Override

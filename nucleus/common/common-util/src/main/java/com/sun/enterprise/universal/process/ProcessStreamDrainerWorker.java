@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
 
@@ -47,7 +47,7 @@ import java.nio.charset.StandardCharsets;
 
 ///////////////////////////////////////////////////////////////////////////
 
-class ProcessStreamDrainerWorker implements Runnable
+final class ProcessStreamDrainerWorker implements Runnable
 {
     ProcessStreamDrainerWorker(InputStream in, PrintStream Redirect, boolean save)
     {

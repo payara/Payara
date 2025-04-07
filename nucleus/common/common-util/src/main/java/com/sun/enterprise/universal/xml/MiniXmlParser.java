@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.xml;
 
@@ -116,7 +116,7 @@ public class MiniXmlParser {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return javaConfig;
+        return new HashMap<>(javaConfig);
     }
 
 
@@ -125,28 +125,28 @@ public class MiniXmlParser {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return jvmOptions;
+        return new ArrayList<>(jvmOptions);
     }
 
     public Map<String, String> getProfilerConfig() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return profilerConfig;
+        return new HashMap<>(profilerConfig);
     }
 
     public List<String> getProfilerJvmOptions() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return profilerJvmOptions;
+        return new ArrayList<>(profilerJvmOptions);
     }
 
     public Map<String, String> getProfilerSystemProperties() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return profilerSysProps;
+        return new HashMap<>(profilerSysProps);
     }
 
     public Map<String, String> getSystemProperties() throws MiniXmlParserException {
@@ -168,21 +168,24 @@ public class MiniXmlParser {
             }
             addPortsForListeners(listenerNames);
         }
-        return adminAddresses;
+        if (adminAddresses == null) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(adminAddresses);
     }
 
     public List<Map<String, String>> getProtocolAttributes() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return protocolAttributes;
+        return new ArrayList<>(protocolAttributes);
     }
 
     public List<Map<String, String>> getIiopSslAttributes() throws MiniXmlParserException {
         if (!valid) {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
-        return iiopSslAttributes;
+        return new ArrayList<>(iiopSslAttributes);
     }
 
     /**
@@ -378,7 +381,7 @@ public class MiniXmlParser {
         return adminRealm;
     }
     public Map<String,String> getAdminRealmProperties() {
-        return adminRealmProperties;
+        return new HashMap<>(adminRealmProperties);
     }
 
     /////////////////////  all private below  /////////////////////////
@@ -869,7 +872,7 @@ public class MiniXmlParser {
                         Level.INFO, strings.get("noDomainName"));
             }
         }
-        catch (Exception e) {
+        catch (XMLStreamException | EndDocumentException e) {
             throw new RuntimeException(strings.get("noDomainEnd"));
         }
     }

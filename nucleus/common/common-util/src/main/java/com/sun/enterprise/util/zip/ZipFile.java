@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 /* Byron Nevins, April 2000
  * ZipFile -- A utility class for exploding archive (zip) files.
@@ -180,7 +181,7 @@ public class ZipFile {
                 throw new ZipFileException("Got an exception while trying to close Jar input stream: " + e);//NOI18N
             }
         }
-        return files;
+        return new ArrayList<>(files);
     }
 
     /**
@@ -223,8 +224,8 @@ public class ZipFile {
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    public ArrayList getFileList() {
-        return files;
+    public ArrayList<String> getFileList() {
+        return new ArrayList<>(files);
     }
 
     /**

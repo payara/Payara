@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -562,7 +562,7 @@ public class NetUtils {
                 // will be closed automatically
             }
         }
-        catch (Exception e) {
+        catch (IOException e) {
             // Nobody is listening on this port
             return true;
         }
@@ -619,7 +619,7 @@ public class NetUtils {
 
             return isPortFreeServer(port, add);
         }
-        catch (Exception e) {
+        catch (UnknownHostException e) {
             // If we can't get an IP address then we can't check
             return false;
         }
@@ -778,7 +778,7 @@ public class NetUtils {
             server.connect(whom, timeoutMilliseconds);
             return true;
         }
-        catch (Exception ex) {
+        catch (IOException ex) {
             return false;
         }
     }

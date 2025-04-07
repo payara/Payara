@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
+
 package com.sun.enterprise.util;
 
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /** Static methods which are handy to manipulate java beans
  *
@@ -62,7 +62,7 @@ public class BeanUtils {
         }
         Map<String, Object> result = new HashMap<String, Object>();
         Collection<Method> getters = getGetters(bean);
-        for (Method method : getGetters(bean)) {
+        for (Method method : getters) {
             try {
                 result.put(toAttributeName(method), method.invoke(bean));
             } catch (IllegalAccessException ex) {
@@ -86,7 +86,6 @@ public class BeanUtils {
         if (data == null || bean == null) {
             return;
         }
-        Class clazz = bean.getClass();
         for (Map.Entry<String, Object> entry : data.entrySet()) {
             try {
                 Method mtd = getSetter(bean, entry.getKey());
