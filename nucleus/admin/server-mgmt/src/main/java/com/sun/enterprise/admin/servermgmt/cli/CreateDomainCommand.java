@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -82,10 +82,12 @@ import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_ADMIN_CERT_DN;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_ADMIN_PORT;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_INITIAL_ADMIN_USER_GROUPS;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_INSTANCE_CERT_DN;
+import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_MASTER_PASSWORD_LOCATION;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_PORTBASE;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_SECURE_ADMIN_IDENTIFIER;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_TEMPLATE_NAME;
 import static com.sun.enterprise.admin.servermgmt.DomainConfig.K_VALIDATE_PORTS;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 import static com.sun.enterprise.config.util.PortConstants.DEFAULT_HAZELCAST_DAS_PORT;
 import static com.sun.enterprise.config.util.PortConstants.DEFAULT_HAZELCAST_START_PORT;
 import static com.sun.enterprise.config.util.PortConstants.DEFAULT_INSTANCE_PORT;
@@ -151,6 +153,9 @@ public final class CreateDomainCommand extends CLICommand {
 
     @Param(name = SAVE_MASTER_PASSWORD, optional = true, defaultValue = "false")
     private boolean saveMasterPassword = false;
+
+    @Param(name = "masterpasswordlocation", optional = true)
+    private String masterPasswordLocation;
 
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
@@ -527,6 +532,14 @@ public final class CreateDomainCommand extends CLICommand {
             domainConfig.put(K_TEMPLATE_NAME, template);
             domainConfig.put(K_PORTBASE, portBase);
             domainConfig.put(K_INITIAL_ADMIN_USER_GROUPS, Version.getInitialAdminGroups());
+            if (masterPasswordLocation != null) {
+                File potentialFolder = new File(masterPasswordLocation);
+                if (potentialFolder.isDirectory()) {
+                    masterPasswordLocation = new File(potentialFolder, MASTERPASSWORD_FILE).getAbsolutePath();
+                }
+
+                domainConfig.put(K_MASTER_PASSWORD_LOCATION, masterPasswordLocation);
+            }
             initSecureAdminSettings(domainConfig);
 
             try {

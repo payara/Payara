@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -64,6 +64,7 @@ public class DomainConfig extends RepositoryConfig {
     public static final String K_PASSWORD = "domain.password";
     public static final String K_NEW_MASTER_PASSWORD = "domain.newMasterPassword";
     public static final String K_MASTER_PASSWORD = "domain.masterPassword";
+    public static final String K_MASTER_PASSWORD_LOCATION = "domain.masterPasswordLocation";
     public static final String K_SAVE_MASTER_PASSWORD = "domain.saveMasterPassword";
     public static final String K_ADMIN_PORT = "domain.adminPort";
     public static final String K_INSTANCE_PORT = "domain.instancePort";
