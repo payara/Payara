@@ -106,6 +106,34 @@ public class BaseCache implements Cache {
 
     protected ArrayList listeners = new ArrayList();
 
+    public BaseCache() {
+
+    }
+
+    public BaseCache(BaseCache other) {
+        this.maxEntries = other.maxEntries;
+        this.entryCount = other.entryCount;
+        this.threshold = other.threshold;
+        this.hitCount = other.hitCount;
+        this.missCount = other.missCount;
+        this.removalCount = other.removalCount;
+        this.refreshCount = other.refreshCount;
+        this.addCount = other.addCount;
+        this.addCountLk = other.addCountLk;
+        this.overflowCount = other.overflowCount;
+        this.overflowCountLk = other.overflowCountLk;
+        this.maxBuckets = other.maxBuckets;
+        this.buckets = other.buckets;
+        this.bucketLocks = other.bucketLocks;
+        this.refreshFlags = other.refreshFlags;
+        this.listeners = other.listeners;
+        this.entryCountLk = other.entryCountLk;
+        this.hitCountLk = other.hitCountLk;
+        this.missCountLk = other.missCountLk;
+        this.removalCountLk = other.removalCountLk;
+        this.refreshCountLk = other.refreshCountLk;
+    }
+
     /**
      * initialize the cache
      * @param maxEntries maximum number of entries expected in the cache

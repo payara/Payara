@@ -134,11 +134,20 @@ public class SortedLoggingProperties extends Properties {
 
     @Override
     public boolean equals(Object o) {
-        return super.equals(o);
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SortedLoggingProperties that = (SortedLoggingProperties) o;
+
+        return Objects.equals(properties, that.properties) && Objects.equals(patterns, that.patterns);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode();
+        return Objects.hash(properties, patterns);
     }
 }

@@ -119,7 +119,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         logRecordWrapper.setThreadName(Thread.currentThread().getName());
 
         if (!pendingRecords.offer(logRecordWrapper)) {
-            System.out.println("Queue is full");
+            logger.fine("Queue is full");
         }
     }
 

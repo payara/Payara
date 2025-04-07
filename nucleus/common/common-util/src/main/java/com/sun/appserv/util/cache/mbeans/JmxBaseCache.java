@@ -57,7 +57,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     private final BaseCache baseCache;
 
     public JmxBaseCache(BaseCache baseCache, String name) {
-        this.baseCache = new BaseCache();
+        this.baseCache = new BaseCache(baseCache);
         this.name = name;
     }
     /**
