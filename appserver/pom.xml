@@ -92,6 +92,9 @@
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+
+        <!-- classgraph dependency used to solve issue when creating proxy implementations for jakarta data-->
+        <classgraph.version>4.8.179</classgraph.version>
     </properties>
 
 
@@ -130,6 +133,7 @@
         <module>payara-appserver-modules</module>
         <module>docker</module>
         <module>monitoring-console</module>
+        <module>data</module>
     </modules>
 
 
@@ -601,6 +605,12 @@
                 <groupId>fish.payara.security.connectors</groupId>
                 <artifactId>security-connector-oauth2-client</artifactId>
                 <version>${payara.security-connectors.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>${classgraph.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
