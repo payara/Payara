@@ -125,6 +125,11 @@ public class MasterPasswordFileManager extends KeystoreManager {
         final PEFileLayout layout = getFileLayout(config);
         File mpLocation = layout.getMasterPasswordLocationFile();
         if (path != null) {
+            File potentialFolder = new File(path);
+            if (potentialFolder.isDirectory()) {
+                path = new File(potentialFolder, MASTERPASSWORD_FILE).getAbsolutePath();
+            }
+
             try (FileWriter writer = new FileWriter(mpLocation)) {
                 writer.write(path);
             } catch (IOException e) {

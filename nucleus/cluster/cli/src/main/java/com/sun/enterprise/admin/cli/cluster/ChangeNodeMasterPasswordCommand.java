@@ -159,6 +159,13 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     @Override
     protected int executeCommand() throws CommandException {
+        if (mpLocation != null) {
+            File potentialFolder = new File(mpLocation);
+            if (potentialFolder.isDirectory()) {
+                mpLocation = new File(potentialFolder, MASTERPASSWORD_FILE).getAbsolutePath();
+            }
+        }
+
         // Find the master password file
         File mpLocationFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_LOCATION_FILE);
         File oldPasswordFile;
