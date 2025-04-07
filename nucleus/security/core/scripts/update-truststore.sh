@@ -20,17 +20,25 @@ WORKING_TRUSTSTORE="working-cacerts.jks"
 cp "$JAVA_TRUSTSTORE" "$WORKING_TRUSTSTORE"
 
 echo "🧹 Removing certificates expiring within 90 days..."
-keytool -list -v -keystore "$WORKING_TRUSTSTORE" -storepass changeit | awk '
-    BEGIN { RS="\n\n"; }
-    /Valid from:/ {
-        match($0, /until: ([^,\n]+)/, exp);
-        cmd = "date -j -f \"%b %e, %Y\" \"" exp[1] "\" +%s 2>/dev/null";
-        cmd | getline exp_epoch;
-        close(cmd);
-        now=systime();
-        if (exp_epoch < now + (90*86400)) {
-            match($0, /Alias name: ([^\n]+)/, alias);
-            print alias[1];
+keytool -list -v -keystore "$WORKING_TRUSTSTORE" -storepass changeit | awk -v now="$(date +%s)" '
+    BEGIN { RS="Alias name:"; FS="\n" }
+    NF {
+        for (i=1; i<=NF; i++) {
+            if ($i ~ /until:/) {
+                split($i, a, "until: ");
+                cmd = "date -d \"" a[2] "\" +%s"
+                cmd | getline exp
+                close(cmd)
+                if (exp < now + 90*24*3600) {
+                    for (j=1; j<=NF; j++) {
+                        if ($j ~ /Alias name:/) {
+                            split($j, b, ": ");
+                            print b[2]
+                            break
+                        }
+                    }
+                }
+            }
         }
     }' | while read -r alias; do
         echo "🗑️ Removing soon-to-expire cert: $alias"
