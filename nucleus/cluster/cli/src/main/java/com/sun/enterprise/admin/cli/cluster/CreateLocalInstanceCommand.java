@@ -71,7 +71,6 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
@@ -361,7 +360,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         File mpLocationFile = new File(new File(getServerDirs().getServerDir(), "config"), MASTERPASSWORD_LOCATION_FILE);
         if (mpLocationFile.canRead()) {
             try {
-                String currentMpLocation = Files.readString(mpLocationFile.toPath(), Charsets.UTF8_CHARSET);
+                String currentMpLocation = Files.readString(mpLocationFile.toPath(), StandardCharsets.UTF_8);
                 mp = new File(currentMpLocation);
             } catch (IOException e) {
                 Logger.getAnonymousLogger().log(Level.SEVERE,

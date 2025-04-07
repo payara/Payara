@@ -52,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -70,7 +71,6 @@ import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.grizzly.utils.Charsets;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.UserInterruptException;
 
@@ -674,7 +674,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
 
         if (mpLocation.canRead()) {
             try {
-                String path = Files.readString(mpLocation.toPath(), Charsets.UTF8_CHARSET);
+                String path = Files.readString(mpLocation.toPath(), StandardCharsets.UTF_8);
                 mp = new File(path);
             }
             catch (IOException e) {

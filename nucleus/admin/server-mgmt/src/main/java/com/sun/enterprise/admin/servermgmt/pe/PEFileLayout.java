@@ -49,10 +49,10 @@ import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.grizzly.utils.Charsets;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Locale;
@@ -790,7 +790,7 @@ public class PEFileLayout
         File mpLocation = getMasterPasswordLocationFile();
         if (mpLocation.canRead()) {
             try {
-                String mpPath = Files.readString(mpLocation.toPath(), Charsets.UTF8_CHARSET);
+                String mpPath = Files.readString(mpLocation.toPath(), StandardCharsets.UTF_8);
                 return new File(mpPath);
             } catch (IOException e) {
                 Logger.getAnonymousLogger().log(Level.WARNING,

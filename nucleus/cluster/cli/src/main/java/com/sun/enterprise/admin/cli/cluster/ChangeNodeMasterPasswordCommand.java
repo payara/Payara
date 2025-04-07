@@ -67,7 +67,6 @@ import com.sun.enterprise.util.HostAndPort;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
-import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
@@ -175,7 +174,7 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
         if (mpLocationFile.canRead()) {
             try {
-                String mpPath = Files.readString(mpLocationFile.toPath(), Charsets.UTF8_CHARSET);
+                String mpPath = Files.readString(mpLocationFile.toPath(), StandardCharsets.UTF_8);
                 oldPasswordFile = new File(mpPath);
             } catch (IOException e) {
                 Logger.getAnonymousLogger().log(Level.WARNING,

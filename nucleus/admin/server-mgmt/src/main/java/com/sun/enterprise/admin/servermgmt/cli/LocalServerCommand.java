@@ -61,7 +61,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.io.ServerDirs;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
-import org.glassfish.grizzly.utils.Charsets;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -81,6 +80,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.KeyStore;
 import java.util.Arrays;
@@ -574,7 +574,7 @@ public abstract class LocalServerCommand extends CLICommand {
         File mpLocation = new File(serverDirs.getConfigDir(), MASTERPASSWORD_LOCATION_FILE);
         if (mpLocation.canRead()) {
             try {
-                String path = Files.readString(mpLocation.toPath(), Charsets.UTF8_CHARSET);
+                String path = Files.readString(mpLocation.toPath(), StandardCharsets.UTF_8);
                 mp = new File(path);
             }
             catch (IOException e) {
