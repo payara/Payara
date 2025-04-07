@@ -92,17 +92,13 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
         return jsonbMap.computeIfAbsent(type, unused -> {
             currentType.set(type);
             try {
-                if (existingResolvers.isEmpty()) {
-                    return JsonbBuilder.create();
-                } else {
-                    for (ContextResolver<?> resolver : existingResolvers) {
-                        Object result = resolver.getContext(type);
-                        if (result instanceof Jsonb) {
-                            return (Jsonb) result;
-                        }
+                for (ContextResolver<?> resolver : existingResolvers) {
+                    Object result = resolver.getContext(type);
+                    if (result instanceof Jsonb) {
+                        return (Jsonb) result;
                     }
-                    return JsonbBuilder.create();
                 }
+                return JsonbBuilder.create();
             } finally {
                 currentType.remove();
             }
