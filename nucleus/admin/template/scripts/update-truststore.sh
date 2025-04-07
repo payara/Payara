@@ -16,7 +16,6 @@ fi
 
 echo "📌 Java Trust Store: $JAVA_TRUSTSTORE"
 
-# Copy truststore to working file
 WORKING_TRUSTSTORE="working-cacerts.jks"
 cp "$JAVA_TRUSTSTORE" "$WORKING_TRUSTSTORE"
 
@@ -39,7 +38,7 @@ awk -v now_epoch="$(date +%s)" '
                 cmd | getline until_epoch
                 close(cmd)
                 if (until_epoch < now_epoch + 90*24*3600) {
-                    print alias
+                    if (alias != "") print alias
                 }
             }
         }
@@ -47,8 +46,10 @@ awk -v now_epoch="$(date +%s)" '
 ' all-certs.txt > expired-aliases.txt
 
 while read -r alias; do
-    echo "🗑️ Removing: $alias"
-    keytool -delete -alias "$alias" -keystore "$WORKING_TRUSTSTORE" -storepass changeit || true
+    if [[ -n "$alias" ]]; then
+        echo "🗑️ Removing: $alias"
+        keytool -delete -alias "$alias" -keystore "$WORKING_TRUSTSTORE" -storepass changeit || true
+    fi
 done < expired-aliases.txt
 
 rm -f all-certs.txt expired-aliases.txt
@@ -58,9 +59,17 @@ curl -fsSL -o /tmp/cacert.pem https://curl.se/ca/cacert.pem
 
 echo "➕ Importing Mozilla certs (avoiding duplicates)..."
 csplit -z -f cert- /tmp/cacert.pem '/-BEGIN CERTIFICATE-/' '{*}' >/dev/null 2>&1
+shopt -s nullglob
 
 for cert in cert-*; do
-    fingerprint=$(openssl x509 -noout -fingerprint -in "$cert" | sed 's/.*=//;s/://g')
+    if ! grep -q "BEGIN CERTIFICATE" "$cert"; then
+        continue  # skip the preamble file
+    fi
+    fingerprint=$(openssl x509 -noout -fingerprint -in "$cert" 2>/dev/null | sed 's/.*=//;s/://g' || true)
+    if [[ -z "$fingerprint" ]]; then
+        echo "⚠️ Skipping unreadable cert file: $cert"
+        continue
+    fi
     alias="moz-$fingerprint"
     if keytool -list -keystore "$WORKING_TRUSTSTORE" -storepass changeit -alias "$alias" >/dev/null 2>&1; then
         echo "🔁 Skipping existing cert: $alias"
@@ -70,9 +79,9 @@ for cert in cert-*; do
     fi
 done
 
-rm cert-* /tmp/cacert.pem
+rm -f cert-* /tmp/cacert.pem
 
-echo "🔐 Converting to PKCS12 format (cacerts.p12)..."
+echo "🔐 Converting to PKCS12 format..."
 keytool -importkeystore \
     -srckeystore "$WORKING_TRUSTSTORE" \
     -srcstorepass changeit \
