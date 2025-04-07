@@ -4,78 +4,85 @@ set -euo pipefail
 
 echo "🔍 Detecting Java trust store path..."
 
-# Detect Java trust store path
 if [ -f "${JAVA_HOME}/jre/lib/security/cacerts" ]; then
     JAVA_TRUSTSTORE="${JAVA_HOME}/jre/lib/security/cacerts"
 elif [ -f "${JAVA_HOME}/lib/security/cacerts" ]; then
     JAVA_TRUSTSTORE="${JAVA_HOME}/lib/security/cacerts"
 else
-    echo "❌ ERROR: Unable to find Java trust store in ${JAVA_HOME}"
+    echo "❌ ERROR: Java trust store not found."
     exit 1
 fi
 
-echo "📌 Truststore detected at: $JAVA_TRUSTSTORE"
+echo "📌 Java Trust Store: $JAVA_TRUSTSTORE"
 
-TRUSTSTORE_PASSWORD="changeit"
-TEMP_STORE="updated-cacerts.jks"
-DAYS_THRESHOLD=90
+# Copy truststore to a working file
+WORKING_TRUSTSTORE="working-cacerts.jks"
+cp "$JAVA_TRUSTSTORE" "$WORKING_TRUSTSTORE"
 
-echo "🧹 Cleaning certificates expiring within ${DAYS_THRESHOLD} days..."
-
-# Export all aliases
-keytool -list -v -keystore "$JAVA_TRUSTSTORE" -storepass "$TRUSTSTORE_PASSWORD" | \
-awk -v threshold=$(date -v+${DAYS_THRESHOLD}d +%s) '
-    /Alias name:/ { alias=$NF }
-    /Valid until:/ {
-        gsub(",", "", $0);
-        cmd = "date -j -f \"%b %e %T %Y %Z\" \"" $NF " 00:00:00 " $(NF-1) " UTC\" +%s"
-        cmd | getline exp
-        close(cmd)
-        if (exp < threshold) {
-            print alias
+echo "🧹 Removing certificates expiring within 90 days..."
+keytool -list -v -keystore "$WORKING_TRUSTSTORE" -storepass changeit | awk '
+    BEGIN { RS="\n\n"; }
+    /Valid from:/ {
+        match($0, /until: ([^,\n]+)/, exp);
+        cmd = "date -j -f \"%b %e, %Y\" \"" exp[1] "\" +%s 2>/dev/null";
+        cmd | getline exp_epoch;
+        close(cmd);
+        now=systime();
+        if (exp_epoch < now + (90*86400)) {
+            match($0, /Alias name: ([^\n]+)/, alias);
+            print alias[1];
         }
-    }
-' > expired_aliases.txt
+    }' | while read -r alias; do
+        echo "🗑️ Removing soon-to-expire cert: $alias"
+        keytool -delete -alias "$alias" -keystore "$WORKING_TRUSTSTORE" -storepass changeit || true
+    done
 
-# Create a copy of original store to work on
-cp "$JAVA_TRUSTSTORE" "$TEMP_STORE"
+echo "🌐 Downloading Mozilla CA bundle..."
+curl -fsSL -o /tmp/cacert.pem https://curl.se/ca/cacert.pem
 
-while IFS= read -r alias; do
-    echo "⏳ Removing expiring cert: $alias"
-    keytool -delete -alias "$alias" -keystore "$TEMP_STORE" -storepass "$TRUSTSTORE_PASSWORD" || true
-done < expired_aliases.txt
+echo "➕ Importing Mozilla certs (avoiding duplicates)..."
+csplit -z -f cert- /tmp/cacert.pem '/-BEGIN CERTIFICATE-/' '{*}' >/dev/null 2>&1
 
-echo "✅ Removed $(wc -l < expired_aliases.txt) expired certs"
+for cert in cert-*; do
+    fingerprint=$(openssl x509 -noout -fingerprint -in "$cert" | sed 's/.*=//;s/://g')
+    alias="moz-$fingerprint"
 
-echo "🌐 Downloading latest Mozilla CA bundle..."
-CA_CERTS_PATH="/tmp/ca-certificates.crt"
-curl -fsSL -o "$CA_CERTS_PATH" https://curl.se/ca/cacert.pem
-
-if [ ! -s "$CA_CERTS_PATH" ]; then
-    echo "❌ Failed to download CA certs."
-    exit 1
-fi
-
-echo "➕ Importing non-duplicate Mozilla certs..."
-csplit -z -f mozilla-cert- "$CA_CERTS_PATH" '/-----BEGIN CERTIFICATE-----/' '{*}' > /dev/null 2>&1
-
-for cert in mozilla-cert-*; do
-    fingerprint=$(openssl x509 -in "$cert" -noout -fingerprint -sha1 | cut -d'=' -f2 | tr -d ':')
-
-    exists=$(keytool -list -keystore "$TEMP_STORE" -storepass "$TRUSTSTORE_PASSWORD" | grep -i "$fingerprint" || true)
-
-    if [ -z "$exists" ]; then
-        alias="mozilla-${fingerprint:0:12}"
-        echo "🔐 Importing cert: $alias"
-        keytool -importcert -noprompt -keystore "$TEMP_STORE" \
-            -storepass "$TRUSTSTORE_PASSWORD" -file "$cert" -alias "$alias"
+    if keytool -list -keystore "$WORKING_TRUSTSTORE" -storepass changeit -alias "$alias" >/dev/null 2>&1; then
+        echo "🔁 Skipping existing cert: $alias"
     else
-        echo "⚠️ Skipped duplicate cert with fingerprint $fingerprint"
+        echo "➕ Importing: $alias"
+        keytool -import -noprompt -trustcacerts -keystore "$WORKING_TRUSTSTORE" -storepass changeit -alias "$alias" -file "$cert"
     fi
 done
 
-echo "🛠️ Replacing original truststore with cleaned one..."
-mv "$TEMP_STORE" "$JAVA_TRUSTSTORE"
+rm cert-* /tmp/cacert.pem
 
-echo "✅ Java truststore successfully updated."
-rm -f mozilla-cert-* expired_aliases.txt "$CA_CERTS_PATH"
+echo "🔐 Converting to PKCS12 format (cacerts.p12)..."
+keytool -importkeystore \
+    -srckeystore "$WORKING_TRUSTSTORE" \
+    -srcstorepass changeit \
+    -destkeystore "cacerts.p12" \
+    -deststorepass changeit \
+    -deststoretype pkcs12 \
+    -noprompt
+
+echo "📁 Copying truststore to Payara codebase paths..."
+
+PAYARA_P12_PATHS=(
+    "nucleus/admin/template/src/main/resources/config/cacerts.p12"
+    "nucleus/security/core/src/main/resources/config/cacerts.p12"
+)
+
+for path in "${PAYARA_P12_PATHS[@]}"; do
+    if [ -f "$path" ]; then
+        cp -f "cacerts.p12" "$path"
+        echo "✅ Replaced: $path"
+    else
+        echo "⚠️ Skipped: $path not found"
+    fi
+done
+
+echo "🔎 Verifying generated truststore..."
+keytool -list -keystore "cacerts.p12" -storepass changeit | head -n 10
+
+echo "🏁 Trust store update and replacement complete."
