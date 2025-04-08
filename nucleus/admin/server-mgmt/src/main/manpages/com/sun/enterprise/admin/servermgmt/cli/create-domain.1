@@ -12,6 +12,7 @@ SYNOPSIS
            [--template template-name]
            [--domaindir domaindir]
            [--savemasterpassword={false|true}]
+           [--masterpasswordlocation filepath]
            [--usemasterpassword={false|true}]
            [--hazelcastdasport hazelcastdasport]
            [--hazelcaststartport hazelcaststartport]
@@ -175,6 +176,11 @@ OPTIONS
            password is saved, then start-domain does not prompt for it. The
            master password gives an extra level of security to the
            environment.
+
+       --masterpasswordlocation
+           Only applies if the --savemasterpassword parameter is set to true.
+           This parameter receives an absolute filepath that the master password
+           will be saved to.
 
        --usemasterpassword
            Specifies whether the key store is encrypted with a master password

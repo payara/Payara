@@ -11,6 +11,7 @@ SYNOPSIS
            [--lbenabled={true|false}]
            [--portbase port-number] [--checkports={true|false}]
            [--savemasterpassword={false|true}]
+           [--masterpasswordlocation filepath]
            [--usemasterpassword={false|true}]
            [--systemproperties (name=value)[:name=value]* ]
            instance-name
@@ -224,6 +225,11 @@ OPTIONS
            directory, not the domain directory. Therefore, this option is
            required only for the first instance that is created for each node
            in a domain.
+
+       --masterpasswordlocation
+           Only applies if the --savemasterpassword parameter is set to true.
+           This parameter receives an absolute filepath that the master password
+           will be saved to.
 
        --usemasterpassword
            Specifies whether the key store is encrypted with a master password
