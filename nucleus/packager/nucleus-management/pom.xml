@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>6.2025.4-SNAPSHOT</version>
+        <version>6.2025.5-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-management</artifactId>
     <name>Nucleus Management Package</name>
