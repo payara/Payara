@@ -132,7 +132,7 @@
         <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
         <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
         <junit.version>4.13.2</junit.version>
-        <mockito.version>5.16.1</mockito.version>
+        <mockito.version>5.17.0</mockito.version>
         <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
         <jline.version>3.29.0</jline.version>
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
