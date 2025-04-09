@@ -2709,9 +2709,4 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public ExtendedDeploymentContext getCurrentDeploymentContext() {
         return currentDeploymentContext.get();
     }
-
-    @Override
-    public void setCurrentDeploymentContext(ExtendedDeploymentContext context) {
-        currentDeploymentContext.set(context);
-    }
 }
