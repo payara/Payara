@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache.mbeans;
 
@@ -57,7 +57,7 @@ public class JmxBaseCache implements JmxBaseCacheMBean {
     private final BaseCache baseCache;
 
     public JmxBaseCache(BaseCache baseCache, String name) {
-        this.baseCache = baseCache;
+        this.baseCache = new BaseCache(baseCache);
         this.name = name;
     }
     /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
 
@@ -64,7 +64,7 @@ public class Jps {
     }
 
     public static Map<Integer, String> getProcessTable() {
-        return new Jps().pidMap;
+        return new HashMap<>(new Jps().pidMap);
     }
 
     /**
@@ -140,7 +140,7 @@ public class Jps {
                 }
             }
         }
-        catch (Exception e) {
+        catch (ProcessManagerException e) {
         }
     }
 

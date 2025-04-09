@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
@@ -56,7 +56,6 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +68,7 @@ import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.common.util.logging.LoggingXMLNames.xmltoPropsMap;
+import static java.util.Map.entry;
 
 /**
  * Implementation of Logging Commands
@@ -83,21 +83,20 @@ public class LoggingConfigImpl implements LoggingConfig {
     static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler";
     static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
 
-    protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
-    static {
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationOnDateChange", "false");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logStandardStreams", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".fastLogging", "false");
-    }
+    protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = Map.ofEntries(
+        entry(GF_FILE_HANDLER + ".logtoFile", "true"),
+        entry(PY_FILE_HANDLER + ".logtoFile", "true"),
+        entry(PY_FILE_HANDLER + ".rotationOnDateChange", "false"),
+        entry(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0"),
+        entry(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000"),
+        entry(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000"),
+        entry(PY_FILE_HANDLER + ".maxHistoryFiles", "0"),
+        entry(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log"),
+        entry(PY_FILE_HANDLER + ".compressOnRotation", "false"),
+        entry(GF_FILE_HANDLER + ".logStandardStreams", "true"),
+        entry(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter"),
+        entry(GF_FILE_HANDLER + ".fastLogging", "false")
+    );
 
     @Inject
     private FileMonitoring fileMonitoring;
@@ -226,7 +225,7 @@ public class LoggingConfigImpl implements LoggingConfig {
     }
 
     @Override
-    public String getLoggingProperty(String propertyName) throws IOException {
+    public synchronized String getLoggingProperty(String propertyName) throws IOException {
         return getLoggingProperties().get(propertyName);
     }
 
@@ -268,7 +267,7 @@ public class LoggingConfigImpl implements LoggingConfig {
 
     public synchronized Map<String, String> checkForLoggingProperties(Map<String, String> loggingProperties) throws IOException {
 
-        for (Entry<String, String> entry : DEFAULT_LOG_PROPERTIES.entrySet()) {
+        for (Map.Entry<String, String> entry : DEFAULT_LOG_PROPERTIES.entrySet()) {
             if (!loggingProperties.containsKey(entry.getKey())) {
                 loggingProperties.put(entry.getKey(), entry.getValue());
                 setLoggingProperty(entry.getKey(), entry.getValue());

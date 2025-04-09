@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache;
 
@@ -105,6 +105,34 @@ public class BaseCache implements Cache {
 	protected boolean[]   refreshFlags;
 
     protected ArrayList listeners = new ArrayList();
+
+    public BaseCache() {
+
+    }
+
+    public BaseCache(BaseCache other) {
+        this.maxEntries = other.maxEntries;
+        this.entryCount = other.entryCount;
+        this.threshold = other.threshold;
+        this.hitCount = other.hitCount;
+        this.missCount = other.missCount;
+        this.removalCount = other.removalCount;
+        this.refreshCount = other.refreshCount;
+        this.addCount = other.addCount;
+        this.addCountLk = other.addCountLk;
+        this.overflowCount = other.overflowCount;
+        this.overflowCountLk = other.overflowCountLk;
+        this.maxBuckets = other.maxBuckets;
+        this.buckets = other.buckets;
+        this.bucketLocks = other.bucketLocks;
+        this.refreshFlags = other.refreshFlags;
+        this.listeners = other.listeners;
+        this.entryCountLk = other.entryCountLk;
+        this.hitCountLk = other.hitCountLk;
+        this.missCountLk = other.missCountLk;
+        this.removalCountLk = other.removalCountLk;
+        this.refreshCountLk = other.refreshCountLk;
+    }
 
     /**
      * initialize the cache
@@ -629,25 +657,20 @@ public class BaseCache implements Cache {
     protected CacheItem _remove(int hashCode, Object key, Object value) {
         int index = getIndex(hashCode);
 
-        CacheItem prev = null;
         CacheItem item = null;
 
         synchronized (bucketLocks[index]) {
             for (item = buckets[index]; item != null; item = item.next) {
                 if (hashCode == item.hashCode && key.equals(item.key) && value == null || value == item.value) {
 
-                    if (prev == null) {
-                        buckets[index] = item.next;
-                    } else {
-                        prev.next = item.next;
-                    }
+                    buckets[index] = item.next;
+
                     item.next = null;
 
                     itemRemoved(item);
                     break;
                 }
             }
-            prev = item;
         }
 
         if (item != null) {
@@ -1031,6 +1054,14 @@ public class BaseCache implements Cache {
             this.size = size;
         }
 
+        public CacheItem(CacheItem other) {
+            this.hashCode = other.hashCode;
+            this.key = other.key;
+            this.value = other.value;
+            this.size = other.size;
+            this.next = other.next == null ? null : new CacheItem(other.next);
+        }
+
         /**
          * get the item's hashCode
          */
@@ -1049,14 +1080,14 @@ public class BaseCache implements Cache {
          * get the item's next reference
          */
         public CacheItem getNext() {
-            return next;
+            return next == null ? null : new CacheItem(next);
         }
 
         /**
          * set the item's next reference
          */
         public void setNext(CacheItem next) {
-            this.next = next;
+            this.next = next == null ? null : new CacheItem(next);
         }
 
         /**

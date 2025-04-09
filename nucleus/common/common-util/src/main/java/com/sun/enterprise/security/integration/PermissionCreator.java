@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.integration;
 
@@ -79,10 +79,10 @@ public class PermissionCreator {
             } catch (NoSuchMethodException ne) {
                 try {
                     Constructor<?> c = pc.getConstructor(PARAMS1);
-                    return (Permission) c.newInstance(name);
+                    return (Permission) c.newInstance(null);
                 } catch (NoSuchMethodException ne1) {
                     Constructor<?> c = pc.getConstructor(PARAMS2);
-                    return (Permission) c.newInstance(name, actions);
+                    return (Permission) c.newInstance(null, null);
                 }
             }
         } else {
@@ -92,7 +92,7 @@ public class PermissionCreator {
                     return (Permission) c.newInstance(name);
                 } catch (NoSuchMethodException ne) {
                     Constructor<?> c = pc.getConstructor(PARAMS2);
-                    return (Permission) c.newInstance(name, actions);
+                    return (Permission) c.newInstance(name, null);
                 }
             } else {
                 Constructor<?> c = pc.getConstructor(PARAMS2);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.timer;
 
@@ -244,7 +244,7 @@ public class TimerSchedule implements Serializable {
     }
 
     public TimeZone getTimeZone() {
-        return tz_;
+        return TimeZone.getTimeZone(tz_.getID());
     }
 
     public TimerSchedule start(Date s) {

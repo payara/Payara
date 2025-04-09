@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -1145,8 +1145,9 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
             closed = true;
             throwable = null;
-            if (loader.get() != null) {
-                loader.get().streams.remove(this);
+            ASURLClassLoader asurlClassLoader = loader.get();
+            if (asurlClassLoader != null) {
+                asurlClassLoader.streams.remove(this);
             }
             super.close();
         }
@@ -1233,7 +1234,12 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             if (entry == null) {
                 throw new IOException("no entry called " + mName + " found in " + mRes.source);
             }
-            return new SentinelInputStream(loader.get(), mRes.zip.getInputStream(entry));
+            ASURLClassLoader asurlClassLoader = this.loader.get();
+            if (asurlClassLoader == null) {
+                return null;
+            }
+
+            return new SentinelInputStream(asurlClassLoader,  mRes.zip.getInputStream(entry));
         }
     }
 

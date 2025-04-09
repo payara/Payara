@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -351,7 +351,7 @@ class ZipPayloadImpl extends PayloadImpl {
      * represent both.  So before exposing the Properties object we remove
      * the content-type entry.
      */
-    private static class Extra {
+    private static final class Extra {
         private static final String CONTENT_TYPE_NAME = "Content-Type";
 
         private String contentType;

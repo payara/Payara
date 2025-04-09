@@ -38,10 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -57,8 +58,8 @@ public class ColumnFormatter {
     private String headings[];
     private List<String[]> valList = new ArrayList<String[]>();
 
-    public ColumnFormatter(String headings[]) {
-        this.headings = headings;
+    public ColumnFormatter(String[] headings) {
+        this.headings = Arrays.copyOf(headings, headings.length);
         numCols = headings.length;
     }
 

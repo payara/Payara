@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache.mbeans;
 
@@ -56,7 +56,7 @@ public class JmxLruCache extends JmxBaseCache implements JmxLruCacheMBean {
 
     public JmxLruCache(LruCache lruCache, String name) {
         super(lruCache,name);
-        this.lruCache = lruCache;
+        this.lruCache = new LruCache(lruCache);
     }
     /**
      * Returns the current lenght of the LRU list

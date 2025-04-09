@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 /*
  * OS.java
@@ -212,7 +213,11 @@ public class OS
     ///////////////////////////////////////////////////////////////////////////
 
     public static boolean isLinuxSystemDBased() {
-        File systemdRunDirectory = new File("/run/systemd/system");
+        String systemdRunDirectoryPath = System.getenv("SYSTEMD_RUN_DIR");
+        if (systemdRunDirectoryPath == null) {
+            systemdRunDirectoryPath = System.getProperty("/run/systemd/system");
+        }
+        File systemdRunDirectory = new File(systemdRunDirectoryPath);
         return isLinux() && systemdRunDirectory.exists() && systemdRunDirectory.isDirectory();
     }
 

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or affiliates
+// Portions Copyright 2024-2025 Payara Foundation and/or affiliates
+
 package com.sun.enterprise.util.io;
 
 import java.io.*;
@@ -105,6 +106,22 @@ public class ServerDirs {
         nodePropertiesFile = null;
     }
 
+    public ServerDirs(ServerDirs other) {
+        serverName = other.serverName;
+        serverDir = other.serverDir;
+        agentDir = other.agentDir;
+        parentDir = other.parentDir;
+        grandParentDir = other.grandParentDir;
+        configDir = other.configDir;
+        domainXml = other.domainXml;
+        pidFile = other.pidFile;
+        valid = other.valid;
+        localPassword = other.localPassword;
+        localPasswordFile = other.localPasswordFile;
+        dasPropertiesFile = other.dasPropertiesFile;
+        nodePropertiesFile = other.nodePropertiesFile;
+    }
+
     public ServerDirs(File leaf) throws IOException {
         if (leaf == null)
             throw new IllegalArgumentException(strings.get("ServerDirs.nullArg", "ServerDirs.ServerDirs()"));
@@ -132,7 +149,7 @@ public class ServerDirs {
         String localPasswordBuffer = null;  // need an atomic assign tor localPassword
         try (BufferedReader r = new BufferedReader(new FileReader(localPasswordFile, StandardCharsets.UTF_8))) {
             localPasswordBuffer = r.readLine();
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.fine("Error reading local password file: " + localPasswordFile);
         } finally {
             localPassword = localPasswordBuffer;

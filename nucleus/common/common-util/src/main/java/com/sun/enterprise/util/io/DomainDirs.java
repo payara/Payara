@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.util.io;
 
@@ -111,7 +111,7 @@ public final class DomainDirs {
      * @param aServerDir
      */
     public DomainDirs(ServerDirs sd) {
-        dirs = sd;
+        dirs = new ServerDirs(sd);
     }
 
     @Override
@@ -132,7 +132,7 @@ public final class DomainDirs {
     }
 
     public final ServerDirs getServerDirs() {
-        return dirs;
+        return new ServerDirs(dirs);
     }
 
     public final boolean isValid() {

@@ -38,10 +38,11 @@
  * holder.
  */
 
-// Portions Copyright 2016-2024 Payara Foundation and/or affiliates
+// Portions Copyright 2016-2025 Payara Foundation and/or affiliates
 
 package com.sun.appserv.server.util;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
@@ -78,65 +79,56 @@ public class Version {
 
     private static Properties getVersionProp() {
         String installRoot = System.getProperty(INSTALL_ROOT_PROP_NAME);
-        if (installRoot != null) {
-            File ir = new File(installRoot);
-            File bd = new File(new File(ir, "config"), "branding");
-            if (bd.isDirectory()) {
-                for (File f : bd.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.getName().endsWith(".properties") && f.canRead();
-                    }
-                })) {
-                    FileReader fr = null;
-                    try {
-                        fr = new FileReader(f, StandardCharsets.UTF_8);
-                        Properties p = new Properties();
-                        p.load(fr);
-                        VERSION_PROPS.add(p);
-                        String apn = p.getProperty(ABBREV_PRODUCT_NAME_KEY);
-                        if (apn != null) {
-                            VERSION_PROPS_MAP.put(apn, p);
-                        }
-                        fr.close();
-                    } catch (IOException ex) {
-                        // ignore files that cannot be read
-                    } finally {
-                        if (fr != null) {
-                            try {
-                                fr.close();
-                            } catch (IOException ex) {
-                                // nothing to do
-                            }
-                        }
-                    }
-                }
-            }
-            // sort the list based on the based-on property.  If a is based on b,
-            // then a is earlier then b in the list.
-            Collections.sort(VERSION_PROPS, new Comparator<Properties>() {
-                @Override
-                public int compare(Properties p1, Properties p2) {
-                    String abp1 = p1.getProperty(ABBREV_PRODUCT_NAME_KEY);
-                    String bo1 = p1.getProperty(BASED_ON_KEY);
-                    String abp2 = p2.getProperty(ABBREV_PRODUCT_NAME_KEY);
-                    String bo2 = p2.getProperty(BASED_ON_KEY);
-                    if (bo1 != null && abp2 != null && bo1.contains(abp2)) {
-                        return -1;
-                    }
-                    if (bo2 != null && abp1 != null && bo2.contains(abp1)) {
-                        return 1;
-                    }
-                    return 0;
-                }
-            });
-
-            // save the first element in the list for later use
-            if (!VERSION_PROPS.isEmpty()) {
-                return VERSION_PROPS.get(0);
-            }
-        } else {
+        if (installRoot == null) {
             System.out.println("installRoot is null");
+            return null;
+        }
+        File ir = new File(installRoot);
+        File bd = new File(new File(ir, "config"), "branding");
+        if (!bd.isDirectory()) {
+            return null;
+        }
+        FileFilter filter = file -> file.getName().endsWith(".properties") && file.canRead();
+        File[] files = bd.listFiles(filter);
+        if (files == null) {
+            return null;
+        }
+        for (File f : files) {
+            try (BufferedReader br = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8))) {
+                Properties p = new Properties();
+                p.load(br);
+                VERSION_PROPS.add(p);
+                String apn = p.getProperty(ABBREV_PRODUCT_NAME_KEY);
+                if (apn != null) {
+                    VERSION_PROPS_MAP.put(apn, p);
+                }
+            } catch (IOException ex) {
+                // ignore files that cannot be read
+            }
+        }
+
+        // sort the list based on the based-on property.  If a is based on b,
+        // then a is earlier then b in the list.
+        Collections.sort(VERSION_PROPS, new Comparator<Properties>() {
+            @Override
+            public int compare(Properties p1, Properties p2) {
+                String abp1 = p1.getProperty(ABBREV_PRODUCT_NAME_KEY);
+                String bo1 = p1.getProperty(BASED_ON_KEY);
+                String abp2 = p2.getProperty(ABBREV_PRODUCT_NAME_KEY);
+                String bo2 = p2.getProperty(BASED_ON_KEY);
+                if (bo1 != null && abp2 != null && bo1.contains(abp2)) {
+                    return -1;
+                }
+                if (bo2 != null && abp1 != null && bo2.contains(abp1)) {
+                    return 1;
+                }
+                return 0;
+            }
+        });
+
+        // save the first element in the list for later use
+        if (!VERSION_PROPS.isEmpty()) {
+            return VERSION_PROPS.get(0);
         }
         return null;
     }

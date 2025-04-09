@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 package com.sun.appserv.management.client.prefs;
 
 
@@ -152,12 +152,12 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
     private void commit(final HostPortKey key, LoginInfo old) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(store, StandardCharsets.UTF_8))) {
             FileMapTransform.writeAll(state.values(), writer);
-        } catch(final Exception e) {
+        } catch(IOException | URISyntaxException e) {
             state.put(key, old); //try to roll back, first memory
             if (old != null) {
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(store, StandardCharsets.UTF_8))) { // then disk, if the old value is not null
                     FileMapTransform.writeAll(state.values(), writer);
-                } catch (final Exception ae) {
+                } catch (final IOException | URISyntaxException ae) {
                     throw new RuntimeException("catastrophe, can't write it to file");
                 }//ignore, can't do much
             }

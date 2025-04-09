@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache;
 
@@ -71,6 +71,16 @@ public class LruCache extends BaseCache {
      * default constructor
      */
     public LruCache() { }
+
+    public LruCache(LruCache other) {
+        this.head = other.head;
+        this.tail = other.tail;
+        this.trimCount = other.trimCount;
+        this.listSize = other.listSize;
+        this.timeout = other.timeout;
+        this.defaultMaxEntries = other.defaultMaxEntries;
+        this.isUnbounded = other.isUnbounded;
+    }
 
     /**
      * constructor with specified max entries.
@@ -107,7 +117,7 @@ public class LruCache extends BaseCache {
      * sets the timeout value
      * @param timeout to be used to trim the expired entries
      */
-    public void setTimeout(long timeout) {
+    public synchronized void setTimeout(long timeout) {
         // accept a positive timeout
         if (timeout > 0)
             this.timeout = timeout;
@@ -223,7 +233,7 @@ public class LruCache extends BaseCache {
      * Cache bucket is already synchronized by the caller
      */
     @Override
-    protected void itemAccessed(CacheItem item) {
+    protected synchronized void itemAccessed(CacheItem item) {
 	if(head == null)
 	    return;
 	if(item == null)
@@ -373,7 +383,7 @@ public class LruCache extends BaseCache {
      * See also: Constant.java for the key
      */
     @Override
-    public Object getStatByName(String key) {
+    public synchronized Object getStatByName(String key) {
         Object stat = super.getStatByName(key);
 
         if (stat == null && key != null) {
@@ -386,7 +396,7 @@ public class LruCache extends BaseCache {
     }
 
     @Override
-    public Map getStats() {
+    public synchronized Map getStats() {
         Map stats = super.getStats();
         stats.put(Constants.STAT_LRUCACHE_LIST_LENGTH, listSize);
         stats.put(Constants.STAT_LRUCACHE_TRIM_COUNT, trimCount);
@@ -407,32 +417,37 @@ public class LruCache extends BaseCache {
             super(hashCode, key, value, size);
         }
 
+        public LruCacheItem(LruCacheItem other) {
+            this(other.hashCode(), other.key, other.value, other.size);
+            this.lNext = other.lNext == null ? null : new LruCacheItem(other.lNext);
+            this.lPrev = other.lPrev == null ? null : new LruCacheItem(other.lPrev);
+        }
         /**
          * Return the next item
          */
          public LruCacheItem getLNext() {
-             return lNext;
+             return lNext == null ? null : new LruCacheItem(lNext);
          }
 
         /**
          * Reset the next item reference
          */
          public void setLNext(LruCacheItem item) {
-             lNext = item;
+             lNext = new LruCacheItem(item);
          }
 
         /**
          * Return the previous item
          */
          public LruCacheItem getLPrev() {
-             return lPrev;
+             return lPrev == null ? null : new LruCacheItem(lPrev);
          }
 
         /**
          * Reset the previous item reference
          */
          public void setLPrev(LruCacheItem item) {
-             lPrev = item;
+             lPrev = new LruCacheItem(item);
          }
 
         /**

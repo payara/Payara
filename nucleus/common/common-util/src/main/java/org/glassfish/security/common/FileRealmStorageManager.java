@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.security.common;
 
@@ -756,10 +756,10 @@ public final class FileRealmStorageManager {
          */
         public User(String name, String[] groups, String realm, byte[] salt, byte[] hash, String algo) {
             super(name);
-            this.groups = groups;
+            this.groups = Arrays.copyOf(groups, groups.length);
             this.realm = realm;
-            this.hash = hash;
-            this.salt = salt;
+            this.hash = Arrays.copyOf(hash, hash.length);
+            this.salt = Arrays.copyOf(salt, salt.length);
             this.algo = algo;
         }
 
@@ -814,7 +814,7 @@ public final class FileRealmStorageManager {
          *
          */
         public byte[] getSalt() {
-            return salt;
+            return Arrays.copyOf(salt, salt.length);
         }
 
         /**
@@ -822,7 +822,7 @@ public final class FileRealmStorageManager {
          *
          */
         public void setSalt(byte[] salt) {
-            this.salt = salt;
+            this.salt = Arrays.copyOf(salt, salt.length);
         }
 
         /**
@@ -830,7 +830,7 @@ public final class FileRealmStorageManager {
          *
          */
         public byte[] getHash() {
-            return hash;
+            return Arrays.copyOf(hash, hash.length);
         }
 
         /**
@@ -838,7 +838,7 @@ public final class FileRealmStorageManager {
          *
          */
         public void setHash(byte[] hash) {
-            this.hash = hash;
+            this.hash = Arrays.copyOf(hash, hash.length);
         }
 
         /**
@@ -848,14 +848,14 @@ public final class FileRealmStorageManager {
          *
          */
         public String[] getGroups() {
-            return groups;
+            return Arrays.copyOf(groups, groups.length);
         }
 
         /**
          * Set group membership.
          */
         public void setGroups(String[] grp) {
-            this.groups = grp;
+            this.groups = Arrays.copyOf(grp, grp.length);
         }
 
         /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.util.cache;
 
@@ -59,6 +59,16 @@ public class BoundedMultiLruCache extends MultiLruCache {
     protected long maxSize = Constants.DEFAULT_MAX_CACHE_SIZE;
     protected long currentSize;
     private Object currentSizeLk = new Object();
+
+    public BoundedMultiLruCache() {
+
+    }
+
+    public BoundedMultiLruCache(BoundedMultiLruCache other) {
+        this.maxSize = other.maxSize;
+        this.currentSize = other.currentSize;
+        this.currentSizeLk = other.currentSizeLk;
+    }
 
     /**
      * initialize the LRU cache
