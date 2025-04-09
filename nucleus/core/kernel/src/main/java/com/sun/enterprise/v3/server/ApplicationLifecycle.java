@@ -1246,6 +1246,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             // get the deployer
             Deployer deployer = engineInfo.getDeployer();
 
+            ExtendedDeploymentContext savedDeploymentContext = currentDeploymentContext.get();
             try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE)){
                 deployer.prepare(context);
 
@@ -1260,6 +1261,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 final ActionReport report = context.getActionReport();
                 report.failure(logger, "Exception while invoking " + deployer.getClass() + " prepare method", e);
                 throw e;
+            } finally {
+                if (currentDeploymentContext.get() == null) {
+                    currentDeploymentContext.set(savedDeploymentContext);
+                }
             }
         }
 
