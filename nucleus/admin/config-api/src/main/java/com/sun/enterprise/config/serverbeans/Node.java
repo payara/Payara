@@ -333,7 +333,9 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
                 return false;
             }
             // Although the Docker container may be local to this machine, it's not truly "local"
-            if (node.getType().equals("DOCKER")) {
+            // TEMP is a docker container as well.
+            if (node.getType().equals("DOCKER")
+                    || node.getType().equals("TEMP")) {
                 return false;
             }
             return NetUtils.isThisHostLocal(nodeHost);
