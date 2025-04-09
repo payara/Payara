@@ -57,8 +57,6 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.JAXRPCCodeGenFacade;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
@@ -106,9 +104,6 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
 
     @Inject
     private ArchiveFactory archiveFactory;
-
-    @Inject
-    Deployment deployment;
 
     public static WebServiceDeploymentNotifier getDeploymentNotifier() {
         return deploymentNotifier;
@@ -178,8 +173,6 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             RuntimeException re = new RuntimeException(ex.getMessage());
             re.initCause(ex);
             throw re;
-        } finally {
-            deployment.setCurrentDeploymentContext((ExtendedDeploymentContext) dc);
         }
     }
 

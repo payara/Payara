@@ -2570,9 +2570,4 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             throws IOException {
         throw new UnsupportedOperationException("Deprecated");
     }
-
-    @Override
-    public void setCurrentDeploymentContext(ExtendedDeploymentContext context) {
-        currentDeploymentContext.set(context);
-    }
 }

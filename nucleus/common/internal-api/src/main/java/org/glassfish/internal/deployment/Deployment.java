@@ -338,7 +338,4 @@ public interface Deployment {
      * @return Currently-executing deployment context
      */
     ExtendedDeploymentContext getCurrentDeploymentContext();
-
-    // used in recursive internal deployers, such as Web Services
-    void setCurrentDeploymentContext(ExtendedDeploymentContext context);
 }
