@@ -212,14 +212,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     protected Logger logger = KernelLoggerInfo.getLogger();
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ApplicationLifecycle.class);
 
-    private final ThreadLocal<Deque<ExtendedDeploymentContext>> currentDeploymentContext //
-        = new ThreadLocal<Deque<ExtendedDeploymentContext>>() {
-
-            @Override
-            protected Deque<ExtendedDeploymentContext> initialValue() {
-            return new ArrayDeque<>(5);
-        }
-    };
+    private final ThreadLocal<ExtendedDeploymentContext> currentDeploymentContext = new ThreadLocal<>();
 
     protected DeploymentLifecycleProbeProvider
         deploymentLifecycleProbeProvider = null;
@@ -291,7 +284,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         events.send(new Event<>(Deployment.DEPLOYMENT_START, context), false);
         eventSpan.close();
 
-        currentDeploymentContext.get().push(context);
         final ActionReport report = context.getActionReport();
         final DeployCommandParameters commandParams = context.getCommandParameters(DeployCommandParameters.class);
         final String appName = commandParams.name();
@@ -358,6 +350,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
         };
 
+        currentDeploymentContext.set(context);
         try (DeploymentSpan topSpan = tracing.startSpan(DeploymentTracing.AppStage.PREPARE);
              SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.PREPARE, "ArchiveMetadata")) {
             if (commandParams.origin == OpsParams.Origin.deploy
@@ -604,7 +597,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS) {
                 context.postDeployClean(false /* not final clean-up yet */);
                 events.send(new Event<>(Deployment.DEPLOYMENT_FAILURE, context));
-                currentDeploymentContext.get().pop();
+                currentDeploymentContext.remove();
             }
         }
         ApplicationDeployment depl = new ApplicationDeployment(appInfo, context);
@@ -625,6 +618,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         // time the containers are set up, all the modules have been prepared in their
         // associated engines and the application info is created and registered
         if (loadOnCurrentInstance(context)) {
+            currentDeploymentContext.set(context);
             try (SpanSequence span = tracing.startSequence(DeploymentTracing.AppStage.INITIALIZE)){
                 notifyLifecycleInterceptorsBefore(ExtendedDeploymentContext.Phase.START, context);
                 appInfo.initialize();
@@ -646,9 +640,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 } else {
                     events.send(new Event<>(Deployment.DEPLOYMENT_SUCCESS, appInfo));
                 }
+                currentDeploymentContext.remove();
             }
         }
-        currentDeploymentContext.get().pop();
     }
     
     @Override
@@ -1252,6 +1246,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             // get the deployer
             Deployer deployer = engineInfo.getDeployer();
 
+            ExtendedDeploymentContext savedDeploymentContext = currentDeploymentContext.get();
             try (DeploymentSpan span = tracing.startSpan(TraceContext.Level.CONTAINER, engineInfo.getSniffer().getModuleType(), DeploymentTracing.AppStage.PREPARE)){
                 deployer.prepare(context);
 
@@ -1266,6 +1261,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 final ActionReport report = context.getActionReport();
                 report.failure(logger, "Exception while invoking " + deployer.getClass() + " prepare method", e);
                 throw e;
+            } finally {
+                if (currentDeploymentContext.get() == null) {
+                    currentDeploymentContext.set(savedDeploymentContext);
+                }
             }
         }
 
@@ -2713,6 +2712,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Override
     public ExtendedDeploymentContext getCurrentDeploymentContext() {
-        return currentDeploymentContext.get().peek();
+        return currentDeploymentContext.get();
     }
 }

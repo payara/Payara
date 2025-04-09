@@ -42,6 +42,7 @@
 
 package org.glassfish.weld;
 
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.jboss.weld.bootstrap.api.Singleton;
@@ -51,6 +52,7 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import java.util.Map;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -86,8 +88,45 @@ public class ACLSingletonProvider extends SingletonProvider
     private static class ACLSingleton<T> implements Singleton<T> {
 
       private final Map<ClassLoader, T> store = new ConcurrentHashMap<>();
-      private final Map<String, T> storeById = new ConcurrentHashMap<>();
+      private final Map<ClassLoaderAndId, T> storeById = new ConcurrentHashMap<>();
       private ClassLoader ccl = Globals.get(ClassLoaderHierarchy.class).getCommonClassLoader();
+      private final Deployment deployment = Globals.getDefaultHabitat().getService(Deployment.class);
+
+      private static class ClassLoaderAndId {
+        private final ClassLoader cl;
+        private final ClassLoader backupClassLoader;
+        private final String id;
+
+        ClassLoaderAndId(ClassLoader cl, String id) {
+          this.cl = cl;
+          this.backupClassLoader = cl;
+          this.id = id;
+        }
+
+          ClassLoaderAndId(ClassLoader cl, ClassLoader backupClassLoader, String id) {
+              this.cl = cl;
+              this.backupClassLoader = backupClassLoader;
+              this.id = id;
+          }
+
+          @Override
+          public boolean equals(Object o) {
+              if (!(o instanceof ClassLoaderAndId)) return false;
+              ClassLoaderAndId that = (ClassLoaderAndId) o;
+              if (Objects.equals(id, that.id)) {
+                  if (Objects.equals(cl, that.cl)) {
+                      return true;
+                  }
+                  return Objects.equals(cl, that.backupClassLoader);
+              }
+              return false;
+          }
+
+          @Override
+          public int hashCode() {
+              return Objects.hash(id);
+          }
+      }
 
       // Can't assume bootstrap loader as null. That's more of a convention.
       // I think either android or IBM JVM does not use null for bootstap loader
@@ -108,7 +147,7 @@ public class ACLSingletonProvider extends SingletonProvider
       @Override
       public T get( String id )
       {
-        T instance = storeById.get(id);
+        T instance = storeById.get(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), id));
         if (instance == null)
         {
             ClassLoader acl = getClassLoader();
@@ -118,6 +157,14 @@ public class ACLSingletonProvider extends SingletonProvider
             }
         }
         return instance;
+      }
+
+      private ClassLoader getDeploymentOrContextClassLoader() {
+          if (deployment.getCurrentDeploymentContext() != null) {
+              return deployment.getCurrentDeploymentContext().getClassLoader();
+          } else {
+              return Thread.currentThread().getContextClassLoader();
+          }
       }
 
       /**
@@ -190,19 +237,20 @@ public class ACLSingletonProvider extends SingletonProvider
 
       @Override
       public boolean isSet(String id) {
-        return store.containsKey(getClassLoader()) || storeById.containsKey(id);
+        return store.containsKey(getClassLoader()) || storeById.containsKey(
+                new ClassLoaderAndId(getDeploymentOrContextClassLoader(), id));
       }
 
       @Override
       public void set(String id, T object) {
         store.put(getClassLoader(), object);
-        storeById.put(id, object);
+        storeById.put(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader(), id), object);
       }
 
       @Override
       public void clear(String id) {
         store.remove(getClassLoader());
-        storeById.remove(id);
+        storeById.remove(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader(), id));
       }
     }
 }
