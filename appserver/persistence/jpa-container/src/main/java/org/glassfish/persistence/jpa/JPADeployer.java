@@ -482,7 +482,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
      * @param context
      */
     private void iterateInitializedPUsAtApplicationPrepare(final DeploymentContext context) {
-        
         final DeployCommandParameters deployCommandParameters = context.getCommandParameters(DeployCommandParameters.class);
         String appName = deployCommandParameters.name;
         final ApplicationInfo appInfo = applicationRegistry.get(appName);
