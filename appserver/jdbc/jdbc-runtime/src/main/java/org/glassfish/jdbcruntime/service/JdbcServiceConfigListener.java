@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,19 +36,49 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-        <artifactId>payara-appserver-modules</artifactId>
-        <version>6.2025.5-SNAPSHOT</version>
-    </parent>
-    <artifactId>rest-monitoring-parent</artifactId>
-    <packaging>pom</packaging>
-    <name>Rest Monitoring Parent</name>
-    <modules>
-        <module>rest-monitoring-service</module>
-        <module>rest-monitoring-war</module>
-    </modules>
-</project>
+ */
+package org.glassfish.jdbcruntime.service;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
+
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class JdbcServiceConfigListener implements ConfigListener {
+
+    @Inject
+    private Transactions transactions;
+
+    @PostConstruct
+    public void postConstruct() {
+        transactions.addListenerForType(JdbcConnectionPool.class, this);
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
+        for (PropertyChangeEvent pce : events) {
+            if (pce.getPropertyName().equalsIgnoreCase("skip-client-info-validation")
+                    && Boolean.parseBoolean(pce.getOldValue().toString()) != Boolean.parseBoolean(pce.getNewValue().toString())) {
+                unprocessedChanges.add(new UnprocessedChangeEvent(pce, "JDBC Skip Client Info Validation Changed"));
+            }
+        }
+
+        if (unprocessedChanges.isEmpty()) {
+            return null;
+        }
+        return new UnprocessedChangeEvents(unprocessedChanges);
+    }
+}

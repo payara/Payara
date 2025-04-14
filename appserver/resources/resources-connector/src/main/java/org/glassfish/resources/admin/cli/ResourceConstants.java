@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -141,6 +141,8 @@ public final class ResourceConstants {
     public static final String STATEMENT_LEAK_TIMEOUT_IN_SECONDS = "statement-leak-timeout-in-seconds";
 
     public static final String STATEMENT_LEAK_RECLAIM = "statement-leak-reclaim";
+
+    public static final String SKIP_CLIENT_INFO_VALIDATION = "skip-client-info-validation";
 
     //Mail resource
     public static final String MAIL_HOST = "host";

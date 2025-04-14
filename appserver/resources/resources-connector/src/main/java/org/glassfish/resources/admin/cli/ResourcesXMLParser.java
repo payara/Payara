@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2017-2024 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2025 [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -1046,6 +1046,7 @@ public class ResourcesXMLParser implements EntityResolver
                 attributes.getNamedItem(STATEMENT_LEAK_TIMEOUT_IN_SECONDS);
         Node statementLeakReclaimNode =
                 attributes.getNamedItem(STATEMENT_LEAK_RECLAIM);
+        Node skipClientInfoValidationNode = attributes.getNamedItem(SKIP_CLIENT_INFO_VALIDATION);
 
 
         org.glassfish.resources.api.Resource jdbcConnPool = new Resource(org.glassfish.resources.api.Resource.JDBC_CONNECTION_POOL);
@@ -1205,6 +1206,10 @@ public class ResourcesXMLParser implements EntityResolver
         if (statementLeakReclaimNode != null) {
            jdbcConnPool.setAttribute(STATEMENT_LEAK_RECLAIM,
                                         statementLeakReclaimNode.getNodeValue());
+        }
+
+        if (skipClientInfoValidationNode != null) {
+            jdbcConnPool.setAttribute(SKIP_CLIENT_INFO_VALIDATION, skipClientInfoValidationNode.getNodeValue());
         }
 
         NodeList children = nextKid.getChildNodes();

@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server.core</groupId>
     <artifactId>core-aggregator</artifactId>
-    <version>6.26.0-SNAPSHOT</version>
+    <version>6.27.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>Payara Core Aggregator</name>
@@ -54,7 +54,7 @@
     <description>All of Payara Core modules</description>
 
     <properties>
-        <payara.core.version>6.26.0-SNAPSHOT</payara.core.version>
+        <payara.core.version>6.27.0-SNAPSHOT</payara.core.version>
         <payara.core.compare-version>6.25.0</payara.core.compare-version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>3.1.2</payara.security-connectors.version>
@@ -64,7 +64,7 @@
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <jakarta.security.enterprise.version>3.0.3.payara-p1</jakarta.security.enterprise.version>
+        <jakarta.security.enterprise.version>3.0.3.payara-p2</jakarta.security.enterprise.version>
         <cdi-api.version>4.0.1</cdi-api.version>
         <grizzly.version>4.0.2.payara-p1</grizzly.version>
         <servlet-api.version>6.0.0</servlet-api.version>
@@ -75,7 +75,7 @@
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <jaxb-api.version>4.0.2</jaxb-api.version>
         <jackson.version>2.18.3</jackson.version>
-        <jersey.version>3.1.7.payara-p1</jersey.version>
+        <jersey.version>3.1.10.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
         <hibernate.validator.osgi.version>8.0.1.Final</hibernate.validator.osgi.version>
@@ -129,7 +129,7 @@
         <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
         <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
         <junit.version>4.13.2</junit.version>
-        <mockito.version>2.28.2</mockito.version>
+        <mockito.version>5.17.0</mockito.version>
         <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
         <jline.version>3.29.0</jline.version>
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -178,7 +178,7 @@
         <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.5.2</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
