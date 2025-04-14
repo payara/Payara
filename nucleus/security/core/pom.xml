@@ -228,36 +228,41 @@
             <artifactId>javassist</artifactId>
         </dependency>
     </dependencies>
+
     <profiles>
         <profile>
-        <id>UpdateTruststore</id>
-        <activation>
-            <activeByDefault>false</activeByDefault>
-        </activation>
-        <build>
-            <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                <execution>
-                    <id>update-truststore-script</id>
-                    <phase>initialize</phase>
-                    <goals>
-                    <goal>exec</goal>
-                    </goals>
-                    <configuration>
-                    <executable>scripts/update-truststore.sh</executable>
-                    <successCodes>
-                        <successCode>0</successCode>
-                    </successCodes>
-                    </configuration>
-                </execution>
-                </executions>
-            </plugin>
-            </plugins>
-        </build>
+            <id>UpdateTruststore</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>update-truststore-script</id>
+                                <phase>verify</phase> <!-- 🔁 Runs during verify phase -->
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>bash</executable>
+                                    <arguments>
+                                        <argument>scripts/update-truststore.sh</argument>
+                                    </arguments>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                    </successCodes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
+    
 </project>
