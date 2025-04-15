@@ -107,29 +107,23 @@ public class GlassFishWeldProvider implements CDIProvider {
 
         @Override
         protected String getCallingClassName() {
+            String superCallingClassName = super.getCallingClassName();
             if (currentType.get() != null) {
-                return currentType.get().getName();
-            } else {
-                return super.getCallingClassName();
+                try {
+                    if (getBundleDescriptor().getClassLoader().loadClass(superCallingClassName).getClassLoader() == null) {
+                        return currentType.get().getName();
+                    }
+                } catch (ClassNotFoundException | NullPointerException e) {
+                }
             }
+            return superCallingClassName;
         }
     }
 
     @Override
     public CDI<Object> getCDI() {
         try {
-            BundleDescriptor bundle = null;
-            Object componentEnv = invocationManager.getCurrentInvocation().getJNDIEnvironment();
-            if( componentEnv instanceof EjbDescriptor) {
-                bundle = (BundleDescriptor)
-                        ((EjbDescriptor) componentEnv).getEjbBundleDescriptor().
-                                getModuleDescriptor().getDescriptor();
-
-            } else if( componentEnv instanceof WebBundleDescriptor) {
-                bundle = (BundleDescriptor) componentEnv;
-            }
-
-            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(bundle);
+            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(getBundleDescriptor());
             if (bda == null) {
                 return new GlassFishEnhancedWeld();
             } else {
@@ -142,5 +136,19 @@ public class GlassFishWeldProvider implements CDIProvider {
             }
             throw throwable;
         }
+    }
+
+    private static BundleDescriptor getBundleDescriptor() {
+        BundleDescriptor bundle = null;
+        Object componentEnv = invocationManager.getCurrentInvocation().getJNDIEnvironment();
+        if( componentEnv instanceof EjbDescriptor) {
+            bundle = (BundleDescriptor)
+                    ((EjbDescriptor) componentEnv).getEjbBundleDescriptor().
+                            getModuleDescriptor().getDescriptor();
+
+        } else if( componentEnv instanceof WebBundleDescriptor) {
+            bundle = (BundleDescriptor) componentEnv;
+        }
+        return bundle;
     }
 }
