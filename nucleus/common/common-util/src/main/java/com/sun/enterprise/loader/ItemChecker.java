@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -111,8 +111,12 @@ class ItemChecker extends WatchProcessor {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if (attrs.isRegularFile()) {
+                    Path parent = file.getParent();
                     // root resources stand for themselves, others contribute to their package
-                    Path target = file.getParent().equals(root) ? file : file.getParent();
+                    if (parent == null) {
+                        return FileVisitResult.CONTINUE;
+                    }
+                    Path target = parent.equals(root) ? file : parent;
                     prefixPaths.add(target);
                 }
                 return FileVisitResult.CONTINUE;

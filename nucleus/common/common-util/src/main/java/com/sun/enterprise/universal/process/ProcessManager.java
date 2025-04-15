@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.universal.process;
 
@@ -70,6 +70,20 @@ public class ProcessManager {
         sb_err = new StringBuffer();
     }
 
+    public ProcessManager(ProcessManager other) {
+        this.cmdline = other.cmdline;
+        this.env = other.env;
+        this.sb_out = other.sb_out;
+        this.sb_err = other.sb_err;
+        this.exit = other.exit;
+        this.timeout = other.timeout;
+        this.process = other.process;
+        this.echo = other.echo;
+        this.stdinLines = other.stdinLines;
+        this.threads = other.threads;
+        this.waitForReaderThreads = other.waitForReaderThreads;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     public final void setTimeoutMsec(int num) {
         if (num > 0) {
@@ -78,7 +92,7 @@ public class ProcessManager {
     }
 
     public final void setEnvironment(String[] env) {
-        this.env = env;
+        this.env = Arrays.copyOf(env, env.length);
     }
 
     ////////////////////////////////////////////////////////////////////////////

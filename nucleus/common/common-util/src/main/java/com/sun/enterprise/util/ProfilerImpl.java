@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 /*
  * ProfilerImpl.java
@@ -46,12 +47,15 @@
 package com.sun.enterprise.util;
 
 import java.util.*;
+import java.util.logging.Logger;
 
 /** Simple class for profiling code.  beginItem/endItem pairs start and stop the timing for an item.
  *
  * @author  bnevins
  */
 public class ProfilerImpl {
+
+    private static final Logger LOGGER = Logger.getLogger(ProfilerImpl.class.getName());
 
     /** Create an empty object
      */
@@ -212,6 +216,7 @@ public class ProfilerImpl {
             p.endItem();
             System.out.println("" + p);
         } catch (Exception e) {
+            LOGGER.warning(e.getMessage());
         }
     }
 }

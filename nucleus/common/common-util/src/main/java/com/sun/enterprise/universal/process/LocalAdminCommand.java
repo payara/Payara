@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.process;
 
@@ -75,7 +76,7 @@ public final class LocalAdminCommand {
     }
 
     public ProcessManager getProcessManager() {
-        return pm;
+        return new ProcessManager(pm);
     }
 
     private final File asadmin;

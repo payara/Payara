@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util.io;
 
@@ -220,7 +221,7 @@ public final class InstanceDirs {
      * @param aServerDir
      */
     public InstanceDirs(ServerDirs sd) {
-        dirs = sd;
+        dirs = new ServerDirs(sd);
     }
 
     public final String getInstanceName() {
@@ -240,7 +241,7 @@ public final class InstanceDirs {
     }
 
     public final ServerDirs getServerDirs() {
-        return dirs;
+        return new ServerDirs(dirs);
     }
 
     public final File getDasPropertiesFile() {

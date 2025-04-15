@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -69,7 +69,7 @@ public class TokenResolver {
     }
 
     public TokenResolver(Map<String, String> map) {
-        props = map;
+        props = new HashMap<>(map);
     }
     /**
      * Replace $[variables} in map with a matching property from the map that this

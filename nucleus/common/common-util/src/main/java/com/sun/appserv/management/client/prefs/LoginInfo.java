@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.appserv.management.client.prefs;
 
@@ -81,7 +81,7 @@ public final class LoginInfo implements Comparable<LoginInfo> {
         return ( user );
     }
     public char[] getPassword() {
-        return ( password );
+        return Arrays.copyOf(password, password.length);
     }
     
     @Override

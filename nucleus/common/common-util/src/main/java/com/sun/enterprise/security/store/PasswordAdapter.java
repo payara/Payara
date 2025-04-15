@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.security.store;
 
@@ -113,7 +113,7 @@ public final class PasswordAdapter {
 
         // assign these only once the store is good; no need to keep copies otherwise!
         this.keyFile            = keyStoreFile;
-        this.masterPassword     = masterPassword;
+        this.masterPassword     = Arrays.copyOf(masterPassword, masterPassword.length);
 
     }
 
