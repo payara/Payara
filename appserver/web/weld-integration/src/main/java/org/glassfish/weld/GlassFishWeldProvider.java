@@ -49,10 +49,12 @@ import org.glassfish.internal.api.Globals;
 import org.jboss.weld.Container;
 import org.jboss.weld.SimpleCDI;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.logging.BeanManagerLogger;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.enterprise.inject.spi.CDIProvider;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import static org.glassfish.weld.JaxRSJsonContextResolver.currentType;
@@ -65,11 +67,15 @@ public class GlassFishWeldProvider implements CDIProvider {
     private static final InvocationManager invocationManager = Globals.get(InvocationManager.class);
 
     private static class GlassFishEnhancedWeld extends SimpleCDI {
+        private final Set<String> knownClassNames;
+
         GlassFishEnhancedWeld() {
+            knownClassNames = new HashSet<>(super.knownClassNames);
         }
 
         GlassFishEnhancedWeld(String contextId) {
             super(contextId == null ? Container.instance() : Container.instance(contextId));
+            knownClassNames = new HashSet<>(super.knownClassNames);
         }
 
         @Override
@@ -107,17 +113,43 @@ public class GlassFishWeldProvider implements CDIProvider {
 
         @Override
         protected String getCallingClassName() {
-            String superCallingClassName = super.getCallingClassName();
+            String superCallingClassName = _getCallingClassName();
             if (currentType.get() != null) {
-                try {
-                    if (getBundleDescriptor().getClassLoader().loadClass(superCallingClassName).getClassLoader() == null) {
+                while (true) {
+                    try {
+                        while (getBundleDescriptor().getClassLoader().loadClass(superCallingClassName).getClassLoader() !=
+                                getBundleDescriptor().getClassLoader()) {
+                            knownClassNames.add(superCallingClassName);
+                            superCallingClassName = _getCallingClassName();
+                        }
+                        break;
+                    } catch (ClassNotFoundException | NullPointerException | IllegalStateException e) {
                         return currentType.get().getName();
                     }
-                } catch (ClassNotFoundException | NullPointerException e) {
                 }
             }
             return superCallingClassName;
         }
+
+        /**
+         * copied from Weld because knownClassNames is not modifiable
+         * @return
+         */
+        private String _getCallingClassName() {
+            boolean outerSubclassReached = false;
+            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+                // the method call that leads to the first invocation of this class or its subclass is considered the caller
+                if (!knownClassNames.contains(element.getClassName())) {
+                    if (outerSubclassReached) {
+                        return element.getClassName();
+                    }
+                } else {
+                    outerSubclassReached = true;
+                }
+            }
+            throw BeanManagerLogger.LOG.unableToIdentifyBeanManager();
+        }
+
     }
 
     @Override
