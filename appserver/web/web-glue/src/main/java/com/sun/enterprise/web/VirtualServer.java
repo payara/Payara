@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -1166,6 +1166,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 _logger.log(Level.WARNING, LogFacade.NULL_VIRTUAL_SERVER_PROPERTY, getID());
                 continue;
             }
+            propValue = propValue.replace("\"", "");
 
             if (!propName.startsWith("send-error_")) {
                 continue;
