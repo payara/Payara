@@ -41,6 +41,7 @@ package fish.payara.jakarta.data.core.cdi.extension;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Query;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -53,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -86,14 +88,16 @@ public class RepositoryImpl<T> implements InvocationHandler {
         logger.info("executing method:" + method.getName());
         preProcessQuery();
         QueryData dataForQuery = queries.get(method);
+        Stream<?> stream = null;
         switch (dataForQuery.getQueryType()) {
             case SAVE -> processSaveOperation(args);
             case INSERT -> processInsertOperation(args);
             case DELETE -> processDeleteOperation(args);
             case UPDATE -> processUpdateOperation(args, dataForQuery.getEntityParamType());
+            case FIND -> stream = processFindAllOperation(args, dataForQuery.getDeclaredEntityClass());
         }
 
-        return "executing method:" + method.getName();
+        return stream;
     }
 
     public void preProcessQuery() {
@@ -156,6 +160,22 @@ public class RepositoryImpl<T> implements InvocationHandler {
             em.flush();
             transactionManager.commit();
         }
+    }
+
+    public Stream<?> processFindAllOperation(Object[] args, Class<?> entityClass) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
+        EntityManager em = getEntityManager();
+        Query q = em.createQuery(builder.toString());
+        return q.getResultStream();
+    }
+
+    public String getSingleEntityName(String entityName) {
+        if (entityName != null) {
+            int idx = entityName.lastIndexOf(".");
+            return entityName.substring(idx + 1);
+        }
+        return null;
     }
 
     public ApplicationRegistry getRegistry() {

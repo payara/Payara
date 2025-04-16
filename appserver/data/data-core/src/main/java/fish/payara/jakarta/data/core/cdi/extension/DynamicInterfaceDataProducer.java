@@ -151,7 +151,6 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
         //get entity type
         Class<?> declaredEntityClass = getEntityType(this.repository);
         logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
-        Set<Class<?>> lifecycleMethodEntityClasses = new HashSet<>();
         for (Method method : this.repository.getMethods()) {
             logger.info("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
             //skip if method is default 
@@ -160,7 +159,7 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
             }
             Class<?> entityParamType = null;
             entityParamType = getEntityParamClass(method);
-            addQueries(repository, entityParamType, method);
+            addQueries(repository, declaredEntityClass, entityParamType, method);
         }
     }
 
@@ -212,12 +211,9 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
      * @param entityParamType
      * @param method
      */
-    public void addQueries(Class<?> entityClass, Class<?> entityParamType, Method method) {
+    public void addQueries(Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
         List<QueryData> queries;
-        queries = queriesForEntity.get(entityClass);
-        if (queries == null) {
-            queriesForEntity.put(entityClass, queries = new ArrayList<>());
-        }
+        queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
         QueryData.QueryType queryType = null;
         if (method.isAnnotationPresent(Save.class)) {
             queryType = QueryData.QueryType.SAVE;
@@ -230,6 +226,6 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
         } else if (method.isAnnotationPresent(Find.class)) {
             queryType = QueryData.QueryType.FIND;
         }
-        queries.add(new QueryData(repository, method, entityParamType, queryType));
+        queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, queryType));
     }
 }

@@ -49,6 +49,7 @@ public class QueryData {
     private Class<?> repositoryInterface;
     private Method method;
     private Class<?> entityParamType;
+    private Class<?> declaredEntityClass;
     private QueryType queryType;
 
     public enum QueryType {
@@ -59,10 +60,11 @@ public class QueryData {
         FIND
     }
 
-    public QueryData(Class<?> repositoryInterface, Method method, Class<?> entityParamType, QueryType queryType) {
+    public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType) {
         this.repositoryInterface = repositoryInterface;
         this.method = method;
         this.entityParamType = entityParamType;
+        this.declaredEntityClass = declaredEntityClass;
         this.queryType = queryType;
     }
 
@@ -96,5 +98,13 @@ public class QueryData {
 
     public void setQueryType(QueryType queryType) {
         this.queryType = queryType;
+    }
+
+    public Class<?> getDeclaredEntityClass() {
+        return declaredEntityClass;
+    }
+
+    public void setDeclaredEntityClass(Class<?> declaredEntityClass) {
+        this.declaredEntityClass = declaredEntityClass;
     }
 }
