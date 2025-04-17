@@ -66,6 +66,15 @@ import java.util.stream.Collectors;
 public class JakartaDataExtension implements Extension {
 
     private static final Logger logger = Logger.getLogger(JakartaDataExtension.class.getName());
+    
+    private String applicationName;
+
+    public JakartaDataExtension() {
+    }
+    
+    public JakartaDataExtension(String appName) {
+        this.applicationName = appName;
+    }
 
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager manager) {
         logger.info("Finishing scanning process");
@@ -79,7 +88,7 @@ public class JakartaDataExtension implements Extension {
         Set<Class<?>> repositories = new HashSet<>();
         //here is the place to start to use the classgraph api to get information from the classes that are 
         //annotated by the jakarta data annotation 
-        try (ScanResult result = new ClassGraph().enableAllInfo().scan()) {
+        try (ScanResult result = new ClassGraph().enableAnnotationInfo().scan()) {
             repositories.addAll(locateAndGetRepositories(result));
         }
         return repositories.stream().filter(cl -> {
@@ -128,5 +137,9 @@ public class JakartaDataExtension implements Extension {
             return entity;
         }
         return null;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
     }
 }
