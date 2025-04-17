@@ -214,17 +214,17 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
     public void addQueries(Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
         List<QueryData> queries;
         queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
-        QueryData.QueryType queryType = null;
+        QueryType queryType = null;
         if (method.isAnnotationPresent(Save.class)) {
-            queryType = QueryData.QueryType.SAVE;
+            queryType = QueryType.SAVE;
         } else if (method.isAnnotationPresent(Delete.class)) {
-            queryType = QueryData.QueryType.DELETE;
+            queryType = QueryType.DELETE;
         } else if (method.isAnnotationPresent(Update.class)) {
-            queryType = QueryData.QueryType.UPDATE;
+            queryType = QueryType.UPDATE;
         } else if (method.isAnnotationPresent(Insert.class)) {
-            queryType = QueryData.QueryType.INSERT;
+            queryType = QueryType.INSERT;
         } else if (method.isAnnotationPresent(Find.class)) {
-            queryType = QueryData.QueryType.FIND;
+            queryType = QueryType.FIND;
         }
         queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, queryType));
     }

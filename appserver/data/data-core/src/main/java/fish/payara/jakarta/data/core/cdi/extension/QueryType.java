@@ -39,64 +39,13 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
-import java.lang.reflect.Method;
-
 /**
- * This class represent the structure of a query to be resolved during runtime
+ * Enum type used to identify each kind of query from Jakarta Data interface methods
  */
-public class QueryData {
-
-    private Class<?> repositoryInterface;
-    private Method method;
-    private Class<?> entityParamType;
-    private Class<?> declaredEntityClass;
-    private QueryType queryType;
-
-    public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType) {
-        this.repositoryInterface = repositoryInterface;
-        this.method = method;
-        this.entityParamType = entityParamType;
-        this.declaredEntityClass = declaredEntityClass;
-        this.queryType = queryType;
-    }
-
-    public Class<?> getRepositoryInterface() {
-        return repositoryInterface;
-    }
-
-    public void setRepositoryInterface(Class<?> repositoryInterface) {
-        this.repositoryInterface = repositoryInterface;
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public Class<?> getEntityParamType() {
-        return entityParamType;
-    }
-
-    public void setEntityParamType(Class<?> entityParamType) {
-        this.entityParamType = entityParamType;
-    }
-
-    public QueryType getQueryType() {
-        return queryType;
-    }
-
-    public void setQueryType(QueryType queryType) {
-        this.queryType = queryType;
-    }
-
-    public Class<?> getDeclaredEntityClass() {
-        return declaredEntityClass;
-    }
-
-    public void setDeclaredEntityClass(Class<?> declaredEntityClass) {
-        this.declaredEntityClass = declaredEntityClass;
-    }
+public enum QueryType {
+    SAVE,
+    UPDATE,
+    DELETE,
+    INSERT,
+    FIND
 }
