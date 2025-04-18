@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//  Portion Copyright [2017-2019] Payara Foundation and/or affiliates
+//  Portion Copyright [2017-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.common.util.admin;
 
@@ -458,7 +458,7 @@ public class MapInjectionResolver extends InjectionResolver<Param> {
      */
     private static Integer convertStringToInteger(String paramName, String s) {
         try {
-            return new Integer(s);
+            return Integer.parseInt(s);
         } catch (Exception ex) {
             String msg = localStrings.getLocalString("UnacceptableIntegerValue",
                 "Invalid parameter: {0}.  This integer option must be set " +
