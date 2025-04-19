@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util;
 
@@ -55,7 +56,7 @@ public class MapBuilder<K,V> {
     private final Map<K,V> map;
 
     public MapBuilder(Map<K,V> map) {
-        this.map = map;
+        this.map = new HashMap<>(map);
     }
 
     public MapBuilder() {
@@ -71,6 +72,6 @@ public class MapBuilder<K,V> {
      * Returns the fully constructed map.
      */
     public Map<K,V> build() {
-        return map;
+        return new HashMap<>(map);
     }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -46,6 +46,7 @@ import com.sun.enterprise.util.net.NetUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.logging.Logger;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.*;
 
@@ -59,6 +60,8 @@ import static com.sun.enterprise.util.SystemPropertyConstants.*;
  * one
  */
 public class ASenvPropertyReader {
+
+    private static final Logger LOGGER = Logger.getLogger(ASenvPropertyReader.class.getName());
     /**
      * Read and process the information in asenv
      * There are no arguments because the installation directory is calculated
@@ -88,10 +91,8 @@ public class ASenvPropertyReader {
                     propsMap.put(installDir, props);
                 }
             }
-            catch(Exception e)
-            {
-            // ignore -- this is universal utility code there isn't much we can
-            // do.
+            catch(Exception e) {
+                LOGGER.warning(e.getMessage());
             }
         }
     }
@@ -103,7 +104,7 @@ public class ASenvPropertyReader {
      */
     public Map<String, String> getProps()
     {
-        return props;
+        return new HashMap<>(props);
     }
 
     /**
@@ -247,7 +248,7 @@ public class ASenvPropertyReader {
                 while ((line = reader.readLine()) != null) {
                     setProperty(line);
                 }
-            } catch (Exception ex) {
+            } catch (IOException ex) {
             // Nothing to do
             }
         }
@@ -322,7 +323,7 @@ public class ASenvPropertyReader {
                 return javaRootName; // we are already done!
 
             // try JAVA_HOME
-            javaRootName = System.getenv("JAVA_HOME");
+            javaRootName = System.getProperty("java.home");
 
             if (isValidJavaRoot(javaRootName))
             {

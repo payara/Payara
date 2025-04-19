@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.util.io;
 
@@ -86,6 +86,9 @@ public abstract class FileLister {
 
     public void getFilesInternal(File root) {
         File[] files = root.listFiles();
+        if (files == null) {
+            return;
+        }
 
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {

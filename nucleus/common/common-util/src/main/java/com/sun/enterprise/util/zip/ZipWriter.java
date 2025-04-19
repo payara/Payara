@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 
 /* Byron Nevins, April 2000
  * ZipFile -- A utility class for exploding jar files that contain EJB(s).  Used *only* in this package by the EJBImporter class
@@ -46,6 +47,7 @@ package com.sun.enterprise.util.zip;
 import com.sun.enterprise.util.io.FileListerRelative;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -60,7 +62,7 @@ public class ZipWriter {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     public ZipWriter(String zipFilename, String dirName, ZipItem[] theItems) throws ZipFileException {
-        items = theItems;
+        items = Arrays.copyOf(theItems, theItems.length);
         init(zipFilename, dirName);
     }
 

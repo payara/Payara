@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or affiliates
+
 package com.sun.enterprise.util;
 
 import java.text.MessageFormat;
@@ -62,7 +64,7 @@ public class CULoggerInfo {
                 UTIL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     public static Logger getLogger() {
-        return utilLogger;
+        return Logger.getLogger(utilLogger.getName());
     }
 
     public static String getString(String key) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util;
 
@@ -48,6 +48,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -81,7 +82,7 @@ public class ProcessExecutor {
      * Creates new ProcessExecutor
      */
     public ProcessExecutor(String[] cmd) {
-        this(cmd, DEFAULT_TIMEOUT_SEC, null);
+        this(cmd, DEFAULT_TIMEOUT_SEC, new String[0]);
     }
 
     /**
@@ -95,11 +96,11 @@ public class ProcessExecutor {
      * Creates new ProcessExecutor
      */
     public ProcessExecutor(String[] cmd, long timeoutSeconds) {
-        this(cmd, timeoutSeconds, null);
+        this(cmd, timeoutSeconds, new String[0]);
     }
 
     public ProcessExecutor(String[] cmd, long timeoutSeconds, String[] inputLines) {
-        this(cmd, timeoutSeconds, inputLines, null, null);
+        this(cmd, timeoutSeconds, inputLines, new String[0], null);
     }
 
     /**
@@ -113,9 +114,9 @@ public class ProcessExecutor {
      */
     public ProcessExecutor(String[] cmd, long timeoutSeconds, String[] inputLines,
             String[] env, File workingDir) {
-        mCmdStrings = cmd;
-        mInputLines = inputLines;
-        mEnv = env;
+        mCmdStrings = Arrays.copyOf(cmd, cmd.length);
+        mInputLines = Arrays.copyOf(inputLines, inputLines.length);
+        mEnv = Arrays.copyOf(env, env.length);
         mWorkingDir = workingDir;
         char fwdSlashChar = '/';
         char backSlashChar = '\\';
@@ -446,7 +447,7 @@ public class ProcessExecutor {
                 sb.append(NEWLINE);
             }
         }
-        catch (Exception e) {
+        catch (IOException e) {
             //squelch the exception
         }
         return sb.toString();
@@ -522,7 +523,7 @@ public class ProcessExecutor {
                     sb.append('\n'); // adding a newline character is going to add one extra byte
                     tmp = rf.readLine();
                 }
-            } catch (Exception e) { }
+            } catch (IOException e) { }
             return (sb.toString());
         }
 

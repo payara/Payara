@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2025 Payara Foundation and/or affiliates
 package com.sun.enterprise.universal.glassfish;
 
 import com.sun.enterprise.universal.NameValue;
@@ -98,10 +98,10 @@ public class AdminCommandResponse {
         return cause;
     }
     public Map<String,String> getMainAtts() {
-        return mainRaw;
+        return new HashMap<>(mainRaw);
     }
     public List<NameValue<String,String>> getMainKeys() {
-        return mainKeys;
+        return new ArrayList<>(mainKeys);
     }
     
     public String getValue(String key) {

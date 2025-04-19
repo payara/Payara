@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Poritons Copyright [2019-2024] Payara Foundation and/or affiliates
+// Poritons Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.payload;
 
@@ -71,7 +71,7 @@ public class PayloadImpl implements Payload {
         /**
          * Partial implementation of the Outbound Payload.
          */
-        private final ArrayList<Payload.Part> parts = new ArrayList<Payload.Part>();
+        private final ArrayList<Payload.Part> parts = new ArrayList<>();
 
         private boolean dirty = false;
         
@@ -244,6 +244,10 @@ public class PayloadImpl implements Payload {
                 final Properties enhancedProps,
                 final File dirFile) throws FileNotFoundException, IOException {
 
+            if (dirFile.listFiles() == null || actualBaseDirAbsURI == null || targetBaseDirRelURI == null) {
+                return;
+            }
+
             for (File f : dirFile.listFiles()) {
                 if (f.isDirectory()) {
                     enhancedProps.setProperty(LAST_MODIFIED, Long.toString(f.lastModified()));
@@ -344,7 +348,7 @@ public class PayloadImpl implements Payload {
         }
 
         public ArrayList<Payload.Part> getParts() {
-            return parts;
+            return new ArrayList<>(parts);
         }
 
         /**
@@ -410,12 +414,7 @@ public class PayloadImpl implements Payload {
         
         @Override
         public Iterator<Payload.Part> parts() {
-            ArrayList<Payload.Part> prts = getParts();
-            if (prts == null) {
-                return Collections.<Payload.Part>emptyList().iterator();
-            } else {
-                return prts.iterator();
-            }
+            return getParts().iterator();
         }
 
         @Override
@@ -516,7 +515,9 @@ public class PayloadImpl implements Payload {
 
         @Override
         public Properties getProperties() {
-            return props;
+            Properties copy = new Properties();
+            copy.putAll(props);
+            return copy;
         }
 
         @Override
@@ -700,7 +701,7 @@ public class PayloadImpl implements Payload {
          * We do that automatically when we detect the end-of-stream while
          * preserving the external behavior of the stream.
          */
-        static class Filed extends PayloadImpl.Part {
+        static final class Filed extends PayloadImpl.Part {
             private final File file;
 
             Filed(final String contentType,
