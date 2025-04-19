@@ -52,7 +52,7 @@ public class LogFormatTest {
             + "\"Version\":\"Payara 5.202\",\"LoggerName\":\"javax.enterprise.logging\",\"ThreadID\":\"22\",\"ThreadName\":"
             + "\"RunLevelControllerThread-1587416020198\",\"TimeMillis\":\"1587416020248\",\"LevelValue\":\"800\","
             + "\"MessageID\":\"NCLS-LOGGING-00009\",\"LogMessage\":\"Running Payara Version: Payara Server  5.202"
-            + " #badassfish (build ${build.number})\"}";
+            + " (build ${build.number})\"}";
     private static final String ODL_RECORD = "[2020-04-20T22:05:43.203+0100] [Payara 5.202] [INFO] [NCLS-LOGGING-00009] "
             + "[javax.enterprise.logging] [tid: _ThreadID=21 _ThreadName=RunLevelControllerThread-1587416743113] "
             + "[timeMillis: 1587416743203] [levelValue: 800] [[";
