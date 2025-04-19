@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,63 +37,66 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.jakarta.data.core.connector;
+package fish.payara.jakarta.data.core.cdi.extension;
 
-import jakarta.enterprise.inject.spi.Extension;
-import java.util.Collection;
-import java.util.function.Supplier;
-import org.glassfish.api.deployment.Deployer;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.MetaData;
-import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.weld.WeldDeployer;
-import org.jvnet.hk2.annotations.Service;
-import fish.payara.jakarta.data.core.cdi.extension.JakartaDataExtension;
-
+import java.lang.reflect.Method;
 
 /**
- * Deployer create to process Jakarta Data annotations, here we can declare information related to process the annotations
- * and also here we can register an extension if needed
- *
- * @author Alfonso Valdez
+ * This class represent the structure of a query to be resolved during runtime
  */
-@Service
-@PerLookup
-public class JakartaDataRepositoryDeployer implements Deployer<JakartaDataContainer, JakartaDataApplicationContainer> {
+public class QueryData {
 
-    @Override
-    public MetaData getMetaData() {
-        return null;
+    private Class<?> repositoryInterface;
+    private Method method;
+    private Class<?> entityParamType;
+    private Class<?> declaredEntityClass;
+    private QueryType queryType;
+
+    public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType) {
+        this.repositoryInterface = repositoryInterface;
+        this.method = method;
+        this.entityParamType = entityParamType;
+        this.declaredEntityClass = declaredEntityClass;
+        this.queryType = queryType;
     }
 
-    @Override
-    public <V> V loadMetaData(Class<V> type, DeploymentContext context) {
-        return null;
+    public Class<?> getRepositoryInterface() {
+        return repositoryInterface;
     }
 
-    @Override
-    public boolean prepare(DeploymentContext context) {
-        return true;
+    public void setRepositoryInterface(Class<?> repositoryInterface) {
+        this.repositoryInterface = repositoryInterface;
     }
 
-    @Override
-    public JakartaDataApplicationContainer load(JakartaDataContainer container, DeploymentContext context) {
-        //Here we can declare extension to process beans
-        Collection<Supplier<Extension>> snifferExtensions =
-                context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
-        if (snifferExtensions != null) {
-            snifferExtensions.add(() -> new JakartaDataExtension(context.getArchiveHandler().getDefaultApplicationName(context.getSource(), context)));
-        }
-        return new JakartaDataApplicationContainer(context);
+    public Method getMethod() {
+        return method;
     }
 
-    @Override
-    public void unload(JakartaDataApplicationContainer appContainer, DeploymentContext context) {
-
+    public void setMethod(Method method) {
+        this.method = method;
     }
 
-    @Override
-    public void clean(DeploymentContext context) {
+    public Class<?> getEntityParamType() {
+        return entityParamType;
+    }
 
+    public void setEntityParamType(Class<?> entityParamType) {
+        this.entityParamType = entityParamType;
+    }
+
+    public QueryType getQueryType() {
+        return queryType;
+    }
+
+    public void setQueryType(QueryType queryType) {
+        this.queryType = queryType;
+    }
+
+    public Class<?> getDeclaredEntityClass() {
+        return declaredEntityClass;
+    }
+
+    public void setDeclaredEntityClass(Class<?> declaredEntityClass) {
+        this.declaredEntityClass = declaredEntityClass;
     }
 }
