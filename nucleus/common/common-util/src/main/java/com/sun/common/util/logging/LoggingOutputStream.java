@@ -118,7 +118,9 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
         logRecordWrapper.setThreadName(Thread.currentThread().getName());
 
-        pendingRecords.offer(logRecordWrapper);
+        if (!pendingRecords.offer(logRecordWrapper)) {
+            logger.fine("LoggingOutputStream.flush(): pending records queue is full");
+        }
     }
 
     private void initializePump() {
