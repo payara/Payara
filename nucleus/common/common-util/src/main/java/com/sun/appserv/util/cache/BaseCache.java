@@ -629,25 +629,19 @@ public class BaseCache implements Cache {
     protected CacheItem _remove(int hashCode, Object key, Object value) {
         int index = getIndex(hashCode);
 
-        CacheItem prev = null;
         CacheItem item = null;
 
         synchronized (bucketLocks[index]) {
             for (item = buckets[index]; item != null; item = item.next) {
                 if (hashCode == item.hashCode && key.equals(item.key) && value == null || value == item.value) {
 
-                    if (prev == null) {
-                        buckets[index] = item.next;
-                    } else {
-                        prev.next = item.next;
-                    }
+                    buckets[index] = item.next;
                     item.next = null;
 
                     itemRemoved(item);
                     break;
                 }
             }
-            prev = item;
         }
 
         if (item != null) {
