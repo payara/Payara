@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.integration;
 
 import java.security.CodeSource;
@@ -64,11 +64,6 @@ public class PermsHolder {
      */
     private PermissionCollection declaredPermissionCollection;
 
-    /**
-     * EE restriction list
-     */
-    private PermissionCollection restrictPermissionCollection;
-
     public PermsHolder() {
 
     }
@@ -76,7 +71,6 @@ public class PermsHolder {
     public PermsHolder(PermissionCollection eePC, PermissionCollection declPC, PermissionCollection restrictPC) {
         setEEPermissions(eePC);
         setDeclaredPermissions(declPC);
-        setRestrictPermissions(restrictPC);
     }
 
     public void setEEPermissions(PermissionCollection eePc) {
@@ -87,8 +81,8 @@ public class PermsHolder {
         declaredPermissionCollection = declaredPc;
     }
 
+    @Deprecated
     public void setRestrictPermissions(PermissionCollection restrictPC) {
-        restrictPermissionCollection = restrictPC;
     }
 
     public PermissionCollection getCachedPerms(CodeSource codesource) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.collections;
 
@@ -134,13 +134,12 @@ public class CollectionUtils {
     }
 
     public static String[] toStringArray(Map<String,String> map) {
-        Set<String> set = map.keySet();
         String[] ss = new String[map.size()];
         int i = 0;
-        
-        for(String name : set) {
-            String value = map.get(name);
-            String s = name;
+
+        for(Map.Entry<String, String> entry : map.entrySet()) {
+            String value = entry.getValue();
+            String s = entry.getKey();
             
             if(value != null) {
                 s += "=" + value;
