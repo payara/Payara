@@ -58,7 +58,7 @@
         <payara.core.compare-version>6.25.0</payara.core.compare-version>
         <!-- BOM dependencies versions -->
         <payara.security-connectors.version>4.0.0.Alpha3</payara.security-connectors.version>
-        <hk2.version>4.0.0-M3.payara-p1</hk2.version>
+        <hk2.version>4.0.0-M3.payara-p2</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
