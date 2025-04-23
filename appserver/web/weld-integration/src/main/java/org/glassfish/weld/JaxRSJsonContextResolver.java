@@ -84,6 +84,10 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
                 .filter(ContextResolver.class::isInstance)
                 .map(resolver -> (ContextResolver<?>) resolver)
                 .collect(Collectors.toList());
+        context.getConfiguration().getClasses().stream()
+                        .filter(ContextResolver.class::isAssignableFrom)
+                        .map(ContextResolver.class::cast)
+                        .forEach(resolvers::add);
         context.register(new JaxRSJsonContextResolver(resolvers));
     }
 
