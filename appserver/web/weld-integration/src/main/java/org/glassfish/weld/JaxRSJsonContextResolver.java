@@ -126,7 +126,7 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
             existingResolverClasses.stream().map(injectionManager::getInstance)
                     .filter(Objects::nonNull)
                     .forEach(existingResolvers::add);
+            existingResolverClasses.clear();
         }
-        existingResolverClasses.clear();
     }
 }
