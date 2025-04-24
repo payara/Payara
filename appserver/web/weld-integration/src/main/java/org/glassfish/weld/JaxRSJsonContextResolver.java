@@ -51,6 +51,7 @@ import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import static jakarta.ws.rs.RuntimeType.SERVER;
@@ -85,9 +86,17 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
                 .map(resolver -> (ContextResolver<?>) resolver)
                 .collect(Collectors.toList());
         context.getConfiguration().getClasses().stream()
-                        .filter(ContextResolver.class::isAssignableFrom)
-                        .map(ContextResolver.class::cast)
-                        .forEach(resolvers::add);
+                .filter(ContextResolver.class::isAssignableFrom)
+                .map(cls -> {
+                    try {
+                        return cls.getDeclaredConstructor().newInstance();
+                    } catch (ReflectiveOperationException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(ContextResolver.class::cast)
+                .forEach(resolvers::add);
         context.register(new JaxRSJsonContextResolver(resolvers));
     }
 
