@@ -124,7 +124,7 @@ public class GlassFishWeldProvider implements CDIProvider {
                         }
                         break;
                     } catch (ClassNotFoundException | NullPointerException | IllegalStateException e) {
-                        if (currentType.get().getClassLoader() != null) {
+                        if (currentType.get().getClassLoader() == getBundleDescriptor().getClassLoader()) {
                             return currentType.get().getName();
                         } else {
                             BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(getBundleDescriptor());
