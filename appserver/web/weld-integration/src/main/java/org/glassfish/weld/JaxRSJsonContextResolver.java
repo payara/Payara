@@ -40,6 +40,7 @@
 package org.glassfish.weld;
 
 import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import jakarta.ws.rs.ConstrainedTo;
@@ -47,6 +48,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.FeatureContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.ext.ContextResolver;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 import java.util.Collections;
 import java.util.List;
@@ -70,13 +72,20 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
     private final Map<Class<?>, Jsonb> jsonbMap = new ConcurrentHashMap<>();
     static final ThreadLocal<Class<?>> currentType = new ThreadLocal<>();
     private final List<ContextResolver<?>> existingResolvers;
+    private final List<Class<ContextResolver<?>>> existingResolverClasses;
+
+    @Inject
+    InjectionManager injectionManager;
 
     public JaxRSJsonContextResolver() {
         this.existingResolvers = Collections.emptyList();
+        this.existingResolverClasses = Collections.emptyList();
     }
 
-    private JaxRSJsonContextResolver(List<ContextResolver<?>> existingResolvers) {
+    private JaxRSJsonContextResolver(List<ContextResolver<?>> existingResolvers,
+                                     List<Class<ContextResolver<?>>> existingResolverClasses) {
         this.existingResolvers = existingResolvers;
+        this.existingResolverClasses = existingResolverClasses;
     }
 
     @Override
@@ -85,24 +94,18 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
                 .filter(ContextResolver.class::isInstance)
                 .map(resolver -> (ContextResolver<?>) resolver)
                 .collect(Collectors.toList());
-        context.getConfiguration().getClasses().stream()
+        @SuppressWarnings("unchecked")
+        var resolverClasses = context.getConfiguration().getClasses().stream()
                 .filter(ContextResolver.class::isAssignableFrom)
-                .map(cls -> {
-                    try {
-                        return cls.getDeclaredConstructor().newInstance();
-                    } catch (ReflectiveOperationException e) {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .map(ContextResolver.class::cast)
-                .forEach(resolvers::add);
-        context.register(new JaxRSJsonContextResolver(resolvers));
+                .map(cls -> (Class<ContextResolver<?>>) cls)
+                .collect(Collectors.toList());
+        context.register(new JaxRSJsonContextResolver(resolvers, resolverClasses));
     }
 
     @Override
     public Jsonb getContext(Class<?> type) {
         return jsonbMap.computeIfAbsent(type, unused -> {
+            instantiateResolverClasses();
             currentType.set(type);
             try {
                 for (ContextResolver<?> resolver : existingResolvers) {
@@ -116,5 +119,14 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
                 currentType.remove();
             }
         });
+    }
+
+    private void instantiateResolverClasses() {
+        if (!existingResolverClasses.isEmpty()) {
+            existingResolverClasses.stream().map(injectionManager::getInstance)
+                    .filter(Objects::nonNull)
+                    .forEach(existingResolvers::add);
+        }
+        existingResolverClasses.clear();
     }
 }
