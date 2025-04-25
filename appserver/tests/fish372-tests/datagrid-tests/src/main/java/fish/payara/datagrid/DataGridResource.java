@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,9 @@ package fish.payara.datagrid;
 import com.hazelcast.core.*;
 import com.hazelcast.map.*;
 
-import javax.inject.*;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
+import jakarta.inject.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.*;
 
 @Path("/api")
 @Produces("text/plain")
