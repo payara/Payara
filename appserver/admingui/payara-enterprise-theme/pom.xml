@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -132,10 +132,12 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.sun.woodstock</groupId>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2019 - 2022 Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -35,10 +35,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>6.27.0-SNAPSHOT</version>
-        <relativePath>../../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.packager</groupId>
+        <artifactId>nucleus-external</artifactId>
+        <version>6.2025.5-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.server.core.packager</groupId>

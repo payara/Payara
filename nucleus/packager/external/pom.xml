@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2019-2023 Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2019-2025 Payara Foundation and/or its affiliates -->
 
 <!--
   External repackaging modules.
@@ -62,8 +62,15 @@
     <name>Repackaged nucleus external modules</name>
 
     <modules>
+        <module>jmxremote_optional</module>
+        <module>ldapbp</module>
         <module>vboxjws</module>
+        <module>trilead-ssh2</module>
+        <module>j-interop</module>
     	<module>antlr</module>
+        <module>opentracing-repackaged</module>
+        <module>opentelemetry-repackaged</module>
+        <module>tiger-types</module>
     </modules>
     <build>
         <plugins>

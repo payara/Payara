@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -53,9 +54,16 @@
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Common modules</name>  
     <modules>
-    	<module>common-util-l10n</module>
-    	<module>internal-api-l10n</module>
-    	<module>glassfish-api-l10n</module>
-    	<module>mbeanserver-l10n</module>
+        <module>simple-glassfish-api</module>
+        <module>internal-api</module>
+        <module>common-util</module>
+        <module>glassfish-api</module>
+        <module>mbeanserver</module>
+        <module>scattered-archive-api</module>
+        <module>amx-core</module>
+        <module>common-util-l10n</module>
+        <module>internal-api-l10n</module>
+        <module>glassfish-api-l10n</module>
+        <module>mbeanserver-l10n</module>
     </modules>
 </project>

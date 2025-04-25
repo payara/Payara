@@ -73,7 +73,7 @@ modify org.glassfish.nucleus.admin.NucleusStartStopTest static initializer
 of COPY_LIB map constant.)
 
 -->
-<!-- Portions Copyright [2017-2021] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2017-2025 Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -138,13 +138,13 @@ of COPY_LIB map constant.)
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
-
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.test-utils</groupId>
             <artifactId>utils-ng</artifactId>
-
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -160,6 +160,7 @@ of COPY_LIB map constant.)
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>rest-client</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
