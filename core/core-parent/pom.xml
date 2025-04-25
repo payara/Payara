@@ -568,70 +568,8 @@
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>${maven.build.helper.plugin.version}</version>
                 </plugin>
-                <plugin>
-                    <groupId>com.github.siom79.japicmp</groupId>
-                    <artifactId>japicmp-maven-plugin</artifactId>
-                    <version>${japicmp.maven.plugin.version}</version>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-    
-    <profiles>
-        <profile>
-            <id>force-semver</id>
-            <!-- Force semantic versioning. The differences are in target/japicmp in text, html and xml -->
-            <activation>
-                <property>
-                    <!-- Active unless explicitly set to false -->
-                    <name>core.force.semver</name>
-                    <value>!false</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.siom79.japicmp</groupId>
-                        <artifactId>japicmp-maven-plugin</artifactId>
-                        <configuration>
-                            <!-- Use the latest published version. It's necessary to use specific version because subprojects using glassfish-jar cannot be found. -->
-                            <oldVersion> 
-                                <dependency>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>${project.artifactId}</artifactId>
-                                    <version>${payara.core.compare-version}</version>
-                                    <type>jar</type>
-                                </dependency>
-                            </oldVersion>
-                            <!-- Use the current version. It's necessary to use <file> because subprojects using glassfish-jar cannot be found.-->
-                            <newVersion>
-                                <file>
-                                    <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
-                                </file>
-                            </newVersion>
-                            <parameter>
-                                <!-- see documentation https://siom79.github.io/japicmp/MavenPlugin.html -->
-                                <ignoreMissingClasses>true</ignoreMissingClasses>
-                                <breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
-                                <excludes>
-                                    <exclude>io.opentelemetry.extension</exclude>
-                                    <exclude>io.opentelemetry.instrumentation</exclude>
-                                    <exclude>fish.payara.shaded</exclude>
-                                </excludes>
-                            </parameter>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>cmp</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>
