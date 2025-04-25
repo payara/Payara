@@ -117,7 +117,11 @@ public class ACLSingletonProvider extends SingletonProvider
                   if (Objects.equals(cl, that.cl)) {
                       return true;
                   }
-                  return Objects.equals(cl, that.backupClassLoader);
+                  if (backupClassLoader != null) {
+                      return Objects.equals(cl, that.backupClassLoader);
+                  } else {
+                      return true;
+                  }
               }
               return false;
           }
@@ -148,8 +152,10 @@ public class ACLSingletonProvider extends SingletonProvider
       public T get( String id )
       {
         T instance = storeById.get(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), id));
-        if (instance == null)
-        {
+        if (instance == null) {
+            instance = storeById.get(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), null, id));
+        }
+        if (instance == null) {
             ClassLoader acl = getClassLoader();
             instance = store.get(acl);
             if (instance == null) {
@@ -238,7 +244,7 @@ public class ACLSingletonProvider extends SingletonProvider
       @Override
       public boolean isSet(String id) {
         return store.containsKey(getClassLoader()) || storeById.containsKey(
-                new ClassLoaderAndId(getDeploymentOrContextClassLoader(), id));
+                new ClassLoaderAndId(getDeploymentOrContextClassLoader(), null, id));
       }
 
       @Override
