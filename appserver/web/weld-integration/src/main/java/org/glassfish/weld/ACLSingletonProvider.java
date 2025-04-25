@@ -92,45 +92,41 @@ public class ACLSingletonProvider extends SingletonProvider
       private ClassLoader ccl = Globals.get(ClassLoaderHierarchy.class).getCommonClassLoader();
       private final Deployment deployment = Globals.getDefaultHabitat().getService(Deployment.class);
 
-      private static class ClassLoaderAndId {
-        private final ClassLoader cl;
-        private final ClassLoader backupClassLoader;
-        private final String id;
+        private static class ClassLoaderAndId {
+            private final ClassLoader cl;
+            private final ClassLoader backupClassLoader;
+            private final String id;
 
-        ClassLoaderAndId(ClassLoader cl, String id) {
-          this.cl = cl;
-          this.backupClassLoader = cl;
-          this.id = id;
+            ClassLoaderAndId(String id) {
+                this.id = id;
+                this.cl = this.backupClassLoader = null;
+            }
+
+            ClassLoaderAndId(String id, ClassLoader cl) {
+                this.id = id;
+                this.cl = this.backupClassLoader = cl;
+            }
+
+            ClassLoaderAndId(String id, ClassLoader cl, ClassLoader backupClassLoader) {
+                this.id = id;
+                this.cl = cl;
+                this.backupClassLoader = backupClassLoader;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (!(o instanceof ClassLoaderAndId)) return false;
+                ClassLoaderAndId that = (ClassLoaderAndId) o;
+                return Objects.equals(id, that.id)
+                        && (cl == null || Objects.equals(cl, that.cl)
+                        || Objects.equals(cl, that.backupClassLoader));
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(id);
+            }
         }
-
-          ClassLoaderAndId(ClassLoader cl, ClassLoader backupClassLoader, String id) {
-              this.cl = cl;
-              this.backupClassLoader = backupClassLoader;
-              this.id = id;
-          }
-
-          @Override
-          public boolean equals(Object o) {
-              if (!(o instanceof ClassLoaderAndId)) return false;
-              ClassLoaderAndId that = (ClassLoaderAndId) o;
-              if (Objects.equals(id, that.id)) {
-                  if (Objects.equals(cl, that.cl)) {
-                      return true;
-                  }
-                  if (backupClassLoader != null) {
-                      return Objects.equals(cl, that.backupClassLoader);
-                  } else {
-                      return true;
-                  }
-              }
-              return false;
-          }
-
-          @Override
-          public int hashCode() {
-              return Objects.hash(id);
-          }
-      }
 
       // Can't assume bootstrap loader as null. That's more of a convention.
       // I think either android or IBM JVM does not use null for bootstap loader
@@ -151,9 +147,9 @@ public class ACLSingletonProvider extends SingletonProvider
       @Override
       public T get( String id )
       {
-        T instance = storeById.get(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), id));
+        T instance = storeById.get(new ClassLoaderAndId(id, getDeploymentOrContextClassLoader()));
         if (instance == null) {
-            instance = storeById.get(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), null, id));
+            instance = storeById.get(new ClassLoaderAndId(id));
         }
         if (instance == null) {
             ClassLoader acl = getClassLoader();
@@ -243,20 +239,19 @@ public class ACLSingletonProvider extends SingletonProvider
 
       @Override
       public boolean isSet(String id) {
-        return store.containsKey(getClassLoader()) || storeById.containsKey(
-                new ClassLoaderAndId(getDeploymentOrContextClassLoader(), null, id));
+        return store.containsKey(getClassLoader()) || storeById.containsKey(new ClassLoaderAndId(id));
       }
 
       @Override
       public void set(String id, T object) {
         store.put(getClassLoader(), object);
-        storeById.put(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader(), id), object);
+        storeById.put(new ClassLoaderAndId(id, getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader()), object);
       }
 
       @Override
       public void clear(String id) {
         store.remove(getClassLoader());
-        storeById.remove(new ClassLoaderAndId(getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader(), id));
+        storeById.remove(new ClassLoaderAndId(id, getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader()));
       }
     }
 }
