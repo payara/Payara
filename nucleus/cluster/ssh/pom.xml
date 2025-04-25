@@ -40,15 +40,14 @@
     holder.
 
 -->
-<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2022-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>7.0.0.Alpha5-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.cluster</groupId>
+        <artifactId>cluster</artifactId>
+        <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.core.cluster</groupId>
     <artifactId>cluster-ssh</artifactId>
@@ -77,6 +76,7 @@
         <dependency>
             <groupId>fish.payara.server.core.packager</groupId>
             <artifactId>trilead-ssh2-repackaged</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -85,10 +85,12 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         
         <!--
@@ -99,10 +101,12 @@
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
