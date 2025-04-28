@@ -1166,7 +1166,10 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 _logger.log(Level.WARNING, LogFacade.NULL_VIRTUAL_SERVER_PROPERTY, getID());
                 continue;
             }
-            propValue = propValue.replace("\"", "");
+
+            if (propValue.startsWith("\"") && propValue.endsWith("\"")) {
+                propValue = propValue.substring(1, propValue.length() - 1);
+            }
 
             if (!propName.startsWith("send-error_")) {
                 continue;
