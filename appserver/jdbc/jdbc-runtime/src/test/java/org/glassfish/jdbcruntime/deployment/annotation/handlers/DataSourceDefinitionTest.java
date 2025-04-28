@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,11 +43,11 @@ import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import jakarta.annotation.sql.DataSourceDefinition;
+import org.mockito.MockitoAnnotations;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +57,6 @@ import static org.mockito.Mockito.when;
  * Test for DataSourceDefinition processing in DataSourceDefinitionHandler
  * @author jonathan coustick
  */
-@RunWith(MockitoJUnitRunner.class)
 public class DataSourceDefinitionTest {
 
     @Mock
@@ -65,6 +64,7 @@ public class DataSourceDefinitionTest {
 
     @Before
     public void before() {
+        MockitoAnnotations.initMocks(this);
         when(dataSourceDefinition.portNumber()).thenReturn(-1);
         when(dataSourceDefinition.isolationLevel()).thenReturn(-1);
         when(dataSourceDefinition.transactional()).thenReturn(false);

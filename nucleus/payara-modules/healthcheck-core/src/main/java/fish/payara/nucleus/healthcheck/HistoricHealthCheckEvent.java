@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2016-2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,11 +46,11 @@ import java.util.logging.Level;
  */
 public class HistoricHealthCheckEvent implements Comparable<HistoricHealthCheckEvent>, Serializable {
 
-    private long occurringTime;
-    private Level level;
-    private String userMessage;
-    private String message;
-    private Object[] parameters;
+    private final long occurringTime;
+    private final Level level;
+    private final String userMessage;
+    private final String message;
+    private final Object[] parameters;
 
     public HistoricHealthCheckEvent(long occurringTime, Level level, String userMessage, String message, Object[] parameters) {
         this.occurringTime = occurringTime;

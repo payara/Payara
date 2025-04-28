@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- jdbc/jdbcConnectionPoolAdvance.jsf -->
@@ -102,7 +102,8 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
         setPageSessionAttribute(key="convertToFalseList" value={"wrapJdbcObjects" "pooling" "connectionLeakReclaim"
                                                                 "lazyConnectionAssociation" "lazyConnectionEnlistment"
                                                                 "associateWithThread" "matchConnections" "allowNonComponentCallers"
-                                                                "isConnectionValidationRequired" "failAllConnections" "logJdbcCalls"});
+                                                                "isConnectionValidationRequired" "failAllConnections" "logJdbcCalls"
+                                                                "skipClientInfoValidation"});
         setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
         gf.createAttributeMap(keys={"poolName"} values={"$pageSession{encodedName}"} map="#{pageSession.attrMap}");
         if(#{pageSession.isAppScopedRes}){

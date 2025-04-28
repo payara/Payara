@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +39,25 @@
  */
 package org.apache.catalina.core;
 
-import junit.framework.TestCase;
 import org.apache.catalina.HttpRequest;
 import org.apache.catalina.HttpResponse;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.web.valve.GlassFishValve;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
+import org.mockito.MockitoAnnotations;
+
 import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class StandardContextValveTest extends TestCase {
+public class StandardContextValveTest {
 
     @Mock
     private HttpRequest httpRequest;
@@ -70,6 +70,11 @@ public class StandardContextValveTest extends TestCase {
 
     @InjectMocks
     private StandardContextValve standardContextValve = new StandardContextValve();
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     @Test
     public void preventAccessToRestrictedDirectoryWithEmptyContextRootTest() throws IOException, ServletException {
@@ -101,28 +106,28 @@ public class StandardContextValveTest extends TestCase {
 
         String result = standardContextValve.normalize(path1);
 
-        assertEquals("/my.jsp", result);
+        Assert.assertEquals("/my.jsp", result);
 
         result = standardContextValve.normalize(path2);
 
-        assertEquals("/app/some/something/my.jsp", result);
+        Assert.assertEquals("/app/some/something/my.jsp", result);
 
         result = standardContextValve.normalize(path3);
 
-        assertEquals("/my.jsp", result);
+        Assert.assertEquals("/my.jsp", result);
 
         result = standardContextValve.normalize(path4);
 
-        assertEquals("/WEB-INF", result);
+        Assert.assertEquals("/WEB-INF", result);
 
         result = standardContextValve.normalize(path5);
 
-        assertEquals("/META-INF", result);
+        Assert.assertEquals("/META-INF", result);
     }
 
     protected void verifyThatResourceIsNotFound(int pipelineResult, int times, HttpRequest httpRequest, HttpResponse httpResponse,
                                  HttpServletResponse httpServletResponse) throws IOException {
-        assertEquals(GlassFishValve.END_PIPELINE, pipelineResult);
+        Assert.assertEquals(GlassFishValve.END_PIPELINE, pipelineResult);
         verify(httpRequest, times(times)).getCheckRestrictedResources();
         verify(httpRequest, times(times)).getRequestPathMB();
         verify(httpResponse, times(times)).getResponse();

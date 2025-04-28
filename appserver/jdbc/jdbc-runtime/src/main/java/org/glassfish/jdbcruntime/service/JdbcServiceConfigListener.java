@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,20 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.healthcheck.events;
+package org.glassfish.jdbcruntime.service;
 
-import fish.payara.nucleus.healthcheck.HealthCheckTask;
-import org.glassfish.api.event.EventTypes;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigListener;
+import org.jvnet.hk2.config.Transactions;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-/**
- *
- * @author Susan Rai
- */
-public class PayaraHealthCheckServiceEvents {
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 
-    public static final EventTypes<HealthCheckTask> HEALTHCHECK_SERVICE_CHECKER_ADD_TO_MICROPROFILE_HEALTH
-            = EventTypes.create("healthcheck_service_checker_add_to_microprofile_health", HealthCheckTask.class);
-    public static final EventTypes<HealthCheckTask> HEALTHCHECK_SERVICE_CHECKER_REMOVE_FROM_MICROPROFILE_HEALTH
-            = EventTypes.create("healthcheck_service_checker_remove_from_microprofile_health", HealthCheckTask.class);
-    public static final EventTypes<?> HEALTHCHECK_SERVICE_DISABLED = EventTypes.create("healthcheck_service_disabled");
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class JdbcServiceConfigListener implements ConfigListener {
+
+    @Inject
+    private Transactions transactions;
+
+    @PostConstruct
+    public void postConstruct() {
+        transactions.addListenerForType(JdbcConnectionPool.class, this);
+    }
+
+    @Override
+    public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
+        List<UnprocessedChangeEvent> unprocessedChanges = new ArrayList<>();
+        for (PropertyChangeEvent pce : events) {
+            if (pce.getPropertyName().equalsIgnoreCase("skip-client-info-validation")
+                    && Boolean.parseBoolean(pce.getOldValue().toString()) != Boolean.parseBoolean(pce.getNewValue().toString())) {
+                unprocessedChanges.add(new UnprocessedChangeEvent(pce, "JDBC Skip Client Info Validation Changed"));
+            }
+        }
+
+        if (unprocessedChanges.isEmpty()) {
+            return null;
+        }
+        return new UnprocessedChangeEvents(unprocessedChanges);
+    }
 }

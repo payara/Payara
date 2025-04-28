@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016] [Payara Foundation]
+Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 -->
 
 <!-- jdbc/advancePool.inc -->
@@ -147,6 +147,10 @@ Portions Copyright [2016] [Payara Foundation]
     <sun:property id="p10"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.maxConnectionUsageCount}" helpText="$resource{i18njdbc.jdbcPool.maxConnectionUsageCountHelp}">
         <sun:textField id="p5" styleClass="integer" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.jdbcPool.maxConnectionUsageCount']}" text="#{pageSession.valueMap['maxConnectionUsageCount']}"/> 
    </sun:property>
+
+   <sun:property id="p11"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njdbc.jdbcPool.skipClientInfoValidation}" helpText="$resource{i18njdbc.jdbcPool.skipClientInfoValidationHelp}">
+        <sun:checkbox selected="#{pageSession.valueMap['skipClientInfoValidation']}" label=" " selectedValue="true" />
+    </sun:property>
 
 </sun:propertySheetSection>
 <!-- -------------------- Connection Validation ------------ -->

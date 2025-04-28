@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -57,10 +58,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.FieldSetter;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,7 +69,6 @@ import static org.junit.Assert.assertNull;
  *
  * @author Susan Rai
  */
-@RunWith(MockitoJUnitRunner.class)
 public class LoggingPropertiesTest {
 
     private final Properties props = new Properties();
@@ -86,10 +84,13 @@ public class LoggingPropertiesTest {
     private LoggingConfigImpl loggingConfigImpl;
 
     @Before
-    public void initialise() throws IOException, NoSuchFieldException {
+    public void initialise() throws IOException, NoSuchFieldException, IllegalAccessException {
+        MockitoAnnotations.initMocks(this);
         loggingFile = tempLoggingfolder.newFile("logging.properties");
         loggingConfigImpl = new LoggingConfigImpl(loggingFile.getParentFile(), loggingFile.getParentFile());
-        FieldSetter.setField(loggingConfigImpl, loggingConfigImpl.getClass().getDeclaredField("fileMonitoring"), fileMonitoring);
+        Field fileMonitoringField = loggingConfigImpl.getClass().getDeclaredField("fileMonitoring");
+        fileMonitoringField.setAccessible(true);
+        fileMonitoringField.set(loggingConfigImpl, fileMonitoring);
     }
 
     @Test
