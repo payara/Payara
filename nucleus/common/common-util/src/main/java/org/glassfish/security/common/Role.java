@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
 // Portions Copyright 2024 Contributors to the Eclipse Foundation
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
@@ -68,12 +68,16 @@ public class Role implements Principal, Serializable {
 
     @Override
     public boolean equals(Object other) {
-        boolean ret = false;
-        if (other instanceof Role) {
-            ret = getName().equals(((Role) other).getName());
+        if (this == other) {
+            return true;
         }
 
-        return ret;
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+
+        Role role = (Role) other;
+        return getName().equals(role.getName());
     }
 
     @Override

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
@@ -121,58 +121,56 @@ public class LoggingXMLNames {
 
 //mapping of the names used in domain.xml to the names used in logging.properties
 
-    public static final Map<String, String> xmltoPropsMap =
-            new HashMap<String, String>() {{            
-                put(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes);
-                put(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes);
-                put(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes);
-                put(payaraNotificationLogRotationTimelimitInMinutes, LoggingPropertyNames.payaraNotificationLogRotationTimelimitInMinutes);
-                put(file, LoggingPropertyNames.file);
-                put(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile);
-                put(logFormatter, LoggingPropertyNames.logFormatter);
-                put(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter);
-                put(logStandardStreams, LoggingPropertyNames.logStandardStreams);
-                put(logHandler, LoggingPropertyNames.logHandler);
-                put(useSystemLogging, LoggingPropertyNames.useSystemLogging);
-                put(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours);
-                put(logFilter, LoggingPropertyNames.logFilter);
-                put(logToFile, LoggingPropertyNames.logToFile);
-                put(payaraNotificationLogToFile, LoggingPropertyNames.payaraNotificationLogToFile);
-                put(logToConsole, LoggingPropertyNames.logToConsole);
-                put(fastLogging, LoggingPropertyNames.fastLogging);
-                put(alarms, LoggingPropertyNames.alarms);
-                put(root, LogDomains.DOMAIN_ROOT + LEVEL);
-                put(server, LogDomains.SERVER_LOGGER + LEVEL);
-                put(ejbcontainer, LogDomains.EJB_LOGGER + LEVEL);
-                put(cmpcontainer, LogDomains.CMP_LOGGER + LEVEL);
-                put(mdbcontainer, LogDomains.MDB_LOGGER + LEVEL);
-                put(webcontainer, LogDomains.WEB_LOGGER + LEVEL);
-                put(classloader, LogDomains.LOADER_LOGGER + LEVEL);
-                put(configuration, LogDomains.CONFIG_LOGGER + LEVEL);
-                put(naming, LogDomains.NAMING_LOGGER + LEVEL);
-                put(security, LogDomains.SECURITY_LOGGER + LEVEL);
-                put(jts, LogDomains.TRANSACTION_LOGGER + LEVEL);
-                put(jta, LogDomains.JTA_LOGGER + LEVEL);
-                put(admin, LogDomains.ADMIN_LOGGER + LEVEL);
-                put(deployment, LogDomains.DPL_LOGGER + LEVEL);
-                //  put(verifier, LogDomains.
-                put(jaxr, LogDomains.JAXR_LOGGER + LEVEL);
-                put(jaxrpc, LogDomains.JAXRPC_LOGGER + LEVEL);
-                put(saaj, LogDomains.SAAJ_LOGGER + LEVEL);
-                put(corba, LogDomains.CORBA_LOGGER + LEVEL);
-                put(javamail, LogDomains.JAVAMAIL_LOGGER + LEVEL);
-                put(jms, LogDomains.JMS_LOGGER + LEVEL);
-                //  put(connector, LogDomains.
-                put(jdo, LogDomains.JDO_LOGGER + LEVEL);
-                put(cmp, LogDomains.CMP_LOGGER + LEVEL);
-                put(util, LogDomains.UTIL_LOGGER + LEVEL);
-                put(resourceadapter, LogDomains.RSR_LOGGER + LEVEL);
-                //  put(synchronization, LogDomains.
-                //  put(nodeAgent, LogDomains.
-                put(selfmanagement, LogDomains.SELF_MANAGEMENT_LOGGER + LEVEL);
-                //  put(groupManagementService, LogDomains.
-                //  put(managementEvent, LogDomains.
-            }};
-
+    public static final Map<String, String> xmltoPropsMap = Map.ofEntries(
+            Map.entry(logRotationLimitInBytes, LoggingPropertyNames.logRotationLimitInBytes),
+            Map.entry(payaraNotificationLogRotationLimitInBytes, LoggingPropertyNames.payaraNotificationLogRotationLimitInBytes),
+            Map.entry(logRotationTimelimitInMinutes, LoggingPropertyNames.logRotationTimelimitInMinutes),
+            Map.entry(payaraNotificationLogRotationTimelimitInMinutes, LoggingPropertyNames.payaraNotificationLogRotationTimelimitInMinutes),
+            Map.entry(file, LoggingPropertyNames.file),
+            Map.entry(payaraNotificationFile, LoggingPropertyNames.payaraNotificationFile),
+            Map.entry(logFormatter, LoggingPropertyNames.logFormatter),
+            Map.entry(payaraNotificationLogFormatter, LoggingPropertyNames.payaraNotificationLogFormatter),
+            Map.entry(logStandardStreams, LoggingPropertyNames.logStandardStreams),
+            Map.entry(logHandler, LoggingPropertyNames.logHandler),
+            Map.entry(useSystemLogging, LoggingPropertyNames.useSystemLogging),
+            Map.entry(retainErrorStatisticsForHours, LoggingPropertyNames.retainErrorStatisticsForHours),
+            Map.entry(logFilter, LoggingPropertyNames.logFilter),
+            Map.entry(logToFile, LoggingPropertyNames.logToFile),
+            Map.entry(payaraNotificationLogToFile, LoggingPropertyNames.payaraNotificationLogToFile),
+            Map.entry(logToConsole, LoggingPropertyNames.logToConsole),
+            Map.entry(fastLogging, LoggingPropertyNames.fastLogging),
+            Map.entry(alarms, LoggingPropertyNames.alarms),
+            Map.entry(root, LogDomains.DOMAIN_ROOT + LEVEL),
+            Map.entry(server, LogDomains.SERVER_LOGGER + LEVEL),
+            Map.entry(ejbcontainer, LogDomains.EJB_LOGGER + LEVEL),
+            Map.entry(cmpcontainer, LogDomains.CMP_LOGGER + LEVEL),
+            Map.entry(mdbcontainer, LogDomains.MDB_LOGGER + LEVEL),
+            Map.entry(webcontainer, LogDomains.WEB_LOGGER + LEVEL),
+            Map.entry(classloader, LogDomains.LOADER_LOGGER + LEVEL),
+            Map.entry(configuration, LogDomains.CONFIG_LOGGER + LEVEL),
+            Map.entry(naming, LogDomains.NAMING_LOGGER + LEVEL),
+            Map.entry(security, LogDomains.SECURITY_LOGGER + LEVEL),
+            Map.entry(jts, LogDomains.TRANSACTION_LOGGER + LEVEL),
+            Map.entry(jta, LogDomains.JTA_LOGGER + LEVEL),
+            Map.entry(admin, LogDomains.ADMIN_LOGGER + LEVEL),
+            Map.entry(deployment, LogDomains.DPL_LOGGER + LEVEL),
+            //  Map.entry(verifier, LogDomains.
+            Map.entry(jaxr, LogDomains.JAXR_LOGGER + LEVEL),
+            Map.entry(jaxrpc, LogDomains.JAXRPC_LOGGER + LEVEL),
+            Map.entry(saaj, LogDomains.SAAJ_LOGGER + LEVEL),
+            Map.entry(corba, LogDomains.CORBA_LOGGER + LEVEL),
+            Map.entry(javamail, LogDomains.JAVAMAIL_LOGGER + LEVEL),
+            Map.entry(jms, LogDomains.JMS_LOGGER + LEVEL),
+            //  Map.entry(connector, LogDomains.
+            Map.entry(jdo, LogDomains.JDO_LOGGER + LEVEL),
+            Map.entry(cmp, LogDomains.CMP_LOGGER + LEVEL),
+            Map.entry(util, LogDomains.UTIL_LOGGER + LEVEL),
+            Map.entry(resourceadapter, LogDomains.RSR_LOGGER + LEVEL),
+            //  Map.entry(synchronization, LogDomains.
+            //  Map.entry(nodeAgent, LogDomains.
+            Map.entry(selfmanagement, LogDomains.SELF_MANAGEMENT_LOGGER + LEVEL)
+            //  Map.entry(groupManagementService, LogDomains.
+            //  Map.entry(managementEvent, LogDomains.
+    );
 }
 

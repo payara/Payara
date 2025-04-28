@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.common.util.logging;
 
@@ -83,21 +83,20 @@ public class LoggingConfigImpl implements LoggingConfig {
     static final String GF_FILE_HANDLER = "com.sun.enterprise.server.logging.GFFileHandler";
     static final String PY_FILE_HANDLER = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler";
 
-    protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = new HashMap<>();
-    static {
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".logtoFile", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationOnDateChange", "false");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".maxHistoryFiles", "0");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".compressOnRotation", "false");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".logStandardStreams", "true");
-        DEFAULT_LOG_PROPERTIES.put(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter");
-        DEFAULT_LOG_PROPERTIES.put(GF_FILE_HANDLER + ".fastLogging", "false");
-    }
+    protected static final Map<String, String> DEFAULT_LOG_PROPERTIES = Map.ofEntries(
+            Map.entry(GF_FILE_HANDLER + ".logtoFile", "true"),
+            Map.entry(PY_FILE_HANDLER + ".logtoFile", "true"),
+            Map.entry(PY_FILE_HANDLER + ".rotationOnDateChange", "false"),
+            Map.entry(PY_FILE_HANDLER + ".rotationTimelimitInMinutes", "0"),
+            Map.entry(GF_FILE_HANDLER + ".rotationLimitInBytes", "2000000"),
+            Map.entry(PY_FILE_HANDLER + ".rotationLimitInBytes", "2000000"),
+            Map.entry(PY_FILE_HANDLER + ".maxHistoryFiles", "0"),
+            Map.entry(PY_FILE_HANDLER + ".file", "${com.sun.aas.instanceRoot}/logs/notification.log"),
+            Map.entry(PY_FILE_HANDLER + ".compressOnRotation", "false"),
+            Map.entry(GF_FILE_HANDLER + ".logStandardStreams", "true"),
+            Map.entry(PY_FILE_HANDLER + ".formatter", "com.sun.enterprise.server.logging.ODLLogFormatter"),
+            Map.entry(GF_FILE_HANDLER + ".fastLogging", "false")
+    );
 
     @Inject
     private FileMonitoring fileMonitoring;

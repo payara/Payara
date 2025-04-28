@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -93,8 +93,13 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             return;
         }
 
+        String host = TranslatedConfigView.expandValue(manager.getProperty(cname + ".host"));
+        if (host == null) {
+            host = "localhost";
+        }
+
         //set up the connection
-        setupConnection();
+        setupConnection(host);
         initializePump();
     }
 
@@ -117,9 +122,14 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         pump.start();
     }
 
+    @Deprecated
     private void setupConnection(){
+        setupConnection("localhost");
+    }
+
+    private void setupConnection(String host){
         try {
-            sysLogger = new Syslog("localhost");  //for now only write to this host
+            sysLogger = new Syslog(host);
         } catch (java.net.UnknownHostException e) {
             LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_INIT_SYSLOG, e);
             return;
@@ -167,7 +177,13 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             sb.append(formatter.format(millisec));
             sb.append(" [ ");
             sb.append(logLevel);
-            sb.append(" glassfish ] ");
+            sb.append(" ");
+            if (record.getLoggerName() == null) {
+                sb.append("Payara");
+            } else {
+                sb.append(record.getLoggerName());
+            }
+            sb.append(" ] ");
             String formattedMsg = simpleFormatter.formatMessage(record);
             sb.append(formattedMsg);
             //send message
@@ -206,13 +222,19 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     }
 
+    @Deprecated
     public void setSystemLogging(boolean systemLogging) {
+        setSystemLogging(systemLogging, "localhost");
+    }
+
+
+    public void setSystemLogging(boolean systemLogging, String host) {
         if (systemLogging) {
             //set up the connection
-            setupConnection();
+            setupConnection(host);
             initializePump();
         } else {
-            if (pump.isAlive()) {
+            if (pump != null && pump.isAlive()) {
                 pump.interrupt();
             }
         }

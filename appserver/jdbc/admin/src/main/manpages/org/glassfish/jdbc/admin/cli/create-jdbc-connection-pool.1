@@ -44,6 +44,7 @@ SYNOPSIS
            [--wrapjdbcobjects={false|true}]
            [--description description]
            [--property name=value)[:name=value]*]
+           [--skipclientinfovalidation={false|true}]
            [--target=target]
            connectionpoolid
 
@@ -515,6 +516,17 @@ OPTIONS
                |characters in command options, see the  |
                |asadmin(1M) man page.                   |
                +----------------------------------------+
+
+       --skipclientinfovalidation
+           Determines whether to skip the validation of client info properties.
+
+           Possible values of --skipclientinfovalidation are as follows:
+
+           false
+               The client info properties will be validated. (default).
+
+           true
+               The validation of client info properties will be skipped.
 
        --target
            Do not specify this option. This option is retained for

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,16 +43,16 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
-import junit.framework.TestCase;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.weld.WeldDeployer;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -60,8 +60,7 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class JCDIServiceImplTest extends TestCase {
+public class JCDIServiceImplTest {
 
     @Mock
     private EjbDescriptor ejbDescriptor;
@@ -90,6 +89,11 @@ public class JCDIServiceImplTest extends TestCase {
     @InjectMocks
     private JCDIServiceImpl jcdiServiceImpl = new JCDIServiceImpl();
 
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
     @Test
     public void createJCDIInjectionContextWithoutNullPointerException() {
         Map<Class<?>, Object> ejbInfo = Collections.emptyMap();
@@ -107,7 +111,7 @@ public class JCDIServiceImplTest extends TestCase {
 
         Object obj = jcdiServiceImpl.createJCDIInjectionContext(ejbDescriptor, ejbInfo);
 
-        assertNull(obj);
+        Assert.assertNull(obj);
         verify(ejbDescriptor, times(2)).getEjbBundleDescriptor();
         verify(ejbBundleDescriptor, times(1)).getModuleDescriptor();
         verify(moduleDescriptor, times(1)).getDescriptor();

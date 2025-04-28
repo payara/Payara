@@ -64,7 +64,7 @@
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <soteria.version>4.0.0</soteria.version>
+        <soteria.version>4.0.1</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
         <!-- Needs FISH-9690 reapplying -->
         <grizzly.version>4.1.0-M1</grizzly.version>
@@ -125,14 +125,14 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.1.10</kotlin-version>
+        <kotlin-version>2.1.20</kotlin-version>
         <epicyro.version>3.1.0</epicyro.version>
 
         <!-- implementation and build dependencies -->
         <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
         <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
         <junit.version>4.13.2</junit.version>
-        <mockito.version>2.28.2</mockito.version>
+        <mockito.version>5.17.0</mockito.version>
         <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
         <jline.version>3.29.0</jline.version>
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -151,7 +151,7 @@
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>4.1.2</pfl.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
-        <jna.version>5.16.0</jna.version>
+        <jna.version>5.17.0</jna.version>
         <!-- A pure Java implementation of the SSH-2 protocol -->
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
@@ -172,7 +172,7 @@
         <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
@@ -182,7 +182,7 @@
         <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.5.2</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
