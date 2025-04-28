@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,7 +88,7 @@ public final class FileDeletionThread extends Thread {
                 if (deletionSuccessful ||
                         deletionAttempts.compute(
                             fileToDelete,
-                            (file, attempts) -> attempts == null ? 1 : ++attempts
+                            (file, attempts) -> attempts == null ? 1 : attempts + 1
                         ) > MAX_DELETION_ATTEMPTS) {
                     // file deleted or attempted deletion exceeded max attempts
                     fileIterator.remove();
