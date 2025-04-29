@@ -50,7 +50,6 @@
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.nucleus</groupId>
     <artifactId>api-exporter</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>GlassFish API Exporter Module</name>

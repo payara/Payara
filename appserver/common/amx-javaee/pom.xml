@@ -50,7 +50,6 @@
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.common</groupId>
     <artifactId>amx-javaee</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -71,12 +70,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>amx-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -91,7 +90,7 @@
             <artifactId>glassfish-corba-omgapi</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>stats77</artifactId>
             <version>${project.version}</version>
         </dependency>

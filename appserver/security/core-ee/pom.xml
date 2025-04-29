@@ -50,7 +50,7 @@
         <artifactId>securitymodule</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.security</groupId>
+    <groupId>fish.payara.server.internal.security</groupId>
     <artifactId>security-ee</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -183,12 +183,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency> <!-- for AuditModule -->
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-ee-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -197,27 +197,27 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>ssl-impl</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -239,12 +239,12 @@
             <scope>provided</scope>
         </dependency>
          <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>jaspic.provider.framework</artifactId>
              <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -254,7 +254,7 @@
             <!-- Don't set scope as provided. See issue #5992 -->
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -263,12 +263,12 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.ejb</groupId>
+            <groupId>fish.payara.server.internal.ejb</groupId>
             <artifactId>ejb-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -281,12 +281,12 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>libpam4j-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-javaee-core</artifactId>
             <version>${project.version}</version>
         </dependency>

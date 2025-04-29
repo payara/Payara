@@ -46,7 +46,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <artifactId>payara-nucleus-modules</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.payara-modules</groupId>
     <artifactId>healthcheck-core</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Healthcheck Core services</name>
@@ -90,12 +89,12 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <artifactId>payara-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

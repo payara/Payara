@@ -57,14 +57,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -83,7 +83,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-admin</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

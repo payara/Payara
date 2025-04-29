@@ -50,7 +50,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fish.payara.server.core.common</groupId>
     <artifactId>stats77</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -71,7 +70,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -49,7 +49,6 @@
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.web</groupId>
     <artifactId>web-sse</artifactId>
     <packaging>glassfish-jar</packaging>
     

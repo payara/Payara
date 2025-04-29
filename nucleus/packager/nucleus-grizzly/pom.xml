@@ -62,7 +62,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
