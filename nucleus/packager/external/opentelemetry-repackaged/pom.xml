@@ -51,8 +51,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
 
-
-    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>opentelemetry-repackaged</artifactId>
     <name>Repackaged OpenTelemetry</name>
     <description>OpenTelemetry API and SDK repackaged as OSGi bundle</description>

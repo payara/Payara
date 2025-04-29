@@ -64,17 +64,17 @@
             <artifactId>jersey-mvc-jsp</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
          <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util</artifactId>
              <version>${project.version}</version>
         </dependency>

@@ -49,7 +49,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.test-utils</groupId>
     <artifactId>utils</artifactId>
     <name>Test utilities</name>
     <properties>
@@ -79,7 +78,7 @@
             <artifactId>hk2-junitrunner</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -89,7 +88,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -49,7 +49,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>j-interop-repackaged</artifactId>
     <name>j-interop repackaged as a module</name>
     <build>

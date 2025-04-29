@@ -49,7 +49,6 @@
         <artifactId>nucleus-admin</artifactId>
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.admin</groupId>
     <artifactId>admin-cli</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>admin-cli</name>
@@ -132,7 +131,7 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -145,22 +144,22 @@
             <artifactId>jakarta.json</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>launcher</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>

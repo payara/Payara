@@ -64,13 +64,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>fish.payara.server.core.packager</groupId>
+                    <groupId>fish.payara.server.internal.packager</groupId>
                     <artifactId>ldapbp-repackaged</artifactId>
                 </exclusion>
             </exclusions>

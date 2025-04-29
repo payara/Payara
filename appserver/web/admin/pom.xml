@@ -49,7 +49,6 @@
         <artifactId>web</artifactId>
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.web</groupId>
     <artifactId>web-cli</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -119,12 +118,12 @@
     
     <dependencies>
 	<dependency>
-        <groupId>fish.payara.server.core.flashlight</groupId>
+        <groupId>fish.payara.server.internal.flashlight</groupId>
         <artifactId>flashlight-framework</artifactId>
         <version>${project.version}</version>
         </dependency>
 	<dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>monitoring-core</artifactId>
         <version>${project.version}</version>
 	</dependency>
@@ -133,32 +132,32 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>grizzly-config</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-	    <groupId>fish.payara.server.core.common</groupId>
+	    <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -171,7 +170,7 @@
             <artifactId>gmbal</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>amx-javaee</artifactId>
             <version>${project.version}</version>
         </dependency>

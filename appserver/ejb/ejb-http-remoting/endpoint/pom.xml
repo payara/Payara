@@ -81,7 +81,7 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security-ee</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

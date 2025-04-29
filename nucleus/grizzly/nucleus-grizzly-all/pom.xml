@@ -51,7 +51,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.grizzly</groupId>
     <artifactId>nucleus-grizzly-all</artifactId>
     <name>Nucleus Grizzly jars Combining</name>
     <description>combining of all nucleus grizzly jars</description>
@@ -138,7 +137,7 @@
             <artifactId>tls-sni</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>grizzly-config</artifactId>
             <version>${project.version}</version>
         </dependency>

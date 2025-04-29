@@ -136,13 +136,13 @@ of COPY_LIB map constant.)
     </build>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.test-utils</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils-ng</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -158,7 +158,7 @@ of COPY_LIB map constant.)
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>rest-client</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

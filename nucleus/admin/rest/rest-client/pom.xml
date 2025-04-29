@@ -49,7 +49,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.admin</groupId>
     <artifactId>rest-client</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -62,7 +61,7 @@
             <artifactId>jersey-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -49,7 +49,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>jmxremote_optional-repackaged</artifactId>
     <name>jmxremote_optional repackaged as a module</name>
     <description>jmxremote_optional repackaged as a module</description>

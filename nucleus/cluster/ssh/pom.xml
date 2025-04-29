@@ -49,7 +49,6 @@
         <artifactId>cluster</artifactId>
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.cluster</groupId>
     <artifactId>cluster-ssh</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -74,7 +73,7 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>trilead-ssh2-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -83,12 +82,12 @@
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -99,12 +98,12 @@
             from NodeRunner.
         -->
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.cluster</groupId>
+            <groupId>fish.payara.server.internal.cluster</groupId>
             <artifactId>cluster-common</artifactId>
             <version>${project.version}</version>
         </dependency>
