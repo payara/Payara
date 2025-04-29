@@ -54,10 +54,12 @@ import org.jboss.weld.manager.BeanManagerImpl;
 
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.enterprise.inject.spi.CDIProvider;
+import java.lang.StackWalker.StackFrame;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import static org.glassfish.weld.JaxRSJsonContextResolver.currentType;
+import java.util.stream.Collectors;
+import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
@@ -65,6 +67,7 @@ import static org.glassfish.weld.JaxRSJsonContextResolver.currentType;
 public class GlassFishWeldProvider implements CDIProvider {
     private static final WeldDeployer weldDeployer = Globals.get(WeldDeployer.class);
     private static final InvocationManager invocationManager = Globals.get(InvocationManager.class);
+    private static final StackWalker stackWalker = StackWalker.getInstance(RETAIN_CLASS_REFERENCE);
 
     private static class GlassFishEnhancedWeld extends SimpleCDI {
         private final Set<String> knownClassNames;
@@ -113,40 +116,19 @@ public class GlassFishWeldProvider implements CDIProvider {
 
         @Override
         protected String getCallingClassName() {
-            String superCallingClassName = _getCallingClassName();
-            if (currentType.get() != null) {
-                while (true) {
-                    try {
-                        while (getBundleDescriptor().getClassLoader().loadClass(superCallingClassName).getClassLoader() !=
-                                getBundleDescriptor().getClassLoader()) {
-                            knownClassNames.add(superCallingClassName);
-                            superCallingClassName = _getCallingClassName();
-                        }
-                        break;
-                    } catch (ClassNotFoundException | NullPointerException | IllegalStateException e) {
-                        if (currentType.get().getClassLoader() == getBundleDescriptor().getClassLoader()) {
-                            return currentType.get().getName();
-                        } else {
-                            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(getBundleDescriptor());
-                            return bda.getBeanClasses().stream().findAny().orElse(superCallingClassName);
-                        }
-                    }
-                }
-            }
-            return superCallingClassName;
-        }
-
-        /**
-         * copied from Weld because knownClassNames is not modifiable
-         * @return
-         */
-        private String _getCallingClassName() {
             boolean outerSubclassReached = false;
-            for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            BundleDescriptor bundleDescriptor = getBundleDescriptor();
+            for (StackFrame element : stackWalker.walk(sf -> sf.collect(Collectors.toList()))) {
                 // the method call that leads to the first invocation of this class or its subclass is considered the caller
                 if (!knownClassNames.contains(element.getClassName())) {
-                    if (outerSubclassReached) {
-                        return element.getClassName();
+                    Class<?> declaringClass = element.getDeclaringClass();
+                    if (outerSubclassReached && declaringClass.getClassLoader() != null) {
+                        if (bundleDescriptor != null && declaringClass.getClassLoader() == bundleDescriptor.getClassLoader()) {
+                            // we are in the same class loader, so this is the caller
+                            return declaringClass.getName();
+                        } else {
+                            return getAnyClassFromBundleDescriptor(declaringClass.getName());
+                        }
                     }
                 } else {
                     outerSubclassReached = true;
@@ -155,6 +137,10 @@ public class GlassFishWeldProvider implements CDIProvider {
             throw BeanManagerLogger.LOG.unableToIdentifyBeanManager();
         }
 
+        private static String getAnyClassFromBundleDescriptor(String backupClassName) {
+            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(getBundleDescriptor());
+            return bda != null ? bda.getBeanClasses().stream().findAny().orElse(backupClassName) : backupClassName;
+        }
     }
 
     @Override

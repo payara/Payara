@@ -70,7 +70,6 @@ import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORIT
 @Produces(MediaType.APPLICATION_JSON)
 public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedAutoDiscoverable {
     private final Map<Class<?>, Jsonb> jsonbMap = new ConcurrentHashMap<>();
-    static final ThreadLocal<Class<?>> currentType = new ThreadLocal<>();
     private final List<ContextResolver<?>> existingResolvers;
     private final List<Class<ContextResolver<?>>> existingResolverClasses;
 
@@ -106,18 +105,13 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
     public Jsonb getContext(Class<?> type) {
         return jsonbMap.computeIfAbsent(type, unused -> {
             instantiateResolverClasses();
-            currentType.set(type);
-            try {
-                for (ContextResolver<?> resolver : existingResolvers) {
-                    Object result = resolver.getContext(type);
-                    if (result instanceof Jsonb) {
-                        return (Jsonb) result;
-                    }
+            for (ContextResolver<?> resolver : existingResolvers) {
+                Object result = resolver.getContext(type);
+                if (result instanceof Jsonb) {
+                    return (Jsonb) result;
                 }
-                return JsonbBuilder.create();
-            } finally {
-                currentType.remove();
             }
+            return JsonbBuilder.create();
         });
     }
 
