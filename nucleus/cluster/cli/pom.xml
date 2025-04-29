@@ -39,16 +39,15 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2019 - 2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2019-2025 Payara Foundation and/or its affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>7.0.0.Alpha5-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.cluster</groupId>
+        <artifactId>cluster</artifactId>
+        <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.core.cluster</groupId>
     <artifactId>cluster-cli</artifactId>
@@ -93,37 +92,47 @@
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-cli</artifactId>
-        </dependency>        <dependency>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.core.nucleus</groupId>
             <artifactId>glassfish</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>server-mgmt</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.admin</groupId>
             <artifactId>launcher</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.cluster</groupId>
             <artifactId>cluster-ssh</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.core.security</groupId>
             <artifactId>ssl-impl</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

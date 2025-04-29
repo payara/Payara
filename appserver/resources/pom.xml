@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -52,6 +53,7 @@
     <packaging>pom</packaging>
     <name>GlassFish Resources infrastructure related modules</name>
     <modules>
+        <module>resources-connector</module>
         <module>resources-runtime</module>
         <module>javamail</module>
         <module>resources-connector-l10n</module>
