@@ -408,7 +408,7 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>[${jdk.version},)</version>
-                                    <message>You need at least JDK11</message>
+                                    <message>You need at least JDK21</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.6.3,)</version>
