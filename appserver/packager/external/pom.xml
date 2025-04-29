@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2017-2024 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2017-2025 Payara Foundation and/or its affiliates -->
 
 <!--
   External repackaging modules.
@@ -66,6 +66,7 @@
         <module>h2db</module>
         <module>jmsra</module>
         <module>jcip</module>
+        <module>libpam4j</module>
         <module>metro-xmlsec</module>
         <module>jakarta-ee9-shim</module>
     </modules>

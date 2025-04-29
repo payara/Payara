@@ -40,54 +40,21 @@
     holder.
 
 -->
-<!-- Portions Copyright 2022-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-	<groupId>fish.payara.server.internal.persistence</groupId>
-    	<artifactId>persistence</artifactId>
+        <groupId>fish.payara.server</groupId>
+        <artifactId>payara-nucleus-parent</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <artifactId>persistence-common</artifactId>
-    <packaging>glassfish-jar</packaging>
-    
-    <name>Common persistence code between JPA and CMP</name>
-    
-    <developers>
-        <developer>
-            <id>mm110999</id>
-            <name>Mitesh Meswani</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-	        <role>lead</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>mvatkina</id>
-            <name>Marina Vatkina</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.core.connectors</groupId>
-            <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
-            <artifactId>container-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+    <groupId>fish.payara.server.internal.grizzly</groupId>
+    <artifactId>nucleus-grizzly</artifactId>
+    <packaging>pom</packaging>
+    <name>GlassFish Nucleus Grizzly modules</name>
+    <modules>
+        <module>config</module>
+        <module>nucleus-grizzly-all</module>
+    </modules>
 </project>
