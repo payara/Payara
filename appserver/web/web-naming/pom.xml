@@ -50,7 +50,6 @@
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.web</groupId>
     <artifactId>web-naming</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -100,7 +99,7 @@
         </dependency>
         <dependency>
             <!-- Needed for Startup service -->
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>

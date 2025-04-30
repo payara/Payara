@@ -48,7 +48,6 @@
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.web</groupId>
     <artifactId>web-gui-plugin-common</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -73,12 +72,12 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>gf-web-connector</artifactId>
             <version>${project.version}</version>
         </dependency>

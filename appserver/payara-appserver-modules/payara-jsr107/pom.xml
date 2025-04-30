@@ -93,7 +93,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -106,7 +106,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -124,13 +124,13 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>faces-compat</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -50,8 +50,7 @@
         <artifactId>nucleus-common</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    
-    <groupId>fish.payara.server.core.common</groupId>
+
     <artifactId>glassfish-api</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -72,7 +71,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>scattered-archive-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -81,7 +80,7 @@
             <artifactId>hk2-runlevel</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.grizzly</groupId>
+            <groupId>fish.payara.server.internal.grizzly</groupId>
             <artifactId>nucleus-grizzly-all</artifactId>
             <version>${project.version}</version>
         </dependency>

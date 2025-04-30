@@ -50,7 +50,6 @@
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.common</groupId>
     <artifactId>simple-glassfish-api</artifactId>
     <packaging>glassfish-jar</packaging>
     

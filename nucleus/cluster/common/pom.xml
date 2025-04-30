@@ -49,7 +49,6 @@
         <artifactId>cluster</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.cluster</groupId>
     <artifactId>cluster-common</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -79,28 +78,28 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.test-utils</groupId>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.packager</groupId>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>j-interop-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -49,7 +49,6 @@
         <artifactId>admingui</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.admingui</groupId>
     <artifactId>console-common</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -75,13 +74,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-client</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -98,20 +97,20 @@
             <scope>provided</scope>
        </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>rest-client</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>faces-compat</artifactId>
             <version>${project.version}</version>
         </dependency>

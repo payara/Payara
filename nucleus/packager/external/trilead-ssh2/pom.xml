@@ -50,7 +50,6 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>trilead-ssh2-repackaged</artifactId>
     <name>trilead-ssh2 repackaged as a module</name>
 

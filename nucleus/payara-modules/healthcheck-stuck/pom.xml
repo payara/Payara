@@ -48,7 +48,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         <artifactId>payara-nucleus-modules</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.payara-modules</groupId>
     <artifactId>healthcheck-stuck</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Healthcheck Stuck Threads</name>
@@ -67,7 +66,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.sniffer;
 
@@ -185,7 +185,7 @@ public class WebSniffer  extends GenericSniffer {
     // TODO(Sahoo): Ideally we should have separate sniffer for JSP, but since WebSniffer is already
     // handling JSPs, we must make sure that all JSP related modules get installed by WebSniffer as well.
     private String[] containerModuleNames = {
-        "fish.payara.server.core.web.glue",
+        "fish.payara.server.internal.web.glue",
         "org.glassfish.wasp.wasp"
     };
 

@@ -48,7 +48,6 @@
         <artifactId>admingui</artifactId>
         <version>6.2025.5-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.admingui</groupId>
     <artifactId>gf-admingui-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -65,7 +64,7 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
