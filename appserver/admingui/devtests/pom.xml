@@ -68,7 +68,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

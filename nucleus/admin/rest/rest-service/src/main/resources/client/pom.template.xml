@@ -40,22 +40,22 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2018-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.admin</groupId>
     <artifactId>rest-service-client</artifactId>
-    <version>{{payara.core.version}}</version>
+    <version>{{glassfish.version}}</version>
     
     <name>GlassFish Admin REST Service Client</name>
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>rest-client</artifactId>
-            <version>{{payara.core.version.version}}</version>
+            <version>{{glassfish.version}}</version>
         </dependency>
     </dependencies>
 </project>

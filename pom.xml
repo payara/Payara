@@ -101,6 +101,26 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>payara-nexus-staging</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+            <releases>
+                <enabled>${payara-nexus-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>jakarta-releases</id>
+            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <releases>
+                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -145,6 +165,26 @@
             </releases>
             <snapshots>
                 <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>payara-nexus-staging</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+            <releases>
+                <enabled>${payara-nexus-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>jakarta-releases</id>
+            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <releases>
+                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
@@ -215,6 +255,10 @@
         <deploy.skip>false</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
+        <jakarta-staging.repo.releases.enabled>false</jakarta-staging.repo.releases.enabled>
+        <jakarta-staging.repo.snapshots.enabled>false</jakarta-staging.repo.snapshots.enabled>
+        <payara-nexus-staging.repo.releases.enabled>false</payara-nexus-staging.repo.releases.enabled>
+        <payara-nexus-staging.repo.snapshots.enabled>false</payara-nexus-staging.repo.snapshots.enabled>
 
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
@@ -451,46 +495,18 @@
 
         <profile>
             <id>payara-nexus-staging</id>
-            <repositories>
-                <repository>
-                    <id>payara-nexus-staging</id>
-                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>payara-nexus-staging</id>
-                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </pluginRepository>
-            </pluginRepositories>
+            <properties>
+                <payara-nexus-staging.repo.releases.enabled>true</payara-nexus-staging.repo.releases.enabled>
+                <payara-nexus-staging.repo.snapshots.enabled>true</payara-nexus-staging.repo.snapshots.enabled>
+            </properties>
         </profile>
 
         <profile>
             <id>jakarta-staging</id>
-            <repositories>
-                <repository>
-                    <id>jakarta-releases</id>
-                    <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
+            <properties>
+                <jakarta-staging.repo.releases.enabled>true</jakarta-staging.repo.releases.enabled>
+                <jakarta-staging.repo.snapshots.enabled>true</jakarta-staging.repo.snapshots.enabled>
+            </properties>
         </profile>
 
         <profile>

@@ -37,6 +37,6 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright 2022 Payara Foundation and/or its affiliates 
+# Portions Copyright 2022-2025 Payara Foundation and/or its affiliates
 
-Fragment-Host: fish.payara.server.core.common.glassfish-naming; bundle-version=${project.osgi.version}
+Fragment-Host: fish.payara.server.internal.common.glassfish-naming; bundle-version=${project.osgi.version}

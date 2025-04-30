@@ -63,7 +63,7 @@
     <dependencies>
         <!-- Payara Dependencies -->
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>

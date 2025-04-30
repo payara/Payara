@@ -40,7 +40,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.packager</groupId>
     <artifactId>tiger-types</artifactId>
 
     <name>Repackaged Tiger-Types</name>
