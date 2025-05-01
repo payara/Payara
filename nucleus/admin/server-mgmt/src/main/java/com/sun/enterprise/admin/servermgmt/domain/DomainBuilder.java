@@ -368,6 +368,17 @@ public class DomainBuilder {
         Boolean saveMasterPassword = (Boolean) domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
         String mpLocation = (String)domainConfig.get(DomainConfig.K_MASTER_PASSWORD_LOCATION);
 
+        File mpFile = new File(configDir, DomainConstants.MASTERPASSWORD_FILE);
+        if (mpLocation != null) {
+            File mpLocationFile = new File(configDir, DomainConstants.MASTERPASSWORD_LOCATION_FILE);
+            try (FileWriter writer = new FileWriter(mpLocationFile)) {
+                writer.write(mpLocation);
+                mpFile = new File(mpLocation);
+            } catch (IOException e) {
+                throw new IOException(STRINGS.get("masterPasswordNotSaved"), e);
+            }
+        }
+
         // Process domain security.
         DomainSecurity domainSecurity = new DomainSecurity();
         domainSecurity.processAdminKeyFile(new File(configDir, DomainConstants.ADMIN_KEY_FILE), user, password, adminUserGroups);
@@ -386,19 +397,6 @@ public class DomainBuilder {
                 if (fos != null) {
                     fos.close();
                 }
-            }
-        }
-
-        File mpFile = new File(configDir, DomainConstants.MASTERPASSWORD_FILE);
-        if (mpLocation != null) {
-            File mpLocationFile = new File(configDir, DomainConstants.MASTERPASSWORD_LOCATION_FILE);
-            try (FileWriter writer = new FileWriter(mpLocationFile)) {
-                writer.write(mpLocation);
-                mpFile = new File(mpLocation);
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,
-                    "Failed to write master-password-location file, using default location due to error: ",
-                    e.getMessage());
             }
         }
 
