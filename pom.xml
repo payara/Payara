@@ -252,7 +252,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jdk.version>21</jdk.version>
         <javase.version>${jdk.version}</javase.version>
-        <deploy.skip>false</deploy.skip>
+        <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
         <jakarta-staging.repo.releases.enabled>false</jakarta-staging.repo.releases.enabled>
