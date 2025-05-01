@@ -55,8 +55,7 @@ import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 
 
@@ -113,6 +112,7 @@ public class DeploymentUtils {
     private final static String DOWNLOADABLE_ARTIFACTS_KEY_PREFIX = "downloadable";
     private final static String GENERATED_ARTIFACTS_KEY_PREFIX = "generated";
 
+    private static final ThreadLocal<ExtendedDeploymentContext> currentDeploymentContext = new ThreadLocal<>();
     private static final Map<String, WarLibraryDescriptor> warLibraryCache = new ConcurrentHashMap<>();
 
     public static class WarLibraryDescriptor {
@@ -466,12 +466,16 @@ public class DeploymentUtils {
         return externalLibURIs;
     }
 
-    public static DeploymentContext getCurrentDeploymentContext() {
-        try {
-            return Globals.getDefaultHabitat().getService(Deployment.class).getCurrentDeploymentContext();
-        } catch (Exception e) {
-            return null;
-        }
+    public static ExtendedDeploymentContext getCurrentDeploymentContext() {
+        return currentDeploymentContext.get();
+    }
+
+    public static void setCurrentDeploymentContext(ExtendedDeploymentContext context) {
+        currentDeploymentContext.set(context);
+    }
+
+    public static void clearCurrentDeploymentContext() {
+        currentDeploymentContext.remove();
     }
 
     public static List<URI> getWarLibraryURIs(DeploymentContext context) {
