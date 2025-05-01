@@ -186,27 +186,25 @@ public class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
         }
 
         try {
+            // Write the master password location if applicable
+            if (mpLocation != null) {
+                try (FileWriter writer = new FileWriter(mpLocationFile)) {
+                    writer.write(mpLocation);
+                } catch (Exception e) {
+                    throw new CommandException(STRINGS.get("masterPasswordFileLocationNotSaved"), e);
+                }
+            } else if (mpLocationFile.exists()) {
+                if (!mpLocationFile.delete()) {
+                    throw new CommandException(STRINGS.get("masterPasswordFileLocationNotDeleted"));
+                }
+            }
+
             // Write the master password file
             PasswordAdapter p = new PasswordAdapter(oldPasswordFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
             p.setPasswordForAlias(MASTERPASSWORD_FILE, newPassword.getBytes(StandardCharsets.UTF_8), newPasswordLocation);
 
             File newMpFile = mpLocation == null ? oldPasswordFile : new File(mpLocation);
             FileProtectionUtility.chmod0600(newMpFile);
-
-            // Write the master password location if applicable
-            if (mpLocation != null) {
-                try (FileWriter writer = new FileWriter(mpLocationFile)) {
-                    writer.write(mpLocation);
-                } catch (IOException e) {
-                    Logger.getAnonymousLogger().log(Level.SEVERE,
-                        "Failed to write master-password-location file due to error: ", e);
-                }
-            } else if (mpLocationFile.exists()) {
-                if (!mpLocationFile.delete()) {
-                    Logger.getAnonymousLogger().log(Level.WARNING,
-                        "Failed to delete old master-password-location file.");
-                }
-            }
             return 0;
         } catch (Exception ex) {
             throw new CommandException(STRINGS.get("masterPasswordFileNotCreated", oldPasswordFile), ex);

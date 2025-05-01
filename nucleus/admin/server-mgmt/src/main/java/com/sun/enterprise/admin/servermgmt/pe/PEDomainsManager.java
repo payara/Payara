@@ -236,6 +236,28 @@ public class PEDomainsManager extends RepositoryManager implements DomainsManage
             String newPass = getNewMasterPasswordClear(config);
             String mpLocation = getNewMasterPasswordLocation(config);
             boolean saveMp = saveMasterPassword(config);
+
+            // valid: exists and is a directory (creates new file)
+            // valid: exists and you can write here
+            // valid: does not exist, but the parent is a directory (creates new file)
+
+            // invalid: exists and you cannot write here
+            // invalid: does not exist, parent directory also does not exist
+
+            // Validate master password location (a valid password requires a writable file, or an existing directory)
+            if (mpLocation != null) {
+                File passwordFile = new File(mpLocation);
+                if (passwordFile.exists()) {
+                    if (!passwordFile.isDirectory() && !passwordFile.canWrite()) {
+                        throw new RepositoryException(STRINGS_MANAGER.getString("masterPasswordNotSaved") +
+                            ": No write access at this location.");
+                    }
+                }
+                else if (passwordFile.getParentFile() == null || !passwordFile.getParentFile().isDirectory()) {
+                    throw new RepositoryException(STRINGS_MANAGER.getString("masterPasswordNotSaved") +
+                        ": Directory not found.");
+                }
+            }
             
             //Change the password of the keystore alias file
             changePasswordAliasKeystorePassword(config, oldPass, newPass);

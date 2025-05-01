@@ -390,8 +390,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
                 writer.write(mpLocation);
                 pwdFile = new File(mpLocation);
             } catch (IOException e) {
-                Logger.getAnonymousLogger().log(Level.SEVERE,
-                    "Failed to write master-password-location, using default location due to error: ", e);
+                throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile), e);
             }
         }
 
