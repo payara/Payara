@@ -837,6 +837,11 @@
 
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
+                <artifactId>imq</artifactId>
+                <version>${openmq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.mq</groupId>
                 <artifactId>imqjmx</artifactId>
                 <version>5.1</version>
             </dependency>
