@@ -192,7 +192,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String JERSEY_PROCESS_JAXRS_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessJAXRSAnnotatedTypes";
 
     private static final String EAR_COMBINED_CDI_DEPLOYMENT = "fish.payara.ear-combined-cdi-deployment";
-    static final String MAKE_WARS_VISIBLE_IN_EAR_LIBS = "fish.payara.war-beans-visible-in-ear-libs";
 
     @Inject
     private Events events;
