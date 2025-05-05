@@ -39,30 +39,35 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import fish.payara.jakarta.data.core.util.FindOperationUtility;
+import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Query;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+
+import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteByIdOperation;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByIdOperation;
 
 
 /**
@@ -97,12 +102,38 @@ public class RepositoryImpl<T> implements InvocationHandler {
         switch (dataForQuery.getQueryType()) {
             case SAVE -> objectToReturn = processSaveOperation(args);
             case INSERT -> objectToReturn = processInsertOperation(args);
-            case DELETE -> processDeleteOperation(args);
+            case DELETE -> processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args);
-            case FIND -> objectToReturn = processFindAllOperation(args, dataForQuery.getDeclaredEntityClass());
+            case FIND -> objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
         }
 
         return objectToReturn;
+    }
+
+    public Object processFindOperation(Object[] args, Class<?> declaredEntityClass, Method method) {
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Class<?>[] types = method.getParameterTypes();
+        if (parameterAnnotations.length == 1 && types.length == 1) {
+            Annotation[] annotations = parameterAnnotations[0];
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof By) {
+                    //for now we are processing only By id operation, when custom By operation available we will provide 
+                    // the metadata from the entity class to search specific column value for By
+                    String byValue = ((By) annotation).value();
+                    List<?> resultList = processFindByIdOperation(args, declaredEntityClass, getEntityManager(), byValue);
+                    Object objectToReturn = null;
+                    if (!resultList.isEmpty() && resultList.size() == 1) {
+                        objectToReturn = resultList.get(0);
+                    } else if (!resultList.isEmpty() && resultList.size() > 1) {
+                        throw new IllegalArgumentException("Multiple results found for the given id");
+                    }
+                    return Optional.ofNullable(objectToReturn);
+                }
+            }
+            return null;
+        } else {
+            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager());
+        }
     }
 
     public void preProcessQuery() {
@@ -164,20 +195,34 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return entity;
     }
 
-    public void processDeleteOperation(Object[] args) throws SystemException, NotSupportedException,
+    public void processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        startTransactionComponents();
-        //delete multiple entities
-        if (args[0] instanceof List arr) {
-            startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) arr)) {
-                em.remove(em.merge(e));
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Class<?>[] types = method.getParameterTypes();
+        if (parameterAnnotations.length == 1 && types.length == 1) {
+            Annotation[] annotations = parameterAnnotations[0];
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof By) {
+                    //for now we are processing only By id operation, when custom By operation available we will provide 
+                    // the metadata from the entity class to search specific column value for By
+                    String byValue = ((By) annotation).value();
+                    processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(), byValue);
+                }
             }
-            endTransaction();
-        } else if (args[0] != null) { //delete single entity
-            startTransactionAndJoin();
-            em.remove(em.merge(args[0]));
-            endTransaction();
+        } else {
+            startTransactionComponents();
+            //delete multiple entities
+            if (args[0] instanceof List arr) {
+                startTransactionAndJoin();
+                for (Object e : ((Iterable<?>) arr)) {
+                    em.remove(em.merge(e));
+                }
+                endTransaction();
+            } else if (args[0] != null) { //delete single entity
+                startTransactionAndJoin();
+                em.remove(em.merge(args[0]));
+                endTransaction();
+            }
         }
     }
 
@@ -206,22 +251,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         return entity;
     }
-
-    public Stream<?> processFindAllOperation(Object[] args, Class<?> entityClass) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
-        EntityManager em = getEntityManager();
-        Query q = em.createQuery(builder.toString());
-        return q.getResultStream();
-    }
-
-    public String getSingleEntityName(String entityName) {
-        if (entityName != null) {
-            int idx = entityName.lastIndexOf(".");
-            return entityName.substring(idx + 1);
-        }
-        return null;
-    }
+    
 
     public ApplicationRegistry getRegistry() {
         ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
