@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2024] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2025] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
@@ -48,12 +48,17 @@ import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.jboss.weld.util.collections.Multimap;
+import org.jboss.weld.util.collections.SetMultimap;
 
+import java.util.Collection;
 import java.util.Map;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import static org.glassfish.weld.ACLSingletonProvider.ACLSingleton.ValueAndClassLoaders.findByClassLoader;
+import static org.glassfish.weld.ACLSingletonProvider.ACLSingleton.ValueAndClassLoaders.findByIdOnly;
 
 /**
  * Singleton provider that uses Application ClassLoader to differentiate
@@ -85,47 +90,38 @@ public class ACLSingletonProvider extends SingletonProvider
         return new ACLSingleton<T>();
     }
 
-    private static class ACLSingleton<T> implements Singleton<T> {
+    static class ACLSingleton<T> implements Singleton<T> {
 
       private final Map<ClassLoader, T> store = new ConcurrentHashMap<>();
-      private final Map<ClassLoaderAndId, T> storeById = new ConcurrentHashMap<>();
+      private final Multimap<String, ValueAndClassLoaders<T>> storeById = SetMultimap.newConcurrentSetMultimap();
       private ClassLoader ccl = Globals.get(ClassLoaderHierarchy.class).getCommonClassLoader();
       private final Deployment deployment = Globals.getDefaultHabitat().getService(Deployment.class);
+      static final class ValueAndClassLoaders<TT> {
+          final TT value;
+          final ClassLoader classLoader;
+          final ClassLoader backupClassLoader;
 
-        private static class ClassLoaderAndId {
-            private final ClassLoader cl;
-            private final ClassLoader backupClassLoader;
-            private final String id;
+          public ValueAndClassLoaders(TT value, ClassLoader classLoader, ClassLoader backupClassLoader) {
+              this.value = value;
+              this.classLoader = classLoader;
+              this.backupClassLoader = backupClassLoader;
+          }
 
-            ClassLoaderAndId(String id) {
-                this.id = id;
-                this.cl = this.backupClassLoader = null;
-            }
+          public static <T> T findByClassLoader(Collection<ValueAndClassLoaders<T>> values, ClassLoader classLoader) {
+              return values.stream()
+                      .filter(v -> Objects.equals(v.classLoader, classLoader)
+                              || Objects.equals(v.backupClassLoader, classLoader))
+                      .findAny()
+                      .map(v -> v.value)
+                      .orElse(null);
+          }
 
-            ClassLoaderAndId(String id, ClassLoader cl) {
-                this.id = id;
-                this.cl = this.backupClassLoader = cl;
-            }
-
-            ClassLoaderAndId(String id, ClassLoader cl, ClassLoader backupClassLoader) {
-                this.id = id;
-                this.cl = cl;
-                this.backupClassLoader = backupClassLoader;
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (!(o instanceof ClassLoaderAndId)) return false;
-                ClassLoaderAndId that = (ClassLoaderAndId) o;
-                return Objects.equals(id, that.id)
-                        && (cl == null || Objects.equals(cl, that.cl)
-                        || Objects.equals(cl, that.backupClassLoader));
-            }
-
-            @Override
-            public int hashCode() {
-                return Objects.hash(id);
-            }
+          public static <T> T findByIdOnly(Collection<ValueAndClassLoaders<T>> values) {
+              return values.stream()
+                      .findAny()
+                      .map(v -> v.value)
+                      .orElse(null);
+          }
         }
 
       // Can't assume bootstrap loader as null. That's more of a convention.
@@ -147,9 +143,9 @@ public class ACLSingletonProvider extends SingletonProvider
       @Override
       public T get( String id )
       {
-        T instance = storeById.get(new ClassLoaderAndId(id, getDeploymentOrContextClassLoader()));
+        T instance = findByClassLoader(storeById.get(id), getDeploymentOrContextClassLoader());
         if (instance == null) {
-            instance = storeById.get(new ClassLoaderAndId(id));
+            instance = findByIdOnly(storeById.get(id));
         }
         if (instance == null) {
             ClassLoader acl = getClassLoader();
@@ -239,19 +235,22 @@ public class ACLSingletonProvider extends SingletonProvider
 
       @Override
       public boolean isSet(String id) {
-        return store.containsKey(getClassLoader()) || storeById.containsKey(new ClassLoaderAndId(id));
+        return store.containsKey(getClassLoader()) || storeById.containsKey(id);
       }
 
       @Override
       public void set(String id, T object) {
         store.put(getClassLoader(), object);
-        storeById.put(new ClassLoaderAndId(id, getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader()), object);
+        storeById.put(id, new ValueAndClassLoaders<>(object, getDeploymentOrContextClassLoader(),
+                Thread.currentThread().getContextClassLoader()));
       }
 
       @Override
       public void clear(String id) {
         store.remove(getClassLoader());
-        storeById.remove(new ClassLoaderAndId(id, getDeploymentOrContextClassLoader(), Thread.currentThread().getContextClassLoader()));
+        storeById.get(id).removeIf(v ->
+                Objects.equals(v.classLoader, getDeploymentOrContextClassLoader())
+                || Objects.equals(v.classLoader, Thread.currentThread().getContextClassLoader()));
       }
     }
 }
