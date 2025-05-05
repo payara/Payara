@@ -454,16 +454,6 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
         }
     }
 
-    private void recursivelyAdd(Collection<BeanDeploymentArchive> bdas, BeanDeploymentArchive bda, Set<BeanDeploymentArchive> seen,
-                                Set<BeanDeploymentArchive> excluded) {
-        for (BeanDeploymentArchive subBda : new LinkedHashSet<>(bdas)) {
-            if (seen.add(subBda) && !excluded.contains(subBda)) {
-                subBda.getBeanDeploymentArchives().add(bda);
-                recursivelyAdd(subBda.getBeanDeploymentArchives(), bda, seen, excluded);
-            }
-        }
-    }
-
     @Override
     public Set<BeanDeploymentArchive> getBeanDeploymentArchives() {
         if ( logger.isLoggable( FINE ) ) {
