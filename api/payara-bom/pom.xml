@@ -843,7 +843,7 @@
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
                 <artifactId>imqjmx</artifactId>
-                <version>5.1</version>
+                <version>${openmq.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
