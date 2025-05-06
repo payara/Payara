@@ -235,7 +235,7 @@ public class ACLSingletonProvider extends SingletonProvider
 
       @Override
       public boolean isSet(String id) {
-        return store.containsKey(getClassLoader()) || storeById.containsKey(id);
+        return store.containsKey(getClassLoader()) || (storeById.containsKey(id) && !storeById.get(id).isEmpty());
       }
 
       @Override
