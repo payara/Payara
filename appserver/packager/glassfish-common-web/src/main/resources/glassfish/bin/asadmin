@@ -51,4 +51,4 @@ JAVA=java
 if [ ${AS_JAVA} ]; then
     JAVA=${AS_JAVA}/bin/java
 fi
-exec "$JAVA" -XX:+IgnoreUnrecognizedVMOptions -jar "$AS_INSTALL_LIB/client/appserver-cli.jar" "$@"
+exec "$JAVA" -XX:+IgnoreUnrecognizedVMOptions $AS_EXTRA_JAVA_OPTS -jar "$AS_INSTALL_LIB/client/appserver-cli.jar" "$@"
