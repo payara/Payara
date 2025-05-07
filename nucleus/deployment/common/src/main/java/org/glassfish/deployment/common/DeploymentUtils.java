@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -54,6 +54,8 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 
 
@@ -62,7 +64,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.BufferedInputStream;
+import java.nio.file.Path;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Properties;
 import java.net.URI;
 import java.net.URL;
@@ -70,6 +74,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.jar.Manifest;
 import java.util.jar.JarFile;
@@ -79,8 +85,6 @@ import java.util.logging.Level;
 
 
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /** 
  * Utility methods for deployment. 
@@ -94,7 +98,8 @@ public class DeploymentUtils {
     private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00010";
 
     public static final String DEPLOYMENT_PROPERTY_JAVA_WEB_START_ENABLED = "java-web-start-enabled";
-    
+    public static final String WAR_LIBRARIES = "warlibs";
+
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentUtils.class);
 
     private static final String V2_COMPATIBILITY = "v2";
@@ -106,6 +111,27 @@ public class DeploymentUtils {
 
     private final static String DOWNLOADABLE_ARTIFACTS_KEY_PREFIX = "downloadable";
     private final static String GENERATED_ARTIFACTS_KEY_PREFIX = "generated";
+
+    private static final ThreadLocal<ExtendedDeploymentContext> currentDeploymentContext = new ThreadLocal<>();
+    private static final Map<String, WarLibraryDescriptor> warLibraryCache = new ConcurrentHashMap<>();
+
+    public static class WarLibraryDescriptor {
+        private final Descriptor descriptor;
+        private final List<Type> types;
+
+        public WarLibraryDescriptor(Descriptor descriptor, List<Type> types) {
+            this.descriptor = descriptor;
+            this.types = types;
+        }
+
+        public Descriptor getDescriptor() {
+            return descriptor;
+        }
+
+        public List<Type> getTypes() {
+            return types;
+        }
+    }
 
     public static boolean isDASTarget(final String targetName) {
         return DAS_TARGET_NAME.equals(targetName);
@@ -436,7 +462,38 @@ public class DeploymentUtils {
         } catch (Exception e) {
             Logger.getAnonymousLogger().log(Level.WARNING, e.getMessage(), e);
         }
+        externalLibURIs.addAll(getWarLibraryURIs(getCurrentDeploymentContext()));
         return externalLibURIs;
+    }
+
+    public static ExtendedDeploymentContext getCurrentDeploymentContext() {
+        return currentDeploymentContext.get();
+    }
+
+    public static void setCurrentDeploymentContext(ExtendedDeploymentContext context) {
+        currentDeploymentContext.set(context);
+    }
+
+    public static void clearCurrentDeploymentContext() {
+        currentDeploymentContext.remove();
+    }
+
+    public static List<URI> getWarLibraryURIs(DeploymentContext context) {
+        if(useWarLibraries(context)) {
+            return InstalledLibrariesResolver.getWarLibraries().stream()
+                    .filter(key -> !warLibraryCache.containsKey(key.toString()))
+                    .map(Path::toUri).collect(Collectors.toList());
+        } else {
+            return List.of();
+        }
+    }
+
+    public static boolean useWarLibraries(DeploymentContext context) {
+        return context != null && Boolean.parseBoolean(context.getAppProps().getProperty(WAR_LIBRARIES));
+    }
+
+    public static Map<String, WarLibraryDescriptor> getWarLibraryCache() {
+        return warLibraryCache;
     }
 
     /**

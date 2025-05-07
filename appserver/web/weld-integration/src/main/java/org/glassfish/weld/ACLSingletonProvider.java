@@ -37,21 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2025] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld;
 
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.jboss.weld.util.collections.Multimap;
+import org.jboss.weld.util.collections.SetMultimap;
 
+import java.util.Collection;
 import java.util.Map;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import static org.glassfish.weld.ACLSingletonProvider.ACLSingleton.ValueAndClassLoaders.findByClassLoader;
+import static org.glassfish.weld.ACLSingletonProvider.ACLSingleton.ValueAndClassLoaders.findByIdOnly;
 
 /**
  * Singleton provider that uses Application ClassLoader to differentiate
@@ -83,11 +90,39 @@ public class ACLSingletonProvider extends SingletonProvider
         return new ACLSingleton<T>();
     }
 
-    private static class ACLSingleton<T> implements Singleton<T> {
+    static class ACLSingleton<T> implements Singleton<T> {
 
       private final Map<ClassLoader, T> store = new ConcurrentHashMap<>();
-      private final Map<String, T> storeById = new ConcurrentHashMap<>();
+      private final Multimap<String, ValueAndClassLoaders<T>> storeById = SetMultimap.newConcurrentSetMultimap();
       private ClassLoader ccl = Globals.get(ClassLoaderHierarchy.class).getCommonClassLoader();
+      private final Deployment deployment = Globals.getDefaultHabitat().getService(Deployment.class);
+      static final class ValueAndClassLoaders<TT> {
+          final TT value;
+          final ClassLoader classLoader;
+          final ClassLoader backupClassLoader;
+
+          public ValueAndClassLoaders(TT value, ClassLoader classLoader, ClassLoader backupClassLoader) {
+              this.value = value;
+              this.classLoader = classLoader;
+              this.backupClassLoader = backupClassLoader;
+          }
+
+          public static <T> T findByClassLoader(Collection<ValueAndClassLoaders<T>> values, ClassLoader classLoader) {
+              return values.stream()
+                      .filter(v -> Objects.equals(v.classLoader, classLoader)
+                              || Objects.equals(v.backupClassLoader, classLoader))
+                      .findAny()
+                      .map(v -> v.value)
+                      .orElse(null);
+          }
+
+          public static <T> T findByIdOnly(Collection<ValueAndClassLoaders<T>> values) {
+              return values.stream()
+                      .findAny()
+                      .map(v -> v.value)
+                      .orElse(null);
+          }
+        }
 
       // Can't assume bootstrap loader as null. That's more of a convention.
       // I think either android or IBM JVM does not use null for bootstap loader
@@ -108,16 +143,26 @@ public class ACLSingletonProvider extends SingletonProvider
       @Override
       public T get( String id )
       {
-        ClassLoader acl = getClassLoader();
-        T instance = store.get(acl);
-        if (instance == null)
-        {
-            instance = storeById.get(id);
+        T instance = findByClassLoader(storeById.get(id), getDeploymentOrContextClassLoader());
+        if (instance == null) {
+            instance = findByIdOnly(storeById.get(id));
+        }
+        if (instance == null) {
+            ClassLoader acl = getClassLoader();
+            instance = store.get(acl);
             if (instance == null) {
                 throw new IllegalStateException("Singleton not set for " + acl);
             }
         }
         return instance;
+      }
+
+      private ClassLoader getDeploymentOrContextClassLoader() {
+          if (deployment.getCurrentDeploymentContext() != null) {
+              return deployment.getCurrentDeploymentContext().getClassLoader();
+          } else {
+              return Thread.currentThread().getContextClassLoader();
+          }
       }
 
       /**
@@ -190,19 +235,22 @@ public class ACLSingletonProvider extends SingletonProvider
 
       @Override
       public boolean isSet(String id) {
-        return store.containsKey(getClassLoader()) || storeById.containsKey(id);
+        return store.containsKey(getClassLoader()) || (storeById.containsKey(id) && !storeById.get(id).isEmpty());
       }
 
       @Override
       public void set(String id, T object) {
         store.put(getClassLoader(), object);
-        storeById.put(id, object);
+        storeById.put(id, new ValueAndClassLoaders<>(object, getDeploymentOrContextClassLoader(),
+                Thread.currentThread().getContextClassLoader()));
       }
 
       @Override
       public void clear(String id) {
         store.remove(getClassLoader());
-        storeById.remove(id);
+        storeById.get(id).removeIf(v ->
+                Objects.equals(v.classLoader, getDeploymentOrContextClassLoader())
+                || Objects.equals(v.classLoader, Thread.currentThread().getContextClassLoader()));
       }
     }
 }
