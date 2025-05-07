@@ -225,17 +225,8 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             if (Object.class.equals(classParameterType)) {
                 entityParamType = classParameterType;
             } else if (classValidationParameter.test(classParameterType)) {
-                String packageName = classParameterType.getPackageName();
-                if (!packageName.startsWith("java.") &&
-                        !packageName.startsWith("jakarta.")) {
-                    Parameter param = method.getParameters()[0];
-                    entityParamType = param.getType();
-                    for (Annotation anno : param.getAnnotations()) {
-                        if (anno.annotationType().getPackageName().startsWith("jakarta.data")) {
-                            entityParamType = null;
-                        }
-                    }
-                }
+                Parameter param = method.getParameters()[0];
+                entityParamType = param.getType();
             }
         }
         return entityParamType;

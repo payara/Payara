@@ -242,7 +242,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Class<?>[] types = method.getParameterTypes();
-        if (parameterAnnotations.length == 1 && types.length == 1) {
+        if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
             Annotation[] annotations = parameterAnnotations[0];
             for (Annotation annotation : annotations) {
                 if (annotation instanceof By) {
