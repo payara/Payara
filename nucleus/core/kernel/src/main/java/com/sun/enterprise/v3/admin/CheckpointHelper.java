@@ -447,7 +447,7 @@ public class CheckpointHelper {
         }
         Inbound outboundSource = loadInbound(outboundFile);
         Iterator<Part> parts = outboundSource.parts();
-        File topDir = createTempDir("checkpoint", "");
+        File topDir = createTempDir("checkpoint");
         FileUtils.deleteOnExit(topDir);
         while (parts.hasNext()) {
             Part part = parts.next();
