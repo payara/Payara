@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -85,6 +86,14 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private JakartaDataExtension jakartaDataExtension;
     private Set<Type> beanTypes = null;
     private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
+    private Predicate<Method> methodAnnotationValidationPredicate = method -> method.getParameterCount() == 1 &&
+            !method.isDefault() && (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
+            || method.isAnnotationPresent(Save.class) || method.isAnnotationPresent(Delete.class));
+    private Predicate<Class<?>> classTypeValidationPredicate = clazz -> Iterable.class.isAssignableFrom(clazz)
+            || Stream.class.isAssignableFrom(clazz);
+
+    private Predicate<Class<?>> classValidationParameter = clazz -> clazz != null
+            && !clazz.isPrimitive() && !clazz.isInterface();
 
     DynamicInterfaceDataProducer(Class<?> instance, BeanManager beanManager, JakartaDataExtension jakartaDataExtension) {
         this.repository = (Class<T>) instance;
@@ -194,31 +203,29 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         Class<?> entityParamType = null;
         Type type;
         // Determine entity class from parameters
-        if (method.getParameterCount() == 1 && !method.isDefault() &&
-                (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
-                        || method.isAnnotationPresent(Save.class) || method.isAnnotationPresent(Delete.class))) {
-            Class<?> c = method.getParameterTypes()[0];
-            if (Iterable.class.isAssignableFrom(c) || Stream.class.isAssignableFrom(c)) {
+        if (methodAnnotationValidationPredicate.test(method)) {
+            Class<?> classParameterType = method.getParameterTypes()[0];
+            if (classTypeValidationPredicate.test(classParameterType)) {
                 type = method.getGenericParameterTypes()[0];
                 if (type instanceof ParameterizedType) {
                     Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
-                    if (typeParams.length == 1 && typeParams[0] instanceof Class)
-                        c = (Class<?>) typeParams[0];
-                    else {
-                        entityParamType = c;
-                        c = null;
+                    if (typeParams.length == 1 && typeParams[0] instanceof Class) {
+                        classParameterType = (Class<?>) typeParams[0];
+                    } else {
+                        entityParamType = classParameterType;
+                        classParameterType = null;
                     }
                 } else {
-                    c = null;
+                    classParameterType = null;
                 }
-            } else if (c.isArray()) {
-                c = c.getComponentType();
+            } else if (classParameterType.isArray()) {
+                classParameterType = classParameterType.getComponentType();
             }
 
-            if (Object.class.equals(c)) {
-                entityParamType = c;
-            } else if (c != null && !c.isPrimitive() && !c.isInterface()) {
-                String packageName = c.getPackageName();
+            if (Object.class.equals(classParameterType)) {
+                entityParamType = classParameterType;
+            } else if (classValidationParameter.test(classParameterType)) {
+                String packageName = classParameterType.getPackageName();
                 if (!packageName.startsWith("java.") &&
                         !packageName.startsWith("jakarta.")) {
                     Parameter param = method.getParameters()[0];
