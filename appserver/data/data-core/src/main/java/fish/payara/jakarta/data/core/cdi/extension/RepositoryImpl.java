@@ -53,7 +53,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +107,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         logger.info("executing method:" + method.getName());
         preProcessQuery();
         QueryData dataForQuery = queries.get(method);
+        evaluateDataQuery(dataForQuery, method);
         Object objectToReturn = null;
         switch (dataForQuery.getQueryType()) {
             case SAVE -> objectToReturn = processSaveOperation(args);
@@ -115,6 +120,44 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
 
         return objectToReturn;
+    }
+
+    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
+        if (dataForQuery.getDeclaredEntityClass() == null) {
+            Class<?> returnType = method.getReturnType();
+            if (Collection.class.isAssignableFrom(returnType)
+                    || Stream.class.isAssignableFrom(returnType)
+                    || Optional.class.isAssignableFrom(returnType)) {
+                Type genericReturnType = method.getGenericReturnType();
+                if (genericReturnType instanceof ParameterizedType) {
+                    ParameterizedType paramType = (ParameterizedType) genericReturnType;
+                    Type typeArgument = paramType.getActualTypeArguments()[0];
+                    dataForQuery.setDeclaredEntityClass(getGenericClass(typeArgument));
+                }
+            } else if (returnType.isArray()) {
+                dataForQuery.setDeclaredEntityClass(returnType.getComponentType());
+            } else {
+                dataForQuery.setDeclaredEntityClass(returnType);
+            }
+        }
+    }
+
+    private Class<?> getGenericClass(Type type) {
+        if (type instanceof Class<?>) {
+            return (Class<?>) type;
+        }
+        if (type instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) type;
+            return (Class<?>) paramType.getRawType();
+        }
+        if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            Type[] upperBounds = wildcardType.getUpperBounds();
+            if (upperBounds.length > 0) {
+                return getGenericClass(upperBounds[0]);
+            }
+        }
+        return Object.class;
     }
 
     public Object processFindOperation(Object[] args, Class<?> declaredEntityClass, Method method) {
