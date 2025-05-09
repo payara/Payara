@@ -49,7 +49,6 @@
     <artifactId>rest-monitoring-war</artifactId>
     <packaging>war</packaging>
     <name>Rest Monitoring War</name>
-    <version>1.0.0-Beta</version>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
