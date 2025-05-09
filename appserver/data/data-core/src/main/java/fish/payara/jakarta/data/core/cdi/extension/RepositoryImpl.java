@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,6 +88,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final String applicationName;
     private TransactionManager transactionManager;
     private EntityManager em;
+    private Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
+            || Void.class.equals(returnType);
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -189,34 +192,30 @@ public class RepositoryImpl<T> implements InvocationHandler {
             endTransaction();
 
             if (!results.isEmpty()) {
-                Object objectToReturn = processReturnType(dataForQuery, results);
-                if (objectToReturn != null) {
-                    return objectToReturn;
-                }
-                return results;
+                return processReturnType(dataForQuery, results);
             }
 
-        } else if (arg instanceof List arr) {  //insert multiple entities from list reference
+        } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
             results = new ArrayList<>();
             startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) arr)) {
+            for (Object e : ((Iterable<?>) toIterate)) {
                 em.persist(e);
                 results.add(e);
             }
             endTransaction();
 
             if (!results.isEmpty()) {
-                Object objectToReturn = processReturnType(dataForQuery, results);
-                if (objectToReturn != null) {
-                    return objectToReturn;
-                }
-                return results;
+                return processReturnType(dataForQuery, results);
             }
-        } else if (args[0] != null) {
+        } else if (args[0] != null) { //insert a single entity
             startTransactionAndJoin();
             entity = args[0];
             em.persist(args[0]);
             endTransaction();
+        }
+
+        if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
+            entity = null;
         }
 
         return entity;
@@ -234,6 +233,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         } else if (Stream.class.equals(returnType)) {
             return results.stream();
+        } else if (evaluateReturnTypeVoidPredicate.test(returnType)) {
+            return null;
+        } else if (!results.isEmpty()) {
+            return results;
         }
         return null;
     }
