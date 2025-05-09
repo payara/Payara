@@ -83,11 +83,13 @@ import org.glassfish.config.support.TargetType;
  *        [--port 4848|4849] [--secure | -s] [--user admin_user] 
  *        [--passwordfile file_name] [--property (name=value)
  *        [:name=value]*] [--target target(Default server)] audit_module_name
- *  
+ *
  * domain.xml element example
+ * {@code
  * <audit-module classname="com.foo.security.Audit" name="AM">
  *     <property name="auditOn" value="false"/>
  * </audit-module>
+ * }
  *
  * @author Nandini Ektare
  */

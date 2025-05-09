@@ -120,7 +120,7 @@ public class EventBus implements EventListener, MonitoringDataSource {
     /**
      * Adds a message receiver to listen to message send on the Hazelcast EventBus
      * @param topic The name of the topic to recive messages on
-     * @param mr A {@link MessageReciever} to listen for messages
+     * @param mr A {@link fish.payara.nucleus.eventbus.MessageReceiver} to listen for messages
      * @return true if successfully registered, false otherwise (i.e. if Hazelcast
      * is not enabled)
      */
@@ -147,7 +147,7 @@ public class EventBus implements EventListener, MonitoringDataSource {
     /**
      * Stops a message receiver from listening to messages on the specified topic
      * @param topic The name of the topic that messages have been received on
-     * @param mr The {@link MessageReciever} to stop listening for messages
+     * @param mr The {@link fish.payara.nucleus.eventbus.MessageReceiver} to stop listening for messages
      */
     public void removeMessageReceiver(String topic, MessageReceiver<?> mr) {
         TopicListener tl = messageReceivers.get(topic);

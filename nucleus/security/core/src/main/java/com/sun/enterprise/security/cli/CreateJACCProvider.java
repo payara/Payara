@@ -84,8 +84,10 @@ import org.jvnet.hk2.config.types.Property;
  *
  *
  * domain.xml element example
- *   <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+ * {@code
+ *    <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
  *   </jacc-provider>
+ * }
  *
  */
 @Service(name="create-jacc-provider")

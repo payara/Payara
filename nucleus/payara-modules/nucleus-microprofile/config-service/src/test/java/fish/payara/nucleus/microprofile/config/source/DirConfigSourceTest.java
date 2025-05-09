@@ -119,6 +119,8 @@ public class DirConfigSourceTest {
     @Test
     public void testFindDir_NotExistingPath() throws IOException {
         // given
+        // Need to set instanceRoot property to something else we hit a NPE - this property Should™ always be set
+        System.setProperty("com.sun.aas.instanceRoot", testDirectory.toString());
         MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
         when(configService.getMPConfig()).thenReturn(config);
         when(config.getSecretDir()).thenReturn(DirConfigSource.DEFAULT_DIR);

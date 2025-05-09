@@ -278,7 +278,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
     /**
      * Gets the JCache provider used by Hazelcast
      * @return
-     * @see <a href=http://docs.hazelcast.org/docs/3.8.6/javadoc/com/hazelcast/cache/HazelcastCachingProvider.html">HazelcastCachingProvider</a>
+     * @see <a href="http://docs.hazelcast.org/docs/3.8.6/javadoc/com/hazelcast/cache/HazelcastCachingProvider.html">HazelcastCachingProvider</a>
      */
     public CachingProvider getCachingProvider() {
         bootstrapHazelcast();

@@ -93,7 +93,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
      * The cause of the issue is that new implementation from blocking mechanism during creation of socket connections
      * is setting a positive value for the parameter connectTimeout instead of using -1 (as previous versions did)
      * to control the creation. For more information about the changes please check
-     * @see < href="https://github.com/openjdk/jdk/pull/6568">jdk connection timeout pr</>
+     * @see <a href="https://github.com/openjdk/jdk/pull/6568">jdk connection timeout pr</a>
      * @return Socket instance with default ssl context
      * @throws IOException
      */

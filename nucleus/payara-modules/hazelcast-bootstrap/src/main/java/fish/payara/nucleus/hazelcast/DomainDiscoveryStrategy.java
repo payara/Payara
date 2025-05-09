@@ -81,6 +81,7 @@ import java.util.logging.Logger;
  * of host-aware partitioning and custom API-based discovery strategy
  *
  * @author lprimak
+ * @author steve
  */
 public final class DomainDiscoveryStrategy extends AbstractDiscoveryStrategy {
     private final boolean hostAwarePartitioning;
@@ -97,7 +98,6 @@ public final class DomainDiscoveryStrategy extends AbstractDiscoveryStrategy {
      * Provides a Discovery SPI implementation for Hazelcast that uses knowledge
      * of the domain topology to build out the cluster and discover members
      * @since 5.0
-     * @author steve
      */
     @Override
     public Iterable<DiscoveryNode> discoverNodes() {
