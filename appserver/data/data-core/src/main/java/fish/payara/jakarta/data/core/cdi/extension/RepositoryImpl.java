@@ -50,6 +50,7 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
             case DELETE ->
                     processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
-            case UPDATE -> objectToReturn = processUpdateOperation(args);
+            case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND ->
                     objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
         }
@@ -187,8 +188,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
-        //insert multiple entities from array reference
-        if (dataForQuery.getEntityParamType().isArray()) {
+        
+        if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
             results = new ArrayList<>();
@@ -202,7 +203,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
-        } else if (args[0] != null) { //insert a single entity
+        } else if (arg != null) { //insert a single entity
             startTransactionAndJoin();
             entity = args[0];
             em.persist(args[0]);
@@ -249,29 +250,48 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
     }
 
-    public Object processUpdateOperation(Object[] args) throws SystemException,
+    public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
         List<Object> results = null;
         Object entity = null;
+        Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
-        //update multiple entities
-        if (args[0] instanceof List arr) {
+        
+        if (dataForQuery.getEntityParamType().isArray()) { //update multiple entities from array reference
+            int length = Array.getLength(args[0]);
+            results = new ArrayList<>(length);
+            startTransactionAndJoin();
+            for (int i = 0; i < length; i++) {
+                em.merge(Array.get(args[0], i));
+                results.add(Array.get(args[0], i));
+            }
+            endTransaction();
+            
+            if (!results.isEmpty()) {
+                return processReturnType(dataForQuery, results);
+            }
+        } else if (arg instanceof List toIterate) { //update multiple entities
             results = new ArrayList<>();
             startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) arr)) {
+            for (Object e : ((Iterable<?>) toIterate)) {
                 entity = em.merge(e);
                 results.add(entity);
             }
             endTransaction();
 
             if (!results.isEmpty()) {
-                return results;
+                return processReturnType(dataForQuery, results);
             }
-        } else if (args[0] != null) { //update single entity
+        } else if (arg != null) { //update single entity
             startTransactionAndJoin();
             entity = em.merge(args[0]);
             endTransaction();
         }
+
+        if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
+            entity = null;
+        }
+        
         return entity;
     }
 
