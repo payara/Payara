@@ -50,6 +50,7 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -58,8 +59,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -85,6 +88,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final String applicationName;
     private TransactionManager transactionManager;
     private EntityManager em;
+    private Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
+            || Void.class.equals(returnType);
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -101,10 +106,12 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object objectToReturn = null;
         switch (dataForQuery.getQueryType()) {
             case SAVE -> objectToReturn = processSaveOperation(args);
-            case INSERT -> objectToReturn = processInsertOperation(args);
-            case DELETE -> processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+            case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
+            case DELETE ->
+                    processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args);
-            case FIND -> objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+            case FIND ->
+                    objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
         }
 
         return objectToReturn;
@@ -167,39 +174,78 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return entity;
     }
 
-    public Object processInsertOperation(Object[] args) throws SystemException, NotSupportedException,
+    public Object processInsertOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
         List<Object> results = null;
         Object entity = null;
+        Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
-        //insert multiple entities
-        if (args[0] instanceof List arr) {
+        //insert multiple entities from array reference
+        if (dataForQuery.getEntityParamType().isArray()) {
+            int length = Array.getLength(args[0]);
+            results = new ArrayList<>(length);
+            startTransactionAndJoin();
+            for (int i = 0; i < length; i++) {
+                em.persist(Array.get(args[0], i));
+                results.add(Array.get(args[0], i));
+            }
+            endTransaction();
+
+            if (!results.isEmpty()) {
+                return processReturnType(dataForQuery, results);
+            }
+
+        } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
             results = new ArrayList<>();
             startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) arr)) {
+            for (Object e : ((Iterable<?>) toIterate)) {
                 em.persist(e);
                 results.add(e);
             }
             endTransaction();
 
             if (!results.isEmpty()) {
-                return results;
+                return processReturnType(dataForQuery, results);
             }
-        } else if (args[0] != null) { //insert single entity
+        } else if (args[0] != null) { //insert a single entity
             startTransactionAndJoin();
             entity = args[0];
             em.persist(args[0]);
             endTransaction();
         }
 
+        if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
+            entity = null;
+        }
+
         return entity;
+    }
+
+    public Object processReturnType(QueryData dataForQuery, List<Object> results) {
+        Class<?> returnType = dataForQuery.getMethod().getReturnType();
+        if (returnType.isArray()) {
+            if (dataForQuery.getDeclaredEntityClass() != null && returnType.getComponentType().isAssignableFrom(dataForQuery.getDeclaredEntityClass())) {
+                Object[] returnValue = (Object[]) Array.newInstance(dataForQuery.getDeclaredEntityClass(), results.size());
+                return results.toArray(returnValue);
+            } else {
+                Object[] returnValue = (Object[]) Array.newInstance(returnType.getComponentType(), results.size());
+                return results.toArray(returnValue);
+            }
+        } else if (Stream.class.equals(returnType)) {
+            return results.stream();
+        } else if (evaluateReturnTypeVoidPredicate.test(returnType)) {
+            return null;
+        } else if (!results.isEmpty()) {
+            return results;
+        }
+        return null;
     }
 
     public void processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Class<?>[] types = method.getParameterTypes();
-        if (parameterAnnotations.length == 1 && types.length == 1) {
+        if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
             Annotation[] annotations = parameterAnnotations[0];
             for (Annotation annotation : annotations) {
                 if (annotation instanceof By) {
@@ -251,7 +297,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         return entity;
     }
-    
+
 
     public ApplicationRegistry getRegistry() {
         ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
