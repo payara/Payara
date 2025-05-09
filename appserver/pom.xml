@@ -73,7 +73,6 @@
         <abbrev_product_name>Payara</abbrev_product_name>
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
-        <production_domain_template>production-domain.jar</production_domain_template>
         <version_prefix />
         <version_suffix/>
         <install.dir.name>payara7</install.dir.name>
