@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.cdi.extension;
 
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
+import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -53,6 +54,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
@@ -124,7 +126,36 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     private void evaluateDataQuery(QueryData dataForQuery, Method method) {
         if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> returnType = method.getReturnType();
+            Class<?> entityType = findEntityTypeInMethod(method);
+            if (entityType != null) {
+                dataForQuery.setDeclaredEntityClass(entityType);
+                return;
+            }
+            Class<?> declaringClass = method.getDeclaringClass();
+            Method[] allMethods = declaringClass.getMethods();
+            for (Method interfaceMethod : allMethods) {
+                if (interfaceMethod.equals(method)) {
+                    continue;
+                }
+                entityType = findEntityTypeInMethod(interfaceMethod);
+                if (entityType != null) {
+                    dataForQuery.setDeclaredEntityClass(entityType);
+                    return;
+                }
+            }
+            throw new MappingException(
+                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                    "Either extend a repository interface with entity type parameters or " +
+                                    "ensure entity type is determinable from method signature.",
+                            method.getName(), declaringClass.getName())
+            );
+
+        }
+    }
+
+    private Class<?> findEntityTypeInMethod(Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
             if (Collection.class.isAssignableFrom(returnType)
                     || Stream.class.isAssignableFrom(returnType)
                     || Optional.class.isAssignableFrom(returnType)) {
@@ -132,14 +163,33 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 if (genericReturnType instanceof ParameterizedType) {
                     ParameterizedType paramType = (ParameterizedType) genericReturnType;
                     Type typeArgument = paramType.getActualTypeArguments()[0];
-                    dataForQuery.setDeclaredEntityClass(getGenericClass(typeArgument));
+                    return getGenericClass(typeArgument);
                 }
             } else if (returnType.isArray()) {
-                dataForQuery.setDeclaredEntityClass(returnType.getComponentType());
-            } else {
-                dataForQuery.setDeclaredEntityClass(returnType);
+                return returnType.getComponentType();
+            } else if (!returnType.isPrimitive() && !returnType.equals(String.class)) {
+                return returnType;
             }
         }
+        for (Parameter param : method.getParameters()) {
+            Class<?> paramType = param.getType();
+            if (!paramType.isPrimitive() && !paramType.equals(String.class)) {
+                if (Collection.class.isAssignableFrom(paramType)
+                        || Stream.class.isAssignableFrom(paramType)) {
+                    Type paramGenericType = param.getParameterizedType();
+                    if (paramGenericType instanceof ParameterizedType) {
+                        ParameterizedType parameterizedType = (ParameterizedType) paramGenericType;
+                        Type typeArgument = parameterizedType.getActualTypeArguments()[0];
+                        return getGenericClass(typeArgument);
+                    }
+                } else if (paramType.isArray()) {
+                    return paramType.getComponentType();
+                } else {
+                    return paramType;
+                }
+            }
+        }
+        return null;
     }
 
     private Class<?> getGenericClass(Type type) {
