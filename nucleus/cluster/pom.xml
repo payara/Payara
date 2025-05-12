@@ -97,7 +97,6 @@
         <module>ssh-l10n</module>
         <module>common-l10n</module>
         <module>admin-l10n</module>
-        <module>uc-l10n</module>
     </modules>
 </project>
 
