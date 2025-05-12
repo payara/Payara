@@ -76,7 +76,6 @@ utilities are in the NucleusTestUtils class.
 
     <artifactId>nucleus-quicklook</artifactId>
     <name>Nucleus Quicklook Tests</name>
-    <version>6.2025.6-SNAPSHOT</version>
     <description>This pom describes how to run QuickLook tests on the Nucleus distribution</description>
     
     <dependencies>
