@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.domain;
 
@@ -61,6 +61,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -365,6 +366,18 @@ public class DomainBuilder {
         String[] adminUserGroups = ((String) domainConfig.get(DomainConfig.K_INITIAL_ADMIN_USER_GROUPS)).split(",");
         String masterPassword = (String) domainConfig.get(DomainConfig.K_MASTER_PASSWORD);
         Boolean saveMasterPassword = (Boolean) domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
+        String mpLocation = (String)domainConfig.get(DomainConfig.K_MASTER_PASSWORD_LOCATION);
+
+        File mpFile = new File(configDir, DomainConstants.MASTERPASSWORD_FILE);
+        if (mpLocation != null) {
+            File mpLocationFile = new File(configDir, DomainConstants.MASTERPASSWORD_LOCATION_FILE);
+            try (FileWriter writer = new FileWriter(mpLocationFile)) {
+                writer.write(mpLocation);
+                mpFile = new File(mpLocation);
+            } catch (IOException e) {
+                throw new IOException(STRINGS.get("masterPasswordNotSaved"), e);
+            }
+        }
 
         // Process domain security.
         DomainSecurity domainSecurity = new DomainSecurity();
@@ -386,8 +399,8 @@ public class DomainBuilder {
                 }
             }
         }
-        domainSecurity.changeMasterPasswordInMasterPasswordFile(new File(configDir, DomainConstants.MASTERPASSWORD_FILE), masterPassword,
-                saveMasterPassword);
+
+        domainSecurity.changeMasterPasswordInMasterPasswordFile(mpFile, masterPassword, saveMasterPassword);
         domainSecurity.createPasswordAliasKeystore(new File(configDir, DomainConstants.DOMAIN_PASSWORD_FILE), masterPassword);
 
         return domainSecurity;

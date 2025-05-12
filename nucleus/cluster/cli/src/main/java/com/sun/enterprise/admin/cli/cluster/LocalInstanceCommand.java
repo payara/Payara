@@ -42,6 +42,7 @@
 package com.sun.enterprise.admin.cli.cluster;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_LOCATION_FILE;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -51,8 +52,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.servermgmt.cli.LocalServerCommand;
@@ -661,11 +665,27 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
 
     @Override
     protected File getMasterPasswordFile() {
-
-        if (nodeDirChild == null)
+        if (nodeDirChild == null) {
             return null;
+        }
 
-        File mp = new File(new File(nodeDirChild,"agent"), MASTERPASSWORD_FILE);
+        File mpLocation = new File(new File(nodeDirChild, "agent"), MASTERPASSWORD_LOCATION_FILE);
+        File mp;
+
+        if (mpLocation.canRead()) {
+            try {
+                String path = Files.readString(mpLocation.toPath(), StandardCharsets.UTF_8);
+                mp = new File(path);
+            }
+            catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.WARNING,
+                    "Failed to read master-password-location file due error: ", e);
+                mp = new File(new File(nodeDirChild, "agent"), MASTERPASSWORD_FILE);
+            }
+        } else {
+            mp = new File(new File(nodeDirChild, "agent"), MASTERPASSWORD_FILE);
+        }
+
         if (!mp.canRead()) {
             return null;
         }

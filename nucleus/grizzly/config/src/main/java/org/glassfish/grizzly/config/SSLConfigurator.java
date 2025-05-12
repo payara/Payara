@@ -171,9 +171,9 @@ public class SSLConfigurator extends SSLEngineConfigurator {
 
             if (ssl != null) {
                 // client-auth
-//                if (Boolean.parseBoolean(ssl.getClientAuthEnabled())) {
-//                    needClientAuth = true;
-//                }
+                if (Boolean.parseBoolean(ssl.getClientAuthEnabled()) || "need".equals(ssl.getClientAuth())) {
+                    setNeedClientAuth(true);
+                }
                 // ssl protocol variants
                 if (Boolean.parseBoolean(ssl.getTls12Enabled())) {
                     tmpSSLArtifactsList.add(TLS12);
@@ -189,14 +189,6 @@ public class SSLConfigurator extends SSLEngineConfigurator {
                     tmpSSLArtifactsList.toArray(protocols);
                     setEnabledProtocols(protocols);
                 }
-//                String auth = ssl.getClientAuth();
-//                if (auth != null) {
-//                    if ("want".equalsIgnoreCase(auth.trim())) {
-//                        wantClientAuth = true;
-//                    } else if ("need".equalsIgnoreCase(auth.trim())) {
-//                        needClientAuth = true;
-//                    }
-//                }
                 tmpSSLArtifactsList.clear();
                 // ssl3-tls-ciphers
                 final String ssl3Ciphers = ssl.getSsl3TlsCiphers();
@@ -238,6 +230,9 @@ public class SSLConfigurator extends SSLEngineConfigurator {
         try {
             final ServerSocketFactory serverSF = getSslImplementation().getServerSocketFactory();
             if (ssl != null) {
+                if ("need".equals(ssl.getClientAuth()) || Boolean.parseBoolean(ssl.getClientAuthEnabled())) {
+                    setAttribute(serverSF, "clientAuthNeed", "true", null, null);
+                }
                 if (ssl.getCrlFile() != null) {
                     setAttribute(serverSF, "crlFile", ssl.getCrlFile(), null, null);
                 }
