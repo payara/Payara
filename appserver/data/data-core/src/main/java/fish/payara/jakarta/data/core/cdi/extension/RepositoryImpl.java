@@ -50,10 +50,13 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -75,6 +78,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private Map<Class<?>, List<QueryData>> queriesPerEntityClass;
     private final Map<Method, QueryData> queries = new HashMap<>();
     private final String applicationName;
+    private TransactionManager transactionManager;
+    private EntityManager em;
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -88,78 +93,118 @@ public class RepositoryImpl<T> implements InvocationHandler {
         logger.info("executing method:" + method.getName());
         preProcessQuery();
         QueryData dataForQuery = queries.get(method);
-        Stream<?> stream = null;
+        Object objectToReturn = null;
         switch (dataForQuery.getQueryType()) {
-            case SAVE -> processSaveOperation(args);
-            case INSERT -> processInsertOperation(args);
+            case SAVE -> objectToReturn = processSaveOperation(args);
+            case INSERT -> objectToReturn = processInsertOperation(args);
             case DELETE -> processDeleteOperation(args);
-            case UPDATE -> processUpdateOperation(args, dataForQuery.getEntityParamType());
-            case FIND -> stream = processFindAllOperation(args, dataForQuery.getDeclaredEntityClass());
+            case UPDATE -> objectToReturn = processUpdateOperation(args);
+            case FIND -> objectToReturn = processFindAllOperation(args, dataForQuery.getDeclaredEntityClass());
         }
 
-        return stream;
+        return objectToReturn;
     }
 
     public void preProcessQuery() {
-        for (Map.Entry<Class<?>, List<QueryData>> entry : queriesPerEntityClass.entrySet()) {
-            for (QueryData queryData : entry.getValue()) {
-                queries.put(queryData.getMethod(), queryData);
+        Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
+                .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
+        queries.putAll(r);
+    }
+
+
+    public Object processSaveOperation(Object[] args) throws SystemException, NotSupportedException,
+            HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        List<Object> results = null;
+        Object entity = null;
+        startTransactionComponents();
+        //save multiple entities
+        if (args[0] instanceof List arr) {
+            results = new ArrayList<>();
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) arr)) {
+                results.add(em.merge(e));
             }
+            endTransaction();
+            if (!results.isEmpty()) {
+                return results;
+            }
+        } else if (args[0] != null) { //save single entity
+            startTransactionAndJoin();
+            entity = em.merge(args[0]);
+            endTransaction();
         }
+        return entity;
     }
 
-
-    public void processSaveOperation(Object[] args) throws SystemException, NotSupportedException,
+    public Object processInsertOperation(Object[] args) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
-            Object entity = em.merge(args[0]);
-            em.flush();
-            transactionManager.commit();
-        }
-    }
+        List<Object> results = null;
+        Object entity = null;
+        startTransactionComponents();
+        //insert multiple entities
+        if (args[0] instanceof List arr) {
+            results = new ArrayList<>();
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) arr)) {
+                em.persist(e);
+                results.add(e);
+            }
+            endTransaction();
 
-    public void processInsertOperation(Object[] args) throws SystemException, NotSupportedException,
-            HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
+            if (!results.isEmpty()) {
+                return results;
+            }
+        } else if (args[0] != null) { //insert single entity
+            startTransactionAndJoin();
+            entity = args[0];
             em.persist(args[0]);
-            em.flush();
-            transactionManager.commit();
+            endTransaction();
         }
+
+        return entity;
     }
 
     public void processDeleteOperation(Object[] args) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
+        startTransactionComponents();
+        //delete multiple entities
+        if (args[0] instanceof List arr) {
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) arr)) {
+                em.remove(em.merge(e));
+            }
+            endTransaction();
+        } else if (args[0] != null) { //delete single entity
+            startTransactionAndJoin();
             em.remove(em.merge(args[0]));
-            em.flush();
-            transactionManager.commit();
+            endTransaction();
         }
     }
 
-    public void processUpdateOperation(Object[] args, Class<?> entityParam) throws SystemException,
+    public Object processUpdateOperation(Object[] args) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        logger.info("Need to process update operation with query based on jpql");
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
-            Object entity = em.merge(args[0]);
-            em.flush();
-            transactionManager.commit();
+        List<Object> results = null;
+        Object entity = null;
+        startTransactionComponents();
+        //update multiple entities
+        if (args[0] instanceof List arr) {
+            results = new ArrayList<>();
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) arr)) {
+                entity = em.merge(e);
+                results.add(entity);
+            }
+            endTransaction();
+
+            if (!results.isEmpty()) {
+                return results;
+            }
+        } else if (args[0] != null) { //update single entity
+            startTransactionAndJoin();
+            entity = em.merge(args[0]);
+            endTransaction();
         }
+        return entity;
     }
 
     public Stream<?> processFindAllOperation(Object[] args, Class<?> entityClass) {
@@ -203,6 +248,21 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return factory.createEntityManager();
         }
         return null;
+    }
+
+    public void startTransactionComponents() {
+        transactionManager = getTransactionManager();
+        em = getEntityManager();
+    }
+
+    public void startTransactionAndJoin() throws SystemException, NotSupportedException {
+        transactionManager.begin();
+        em.joinTransaction();
+    }
+
+    public void endTransaction() throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
+        em.flush();
+        transactionManager.commit();
     }
 
 }
