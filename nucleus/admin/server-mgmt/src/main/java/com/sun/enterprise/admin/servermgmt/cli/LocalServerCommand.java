@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -80,14 +80,18 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_LOCATION_FILE;
 
 /**
  * A class that's supposed to capture all the behavior common to operation on a
@@ -562,11 +566,26 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     protected File getMasterPasswordFile() {
-
-        if (serverDirs == null)
+        if (serverDirs == null) {
             return null;
+        }
 
-        File mp = new File(serverDirs.getConfigDir(), MASTERPASSWORD_FILE);
+        File mp;
+        File mpLocation = new File(serverDirs.getConfigDir(), MASTERPASSWORD_LOCATION_FILE);
+        if (mpLocation.canRead()) {
+            try {
+                String path = Files.readString(mpLocation.toPath(), StandardCharsets.UTF_8);
+                mp = new File(path);
+            }
+            catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.WARNING,
+                    "Failed to read master-password-location file due error: " + e);
+                mp = new File(serverDirs.getConfigDir(), MASTERPASSWORD_FILE);
+            }
+        } else {
+            mp = new File(serverDirs.getConfigDir(), MASTERPASSWORD_FILE);
+        }
+
         if (!mp.canRead())
             return null;
 

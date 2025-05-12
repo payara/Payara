@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2023] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
@@ -49,12 +49,19 @@ import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_LOCATION_FILE;
 
 public class PEFileLayout
 {
@@ -780,7 +787,21 @@ public class PEFileLayout
 
     public File getMasterPasswordFile()
     {
+        File mpLocation = getMasterPasswordLocationFile();
+        if (mpLocation.canRead()) {
+            try {
+                String mpPath = Files.readString(mpLocation.toPath(), StandardCharsets.UTF_8);
+                return new File(mpPath);
+            } catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.WARNING,
+                    "Failed to read master-password-location file due error: " + e);
+            }
+        }
         return new File(getConfigRoot(), MASTERPASSWORD_FILE);
+    }
+
+    public File getMasterPasswordLocationFile () {
+        return new File(getConfigRoot(), MASTERPASSWORD_LOCATION_FILE);
     }
 
     public static final String PASSWORD_ALIAS_KEYSTORE = PasswordAdapter.PASSWORD_ALIAS_KEYSTORE;

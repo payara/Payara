@@ -56,11 +56,16 @@ import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.admin.cli.cluster.NamingHelper;
 import fish.payara.util.cluster.PayaraServerNameGenerator;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -71,6 +76,7 @@ import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
+import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_LOCATION_FILE;
 
 
 /**
@@ -110,6 +116,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
     private boolean saveMasterPassword = false;
+
+    @Param(name = "masterpasswordlocation", optional = true)
+    private String mpLocation;
 
     @Param(name = "usemasterpassword", optional = true, defaultValue = "false")
     private boolean useMasterPassword = false;
@@ -334,7 +343,6 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             File mp = new File(new File(getServerDirs().getServerDir(), "config"), "keystore.p12");
             if (mp.canRead()) {
                 if (verifyMasterPassword(masterPassword)) {
-
                     createMasterPasswordFile(masterPassword);
                 } else {
                     logger.info(Strings.get("masterPasswordIncorrect"));
@@ -346,6 +354,22 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     }
 
+    @Override
+    protected File getMasterPasswordFile () {
+        File mp = new File(new File(getServerDirs().getServerDir(), "config"), "keystore.p12");
+        File mpLocationFile = new File(new File(getServerDirs().getServerDir(), "config"), MASTERPASSWORD_LOCATION_FILE);
+        if (mpLocationFile.canRead()) {
+            try {
+                String currentMpLocation = Files.readString(mpLocationFile.toPath(), StandardCharsets.UTF_8);
+                mp = new File(currentMpLocation);
+            } catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.SEVERE,
+                    "Failed to read master-password-location file: ", e.getMessage());
+            }
+        }
+        return mp;
+    }
+
 
     /**
      * Create the master password keystore. This routine can also modify the master password
@@ -354,7 +378,22 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
      * @throws CommandException
      */
     protected void createMasterPasswordFile(String masterPassword) throws CommandException {
-        final File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+        File pwdFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_FILE);
+        if (mpLocation != null) {
+            File potentialFolder = new File(mpLocation);
+            if (potentialFolder.isDirectory()) {
+                mpLocation = new File(potentialFolder, MASTERPASSWORD_FILE).getAbsolutePath();
+            }
+
+            File mpLocationFile = new File(this.getServerDirs().getAgentDir(), MASTERPASSWORD_LOCATION_FILE);
+            try (FileWriter writer = new FileWriter(mpLocationFile)) {
+                writer.write(mpLocation);
+                pwdFile = new File(mpLocation);
+            } catch (IOException e) {
+                throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile), e);
+            }
+        }
+
         try {
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), MASTERPASSWORD_FILE.toCharArray());
             p.setPasswordForAlias(MASTERPASSWORD_FILE, masterPassword.getBytes(StandardCharsets.UTF_8));
