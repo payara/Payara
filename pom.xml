@@ -347,8 +347,6 @@
         <jsp-impl.version>4.0.0</jsp-impl.version>
         <asm.version>9.8</asm.version>
         <monitoring-console-api.version>3.0.0-SNAPSHOT</monitoring-console-api.version>
-        <monitoring-console-process.version>3.0.0-SNAPSHOT</monitoring-console-process.version>
-        <monitoring-console-webapp.version>3.0.0-SNAPSHOT</monitoring-console-webapp.version>
         <websocket-api.version>2.2.0</websocket-api.version>
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
