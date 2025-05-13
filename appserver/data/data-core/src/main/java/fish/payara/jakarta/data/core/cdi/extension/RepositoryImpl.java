@@ -39,27 +39,40 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import fish.payara.jakarta.data.core.util.FindOperationUtility;
+import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Query;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
+import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteByIdOperation;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByIdOperation;
+import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
 
 
 /**
@@ -75,6 +88,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private Map<Class<?>, List<QueryData>> queriesPerEntityClass;
     private final Map<Method, QueryData> queries = new HashMap<>();
     private final String applicationName;
+    private TransactionManager transactionManager;
+    private EntityManager em;
+
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -88,95 +104,197 @@ public class RepositoryImpl<T> implements InvocationHandler {
         logger.info("executing method:" + method.getName());
         preProcessQuery();
         QueryData dataForQuery = queries.get(method);
-        Stream<?> stream = null;
+        Object objectToReturn = null;
         switch (dataForQuery.getQueryType()) {
-            case SAVE -> processSaveOperation(args);
-            case INSERT -> processInsertOperation(args);
-            case DELETE -> processDeleteOperation(args);
-            case UPDATE -> processUpdateOperation(args, dataForQuery.getEntityParamType());
-            case FIND -> stream = processFindAllOperation(args, dataForQuery.getDeclaredEntityClass());
+            case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
+            case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
+            case DELETE ->
+                    processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+            case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
+            case FIND ->
+                    objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
         }
 
-        return stream;
+        return objectToReturn;
+    }
+
+    public Object processFindOperation(Object[] args, Class<?> declaredEntityClass, Method method) {
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Class<?>[] types = method.getParameterTypes();
+        if (parameterAnnotations.length == 1 && types.length == 1) {
+            Annotation[] annotations = parameterAnnotations[0];
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof By) {
+                    //for now we are processing only By id operation, when custom By operation available we will provide 
+                    // the metadata from the entity class to search specific column value for By
+                    String byValue = ((By) annotation).value();
+                    List<?> resultList = processFindByIdOperation(args, declaredEntityClass, getEntityManager(), byValue);
+                    Object objectToReturn = null;
+                    if (!resultList.isEmpty() && resultList.size() == 1) {
+                        objectToReturn = resultList.get(0);
+                    } else if (!resultList.isEmpty() && resultList.size() > 1) {
+                        throw new IllegalArgumentException("Multiple results found for the given id");
+                    }
+                    return Optional.ofNullable(objectToReturn);
+                }
+            }
+            return null;
+        } else {
+            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager());
+        }
     }
 
     public void preProcessQuery() {
-        for (Map.Entry<Class<?>, List<QueryData>> entry : queriesPerEntityClass.entrySet()) {
-            for (QueryData queryData : entry.getValue()) {
-                queries.put(queryData.getMethod(), queryData);
+        Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
+                .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
+        queries.putAll(r);
+    }
+
+
+    public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
+            HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        List<Object> results = null;
+        Object entity = null;
+        Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
+        startTransactionComponents();
+        
+        if (dataForQuery.getEntityParamType().isArray()) { //save multiple entities from array reference
+            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(), dataForQuery);
+        } else if (arg instanceof Iterable toIterate) { //save multiple entities from list reference
+            results = new ArrayList<>();
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) toIterate)) {
+                results.add(em.merge(e));
+            }
+            endTransaction();
+            if (!results.isEmpty()) {
+                return processReturnType(dataForQuery, results);
+            }
+        } else if (args[0] != null) { //save a single entity
+            startTransactionAndJoin();
+            entity = em.merge(args[0]);
+            endTransaction();
+        }
+
+        if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
+            entity = null;
+        }
+        return entity;
+    }
+
+    public Object processInsertOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
+            HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        List<Object> results = null;
+        Object entity = null;
+        Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
+        startTransactionComponents();
+        
+        if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
+            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(), dataForQuery);
+        } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
+            results = new ArrayList<>();
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) toIterate)) {
+                em.persist(e);
+                results.add(e);
+            }
+            endTransaction();
+
+            if (!results.isEmpty()) {
+                return processReturnType(dataForQuery, results);
+            }
+        } else if (arg != null) { //insert a single entity
+            startTransactionAndJoin();
+            entity = args[0];
+            em.persist(args[0]);
+            endTransaction();
+        }
+
+        if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
+            entity = null;
+        }
+
+        return entity;
+    }
+
+
+
+    public void processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
+            HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Class<?>[] types = method.getParameterTypes();
+        if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
+            Annotation[] annotations = parameterAnnotations[0];
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof By) {
+                    //for now we are processing only By id operation, when custom By operation available we will provide 
+                    // the metadata from the entity class to search specific column value for By
+                    String byValue = ((By) annotation).value();
+                    processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(), byValue);
+                }
+            }
+        } else {
+            startTransactionComponents();
+            //delete multiple entities
+            if (args[0] instanceof List arr) {
+                startTransactionAndJoin();
+                for (Object e : ((Iterable<?>) arr)) {
+                    em.remove(em.merge(e));
+                }
+                endTransaction();
+            } else if (args[0] != null) { //delete single entity
+                startTransactionAndJoin();
+                em.remove(em.merge(args[0]));
+                endTransaction();
             }
         }
     }
 
-
-    public void processSaveOperation(Object[] args) throws SystemException, NotSupportedException,
-            HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
-            Object entity = em.merge(args[0]);
-            em.flush();
-            transactionManager.commit();
-        }
-    }
-
-    public void processInsertOperation(Object[] args) throws SystemException, NotSupportedException,
-            HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
-            em.persist(args[0]);
-            em.flush();
-            transactionManager.commit();
-        }
-    }
-
-    public void processDeleteOperation(Object[] args) throws SystemException, NotSupportedException,
-            HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
-            em.remove(em.merge(args[0]));
-            em.flush();
-            transactionManager.commit();
-        }
-    }
-
-    public void processUpdateOperation(Object[] args, Class<?> entityParam) throws SystemException,
+    public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        logger.info("Need to process update operation with query based on jpql");
-        TransactionManager transactionManager = getTransactionManager();
-        EntityManager em = getEntityManager();
-        if (args[0] != null) {
-            transactionManager.begin();
-            em.joinTransaction();
-            Object entity = em.merge(args[0]);
-            em.flush();
-            transactionManager.commit();
+        List<Object> results = null;
+        Object entity = null;
+        Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
+        startTransactionComponents();
+        
+        if (dataForQuery.getEntityParamType().isArray()) { //update multiple entities from array reference
+            int length = Array.getLength(args[0]);
+            results = new ArrayList<>(length);
+            startTransactionAndJoin();
+            for (int i = 0; i < length; i++) {
+                em.merge(Array.get(args[0], i));
+                results.add(Array.get(args[0], i));
+            }
+            endTransaction();
+            
+            if (!results.isEmpty()) {
+                return processReturnType(dataForQuery, results);
+            }
+        } else if (arg instanceof List toIterate) { //update multiple entities
+            results = new ArrayList<>();
+            startTransactionAndJoin();
+            for (Object e : ((Iterable<?>) toIterate)) {
+                entity = em.merge(e);
+                results.add(entity);
+            }
+            endTransaction();
+
+            if (!results.isEmpty()) {
+                return processReturnType(dataForQuery, results);
+            }
+        } else if (arg != null) { //update single entity
+            startTransactionAndJoin();
+            entity = em.merge(args[0]);
+            endTransaction();
         }
+
+        if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
+            entity = null;
+        }
+        
+        return entity;
     }
 
-    public Stream<?> processFindAllOperation(Object[] args, Class<?> entityClass) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
-        EntityManager em = getEntityManager();
-        Query q = em.createQuery(builder.toString());
-        return q.getResultStream();
-    }
-
-    public String getSingleEntityName(String entityName) {
-        if (entityName != null) {
-            int idx = entityName.lastIndexOf(".");
-            return entityName.substring(idx + 1);
-        }
-        return null;
-    }
 
     public ApplicationRegistry getRegistry() {
         ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
@@ -203,6 +321,21 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return factory.createEntityManager();
         }
         return null;
+    }
+
+    public void startTransactionComponents() {
+        transactionManager = getTransactionManager();
+        em = getEntityManager();
+    }
+
+    public void startTransactionAndJoin() throws SystemException, NotSupportedException {
+        transactionManager.begin();
+        em.joinTransaction();
+    }
+
+    public void endTransaction() throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
+        em.flush();
+        transactionManager.commit();
     }
 
 }

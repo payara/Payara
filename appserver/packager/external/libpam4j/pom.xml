@@ -50,7 +50,6 @@
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.internal.packager</groupId>
     <artifactId>libpam4j-repackaged</artifactId>
     <name>libpam4j repackaged as a module</name>
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>
