@@ -49,22 +49,27 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.spi.CreationalContext;
 import jakarta.enterprise.inject.Default;
 import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanAttributes;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.inject.spi.PassivationCapable;
+import jakarta.enterprise.inject.spi.Producer;
+import jakarta.enterprise.inject.spi.ProducerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * This is a generic class that works as a producer for a Bean that is going to be used during
@@ -72,7 +77,7 @@ import java.util.logging.Logger;
  *
  * @param <T>
  */
-public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapable {
+public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFactory<T>, BeanAttributes<T>, PassivationCapable {
 
     private static final Logger logger = Logger.getLogger(DynamicInterfaceDataProducer.class.getName());
 
@@ -81,6 +86,14 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
     private JakartaDataExtension jakartaDataExtension;
     private Set<Type> beanTypes = null;
     private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
+    private Predicate<Method> methodAnnotationValidationPredicate = method -> method.getParameterCount() == 1 &&
+            !method.isDefault() && (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
+            || method.isAnnotationPresent(Save.class) || method.isAnnotationPresent(Delete.class));
+    private Predicate<Class<?>> classTypeValidationPredicate = clazz -> Iterable.class.isAssignableFrom(clazz)
+            || Stream.class.isAssignableFrom(clazz);
+
+    private Predicate<Class<?>> classValidationParameter = clazz -> clazz != null
+            && !clazz.isPrimitive() && !clazz.isInterface();
 
     DynamicInterfaceDataProducer(Class<?> instance, BeanManager beanManager, JakartaDataExtension jakartaDataExtension) {
         this.repository = (Class<T>) instance;
@@ -91,24 +104,20 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
     }
 
     @Override
-    public Class<T> getBeanClass() {
-        return repository;
-    }
-
-    @Override
-    public Set<InjectionPoint> getInjectionPoints() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public T create(CreationalContext<T> context) {
+    public T produce(CreationalContext<T> creationalContext) {
         RepositoryImpl<?> handler = new RepositoryImpl<>(repository, queriesForEntity, jakartaDataExtension.getApplicationName());
         return (T) Proxy.newProxyInstance(repository.getClassLoader(), new Class[]{repository},
                 handler);
     }
 
     @Override
-    public void destroy(T t, CreationalContext<T> creationalContext) {
+    public void dispose(T t) {
+
+    }
+
+    @Override
+    public Set<InjectionPoint> getInjectionPoints() {
+        return Collections.emptySet();
     }
 
     @Override
@@ -128,7 +137,7 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
 
     @Override
     public String getName() {
-        return "";
+        return null;
     }
 
     @Override
@@ -192,13 +201,32 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
 
     public Class<?> getEntityParamClass(Method method) {
         Class<?> entityParamType = null;
+        Type type;
         // Determine entity class from parameters
-        if (method.getParameterCount() == 1 && !method.isDefault() &&
-                (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
-                        || method.isAnnotationPresent(Save.class) || method.isAnnotationPresent(Delete.class))) {
-            Class<?> c = method.getParameterTypes()[0];
-            if (Object.class.equals(c)) {
-                entityParamType = c;
+        if (methodAnnotationValidationPredicate.test(method)) {
+            Class<?> classParameterType = method.getParameterTypes()[0];
+            if (classTypeValidationPredicate.test(classParameterType)) {
+                type = method.getGenericParameterTypes()[0];
+                if (type instanceof ParameterizedType) {
+                    Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
+                    if (typeParams.length == 1 && typeParams[0] instanceof Class) {
+                        classParameterType = (Class<?>) typeParams[0];
+                    } else {
+                        entityParamType = classParameterType;
+                        classParameterType = null;
+                    }
+                } else {
+                    classParameterType = null;
+                }
+            } else if (classParameterType.isArray()) {
+                classParameterType = classParameterType.getComponentType();
+            }
+
+            if (Object.class.equals(classParameterType)) {
+                entityParamType = classParameterType;
+            } else if (classValidationParameter.test(classParameterType)) {
+                Parameter param = method.getParameters()[0];
+                entityParamType = param.getType();
             }
         }
         return entityParamType;
@@ -227,5 +255,10 @@ public class DynamicInterfaceDataProducer<T> implements Bean<T>, PassivationCapa
             queryType = QueryType.FIND;
         }
         queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, queryType));
+    }
+
+    @Override
+    public <T> Producer<T> createProducer(Bean<T> bean) {
+        return (Producer<T>) this;
     }
 }
