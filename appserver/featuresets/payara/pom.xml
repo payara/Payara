@@ -142,14 +142,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        
-        <!-- Rest Monitoring -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>rest-monitoring</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
 
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
