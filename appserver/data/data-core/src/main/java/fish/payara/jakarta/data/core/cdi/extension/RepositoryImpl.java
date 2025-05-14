@@ -351,9 +351,12 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         } else {
             startTransactionComponents();
-            //delete multiple entities
-
-            if (args[0] instanceof List arr) {
+            if (args == null) { //delete all records
+                startTransactionAndJoin();
+                String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
+                returnValue = (long) em.createQuery(deleteAllQuery).executeUpdate();
+                endTransaction();
+            } else if (args[0] instanceof List arr) {
                 startTransactionAndJoin();
                 for (Object e : ((Iterable<?>) arr)) {
                     em.remove(em.merge(e));
