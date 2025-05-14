@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2022-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 
@@ -84,20 +84,24 @@
                 <artifactId>core</artifactId>
         </dependency>
 	    <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
        <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>kernel</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>

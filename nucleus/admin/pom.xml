@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -53,6 +54,12 @@
     <packaging>pom</packaging>
     <name>Admin Modules</name>
     <modules>
+        <module>config-api</module>
+        <module>server-mgmt</module>
+        <module>util</module>
+        <module>cli</module>
+        <module>launcher</module>
+        <module>monitor</module>
         <module>rest</module>
         <module>launcher-l10n</module>
         <module>monitor-l10n</module>

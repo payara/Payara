@@ -40,17 +40,15 @@
     holder.
 
 -->
-<!-- Portions Copyright 2022 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2022-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>6.28.0-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.security</groupId>
+        <artifactId>nucleus-security</artifactId>
+        <version>6.2025.6-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.security</groupId>
     <artifactId>security-services</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -67,24 +65,29 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>

@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -100,12 +100,16 @@
     </developers>
 
     <modules>
+        <module>dataprovider</module>
+        <module>plugin-service</module>
+        <module>common</module>
         <module>core</module>
         <module>concurrent</module>
         <module>cluster</module>
         <module>reference-manual</module>
         <module>payara-theme</module>
         <module>web</module>
+        <module>gf-admingui-connector</module>
         <module>jts</module>
         <module>jdbc</module>
         <module>jca</module>
@@ -144,9 +148,9 @@
         <module>healthcheck-service-console-plugin-l10n</module>
         <module>jmx-monitoring-plugin</module>
         <module>jmx-monitoring-plugin-l10n</module>
-        <module>rest-monitoring-plugin</module>
         <module>microprofile-console-plugin</module>
         <module>microprofile-console-plugin-l10n</module>
+        <module>faces-compat</module>
     </modules>
 
     <properties>

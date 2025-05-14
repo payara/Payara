@@ -37,5 +37,6 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2025 Payara Foundation and/or its affiliates
 
-Fragment-Host: fish.payara.server.internal.nucleus-resources; bundle-version=${project.osgi.version}
+Fragment-Host: fish.payara.server.internal.resourcebase.resources.nucleus-resources; bundle-version=${project.osgi.version}

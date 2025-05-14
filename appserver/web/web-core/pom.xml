@@ -40,19 +40,17 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>6.28.0-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.web</groupId>
+        <artifactId>web</artifactId>
+        <version>6.2025.6-SNAPSHOT</version>
     </parent>
 
-    <groupId>fish.payara.server.core.web</groupId>
     <artifactId>web-core</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -107,32 +105,39 @@
             <artifactId>grizzly-http</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-naming</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>requesttracing-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
@@ -149,19 +154,21 @@
             <artifactId>jersey-container-servlet-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>healthcheck-stuck</artifactId>
-
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.core.payara-modules</groupId>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>opentracing-adapter</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentracing</groupId>

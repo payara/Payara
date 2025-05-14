@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2024 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2025 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -47,12 +47,6 @@
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
     <version>6.2025.6-SNAPSHOT</version>
-    <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-aggregator</artifactId>
-        <version>6.28.0-SNAPSHOT</version>
-        <relativePath>core</relativePath>
-    </parent>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -63,8 +57,6 @@
         <module>api</module>
     </modules>
 
-    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
-         Maven where to download it from -->
     <repositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
         <repository>
@@ -79,6 +71,17 @@
             </snapshots>
         </repository>
         <repository>
+            <id>ossrh-snapshots</id>
+            <name>Sonatype OSSRH Snapshot Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
@@ -98,10 +101,18 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>payara-nexus-staging</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+            <releases>
+                <enabled>${payara-nexus-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
-    <!-- Some of these are duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
-         Maven where to download it from -->
     <pluginRepositories>
         <!-- Try Maven central first, not last, which happens when omitted here -->
         <pluginRepository>
@@ -116,6 +127,17 @@
             </snapshots>
         </pluginRepository>
         <pluginRepository>
+            <id>ossrh-snapshots</id>
+            <name>Sonatype OSSRH Snapshot Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
             <id>payara-nexus-artifacts</id>
             <url>https://nexus.dev.payara.fish/repository/payara-artifacts</url>
             <releases>
@@ -135,6 +157,16 @@
                 <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
+        <pluginRepository>
+            <id>payara-nexus-staging</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
+            <releases>
+                <enabled>${payara-nexus-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
 
     <distributionManagement>
@@ -142,20 +174,77 @@
             <id>payara-nexus-distributions</id>
             <url>https://nexus.dev.payara.fish/repository/payara-community/</url>
         </repository>
+        <snapshotRepository>
+            <id>payara-nexus-snapshots</id>
+            <url>https://nexus.dev.payara.fish/repository/payara-snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
 
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/payara/Payara/issues</url>
+    </issueManagement>
+
+    <developers>
+        <developer>
+            <name>Payara Team</name>
+            <email>info@payara.fish</email>
+            <organization>Payara Foundation</organization>
+            <organizationUrl>http://www.payara.fish</organizationUrl>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>CDDL + GPLv2 with classpath exception</name>
+            <url>https://raw.githubusercontent.com/payara/Payara/main/LICENSE.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
     <properties>
+        <!-- build versions -->
+        <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
+        <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
+        <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
+        <maven.gpg.plugin.version>3.2.7</maven.gpg.plugin.version>
+        <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
+        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <!-- Be careful updating to a higher version - an issue affecting 3.10.0-3.11.2 causes the aggregate jar to be empty -->
+        <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
+        <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
+        <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
+        <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
+        <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+        <maven.build.helper.plugin.version>3.6.0</maven.build.helper.plugin.version>
+        <maven.flatten.plugin.version>1.7.0</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
+        <license-maven-plugin.version>2.5.0</license-maven-plugin.version>
 
+        <!-- build settings -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <jdk.version>11</jdk.version>
         <javase.version>${jdk.version}</javase.version>
-        <!-- BOM-referenced versions -->
+        <deploy.skip>true</deploy.skip>
+        <javadoc.skip>true</javadoc.skip>
+        <source.skip>true</source.skip>
+        <payara-nexus-staging.repo.releases.enabled>false</payara-nexus-staging.repo.releases.enabled>
+        <payara-nexus-staging.repo.snapshots.enabled>false</payara-nexus-staging.repo.snapshots.enabled>
 
+        <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <snakeyaml.version>2.4</snakeyaml.version>
         <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
         <mojarra.version>4.0.9.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
-
         <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
         <krazo.version>3.0.1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
@@ -171,19 +260,85 @@
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>1.1.0</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
+        <jline.version>3.29.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>3.0</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.0.2.payara-p1</concurro.version>
-        <monitoring-console-process.version>2.0.2</monitoring-console-process.version>
-        <monitoring-console-webapp.version>2.0.2</monitoring-console-webapp.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-
-        <deploy.skip>true</deploy.skip>
-        <javadoc.skip>true</javadoc.skip>
-        <source.skip>true</source.skip>
-        <license-maven-plugin.version>2.5.0</license-maven-plugin.version>
+        <payara.security-connectors.version>3.1.2</payara.security-connectors.version>
+        <hk2.version>3.0.1.payara-p5</hk2.version>
+        <osgi.version>8.0.0</osgi.version>
+        <osgi.annotation.version>8.1.0</osgi.annotation.version>
+        <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
+        <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
+        <osgi.dto.version>1.1.1</osgi.dto.version>
+        <jakarta.security.enterprise.version>3.0.3.payara-p2</jakarta.security.enterprise.version>
+        <cdi-api.version>4.0.1</cdi-api.version>
+        <grizzly.version>4.0.2.payara-p1</grizzly.version>
+        <servlet-api.version>6.0.0</servlet-api.version>
+        <jakarta.el-api.version>5.0.1</jakarta.el-api.version>
+        <expressly.version>5.0.0</expressly.version>
+        <microprofile-config.version>3.1</microprofile-config.version>
+        <parsson.version>1.1.5.payara-p1</parsson.version>
+        <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
+        <jaxb-api.version>4.0.2</jaxb-api.version>
+        <jackson.version>2.18.3</jackson.version>
+        <jersey.version>3.1.10.payara-p1</jersey.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
+        <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
+        <hibernate.validator.osgi.version>8.0.1.Final</hibernate.validator.osgi.version>
+        <jaxb-impl.version>4.0.2</jaxb-impl.version>
+        <jsonp-api.version>2.1.3</jsonp-api.version>
+        <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
+        <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
+        <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
+        <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>
+        <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
+        <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
+        <jakarta.inject.version>2.0.1</jakarta.inject.version>
+        <json.bind-api.version>3.0.1</json.bind-api.version>
+        <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
+        <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
+        <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
+        <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
+        <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
+        <microprofile-metrics.version>5.1.0.payara-p1</microprofile-metrics.version>
+        <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
+        <microprofile-openapi.version>3.1.1</microprofile-openapi.version>
+        <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
+        <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
+        <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
+        <exousia.version>2.1.3</exousia.version>
+        <opentracing.version>0.33.0</opentracing.version>
+        <jsp-api.version>3.1.0</jsp-api.version>
+        <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
+        <hazelcast.version>5.3.6</hazelcast.version>
+        <jakartaee.api.version>10.0.0</jakartaee.api.version>
+        <weld-api.version>5.0.SP3</weld-api.version>
+        <weld.version>5.0.1.payara-p1</weld.version>
+        <tyrus.version>2.1.5.payara-p2</tyrus.version>
+        <jsp-impl.version>3.2.2</jsp-impl.version>
+        <asm.version>9.8</asm.version>
+        <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
+        <websocket-api.version>2.1.1</websocket-api.version>
+        <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
+        <jstl-api.version>3.0.2</jstl-api.version>
+        <concurrent-api.version>3.0.4</concurrent-api.version>
+        <jaxws-api.version>4.0.2</jaxws-api.version>
+        <jms-api.version>3.1.0</jms-api.version>
+        <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
+        <stax2-api.version>4.2.2</stax2-api.version>
+        <stax-api.version>1.0-2</stax-api.version>
+        <jbi.version>1.0</jbi.version>
+        <mail.version>2.1.3</mail.version>
+        <angus.mail.version>2.0.3</angus.mail.version>
+        <opentelemetry.version>1.29.0</opentelemetry.version>
+        <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
+        <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
+        <payara.transformer.version>0.2.12</payara.transformer.version>
     </properties>
 
     <profiles>
@@ -232,6 +387,9 @@
                     <value>true</value>
                 </property>
             </activation>
+            <properties>
+                <javadoc.skip>false</javadoc.skip>
+            </properties>
             <build>
                 <finalName>payara-${project.version}</finalName>
                 <plugins>
@@ -313,46 +471,11 @@
         </profile>
 
         <profile>
-            <id>BuildCore</id>
-            <activation>
-                <property>
-                    <name>build.core.skip</name>
-                    <value>!true</value>
-                </property>
-            </activation>
-            <modules>
-                <module>core</module>
-            </modules>
-        </profile>
-
-        <!-- Duplicated from core-bom because it isn't deployed to Maven Central so we need to tell
-             Maven where to download it from -->
-        <profile>
             <id>payara-nexus-staging</id>
-            <repositories>
-                <repository>
-                    <id>payara-nexus-staging</id>
-                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>payara-nexus-staging</id>
-                    <url>https://nexus.dev.payara.fish/repository/payara-staging</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                </pluginRepository>
-            </pluginRepositories>
+            <properties>
+                <payara-nexus-staging.repo.releases.enabled>true</payara-nexus-staging.repo.releases.enabled>
+                <payara-nexus-staging.repo.snapshots.enabled>true</payara-nexus-staging.repo.snapshots.enabled>
+            </properties>
         </profile>
 
         <profile>
@@ -410,6 +533,62 @@
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${maven.flatten.plugin.version}</version>
+                    <configuration>
+                        <flattenMode>ossrh</flattenMode>
+                        <pomElements>
+                            <developers>resolve</developers>
+                            <build>remove</build>
+                            <properties>flatten</properties>
+                        </pomElements>
+                        <flattenedPomFilename>target/flattened-pom.xml</flattenedPomFilename>
+                    </configuration>
+                    <executions>
+                        <!-- enable flattening -->
+                        <execution>
+                            <id>flatten</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>flatten</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven.deploy.plugin.version}</version>
+                    <configuration>
+                        <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
+                        <skip>${deploy.skip}</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>${maven.bundle.plugin.version}</version>
+                    <configuration>
+                        <instructions>
+                            <!--
+                                Read all the configuration from osgi.bundle file, if it exists.
+                            -->
+                            <_include>-osgi.bundle</_include>
+                        </instructions>
+                        <excludeDependencies>tools-jar</excludeDependencies>
+                        <supportedProjectTypes>
+                            <supportedProjectType>glassfish-jar</supportedProjectType>
+                            <supportedProjectType>jar</supportedProjectType>
+                        </supportedProjectTypes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven.enforcer.plugin.version}</version>
+                </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven.jar.plugin.version}</version>

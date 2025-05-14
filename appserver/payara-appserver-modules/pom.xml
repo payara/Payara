@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) 2016-2023 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,6 @@
         <module>notification-jms-core</module>
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
-        <module>rest-monitoring</module>
         <module>cdi-auth-roles</module>
         <module>jaxrs-client-tracing</module>
         <module>yubikey-authentication</module>

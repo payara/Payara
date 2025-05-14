@@ -39,19 +39,17 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2022] Payara Foundation and/or affiliates
+    Portions Copyright 2017-2025 Payara Foundation and/or its affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>6.28.0-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.admin</groupId>
+        <artifactId>nucleus-admin</artifactId>
+        <version>6.2025.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fish.payara.server.core.admin</groupId>
     <artifactId>monitoring-core</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -80,20 +78,23 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.flashlight</groupId>
+            <groupId>fish.payara.server.internal.flashlight</groupId>
             <artifactId>flashlight-framework</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.external</groupId>
@@ -109,8 +110,9 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>amx-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.monitoring-console</groupId>

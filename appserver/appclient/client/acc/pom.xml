@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2016-2023 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -129,60 +129,59 @@
                 we can package them as resources.
             -->
             <plugin>
-                 <groupId>org.apache.maven.plugins</groupId>
-                 <artifactId>maven-dependency-plugin</artifactId>
-                 <executions>
-                   <execution>
-                     <id>unpack-dtds-and-schemas</id>
-                     <phase>generate-resources</phase>
-                     <goals>
-                       <goal>unpack-dependencies</goal>
-                     </goals>
-                     <configuration>
-                       <includeGroupIds>fish.payara.server.internal.deployment</includeGroupIds>
-                       <includeArtifactIds>schemas,dtds</includeArtifactIds>
-                       <includes>**/*.dtd,**/*.xsd</includes>
-                     </configuration>
-                   </execution>
-                  </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-dtds-and-schemas</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeGroupIds>fish.payara.server.internal.deployment</includeGroupIds>
+                            <includeArtifactIds>schemas,dtds</includeArtifactIds>
+                            <includes>**/*.dtd,**/*.xsd</includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                    <configuration>
-
-                            <archive>
-
-                                <manifest>
-                                    <mainClass>org.glassfish.main.appclient.client.acc.AppClientCommand</mainClass>
-                                </manifest>
-                                <!--
-                                    It's discouraging to have to specify the class path
-                                    manually.  Ideally the plug-in would do this
-                                    for us, but the jar plug-in uses the name
-                                    of the modules including the version strings;
-                                    when the GlassFish modules are packaged into
-                                    the distributions the version strings are
-                                    stripped off. 
-                                -->
-                            </archive>
-                        </configuration>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.glassfish.main.appclient.client.acc.AppClientCommand</mainClass>
+                        </manifest>
+                        <!--
+                            It's discouraging to have to specify the class path
+                            manually.  Ideally the plug-in would do this
+                            for us, but the jar plug-in uses the name
+                            of the modules including the version strings;
+                            when the GlassFish modules are packaged into
+                            the distributions the version strings are
+                            stripped off.
+                        -->
+                    </archive>
+                </configuration>
             </plugin>
         </plugins>
     </build>
 
     <dependencies>
         <dependency>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-core</artifactId>
+            <groupId>org.glassfish.hk2</groupId>
+            <artifactId>hk2-core</artifactId>
         </dependency>
         
         <!--
             required for annotation processing support
         -->
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -216,15 +215,17 @@
 
         <!-- required for InjectionManager -->
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <!--
             Required for AnnotationDetector, AnnotationScanner, PersistenceUnitDescriptor
         -->
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!--
@@ -239,8 +240,9 @@
             Required for ClientNamingConfigurator
         -->
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- required for ClientPipeCloser -->
@@ -266,17 +268,18 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-naming</artifactId>
+            <version>${project.version}</version>
         </dependency>
         
-	 <dependency>
+	    <dependency>
             <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>work-management</artifactId>
             <version>${project.version}</version>
         </dependency>
 
- 	<dependency>
+ 	    <dependency>
             <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
             <version>${project.version}</version>
@@ -284,8 +287,9 @@
         
         
         <dependency>
-            <groupId>fish.payara.server.core.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-connector</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -313,8 +317,9 @@
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.core.nucleus</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -323,157 +328,157 @@
             <version>${project.version}</version>
         </dependency>
 
-     <dependency>
-         <groupId>fish.payara.server.internal.transaction</groupId>
-         <artifactId>jts</artifactId>
-         <version>${project.version}</version>
-     </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.transaction</groupId>
+            <artifactId>jts</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-     <dependency>
-         <scope>runtime</scope>
-         <groupId>fish.payara.server.internal.jms</groupId>
-         <artifactId>jms-core</artifactId>
-         <version>${project.version}</version>
-     </dependency>
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>fish.payara.server.internal.jms</groupId>
+            <artifactId>jms-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-     <dependency>
-         <scope>runtime</scope>
-         <groupId>jakarta.jms</groupId>
-         <artifactId>jakarta.jms-api</artifactId>
-     </dependency>
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+        </dependency>
 
-     <!-- for EclipseLink support -->
-     <dependency>
-         <type>pom</type>
-         <scope>runtime</scope>
-         <groupId>fish.payara.server.internal.persistence</groupId>
-         <artifactId>eclipselink-wrapper</artifactId>
-         <version>${project.version}</version>
-     </dependency>
+        <!-- for EclipseLink support -->
+        <dependency>
+            <type>pom</type>
+            <scope>runtime</scope>
+            <groupId>fish.payara.server.internal.persistence</groupId>
+            <artifactId>eclipselink-wrapper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-     <dependency>
-         <groupId>fish.payara.server.internal.persistence</groupId>
-         <artifactId>jpa-container</artifactId>
-         <version>${project.version}</version>
-     </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.persistence</groupId>
+            <artifactId>jpa-container</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-     <dependency>
-         <scope>runtime</scope>
-         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
-         <artifactId>cmp-internal-api</artifactId>
-         <version>${project.version}</version>
-     </dependency>
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
+            <artifactId>cmp-internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-     <dependency>
-        <groupId>jakarta.annotation</groupId>
-        <artifactId>jakarta.annotation-api</artifactId>
-     </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
 
-     <!-- jakarta.activation-api.jar -->
-     <dependency>
-         <groupId>jakarta.activation</groupId>
-         <artifactId>jakarta.activation-api</artifactId>
-     </dependency>
+        <!-- jakarta.activation-api.jar -->
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
 
-     <dependency>
-         <groupId>org.eclipse.angus</groupId>
-         <artifactId>angus-activation</artifactId>
-     </dependency>
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+        </dependency>
 
-     <dependency>
-         <groupId>jakarta.xml.bind</groupId>
-	 <artifactId>jakarta.xml.bind-api</artifactId>
-	 <exclusions>
-             <exclusion>
-                 <groupId>com.sun.activation</groupId>
-                 <artifactId>jakarta.activation</artifactId>
-             </exclusion>
-         </exclusions>
-     </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+	        <artifactId>jakarta.xml.bind-api</artifactId>
+	        <exclusions>
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>jakarta.activation</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-     <dependency>
-         <groupId>com.sun.xml.bind</groupId>
-	 <artifactId>jaxb-osgi</artifactId>
-	 <exclusions>
-             <exclusion>
-                 <groupId>com.sun.activation</groupId>
-                 <artifactId>jakarta.activation</artifactId>
-             </exclusion>
-         </exclusions>
-     </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-osgi</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.activation</groupId>
+                    <artifactId>jakarta.activation</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-     <dependency>
-         <groupId>com.sun.xml.bind</groupId>
-         <artifactId>jaxb-extra-osgi</artifactId>
-         <scope>runtime</scope>
-     </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-extra-osgi</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
-     <dependency>
-        <groupId>org.glassfish.metro</groupId>
-        <artifactId>webservices-api-osgi</artifactId>
-     </dependency>
+        <dependency>
+            <groupId>org.glassfish.metro</groupId>
+            <artifactId>webservices-api-osgi</artifactId>
+        </dependency>
 
-     <dependency>
-         <groupId>jakarta.json.bind</groupId>
-         <artifactId>jakarta.json.bind-api</artifactId>
-     </dependency>
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
+        </dependency>
 
-     <dependency>
-         <groupId>org.eclipse</groupId>
-         <artifactId>yasson</artifactId>
-     </dependency>     
+        <dependency>
+            <groupId>org.eclipse</groupId>
+            <artifactId>yasson</artifactId>
+        </dependency>
 
-     <!--
-     This is needed because it provides the sniffer/detector/moduletype
-     -->
-     <dependency>
-         <groupId>fish.payara.server.internal.appclient.server</groupId>
-         <artifactId>appclient-connector</artifactId>
-         <version>${project.version}</version>
-         <scope>runtime</scope>
-     </dependency>
+        <!--
+        This is needed because it provides the sniffer/detector/moduletype
+        -->
+        <dependency>
+            <groupId>fish.payara.server.internal.appclient.server</groupId>
+            <artifactId>appclient-connector</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
-      <!--
-        The next two mail-related dependencies allow mail session look-up
-        and use from clients.
-      -->
-      <dependency>
-          <scope>runtime</scope>
-          <groupId>fish.payara.server.internal.resources</groupId>
-          <artifactId>javamail-connector</artifactId>
-          <version>${project.version}</version>
-      </dependency>
-      <dependency>
-          <scope>runtime</scope>
-          <groupId>fish.payara.server.internal.resources</groupId>
-          <artifactId>javamail-runtime</artifactId>
-          <version>${project.version}</version>
-      </dependency>
+        <!--
+          The next two mail-related dependencies allow mail session look-up
+          and use from clients.
+        -->
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>fish.payara.server.internal.resources</groupId>
+            <artifactId>javamail-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>fish.payara.server.internal.resources</groupId>
+            <artifactId>javamail-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-      <!-- As of EE 7, JSON needs to be available to clients -->
-      <dependency>
-          <scope>runtime</scope>
-          <groupId>org.eclipse.parsson</groupId>
-          <artifactId>jakarta.json</artifactId>
-      </dependency>
+        <!-- As of EE 7, JSON needs to be available to clients -->
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>jakarta.json</artifactId>
+        </dependency>
 
-      <!-- CDI support -->
-      <dependency>
-          <groupId>org.jboss.weld.se</groupId>
-          <artifactId>weld-se-shaded</artifactId>
-      </dependency>
-      <dependency>
-          <groupId>jakarta.enterprise</groupId>
-          <artifactId>jakarta.enterprise.cdi-api</artifactId>
-      </dependency>
+        <!-- CDI support -->
+        <dependency>
+            <groupId>org.jboss.weld.se</groupId>
+            <artifactId>weld-se-shaded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+        </dependency>
 
-      <!-- Request tracing for remote eJB -->
-      <dependency>
-        <scope>runtime</scope>
-        <groupId>fish.payara.server.internal.ejb</groupId>
-        <artifactId>ejb-opentracing</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+        <!-- Request tracing for remote eJB -->
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>fish.payara.server.internal.ejb</groupId>
+            <artifactId>ejb-opentracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
     </dependencies>
 </project>
