@@ -58,7 +58,7 @@ public class DeleteOperationUtility {
 
     public static final Logger logger = Logger.getLogger(DeleteOperationUtility.class.getName());
 
-    public static void processDeleteByIdOperation(Object[] args, Class<?> declaredEntityClass, TransactionManager tm,
+    public static Long processDeleteByIdOperation(Object[] args, Class<?> declaredEntityClass, TransactionManager tm,
                                                   EntityManager em, String idNameValue) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
         String query = createDeleteOperationSingleEntity(declaredEntityClass, idNameValue);
@@ -70,6 +70,7 @@ public class DeleteOperationUtility {
         em.flush();
         tm.commit();
         logger.info("Rows affected from delete operation:" + rowsAffected);
+        return Long.valueOf(rowsAffected);
     }
 
 

@@ -115,7 +115,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case SAVE -> objectToReturn = processSaveOperation(args);
             case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
             case DELETE ->
-                    processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+                    objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args);
             case FIND ->
                     objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
@@ -334,8 +334,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return null;
     }
 
-    public void processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
+    public Long processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        Long returnValue = 0L;
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Class<?>[] types = method.getParameterTypes();
         if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
@@ -345,24 +346,28 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     //for now we are processing only By id operation, when custom By operation available we will provide 
                     // the metadata from the entity class to search specific column value for By
                     String byValue = ((By) annotation).value();
-                    processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(), byValue);
+                    returnValue = processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(), byValue);
                 }
             }
         } else {
             startTransactionComponents();
             //delete multiple entities
+
             if (args[0] instanceof List arr) {
                 startTransactionAndJoin();
                 for (Object e : ((Iterable<?>) arr)) {
                     em.remove(em.merge(e));
+                    returnValue++;
                 }
                 endTransaction();
             } else if (args[0] != null) { //delete single entity
                 startTransactionAndJoin();
                 em.remove(em.merge(args[0]));
+                returnValue = 1L;
                 endTransaction();
             }
         }
+        return returnValue;
     }
 
     public Object processUpdateOperation(Object[] args) throws SystemException,
