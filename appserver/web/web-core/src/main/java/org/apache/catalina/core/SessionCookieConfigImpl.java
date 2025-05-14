@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 package org.apache.catalina.core;
 
 import org.apache.catalina.LogFacade;
@@ -67,7 +67,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
-    private static final boolean DEFAULT_HTTP_ONLY = false;
+    private static final boolean DEFAULT_HTTP_ONLY = true;
     private static final int DEFAULT_MAX_AGE = -1;
     private static final String DEFAULT_NAME = "JSESSIONID";
     private static final boolean DEFAULT_SECURE = false;
