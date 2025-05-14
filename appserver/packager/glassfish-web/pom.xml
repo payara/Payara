@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2016-2024 [Payara Foundation and/or its affiliates]
+    Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -85,8 +85,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>gf-web-connector</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
@@ -109,28 +110,34 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>stats77</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-cli</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-embed-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-glue</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-gui-plugin-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
@@ -138,16 +145,19 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-naming</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-sse</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>war-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp</groupId>
@@ -225,8 +235,9 @@
             <artifactId>tyrus-container-glassfish-ejb</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>websecurity</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>

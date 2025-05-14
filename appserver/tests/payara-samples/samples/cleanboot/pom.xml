@@ -31,7 +31,6 @@
 
     
     <artifactId>cleanboot</artifactId>
-    <version>7.2025.1.Alpha2-SNAPSHOT</version>
     <name>Payara Samples - Payara - Clean boot test</name>
 
     <parent>

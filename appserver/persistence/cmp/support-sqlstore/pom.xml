@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portion Copyright [2018-2024] Payara Foundation and/or affiliates
+    Portion Copyright 2018-2025 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -132,8 +132,9 @@
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.jdbc</groupId>
@@ -141,8 +142,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.connectors</groupId>
+            <groupId>fish.payara.server.internal.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.persistence</groupId>
@@ -150,12 +152,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

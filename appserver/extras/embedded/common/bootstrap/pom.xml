@@ -40,7 +40,7 @@
  * holder.
  */
 -->
-<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2018-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -70,7 +70,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>fish.payara.server.core.common</groupId>
+                                    <groupId>fish.payara.server.internal.common</groupId>
                                     <artifactId>simple-glassfish-api</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -78,7 +78,7 @@
                                     <excludes>META-INF/**</excludes>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>fish.payara.server.core.nucleus</groupId>
+                                    <groupId>fish.payara.server.internal.core</groupId>
                                     <artifactId>glassfish</artifactId>
                                     <version>${project.version}</version>
                                     <overWrite>false</overWrite>
@@ -106,15 +106,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.nucleus</groupId>
+            <groupId>fish.payara.server.internal.core</groupId>
             <artifactId>glassfish</artifactId>
-
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>simple-glassfish-api</artifactId>
-
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
