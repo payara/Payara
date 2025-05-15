@@ -94,6 +94,7 @@ import org.glassfish.config.support.TargetType;
  *  
  * domain.xml element example
  *  
+ * {@code
  *  <message-security-config auth-layer="SOAP">
  *      <!-- turned off by default -->
  *      <provider-config class-name="com.sun.wss.provider.ClientSecAuthModule" 
@@ -106,6 +107,7 @@ import org.glassfish.config.support.TargetType;
  *      <property name="debug" value="false"/>
  *      </provider-config>
  *  </message-security-config>
+ *  }
  *
  *  @author Nandini Ektare
  */
