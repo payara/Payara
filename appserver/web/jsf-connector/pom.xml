@@ -72,8 +72,9 @@
             <artifactId>hk2-core</artifactId>
         </dependency>
          <dependency>
-            <groupId>fish.payara.server.core.web</groupId>
+            <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>web-glue</artifactId>
+             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
@@ -81,20 +82,24 @@
             <artifactId>jakarta.faces</artifactId>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.common</groupId>
+            <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

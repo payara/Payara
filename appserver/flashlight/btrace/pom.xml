@@ -40,16 +40,15 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.internal.common</groupId>
-        <artifactId>common</artifactId>
+        <groupId>fish.payara.server.internal.flashlight</groupId>
+        <artifactId>glassfish-flashlight</artifactId>
         <version>7.2025.1.Alpha2-SNAPSHOT</version>
-        <relativePath>../../common/pom.xml</relativePath>
     </parent>
-    <groupId>fish.payara.server.internal.flashlight</groupId>
     <artifactId>btrace-jars</artifactId>
     <name>btrace jar files</name>
     <!--

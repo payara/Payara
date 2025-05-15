@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,8 @@ package fish.payara.datagrid.tests;
 import org.apache.http.*;
 import org.junit.*;
 
-import javax.ws.rs.client.*;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.client.*;
+import jakarta.ws.rs.core.*;
 
 import static org.junit.Assert.*;
 

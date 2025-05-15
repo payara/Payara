@@ -39,18 +39,16 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2019-2025 Payara Foundation and/or its affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>7.0.0.Alpha5-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.orb</groupId>
+        <artifactId>orb</artifactId>
+        <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.orb</groupId>
     <artifactId>orb-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -70,12 +68,14 @@
     </developers>
     <dependencies>
     	<dependency>
-            <groupId>fish.payara.server.core.orb</groupId>
+            <groupId>fish.payara.server.internal.orb</groupId>
             <artifactId>orb-enabler</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.pfl</groupId>
@@ -98,29 +98,34 @@
             <artifactId>jakarta.el-api</artifactId>
         </dependency>
        <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>dol</artifactId>
+           <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.ejb</groupId>
             <artifactId>jakarta.ejb-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>fish.payara.server.core.cluster</groupId>
+           <groupId>fish.payara.server.internal.cluster</groupId>
            <artifactId>cluster-admin</artifactId>
+            <version>${project.version}</version>
 	   <scope>test</scope>
        </dependency>
         <dependency>
-           <groupId>fish.payara.server.core.common</groupId>
+           <groupId>fish.payara.server.internal.common</groupId>
            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
        </dependency>
         <dependency>
-           <groupId>fish.payara.server.core.admin</groupId>
+           <groupId>fish.payara.server.internal.admin</groupId>
            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
        </dependency>
        <dependency>
-           <groupId>fish.payara.server.core.admin</groupId>
+           <groupId>fish.payara.server.internal.admin</groupId>
            <artifactId>monitoring-core</artifactId>
+           <version>${project.version}</version>
        </dependency>
        <dependency>
 	    <groupId>org.glassfish.external</groupId>
@@ -131,9 +136,9 @@
 	    <artifactId>gmbal</artifactId>
         </dependency>
        <dependency>
-           <groupId>fish.payara.server.core.test-utils</groupId>
+           <groupId>fish.payara.server.internal.test-utils</groupId>
            <artifactId>utils</artifactId>
-
+           <version>${project.version}</version>
            <scope>test</scope>
        </dependency>
     </dependencies>

@@ -40,17 +40,15 @@
     holder.
 
 -->
-<!--"Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]" -->
+<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.server.core</groupId>
-        <artifactId>core-parent</artifactId>
-        <version>7.0.0.Alpha5-SNAPSHOT</version>
-        <relativePath>../../../core/core-parent</relativePath>
+        <groupId>fish.payara.server.internal.admingui</groupId>
+        <artifactId>admingui</artifactId>
+        <version>7.2025.1.Alpha2-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.server.core.admingui</groupId>
     <artifactId>console-common</artifactId>
     <packaging>glassfish-jar</packaging>
 
@@ -76,13 +74,15 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.core.deployment</groupId>
+            <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-client</artifactId>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -97,19 +97,22 @@
             <scope>provided</scope>
        </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.admin</groupId>
+            <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>rest-client</artifactId>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.core.security</groupId>
+            <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>security</artifactId>
+            <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.core.admingui</groupId>
+            <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>faces-compat</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
