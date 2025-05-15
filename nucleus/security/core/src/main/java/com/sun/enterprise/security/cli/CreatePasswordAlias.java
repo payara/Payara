@@ -65,17 +65,20 @@ import jakarta.inject.Inject;
  *        [--secure | -s] [--user admin_user] [--passwordfile file_name] aliasname
  *  
  * Result of the command is that:
- * <domain-dir>/<domain-name>/config/domain-passwords file gets appended with 
+ * {@code <domain-dir>/<domain-name>/config/domain-passwords }
+ * file gets appended with
  * the entry of the form: aliasname=<password encrypted with masterpassword>
  *
  * A user can use this aliased password now in setting passwords in domain.xml.
  * Benefit is it is in NON-CLEAR-TEXT
  *
  * domain.xml example entry is:
+ * {@code
  * <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" 
  *                  provider-id="XWS_ClientProvider" provider-type="client">
  *      <property name="password" value="${ALIAS=myalias}/>
- * </provider-config> 
+ * </provider-config>
+ * }
  *
  * @author Nandini Ektare
  */
