@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 package org.glassfish.ejb.security.application;
 
 import com.sun.ejb.EjbInvocation;
@@ -62,6 +62,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
+import org.glassfish.exousia.AuthorizationService;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 
@@ -143,7 +144,7 @@ public final class EJBSecurityManager implements SecurityManager {
         this.invocationManager = invocationManager;
         roleMapperFactory = SecurityUtil.getRoleMapperFactory();
         // get the default policy
-        policy = Policy.getPolicy();
+        policy = AuthorizationService.getPolicy();
         securityManagerFactory = fact;
 
         boolean runas = !(deploymentDescriptor.getUsesCallerIdentity());

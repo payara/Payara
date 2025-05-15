@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.jacc;
 
@@ -93,6 +93,7 @@ import jakarta.security.jacc.WebRoleRefPermission;
 import jakarta.security.jacc.WebUserDataPermission;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.glassfish.exousia.AuthorizationService;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.PrincipalImpl;
@@ -149,7 +150,7 @@ public class JaccWebAuthorizationManager {
 
     // The JACC policy provider. This is the pluggable lower level authorization module
     // to which this class delegates all authorization queries.
-    protected Policy policy = Policy.getPolicy();
+    protected Policy policy = AuthorizationService.getPolicy();
     protected PolicyConfigurationFactory policyConfigurationFactory;
     protected PolicyConfiguration policyConfiguration;
     protected CodeSource codesource;
@@ -397,7 +398,7 @@ public class JaccWebAuthorizationManager {
 
         // Refresh policy if the context was in service
         if (wasInService) {
-            Policy.getPolicy().refresh();
+            AuthorizationService.getPolicy().refresh();
         }
 
         PermissionCacheFactory.removePermissionCache(uncheckedPermissionCache);
