@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.file.Files;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -446,7 +447,7 @@ public class CheckpointHelper {
         }
         Inbound outboundSource = loadInbound(outboundFile);
         Iterator<Part> parts = outboundSource.parts();
-        File topDir = createTempDir("checkpoint", "");
+        File topDir = createTempDir("checkpoint");
         FileUtils.deleteOnExit(topDir);
         while (parts.hasNext()) {
             Part part = parts.next();
@@ -508,15 +509,8 @@ public class CheckpointHelper {
         }
     }
 
-    private File createTempDir(final String prefix, final String suffix) throws IOException {
-        File temp = File.createTempFile(prefix, suffix);
-        if ( ! temp.delete()) {
-            throw new IOException("Cannot delete temp file " + temp.getAbsolutePath());
-        }
-        if ( ! temp.mkdirs()) {
-            throw new IOException("Cannot create temp directory" + temp.getAbsolutePath());
-        }
-        return temp;
+    private File createTempDir(final String prefix) throws IOException {
+            return Files.createTempDirectory(prefix).toFile();
     }
 
     private static final String CONTENT_TYPE_NAME = "Content-Type";
