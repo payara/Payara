@@ -280,17 +280,26 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 endTransaction();
             } else if (args[0] instanceof List arr) {
                 startTransactionAndJoin();
-                String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e IN :entities";
-                returnValue = em.createQuery(deleteQuery)
-                        .setParameter("entities", arr)
-                        .executeUpdate();
+                List<Object> ids = getIds((List<?>) arr);
+                if (!ids.isEmpty()) {
+                    String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
+                    returnValue = em.createQuery(deleteQuery)
+                            .setParameter("ids", ids)
+                            .executeUpdate();
+                }
                 endTransaction();
             } else if (args[0] != null) { //delete single entity
                 startTransactionAndJoin();
-                String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e = :entity";
-                returnValue = em.createQuery(deleteQuery)
-                        .setParameter("entity", args[0])
-                        .executeUpdate();
+                try {
+                    Method getId = args[0].getClass().getMethod("getId");
+                    Object id = getId.invoke(args[0]);
+                    String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id = :id";
+                    returnValue = em.createQuery(deleteQuery)
+                            .setParameter("id", id)
+                            .executeUpdate();
+                } catch (Exception e) {
+                    throw new RuntimeException("Erro ao obter ID da entidade", e);
+                }
                 endTransaction();
             }
         }
@@ -299,6 +308,20 @@ public class RepositoryImpl<T> implements InvocationHandler {
         } else {
             return Long.valueOf(returnValue);
         }
+    }
+
+    private static List<Object> getIds(List<?> arr) {
+        List<Object> ids = arr.stream()
+                .map(entity -> {
+                    try {
+                        Method getId = entity.getClass().getMethod("getId");
+                        return getId.invoke(entity);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error to get entity ID", e);
+                    }
+                })
+                .collect(Collectors.toList());
+        return ids;
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
