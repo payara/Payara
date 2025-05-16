@@ -39,74 +39,77 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Member;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This class represent the structure of a query to be resolved during runtime
+ * this represent the EntityMetadata used to preprocess dynamic queries
  */
-public class QueryData {
+public class EntityMetadata {
+    
+    private String entityName;
+    private Class<?> entityClass;
+    private Map<String, String> attributeNames = new HashMap<>();
+    private Map<String, Class<?>> attributeTypes = new HashMap<>();
+    private Map<String, Member> attributeAccessors = new HashMap<>();
+    private Class<?> idTypeClass;
 
-    private Class<?> repositoryInterface;
-    private Method method;
-    private Class<?> entityParamType;
-    private Class<?> declaredEntityClass;
-    private QueryType queryType;
-    private EntityMetadata entityMetadata;
-
-    public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
-        this.repositoryInterface = repositoryInterface;
-        this.method = method;
-        this.entityParamType = entityParamType;
-        this.declaredEntityClass = declaredEntityClass;
-        this.queryType = queryType;
-        this.entityMetadata = entityMetadata;
+    public EntityMetadata(String entityName, Class<?> entityClass, Map<String, String> attributeNames, 
+                          Map<String, Class<?>> attributeTypes, Map<String, Member> attributeAccessors, Class<?> idTypeClass) {
+        this.entityName = entityName;
+        this.entityClass = entityClass;
+        this.attributeNames = attributeNames;
+        this.attributeTypes = attributeTypes;
+        this.attributeAccessors = attributeAccessors;
+        this.idTypeClass = idTypeClass;
     }
 
-    public Class<?> getRepositoryInterface() {
-        return repositoryInterface;
+    public String getEntityName() {
+        return entityName;
     }
 
-    public void setRepositoryInterface(Class<?> repositoryInterface) {
-        this.repositoryInterface = repositoryInterface;
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
     }
 
-    public Method getMethod() {
-        return method;
+    public Class<?> getEntityClass() {
+        return entityClass;
     }
 
-    public void setMethod(Method method) {
-        this.method = method;
+    public void setEntityClass(Class<?> entityClass) {
+        this.entityClass = entityClass;
     }
 
-    public Class<?> getEntityParamType() {
-        return entityParamType;
+    public Map<String, String> getAttributeNames() {
+        return attributeNames;
     }
 
-    public void setEntityParamType(Class<?> entityParamType) {
-        this.entityParamType = entityParamType;
+    public void setAttributeNames(Map<String, String> attributeNames) {
+        this.attributeNames = attributeNames;
     }
 
-    public QueryType getQueryType() {
-        return queryType;
+    public Map<String, Class<?>> getAttributeTypes() {
+        return attributeTypes;
     }
 
-    public void setQueryType(QueryType queryType) {
-        this.queryType = queryType;
+    public void setAttributeTypes(Map<String, Class<?>> attributeTypes) {
+        this.attributeTypes = attributeTypes;
     }
 
-    public Class<?> getDeclaredEntityClass() {
-        return declaredEntityClass;
+    public Map<String, Member> getAttributeAccessors() {
+        return attributeAccessors;
     }
 
-    public void setDeclaredEntityClass(Class<?> declaredEntityClass) {
-        this.declaredEntityClass = declaredEntityClass;
+    public void setAttributeAccessors(Map<String, Member> attributeAccessors) {
+        this.attributeAccessors = attributeAccessors;
     }
 
-    public EntityMetadata getEntityMetadata() {
-        return entityMetadata;
+    public Class<?> getIdTypeClass() {
+        return idTypeClass;
     }
 
-    public void setEntityMetadata(EntityMetadata entityMetadata) {
-        this.entityMetadata = entityMetadata;
+    public void setIdTypeClass(Class<?> idTypeClass) {
+        this.idTypeClass = idTypeClass;
     }
 }

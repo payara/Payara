@@ -39,10 +39,17 @@
  */
 package fish.payara.jakarta.data.core.util;
 
+import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
+
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 
 /**
  * Utility class used to process Jakarta Data find operations
@@ -54,13 +61,56 @@ public class FindOperationUtility {
         return q.getResultStream();
     }
 
-    public static List<?> processFindByIdOperation(Object[] args, Class<?> entityClass, EntityManager em, String idNameValue) {
+    public static List<Object> processFindByOperation(Object[] args, Class<?> entityClass, EntityManager em,
+                                                   EntityMetadata entityMetadata, Method method) {
         StringBuilder builder =  new StringBuilder();
         builder.append(createBaseFindQuery(entityClass));
-        builder.append(" WHERE ").append("o.").append(getIDParameterName(idNameValue)).append("=?1");
+        String attributeValue = null;
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        int queryPosition = 1;
+        boolean hasWhere = false;
+        for (Annotation[] annotations : parameterAnnotations) {
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof By) {
+                    attributeValue = ((By) annotation).value();
+                }
+                if (!hasWhere) {
+                    builder.append(" WHERE (");
+                    hasWhere = true;
+                } else {
+                    builder.append(" AND ");
+                }
+
+                if (attributeValue != null) {
+                    attributeValue = preprocessAttributeName(entityMetadata, attributeValue);
+                }
+                builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+            }
+            queryPosition++;
+        }
+        
+        if (hasWhere) {
+            builder.append(")");
+        }
         Query q = em.createQuery(builder.toString());
-        q.setParameter(1, args[0]);
+        for (int i = 0; i < args.length; i++) {
+            q.setParameter(i+1, args[i]);
+        }
         return q.getResultList();
+    }
+    
+    public static String preprocessAttributeName(EntityMetadata entityMetadata, String attributeValue) {
+        if (attributeValue.endsWith(")")) {
+            //process this(id)
+            return getIDParameterName(attributeValue);
+        } else {
+            if (entityMetadata.getAttributeNames().containsKey(attributeValue.toLowerCase())) {
+                return entityMetadata.getAttributeNames().get(attributeValue.toLowerCase());
+            } else {
+                throw new IllegalArgumentException("The attribute " + attributeValue + 
+                        " is not mapped on the entity " + entityMetadata.getEntityName());
+            }
+        }
     }
     
     public static String createBaseFindQuery(Class<?> entityClass) {
