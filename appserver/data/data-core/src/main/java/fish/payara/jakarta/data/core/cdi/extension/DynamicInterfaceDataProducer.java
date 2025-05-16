@@ -71,6 +71,8 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.preprocesEntityMetadata;
+
 /**
  * This is a generic class that works as a producer for a Bean that is going to be used during
  * injection point resolution
@@ -86,6 +88,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private JakartaDataExtension jakartaDataExtension;
     private Set<Type> beanTypes = null;
     private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
+    private Map<Class<?>, EntityMetadata> mapOfMetaData = new HashMap<>();
     private Predicate<Method> methodAnnotationValidationPredicate = method -> method.getParameterCount() == 1 &&
             !method.isDefault() && (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
             || method.isAnnotationPresent(Save.class) || method.isAnnotationPresent(Delete.class));
@@ -254,7 +257,9 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         } else if (method.isAnnotationPresent(Find.class)) {
             queryType = QueryType.FIND;
         }
-        queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, queryType));
+        
+        queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, 
+                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName())));
     }
 
     @Override

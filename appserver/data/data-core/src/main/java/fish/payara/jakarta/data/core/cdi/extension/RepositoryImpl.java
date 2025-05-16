@@ -44,43 +44,35 @@ import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteByIdOperation;
-import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByIdOperation;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByOperation;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
-
 
 /**
  * This is a generic class that represent the proxy to be used during runtime
@@ -120,7 +112,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND ->
-                    objectToReturn = processFindOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+                    objectToReturn = processFindOperation(args, dataForQuery);
         }
 
         return objectToReturn;
@@ -155,29 +147,17 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
     }
 
-    public Object processFindOperation(Object[] args, Class<?> declaredEntityClass, Method method) {
+    public Object processFindOperation(Object[] args, QueryData dataForQuery) {
+        Method method = dataForQuery.getMethod();
+        Class<?> declaredEntityClass= dataForQuery.getDeclaredEntityClass();
+        EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        Class<?>[] types = method.getParameterTypes();
-        if (parameterAnnotations.length == 1 && types.length == 1) {
-            Annotation[] annotations = parameterAnnotations[0];
-            for (Annotation annotation : annotations) {
-                if (annotation instanceof By) {
-                    //for now we are processing only By id operation, when custom By operation available we will provide 
-                    // the metadata from the entity class to search specific column value for By
-                    String byValue = ((By) annotation).value();
-                    List<?> resultList = processFindByIdOperation(args, declaredEntityClass, getEntityManager(), byValue);
-                    Object objectToReturn = null;
-                    if (!resultList.isEmpty() && resultList.size() == 1) {
-                        objectToReturn = resultList.get(0);
-                    } else if (!resultList.isEmpty() && resultList.size() > 1) {
-                        throw new IllegalArgumentException("Multiple results found for the given id");
-                    }
-                    return Optional.ofNullable(objectToReturn);
-                }
-            }
-            return null;
+        if (parameterAnnotations.length > 0) {
+            List<Object> resultList = processFindByOperation(args, declaredEntityClass,
+                    getEntityManager(this.applicationName), entityMetadata, method);
+            return processReturnType(dataForQuery, resultList);
         } else {
-            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager());
+            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName));
         }
     }
 
@@ -196,7 +176,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         startTransactionComponents();
 
         if (dataForQuery.getEntityParamType().isArray()) { //save multiple entities from array reference
-            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(), dataForQuery);
+            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) { //save multiple entities from list reference
             results = new ArrayList<>();
             startTransactionAndJoin();
@@ -227,7 +207,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         startTransactionComponents();
 
         if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
-            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(), dataForQuery);
+            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
             results = new ArrayList<>();
             startTransactionAndJoin();
@@ -268,7 +248,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     //for now we are processing only By id operation, when custom By operation available we will provide 
                     // the metadata from the entity class to search specific column value for By
                     String byValue = ((By) annotation).value();
-                    returnValue = processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(), byValue);
+                    returnValue = processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(this.applicationName), byValue);
                 }
             }
         } else {
@@ -365,15 +345,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
             entity = null;
         }
-
+        
         return entity;
     }
 
-
-    public ApplicationRegistry getRegistry() {
-        ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
-        return registry;
-    }
 
     public TransactionManager getTransactionManager() {
         ServiceLocator locator = Globals.get(ServiceLocator.class);
@@ -386,20 +361,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return null;
     }
 
-    public EntityManager getEntityManager() {
-        ApplicationRegistry applicationRegistry = getRegistry();
-        ApplicationInfo applicationInfo = applicationRegistry.get(this.applicationName);
-        List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
-        if (factoryList.size() == 1) {
-            EntityManagerFactory factory = factoryList.get(0);
-            return factory.createEntityManager();
-        }
-        return null;
-    }
-
     public void startTransactionComponents() {
         transactionManager = getTransactionManager();
-        em = getEntityManager();
+        em = getEntityManager(this.applicationName);
     }
 
     public void startTransactionAndJoin() throws SystemException, NotSupportedException {
