@@ -39,6 +39,7 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import fish.payara.jakarta.data.core.util.DataCommonOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
@@ -127,7 +128,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     private void evaluateDataQuery(QueryData dataForQuery, Method method) {
         if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> entityType = findEntityTypeInMethod(method);
+            Class<?> entityType = DataCommonOperationUtility.findEntityTypeInMethod(method);
             if (entityType != null) {
                 dataForQuery.setDeclaredEntityClass(entityType);
                 return;
@@ -138,7 +139,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 if (interfaceMethod.equals(method)) {
                     continue;
                 }
-                entityType = findEntityTypeInMethod(interfaceMethod);
+                entityType = DataCommonOperationUtility.findEntityTypeInMethod(interfaceMethod);
                 if (entityType != null) {
                     dataForQuery.setDeclaredEntityClass(entityType);
                     return;
@@ -152,63 +153,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
             );
 
         }
-    }
-
-    private Class<?> findEntityTypeInMethod(Method method) {
-        Class<?> returnType = method.getReturnType();
-        if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
-            if (Collection.class.isAssignableFrom(returnType)
-                    || Stream.class.isAssignableFrom(returnType)
-                    || Optional.class.isAssignableFrom(returnType)) {
-                Type genericReturnType = method.getGenericReturnType();
-                if (genericReturnType instanceof ParameterizedType) {
-                    ParameterizedType paramType = (ParameterizedType) genericReturnType;
-                    Type typeArgument = paramType.getActualTypeArguments()[0];
-                    return getGenericClass(typeArgument);
-                }
-            } else if (returnType.isArray()) {
-                return returnType.getComponentType();
-            } else if (!returnType.isPrimitive() && !returnType.equals(String.class)) {
-                return returnType;
-            }
-        }
-        for (Parameter param : method.getParameters()) {
-            Class<?> paramType = param.getType();
-            if (!paramType.isPrimitive() && !paramType.equals(String.class)) {
-                if (Collection.class.isAssignableFrom(paramType)
-                        || Stream.class.isAssignableFrom(paramType)) {
-                    Type paramGenericType = param.getParameterizedType();
-                    if (paramGenericType instanceof ParameterizedType) {
-                        ParameterizedType parameterizedType = (ParameterizedType) paramGenericType;
-                        Type typeArgument = parameterizedType.getActualTypeArguments()[0];
-                        return getGenericClass(typeArgument);
-                    }
-                } else if (paramType.isArray()) {
-                    return paramType.getComponentType();
-                } else {
-                    return paramType;
-                }
-            }
-        }
-        return null;
-    }
-
-    private Class<?> getGenericClass(Type type) {
-        if (type instanceof Class<?>) {
-            return (Class<?>) type;
-        }
-        if (type instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType) type;
-            return (Class<?>) paramType.getRawType();
-        }
-        if (type instanceof WildcardType) {
-            WildcardType wildcardType = (WildcardType) type;
-            Type[] upperBounds = wildcardType.getUpperBounds();
-            if (upperBounds.length > 0) {
-                return getGenericClass(upperBounds[0]);
-            }
-        }
-        return Object.class;
     }
 
     public Object processFindOperation(Object[] args, Class<?> declaredEntityClass, Method method) {
@@ -312,9 +256,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
 
 
-    public Long processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
+    public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        Long returnValue = 0L;
+        int returnValue = 0;
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Class<?>[] types = method.getParameterTypes();
         if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
@@ -332,23 +276,29 @@ public class RepositoryImpl<T> implements InvocationHandler {
             if (args == null) { //delete all records
                 startTransactionAndJoin();
                 String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
-                returnValue = (long) em.createQuery(deleteAllQuery).executeUpdate();
+                returnValue = em.createQuery(deleteAllQuery).executeUpdate();
                 endTransaction();
             } else if (args[0] instanceof List arr) {
                 startTransactionAndJoin();
-                for (Object e : ((Iterable<?>) arr)) {
-                    em.remove(em.merge(e));
-                    returnValue++;
-                }
+                String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e IN :entities";
+                returnValue = em.createQuery(deleteQuery)
+                        .setParameter("entities", arr)
+                        .executeUpdate();
                 endTransaction();
             } else if (args[0] != null) { //delete single entity
                 startTransactionAndJoin();
-                em.remove(em.merge(args[0]));
-                returnValue = 1L;
+                String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e = :entity";
+                returnValue = em.createQuery(deleteQuery)
+                        .setParameter("entity", args[0])
+                        .executeUpdate();
                 endTransaction();
             }
         }
-        return returnValue;
+        if (method.getReturnType().equals(Integer.TYPE)) {
+            return Integer.valueOf(returnValue);
+        } else {
+            return Long.valueOf(returnValue);
+        }
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,

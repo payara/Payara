@@ -41,7 +41,14 @@ package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -71,5 +78,62 @@ public class DataCommonOperationUtility {
             return results;
         }
         return null;
+    }
+
+    public static Class<?> findEntityTypeInMethod(Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
+            if (Collection.class.isAssignableFrom(returnType)
+                    || Stream.class.isAssignableFrom(returnType)
+                    || Optional.class.isAssignableFrom(returnType)) {
+                Type genericReturnType = method.getGenericReturnType();
+                if (genericReturnType instanceof ParameterizedType) {
+                    ParameterizedType paramType = (ParameterizedType) genericReturnType;
+                    Type typeArgument = paramType.getActualTypeArguments()[0];
+                    return getGenericClass(typeArgument);
+                }
+            } else if (returnType.isArray()) {
+                return returnType.getComponentType();
+            } else if (!returnType.isPrimitive() && !returnType.equals(String.class)) {
+                return returnType;
+            }
+        }
+        for (Parameter param : method.getParameters()) {
+            Class<?> paramType = param.getType();
+            if (!paramType.isPrimitive() && !paramType.equals(String.class)) {
+                if (Collection.class.isAssignableFrom(paramType)
+                        || Stream.class.isAssignableFrom(paramType)) {
+                    Type paramGenericType = param.getParameterizedType();
+                    if (paramGenericType instanceof ParameterizedType) {
+                        ParameterizedType parameterizedType = (ParameterizedType) paramGenericType;
+                        Type typeArgument = parameterizedType.getActualTypeArguments()[0];
+                        return getGenericClass(typeArgument);
+                    }
+                } else if (paramType.isArray()) {
+                    return paramType.getComponentType();
+                } else {
+                    return paramType;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Class<?> getGenericClass(Type type) {
+        if (type instanceof Class<?>) {
+            return (Class<?>) type;
+        }
+        if (type instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) type;
+            return (Class<?>) paramType.getRawType();
+        }
+        if (type instanceof WildcardType) {
+            WildcardType wildcardType = (WildcardType) type;
+            Type[] upperBounds = wildcardType.getUpperBounds();
+            if (upperBounds.length > 0) {
+                return getGenericClass(upperBounds[0]);
+            }
+        }
+        return Object.class;
     }
 }
