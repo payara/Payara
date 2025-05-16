@@ -39,6 +39,7 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import fish.payara.jakarta.data.core.util.DataCommonOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
@@ -49,6 +50,10 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -61,18 +66,13 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteByIdOperation;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByOperation;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
-
 
 /**
  * This is a generic class that represent the proxy to be used during runtime
@@ -109,13 +109,42 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
             case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
             case DELETE ->
-                    processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+                    objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND ->
                     objectToReturn = processFindOperation(args, dataForQuery);
         }
 
         return objectToReturn;
+    }
+
+    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
+        if (dataForQuery.getDeclaredEntityClass() == null) {
+            Class<?> entityType = DataCommonOperationUtility.findEntityTypeInMethod(method);
+            if (entityType != null) {
+                dataForQuery.setDeclaredEntityClass(entityType);
+                return;
+            }
+            Class<?> declaringClass = method.getDeclaringClass();
+            Method[] allMethods = declaringClass.getMethods();
+            for (Method interfaceMethod : allMethods) {
+                if (interfaceMethod.equals(method)) {
+                    continue;
+                }
+                entityType = DataCommonOperationUtility.findEntityTypeInMethod(interfaceMethod);
+                if (entityType != null) {
+                    dataForQuery.setDeclaredEntityClass(entityType);
+                    return;
+                }
+            }
+            throw new MappingException(
+                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                    "Either extend a repository interface with entity type parameters or " +
+                                    "ensure entity type is determinable from method signature.",
+                            method.getName(), declaringClass.getName())
+            );
+
+        }
     }
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
@@ -145,7 +174,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
-        
+
         if (dataForQuery.getEntityParamType().isArray()) { //save multiple entities from array reference
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) { //save multiple entities from list reference
@@ -176,7 +205,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
-        
+
         if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
@@ -207,8 +236,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
 
 
-    public void processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
+    public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        int returnValue = 0;
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Class<?>[] types = method.getParameterTypes();
         if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
@@ -218,24 +248,60 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     //for now we are processing only By id operation, when custom By operation available we will provide 
                     // the metadata from the entity class to search specific column value for By
                     String byValue = ((By) annotation).value();
-                    processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(this.applicationName), byValue);
+                    returnValue = processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(this.applicationName), byValue);
                 }
             }
         } else {
             startTransactionComponents();
-            //delete multiple entities
-            if (args[0] instanceof List arr) {
+            if (args == null) { //delete all records
                 startTransactionAndJoin();
-                for (Object e : ((Iterable<?>) arr)) {
-                    em.remove(em.merge(e));
+                String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
+                returnValue = em.createQuery(deleteAllQuery).executeUpdate();
+                endTransaction();
+            } else if (args[0] instanceof List arr) {
+                startTransactionAndJoin();
+                List<Object> ids = getIds((List<?>) arr);
+                if (!ids.isEmpty()) {
+                    String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
+                    returnValue = em.createQuery(deleteQuery)
+                            .setParameter("ids", ids)
+                            .executeUpdate();
                 }
                 endTransaction();
             } else if (args[0] != null) { //delete single entity
                 startTransactionAndJoin();
-                em.remove(em.merge(args[0]));
+                try {
+                    Method getId = args[0].getClass().getMethod("getId");
+                    Object id = getId.invoke(args[0]);
+                    String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id = :id";
+                    returnValue = em.createQuery(deleteQuery)
+                            .setParameter("id", id)
+                            .executeUpdate();
+                } catch (Exception e) {
+                    throw new RuntimeException("Erro ao obter ID da entidade", e);
+                }
                 endTransaction();
             }
         }
+        if (method.getReturnType().equals(Integer.TYPE)) {
+            return Integer.valueOf(returnValue);
+        } else {
+            return Long.valueOf(returnValue);
+        }
+    }
+
+    private static List<Object> getIds(List<?> arr) {
+        List<Object> ids = arr.stream()
+                .map(entity -> {
+                    try {
+                        Method getId = entity.getClass().getMethod("getId");
+                        return getId.invoke(entity);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error to get entity ID", e);
+                    }
+                })
+                .collect(Collectors.toList());
+        return ids;
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
@@ -244,7 +310,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
-        
+
         if (dataForQuery.getEntityParamType().isArray()) { //update multiple entities from array reference
             int length = Array.getLength(args[0]);
             results = new ArrayList<>(length);
@@ -254,7 +320,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 results.add(Array.get(args[0], i));
             }
             endTransaction();
-            
+
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
@@ -282,7 +348,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         
         return entity;
     }
-    
+
 
     public TransactionManager getTransactionManager() {
         ServiceLocator locator = Globals.get(ServiceLocator.class);
@@ -294,37 +360,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         return null;
     }
-
-    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
-        if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> entityType = findEntityTypeInMethod(method);
-            if (entityType != null) {
-                dataForQuery.setDeclaredEntityClass(entityType);
-                return;
-            }
-            Class<?> declaringClass = method.getDeclaringClass();
-            Method[] allMethods = declaringClass.getMethods();
-            for (Method interfaceMethod : allMethods) {
-                if (interfaceMethod.equals(method)) {
-                    continue;
-                }
-                entityType = findEntityTypeInMethod(interfaceMethod);
-                if (entityType != null) {
-                    dataForQuery.setDeclaredEntityClass(entityType);
-                    return;
-                }
-            }
-            throw new MappingException(
-                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                    "Either extend a repository interface with entity type parameters or " +
-                                    "ensure entity type is determinable from method signature.",
-                            method.getName(), declaringClass.getName())
-            );
-
-        }
-    }
-
-
 
     public void startTransactionComponents() {
         transactionManager = getTransactionManager();

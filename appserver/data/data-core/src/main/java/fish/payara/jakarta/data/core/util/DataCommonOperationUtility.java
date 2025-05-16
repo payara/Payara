@@ -49,6 +49,12 @@ import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
 import jakarta.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
+import java.util.Collection;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -58,6 +64,7 @@ import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -122,7 +129,7 @@ public class DataCommonOperationUtility {
         if (declaredEntityClass == null) {
             declaredEntityClass = findEntityTypeInMethod(method);
         }
-        
+
         if (mapOfMetaData != null && mapOfMetaData.containsKey(declaredEntityClass)) {
             return mapOfMetaData.get(declaredEntityClass);
         }
@@ -146,7 +153,7 @@ public class DataCommonOperationUtility {
                     if (!(Objects.requireNonNull(persistentAttributeType) == Attribute.PersistentAttributeType.BASIC)) {
                         throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
                     }
-                    
+
                     Member accessor = attribute.getJavaMember();
                     attributeNames.put(attributeName.toLowerCase(), attributeName);
                     attributeAccessors.put(attributeName, accessor);
@@ -160,11 +167,11 @@ public class DataCommonOperationUtility {
                     }
 
                 }
-                
+
                 EntityMetadata entityMetadata = new EntityMetadata(entityClassType.getName(), entityClassType, attributeNames, attributeTypes, attributeAccessors, idType);
 
                 mapOfMetaData.computeIfAbsent(entityClassType, key -> entityMetadata);
-                
+
                 return entityMetadata;
             }
         } finally {
@@ -172,8 +179,8 @@ public class DataCommonOperationUtility {
                 entityManager.close();
             }
         }
-        
-        
+
+
         return null;
     }
 
@@ -233,5 +240,4 @@ public class DataCommonOperationUtility {
         }
         return Object.class;
     }
-    
 }
