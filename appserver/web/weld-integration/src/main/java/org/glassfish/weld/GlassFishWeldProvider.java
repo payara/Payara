@@ -37,24 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Globals;
 import org.jboss.weld.Container;
 import org.jboss.weld.SimpleCDI;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.logging.BeanManagerLogger;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.enterprise.inject.spi.CDIProvider;
+import java.lang.StackWalker.StackFrame;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class GlassFishWeldProvider implements CDIProvider {
+    private static final WeldDeployer weldDeployer = Globals.get(WeldDeployer.class);
+    private static final InvocationManager invocationManager = Globals.get(InvocationManager.class);
+    private static final StackWalker stackWalker = StackWalker.getInstance(RETAIN_CLASS_REFERENCE);
+
     private static class GlassFishEnhancedWeld extends SimpleCDI {
+        private final Set<String> knownClassNames;
+
+        GlassFishEnhancedWeld() {
+            knownClassNames = new HashSet<>(super.knownClassNames);
+        }
+
+        GlassFishEnhancedWeld(String contextId) {
+            super(contextId == null ? Container.instance() : Container.instance(contextId));
+            knownClassNames = new HashSet<>(super.knownClassNames);
+        }
 
         @Override
         protected BeanManagerImpl unsatisfiedBeanManager(String callerClassName) {
@@ -88,19 +113,65 @@ public class GlassFishWeldProvider implements CDIProvider {
 
             return super.unsatisfiedBeanManager(callerClassName);
         }
+
+        @Override
+        protected String getCallingClassName() {
+            boolean outerSubclassReached = false;
+            BundleDescriptor bundleDescriptor = getBundleDescriptor();
+            for (StackFrame element : stackWalker.walk(sf -> sf.collect(Collectors.toList()))) {
+                // the method call that leads to the first invocation of this class or its subclass is considered the caller
+                if (!knownClassNames.contains(element.getClassName())) {
+                    Class<?> declaringClass = element.getDeclaringClass();
+                    if (outerSubclassReached && declaringClass.getClassLoader() != null) {
+                        if (bundleDescriptor != null && declaringClass.getClassLoader() == bundleDescriptor.getClassLoader()) {
+                            // we are in the same class loader, so this is the caller
+                            return declaringClass.getName();
+                        } else {
+                            return getAnyClassFromBundleDescriptor(declaringClass.getName());
+                        }
+                    }
+                } else {
+                    outerSubclassReached = true;
+                }
+            }
+            throw BeanManagerLogger.LOG.unableToIdentifyBeanManager();
+        }
+
+        private static String getAnyClassFromBundleDescriptor(String backupClassName) {
+            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(getBundleDescriptor());
+            return bda != null ? bda.getBeanClasses().stream().findAny().orElse(backupClassName) : backupClassName;
+        }
     }
 
     @Override
     public CDI<Object> getCDI() {
-      try {
-        return new GlassFishEnhancedWeld();
-      } catch ( Throwable throwable ) {
-        Throwable cause = throwable.getCause();
-        if ( cause instanceof IllegalStateException ) {
-          return null;
+        try {
+            BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(getBundleDescriptor());
+            if (bda == null) {
+                return new GlassFishEnhancedWeld();
+            } else {
+                return new GlassFishEnhancedWeld(weldDeployer.getContextIdForArchive(bda));
+            }
+        } catch ( Throwable throwable ) {
+            Throwable cause = throwable.getCause();
+            if ( cause instanceof IllegalStateException ) {
+                return null;
+            }
+            throw throwable;
         }
-        throw throwable;
-      }
     }
 
+    private static BundleDescriptor getBundleDescriptor() {
+        BundleDescriptor bundle = null;
+        Object componentEnv = invocationManager.getCurrentInvocation().getJNDIEnvironment();
+        if( componentEnv instanceof EjbDescriptor) {
+            bundle = (BundleDescriptor)
+                    ((EjbDescriptor) componentEnv).getEjbBundleDescriptor().
+                            getModuleDescriptor().getDescriptor();
+
+        } else if( componentEnv instanceof WebBundleDescriptor) {
+            bundle = (BundleDescriptor) componentEnv;
+        }
+        return bundle;
+    }
 }
