@@ -56,15 +56,15 @@ import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getE
  */
 public class FindOperationUtility {
     
-    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em) {
-        Query q = em.createQuery(createBaseFindQuery(entityClass));
+    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause) {
+        Query q = em.createQuery(createBaseFindQuery(entityClass, orderByClause));
         return q.getResultStream();
     }
 
     public static List<Object> processFindByOperation(Object[] args, Class<?> entityClass, EntityManager em,
                                                    EntityMetadata entityMetadata, Method method) {
         StringBuilder builder =  new StringBuilder();
-        builder.append(createBaseFindQuery(entityClass));
+        builder.append(createBaseFindQuery(entityClass, null));
         String attributeValue = null;
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         int queryPosition = 1;
@@ -113,9 +113,12 @@ public class FindOperationUtility {
         }
     }
     
-    public static String createBaseFindQuery(Class<?> entityClass) {
+    public static String createBaseFindQuery(Class<?> entityClass, String orderByClause) {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
+        if (orderByClause != null && !orderByClause.isEmpty()) {
+            builder.append(" ORDER BY o.").append(orderByClause);
+        }
         return builder.toString();
     }
 
