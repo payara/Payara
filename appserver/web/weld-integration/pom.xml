@@ -83,6 +83,7 @@
                     <include>**/faces-config.xml</include>
                     <include>**/com.sun.faces.spi.FacesConfigResourceProvider</include>
                     <include>**/jakarta.enterprise.inject.spi.Extension</include>
+                    <include>**/org.glassfish.jersey.internal.spi.*</include>
                 </includes>
             </resource>
         </resources>
@@ -211,6 +212,10 @@
             <groupId>fish.payara.server.internal.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.json.bind</groupId>
+            <artifactId>jakarta.json.bind-api</artifactId>
         </dependency>
          <dependency>
              <groupId>jakarta.xml.ws</groupId>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
@@ -101,7 +102,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 @Service
 @PerLookup
 public class EarDeployer implements Deployer {
-
+    public static final String PER_BDA_METADATA_KEY = "[PerBDA]";
     //    private static final Class GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS =
 //            org.glassfish.appclient.client.AppClientGroupFacade.class;
 // Currently using a string instead of a Class constant to avoid a circular
@@ -457,15 +458,21 @@ public class EarDeployer implements Deployer {
         @Override
         public void addTransientAppMetaData(String metaDataKey,
                                             Object metaData) {
-            context.addTransientAppMetaData(metaDataKey,
-                metaData);
+            if (metaDataKey.startsWith(PER_BDA_METADATA_KEY)) {
+                super.addTransientAppMetaData(metaDataKey, metaData);
+            } else {
+                context.addTransientAppMetaData(metaDataKey, metaData);
+            }
         }
 
         @Override
         public <T> T getTransientAppMetaData(String metaDataKey,
                                              Class<T> metadataType) {
-            return context.getTransientAppMetaData(metaDataKey,
-                metadataType);
+            if (metaDataKey.startsWith(PER_BDA_METADATA_KEY)) {
+                return super.getTransientAppMetaData(metaDataKey, metadataType);
+            } else {
+                return context.getTransientAppMetaData(metaDataKey, metadataType);
+            }
         }
 
         @Override

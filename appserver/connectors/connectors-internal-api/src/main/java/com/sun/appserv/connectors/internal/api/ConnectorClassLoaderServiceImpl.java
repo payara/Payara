@@ -37,22 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.appserv.connectors.internal.api;
 
+import jakarta.inject.Provider;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.api.*;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.UnaryOperator;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import com.sun.logging.LogDomains;
 
 import jakarta.inject.Inject;
-import jakarta.inject.Provider;
 
 /**
  * We support two policies:
@@ -72,13 +77,13 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
      * class loader for all applications. In other words, we make every
      * standalone RARs available to all applications.
      */
-    private volatile DelegatingClassLoader globalConnectorCL;
+    private final AtomicReference<DelegatingClassLoader> globalConnectorCL = new AtomicReference<>();
+    private final AtomicReference<DelegatingClassLoader> globalConnectorWithWarLibCL = new AtomicReference<>();
 
     @Inject
     private AppSpecificConnectorClassLoaderUtil appsSpecificCCLUtil;
-
     @Inject
-    private Provider<ClassLoaderHierarchy> classLoaderHierarchyProvider;
+    private Provider<ConnectorsClassLoaderUtil> connectorsClassLoaderUtil;
 
     private Logger logger = LogDomains.getLogger(ConnectorClassLoaderServiceImpl.class, LogDomains.RSR_LOGGER);
 
@@ -92,34 +97,8 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
     public DelegatingClassLoader getConnectorClassLoader(String appName) {
         DelegatingClassLoader loader = null;
 
-       // We do not have dependency on common-class-loader explicitly
-       // and also cannot initialize globalConnectorCL during postConstruct via ClassLoaderHierarchy
-       // which will result in circular dependency injection between kernel and connector module
-       // Hence initializing globalConnectorCL lazily
-        if (globalConnectorCL == null) {
-            synchronized (ConnectorClassLoaderServiceImpl.class) {
-                if (globalConnectorCL == null) {
-                    //[parent is assumed to be common-class-loader in ConnectorClassLoaderUtil.createRARClassLoader() also]
-                    final ClassLoader parent = getCommonClassLoader();
-                    globalConnectorCL = AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
-                        public DelegatingClassLoader run() {
-                            DelegatingClassLoader dcl = new DelegatingClassLoader(parent);
-                            for (DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()) {
-                                dcl.addDelegate(cf);
-                            }
-                            return dcl;
-                        }
-                    });
-
-                    for (DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()) {
-                        globalConnectorCL.addDelegate(cf);
-                    }
-                }
-            }
-        }
         if (hasGlobalAccessForRARs(appName)) {
-            assert (globalConnectorCL != null);
-            loader = globalConnectorCL;
+            loader = getGlobalConnectorClassLoader();
         } else {
             appsSpecificCCLUtil.detectReferredRARs(appName);
             loader = createConnectorClassLoaderForApplication(appName);
@@ -133,14 +112,42 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
                         (ConnectorConstants.RAR_VISIBILITY_GLOBAL_ACCESS);
     }
 
-    private ClassLoader getCommonClassLoader(){
-        return classLoaderHierarchyProvider.get().getCommonClassLoader();
+    private DelegatingClassLoader getGlobalConnectorClassLoader() {
+        // We do not have dependency on common-class-loader explicitly
+        // and also cannot initialize globalConnectorCL during postConstruct via ClassLoaderHierarchy
+        // which will result in circular dependency injection between kernel and connector module
+        // Hence initializing globalConnectorCL lazily
+        UnaryOperator<DelegatingClassLoader> updateOperator = currentValue -> {
+            if (currentValue == null) {
+                //[parent is assumed to be common-class-loader in ConnectorClassLoaderUtil.createRARClassLoader() also]
+                var newValue = AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
+                    public DelegatingClassLoader run() {
+                        DelegatingClassLoader dcl = new DelegatingClassLoader(connectorsClassLoaderUtil.get().getCommonClassLoader());
+                        for (DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()) {
+                            dcl.addDelegate(cf);
+                        }
+                        return dcl;
+                    }
+                });
+
+                for (DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()) {
+                    newValue.addDelegate(cf);
+                }
+                return newValue;
+            }
+            return currentValue;
+        };
+        if (DeploymentUtils.useWarLibraries(DeploymentUtils.getCurrentDeploymentContext())) {
+            return globalConnectorWithWarLibCL.updateAndGet(updateOperator);
+        } else {
+            return globalConnectorCL.updateAndGet(updateOperator);
+        }
     }
 
     private DelegatingClassLoader createConnectorClassLoaderForApplication(String appName){
 
         DelegatingClassLoader appSpecificConnectorClassLoader =
-                new DelegatingClassLoader(getCommonClassLoader());
+                new DelegatingClassLoader(connectorsClassLoaderUtil.get().getCommonClassLoader());
 
         //add system ra classloaders
         for(DelegatingClassLoader.ClassFinder cf : appsSpecificCCLUtil.getSystemRARClassLoaders()){
@@ -178,7 +185,7 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
     }
 
     private DelegatingClassLoader.ClassFinder getClassFinder(String raName) {
-        List<DelegatingClassLoader.ClassFinder> delegates = globalConnectorCL.getDelegates();
+        List<DelegatingClassLoader.ClassFinder> delegates = getGlobalConnectorClassLoader().getDelegates();
         DelegatingClassLoader.ClassFinder classFinder = null;
         for(DelegatingClassLoader.ClassFinder cf : delegates){
             if(raName.equals(((ConnectorClassFinder)cf).getResourceAdapterName())){
@@ -188,5 +195,4 @@ public class ConnectorClassLoaderServiceImpl implements ConnectorClassLoaderServ
         }
         return classFinder;
     }
-
 }
