@@ -1,5 +1,6 @@
 #!groovy
 // Jenkinsfile for building a PR and running a subset of tests against it
+// Leaving jdk unchanged to create a dummy PR
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
