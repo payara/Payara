@@ -56,15 +56,15 @@ import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getE
  */
 public class FindOperationUtility {
     
-    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause) {
-        Query q = em.createQuery(createBaseFindQuery(entityClass, orderByClause));
+    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause, EntityMetadata entityMetadata) {
+        Query q = em.createQuery(createBaseFindQuery(entityClass, orderByClause, entityMetadata));
         return q.getResultStream();
     }
 
     public static List<Object> processFindByOperation(Object[] args, Class<?> entityClass, EntityManager em,
                                                    EntityMetadata entityMetadata, Method method) {
         StringBuilder builder =  new StringBuilder();
-        builder.append(createBaseFindQuery(entityClass, null));
+        builder.append(createBaseFindQuery(entityClass, null, entityMetadata));
         String attributeValue = null;
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         int queryPosition = 1;
@@ -112,14 +112,47 @@ public class FindOperationUtility {
             }
         }
     }
-    
-    public static String createBaseFindQuery(Class<?> entityClass, String orderByClause) {
+
+    public static String createBaseFindQuery(Class<?> entityClass, String orderByClause, EntityMetadata entityMetadata) {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
+
         if (orderByClause != null && !orderByClause.isEmpty()) {
-            builder.append(" ORDER BY o.").append(orderByClause);
+            builder.append(processOrderByClause(orderByClause, entityMetadata));
         }
+
         return builder.toString();
+    }
+
+    private static String processOrderByClause(String orderByClause, EntityMetadata entityMetadata) {
+        String[] orderByClauses = orderByClause.split(",");
+        StringBuilder orderByBuilder = new StringBuilder(" ORDER BY ");
+
+        for (int i = 0; i < orderByClauses.length; i++) {
+            String clause = orderByClauses[i].trim();
+            String[] parts = clause.split(" ", 2);
+            String fieldName = parts[0].trim().toLowerCase();
+
+            if (!entityMetadata.getAttributeNames().containsKey(fieldName)) {
+                throw new IllegalArgumentException(
+                        "The attribute '" + parts[0].trim() + "' is not mapped on the entity " +
+                                entityMetadata.getEntityName());
+            }
+
+            String actualFieldName = entityMetadata.getAttributeNames().get(fieldName);
+
+            if (i > 0) {
+                orderByBuilder.append(", ");
+            }
+
+            orderByBuilder.append("o.").append(actualFieldName);
+
+            if (parts.length > 1) {
+                orderByBuilder.append(" ").append(parts[1].trim());
+            }
+        }
+
+        return orderByBuilder.toString();
     }
 
     public static String getSingleEntityName(String entityName) {

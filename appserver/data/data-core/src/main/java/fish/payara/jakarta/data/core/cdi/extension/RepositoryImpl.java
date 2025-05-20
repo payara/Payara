@@ -60,6 +60,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -149,8 +150,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
         Method method = dataForQuery.getMethod();
-        OrderBy orderBy = method.getAnnotation(OrderBy.class);
-        String orderByClause = orderBy != null ? orderBy.value() : null;
+        String orderByClause = extractOrderByClause(method);
         Class<?> declaredEntityClass= dataForQuery.getDeclaredEntityClass();
         EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
@@ -159,8 +159,20 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     getEntityManager(this.applicationName), entityMetadata, method);
             return processReturnType(dataForQuery, resultList);
         } else {
-            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName), orderByClause);
+            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName), orderByClause, entityMetadata);
         }
+    }
+
+    private String extractOrderByClause(Method method) {
+        OrderBy.List orderByList = method.getAnnotation(OrderBy.List.class);
+        if (orderByList != null && orderByList.value().length > 0) {
+            return String.join(", ", Arrays.stream(orderByList.value())
+                    .map(OrderBy::value)
+                    .toArray(String[]::new));
+        }
+
+        OrderBy orderBy = method.getAnnotation(OrderBy.class);
+        return orderBy != null ? orderBy.value() : null;
     }
 
     public void preProcessQuery() {
