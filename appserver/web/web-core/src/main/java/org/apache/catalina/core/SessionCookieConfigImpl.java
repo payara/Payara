@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 package org.apache.catalina.core;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.LogFacade;
 import static org.apache.catalina.core.Constants.COOKIE_DOMAIN_ATTR;
 import static org.apache.catalina.core.Constants.COOKIE_HTTP_ONLY_ATTR;
@@ -67,10 +68,10 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
-    private static final boolean DEFAULT_HTTP_ONLY = false;
+    private final boolean DEFAULT_HTTP_ONLY;
     private static final int DEFAULT_MAX_AGE = -1;
     private static final String DEFAULT_NAME = "JSESSIONID";
-    private static final boolean DEFAULT_SECURE = false;
+    private final boolean DEFAULT_SECURE;
     private static final String RESERVED_CHAR = ";, ";
 
     /**
@@ -78,6 +79,15 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public SessionCookieConfigImpl(StandardContext ctx) {
         this.ctx = ctx;
+        Container parent = ctx.getParent();
+        if (parent instanceof SessionCookieConfigSource) {
+            SessionCookieConfigSource source = (SessionCookieConfigSource) parent;
+            DEFAULT_HTTP_ONLY = source.isSessionCookieHttpOnly();
+            DEFAULT_SECURE = source.isSessionCookieSecure();
+        } else {
+            DEFAULT_HTTP_ONLY = true;
+            DEFAULT_SECURE = false;
+        }
     }
 
     /**

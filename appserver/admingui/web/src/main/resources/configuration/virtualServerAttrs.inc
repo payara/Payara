@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- web/configuration/virtualServerAttrs.inc -->
 #include "/common/applications/applicationHandlers.inc"
@@ -67,6 +68,14 @@
 
         <sun:property id="ssoCookieHttpOnly"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.ssoCookieHttpOnly}" helpText="$resource{i18n_web.vs.ssoCookieHttpOnlyHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['ssoCookieHttpOnly']}"  selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="sessionCookieHttpOnly"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sessionCookieHttpOnly}" helpText="$resource{i18n_web.vs.sessionCookieHttpOnlyHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['sessionCookieHttpOnly']}"  selectedValue="true" />
+        </sun:property>
+
+        <sun:property id="sessionCookieSecure"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sessionCookieSecure}" helpText="$resource{i18n_web.vs.sessionCookieSecureHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['sessionCookieSecure']}"  selectedValue="true" />
         </sun:property>
 
         <sun:property id="nwProps"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.NetworkListeners}" helpText="$resource{i18n_web.vs.NetworkListenersHelp}">
