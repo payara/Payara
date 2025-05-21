@@ -253,7 +253,7 @@
         <openmq.version>6.5.1.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
-        <webservices.version>4.0.3.payara-p1</webservices.version>
+        <webservices.version>4.0.4</webservices.version>
         <santuario.version>4.0.0</santuario.version>
         <woodstox.version>6.6.2</woodstox.version>
         <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
