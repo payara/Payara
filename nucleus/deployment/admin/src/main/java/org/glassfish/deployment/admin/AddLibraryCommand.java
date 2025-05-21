@@ -96,7 +96,7 @@ public class AddLibraryCommand implements AdminCommand {
     @Param(primary=true, multiple=true)
     File[] files = null;
 
-    @Param(optional=true, acceptableValues="common, app")
+    @Param(optional=true, acceptableValues="common, app, war")
     String type = "common";
 
     @Inject
@@ -123,6 +123,9 @@ public class AddLibraryCommand implements AdminCommand {
 
         if (type.equals("app")) {
             libDir = new File(libDir, "applibs");
+        }
+        else if (type.equals("war")) {
+            libDir = new File(libDir, "warlibs");
         }
 
         // rename or copy the library file to the appropriate 
