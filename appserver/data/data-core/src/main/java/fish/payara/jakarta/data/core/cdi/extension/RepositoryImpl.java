@@ -43,6 +43,7 @@ import fish.payara.jakarta.data.core.util.DataCommonOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
+import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
@@ -59,6 +60,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +91,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final String applicationName;
     private TransactionManager transactionManager;
     private EntityManager em;
-
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -149,6 +150,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
         Method method = dataForQuery.getMethod();
+        String orderByClause = extractOrderByClause(method);
         Class<?> declaredEntityClass= dataForQuery.getDeclaredEntityClass();
         EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
@@ -157,8 +159,20 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     getEntityManager(this.applicationName), entityMetadata, method);
             return processReturnType(dataForQuery, resultList);
         } else {
-            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName));
+            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName), orderByClause, entityMetadata);
         }
+    }
+
+    private String extractOrderByClause(Method method) {
+        OrderBy.List orderByList = method.getAnnotation(OrderBy.List.class);
+        if (orderByList != null && orderByList.value().length > 0) {
+            return String.join(", ", Arrays.stream(orderByList.value())
+                    .map(OrderBy::value)
+                    .toArray(String[]::new));
+        }
+
+        OrderBy orderBy = method.getAnnotation(OrderBy.class);
+        return orderBy != null ? orderBy.value() : null;
     }
 
     public void preProcessQuery() {
