@@ -99,7 +99,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
     private static final String SAVED_SUBJECT = "Saved_Subject";
     private static final String USER_NAME = "userName";
-    private static final String ORIG_REQUEST_PATH = "origRequestPath";
+    private static final String ORIG_REQUEST_PATH = "__origRequestPath";
     private static final String RESPONSE_TYPE = "application/json";
 
     /**
@@ -369,6 +369,9 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
         try {
             // Redirect...
             String origRequest = (String) session.getAttribute(ORIG_REQUEST_PATH);
+            //clear session attribute for security reason
+            session.removeAttribute(ORIG_REQUEST_PATH);
+
             // Explicitly test for favicon.ico, as Firefox seems to ask for this on
             // every page
             if (origRequest == null || "/favicon.ico".equals(origRequest)) {
