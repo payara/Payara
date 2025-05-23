@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Payara Community Forum
-    url: http://www.payara.org/forum
+  - name: Payara Forum
+    url: https://forum.payara.fish/
     about: Please ask and answer questions about the Payara Platform here.
   - name: Security Issues
     url: https://mailxto.com/smwknx
