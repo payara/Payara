@@ -272,6 +272,11 @@
             <groupId>fish.payara.deployment.transformer</groupId>
             <artifactId>deployment-transformer-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex</artifactId>
+            <version>${jandex.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
