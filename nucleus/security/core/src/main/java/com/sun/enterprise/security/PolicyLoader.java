@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.policyConfigFactoryNotDefined;
@@ -55,6 +55,7 @@ import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
 
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import jakarta.inject.Inject;
@@ -275,15 +276,22 @@ public class PolicyLoader {
         isPolicyInstalled = true;
     }
     
-    private void installPolicy14(Object policyInstance) {
+    private void installPolicy14(Object policyInstance) throws ReflectiveOperationException {
         if (!(policyInstance instanceof java.security.Policy)) {
             throw new RuntimeException(STRING_MANAGER.getString("enterprise.security.plcyload.not14"));
         }
-        
+
         Policy policy = (java.security.Policy) policyInstance;
-        Policy.setPolicy(policy);
-        
-        // TODO: causing ClassCircularity error when SM ON and deployment use library feature and 
+        try {
+            Policy.setPolicy(policy);
+        } catch (UnsupportedOperationException e) {
+            Class<?> authorizationServiceClass = Class.forName("org.glassfish.exousia.AuthorizationService");
+
+            Method setPolicyMethod = authorizationServiceClass.getMethod("setPolicy", Policy.class);
+            setPolicyMethod.invoke(null, policy);
+        }
+
+        // TODO: causing ClassCircularity error when SM ON and deployment use library feature and
         // ApplibClassLoader
         //
         // It is likely a problem caused by the way class loading is done in this case.

@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import static java.util.logging.Level.FINE;
 
-import java.security.Policy;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -62,6 +61,7 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import org.glassfish.exousia.AuthorizationService;
 
 /**
  * This utility class contains JACC related utilities.
@@ -138,7 +138,7 @@ public class SecurityUtil {
             
             // Only do refresh policy if the deleted context was in service
             if (wasInService) {
-                Policy.getPolicy().refresh();
+                AuthorizationService.getPolicy().refresh();
             }
 
         } catch (java.lang.ClassNotFoundException cnfe) {
@@ -204,7 +204,7 @@ public class SecurityUtil {
                 }
             }
 
-            Policy.getPolicy().refresh();
+            AuthorizationService.getPolicy().refresh();
         } catch (ClassNotFoundException | PolicyContextException cnfe) {
             throw new IASSecurityException(cnfe);
         }

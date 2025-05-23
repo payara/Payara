@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.loader;
 
@@ -81,6 +81,7 @@ import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.api.deployment.ResourceClassLoader;
 import org.glassfish.api.deployment.ResourceEntry;
 import org.glassfish.common.util.InstanceCounter;
+import org.glassfish.exousia.AuthorizationService;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.web.util.ExceptionUtils;
 import org.glassfish.web.util.IntrospectionUtils;
@@ -133,7 +134,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -3231,7 +3231,7 @@ public class WebappClassLoader
             // The policy file may have been modified to adjust
             // permissions, so we're reloading it when loading or
             // reloading a Context
-            Policy policy = Policy.getPolicy();
+            Policy policy = AuthorizationService.getPolicy();
             policy.refresh();
         } catch (AccessControlException e) {
             // Some policy files may restrict this, even for the core,
