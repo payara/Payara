@@ -81,7 +81,7 @@
         <hk2.plugin.version>3.0.2</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
+        <glassfish-corba.version>4.2.5</glassfish-corba.version>
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
 
         <junit.version>4.13.2</junit.version>
