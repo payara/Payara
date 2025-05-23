@@ -89,7 +89,7 @@
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
         
         <!-- Yubico client validation version property -->
-        <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
+        <yubico-validation-client2.version>3.1.0</yubico-validation-client2.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
     </properties>
 
