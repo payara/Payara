@@ -292,7 +292,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                             .setParameter("id", id)
                             .executeUpdate();
                 } catch (Exception e) {
-                    throw new RuntimeException("Erro ao obter ID da entidade", e);
+                    throw new RuntimeException("Error to get entity ID", e);
                 }
                 endTransaction();
             }

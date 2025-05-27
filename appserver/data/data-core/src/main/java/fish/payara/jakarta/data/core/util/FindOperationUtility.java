@@ -40,16 +40,15 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
-
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 
 /**
  * Utility class used to process Jakarta Data find operations
@@ -134,7 +133,7 @@ public class FindOperationUtility {
             String fieldName = parts[0].trim().toLowerCase();
 
             if (!entityMetadata.getAttributeNames().containsKey(fieldName)) {
-                throw new IllegalArgumentException(
+                throw new MappingException(
                         "The attribute '" + parts[0].trim() + "' is not mapped on the entity " +
                                 entityMetadata.getEntityName());
             }
