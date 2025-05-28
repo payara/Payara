@@ -46,10 +46,7 @@ import jakarta.persistence.Query;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
-
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 
 /**
  * Utility class used to process Jakarta Data find operations

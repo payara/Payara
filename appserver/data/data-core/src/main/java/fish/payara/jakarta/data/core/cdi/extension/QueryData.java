@@ -40,6 +40,8 @@
 package fish.payara.jakarta.data.core.cdi.extension;
 
 import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * This class represent the structure of a query to be resolved during runtime
@@ -52,6 +54,7 @@ public class QueryData {
     private Class<?> declaredEntityClass;
     private QueryType queryType;
     private EntityMetadata entityMetadata;
+    private Set<String> jpqlParameters = new LinkedHashSet<>();
 
     public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
         this.repositoryInterface = repositoryInterface;
@@ -108,5 +111,13 @@ public class QueryData {
 
     public void setEntityMetadata(EntityMetadata entityMetadata) {
         this.entityMetadata = entityMetadata;
+    }
+
+    public Set<String> getJpqlParameters() {
+        return jpqlParameters;
+    }
+
+    public void setJpqlParameters(Set<String> jpqlParameters) {
+        this.jpqlParameters = jpqlParameters;
     }
 }
