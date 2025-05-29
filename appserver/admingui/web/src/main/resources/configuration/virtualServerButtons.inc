@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- configuration/virtualServerButtons.inc -->
 #include "/common/shared/commonHandlers.inc"
@@ -83,7 +84,7 @@
                             convertToFalse="#{pageSession.convertToFalseList}"
                             onlyUseAttrs="#{pageSession.onlyUseAttrs}"
                     );
-                    setPageSessionAttribute(key="onlyUseAttrs" value={"ssoEnabled", "ssoCookieHttpOnly", "accessLoggingEnabled", "docroot", "accessLog"})
+                    setPageSessionAttribute(key="onlyUseAttrs" value={"ssoEnabled", "ssoCookieHttpOnly", "sessionCookieHttpOnly", "sessionCookieSecure", "accessLoggingEnabled", "docroot", "accessLog"})
                     gf.createEntity(endpoint="#{pageSession.selfUrl}/#{pageSession.valueMap['id']}"
                             attrs="#{pageSession.valueMap}"
                             onlyUseAttrs="#{pageSession.onlyUseAttrs}"
