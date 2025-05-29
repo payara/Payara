@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.loader;
 
@@ -134,7 +134,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.WeakHashMap;
