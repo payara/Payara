@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.client.jws.boot;
 
@@ -44,6 +45,7 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.appclient.client.acc.AppClientContainer;
 import org.glassfish.appclient.client.acc.JWSACCClassLoader;
 import org.glassfish.appclient.common.Util;
+import org.glassfish.exousia.AuthorizationService;
 
 import javax.swing.SwingUtilities;
 import java.io.*;
@@ -352,7 +354,7 @@ public class JWSACCMain implements Runnable {
         int idx = firstFreePolicyIndex();
         URI policyFileURI = policyFile.toURI();
         java.security.Security.setProperty("policy.url." + idx, policyFileURI.toASCIIString());
-        Policy p = Policy.getPolicy();
+        Policy p = AuthorizationService.getPolicy();
         p.refresh();
     }
 

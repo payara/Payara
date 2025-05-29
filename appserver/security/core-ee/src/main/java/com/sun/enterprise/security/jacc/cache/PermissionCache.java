@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.jacc.cache;
 
 import static java.util.Collections.list;
@@ -61,6 +61,7 @@ import jakarta.security.jacc.PolicyContext;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl.Epoch;
 import com.sun.logging.LogDomains;
+import org.glassfish.exousia.AuthorizationService;
 
 /**
  * This class is
@@ -70,7 +71,7 @@ import com.sun.logging.LogDomains;
 public class PermissionCache extends Object {
 
     private static Logger _logger = LogDomains.getLogger(PermissionCache.class, LogDomains.SECURITY_LOGGER);
-    private static Policy policy = Policy.getPolicy();
+    private static Policy policy = AuthorizationService.getPolicy();
     private static AllPermission allPermission = new AllPermission();
 
     private Permissions cache;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.security.services.common;
 
@@ -272,12 +272,13 @@ public class SecurityAccessValidator implements Validator {
 
         
         try {
-            if (caller != null) {
-                ProtectionDomain pd = this.getCallerProtDomain(caller);
-                pd.implies(p);
-            } else
-                AccessController.checkPermission(p);
-            
+            if (System.getProperty("java.vm.specification.version").compareTo("24") < 0) {
+                if (caller != null) {
+                    ProtectionDomain pd = this.getCallerProtDomain(caller);
+                    pd.implies(p);
+                } else
+                    AccessController.checkPermission(p);
+            }
         } catch (SecurityException e) {
             
             LOG.warning(localStrings.getLocalString(
@@ -299,6 +300,10 @@ public class SecurityAccessValidator implements Validator {
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Injectee =" + injectee + ", permission= " + p);
+        }
+
+        if (System.getProperty("java.vm.specification.version").compareTo("24") >= 0) {
+            return true;
         }
 
         // If this is an Inject, get the protection domain of the injectee
