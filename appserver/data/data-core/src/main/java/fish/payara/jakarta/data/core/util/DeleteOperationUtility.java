@@ -39,6 +39,8 @@
  */
 package fish.payara.jakarta.data.core.util;
 
+import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.HeuristicMixedException;
@@ -47,6 +49,9 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getIDParameterName;
@@ -57,6 +62,63 @@ import static fish.payara.jakarta.data.core.util.FindOperationUtility.getIDParam
 public class DeleteOperationUtility {
 
     public static final Logger logger = Logger.getLogger(DeleteOperationUtility.class.getName());
+
+    public static int processDeleteByOperation(Object[] args, Class<?> declaredEntityClass, TransactionManager tm,
+                                               EntityManager em, EntityMetadata entityMetadata, Method method)
+            throws SystemException, NotSupportedException, HeuristicRollbackException,
+            HeuristicMixedException, RollbackException {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("DELETE FROM ").append(declaredEntityClass.getSimpleName())
+                .append(" o");
+
+        String attributeValue = null;
+        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        int queryPosition = 1;
+        boolean hasWhere = false;
+
+        for (Annotation[] annotations : parameterAnnotations) {
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof By) {
+                    attributeValue = ((By) annotation).value();
+                }
+                if (!hasWhere) {
+                    builder.append(" WHERE (");
+                    hasWhere = true;
+                } else {
+                    builder.append(" AND ");
+                }
+
+                if (attributeValue != null) {
+                    attributeValue = preprocessAttributeName(entityMetadata, attributeValue);
+                }
+                builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+            }
+            queryPosition++;
+        }
+
+        if (hasWhere) {
+            builder.append(")");
+        }
+
+        tm.begin();
+        em.joinTransaction();
+        Query q = em.createQuery(builder.toString());
+        for (int i = 0; i < args.length; i++) {
+            q.setParameter(i + 1, args[i]);
+        }
+        int rowsAffected = q.executeUpdate();
+        em.flush();
+        tm.commit();
+
+        logger.info("Rows affected from delete operation: " + rowsAffected);
+        return rowsAffected;
+    }
+
+    private static String preprocessAttributeName(EntityMetadata entityMetadata, String attributeName) {
+        // Add any necessary attribute name preprocessing logic here
+        return attributeName;
+    }
 
     public static int processDeleteByIdOperation(Object[] args, Class<?> declaredEntityClass, TransactionManager tm,
                                                   EntityManager em, String idNameValue) throws SystemException,

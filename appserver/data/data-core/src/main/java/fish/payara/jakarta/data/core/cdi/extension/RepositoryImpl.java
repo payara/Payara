@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.cdi.extension;
 
 import fish.payara.jakarta.data.core.util.DataCommonOperationUtility;
+import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
@@ -248,41 +249,56 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return entity;
     }
 
-
-
-    public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method) throws SystemException, NotSupportedException,
-            HeuristicRollbackException, HeuristicMixedException, RollbackException {
+    public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method)
+            throws SystemException, NotSupportedException, HeuristicRollbackException,
+            HeuristicMixedException, RollbackException {
         int returnValue = 0;
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        Class<?>[] types = method.getParameterTypes();
-        if (parameterAnnotations.length == 1 && types.length == 1 && parameterAnnotations[0].length == 1) {
-            Annotation[] annotations = parameterAnnotations[0];
-            for (Annotation annotation : annotations) {
-                if (annotation instanceof By) {
-                    //for now we are processing only By id operation, when custom By operation available we will provide 
-                    // the metadata from the entity class to search specific column value for By
-                    String byValue = ((By) annotation).value();
-                    returnValue = processDeleteByIdOperation(args, declaredEntityClass, getTransactionManager(), getEntityManager(this.applicationName), byValue);
-                }
-            }
-        } else {
+
+        if (args == null) { // delete all records
             startTransactionComponents();
-            if (args == null) { //delete all records
-                startTransactionAndJoin();
-                String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
-                returnValue = em.createQuery(deleteAllQuery).executeUpdate();
-                endTransaction();
-            } else if (args[0] instanceof List arr) {
-                startTransactionAndJoin();
-                List<Object> ids = getIds((List<?>) arr);
-                if (!ids.isEmpty()) {
-                    String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
-                    returnValue = em.createQuery(deleteQuery)
-                            .setParameter("ids", ids)
-                            .executeUpdate();
+            startTransactionAndJoin();
+            String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
+            returnValue = em.createQuery(deleteAllQuery).executeUpdate();
+            endTransaction();
+        } else if (args[0] instanceof List arr) {
+            // existing list handling code
+            startTransactionComponents();
+            startTransactionAndJoin();
+            List<Object> ids = getIds((List<?>) arr);
+            if (!ids.isEmpty()) {
+                String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
+                returnValue = em.createQuery(deleteQuery)
+                        .setParameter("ids", ids)
+                        .executeUpdate();
+            }
+            endTransaction();
+        } else {
+            // Handle @By annotation cases
+            boolean hasByAnnotation = false;
+            for (Annotation[] annotations : parameterAnnotations) {
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof By) {
+                        hasByAnnotation = true;
+                        break;
+                    }
                 }
-                endTransaction();
-            } else if (args[0] != null) { //delete single entity
+                if (hasByAnnotation) break;
+            }
+
+            if (hasByAnnotation) {
+                startTransactionComponents();
+                QueryData queryData = queries.get(method);
+                returnValue = DeleteOperationUtility.processDeleteByOperation(
+                        args,
+                        declaredEntityClass,
+                        getTransactionManager(),
+                        getEntityManager(this.applicationName),
+                        queryData.getEntityMetadata(),
+                        method
+                );
+            } else if (args[0] != null) { // delete single entity
+                startTransactionComponents();
                 startTransactionAndJoin();
                 try {
                     Method getId = args[0].getClass().getMethod("getId");
@@ -297,8 +313,11 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 endTransaction();
             }
         }
+
         if (method.getReturnType().equals(Integer.TYPE)) {
             return Integer.valueOf(returnValue);
+        } else if (method.getReturnType().equals(Void.TYPE)) {
+            return null;
         } else {
             return Long.valueOf(returnValue);
         }
