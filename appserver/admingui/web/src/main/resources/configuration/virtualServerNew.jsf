@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- configuration/virtualServerNew.jsf" -->
 
@@ -63,7 +64,8 @@
         mapPut(map="#{pageSession.valueMap}" key="ssoEnabled" value="inherit");
         mapPut(map="#{pageSession.valueMap}" key="accessLoggingEnabled" value="inherit");
         mapPut(map="#{pageSession.valueMap}" key="accessLog" value="");
-        setPageSessionAttribute(key="convertToFalseList" value={"ssoCookieHttpOnly"});
+        setPageSessionAttribute(key="convertToFalseList" value={"ssoCookieHttpOnly", "sessionCookieHttpOnly"});
+        setPageSessionAttribute(key="sessionCookieSecure" value="dynamic");
         setPageSessionAttribute(key="edit" value="#{false}" );
         setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
         setPageSessionAttribute(key="showCancelButton" value="#{true}" );
