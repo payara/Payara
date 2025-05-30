@@ -83,10 +83,9 @@ public class QueryOperationUtility {
             jakarta.persistence.Query q = entityManager.createQuery(query);
             validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             if (!entry.getValue().isEmpty()) {
-                for (String parameter : dataForQuery.getJpqlParameters()) {
-                    for (int i = 0; i < args.length; i++) {
-                        q.setParameter(parameter, args[i]);
-                    }
+                Object[] params = dataForQuery.getJpqlParameters().toArray();
+                for (int i = 0; i < args.length && params.length == args.length; i++) {
+                    q.setParameter((String) params[i], args[i]);
                 }
                 objectToReturn = processReturnType(dataForQuery, q.getResultList());
             } else {
@@ -117,10 +116,10 @@ public class QueryOperationUtility {
                 continue;
             } else if (queryCharacter == ':') {
                 paramName = new StringBuilder();
-            } else if (patternPositions.containsKey(startIndex) 
-                    && queryString.regionMatches(true, startIndex, patternPositions.get(startIndex), 0, patternPositions.get(startIndex).length()) 
+            } else if (patternPositions.containsKey(startIndex)
+                    && queryString.regionMatches(true, startIndex, patternPositions.get(startIndex), 0, patternPositions.get(startIndex).length())
                     && !Character.isJavaIdentifierPart(queryString.charAt(startIndex + patternPositions.get(startIndex).length()))) {
-                addQueryPart(queryBuilder, patternPositions.get(startIndex), 
+                addQueryPart(queryBuilder, patternPositions.get(startIndex),
                         queryString, dataForQuery.getDeclaredEntityClass(), patternPositions);
                 startIndex += patternPositions.get(startIndex).length();
                 continue;
@@ -171,15 +170,15 @@ public class QueryOperationUtility {
                 int selectIndex = getIndexFromMap("SELECT", patternPositions);
                 if (patternPositions.containsValue("FROM")) {
                     int fromIndex = getIndexFromMap("FROM", patternPositions);
-                    queryBuilder.append(query.substring(selectIndex+6, fromIndex));
+                    queryBuilder.append(query.substring(selectIndex + 6, fromIndex));
                 } else if (patternPositions.containsValue("WHERE")) {
                     int whereIndex = getIndexFromMap("WHERE", patternPositions);
-                    queryBuilder.append(query.substring(selectIndex+6, whereIndex));
+                    queryBuilder.append(query.substring(selectIndex + 6, whereIndex));
                 }
             }
             case "FROM" -> {
                 String entityName = getSingleEntityName(entityClass.getName());
-                if(entityName != null) {
+                if (entityName != null) {
                     queryBuilder.append("FROM ").append(entityName);
                 } else {
                     //need to see the resolution of entity from query path
@@ -191,7 +190,7 @@ public class QueryOperationUtility {
                 } else {
                     queryBuilder.append(" WHERE ");
                 }
-                
+
                 if (!patternPositions.containsValue("ORDER") && !patternPositions.containsValue("GROUP") && !patternPositions.containsValue("HAVING")) {
                     int whereIndex = getIndexFromMap("WHERE", patternPositions);
                     queryBuilder.append(query.substring(whereIndex + 6));
@@ -232,7 +231,7 @@ public class QueryOperationUtility {
             return -1;
         }
     }
-    
+
     public static void validateParameters(QueryData dataForQuery, Set<String> parameters, String query) {
         Method method = dataForQuery.getMethod();
         if (!parameters.isEmpty()) {
@@ -249,7 +248,7 @@ public class QueryOperationUtility {
                         paramName = parameterMethod.getName();
                         jpqlParameters.add(paramName);
                     }
-                    
+
                     if (paramName != null && paramName.equals(parameter)) {
                         found = true;
                     }
@@ -257,11 +256,11 @@ public class QueryOperationUtility {
                 if (!found) {
                     String message = String.format(
                             """
-                            One param from the method %s from the repository class %s
-                            is not defining a parameter with name :%s. The Query value: %s requires
-                            this value. Try use @Param annotation to define the parameter name in case you didn't add 
-                            the -parameters option to the java compiler that resolves the parameter names.
-                            """,
+                                    One param from the method %s from the repository class %s
+                                    is not defining a parameter with name :%s. The Query value: %s requires
+                                    this value. Try use @Param annotation to define the parameter name in case you didn't add 
+                                    the -parameters option to the java compiler that resolves the parameter names.
+                                    """,
                             method.getName(), dataForQuery.getRepositoryInterface().getName(), parameter, query);
                     throw new MappingException(message);
                 }
