@@ -193,7 +193,11 @@ import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
@@ -5816,20 +5820,23 @@ public class StandardContext
     protected void callServletContainerInitializers()
             throws LifecycleException {
 
-        // Get the list of ServletContainerInitializers and the classes
-        // they are interested in
-        Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList =
-            ServletContainerInitializerUtil.getInterestList(
-                servletContainerInitializers);
-        Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList =
-            ServletContainerInitializerUtil.getInitializerList(
-                servletContainerInitializers, interestList,
-                getTypes(),
-                getClassLoader(), isStandalone());
+        ServiceLocator locator = org.glassfish.internal.api.Globals.getDefaultHabitat();
+        var deploymentContext = locator.getService(Deployment.class).getCurrentDeploymentContext();
+
+        Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList = null;
+        if (deploymentContext != null && deploymentContext.getPhase() != ExtendedDeploymentContext.Phase.PREPARE) {
+            // Get the list of ServletContainerInitializers and the classes
+            // they are interested in
+            Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList =
+                    ServletContainerInitializerUtil.getInterestList(
+                            servletContainerInitializers);
+            initializerList = ServletContainerInitializerUtil.getInitializerList(servletContainerInitializers, interestList,
+                    locator.getService(JandexIndexer.class).getAllIndexes(deploymentContext), getClassLoader(), isStandalone());
+        }
+
         if (initializerList == null) {
             return;
         }
-
         // Allow programmatic registration of ServletContextListeners, but
         // only within the scope of ServletContainerInitializer#onStartup
         isProgrammaticServletContextListenerRegistrationAllowed = true;

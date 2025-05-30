@@ -42,14 +42,14 @@ package fish.payara.faces.integration;
 import com.sun.enterprise.util.Utility;
 import com.sun.faces.config.FacesInitializer;
 import com.sun.faces.config.FacesInitializer2;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.servlet.ServletContainerInitializer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.GenericSniffer;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.web.loader.ServletContainerInitializerUtil;
 import org.jvnet.hk2.annotations.Service;
 
@@ -74,6 +74,9 @@ public class MojarraSniffer extends GenericSniffer {
     // If faces is detected, we need to force Weld to initialise (even in cases where bean discovery has been disabled)
     private static final String[] containers = { "org.glassfish.weld.WeldContainer" };
     private static final Logger logger = Logger.getLogger(MojarraSniffer.class.getName());
+
+    @Inject
+    JandexIndexer jandexIndexer;
 
     public MojarraSniffer() {
         super("cdi", null, null);
@@ -166,14 +169,14 @@ public class MojarraSniffer extends GenericSniffer {
         Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initialiserList =
                 ServletContainerInitializerUtil.getInitializerList(
                         facesInitialisers, interestList,
-                        getTypes(context),
+                        jandexIndexer.getAllIndexes(context),
                         Utility.getClassLoader(), false);
 
         for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initialiserEntry : initialiserList.entrySet()) {
             if (initialiserEntry.getValue() != null && !initialiserEntry.getValue().isEmpty()) {
                 if (logger.isLoggable(Level.FINE)) {
                     List<String> classNames = new ArrayList<>();
-                    initialiserEntry.getValue().stream().forEach(clazz -> classNames.add(clazz.getName()));
+                    initialiserEntry.getValue().forEach(clazz -> classNames.add(clazz.getName()));
                     logger.fine(initialiserEntry.getKey().getName()
                             + " container initialiser has an interest in the following classes detected within the application: "
                             + Arrays.toString(classNames.toArray()));
@@ -200,26 +203,4 @@ public class MojarraSniffer extends GenericSniffer {
 
         return facesInitialisers;
     }
-
-    private Types getTypes(DeploymentContext context) {
-        String metadataKey = Types.class.getName();
-
-        Types types = (Types) context.getTransientAppMetadata().get(metadataKey);
-        while (types == null) {
-            context = ((ExtendedDeploymentContext) context).getParentContext();
-            if (context != null) {
-                types = (Types) context.getTransientAppMetadata().get(metadataKey);
-            } else {
-                break;
-            }
-        }
-
-        if (types == null) {
-            logger.fine("No types found!");
-        }
-
-        return types;
-    }
-
-
 }

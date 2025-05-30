@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.annotation.impl;
 
@@ -74,21 +74,9 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     private static final int DEFAULT_ENTRY_BUFFER_SIZE = 8192;
 
-    @Inject
-    DefaultAnnotationScanner defaultScanner;
-
     protected File archiveFile = null;
     protected ClassLoader classLoader = null;
     protected Parser classParser = null;
-
-    private Set<URI> scannedURI = new HashSet<>();
-
-    private boolean needScanAnnotation = false;
-
-    @Inject
-    PayaraExecutorService executorService;
-    
-    private Set<String> entries = new HashSet<>();
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
 
@@ -121,11 +109,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     public void process(ReadableArchive archiveFile,
             T bundleDesc, ClassLoader classLoader, Parser parser) throws IOException {
-        File file = new File(archiveFile.getURI());
-        setParser(parser);
-        process(file, bundleDesc, classLoader);
-        completeProcess(bundleDesc, archiveFile);
-        calculateResults(bundleDesc);
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
@@ -144,79 +128,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     }
 
     protected void calculateResults(T bundleDesc) {
-        try {
-            classParser.awaitTermination();
-        } catch (InterruptedException e) {
-            deplLogger.log(Level.SEVERE,
-                           ANNOTATION_SCANNING_EXCEPTION,
-                           e);
-            return;
-        }
-        Level logLevel = (System.getProperty("glassfish.deployment.dump.scanning")!=null?Level.INFO:Level.FINE);
-        boolean shouldLog = deplLogger.isLoggable(logLevel);
-        ParsingContext context = classParser.getContext();
-        boolean isFullAttribute = false;
-        if (bundleDesc instanceof BundleDescriptor) {
-            isFullAttribute = ((BundleDescriptor)bundleDesc).isFullAttribute();
-        }
-        Set<String> annotationsToProcess = defaultScanner.getAnnotations(isFullAttribute);
-        for (String annotation: annotationsToProcess) {
-            Type type = context.getTypes().getBy(annotation);
-
-            // we never found anyone using that type
-            if (type==null) continue;
-
-            // is it an annotation
-            if (type instanceof AnnotationType) {
-                AnnotationType at = (AnnotationType) type;
-                for (AnnotatedElement ae : at.allAnnotatedTypes()) {
-                    // if it is a member (field, method), let's retrieve the declaring type
-                    // otherwise, use the annotated type directly.
-                    Type t = (ae instanceof Member?((Member) ae).getDeclaringType():(Type) ae);
-                    if (t.wasDefinedIn(scannedURI)) {
-                        if (shouldLog) {
-                          if (Level.INFO.equals(logLevel)) {
-                            deplLogger.log(Level.INFO,
-                                           ANNOTATION_ADDED,
-                                           new Object[] { t.getName(),
-                                                          ae.getName(),
-                                                          at.getName() });
-                          } else {
-                            deplLogger.log(Level.FINE, "Adding {0} since {1} is annotated with {2}", new Object[]{t.getName(), ae.getName(), at.getName()});
-                          }
-                        }
-                        entries.add(t.getName());
-                    }
-                }
-
-            } else
-            // or is it an interface ?
-            if (type instanceof InterfaceModel) {
-                InterfaceModel im = (InterfaceModel) type;
-                for (ClassModel cm : im.allImplementations()) {
-                    if (shouldLog) {
-                      if (Level.INFO.equals(logLevel)) {
-                        deplLogger.log(Level.INFO,
-                                       INTERFACE_ADDED,
-                                       new Object[] { cm.getName(),
-                                                      im.getName() });
-                      } else {
-                        deplLogger.log(Level.FINE, "Adding {0} since it is implementing {1}", new Object[]{cm.getName(), im.getName()});
-                      }
-                    }
-                    entries.add(cm.getName());
-                }
-            } else {
-                deplLogger.log(Level.SEVERE,
-                               INCORRECT_ANNOTATION,
-                               annotation);
-            }
-        }
-        if (deplLogger.isLoggable(Level.FINE)) {
-            deplLogger.log(Level.FINE,
-                           "Done with results");
-        }
-
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
@@ -224,8 +136,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      * @param className
      */
     protected void addScanClassName(String className) {
-        if (className!=null && className.length()!=0)
-            entries.add(className);
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
@@ -233,24 +144,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      * @param jarFile
      */
     protected void addScanJar(File jarFile) throws IOException {
-        try {
-            /*
-             * An app might refer to a non-existent JAR in its Class-Path.  Java
-             * SE accepts that silently, and so will GlassFish.
-             */
-            if ( ! jarFile.exists()) {
-                return;
-            }
-            scannedURI.add(jarFile.toURI());
-            if (needScanAnnotation) {
-                classParser.parse(jarFile, null);
-            }
-        } catch (ZipException ze) {
-            deplLogger.log(Level.WARNING,
-                           JAR_EXCEPTION,
-                           new Object[] { ze.getMessage(),
-                                          jarFile.getPath() });
-        }
+        throw new UnsupportedOperationException("No longer supported.");
     }
     
     /**
@@ -266,10 +160,7 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      * @param directory
      */
     protected void addScanDirectory(File directory) throws IOException {
-        scannedURI.add(directory.toURI());
-        if (needScanAnnotation) {
-            classParser.parse(directory, null);
-        }
+        throw new UnsupportedOperationException("No longer supported.");
     }
     
     @Override
@@ -279,38 +170,12 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
 
     @Override
     public Set<Class> getElements() {
-        return getElements(entries);
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     @Override
     public Set<Class> getElements(Set<String> classNames) {
-        Set<Class> elements = new HashSet<>();
-        if (getClassLoader() == null) {
-            deplLogger.log(Level.SEVERE,
-                           NO_CLASSLOADER);
-            return elements;
-        }        
-
-        for (String className : classNames) {
-            if (deplLogger.isLoggable(Level.FINE)) {
-                deplLogger.log(Level.FINE, "Getting {0}", className);
-            }
-            try {                
-                elements.add(classLoader.loadClass(className));
-            } catch (NoClassDefFoundError err) {
-                deplLogger.log(Level.WARNING,
-                               ANNOTATION_ERROR,
-                               err);
-            } catch(ClassNotFoundException cnfe) {
-              LogRecord lr = new LogRecord(Level.WARNING, CLASSLOADING_ERROR);
-              Object args[] = { className,
-                                cnfe.getMessage() };
-              lr.setParameters(args);
-              lr.setThrown(cnfe);
-              deplLogger.log(lr);
-            }
-        }
-        return elements;
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
@@ -320,43 +185,15 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
      */
     protected void addLibraryJars(T bundleDesc, 
         ReadableArchive moduleArchive) {
-        List<URI> libraryURIs = new ArrayList<>(); 
-        try {
-            if (bundleDesc instanceof BundleDescriptor) {
-                libraryURIs = DOLUtils.getLibraryJarURIs((BundleDescriptor)bundleDesc, moduleArchive);
-            }
-
-            for (URI uri : libraryURIs) {
-                File libFile = new File(uri);
-                if (libFile.isFile()) {
-                    addScanJar(libFile);
-                } else if (libFile.isDirectory()) {
-                    addScanDirectory(libFile);
-                }
-            }
-        } catch (Exception ex) {
-            // we log a warning and proceed for any problems in 
-            // adding library jars to the scan list
-            deplLogger.log(Level.WARNING,
-                           LIBRARY_JAR_ERROR,
-                           ex.getMessage());
-        }       
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     @Override
     public Types getTypes() {
-        return classParser.getContext().getTypes();
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     protected void setParser(Parser parser) {
-        if (parser == null) {
-            // if the passed in parser is null, it means no annotation scanning
-            // has been done yet, we need to construct a new parser
-            // and do the annotation scanning here
-            ParsingContext pc = new ParsingContext.Builder().logger(deplLogger).executorService(executorService.getUnderlyingExecutorService()).build();
-            parser = new Parser(pc);
-            needScanAnnotation = true;
-        }
-        classParser = parser;
+        throw new UnsupportedOperationException("No longer supported.");
     }
 }

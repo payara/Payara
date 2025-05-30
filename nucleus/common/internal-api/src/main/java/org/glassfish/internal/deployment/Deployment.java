@@ -316,7 +316,9 @@ public interface Deployment {
      * @param context deployment context
      * @return the types information from the deployment artifacts
      * @throws IOException if the scanning fails due to an I/O exception
+     * @deprecated replaced with Jandex indexer
      */
+    @Deprecated(forRemoval = true, since = "7.0.0")
     Types getDeployableTypes(DeploymentContext context) throws IOException;
 
     List<Sniffer> getSniffersFromApp(Application app);

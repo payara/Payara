@@ -145,9 +145,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
     private Application processDOL(DeploymentContext dc) throws IOException {
         ReadableArchive sourceArchive = dc.getSource();
 
-        sourceArchive.setExtraData(Types.class, dc.getTransientAppMetaData(Types.class.getName(), Types.class));
-        sourceArchive.setExtraData(Parser.class, dc.getTransientAppMetaData(Parser.class.getName(), Parser.class));
-
         Optional<ApplicationState> appState = hotDeployService.getApplicationState(dc);
         appState.ifPresent(state -> sourceArchive.setExtraData(ApplicationState.class, state));
 

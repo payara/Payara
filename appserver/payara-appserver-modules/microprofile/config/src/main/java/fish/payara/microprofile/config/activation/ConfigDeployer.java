@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,13 +44,14 @@ import java.util.function.Supplier;
 
 import jakarta.enterprise.inject.spi.Extension;
 
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
@@ -60,6 +61,8 @@ import fish.payara.microprofile.connector.MicroProfileDeployer;
 @Service
 @PerLookup
 public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, ConfigApplicationContainer> {
+    @Inject
+    JandexIndexer jandexIndexer;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -68,19 +71,13 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
 
         // Perform annotation scanning to see if CDI extension is required here
         // This is performed here so that the ApplicationContainer executes regardless of CDI extension state
-        final Types types = deploymentContext.getTransientAppMetaData(Types.class.getName(), Types.class);
-
-
-        if (types != null) {
-            // The annotations that denote a Config API enabled application
-            final Type annotationType = types.getBy(ConfigProperty.class.getName());
-            final Type annotation2Type = types.getBy(ConfigProperties.class.getName());
-            final Type classType = types.getBy(Config.class.getName());
-            final boolean annotationFound = annotationType != null;
-            final boolean annotation2Found = annotation2Type != null;
-            final boolean classFound = classType != null;
-
-            if (annotationFound || annotation2Found || classFound) {
+        Index index = jandexIndexer.getRootIndex(deploymentContext);
+        if (index != null) {
+            boolean found = false;
+            found |= !index.getIndex().getAnnotations(ConfigProperty.class).isEmpty();
+            found |= !index.getIndex().getAnnotations(ConfigProperties.class).isEmpty();
+            found |= !index.getIndex().getAnnotations(Config.class).isEmpty();
+            if (found) {
                 // Register the CDI extension
                 final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
                 if (snifferExtensions != null) {

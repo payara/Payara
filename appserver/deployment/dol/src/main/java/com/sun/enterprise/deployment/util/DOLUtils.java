@@ -75,10 +75,10 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -648,16 +648,18 @@ public class DOLUtils {
         SnifferManager snifferManager = habitat.getService(SnifferManager.class);
         List<URI> classPathURIs = handler.getClassPathURIs(archive);
         classPathURIs.addAll(getLibraryJarURIs(app, archive));
-        Types types = archive.getParentArchive().getExtraData(Types.class);
         DeployCommandParameters parameters = archive.getParentArchive().getArchiveMetaData(DeploymentProperties.COMMAND_PARAMS, DeployCommandParameters.class);
         Properties appProps = archive.getParentArchive().getArchiveMetaData(DeploymentProperties.APP_PROPS, Properties.class);
         ExtendedDeploymentContext context = new DeploymentContextImpl(null, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
+        context.setParentContext(habitat.getService(Deployment.class).getCurrentDeploymentContext());
+        for (var entry : habitat.getService(Deployment.class).getCurrentDeploymentContext().getTransientAppMetadata().entrySet()) {
+            context.addTransientAppMetaData(entry.getKey(), entry.getValue());
+        }
         if (appProps != null) {
             context.getAppProps().putAll(appProps);
         }
         context.setArchiveHandler(handler);
-        context.addTransientAppMetaData(Types.class.getName(), types);
-        Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, types);
+        Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, null);
         context.postDeployClean(true);
         String type = getTypeFromModuleType(md.getModuleType());
         Sniffer mainSniffer = null;

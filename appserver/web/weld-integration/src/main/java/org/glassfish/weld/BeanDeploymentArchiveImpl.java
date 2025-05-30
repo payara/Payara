@@ -47,6 +47,8 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -66,19 +68,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
-import static org.glassfish.web.loader.NonCachedJarStreamHandler.forceNonCachedJarURL;
 import static org.glassfish.weld.WeldDeployer.WELD_BOOTSTRAP;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
@@ -502,33 +500,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
             if (webinfbda) {
                 bdaType = BDAType.WAR;
-                Enumeration<String> entries = archive.entries();
-                while (entries.hasMoreElements()) {
-                    String entry = entries.nextElement();
-                    if (legalClassName(entry)) {
-                        if (entry.contains(WEB_INF_CLASSES)) {
-                            //Workaround for incorrect WARs that bundle classes above WEB-INF/classes
-                            //[See. GLASSFISH-16706]
-                            entry = entry.substring(WEB_INF_CLASSES.length() + 1);
-                        }
-                        String className = filenameToClassname(entry);
-                        try {
-                            if (hasBeansXml || isCDIAnnotatedClass(className)) {
-                                beanClassNames.add(className);
-                                beanClasses.add(getClassLoader().loadClass(className));
-                            }
-                            moduleClassNames.add(className);
-                        } catch (Throwable t) {
-                            if (logger.isLoggable(Level.WARNING)) {
-                                logger.log(Level.WARNING, CDILoggerInfo.ERROR_LOADING_BEAN_CLASS,
-                                        new Object[]{className, t.toString()});
-                            }
-                        }
-                    } else if (entry.endsWith(BEANS_XML_FILENAME)) {
-                        addBeansXMLURL(archive, entry);
-                    }
-                }
-                archive.close();
+                addClassNamesFromIndex(archive, hasBeansXml);
             }
 
             // If this archive has WEB-INF/lib entry..
@@ -699,92 +671,40 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
     private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml)
             throws IOException, ClassNotFoundException {
-        if (archive != null) {
+        if (archive != null && isBeanArchive) {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
             }
-            Enumeration<String> entries = archive.entries();
-            while (entries.hasMoreElements()) {
-                String entry = entries.nextElement();
-                handleEntry(archive, entry, isBeanArchive, hasBeansXml);
-            }
+            addClassNamesFromIndex(archive, hasBeansXml);
         }
     }
 
-    private void handleEntry(ReadableArchive archive,
-                             String entry,
-                             boolean isBeanArchive,
-                             boolean hasBeansXml) throws ClassNotFoundException {
-        if (legalClassName(entry)) {
-            String className = filenameToClassname(entry);
-            try {
-                if (isBeanArchive) {
-                    // If the jar is a bean archive, or the individual class should be managed,
-                    // based on its annotation(s)
+    private void addClassNamesFromIndex(ReadableArchive archive, boolean hasBeansXml) {
+        Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archive.getURI()))
+                .values().stream().findAny().get().getIndex()
+                .getKnownClasses().forEach(classInfo -> {
+                    String className = classInfo.name().toString();
                     if (hasBeansXml || isCDIAnnotatedClass(className)) {
-                        beanClasses.add(getClassLoader().loadClass(className));
                         beanClassNames.add(className);
                     }
-                }
-                // Add the class as a module class
-                moduleClassNames.add(className);
-            } catch (Throwable t) {
-                if (logger.isLoggable(Level.WARNING)) {
-                    logger.log(Level.WARNING,
-                               CDILoggerInfo.ERROR_LOADING_BEAN_CLASS,
-                               new Object[]{className, t.toString()});
-                }
-            }
-        } else if (entry.endsWith("/beans.xml")) {
-            try {
-                // use a throwaway classloader to load the application's beans.xml
-                ClassLoader throwAwayClassLoader =
-                                      new URLClassLoader(new URL[]{archive.getURI().toURL()}, null);
-                URL beansXmlUrl = forceNonCachedJarURL(throwAwayClassLoader.getResource(entry));
-                if (beansXmlUrl != null && !beansXmlURLs.contains(beansXmlUrl)) { // http://java.net/jira/browse/GLASSFISH-17157
-                    beansXmlURLs.add(beansXmlUrl);
-                }
-            } catch (MalformedURLException e) {
-                if (logger.isLoggable(Level.SEVERE)) {
-                    logger.log(Level.SEVERE,
-                               CDILoggerInfo.SEVERE_ERROR_READING_ARCHIVE,
-                               new Object[]{e.getMessage()});
-                }
-            }
-        }
+                    moduleClassNames.add(className);
+                });
     }
-
-
-    private boolean legalClassName(String className) {
-        return className.endsWith(CLASS_SUFFIX) && !className.startsWith(WEB_INF_LIB);
-    }
-
 
     private void collectRarInfo(ReadableArchive archive) throws IOException, ClassNotFoundException {
         if (logger.isLoggable(FINE)) {
             logger.log(FINE, CDILoggerInfo.COLLECTING_RAR_INFO, new Object[]{archive.getURI()});
         }
         Enumeration<String> entries = archive.entries();
+        addClassNamesFromIndex(archive, false);
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
             if (entry.endsWith(JAR_SUFFIX)) {
                 ReadableArchive jarArchive = archive.getSubArchive(entry);
                 collectJarInfo(jarArchive, true, true);
-            } else {
-                handleEntry(archive, entry, true, true);
             }
         }
-    }
-
-    private static String filenameToClassname(String filename) {
-        String className = null;
-        if (filename.indexOf(File.separatorChar) >= 0) {
-            className = filename.replace(File.separatorChar, '.');
-        } else {
-            className = filename.replace(SEPARATOR_CHAR, '.');
-        }
-        className = className.substring(0, className.length() - 6);
-        return className;
     }
 
     private ClassLoader getClassLoader() {

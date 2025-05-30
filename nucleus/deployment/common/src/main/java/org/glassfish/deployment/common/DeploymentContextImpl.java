@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -51,12 +51,16 @@ import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.classmodel.reflect.Parser;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.io.File;
 import java.io.IOException;
@@ -76,8 +80,6 @@ import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
 
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -118,7 +120,49 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     Phase phase = Phase.UNKNOWN;
     WeakReference<ClassLoader> sharableTemp = null;
     Map<String, Properties> modulePropsMap = new HashMap<String, Properties>();
-    Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
+    Map<String, Object> transientAppMetaData = new HashMap<>() {
+        @Override
+        public Object get(Object key) {
+            check(key);
+            return super.get(key);
+        }
+
+        @Override
+        public Object put(String key, Object value) {
+            check(key);
+            return super.put(key, value);
+        }
+
+        @Override
+        public Object putIfAbsent(String key, Object value) {
+            check(key);
+            return super.putIfAbsent(key, value);
+        }
+
+        @Override
+        public Object compute(String key, BiFunction<? super String, ? super Object, ?> remappingFunction) {
+            check(key);
+            return super.compute(key, remappingFunction);
+        }
+
+        @Override
+        public Object computeIfAbsent(String key, Function<? super String, ?> mappingFunction) {
+            check(key);
+            return super.computeIfAbsent(key, mappingFunction);
+        }
+
+        @Override
+        public Object computeIfPresent(String key, BiFunction<? super String, ? super Object, ?> remappingFunction) {
+            check(key);
+            return super.computeIfPresent(key, remappingFunction);
+        }
+
+        private void check(Object key) {
+            if (key.equals(Types.class.getName()) || key.equals(Parser.class.getName())) {
+                throw new IllegalArgumentException("Cannot access " + key + " in transient metadata");
+            }
+        }
+    };
     Map<String, ArchiveHandler> moduleArchiveHandlers = new HashMap<String, ArchiveHandler>();
     Map<String, ExtendedDeploymentContext> moduleDeploymentContexts = new HashMap<String, ExtendedDeploymentContext>();
     ExtendedDeploymentContext parentContext = null;
@@ -724,11 +768,6 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
             if (isFinalClean) {
                 transientAppMetaData.clear();
             } else {
-                final String [] classNamesToClean = {Types.class.getName(), Parser.class.getName()};
-        
-                for (String className : classNamesToClean) {
-                    transientAppMetaData.remove(className);
-                }
                 com.sun.enterprise.deploy.shared.FileArchive.clearCache();
             }
         }
