@@ -116,8 +116,14 @@ public class DeleteOperationUtility {
     }
 
     private static String preprocessAttributeName(EntityMetadata entityMetadata, String attributeName) {
-        // Add any necessary attribute name preprocessing logic here
-        return attributeName;
+        if (attributeName.endsWith(")")) {
+            return getIDParameterName(attributeName);
+        }
+        if (entityMetadata.getAttributeNames().containsKey(attributeName.toLowerCase())) {
+            return entityMetadata.getAttributeNames().get(attributeName.toLowerCase());
+        }
+        throw new IllegalArgumentException("The attribute " + attributeName +
+                " is not mapped on the entity " + entityMetadata.getEntityName());
     }
 
     public static int processDeleteByIdOperation(Object[] args, Class<?> declaredEntityClass, TransactionManager tm,

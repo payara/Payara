@@ -66,6 +66,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -277,16 +278,11 @@ public class RepositoryImpl<T> implements InvocationHandler {
             endTransaction();
         } else {
             // Handle @By annotation cases
-            boolean hasByAnnotation = false;
-            for (Annotation[] annotations : parameterAnnotations) {
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof By) {
-                        hasByAnnotation = true;
-                        break;
-                    }
-                }
-                if (hasByAnnotation) break;
-            }
+            Optional<Annotation> byFound = Arrays.stream(parameterAnnotations)
+                    .flatMap(Arrays::stream)
+                    .filter(a -> a instanceof By)
+                    .findFirst();
+            final boolean hasByAnnotation = byFound.isPresent();
 
             if (hasByAnnotation) {
                 startTransactionComponents();
