@@ -43,6 +43,7 @@ import jakarta.data.repository.DataRepository;
 import jakarta.data.repository.Delete;
 import jakarta.data.repository.Find;
 import jakarta.data.repository.Insert;
+import jakarta.data.repository.Query;
 import jakarta.data.repository.Save;
 import jakarta.data.repository.Update;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -256,6 +257,8 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             queryType = QueryType.INSERT;
         } else if (method.isAnnotationPresent(Find.class)) {
             queryType = QueryType.FIND;
+        } else if (method.isAnnotationPresent(Query.class)) {
+            queryType = QueryType.QUERY;
         }
         
         queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, 

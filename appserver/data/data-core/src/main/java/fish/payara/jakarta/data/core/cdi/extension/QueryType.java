@@ -47,5 +47,6 @@ public enum QueryType {
     UPDATE,
     DELETE,
     INSERT,
-    FIND
+    FIND,
+    QUERY
 }
