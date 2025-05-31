@@ -41,6 +41,7 @@ package fish.payara.jakarta.data.core.cdi.extension;
 
 import fish.payara.jakarta.data.core.util.DataCommonOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
+import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
@@ -114,6 +115,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND ->
                     objectToReturn = processFindOperation(args, dataForQuery);
+            case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
         }
 
         return objectToReturn;
@@ -361,6 +363,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         
         return entity;
+    }
+    
+    public Object processQueryOperation(Object[] args, QueryData dataForQuery) {
+        return QueryOperationUtility.processQueryOperation(args, dataForQuery, getEntityManager(this.applicationName));
     }
 
 

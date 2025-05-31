@@ -41,6 +41,8 @@ package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
+import jakarta.data.exceptions.EmptyResultException;
+import jakarta.data.exceptions.NonUniqueResultException;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -49,12 +51,6 @@ import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
 import jakarta.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
-import java.util.Collection;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -64,7 +60,6 @@ import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -96,12 +91,25 @@ public class DataCommonOperationUtility {
             return results.stream();
         } else if (evaluateReturnTypeVoidPredicate.test(returnType)) {
             return null;
-        } else if(returnType.equals(Optional.class)) {
-            if(results.isEmpty()) {
+        } else if (returnType.equals(Optional.class)) {
+            if (results.isEmpty()) {
                 return Optional.empty();
             } else {
-                return Optional.of(results.get(0));
+                if (results.size() > 1) {
+                    throw new NonUniqueResultException("There are more than one result for the query");
+                }
+                return Optional.ofNullable(results.get(0));
             }
+        } else if (returnType.equals(dataForQuery.getDeclaredEntityClass())) {
+            if (results.isEmpty()) {
+                throw new EmptyResultException("There are no results for the query");
+            }
+            
+            if (results.size() > 1) {
+                throw new NonUniqueResultException("There are more than one result for the query");
+            }
+            
+            return results.getFirst();
         } else if (!results.isEmpty()) {
             return results;
         }
@@ -175,7 +183,7 @@ public class DataCommonOperationUtility {
                 return entityMetadata;
             }
         } finally {
-            if(entityManager != null) {
+            if (entityManager != null) {
                 entityManager.close();
             }
         }

@@ -44,7 +44,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * this represent the EntityMetadata used to preprocess dynamic queries
+ * This represent the EntityMetadata used to preprocess dynamic queries
  */
 public class EntityMetadata {
     
