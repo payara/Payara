@@ -171,12 +171,15 @@ public class RepositoryImpl<T> implements InvocationHandler {
         OrderBy.List orderByList = method.getAnnotation(OrderBy.List.class);
         if (orderByList != null && orderByList.value().length > 0) {
             return String.join(", ", Arrays.stream(orderByList.value())
-                    .map(OrderBy::value)
+                    .map(orderBy -> orderBy.value() + (orderBy.descending() ? " DESC" : ""))
                     .toArray(String[]::new));
         }
 
         OrderBy orderBy = method.getAnnotation(OrderBy.class);
-        return orderBy != null ? orderBy.value() : null;
+        if (orderBy != null) {
+            return orderBy.value() + (orderBy.descending() ? " DESC" : "");
+        }
+        return null;
     }
 
     public void preProcessQuery() {
