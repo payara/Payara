@@ -920,7 +920,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     private static void setImplementation(SchemaImpl schema, String implementationClass, boolean override, ApiContext context) {
-        if (context.getApi().getComponents().getSchemas() != null) {
+        if (context != null && context.getApi().getComponents().getSchemas() != null) {
             if (schema instanceof SchemaImpl) {
                 schema.setImplementation(mergeProperty(((SchemaImpl)schema).getImplementation(), implementationClass, override));
             }
