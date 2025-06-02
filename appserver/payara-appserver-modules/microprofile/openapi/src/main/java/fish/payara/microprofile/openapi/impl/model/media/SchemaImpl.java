@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2021-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -920,7 +920,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     private static void setImplementation(SchemaImpl schema, String implementationClass, boolean override, ApiContext context) {
-        if (context.getApi().getComponents().getSchemas() != null) {
+        if (context != null && context.getApi().getComponents().getSchemas() != null) {
             if (schema instanceof SchemaImpl) {
                 schema.setImplementation(mergeProperty(((SchemaImpl)schema).getImplementation(), implementationClass, override));
             }
