@@ -54,4 +54,4 @@ goto run
 :UsePath
 set JAVA=java
 :run
-%JAVA% -jar "%~dp0..\glassfish\lib\client\appserver-cli.jar" %*
+%JAVA% %AS_EXTRA_JAVA_OPTS% -jar "%~dp0..\glassfish\lib\client\appserver-cli.jar" %*

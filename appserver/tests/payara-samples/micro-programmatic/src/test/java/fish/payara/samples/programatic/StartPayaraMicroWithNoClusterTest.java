@@ -1,12 +1,18 @@
 package fish.payara.samples.programatic;
 
-import com.hazelcast.core.*;
-import fish.payara.micro.*;
-import org.junit.*;
+import fish.payara.micro.BootstrapException;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class StartPayaraMicroWithNoClusterTest
 {
@@ -39,10 +45,20 @@ public class StartPayaraMicroWithNoClusterTest
   }
 
   private static File createWar() {
-    return ShrinkWrap.create(WebArchive.class, "test.war")
-      .addClass(DataGridTest.class)
-      .addAsLibraries(
-        Maven.resolver().resolve("org.apache.commons:commons-lang3:3.12.0")
-          .withTransitivity().asFile());
+    WebArchive war = ShrinkWrap.create(WebArchive.class, "test.war")
+            .addClass(DataGridTest.class)
+            .addAsLibraries(
+                    Maven.resolver().resolve("org.apache.commons:commons-lang3:3.12.0")
+                            .withTransitivity().asFile()
+            );
+      File warFile = null;
+      try {
+          warFile = File.createTempFile(DataGridTest.class.getSimpleName(), "test.war");
+      } catch (IOException e) {
+          throw new RuntimeException(e);
+      }
+      warFile.deleteOnExit();
+    war.as(ZipExporter.class).exportTo(warFile, true);
+    return warFile;
   }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -55,6 +55,7 @@ import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.deployment.*;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Logger;
 import java.io.File;
@@ -71,8 +72,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
-import java.io.Closeable;
-import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -117,7 +116,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
     Map<String, Object> modulesMetaData = new HashMap<String, Object>();
     List<ClassFileTransformer> transformers = new ArrayList<ClassFileTransformer>();
     Phase phase = Phase.UNKNOWN;
-    ClassLoader sharableTemp = null;
+    WeakReference<ClassLoader> sharableTemp = null;
     Map<String, Properties> modulePropsMap = new HashMap<String, Properties>();
     Map<String, Object> transientAppMetaData = new HashMap<String, Object>();
     Map<String, ArchiveHandler> moduleArchiveHandlers = new HashMap<String, ArchiveHandler>();
@@ -184,7 +183,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
         if (!hotDeploy) {
             try {
-                PreDestroy.class.cast(sharableTemp).preDestroy();
+                PreDestroy.class.cast(sharableTemp.get()).preDestroy();
             } catch (Exception e) {
                 // ignore, the classloader does not need to be destroyed
             }
@@ -249,9 +248,9 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         this.addTransientAppMetaData(ExtendedDeploymentContext.IS_TEMP_CLASSLOADER, Boolean.TRUE);
         boolean hotDeploy = getCommandParameters(DeployCommandParameters.class).hotDeploy;
         if (hotDeploy && this.cloader != null) {
-            this.sharableTemp = this.cloader;
+            this.sharableTemp = new WeakReference<>(this.cloader);
         } else {
-            this.sharableTemp = createClassLoader(clh, handler, null);
+            this.sharableTemp = new WeakReference<>(createClassLoader(clh, handler, null));
         }
     }
 
@@ -280,7 +279,7 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         // otherwise, we return the final one.
         if (phase == Phase.PREPARE) {
             if (sharable) {
-                return sharableTemp;
+                return sharableTemp.get();
             } else {
                 InstrumentableClassLoader cl = InstrumentableClassLoader.class.cast(sharableTemp);
                 return cl.copy();
@@ -288,9 +287,9 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
         } else {
             // we are out of the prepare phase, destroy the shareableTemp and 
             // return the final classloader
-            if (sharableTemp != null && sharableTemp != cloader) {
+            if (sharableTemp != null && sharableTemp.get() != cloader) {
                 try {
-                    PreDestroy.class.cast(sharableTemp).preDestroy();
+                    PreDestroy.class.cast(sharableTemp.get()).preDestroy();
                 } catch (Exception e) {
                     // ignore, the classloader does not need to be destroyed
                 }

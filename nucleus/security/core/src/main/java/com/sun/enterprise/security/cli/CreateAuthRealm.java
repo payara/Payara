@@ -100,15 +100,19 @@ import javax.security.auth.login.Configuration;
  *        [--echo=false] [--target target(Default server)] auth_realm_name
  *
  * domain.xml element example
+ * {@code
  * <auth-realm name="file"
  *   classname="com.sun.enterprise.security.auth.realm.file.FileRealm">
  *   <property name="file" value="${com.sun.aas.instanceRoot}/config/keyfile"/>
  *   <property name="jaas-context" value="fileRealm"/>
  * </auth-realm>
+ * }
  *       Or
+ * {@code
  * <auth-realm name="certificate"
  *   classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm">
  * </auth-realm>
+ * }
  *
  * @author Nandini Ektare
  */

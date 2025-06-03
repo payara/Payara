@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,7 @@ import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isVoid;
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -77,6 +78,9 @@ import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import fish.payara.microprofile.openapi.util.BeanValidationType;
+import jakarta.validation.groups.Default;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.HttpMethod;
@@ -156,7 +160,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     api,
                     allTypes,
                     config == null ? allowedTypes : config.getValidClasses(allowedTypes),
-                    appClassLoader
+                    appClassLoader,
+                    config == null || config.getScanBeanValidation()
             );
             apiWalker.accept(this);
         }
@@ -433,6 +438,290 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         addParameter(element, context, param.getValue("value", String.class), In.COOKIE, null);
     }
 
+    @Override
+    public void visitNotEmpty(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.NOT_EMPTY);
+    }
+
+    @Override
+    public void visitNotBlank(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.NOT_BLANK);
+    }
+
+    @Override
+    public void visitSize(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.SIZE);
+    }
+
+    @Override
+    public void visitDecimalMax(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.DECIMAL_MAX);
+    }
+
+    @Override
+    public void visitDecimalMin(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.DECIMAL_MIN);
+    }
+
+    @Override
+    public void visitMax(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.MAX);
+    }
+
+    @Override
+    public void visitMin(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.MIN);
+    }
+
+    @Override
+    public void visitNegative(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.NEGATIVE);
+    }
+
+    @Override
+    public void visitNegativeOrZero(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.NEGATIVE_OR_ZERO);
+
+    }
+
+    @Override
+    public void visitPositive(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.POSITIVE);
+    }
+
+    @Override
+    public void visitPositiveOrZero(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.POSITIVE_OR_ZER0);
+    }
+
+    private void handleBeanValidationAnnotation(AnnotationModel param, AnnotatedElement element, ApiContext context, BeanValidationType type) {
+        if (element instanceof FieldModel) {
+            addSchemaProperty(param, element, context, type);
+        } else if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
+            addSchemaParameter(param, element, context, type);
+        }
+    }
+
+    private void addSchemaParameter(AnnotationModel param, AnnotatedElement element, ApiContext context, BeanValidationType type) {
+        if (isSchemaHidden(element)) {
+            return;
+        }
+        Parameter newParameter = new ParameterImpl();
+        org.glassfish.hk2.classmodel.reflect.Parameter elementParam = (org.glassfish.hk2.classmodel.reflect.Parameter) element;
+        newParameter.setName(element.getAnnotation("jakarta.ws.rs.PathParam").getValue("value", String.class));
+
+        SchemaImpl property = new SchemaImpl();
+        property.setType(ModelUtils.getSchemaType(elementParam.getTypeName(), context));
+        setPropertyValue(type, property, param);
+        newParameter.setSchema(property);
+        mergeParameter(context, newParameter);
+    }
+
+    private void addSchemaProperty(AnnotationModel param, AnnotatedElement element, ApiContext context, BeanValidationType type) {
+        if (isSchemaHidden(element)) {
+            return;
+        }
+        FieldModel field = (FieldModel) element;
+        final ExtensibleType<?> declaringType = field.getDeclaringType();
+        final String typeName = field.getTypeName();
+
+        String schemaName = ModelUtils.getSchemaName(context, element);
+        SchemaImpl schema = SchemaImpl.createInstance(param, context);
+
+        if (Void.class.getName().equals(schema.getImplementation())) {
+            schema.setImplementation(typeName);
+        }
+
+
+        String parentName = getParentSchemaName(context, declaringType);
+        Components components = context.getApi().getComponents();
+        Schema property = getParentSchemaOrCreate(element, context, typeName, schemaName, schema, parentName, components);
+        setPropertyValue(type, property, param);
+
+        SchemaImpl.merge(schema, property, false, context);
+    }
+
+    private static void mergeParameter(ApiContext context, Parameter newParameter) {
+        final Operation workingOperation = context.getWorkingOperation();
+        if (workingOperation != null) {
+            for (Parameter parameter : workingOperation.getParameters()) {
+                final String parameterName = parameter.getName();
+                if (parameterName != null && parameterName.equals(newParameter.getName())) {
+                    ParameterImpl.merge(newParameter, parameter, false, context);
+                    return;
+                }
+            }
+            workingOperation.addParameter(newParameter);
+        } else {
+            LOGGER.log(
+                    SEVERE,
+                    "Couldn't add {0} parameter, \"{1}\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with an unsupported annotation.",
+                    new Object[]{newParameter.getIn(), newParameter.getName()}
+            );
+        }
+    }
+
+    private boolean isSchemaHidden(AnnotatedElement element) {
+        Boolean isSchemaHidden = false;
+        AnnotationModel annotation = element.getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class.getName());
+        if (annotation != null) {
+            isSchemaHidden = annotation.getValue("hidden", Boolean.class);
+        }
+        return isSchemaHidden;
+    }
+
+    private Schema getParentSchemaOrCreate(AnnotatedElement element, ApiContext context, String typeName, String schemaName, SchemaImpl schema, String parentName, Components components) {
+        Schema parentSchema = components.getSchemas().getOrDefault(parentName, new SchemaImpl());
+        components.addSchema(parentName, parentSchema);
+
+        Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
+        parentSchema.addProperty(schemaName, property);
+
+        if (schema.isRequired()) {
+            parentSchema.addRequired(schemaName);
+        }
+
+        if (!schemaName.equals(element.getName()) && parentSchema.getProperties().containsKey(element.getName())) {
+            parentSchema.removeProperty(element.getName());
+        }
+
+        if (property.getRef() == null) {
+            property.setType(ModelUtils.getSchemaType(typeName, context));
+        }
+        return property;
+    }
+
+    private String getParentSchemaName(ApiContext context, ExtensibleType<?> declaringType) {
+        String parentName = null;
+        AnnotationModel classSchemaAnnotation = context.getAnnotationInfo(declaringType)
+                .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
+
+        if (classSchemaAnnotation != null) {
+            parentName = classSchemaAnnotation.getValue("name", String.class);
+        }
+        if (parentName == null || parentName.isEmpty()) {
+            parentName = declaringType.getSimpleName();
+        }
+        return parentName;
+    }
+
+    private void setPropertyValue(BeanValidationType type, Schema property, AnnotationModel param) {
+        switch (type) {
+            case NOT_EMPTY:
+                handleNotEmptyProperty(property, param);
+                break;
+            case NOT_BLANK:
+                property.setPattern("\\S");
+                break;
+            case SIZE:
+                handleSizeProperty(property, param);
+                break;
+            case DECIMAL_MAX:
+                if (property.getMaximum() == null) {
+                    property.setMaximum(new BigDecimal(param.getValue("value", String.class)));
+                }
+                if (param.getValue("inclusive", Boolean.class) != null && property.getExclusiveMaximum() == null) {
+                    property.setExclusiveMaximum((!param.getValue("inclusive", Boolean.class)));
+                }
+                break;
+            case DECIMAL_MIN:
+                if (property.getMinimum() == null) {
+                    property.setMinimum(new BigDecimal(param.getValue("value", String.class)));
+                }
+                if (param.getValue("inclusive", Boolean.class) != null && property.getExclusiveMinimum() == null) {
+                    property.setExclusiveMinimum((!param.getValue("inclusive", Boolean.class)));
+                }
+                break;
+            case MAX:
+                if (property.getMaximum() == null) {
+                    property.setMaximum(BigDecimal.valueOf(param.getValue("value", Long.class)));
+                }
+                break;
+            case MIN:
+                if (property.getMinimum() == null) {
+                    property.setMinimum(BigDecimal.valueOf(param.getValue("value", Long.class)));
+                }
+                break;
+            case NEGATIVE:
+                if (property.getMaximum() == null) {
+                    property.setMaximum(BigDecimal.ZERO);
+                }
+                if (property.getExclusiveMaximum() == null) {
+                    property.setExclusiveMaximum(true);
+                }
+                break;
+            case NEGATIVE_OR_ZERO:
+                if (property.getMaximum() == null) {
+                    property.setMaximum(BigDecimal.ZERO);
+                }
+                break;
+            case POSITIVE:
+                if (property.getMinimum() == null) {
+                    property.setMinimum(BigDecimal.ZERO);
+                }
+                if (property.getExclusiveMinimum() == null) {
+                    property.setExclusiveMinimum(true);
+                }
+                break;
+            case POSITIVE_OR_ZER0:
+                if (property.getMinimum() == null) {
+                    property.setMinimum(BigDecimal.ZERO);
+                }
+                break;
+        }
+    }
+
+    private void handleNotEmptyProperty(Schema property, AnnotationModel param) {
+        switch (property.getType()){
+            case STRING:
+                List<?> groupList = param.getValue("groups", List.class);
+                if ((groupList == null || groupList.contains(Default.class.getName())) && property.getMinLength() == null) {
+                    property.setMinLength(1);
+                }
+                break;
+            case ARRAY:
+                if (property.getMinItems() == null) {
+                    property.setMinItems(1);
+                }
+                break;
+            case OBJECT:
+                if (property.getMinProperties() == null) {
+                    property.setMinProperties(1);
+                }
+                break;
+        }
+    }
+    private  void handleSizeProperty(Schema property, AnnotationModel param) {
+        switch (property.getType()){
+            case STRING:
+                if (property.getMinLength() == null) {
+                    property.setMinLength(param.getValue("min", Integer.class));
+                }
+
+                if (property.getMaxLength() == null) {
+                    property.setMaxLength(param.getValue("max", Integer.class));
+                }
+                break;
+            case ARRAY:
+                if(property.getMinItems() == null) {
+                    property.setMinItems(param.getValue("min", Integer.class));
+                }
+
+                if(property.getMaxItems() == null) {
+                    property.setMaxItems(param.getValue("max", Integer.class));
+                }
+                break;
+            case OBJECT:
+                if(property.getMinProperties() == null) {
+                    property.setMinProperties(param.getValue("min", Integer.class));
+                }
+                if(property.getMaxProperties() == null) {
+                    property.setMaxProperties(param.getValue("max", Integer.class));
+                }
+                break;
+        }
+    }
+
     private static void addParameter(AnnotatedElement element, ApiContext context, String name, In in, Boolean required) {
         Boolean hidden = false;
         AnnotationModel paramAnnotation = element.getAnnotation(org.eclipse.microprofile.openapi.annotations.parameters.Parameter.class.getName());
@@ -477,23 +766,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             newParameter.setSchema(schema);
         }
 
-        final Operation workingOperation = context.getWorkingOperation();
-        if (workingOperation != null) {
-            for (Parameter parameter : workingOperation.getParameters()) {
-                final String parameterName = parameter.getName();
-                if (parameterName != null && parameterName.equals(newParameter.getName())) {
-                    ParameterImpl.merge(newParameter, parameter, false, context);
-                    return;
-                }
-            }
-            workingOperation.addParameter(newParameter);
-        } else {
-            LOGGER.log(
-                    SEVERE,
-                    "Couldn''t add {0} parameter, \"{1}\" to the OpenAPI Document. This is usually caused by declaring parameter under a method with an unsupported annotation.",
-                    new Object[]{newParameter.getIn(), newParameter.getName()}
-            );
-        }
+        mergeParameter(context, newParameter);
     }
 
     private static SchemaImpl getArraySchema(AnnotatedElement element, ApiContext context) {
@@ -681,34 +954,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
 
             // Get the parent schema object name
-            String parentName = null;
-            AnnotationModel classSchemaAnnotation = context.getAnnotationInfo(declaringType)
-                    .getAnnotation(org.eclipse.microprofile.openapi.annotations.media.Schema.class);
-            if (classSchemaAnnotation != null) {
-                parentName = classSchemaAnnotation.getValue("name", String.class);
-            }
-            if (parentName == null || parentName.isEmpty()) {
-                parentName = declaringType.getSimpleName();
-            }
+            String parentName = getParentSchemaName(context, declaringType);
 
             // Get or create the parent schema object
             final Components components = context.getApi().getComponents();
-            Schema parentSchema = components.getSchemas().getOrDefault(parentName, new SchemaImpl());
-            components.addSchema(parentName, parentSchema);
-
-            Schema property = parentSchema.getProperties().getOrDefault(schemaName, new SchemaImpl());
-            parentSchema.addProperty(schemaName, property);
-            if (schema.isRequired()) {
-                parentSchema.addRequired(schemaName);
-            }
-            // Removing the original property
-            if (!schemaName.equals(fieldOrMethod.getName()) && parentSchema.getProperties().containsKey(fieldOrMethod.getName())) {
-                parentSchema.removeProperty(fieldOrMethod.getName());
-            }
-
-            if (property.getRef() == null) {
-                property.setType(ModelUtils.getSchemaType(typeName, context));
-            }
+            Schema property = getParentSchemaOrCreate(fieldOrMethod, context, typeName, schemaName, schema, parentName, components);
 
             SchemaImpl.merge(schema, property, false, context);
         }

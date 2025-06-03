@@ -62,7 +62,7 @@ public final class WebSessionCookieConfig extends SessionCookieConfigImpl {
     }
 
     // default web.xml(secure=false) = glassfish-web.xml(cookieSecure=dynamic)
-    private CookieSecureType secureCookieType = CookieSecureType.DYNAMIC;
+    private CookieSecureType secureCookieType = CookieSecureType.valueOf(getDefaultSecure().toUpperCase());
     private CookieSameSiteType sameSiteCookie = null;
 
     public WebSessionCookieConfig(StandardContext context) {

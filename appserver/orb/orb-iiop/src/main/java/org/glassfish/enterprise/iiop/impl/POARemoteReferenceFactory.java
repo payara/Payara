@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -65,6 +65,7 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.ref.WeakReference;
 import java.rmi.Remote;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -118,7 +119,7 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
 
     private EjbContainerFacade container;
     private EjbDescriptor ejbDescriptor;
-    private ClassLoader appClassLoader;
+    private WeakReference<ClassLoader> appClassLoader;
 
     private ORB orb;
     private POAProtocolMgr protocolMgr;
@@ -163,7 +164,7 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
         this.ejbDescriptor = container.getEjbDescriptor();
         this.isRemoteHomeView = remoteHomeView;
 
-        appClassLoader = container.getClassLoader();
+        appClassLoader = new WeakReference<>(container.getClassLoader());
 
         // NOTE: ReferenceFactory creation happens in setRepositoryIds.
     }
@@ -200,12 +201,12 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
         // Home
         ejbHomeStubFactory = 
             sff.createStubFactory( homeIntf.getName(), false,
-                                   "", null, appClassLoader);
+                                   "", null, appClassLoader.get());
         String[] ejbHomeTypeIds = ejbHomeStubFactory.getTypeIds();
         ejbHomeRepositoryId = ejbHomeTypeIds[0];
 
         ejbObjectStubFactory = sff.createStubFactory
-            ( remoteIntf.getName(), false, "", null, appClassLoader);
+            ( remoteIntf.getName(), false, "", null, appClassLoader.get());
 
         String[] ejbObjectTypeIds = ejbObjectStubFactory.getTypeIds();
 

@@ -269,8 +269,8 @@
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
         <krazo.version>4.0.0</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>5.0.0-B07</eclipselink.version>
-        <eclipselink.asm.version>9.7.1</eclipselink.asm.version>
+        <eclipselink.version>5.0.0-B08</eclipselink.version>
+        <eclipselink.asm.version>9.8.0</eclipselink.asm.version>
         <openmq.version>6.5.1.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
@@ -281,7 +281,7 @@
         <woodstock-jsf-suntheme.version>6.0.1</woodstock-jsf-suntheme.version>
         <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.29.0</jline.version>
+        <jline.version>3.30.0</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
@@ -307,7 +307,7 @@
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <jaxb-api.version>4.0.2</jaxb-api.version>
-        <jackson.version>2.18.3</jackson.version>
+        <jackson.version>2.19.0</jackson.version>
         <jersey.version>4.0.0-M2.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
@@ -330,7 +330,7 @@
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
         <microprofile-metrics.version>5.1.0.payara-p1</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
-        <microprofile-openapi.version>3.1.1</microprofile-openapi.version>
+        <microprofile-openapi.version>3.1.2</microprofile-openapi.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
