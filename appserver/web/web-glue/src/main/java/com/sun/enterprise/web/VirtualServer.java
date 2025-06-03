@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -96,6 +96,7 @@ import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.catalina.core.SessionCookieConfigSource;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.ErrorPage;
@@ -177,7 +178,7 @@ import com.sun.web.security.RealmAdapter;
 /**
  * Standard implementation of a virtual server (aka virtual host) in the Payara Server.
  */
-public class VirtualServer extends StandardHost implements org.glassfish.embeddable.web.VirtualServer {
+public class VirtualServer extends StandardHost implements org.glassfish.embeddable.web.VirtualServer, SessionCookieConfigSource {
 
     private static final String SSO_MAX_IDLE = "sso-max-inactive-seconds";
     private static final String SSO_REAP_INTERVAL = "sso-reap-interval-seconds";
@@ -425,6 +426,16 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
 
     public void setDomain(Domain domain) {
         this.domain = domain;
+    }
+
+    @Override
+    public String getSessionCookieSecure() {
+        return vsBean.getSessionCookieSecure();
+    }
+
+    @Override
+    public boolean isSessionCookieHttpOnly() {
+        return Boolean.parseBoolean(vsBean.getSessionCookieHttpOnly());
     }
 
     @Override
@@ -1165,6 +1176,10 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             if (propName == null || propValue == null) {
                 _logger.log(Level.WARNING, LogFacade.NULL_VIRTUAL_SERVER_PROPERTY, getID());
                 continue;
+            }
+
+            if (propValue.startsWith("\"") && propValue.endsWith("\"")) {
+                propValue = propValue.substring(1, propValue.length() - 1);
             }
 
             if (!propName.startsWith("send-error_")) {

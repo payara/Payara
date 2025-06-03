@@ -101,6 +101,7 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
     /**
      * This method sets the SecurityContext to be stored here.
      *
+     * @param clientSecurityContext The Security Context that should be stored.
      */
     public static void setCurrent(ClientSecurityContext clientSecurityContext) {
         if (isPerThreadAuth) {

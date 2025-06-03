@@ -41,7 +41,9 @@
 
 package org.glassfish.weld.services;
 
+import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.InjectionCapable;
@@ -148,14 +150,17 @@ public class InjectionServicesImpl implements InjectionServices {
 
             ManagedBeanDescriptor mbDesc = null;
 
-            JndiNameEnvironment injectionEnv = (JndiNameEnvironment) bundleContext;
+            JndiNameEnvironment injectionEnv = null;
+            if (bundleContext instanceof JndiNameEnvironment) {
+                injectionEnv = (JndiNameEnvironment) bundleContext;
+            }
 
             AnnotatedType annotatedType = injectionContext.getAnnotatedType();
             Class targetClass = annotatedType.getJavaClass();
             String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
 
-            if ( isInterceptor( targetClass )
+            if ( isInterceptor( targetClass ) && isValidBundleContext()
                     && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
               // Resources injected into interceptors must come from the environment in which the interceptor is
               // intercepting, not the environment in which the interceptor resides (for everything else!)
@@ -214,7 +219,7 @@ public class InjectionServicesImpl implements InjectionServices {
                   } else {
                     injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
                   }
-                } else {
+                } else if (isValidBundleContext()) {
                   if ( target == null ) {
                     injectionManager.injectClass(targetClass, injectionEnv, false);
                   } else {
@@ -234,7 +239,7 @@ public class InjectionServicesImpl implements InjectionServices {
 
     @Override
     public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
-        if ( bundleContext instanceof EjbBundleDescriptor ) {
+        if ( bundleContext instanceof EjbBundleDescriptor || !isValidBundleContext() ) {
             // we can't handle validting producer fields for ejb bundles because the JNDI environment is not setup
             // yet for ejbs and so we can't get the correct JndiNameEnvironment to call getInjectionInfoByClass.
             // getInjectionInfoByClass caches the results and so causes subsequent calls to return invalid information.
@@ -474,7 +479,12 @@ public class InjectionServicesImpl implements InjectionServices {
         return jndiName;
     }
 
-
+    private boolean isValidBundleContext() {
+        if (bundleContext instanceof Application || bundleContext instanceof ConnectorDescriptor) {
+            return false;
+        }
+        return true;
+    }
 
     @Override
     public void cleanup() {

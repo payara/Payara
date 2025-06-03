@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ssl;
 
 import static java.util.logging.Level.FINE;
@@ -278,7 +278,9 @@ public final class SSLUtils implements PostConstruct {
      * @return PrivateKeyEntry
      */
     public PrivateKeyEntry getPrivateKeyEntryFromTokenAlias(String certNickname) throws Exception {
-        checkPermission(SecuritySupport.KEYSTORE_PASS_PROP);
+        if (System.getProperty("java.vm.specification.version").compareTo("24") < 0) {
+            checkPermission(SecuritySupport.KEYSTORE_PASS_PROP);
+        }
         PrivateKeyEntry privKeyEntry = null;
         if (certNickname != null) {
             int ind = certNickname.indexOf(':');
@@ -325,7 +327,9 @@ public final class SSLUtils implements PostConstruct {
                 return;
             }
 
-            AccessController.checkPermission(new RuntimePermission("SSLPassword"));
+            if (System.getProperty("java.vm.specification.version").compareTo("24") < 0) {
+                AccessController.checkPermission(new RuntimePermission("SSLPassword"));
+            }
         } catch (AccessControlException e) {
             String message = e.getMessage();
             Permission permission = new PropertyPermission(key, "read");

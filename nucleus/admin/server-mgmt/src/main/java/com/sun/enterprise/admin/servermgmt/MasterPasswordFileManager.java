@@ -37,19 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.admin.servermgmt;
 
 import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERPASSWORD_FILE;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
 
+import jakarta.annotation.Nullable;
 import org.glassfish.security.common.FileProtectionUtility;
 
 
@@ -91,20 +96,56 @@ public class MasterPasswordFileManager extends KeystoreManager {
         final File pwdFile = layout.getMasterPasswordFile();    
         FileUtils.deleteFile(pwdFile);
     }
-    
+
+    /**
+     * Create the master password keystore at the default path. This routine can also modify the master password
+     * if the keystore already exists.
+     * @param config
+     * @param masterPassword
+     * @throws RepositoryException
+     */
+    @Deprecated
+    protected void createMasterPasswordFile(RepositoryConfig config, String masterPassword)
+        throws RepositoryException
+    {
+        this.createMasterPasswordFile(config, masterPassword, null);
+    }
+
     /**
      * Create the master password keystore. This routine can also modify the master password
      * if the keystore already exists
-     * @param config
-     * @param masterPassword 
+     * @param config The config information.
+     * @param masterPassword The password to set.
+     * @param path The path to save the master password to.
      * @throws RepositoryException
-     */    
-    protected void createMasterPasswordFile(
-        RepositoryConfig config, String masterPassword) 
+     */
+    protected void createMasterPasswordFile(RepositoryConfig config, String masterPassword, @Nullable String path)
         throws RepositoryException
     {
         final PEFileLayout layout = getFileLayout(config);
-        final File pwdFile = layout.getMasterPasswordFile();                     
+        File mpLocation = layout.getMasterPasswordLocationFile();
+        if (path != null) {
+            File potentialFolder = new File(path);
+            if (potentialFolder.isDirectory()) {
+                path = new File(potentialFolder, MASTERPASSWORD_FILE).getAbsolutePath();
+            }
+
+            try (FileWriter writer = new FileWriter(mpLocation)) {
+                writer.write(path);
+            } catch (IOException e) {
+                Logger.getAnonymousLogger().log(Level.SEVERE,
+                    "Failed to write master-password-location file: ", e);
+            }
+        } else {
+            if (mpLocation.exists()) {
+                if (!mpLocation.delete()) {
+                    Logger.getAnonymousLogger().log(Level.WARNING,
+                        "Failed to delete old master-password-location file.");
+                }
+            }
+        }
+
+        final File pwdFile = layout.getMasterPasswordFile();
         try {                    
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), getMasterPasswordPassword());
             p.setPasswordForAlias(MASTERPASSWORD_FILE, masterPassword.getBytes());
@@ -139,7 +180,22 @@ public class MasterPasswordFileManager extends KeystoreManager {
             //Return null if the password file does not exist.
             return null;
         }
-    }   
+    }
+
+    /**
+     * Changes the master password in the master password file
+     * @param saveMasterPassword
+     * @param config
+     * @param newPassword
+     * @throws RepositoryException
+     */
+    @Deprecated
+    protected void changeMasterPasswordInMasterPasswordFile(RepositoryConfig config, String newPassword,
+        boolean saveMasterPassword) throws RepositoryException
+    {
+        this.changeMasterPasswordInMasterPasswordFile(config, newPassword, saveMasterPassword, null);
+    }
+
     /**
      * Changes the master password in the master password file
      * @param saveMasterPassword
@@ -148,11 +204,11 @@ public class MasterPasswordFileManager extends KeystoreManager {
      * @throws RepositoryException
      */
     protected void changeMasterPasswordInMasterPasswordFile(RepositoryConfig config, String newPassword,
-        boolean saveMasterPassword) throws RepositoryException 
+        boolean saveMasterPassword, @Nullable String newMPLocation) throws RepositoryException
     {
         deleteMasterPasswordFile(config);
         if (saveMasterPassword) {
-            createMasterPasswordFile(config, newPassword);
+            createMasterPasswordFile(config, newPassword, newMPLocation);
         }         
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -317,6 +317,17 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
     String getSsoCookieHttpOnly();
 
     void setSsoCookieHttpOnly(String value);
+
+    @Attribute(defaultValue = "true")
+    String getSessionCookieHttpOnly();
+
+    void setSessionCookieHttpOnly(String value);
+
+    @Attribute(defaultValue = "dynamic")
+    @Pattern(regexp = "(true|false|dynamic)")
+    String getSessionCookieSecure();
+
+    void setSessionCookieSecure(String value);
 
     @DuckTyped
     void addNetworkListener(String name) throws PropertyVetoException;

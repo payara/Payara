@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- configuration/virtualServerEdit.jsf -->
 
@@ -65,7 +66,8 @@
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
         gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
         setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
-        setPageSessionAttribute(key="convertToFalseList" value={"ssoCookieHttpOnly"});
+        setPageSessionAttribute(key="convertToFalseList" value={"ssoCookieHttpOnly", "sessionCookieHttpOnly"});
+        setPageSessionAttribute(key="sessionCookieSecure" value="dynamic");
         //set the following for including buttons.inc
         setPageSessionAttribute(key="edit" value="#{true}" );
         setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
