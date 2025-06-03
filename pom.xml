@@ -365,6 +365,7 @@
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <payara.transformer.version>0.2.13</payara.transformer.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
+        <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
     </properties>
 
     <profiles>
