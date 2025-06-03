@@ -275,7 +275,7 @@
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.4</webservices.version>
-        <santuario.version>4.0.0</santuario.version>
+        <santuario.version>4.0.4</santuario.version>
         <woodstox.version>7.1.0</woodstox.version>
         <woodstock-jsf.version>6.0.1</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>6.0.1</woodstock-jsf-suntheme.version>
