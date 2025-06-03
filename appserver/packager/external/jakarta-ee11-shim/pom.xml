@@ -65,12 +65,6 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- Downgrade shim for Jakarta EL, required by Jersey-HK2/Hibernate Validator(?). Remove once Jersey-HK2/Hibernate Validator(?) upgraded -->
-        <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
         <dependency>
@@ -100,8 +94,6 @@
                                 <Require-Bundle>
                                     <!-- Downgrade shim for Annotations 2.1 (currently 3.0), required by MicroProfile Rest Client -->
                                     jakarta.annotation-api,
-                                    <!-- Downgrade shim for Jakarta EL, required by Jersey-HK2/Hibernate Validator(?). Remove once Jersey-HK2/Hibernate Validator(?) upgraded -->
-                                    jakarta.el-api,
                                     <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
                                     jakarta.ws.rs-api
                                 </Require-Bundle>
@@ -115,8 +107,6 @@
                                     jakarta.annotation;
                                     jakarta.annotation.security;
                                     jakarta.annotation.sql;version="2.1.99";shim=true,
-                                    <!-- Downgrade shim for Jakarta EL, required by Jersey-HK2/Hibernate Validator(?). Remove once Jersey-HK2/Hibernate Validator(?) upgraded-->
-                                    jakarta.el;version="5.0.99";shim=true,
                                     <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
                                     jakarta.ws.rs;
                                     jakarta.ws.rs.client;
