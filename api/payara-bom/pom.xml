@@ -406,11 +406,6 @@
                 <version>${jakarta-persistence-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>jakarta.security.auth.message</groupId>
-                <artifactId>jakarta.security.auth.message-api</artifactId>
-                <version>${jakarta.security.auth.message-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>jakarta.persistence</artifactId>
                 <version>${jakarta-persistence-api.version}</version>
