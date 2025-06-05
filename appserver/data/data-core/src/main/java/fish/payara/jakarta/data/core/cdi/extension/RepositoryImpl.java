@@ -72,9 +72,7 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.*;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByOperation;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
 
@@ -123,7 +121,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     private void evaluateDataQuery(QueryData dataForQuery, Method method) {
         if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> entityType = DataCommonOperationUtility.findEntityTypeInMethod(method);
+            Class<?> entityType = findEntityTypeInMethod(method);
             if (entityType != null) {
                 dataForQuery.setDeclaredEntityClass(entityType);
                 return;
@@ -134,7 +132,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 if (interfaceMethod.equals(method)) {
                     continue;
                 }
-                entityType = DataCommonOperationUtility.findEntityTypeInMethod(interfaceMethod);
+                entityType = findEntityTypeInMethod(interfaceMethod);
                 if (entityType != null) {
                     dataForQuery.setDeclaredEntityClass(entityType);
                     return;
@@ -151,14 +149,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
     }
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
-        Method method = dataForQuery.getMethod();
-        String orderByClause = extractOrderByClause(method);
-        Class<?> declaredEntityClass = dataForQuery.getDeclaredEntityClass();
-        EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
-        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         //get the return type to evaluate if the return correspond to the Pagination processing
-        Class<?> returnType = method.getReturnType();
-        boolean evaluatePages = Page.class.equals(returnType);
+        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
 
         if (parameterAnnotations.length > 0) {
             Object returnObject = processFindByOperation(args,
@@ -172,8 +165,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 return returnObject;
             }
         } else {
-            return FindOperationUtility.processFindAllOperation(declaredEntityClass,
-                    getEntityManager(this.applicationName), orderByClause, entityMetadata);
+            return FindOperationUtility.processFindAllOperation(
+                    dataForQuery.getDeclaredEntityClass(), getEntityManager(this.applicationName), 
+                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery.getEntityMetadata());
         }
     }
 

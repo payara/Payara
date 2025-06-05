@@ -71,13 +71,11 @@ public class FindOperationUtility {
     }
 
     public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, boolean evaluatePages) {
-        Class<?> entityClass = dataForQuery.getDeclaredEntityClass();
-        EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
-        Method method = dataForQuery.getMethod();
         StringBuilder builder = new StringBuilder();
-        builder.append(createBaseFindQuery(entityClass, null, entityMetadata));
+        builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
+                null, dataForQuery.getEntityMetadata()));
         String attributeValue = null;
-        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         int queryPosition = 1;
         boolean hasWhere = false;
         for (Annotation[] annotations : parameterAnnotations) {
@@ -93,7 +91,7 @@ public class FindOperationUtility {
                 }
 
                 if (attributeValue != null) {
-                    attributeValue = preprocessAttributeName(entityMetadata, attributeValue);
+                    attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
                 }
                 builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             }
@@ -104,60 +102,13 @@ public class FindOperationUtility {
             builder.append(")");
         }
 
+        dataForQuery.setQueryString(builder.toString());
+
         //here place to process pagination
         if (evaluatePages) {
-            int maxResults = 0;
-            PageRequest pageRequest = null;
-            Object returnValue = null;
-            List<Sort<Object>> orders = new ArrayList<>();
-            createCountQuery(dataForQuery, hasWhere);
-            //evaluating parameters for pagination
-            for (Object param : args) {
-                if (param instanceof PageRequest) { //Get info for PageRequest
-                    if (maxResults == 0) {
-                        pageRequest = (PageRequest) param;
-                        maxResults = pageRequest.size();
-                    }
-                } else if (param instanceof Order) { //Get info for orders
-                    Iterable<Sort<Object>> order = (Iterable<Sort<Object>>) param;
-                    preprocessOrder(orders, order, dataForQuery);
-                }
-            }
-
-
-            StringBuilder orderQuery = null;
-            //create order query
-            for (Sort<?> sort : orders) {
-                if (orderQuery == null) {
-                    orderQuery = new StringBuilder(" ORDER BY ");
-                } else {
-                    orderQuery.append(", ");
-                }
-
-                String propertyName = sort.property();
-                if (sort.ignoreCase()) {
-                    orderQuery.append("LOWER(");
-                }
-
-                if (propertyName.charAt(propertyName.length() - 1) != ')') {
-                    orderQuery.append("o.");
-                }
-                orderQuery.append(propertyName);
-            }
-
-            if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
-                builder.append(orderQuery.toString());
-                dataForQuery.setQueryString(builder.toString());
-            }
-
-            if (Page.class.equals(method.getReturnType())) {
-                returnValue = new PageImpl(dataForQuery, args, pageRequest, em);
-            }
-
-            return returnValue;
+            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere);
         } else {
             //check order conditions to improve select queries
-            dataForQuery.setQueryString(builder.toString());
             Query q = em.createQuery(dataForQuery.getQueryString());
             for (int i = 0; i < args.length; i++) {
                 if (!excludeParameter(args[i])) {
@@ -168,6 +119,67 @@ public class FindOperationUtility {
         }
     }
 
+
+    public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
+                                           Method method, StringBuilder builder, boolean hasWhere) {
+        PageRequest pageRequest = null;
+        Object returnValue = null;
+        List<Sort<Object>> orders = new ArrayList<>();
+        createCountQuery(dataForQuery, hasWhere);
+        //evaluating parameters for pagination
+        for (Object param : args) {
+            if (param instanceof PageRequest) { //Get info for PageRequest
+                pageRequest = (PageRequest) param;
+            } else if (param instanceof Order) { //Get info for orders
+                Iterable<Sort<Object>> order = (Iterable<Sort<Object>>) param;
+                preprocessOrder(orders, order, dataForQuery);
+            } else if (param instanceof Sort) {
+                preprocessOrder(orders, dataForQuery,(Sort<Object>) param);
+            } else if (param instanceof Sort[]) {
+                preprocessOrder(orders, dataForQuery,(Sort<Object>[]) param);
+            }
+        }
+
+        StringBuilder orderQuery = null;
+        //create order query
+        for (Sort<?> sort : orders) {
+            if (orderQuery == null) {
+                orderQuery = new StringBuilder(" ORDER BY ");
+            } else {
+                orderQuery.append(", ");
+            }
+
+            String propertyName = sort.property();
+            if (sort.ignoreCase()) {
+                orderQuery.append("LOWER(");
+            }
+
+            if (propertyName.charAt(propertyName.length() - 1) != ')') {
+                orderQuery.append("o.");
+            }
+            orderQuery.append(propertyName);
+            
+            if(sort.ignoreCase()) {
+                orderQuery.append(")");
+            }
+            
+            if (sort.isDescending()) {
+               orderQuery.append(" DESC"); 
+            }
+        }
+
+        if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
+            builder.append(orderQuery.toString());
+            dataForQuery.setQueryString(builder.toString());
+        }
+
+        if (Page.class.equals(method.getReturnType())) {
+            returnValue = new PageImpl(dataForQuery, args, pageRequest, em);
+        }
+
+        return returnValue;
+    }
+
     public static void preprocessOrder(List<Sort<Object>> orders, Iterable<Sort<Object>> order, QueryData dataForQuery) {
         for (Sort<Object> sort : order) {
             if (sort == null) {
@@ -176,7 +188,15 @@ public class FindOperationUtility {
                 orders.add(validateSort(sort, dataForQuery.getEntityMetadata(), sort.property()));
             }
         }
-
+    }
+    
+    public static void preprocessOrder(List<Sort<Object>> sorts, QueryData dataForQuery, Sort<Object>... sortArray) {
+        for (Sort<Object> sort : sortArray) {
+            if (sort == null) {
+                throw new MappingException("sort is null");
+            }
+            sorts.add(validateSort(sort, dataForQuery.getEntityMetadata(), sort.property()));
+        }
     }
 
     public static <T> Sort<T> validateSort(Sort<T> sort, EntityMetadata entityMetadata, String attributeName) {

@@ -178,4 +178,13 @@ public class PageImpl<T> implements Page<T> {
         }
         return -1;
     }
+
+    @Override
+    public String toString() {
+        return "PageImpl{" +
+                "pageRequest=" + pageRequest +
+                ", results=" + results +
+                ", totalElements=" + totalElements +
+                '}';
+    }
 }

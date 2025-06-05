@@ -43,6 +43,7 @@ import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.NonUniqueResultException;
+import jakarta.data.page.Page;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -197,7 +198,7 @@ public class DataCommonOperationUtility {
         if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
             if (Collection.class.isAssignableFrom(returnType)
                     || Stream.class.isAssignableFrom(returnType)
-                    || Optional.class.isAssignableFrom(returnType)) {
+                    || Optional.class.isAssignableFrom(returnType) || Page.class.isAssignableFrom(returnType)) {
                 Type genericReturnType = method.getGenericReturnType();
                 if (genericReturnType instanceof ParameterizedType) {
                     ParameterizedType paramType = (ParameterizedType) genericReturnType;
@@ -209,7 +210,7 @@ public class DataCommonOperationUtility {
             } else if (!returnType.isPrimitive() && !returnType.equals(String.class)) {
                 return returnType;
             }
-        }
+        } 
         for (Parameter param : method.getParameters()) {
             Class<?> paramType = param.getType();
             if (!paramType.isPrimitive() && !paramType.equals(String.class)) {
