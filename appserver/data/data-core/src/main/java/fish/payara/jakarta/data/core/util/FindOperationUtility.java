@@ -130,11 +130,21 @@ public class FindOperationUtility {
         for (int i = 0; i < orderByClauses.length; i++) {
             String clause = orderByClauses[i].trim();
             String[] parts = clause.split(" ", 2);
-            String fieldName = parts[0].trim().toLowerCase();
+            String fieldNamePart = parts[0].trim();
+
+            // Extract field name from LOWER() function if present
+            String fieldName;
+            boolean hasLowerFunction = false;
+            if (fieldNamePart.startsWith("LOWER(") && fieldNamePart.endsWith(")")) {
+                fieldName = fieldNamePart.substring(6, fieldNamePart.length() - 1).toLowerCase();
+                hasLowerFunction = true;
+            } else {
+                fieldName = fieldNamePart.toLowerCase();
+            }
 
             if (!entityMetadata.getAttributeNames().containsKey(fieldName)) {
                 throw new MappingException(
-                        "The attribute '" + parts[0].trim() + "' is not mapped on the entity " +
+                        "The attribute '" + fieldName + "' is not mapped on the entity " +
                                 entityMetadata.getEntityName());
             }
 
@@ -144,7 +154,11 @@ public class FindOperationUtility {
                 orderByBuilder.append(", ");
             }
 
-            orderByBuilder.append("o.").append(actualFieldName);
+            if (hasLowerFunction) {
+                orderByBuilder.append("LOWER(o.").append(actualFieldName).append(")");
+            } else {
+                orderByBuilder.append("o.").append(actualFieldName);
+            }
 
             if (parts.length > 1) {
                 orderByBuilder.append(" ").append(parts[1].trim());
@@ -153,6 +167,7 @@ public class FindOperationUtility {
 
         return orderByBuilder.toString();
     }
+
 
     public static String getSingleEntityName(String entityName) {
         if (entityName != null) {
