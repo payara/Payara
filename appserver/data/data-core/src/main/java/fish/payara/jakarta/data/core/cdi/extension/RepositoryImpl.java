@@ -177,16 +177,32 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
     }
 
+
     private String extractOrderByClause(Method method) {
         OrderBy.List orderByList = method.getAnnotation(OrderBy.List.class);
         if (orderByList != null && orderByList.value().length > 0) {
             return String.join(", ", Arrays.stream(orderByList.value())
-                    .map(OrderBy::value)
+                    .map(this::formatOrderByClause)
                     .toArray(String[]::new));
         }
-
         OrderBy orderBy = method.getAnnotation(OrderBy.class);
-        return orderBy != null ? orderBy.value() : null;
+        if (orderBy != null) {
+            return formatOrderByClause(orderBy);
+        }
+        return null;
+    }
+
+    private String formatOrderByClause(OrderBy orderBy) {
+        StringBuilder clause = new StringBuilder();
+        if (orderBy.ignoreCase()) {
+            clause.append("LOWER(").append(orderBy.value()).append(")");
+        } else {
+            clause.append(orderBy.value());
+        }
+        if (orderBy.descending()) {
+            clause.append(" DESC");
+        }
+        return clause.toString();
     }
 
     public void preProcessQuery() {
@@ -194,7 +210,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
         queries.putAll(r);
     }
-
 
     public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
