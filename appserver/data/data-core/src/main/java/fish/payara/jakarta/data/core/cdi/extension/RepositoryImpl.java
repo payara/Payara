@@ -44,6 +44,7 @@ import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.exceptions.MappingException;
+import jakarta.data.page.Page;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
@@ -53,10 +54,6 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -71,11 +68,13 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
-import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteByIdOperation;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByOperation;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
 
@@ -115,8 +114,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case DELETE ->
                     objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-            case FIND ->
-                    objectToReturn = processFindOperation(args, dataForQuery);
+            case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
         }
 
@@ -155,15 +153,27 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
         Method method = dataForQuery.getMethod();
         String orderByClause = extractOrderByClause(method);
-        Class<?> declaredEntityClass= dataForQuery.getDeclaredEntityClass();
+        Class<?> declaredEntityClass = dataForQuery.getDeclaredEntityClass();
         EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        //get the return type to evaluate if the return correspond to the Pagination processing
+        Class<?> returnType = method.getReturnType();
+        boolean evaluatePages = Page.class.equals(returnType);
+
         if (parameterAnnotations.length > 0) {
-            List<Object> resultList = processFindByOperation(args, declaredEntityClass,
-                    getEntityManager(this.applicationName), entityMetadata, method);
-            return processReturnType(dataForQuery, resultList);
+            Object returnObject = processFindByOperation(args,
+                    getEntityManager(this.applicationName), dataForQuery, evaluatePages);
+
+            if (returnObject != null && (returnObject instanceof List<?>)) {
+                List<Object> resultList = (List<Object>) returnObject;
+                return processReturnType(dataForQuery, resultList);
+            } else {
+                //here to return the instance of a page
+                return returnObject;
+            }
         } else {
-            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName), orderByClause, entityMetadata);
+            return FindOperationUtility.processFindAllOperation(declaredEntityClass,
+                    getEntityManager(this.applicationName), orderByClause, entityMetadata);
         }
     }
 
@@ -376,10 +386,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
             entity = null;
         }
-        
+
         return entity;
     }
-    
+
     public Object processQueryOperation(Object[] args, QueryData dataForQuery) {
         return QueryOperationUtility.processQueryOperation(args, dataForQuery, getEntityManager(this.applicationName));
     }
