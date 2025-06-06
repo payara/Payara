@@ -43,6 +43,7 @@ import fish.payara.jakarta.data.core.util.DataCommonOperationUtility;
 import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
+import jakarta.data.Limit;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
@@ -75,8 +76,6 @@ import java.util.stream.Stream;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
-import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteByIdOperation;
-import static fish.payara.jakarta.data.core.util.FindOperationUtility.processFindByOperation;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
 
 /**
@@ -154,19 +153,53 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
         Method method = dataForQuery.getMethod();
-        String orderByClause = extractOrderByClause(method);
-        Class<?> declaredEntityClass= dataForQuery.getDeclaredEntityClass();
+        String orderByClause = extractOrderByClause(method); // Handles @OrderBy annotation
+        Class<?> declaredEntityClass = dataForQuery.getDeclaredEntityClass();
         EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
-        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        if (parameterAnnotations.length > 0) {
-            List<Object> resultList = processFindByOperation(args, declaredEntityClass,
-                    getEntityManager(this.applicationName), entityMetadata, method);
+        EntityManager currentEm = getEntityManager(this.applicationName);
+
+        Limit limit = null;
+        List<Object> actualQueryParameters = new ArrayList<>(); // Parameters for WHERE clause, etc.
+
+        if (args != null) {
+            for (Object arg : args) {
+                if (arg instanceof Limit) {
+                    limit = (Limit) arg;
+                } else {
+                    // Assuming other arguments are for query conditions (e.g., IDs, fields for @By)
+                    actualQueryParameters.add(arg);
+                }
+            }
+        }
+
+        // Determine if this is a "findBy" operation (with specific conditions) or a "findAll"
+        boolean isFindByOperation = !actualQueryParameters.isEmpty() ||
+                Arrays.stream(method.getParameterAnnotations())
+                        .flatMap(Arrays::stream)
+                        .anyMatch(a -> a instanceof By);
+
+        if (isFindByOperation) {
+            // For "findBy" operations (e.g., findById, findBySomeField)
+            List<Object> resultList = FindOperationUtility.processFindByOperation(
+                    actualQueryParameters.toArray(),
+                    declaredEntityClass,
+                    currentEm,
+                    entityMetadata,
+                    method,
+                    limit
+            );
             return processReturnType(dataForQuery, resultList);
         } else {
-            return FindOperationUtility.processFindAllOperation(declaredEntityClass, getEntityManager(this.applicationName), orderByClause, entityMetadata);
+            // For "findAll" operations
+            return FindOperationUtility.processFindAllOperation(
+                    declaredEntityClass,
+                    currentEm,
+                    orderByClause,
+                    entityMetadata,
+                    limit
+            );
         }
     }
-
 
     private String extractOrderByClause(Method method) {
         OrderBy.List orderByList = method.getAnnotation(OrderBy.List.class);
