@@ -427,11 +427,26 @@ public class RepositoryImpl<T> implements InvocationHandler {
         
         return entity;
     }
-    
-    public Object processQueryOperation(Object[] args, QueryData dataForQuery) {
-        return QueryOperationUtility.processQueryOperation(args, dataForQuery, getEntityManager(this.applicationName));
-    }
 
+    public Object processQueryOperation(Object[] args, QueryData dataForQuery) {
+        Limit limit = null;
+        List<Object> queryParams = new ArrayList<>();
+        if (args != null) {
+            for (Object arg : args) {
+                if (arg instanceof Limit) {
+                    limit = (Limit) arg;
+                } else {
+                    queryParams.add(arg);
+                }
+            }
+        }
+        return QueryOperationUtility.processQueryOperation(
+                queryParams.toArray(),
+                dataForQuery,
+                getEntityManager(this.applicationName),
+                limit
+        );
+    }
 
     public TransactionManager getTransactionManager() {
         ServiceLocator locator = Globals.get(ServiceLocator.class);
