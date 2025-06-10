@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import jakarta.data.Limit;
 import fish.payara.jakarta.data.core.cdi.extension.PageImpl;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import fish.payara.jakarta.data.core.cdi.extension.QueryType;
@@ -72,9 +73,18 @@ public class FindOperationUtility {
     public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause, EntityMetadata entityMetadata) {
         Query q = em.createQuery(createBaseFindQuery(entityClass, orderByClause, entityMetadata));
         return q.getResultStream();
+    
+    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
+                                                    EntityMetadata entityMetadata, Limit limit) {
+        String qlString = createBaseFindQuery(entityClass, orderByClause, entityMetadata);
+        Query query = em.createQuery(qlString);
+
+        verifyLimit(limit, query);
+
+        return query.getResultStream();
     }
 
-    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, boolean evaluatePages) {
+    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, boolean evaluatePages, Limit limit) {
         StringBuilder builder = new StringBuilder();
         builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
                 null, dataForQuery.getEntityMetadata()));
@@ -119,6 +129,9 @@ public class FindOperationUtility {
                     q.setParameter(i + 1, args[i]);
                 }
             }
+
+            verifyLimit(limit, query);
+            
             return q.getResultList();
         }
     }
