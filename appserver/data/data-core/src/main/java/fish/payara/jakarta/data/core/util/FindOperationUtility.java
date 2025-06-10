@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import jakarta.data.Limit;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
@@ -55,13 +56,18 @@ import java.util.stream.Stream;
  */
 public class FindOperationUtility {
     
-    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause, EntityMetadata entityMetadata) {
-        Query q = em.createQuery(createBaseFindQuery(entityClass, orderByClause, entityMetadata));
-        return q.getResultStream();
+    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
+                                                    EntityMetadata entityMetadata, Limit limit) {
+        String qlString = createBaseFindQuery(entityClass, orderByClause, entityMetadata);
+        Query query = em.createQuery(qlString);
+
+        verifyLimit(limit, query);
+
+        return query.getResultStream();
     }
 
     public static List<Object> processFindByOperation(Object[] args, Class<?> entityClass, EntityManager em,
-                                                   EntityMetadata entityMetadata, Method method) {
+                                                      EntityMetadata entityMetadata, Method method, Limit limit) {
         StringBuilder builder =  new StringBuilder();
         builder.append(createBaseFindQuery(entityClass, null, entityMetadata));
         String attributeValue = null;
@@ -87,17 +93,29 @@ public class FindOperationUtility {
             }
             queryPosition++;
         }
-        
+
         if (hasWhere) {
             builder.append(")");
         }
-        Query q = em.createQuery(builder.toString());
+        Query query = em.createQuery(builder.toString());
         for (int i = 0; i < args.length; i++) {
-            q.setParameter(i+1, args[i]);
+            query.setParameter(i+1, args[i]);
         }
-        return q.getResultList();
+
+        verifyLimit(limit, query);
+
+        return query.getResultList();
     }
-    
+
+    private static void verifyLimit(Limit limit, Query query) {
+        if (limit != null) {
+            // limit.startAt() is 1-based and guaranteed to be >= 1. JPA's setFirstResult is 0-based.
+            query.setFirstResult((int) (limit.startAt() - 1));
+            // limit.maxResults() is guaranteed to be >= 1.
+            query.setMaxResults(limit.maxResults());
+        }
+    }
+
     public static String preprocessAttributeName(EntityMetadata entityMetadata, String attributeValue) {
         if (attributeValue.endsWith(")")) {
             //process this(id)

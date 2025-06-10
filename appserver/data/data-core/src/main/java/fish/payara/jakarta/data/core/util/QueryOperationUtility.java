@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
+import jakarta.data.Limit;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
@@ -63,7 +64,8 @@ public class QueryOperationUtility {
 
     private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER", "BY", "GROUP", "HAVING");
 
-    public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager) {
+    public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
+                                               Limit limit ) {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         Map<Integer, String> patternPositions = new LinkedHashMap<>();
@@ -87,13 +89,16 @@ public class QueryOperationUtility {
                 for (int i = 0; i < args.length && params.length == args.length; i++) {
                     q.setParameter((String) params[i], args[i]);
                 }
-                objectToReturn = processReturnType(dataForQuery, q.getResultList());
             } else {
                 for (int i = 1; i <= args.length; i++) {
                     q.setParameter(i, args[i - 1]);
                 }
-                objectToReturn = processReturnType(dataForQuery, q.getResultList());
             }
+            if (limit != null) {
+                q.setFirstResult((int) (limit.startAt() - 1));
+                q.setMaxResults(limit.maxResults());
+            }
+            objectToReturn = processReturnType(dataForQuery, q.getResultList());
         }
 
         return objectToReturn;
@@ -239,6 +244,9 @@ public class QueryOperationUtility {
             for (String parameter : parameters) {
                 boolean found = false;
                 for (Parameter parameterMethod : method.getParameters()) {
+                    if (Limit.class.isAssignableFrom(parameterMethod.getType())) {
+                        continue;
+                    }
                     Param param = parameterMethod.getAnnotation(Param.class); //get param annotation if available to validate named param
                     String paramName = null;
                     if (param != null) {
