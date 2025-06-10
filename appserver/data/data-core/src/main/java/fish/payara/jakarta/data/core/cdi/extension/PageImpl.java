@@ -47,6 +47,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
+
+/**
+ * This class represent the Page<T> implementation for pagination from the offset model
+ * @param <T>
+ */
 public class PageImpl<T> implements Page<T> {
 
     private final Object[] args;
@@ -64,21 +70,25 @@ public class PageImpl<T> implements Page<T> {
 
         TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
-            //need to process parameters 
+            Object[] params = queryData.getJpqlParameters().toArray();
+            for (int i = 0; i < params.length; i++) {
+                query.setParameter((String) params[i], args[i]);
+            }
+        } else {
+            for (int i = 0; i < args.length; i++) {
+                if (!excludeParameter(args[i])) {
+                    query.setParameter(i + 1, args[i]);
+                }
+            }
         }
         int maxPageSize = pageRequest.size();
         query.setFirstResult(this.processOffset());
-        query.setMaxResults(maxPageSize + (maxPageSize == Integer.MAX_VALUE ? 0 : 1));
+        query.setMaxResults(maxPageSize);
         results = query.getResultList();
     }
 
     @Override
     public List<T> content() {
-        int size = results.size();
-        int max = pageRequest.size();
-        if (size > max) {
-            return results.subList(0, max);
-        }
         return results;
     }
 
@@ -134,15 +144,17 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public long totalElements() {
-        if (totalElements == -1)
+        if (totalElements == -1) {
             totalElements = countTotalElements();
+        }
         return totalElements;
     }
 
     @Override
     public long totalPages() {
-        if (totalElements == -1)
+        if (totalElements == -1) {
             totalElements = countTotalElements();
+        }
         return totalElements / pageRequest.size() + (totalElements % pageRequest.size() > 0 ? 1 : 0);
     }
 
@@ -151,13 +163,21 @@ public class PageImpl<T> implements Page<T> {
             throw new IllegalArgumentException("Page request does not contain any elements");
         }
 
-        if (pageRequest.page() == 1L && results.size() <= pageRequest.size() &&
-                pageRequest.size() < Integer.MAX_VALUE) {
+        if (pageRequest.page() == 1L && results.size() <= pageRequest.size()) {
             return results.size();
         }
         TypedQuery<Long> queryCount = this.entityManager.createQuery(queryData.getCountQueryString(), Long.class);
         if (!queryData.getJpqlParameters().isEmpty()) {
-            //here to process parameters
+            Object[] params = queryData.getJpqlParameters().toArray();
+            for (int i = 0; i < params.length; i++) {
+                queryCount.setParameter((String) params[i], args[i]);
+            }
+        } else {
+            for (int i = 0; i < args.length; i++) {
+                if (!excludeParameter(args[i])) {
+                    queryCount.setParameter(i + 1, args[i]);
+                }
+            }
         }
         return queryCount.getSingleResult();
     }
@@ -171,12 +191,7 @@ public class PageImpl<T> implements Page<T> {
         if (this.pageRequest.mode() != PageRequest.Mode.OFFSET) {
             throw new IllegalArgumentException("The page request does not support mode " + this.pageRequest.mode());
         }
-        int maxPageSize = pageRequest.size();
-        long pageIndex = pageRequest.page() - 1;
-        if (Integer.MAX_VALUE / maxPageSize >= pageIndex) {
-            return (int) (pageIndex * maxPageSize);
-        }
-        return -1;
+        return (int) ((pageRequest.page() - 1) * pageRequest.size());
     }
 
     @Override
