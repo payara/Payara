@@ -135,7 +135,7 @@ public class FindOperationUtility {
         PageRequest pageRequest = null;
         Object returnValue = null;
         List<Sort<Object>> orders = new ArrayList<>();
-        createCountQuery(dataForQuery, hasWhere, patternPositions != null ? getIndexFromMap("WHERE", patternPositions) : -1);
+        createCountQuery(dataForQuery, hasWhere, dataForQuery.getQueryString().indexOf("WHERE"));
         //evaluating parameters for pagination
         for (Object param : args) {
             if (param instanceof PageRequest) { //Get info for PageRequest

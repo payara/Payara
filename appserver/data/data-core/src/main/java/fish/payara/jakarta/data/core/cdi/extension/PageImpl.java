@@ -67,7 +67,7 @@ public class PageImpl<T> implements Page<T> {
         this.args = args;
         this.pageRequest = pageRequest;
         this.entityManager = em;
-
+        
         TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
@@ -85,6 +85,7 @@ public class PageImpl<T> implements Page<T> {
         query.setFirstResult(this.processOffset());
         query.setMaxResults(maxPageSize);
         results = query.getResultList();
+        totalElements();
     }
 
     @Override
@@ -99,14 +100,12 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public int numberOfElements() {
-        int size = results.size();
-        int max = pageRequest.size();
-        return size > max ? max : size;
+        return results.size();
     }
 
     @Override
     public boolean hasNext() {
-        return results.size() > pageRequest.size() || pageRequest.size() == Integer.MAX_VALUE && results.size() == pageRequest.size();
+        return totalPages() > pageRequest.page();
     }
 
     @Override
@@ -152,9 +151,6 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public long totalPages() {
-        if (totalElements == -1) {
-            totalElements = countTotalElements();
-        }
         return totalElements / pageRequest.size() + (totalElements % pageRequest.size() > 0 ? 1 : 0);
     }
 
@@ -162,10 +158,7 @@ public class PageImpl<T> implements Page<T> {
         if (!pageRequest.requestTotal()) {
             throw new IllegalArgumentException("Page request does not contain any elements");
         }
-
-        if (pageRequest.page() == 1L && results.size() <= pageRequest.size()) {
-            return results.size();
-        }
+        
         TypedQuery<Long> queryCount = this.entityManager.createQuery(queryData.getCountQueryString(), Long.class);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
@@ -196,10 +189,8 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public String toString() {
-        return "PageImpl{" +
-                "pageRequest=" + pageRequest +
-                ", results=" + results +
-                ", totalElements=" + totalElements +
-                '}';
+        return "Page:" + this.pageRequest.page() + 
+                " From Entity:"+this.queryData.getDeclaredEntityClass().getName() +
+                " page size:"+this.pageRequest.size();
     }
 }
