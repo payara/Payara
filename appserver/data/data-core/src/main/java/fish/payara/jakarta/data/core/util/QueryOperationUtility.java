@@ -56,6 +56,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.parametersToExclude;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.processPagination;
@@ -68,11 +69,11 @@ public class QueryOperationUtility {
     private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER", "BY", "GROUP", "HAVING");
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               Limit limit ) {
+                                               Limit limit) {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
-        
+
         Map<Integer, String> patternPositions = new LinkedHashMap<>();
         Map<String, Set<String>> queryMapping = null;
         if (queryAnnotation != null) {
@@ -84,7 +85,7 @@ public class QueryOperationUtility {
         }
 
         Object objectToReturn = null;
-        if(!evaluatePages) {
+        if (!evaluatePages) {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
                 String query = entry.getKey();
                 jakarta.persistence.Query q = entityManager.createQuery(query);
@@ -96,7 +97,9 @@ public class QueryOperationUtility {
                     }
                 } else {
                     for (int i = 1; i <= args.length; i++) {
-                        q.setParameter(i, args[i - 1]);
+                        if (!excludeParameter(args[i - 1])) {
+                            q.setParameter(i, args[i - 1]);
+                        }
                     }
                 }
                 if (limit != null) {
@@ -109,8 +112,8 @@ public class QueryOperationUtility {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
-            objectToReturn = processPagination(entityManager, dataForQuery, args, 
-                    method, new StringBuilder(dataForQuery.getQueryString()), patternPositions.containsValue("WHERE"), 
+            objectToReturn = processPagination(entityManager, dataForQuery, args,
+                    method, new StringBuilder(dataForQuery.getQueryString()), patternPositions.containsValue("WHERE"),
                     patternPositions);
         }
 
@@ -257,12 +260,12 @@ public class QueryOperationUtility {
             for (String parameter : parameters) {
                 boolean found = false;
                 for (Parameter parameterMethod : method.getParameters()) {
-                    Param param = parameterMethod.getAnnotation(Param.class); 
+                    Param param = parameterMethod.getAnnotation(Param.class);
                     String paramName = null;
                     if (param != null) {
                         paramName = param.value();
                         jpqlParameters.add(paramName);
-                    } else if (parameterMethod.isNamePresent() 
+                    } else if (parameterMethod.isNamePresent()
                             && !isPaginationType(parameterMethod)) {
                         paramName = parameterMethod.getName();
                         jpqlParameters.add(paramName);
@@ -286,9 +289,9 @@ public class QueryOperationUtility {
             }
         }
     }
-    
+
     public static boolean isPaginationType(Parameter parameterMethod) {
-        Optional<Class<?>> found = parametersToExclude.stream().filter(p -> p.equals(parameterMethod.getParameterizedType()) 
+        Optional<Class<?>> found = parametersToExclude.stream().filter(p -> p.equals(parameterMethod.getParameterizedType())
                 || p.equals(parameterMethod.getType())).findAny();
         return found.isPresent();
     }
