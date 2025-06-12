@@ -51,6 +51,7 @@ import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludePar
 
 /**
  * This class represent the Page<T> implementation for pagination from the offset model
+ *
  * @param <T>
  */
 public class PageImpl<T> implements Page<T> {
@@ -67,7 +68,7 @@ public class PageImpl<T> implements Page<T> {
         this.args = args;
         this.pageRequest = pageRequest;
         this.entityManager = em;
-        
+
         TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
@@ -158,7 +159,7 @@ public class PageImpl<T> implements Page<T> {
         if (!pageRequest.requestTotal()) {
             throw new IllegalArgumentException("Page request does not contain any elements");
         }
-        
+
         TypedQuery<Long> queryCount = this.entityManager.createQuery(queryData.getCountQueryString(), Long.class);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
@@ -173,10 +174,10 @@ public class PageImpl<T> implements Page<T> {
             }
         }
         List results = queryCount.getResultList();
-        if(results.size() == 1) {
+        if (results.size() == 1) {
             return (Long) results.get(0);
-        } else if(results.size() > 1) {
-           return results.size();
+        } else if (results.size() > 1) {
+            return results.size();
         } else {
             return 0;
         }
@@ -196,8 +197,8 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public String toString() {
-        return "Page:" + this.pageRequest.page() + 
-                " From Entity:"+this.queryData.getDeclaredEntityClass().getName() +
-                " page size:"+this.pageRequest.size();
+        return "Page:" + this.pageRequest.page() +
+                " From Entity:" + this.queryData.getDeclaredEntityClass().getName() +
+                " page size:" + this.pageRequest.size();
     }
 }
