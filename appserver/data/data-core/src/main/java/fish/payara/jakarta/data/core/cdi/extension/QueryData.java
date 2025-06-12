@@ -55,6 +55,8 @@ public class QueryData {
     private QueryType queryType;
     private EntityMetadata entityMetadata;
     private Set<String> jpqlParameters = new LinkedHashSet<>();
+    private String queryString;
+    private String countQueryString;
 
     public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
         this.repositoryInterface = repositoryInterface;
@@ -111,6 +113,22 @@ public class QueryData {
 
     public void setEntityMetadata(EntityMetadata entityMetadata) {
         this.entityMetadata = entityMetadata;
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+
+    public void setQueryString(String queryString) {
+        this.queryString = queryString;
+    }
+
+    public String getCountQueryString() {
+        return countQueryString;
+    }
+
+    public void setCountQueryString(String countQueryString) {
+        this.countQueryString = countQueryString;
     }
 
     public Set<String> getJpqlParameters() {

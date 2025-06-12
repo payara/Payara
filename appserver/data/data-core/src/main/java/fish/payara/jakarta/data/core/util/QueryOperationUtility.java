@@ -42,6 +42,7 @@ package fish.payara.jakarta.data.core.util;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import jakarta.data.Limit;
 import jakarta.data.exceptions.MappingException;
+import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
@@ -55,7 +56,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.parametersToExclude;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.processPagination;
 
 /**
  * Utility class used to process Jakarta Data query operations
@@ -65,9 +69,11 @@ public class QueryOperationUtility {
     private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER", "BY", "GROUP", "HAVING");
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               Limit limit ) {
+                                               Limit limit) {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
+        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+
         Map<Integer, String> patternPositions = new LinkedHashMap<>();
         Map<String, Set<String>> queryMapping = null;
         if (queryAnnotation != null) {
@@ -79,26 +85,36 @@ public class QueryOperationUtility {
         }
 
         Object objectToReturn = null;
-
-        for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
-            String query = entry.getKey();
-            jakarta.persistence.Query q = entityManager.createQuery(query);
-            validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
-            if (!entry.getValue().isEmpty()) {
-                Object[] params = dataForQuery.getJpqlParameters().toArray();
-                for (int i = 0; i < args.length && params.length == args.length; i++) {
-                    q.setParameter((String) params[i], args[i]);
+        if (!evaluatePages) {
+            for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
+                String query = entry.getKey();
+                jakarta.persistence.Query q = entityManager.createQuery(query);
+                validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
+                if (!entry.getValue().isEmpty()) {
+                    Object[] params = dataForQuery.getJpqlParameters().toArray();
+                    for (int i = 0; i < params.length; i++) {
+                        q.setParameter((String) params[i], args[i]);
+                    }
+                } else {
+                    for (int i = 1; i <= args.length; i++) {
+                        if (!excludeParameter(args[i - 1])) {
+                            q.setParameter(i, args[i - 1]);
+                        }
+                    }
                 }
-            } else {
-                for (int i = 1; i <= args.length; i++) {
-                    q.setParameter(i, args[i - 1]);
+                if (limit != null) {
+                    q.setFirstResult((int) (limit.startAt() - 1));
+                    q.setMaxResults(limit.maxResults());
                 }
+                objectToReturn = processReturnType(dataForQuery, q.getResultList());
             }
-            if (limit != null) {
-                q.setFirstResult((int) (limit.startAt() - 1));
-                q.setMaxResults(limit.maxResults());
+        } else {
+            for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
+                validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
-            objectToReturn = processReturnType(dataForQuery, q.getResultList());
+            objectToReturn = processPagination(entityManager, dataForQuery, args,
+                    method, new StringBuilder(dataForQuery.getQueryString()), patternPositions.containsValue("WHERE"),
+                    patternPositions);
         }
 
         return objectToReturn;
@@ -152,7 +168,7 @@ public class QueryOperationUtility {
 
         Map<String, Set<String>> queryMapping = new LinkedHashMap<>();
         queryMapping.put(queryBuilder.toString(), parameters);
-
+        dataForQuery.setQueryString(queryBuilder.toString());
         return queryMapping;
     }
 
@@ -244,15 +260,13 @@ public class QueryOperationUtility {
             for (String parameter : parameters) {
                 boolean found = false;
                 for (Parameter parameterMethod : method.getParameters()) {
-                    if (Limit.class.isAssignableFrom(parameterMethod.getType())) {
-                        continue;
-                    }
-                    Param param = parameterMethod.getAnnotation(Param.class); //get param annotation if available to validate named param
+                    Param param = parameterMethod.getAnnotation(Param.class);
                     String paramName = null;
                     if (param != null) {
                         paramName = param.value();
                         jpqlParameters.add(paramName);
-                    } else if (parameterMethod.isNamePresent()) {
+                    } else if (parameterMethod.isNamePresent()
+                            && !isPaginationType(parameterMethod)) {
                         paramName = parameterMethod.getName();
                         jpqlParameters.add(paramName);
                     }
@@ -274,6 +288,12 @@ public class QueryOperationUtility {
                 }
             }
         }
+    }
+
+    public static boolean isPaginationType(Parameter parameterMethod) {
+        Optional<Class<?>> found = parametersToExclude.stream().filter(p -> p.equals(parameterMethod.getParameterizedType())
+                || p.equals(parameterMethod.getType())).findAny();
+        return found.isPresent();
     }
 
 
