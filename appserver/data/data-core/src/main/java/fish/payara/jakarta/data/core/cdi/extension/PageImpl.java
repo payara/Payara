@@ -172,7 +172,14 @@ public class PageImpl<T> implements Page<T> {
                 }
             }
         }
-        return queryCount.getSingleResult();
+        List results = queryCount.getResultList();
+        if(results.size() == 1) {
+            return (Long) results.get(0);
+        } else if(results.size() > 1) {
+           return results.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override
