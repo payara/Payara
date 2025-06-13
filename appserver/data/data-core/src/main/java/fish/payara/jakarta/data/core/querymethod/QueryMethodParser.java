@@ -122,7 +122,6 @@ public class QueryMethodParser {
         }
         if (!isEof()) {
             throw new QueryMethodSyntaxException("Unexpected text", methodName, currentToken, tokens, tokensPositions);
-            //throw new QueryMethodSyntaxException("Unexpected text at position " + tokensPositions.get(currentToken));
         }
     }
 
@@ -139,8 +138,11 @@ public class QueryMethodParser {
         }
     }
 
-    private void grammarAction() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    private void grammarAction() throws QueryMethodSyntaxException {
+        grammarIgnoredText(Set.of(KEYWORD_BY));
+        if (follows(KEYWORD_BY)) {
+            grammarRestriction();
+        }
     }
 
     private void grammarRestriction() throws QueryMethodSyntaxException {

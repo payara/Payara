@@ -143,6 +143,64 @@ public class QueryMethodParserTest {
                 parser.getConditions());
     }
 
+    @Test
+    public void testCountByNumber() throws QueryMethodSyntaxException {
+        QueryMethodParser parser = new QueryMethodParser("countByNumber");
+        List<String> tokens = parser.parse().getTokens();
+
+        assertEquals(QueryMethodParser.Action.COUNT, parser.getAction());
+        assertEquals(List.of("By", "Number"), tokens);
+        assertEquals(
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Number", false, false, null)
+                ),
+                parser.getConditions());
+    }
+
+    @Test
+    public void testCountByNumberWithIgnoredTest() throws QueryMethodSyntaxException {
+        QueryMethodParser parser = new QueryMethodParser("countSomeIgnoredTextWithNumber5ByNumber");
+        List<String> tokens = parser.parse().getTokens();
+
+        assertEquals(QueryMethodParser.Action.COUNT, parser.getAction());
+        assertEquals(List.of("Some", "Ignored", "Text", "With", "Number", "5", "By", "Number"), tokens);
+        assertEquals(
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Number", false, false, null)
+                ),
+                parser.getConditions());
+    }
+
+    @Test
+    public void testDeleteByNameLikeAndPriceLessThan() throws QueryMethodSyntaxException {
+        QueryMethodParser parser = new QueryMethodParser("deleteByNameLikeAndPriceLessThan");
+        List<String> tokens = parser.parse().getTokens();
+
+        assertEquals(QueryMethodParser.Action.DELETE, parser.getAction());
+        assertEquals(List.of("By", "Name", "Like", "And", "Price", "Less", "Than"), tokens);
+        assertEquals(
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Name", false, false, "Like"),
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.AND, "Price", false, false, "LessThan")
+                ),
+                parser.getConditions());
+    }
+
+    @Test
+    public void testExistsByNameLikeAndPriceLessThan() throws QueryMethodSyntaxException {
+        QueryMethodParser parser = new QueryMethodParser("existsByNameLikeAndPriceLessThan");
+        List<String> tokens = parser.parse().getTokens();
+
+        assertEquals(QueryMethodParser.Action.EXISTS, parser.getAction());
+        assertEquals(List.of("By", "Name", "Like", "And", "Price", "Less", "Than"), tokens);
+        assertEquals(
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Name", false, false, "Like"),
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.AND, "Price", false, false, "LessThan")
+                ),
+                parser.getConditions());
+    }
+
     /**
      * Test 1 field in OrderBy.
      *
