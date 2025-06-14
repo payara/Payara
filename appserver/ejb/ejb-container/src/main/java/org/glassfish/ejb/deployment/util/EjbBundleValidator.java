@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.util;
 
@@ -599,7 +599,7 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                             relativeJarPath);
 
                         if( bundle == null ) {
-                            throw new IllegalStateException("Invalid @DependOn value = " + next +
+                            throw new IllegalStateException("Invalid @DependsOn value = " + next +
                                     " for Singleton " + sessionDesc.getName());
                         }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -135,7 +135,7 @@ public class SingletonLifeCycleManager {
             BundleDescriptor bundle = app.getRelativeBundle(sessionDesc.getEjbBundleDescriptor(),
                     relativeJarPath);
             if (bundle == null) {
-                throw new IllegalStateException("Invalid @DependOn value = " + origName +
+                throw new IllegalStateException("Invalid @DependsOn value = " + origName +
                         " for Singleton " + sessionDesc.getName());
             }
             normalizedName = bundle.getModuleDescriptor().getArchiveUri() + "#" + ejbName;
