@@ -390,20 +390,24 @@ public class QueryMethodParserTest {
     }
 
     // ----------------- Aditional Tests ---------------------
-
+    /**
+     * Validate Or.
+     *
+     * @throws QueryMethodSyntaxException
+     */
     @Test
     public void testFindByTitleOrAuthor() throws QueryMethodSyntaxException {
         QueryMethodParser parser = new QueryMethodParser("findByTitleOrAuthor").parse();
         assertEquals(
-            List.of(
-                    new QueryMethodParser.Condition(LogicalOperator.NONE, "Title", false, false, null),
-                    new QueryMethodParser.Condition(LogicalOperator.OR, "Author", false, false, null)
-            ),
-            parser.getConditions());
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Title", false, false, null),
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.OR, "Author", false, false, null)
+                ),
+                parser.getConditions());
     }
 
     /**
-     * Validate And precedence over Or
+     * Validate And precedence over Or.
      *
      * @throws QueryMethodSyntaxException
      */
@@ -411,26 +415,26 @@ public class QueryMethodParserTest {
     public void testFindByPriceLessThanOrNameLikeAndPublishedTrue() throws QueryMethodSyntaxException {
         QueryMethodParser parser = new QueryMethodParser("findByPriceLessThanOrNameLikeAndPublishedTrue").parse();
         assertEquals(
-            List.of(
-                    new QueryMethodParser.Condition(LogicalOperator.NONE, "Price", false, false, "LessThan"),
-                    new QueryMethodParser.Condition(LogicalOperator.OR, "Name", false, false, "Like"),
-                    new QueryMethodParser.Condition(LogicalOperator.AND, "Published", false, false, "True")
-            ),
-            parser.getConditions());
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Price", false, false, "LessThan"),
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.OR, "Name", false, false, "Like"),
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.AND, "Published", false, false, "True")
+                ),
+                parser.getConditions());
     }
 
     @Test
     public void testFindByNameNotLike() throws QueryMethodSyntaxException {
         QueryMethodParser parser = new QueryMethodParser("findByNameNotLike").parse();
         assertEquals(
-            List.of(
-                    new QueryMethodParser.Condition(LogicalOperator.NONE, "Name", false, true, "Like")
-            ),
-            parser.getConditions());
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Name", false, true, "Like")
+                ),
+                parser.getConditions());
     }
 
     /**
-     * Testing "NotEqual"
+     * Testing "NotEqual".
      *
      * @throws QueryMethodSyntaxException
      */
@@ -438,10 +442,10 @@ public class QueryMethodParserTest {
     public void testFindByNameNot() throws QueryMethodSyntaxException {
         QueryMethodParser parser = new QueryMethodParser("findByNameNot").parse();
         assertEquals(
-            List.of(
-                    new QueryMethodParser.Condition(LogicalOperator.NONE, "Name", false, true, null)
-            ),
-            parser.getConditions());
+                List.of(
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Name", false, true, null)
+                ),
+                parser.getConditions());
     }
 
     @Test
@@ -449,19 +453,19 @@ public class QueryMethodParserTest {
         QueryMethodParser parser = new QueryMethodParser("findByNameIgnoreCase").parse();
         assertEquals(
                 List.of(
-                        new QueryMethodParser.Condition(LogicalOperator.NONE, "Name", true, false, null)
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Name", true, false, null)
                 ),
                 parser.getConditions());
     }
 
     @Test
-    public void testFindByTitleContainsIgnoreCase() throws QueryMethodSyntaxException {
-        QueryMethodParser parser = new QueryMethodParser("findByTitleContainsIgnoreCase").parse();
+    public void testFindByTitleIgnoreCaseContains() throws QueryMethodSyntaxException {
+        QueryMethodParser parser = new QueryMethodParser("findByTitleIgnoreCaseContains").parse();
         assertEquals(
                 List.of(
-                        new QueryMethodParser.Condition(LogicalOperator.NONE, "Title", true, false, "Contains")
+                        new QueryMethodParser.Condition(QueryMethodParser.LogicalOperator.NONE, "Title", true, false, "Contains")
                 ),
                 parser.getConditions());
     }
-    
+
 }
