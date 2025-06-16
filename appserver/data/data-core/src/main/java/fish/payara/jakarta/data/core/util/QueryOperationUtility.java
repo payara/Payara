@@ -46,6 +46,12 @@ import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
@@ -56,6 +62,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
+import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteReturn;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.parametersToExclude;
@@ -67,20 +74,34 @@ import static fish.payara.jakarta.data.core.util.FindOperationUtility.processPag
 public class QueryOperationUtility {
 
     private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER", "BY", "GROUP", "HAVING");
+    private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               Limit limit) {
+                                               TransactionManager transactionManager, Limit limit) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
+        String mappedQuery = queryAnnotation.value();
         boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+        int length = mappedQuery.length();
+        int firstCharPosition = 0;
+        char firstChar = ' ';
+        while (firstCharPosition < length && Character.isWhitespace(firstChar)) {
+            firstChar = mappedQuery.charAt(firstCharPosition);
+            firstCharPosition++;
+        }
 
-        Map<Integer, String> patternPositions = new LinkedHashMap<>();
+        Map<Integer, String> patternSelectPositions = new LinkedHashMap<>();
+        Map<Integer, String> patternDeletePositions;
         Map<String, Set<String>> queryMapping = null;
         if (queryAnnotation != null) {
-            String mappedQuery = queryAnnotation.value();
             if (!mappedQuery.isEmpty()) {
-                patternPositions = preprocessQueryString(mappedQuery);
-                queryMapping = processQuery(mappedQuery, patternPositions, dataForQuery);
+                if (firstChar == 'D' || firstChar == 'd') {
+                    patternDeletePositions = preprocessQueryString(mappedQuery, deleteQueryPatterns);
+                    queryMapping = processQuery(mappedQuery, patternDeletePositions, dataForQuery);
+                } else {
+                    patternSelectPositions = preprocessQueryString(mappedQuery, selectQueryPatterns);
+                    queryMapping = processQuery(mappedQuery, patternSelectPositions, dataForQuery);
+                }
             }
         }
 
@@ -96,7 +117,7 @@ public class QueryOperationUtility {
                         q.setParameter((String) params[i], args[i]);
                     }
                 } else {
-                    for (int i = 1; i <= args.length; i++) {
+                    for (int i = 1; args != null && i <= args.length; i++) {
                         if (!excludeParameter(args[i - 1])) {
                             q.setParameter(i, args[i - 1]);
                         }
@@ -106,15 +127,26 @@ public class QueryOperationUtility {
                     q.setFirstResult((int) (limit.startAt() - 1));
                     q.setMaxResults(limit.maxResults());
                 }
-                objectToReturn = processReturnType(dataForQuery, q.getResultList());
+
+                if (firstChar == 'D' || firstChar == 'd') {
+                    transactionManager.begin();
+                    entityManager.joinTransaction();
+                    int deleteReturn = q.executeUpdate();
+                    entityManager.flush();
+                    transactionManager.commit();
+
+                    return processDeleteReturn(method, deleteReturn);
+                } else {
+                    objectToReturn = processReturnType(dataForQuery, q.getResultList());
+                }
             }
         } else {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
-                    method, new StringBuilder(dataForQuery.getQueryString()), patternPositions.containsValue("WHERE"),
-                    patternPositions);
+                    method, new StringBuilder(dataForQuery.getQueryString()), patternSelectPositions.containsValue("WHERE"),
+                    patternSelectPositions);
         }
 
         return objectToReturn;
@@ -172,9 +204,9 @@ public class QueryOperationUtility {
         return queryMapping;
     }
 
-    public static Map<Integer, String> preprocessQueryString(String queryString) {
+    public static Map<Integer, String> preprocessQueryString(String queryString, List<String> patterns) {
         Map<Integer, String> patternPositions = new LinkedHashMap<>();
-        for (String p : selectQueryPatterns) {
+        for (String p : patterns) {
             int startIndex = queryString.toLowerCase().indexOf(p.toLowerCase());
             if (startIndex != -1) {
                 patternPositions.put(startIndex, p);
@@ -195,6 +227,14 @@ public class QueryOperationUtility {
                 } else if (patternPositions.containsValue("WHERE")) {
                     int whereIndex = getIndexFromMap("WHERE", patternPositions);
                     queryBuilder.append(query.substring(selectIndex + 6, whereIndex));
+                }
+            }
+            case "DELETE" -> {
+                queryBuilder.append("DELETE");
+                int deleteIndex = getIndexFromMap("DELETE", patternPositions);
+                if (patternPositions.containsValue("FROM")) {
+                    int fromIndex = getIndexFromMap("FROM", patternPositions);
+                    queryBuilder.append(query.substring(deleteIndex + 6, fromIndex));
                 }
             }
             case "FROM" -> {
