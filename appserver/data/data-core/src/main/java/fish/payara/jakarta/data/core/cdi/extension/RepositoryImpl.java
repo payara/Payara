@@ -76,6 +76,7 @@ import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.eval
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
+import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteReturn;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
 
 /**
@@ -342,13 +343,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         }
 
-        if (method.getReturnType().equals(Integer.TYPE)) {
-            return Integer.valueOf(returnValue);
-        } else if (method.getReturnType().equals(Void.TYPE)) {
-            return null;
-        } else {
-            return Long.valueOf(returnValue);
-        }
+        return processDeleteReturn(method, returnValue);
     }
 
     private static List<Object> getIds(List<?> arr) {
@@ -410,7 +405,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return entity;
     }
 
-    public Object processQueryOperation(Object[] args, QueryData dataForQuery) {
+    public Object processQueryOperation(Object[] args, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Limit limit = null;
         if (args != null) {
             for (Object arg : args) {
@@ -420,7 +415,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         }
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
-                getEntityManager(this.applicationName), limit);
+                getEntityManager(this.applicationName), getTransactionManager(), limit);
     }
 
     public Object processQueryByNameOperation(Object[] args, QueryData dataForQuery) {
