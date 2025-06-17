@@ -127,7 +127,7 @@ public class DeleteOperationUtility {
     }
 
     public static int processDeleteByIdOperation(Object[] args, Class<?> declaredEntityClass, TransactionManager tm,
-                                                  EntityManager em, String idNameValue) throws SystemException,
+                                                 EntityManager em, String idNameValue) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
         String query = createDeleteOperationSingleEntity(declaredEntityClass, idNameValue);
         tm.begin();
@@ -148,5 +148,15 @@ public class DeleteOperationUtility {
                 .append(" ").append("o").append(" WHERE ").append("(")
                 .append("o.").append(getIDParameterName(idNameValue)).append("=?1)");
         return builder.toString();
+    }
+
+    public static Object processDeleteReturn(Method method, int returnValue) {
+        if (method.getReturnType().equals(Integer.TYPE)) {
+            return Integer.valueOf(returnValue);
+        } else if (method.getReturnType().equals(Void.TYPE)) {
+            return null;
+        } else {
+            return Long.valueOf(returnValue);
+        }
     }
 }
