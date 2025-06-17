@@ -43,9 +43,9 @@ pipeline {
                     archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
                     stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
-                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true 
-                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true 
-                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true 
+                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true
+                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true
+                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
@@ -66,7 +66,7 @@ pipeline {
                     }
                     steps {
                         setupDomain()
-                        
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
                         sh """mvn -B -V -ff -e clean test --strict-checksums -Pall,jakarta-staging \
@@ -178,41 +178,41 @@ pipeline {
 //                         }
 //                     }
 //                 }
-//                 stage('CargoTracker Tests') {
-//                     agent {
-//                         label 'general-purpose'
-//                     }
-//                     options {
-//                         retry(3)
-//                     }
-//                     steps{
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-//                             branches: [[name: "*/Payara7"]],
-//                             userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//
-//                         setupDomain()
-//
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         sh "rm -rf /tmp/cargo*"
-//
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         sh  """mvn -B -V -ff -e clean verify --strict-checksums -Dsurefire.useFile=false \
-//                          -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-//                          -Djavax.xml.accessExternalSchema=all \
-//                          -Ppayara-server-remote -DtrimStackTrace=false"""
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                     }
-//                     post {
-//                         always {
-//                             processReportAndStopDomain()
-//                         }
-//                         cleanup {
-//                             saveLogsAndCleanup 'cargotracker-log.zip'
-//                         }
-//                     }
-//                 }
+                stage('CargoTracker Tests') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh "rm -rf /tmp/cargo*"
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh  """mvn -B -V -ff -e clean verify --strict-checksums -Dsurefire.useFile=false \
+                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                         -Djavax.xml.accessExternalSchema=all \
+                         -Ppayara-server-remote -DtrimStackTrace=false"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'cargotracker-log.zip'
+                        }
+                    }
+                }
 //                 stage('EE7 Tests') {
 //                     agent {
 //                         label 'general-purpose'
@@ -307,7 +307,7 @@ void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     dir('/home/ubuntu/.m2/repository/'){
         unstash name: 'payara-m2-repository'
-    }    
+    }
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
@@ -318,7 +318,7 @@ void setupM2RepositoryOnly() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     dir('/home/ubuntu/.m2/repository/'){
         unstash name: 'payara-m2-repository'
-    }    
+    }
 }
 
 void processReportAndStopDomain() {

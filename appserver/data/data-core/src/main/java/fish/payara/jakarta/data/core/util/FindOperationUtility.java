@@ -40,32 +40,49 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import fish.payara.jakarta.data.core.cdi.extension.PageImpl;
+import fish.payara.jakarta.data.core.cdi.extension.QueryData;
+import fish.payara.jakarta.data.core.cdi.extension.QueryType;
+import jakarta.data.Limit;
+import jakarta.data.Order;
+import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
+import jakarta.data.page.Page;
+import jakarta.data.page.PageRequest;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
+
+import static fish.payara.jakarta.data.core.util.QueryOperationUtility.getIndexFromMap;
 
 /**
  * Utility class used to process Jakarta Data find operations
  */
 public class FindOperationUtility {
-    
-    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause, EntityMetadata entityMetadata) {
-        Query q = em.createQuery(createBaseFindQuery(entityClass, orderByClause, entityMetadata));
-        return q.getResultStream();
+
+    public static final List<Class<?>> parametersToExclude = List.of(PageRequest.class, Limit.class, Order.class, Sort.class, Sort[].class);
+
+    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
+                                                    EntityMetadata entityMetadata, Limit limit) {
+        String qlString = createBaseFindQuery(entityClass, orderByClause, entityMetadata);
+        Query query = em.createQuery(qlString);
+        verifyLimit(limit, query);
+        return query.getResultStream();
     }
 
-    public static List<Object> processFindByOperation(Object[] args, Class<?> entityClass, EntityManager em,
-                                                   EntityMetadata entityMetadata, Method method) {
-        StringBuilder builder =  new StringBuilder();
-        builder.append(createBaseFindQuery(entityClass, null, entityMetadata));
+    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, Limit limit, boolean evaluatePages) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
+                null, dataForQuery.getEntityMetadata()));
         String attributeValue = null;
-        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+        Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         int queryPosition = 1;
         boolean hasWhere = false;
         for (Annotation[] annotations : parameterAnnotations) {
@@ -81,23 +98,157 @@ public class FindOperationUtility {
                 }
 
                 if (attributeValue != null) {
-                    attributeValue = preprocessAttributeName(entityMetadata, attributeValue);
+                    attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
                 }
                 builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             }
             queryPosition++;
         }
-        
+
         if (hasWhere) {
             builder.append(")");
         }
-        Query q = em.createQuery(builder.toString());
-        for (int i = 0; i < args.length; i++) {
-            q.setParameter(i+1, args[i]);
+
+        dataForQuery.setQueryString(builder.toString());
+
+        //here place to process pagination
+        if (evaluatePages) {
+            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, null);
+        } else {
+            //check order conditions to improve select queries
+            Query query = em.createQuery(dataForQuery.getQueryString());
+            for (int i = 0; i < args.length; i++) {
+                if (!excludeParameter(args[i])) {
+                    query.setParameter(i + 1, args[i]);
+                }
+            }
+
+            verifyLimit(limit, query);
+
+            return query.getResultList();
         }
-        return q.getResultList();
     }
-    
+
+
+    public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
+                                           Method method, StringBuilder builder, boolean hasWhere, Map<Integer, String> patternPositions) {
+        PageRequest pageRequest = null;
+        Object returnValue = null;
+        List<Sort<Object>> orders = new ArrayList<>();
+        createCountQuery(dataForQuery, hasWhere, dataForQuery.getQueryString().indexOf("WHERE"));
+        //evaluating parameters for pagination
+        for (Object param : args) {
+            if (param instanceof PageRequest) { //Get info for PageRequest
+                pageRequest = (PageRequest) param;
+            } else if (param instanceof Order) { //Get info for orders
+                Iterable<Sort<Object>> order = (Iterable<Sort<Object>>) param;
+                preprocessOrder(orders, order, dataForQuery);
+            } else if (param instanceof Sort) {
+                preprocessOrder(orders, dataForQuery, (Sort<Object>) param);
+            } else if (param instanceof Sort[]) {
+                preprocessOrder(orders, dataForQuery, (Sort<Object>[]) param);
+            }
+        }
+
+        StringBuilder orderQuery = null;
+
+        //We can't have a combinaton of sort from Query annotation value and parameters
+        if (patternPositions != null && patternPositions.containsValue("ORDER") && orders.size() > 0) {
+            throw new IllegalArgumentException("You can't add multiple sort parameters with Order By from the Query value");
+        }
+
+        //create order query
+        for (Sort<?> sort : orders) {
+            if (orderQuery == null) {
+                orderQuery = new StringBuilder(" ORDER BY ");
+            } else {
+                orderQuery.append(", ");
+            }
+
+            String propertyName = sort.property();
+            if (sort.ignoreCase()) {
+                orderQuery.append("LOWER(");
+            }
+
+            if (propertyName.charAt(propertyName.length() - 1) != ')' && dataForQuery.getQueryType().equals(QueryType.FIND)) {
+                orderQuery.append("o.");
+            }
+
+            orderQuery.append(propertyName);
+
+            if (sort.ignoreCase()) {
+                orderQuery.append(")");
+            }
+
+            if (sort.isDescending()) {
+                orderQuery.append(" DESC");
+            }
+        }
+
+        if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
+            builder.append(orderQuery != null ? orderQuery.toString() : "");
+            dataForQuery.setQueryString(builder.toString());
+        }
+
+        if (Page.class.equals(method.getReturnType())) {
+            returnValue = new PageImpl(dataForQuery, args, pageRequest, em);
+        }
+
+        return returnValue;
+    }
+
+    public static void preprocessOrder(List<Sort<Object>> orders, Iterable<Sort<Object>> order, QueryData dataForQuery) {
+        for (Sort<Object> sort : order) {
+            if (sort == null) {
+                throw new MappingException("sort is null");
+            } else {
+                orders.add(validateSort(sort, dataForQuery.getEntityMetadata(), sort.property()));
+            }
+        }
+    }
+
+    public static void preprocessOrder(List<Sort<Object>> sorts, QueryData dataForQuery, Sort<Object>... sortArray) {
+        for (Sort<Object> sort : sortArray) {
+            if (sort == null) {
+                throw new MappingException("sort is null");
+            }
+            sorts.add(validateSort(sort, dataForQuery.getEntityMetadata(), sort.property()));
+        }
+    }
+
+    public static <T> Sort<T> validateSort(Sort<T> sort, EntityMetadata entityMetadata, String attributeName) {
+        String name = preprocessAttributeName(entityMetadata, attributeName);
+        if (name.equals(sort.property())) {
+            return sort;
+        } else {
+            return sort.isAscending() ? sort.ignoreCase() ? Sort.ascIgnoreCase(name) : Sort.asc(name)
+                    : sort.ignoreCase() ? Sort.descIgnoreCase(name) : Sort.desc(name);
+        }
+    }
+
+    public static void createCountQuery(QueryData dataForQuery, boolean hasWhere, int wherePosition) {
+        StringBuilder builder = new StringBuilder();
+        if (dataForQuery.getQueryType().equals(QueryType.FIND)) {
+            builder.append("SELECT COUNT(").append("o").append(") FROM ")
+                    .append(getSingleEntityName(dataForQuery.getDeclaredEntityClass().getName())).append(" o");
+        } else if (dataForQuery.getQueryType().equals(QueryType.QUERY)) {
+            builder.append("SELECT COUNT(").append("this").append(") FROM ")
+                    .append(getSingleEntityName(dataForQuery.getDeclaredEntityClass().getName()));
+        }
+
+        if (hasWhere && dataForQuery.getQueryType().equals(QueryType.FIND)) {
+            builder.append(" WHERE ");
+        } else if (hasWhere && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
+            builder.append(" WHERE ").append(dataForQuery.getQueryString().substring(wherePosition + 5));
+        }
+        dataForQuery.setCountQueryString(builder.toString());
+    }
+
+    public static boolean excludeParameter(Object arg) {
+        Optional<Class<?>> found = parametersToExclude.stream().filter(c -> c.isInstance(arg)).findAny();
+        return found.isPresent();
+    }
+
     public static String preprocessAttributeName(EntityMetadata entityMetadata, String attributeValue) {
         if (attributeValue.endsWith(")")) {
             //process this(id)
@@ -106,7 +257,7 @@ public class FindOperationUtility {
             if (entityMetadata.getAttributeNames().containsKey(attributeValue.toLowerCase())) {
                 return entityMetadata.getAttributeNames().get(attributeValue.toLowerCase());
             } else {
-                throw new IllegalArgumentException("The attribute " + attributeValue + 
+                throw new IllegalArgumentException("The attribute " + attributeValue +
                         " is not mapped on the entity " + entityMetadata.getEntityName());
             }
         }
@@ -176,12 +327,21 @@ public class FindOperationUtility {
         }
         return null;
     }
-    
+
     public static String getIDParameterName(String idNameValue) {
         if (idNameValue != null) {
             int idx = idNameValue.lastIndexOf("(");
-            return idNameValue.substring(0,idx);
+            return idNameValue.substring(0, idx);
         }
         return null;
+    }
+
+    private static void verifyLimit(Limit limit, Query query) {
+        if (limit != null) {
+            // limit.startAt() is 1-based and guaranteed to be >= 1. JPA's setFirstResult is 0-based.
+            query.setFirstResult((int) (limit.startAt() - 1));
+            // limit.maxResults() is guaranteed to be >= 1.
+            query.setMaxResults(limit.maxResults());
+        }
     }
 }
