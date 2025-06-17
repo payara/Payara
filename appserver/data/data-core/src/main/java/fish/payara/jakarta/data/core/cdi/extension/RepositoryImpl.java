@@ -118,6 +118,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case FIND ->
                     objectToReturn = processFindOperation(args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
+            default -> objectToReturn = processQueryByNameOperation(args, dataForQuery);
         }
 
         return objectToReturn;
@@ -399,6 +400,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return QueryOperationUtility.processQueryOperation(args, dataForQuery, getEntityManager(this.applicationName));
     }
 
+    public Object processQueryByNameOperation(Object[] args, QueryData dataForQuery) {
+        return QueryOperationUtility.processQueryByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+    }
 
     public TransactionManager getTransactionManager() {
         ServiceLocator locator = Globals.get(ServiceLocator.class);

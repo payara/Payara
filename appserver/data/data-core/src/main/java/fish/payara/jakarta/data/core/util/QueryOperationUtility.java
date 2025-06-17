@@ -269,4 +269,8 @@ public class QueryOperationUtility {
     }
 
 
+    public static Object processQueryByNameOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager) {
+        //TODO to be implemented
+        return null;
+    }
 }

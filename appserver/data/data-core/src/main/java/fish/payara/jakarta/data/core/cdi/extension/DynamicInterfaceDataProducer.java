@@ -259,6 +259,8 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             queryType = QueryType.FIND;
         } else if (method.isAnnotationPresent(Query.class)) {
             queryType = QueryType.QUERY;
+        } else {
+            queryType = QueryType.QUERY_BY_NAME;
         }
         
         queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, 
