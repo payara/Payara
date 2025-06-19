@@ -62,7 +62,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -105,11 +104,11 @@ public class DataCommonOperationUtility {
             if (results.isEmpty()) {
                 throw new EmptyResultException("There are no results for the query");
             }
-            
+
             if (results.size() > 1) {
                 throw new NonUniqueResultException("There are more than one result for the query");
             }
-            
+
             return results.getFirst();
         } else if (!results.isEmpty()) {
             return results;
@@ -159,8 +158,13 @@ public class DataCommonOperationUtility {
                 for (Attribute<?, ?> attribute : entityType.getAttributes()) {
                     String attributeName = attribute.getName();
                     Attribute.PersistentAttributeType persistentAttributeType = attribute.getPersistentAttributeType();
-                    if (!(Objects.requireNonNull(persistentAttributeType) == Attribute.PersistentAttributeType.BASIC)) {
-                        throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
+                    switch (persistentAttributeType) {
+                        case BASIC, ONE_TO_ONE, ONE_TO_MANY, MANY_TO_MANY, ELEMENT_COLLECTION, MANY_TO_ONE,
+                             EMBEDDED -> {
+                        }
+                        default -> {
+                            throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
+                        }
                     }
 
                     Member accessor = attribute.getJavaMember();
@@ -210,7 +214,7 @@ public class DataCommonOperationUtility {
             } else if (!returnType.isPrimitive() && !returnType.equals(String.class)) {
                 return returnType;
             }
-        } 
+        }
         for (Parameter param : method.getParameters()) {
             Class<?> paramType = param.getType();
             if (!paramType.isPrimitive() && !paramType.equals(String.class)) {
@@ -248,5 +252,15 @@ public class DataCommonOperationUtility {
             }
         }
         return Object.class;
+    }
+
+    public static Object processReturnQueryUpdate(Method method, int returnValue) {
+        if (method.getReturnType().equals(Integer.TYPE)) {
+            return Integer.valueOf(returnValue);
+        } else if (method.getReturnType().equals(Void.TYPE)) {
+            return null;
+        } else {
+            return Long.valueOf(returnValue);
+        }
     }
 }
