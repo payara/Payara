@@ -89,5 +89,9 @@
             </plugins>
         </pluginManagement>
     </build>
+    
+    <modules>
+        <module>payara-samples</module>
+    </modules>
 
 </project>
