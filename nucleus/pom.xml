@@ -135,7 +135,7 @@
         <mockito.version>5.17.0</mockito.version>
 
         <!-- Build -->
-        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
+        <glassfishbuild.version>4.1.0</glassfishbuild.version>
         <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.19</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
