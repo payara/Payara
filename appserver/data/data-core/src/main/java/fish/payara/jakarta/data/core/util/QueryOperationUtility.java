@@ -350,7 +350,7 @@ public class QueryOperationUtility {
                     sortedQuery.append(", ");
                 }
                 if (sort.ignoreCase()) {
-                    sortedQuery.append("UPPER(");
+                    sortedQuery.append("LOWER(");
                 }
                 sortedQuery.append(sort.property());
                 if (sort.ignoreCase()) {
