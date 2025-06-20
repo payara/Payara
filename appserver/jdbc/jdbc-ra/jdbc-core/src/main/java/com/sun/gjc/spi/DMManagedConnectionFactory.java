@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -134,12 +134,14 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
                 logFine("More than one value for key : " + key);
             }
             String prop = getParsedKey(key);
-            driverProps.put(prop, value);
+
             if(prop.equalsIgnoreCase("URL")) {
                 if(spec.getDetail(DataSourceSpec.URL) == null) {
                     setConnectionURL(value);
                 }
+                continue;
             }
+            driverProps.put(prop, value);
         }
         try {
             if (cxRequestInfo != null) {
