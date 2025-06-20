@@ -58,6 +58,8 @@
     />
     <sun:html id="html2"> 
         <sun:head id="propertyhead" title="JVM Report" >
+            <sun:script url="/jakarta.faces.resource/jsf.js.jsf?ln=jakarta.faces" />
+            <sun:script url="/resource/js/adminjsf.js" />
         </sun:head>
         <sun:body id="body3">
             <sun:form id="propertyForm">
@@ -110,7 +112,7 @@
                             </sun:property>                          
                         </sun:propertySheetSection>
                         <sun:propertySheetSection id="reportPropertySection">
-                            <sun:property id="ReportProp"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" readOnly="#{true)" >
+                            <sun:property id="ReportProp"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" readOnly="#{true}" >
                              "<pre><font size="3" /> 
                                 <sun:staticText id="Report" text="#{pageSession.report.data.message}"/>
                                 <sun:staticText id="Report1" text="#{pageSession.report.data.subReports[0].properties.message}"/>
