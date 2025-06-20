@@ -41,6 +41,7 @@ package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import jakarta.data.Limit;
+import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
@@ -77,7 +78,7 @@ public class QueryOperationUtility {
     private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               TransactionManager transactionManager, Limit limit) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
+                                               TransactionManager transactionManager, Limit limit, List<Sort<?>> sortList) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
@@ -109,6 +110,9 @@ public class QueryOperationUtility {
         if (!evaluatePages) {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
                 String query = entry.getKey();
+                if (!sortList.isEmpty()) {
+                    query = handleSort(sortList, query);
+                }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
                 if (!entry.getValue().isEmpty()) {
@@ -336,5 +340,31 @@ public class QueryOperationUtility {
         return found.isPresent();
     }
 
-
+    private static String handleSort(List<Sort<?>> sortList, String query) {
+        StringBuilder sortedQuery = new StringBuilder(query);
+        if (!sortList.isEmpty()) {
+            sortedQuery.append(" ORDER BY ");
+            boolean firstItem = true;
+            for (Sort<?> sort : sortList) {
+                if (!firstItem) {
+                    sortedQuery.append(", ");
+                }
+                if (sort.ignoreCase()) {
+                    sortedQuery.append("LOWER(");
+                }
+                sortedQuery.append(sort.property());
+                if (sort.ignoreCase()) {
+                    sortedQuery.append(")");
+                }
+                if (sort.isAscending()) {
+                    sortedQuery.append(" ASC");
+                }
+                if (sort.isDescending()) {
+                    sortedQuery.append(" DESC");
+                }
+                firstItem = false;
+            }
+        }
+        return sortedQuery.toString();
+    }
 }
