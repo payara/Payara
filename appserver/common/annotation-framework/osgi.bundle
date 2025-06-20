@@ -37,10 +37,12 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 -exportcontents: \
                         org.glassfish.apf; \
                         org.glassfish.apf.context; \
                         org.glassfish.apf.factory; \
+                        org.glassfish.apf.jandex; \
                         org.glassfish.apf.impl; version=${project.osgi.version}
 
