@@ -86,33 +86,32 @@ pipeline {
                         }
                     }
                 }
-//                 stage('Payara Samples Tests') {
-//                     agent {
-//                         label 'general-purpose'
-//                     }
-//                     options {
-//                         retry(3)
-//                     }
-//                     steps {
-//                         setupDomain()
-//
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
-//                         -Dpayara.version=${pom.version} \
-//                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-//                         -Djavax.xml.accessExternalSchema=all \
-//                         -f appserver/tests/payara-samples """
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                     }
-//                     post {
-//                         always {
-//                             processReportAndStopDomain()
-//                         }
-//                         cleanup {
-//                             saveLogsAndCleanup 'samples-log.zip'
-//                         }
-//                     }
-//                 }
+                 stage('Payara Samples Tests') {
+                     agent {
+                         label 'general-purpose'
+                    }
+                     options {
+                         retry(3)
+                    }
+                     steps {
+                         setupDomain()
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
+                         -Dpayara.version=${pom.version} \
+                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                         -Djavax.xml.accessExternalSchema=all \
+                         -f appserver/tests/payara-samples """
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                     }
+                     post {
+                         always {
+                             processReportAndStopDomain()
+                         }
+                         cleanup {
+                             saveLogsAndCleanup 'samples-log.zip'
+                         }
+                     }
+                 }
 //                 stage('MP TCK Runners') {
 //                     agent {
 //                         label 'general-purpose'
