@@ -40,12 +40,15 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
+import fish.payara.jakarta.data.core.querymethod.QueryMethodParser;
+import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -54,12 +57,15 @@ import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteReturn;
@@ -336,9 +342,166 @@ public class QueryOperationUtility {
         return found.isPresent();
     }
 
-
+    /**
+     * Processes a query derived from the method name (e.g., findBy...).
+     */
     public static Object processQueryByNameOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager) {
-        //TODO to be implemented
-        return null;
+        Method method = dataForQuery.getMethod();
+        String methodName = method.getName();
+
+        try {
+            // 1. Parse the method name to get query details
+            QueryMethodParser parser = new QueryMethodParser(methodName).parse();
+            QueryMethodParser.Action action = parser.getAction();
+
+            // 2. Build the JPQL query string
+            StringBuilder jpql = new StringBuilder();
+            switch (action) {
+                case FIND:
+                    jpql.append("SELECT e FROM ");
+                    jpql.append(dataForQuery.getDeclaredEntityClass().getSimpleName()).append(" e");
+                    break;
+                case COUNT:
+                case EXISTS:
+                    jpql.append("SELECT COUNT(e) FROM ");
+                    jpql.append(dataForQuery.getDeclaredEntityClass().getSimpleName()).append(" e");
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Action " + action + " is not supported for Query By Method Name.");
+            }
+
+            // 3. Build WHERE clause from conditions
+            List<QueryMethodParser.Condition> conditions = parser.getConditions();
+            if (!conditions.isEmpty()) {
+                jpql.append(" WHERE ");
+                boolean firstCondition = true;
+                for (QueryMethodParser.Condition condition : conditions) {
+                    if (!firstCondition) {
+                        jpql.append(" ").append(condition.precedingOperator().name()).append(" ");
+                    }
+                    firstCondition = false;
+
+                    String propertyPath = "e." + condition.property();
+                    String propertyExpression = condition.ignoreCase() ? "UPPER(" + propertyPath + ")" : propertyPath;
+
+                    // Handle 'NOT' for operators and simple negation
+                    if (condition.not()) {
+                        jpql.append("NOT (");
+                    }
+                    jpql.append(propertyExpression);
+
+                    if (condition.operator() == null) { // Equality
+                        jpql.append(" = ?").append(getAndIncrementParamIndex(dataForQuery));
+                    } else {
+                        switch (condition.operator()) {
+                            case "Like", "StartsWith", "EndsWith", "Contains" -> jpql.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "LessThan" -> jpql.append(" < ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "LessThanEqual" -> jpql.append(" <= ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "GreaterThan" -> jpql.append(" > ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "GreaterThanEqual" -> jpql.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "Between" -> jpql.append(" BETWEEN ?").append(getAndIncrementParamIndex(dataForQuery))
+                                    .append(" AND ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "In" -> jpql.append(" IN ?").append(getAndIncrementParamIndex(dataForQuery));
+                            case "Null" -> jpql.append(" IS NULL");
+                            case "True" -> jpql.append(" = TRUE");
+                            case "False" -> jpql.append(" = FALSE");
+                            default -> throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
+                        }
+                    }
+                    if (condition.not()) {
+                        jpql.append(")");
+                    }
+                }
+            }
+            dataForQuery.resetParamIndex();
+
+            // 4. Build ORDER BY clause
+            List<QueryMethodParser.OrderBy> orderByList = parser.getOrderBy();
+            if (!orderByList.isEmpty()) {
+                jpql.append(" ORDER BY ");
+                StringJoiner joiner = new StringJoiner(", ");
+                for (QueryMethodParser.OrderBy orderBy : orderByList) {
+                    String direction = (orderBy.ascDesc() == null || "Asc".equalsIgnoreCase(orderBy.ascDesc())) ? "ASC" : "DESC";
+                    joiner.add("e." + orderBy.property() + " " + direction);
+                }
+                jpql.append(joiner.toString());
+            }
+
+            // 5. Create query and set parameters
+            jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
+
+            // 6. Prepare and set parameters from method arguments
+            List<Object> queryArgs = getQueryArguments(args);
+            int argIndex = 0;
+            for (int i = 0; i < conditions.size(); i++) {
+                QueryMethodParser.Condition condition = conditions.get(i);
+                if (condition.operator() != null && (condition.operator().equals("Null") || condition.operator().equals("True") || condition.operator().equals("False"))) {
+                    continue; // Skip parameters for operators that don't have them
+                }
+
+                Object arg = queryArgs.get(argIndex);
+                Object processedArg = condition.ignoreCase() && arg instanceof String ? ((String) arg).toUpperCase() : arg;
+
+                if ("StartsWith".equals(condition.operator())) {
+                    processedArg = processedArg + "%";
+                } else if ("EndsWith".equals(condition.operator())) {
+                    processedArg = "%" + processedArg;
+                } else if ("Contains".equals(condition.operator()) || "Like".equals(condition.operator())) {
+                    processedArg = "%" + processedArg + "%";
+                }
+
+                q.setParameter(getAndIncrementParamIndex(dataForQuery), processedArg);
+                argIndex++;
+
+                if ("Between".equals(condition.operator())) {
+                    Object arg2 = queryArgs.get(argIndex);
+                    Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toUpperCase() : arg2;
+                    q.setParameter(getAndIncrementParamIndex(dataForQuery), processedArg2);
+                    argIndex++;
+                }
+            }
+            dataForQuery.resetParamIndex();
+
+            // 7. Execute query and process return type based on action
+            Object result;
+            switch (action) {
+                case FIND:
+                    if (parser.getLimit() != null) {
+                        q.setMaxResults(parser.getLimit());
+                    }
+                    result = processReturnType(dataForQuery, q.getResultList());
+                    break;
+                case COUNT:
+                    result = q.getSingleResult();
+                    break;
+                case EXISTS:
+                    long count = (long) q.getSingleResult();
+                    result = count > 0;
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected action: " + action);
+            }
+            return result;
+        } catch (QueryMethodSyntaxException e) {
+            throw new MappingException("Failed to parse query from method name: " + methodName, e);
+        }
+    }
+
+    private static int getAndIncrementParamIndex(QueryData dataForQuery) {
+        dataForQuery.setParamIndex(dataForQuery.getParamIndex() + 1);
+        return dataForQuery.getParamIndex();
+    }
+
+    private static List<Object> getQueryArguments(Object[] allArgs) {
+        if (allArgs == null) {
+            return Collections.emptyList();
+        }
+        List<Object> queryArgs = new ArrayList<>();
+        for (Object arg : allArgs) {
+            if (arg != null && parametersToExclude.stream().noneMatch(p -> p.isAssignableFrom(arg.getClass()))) {
+                queryArgs.add(arg);
+            }
+        }
+        return queryArgs;
     }
 }

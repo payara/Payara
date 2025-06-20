@@ -219,15 +219,30 @@ public class QueryMethodParser {
 
     private String grammarProperty() {
         StringBuilder propertyName = new StringBuilder();
-        String idPart;
-        idPart = grammarIdentifier();
-        propertyName.append(idPart);
+        // Process the first part of the property (e.g., "Address")
+        String firstPart = grammarIdentifier();
+        propertyName.append(decapitalize(firstPart));
+
+        // Process subsequent parts if they exist (e.g., "_City")
         while (follows(KEYWORD_UNDERSCORE)) {
-            next();
-            idPart = grammarIdentifier();
-            propertyName.append(".").append(idPart);
+            next(); // Consume the "_" token
+            String subsequentPart = grammarIdentifier();
+            // Add the JPQL delimiter '.' and the decapitalized subsequent part
+            propertyName.append(".").append(decapitalize(subsequentPart));
         }
         return propertyName.toString();
+    }
+
+    private String decapitalize(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        if (str.length() > 1 && Character.isUpperCase(str.charAt(1)) && Character.isUpperCase(str.charAt(0))) {
+            return str; // Avoids changing "URL" to "uRL", assumes acronym
+        }
+        char c[] = str.toCharArray();
+        c[0] = Character.toLowerCase(c[0]);
+        return new String(c);
     }
 
     private String grammarIdentifier() {

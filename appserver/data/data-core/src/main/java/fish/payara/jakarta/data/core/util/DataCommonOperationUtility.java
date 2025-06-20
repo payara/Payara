@@ -158,10 +158,10 @@ public class DataCommonOperationUtility {
 
                 for (Attribute<?, ?> attribute : entityType.getAttributes()) {
                     String attributeName = attribute.getName();
-                    Attribute.PersistentAttributeType persistentAttributeType = attribute.getPersistentAttributeType();
-                    if (!(Objects.requireNonNull(persistentAttributeType) == Attribute.PersistentAttributeType.BASIC)) {
-                        throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
-                    }
+//                    Attribute.PersistentAttributeType persistentAttributeType = attribute.getPersistentAttributeType();
+//                    if (!(Objects.requireNonNull(persistentAttributeType) == Attribute.PersistentAttributeType.BASIC)) {
+//                        throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
+//                    }
 
                     Member accessor = attribute.getJavaMember();
                     attributeNames.put(attributeName.toLowerCase(), attributeName);
