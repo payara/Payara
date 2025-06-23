@@ -43,6 +43,7 @@ import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
+import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
 import jakarta.data.repository.By;
@@ -60,6 +61,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -406,15 +408,20 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processQueryOperation(Object[] args, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Limit limit = null;
+        List<Sort<?>> sortList = new ArrayList<>();
         if (args != null) {
             for (Object arg : args) {
                 if (arg instanceof Limit) {
                     limit = (Limit) arg;
+                } else if (arg instanceof Sort) {
+                    sortList.add((Sort<?>) arg);
+                } else if (arg instanceof Sort[]) {
+                    Collections.addAll(sortList, (Sort<?>[]) arg);
                 }
             }
         }
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
-                getEntityManager(this.applicationName), getTransactionManager(), limit);
+                getEntityManager(this.applicationName), getTransactionManager(), limit, sortList);
     }
 
     public TransactionManager getTransactionManager() {
