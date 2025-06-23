@@ -150,13 +150,4 @@ public class DeleteOperationUtility {
         return builder.toString();
     }
 
-    public static Object processDeleteReturn(Method method, int returnValue) {
-        if (method.getReturnType().equals(Integer.TYPE)) {
-            return Integer.valueOf(returnValue);
-        } else if (method.getReturnType().equals(Void.TYPE)) {
-            return null;
-        } else {
-            return Long.valueOf(returnValue);
-        }
-    }
 }

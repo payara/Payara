@@ -77,8 +77,8 @@ import org.glassfish.internal.api.Globals;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
-import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteReturn;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
 
 /**
@@ -344,7 +344,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         }
 
-        return processDeleteReturn(method, returnValue);
+        return processReturnQueryUpdate(method, returnValue);
     }
 
     private static List<Object> getIds(List<?> arr) {
