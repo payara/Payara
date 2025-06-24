@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2025 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.deployment.util;
 
@@ -489,6 +490,10 @@ public class TypeUtil {
      */
     private static boolean sameReturnTypes(Method m1, Method m2) {
         if(m1.getReturnType().equals(m2.getReturnType())) {
+            return true;
+        }
+
+        if (m1.getReturnType().isAssignableFrom(m2.getReturnType())) {
             return true;
         }
 
