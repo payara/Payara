@@ -43,6 +43,7 @@ import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import fish.payara.jakarta.data.core.querymethod.QueryMethodParser;
 import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
+import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
@@ -71,8 +72,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
-
 import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteReturn;
+import java.util.function.Predicate;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.parametersToExclude;
@@ -85,9 +88,13 @@ public class QueryOperationUtility {
 
     private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER", "BY", "GROUP", "HAVING");
     private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
+    private static final List<String> updateQueryPatterns = List.of("UPDATE", "SET", "WHERE");
+
+    private static Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
+    private static Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               TransactionManager transactionManager, Limit limit) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
+                                               TransactionManager transactionManager, Limit limit, List<Sort<?>> sortList) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
@@ -102,12 +109,16 @@ public class QueryOperationUtility {
 
         Map<Integer, String> patternSelectPositions = new LinkedHashMap<>();
         Map<Integer, String> patternDeletePositions;
+        Map<Integer, String> patternUpdatePositions;
         Map<String, Set<String>> queryMapping = null;
         if (queryAnnotation != null) {
             if (!mappedQuery.isEmpty()) {
-                if (firstChar == 'D' || firstChar == 'd') {
+                if (deletePredicate.test(firstChar)) {
                     patternDeletePositions = preprocessQueryString(mappedQuery, deleteQueryPatterns);
                     queryMapping = processQuery(mappedQuery, patternDeletePositions, dataForQuery);
+                } else if (updatePredicate.test(firstChar)) {
+                    patternUpdatePositions = preprocessQueryString(mappedQuery, updateQueryPatterns);
+                    queryMapping = processQuery(mappedQuery, patternUpdatePositions, dataForQuery);
                 } else {
                     patternSelectPositions = preprocessQueryString(mappedQuery, selectQueryPatterns);
                     queryMapping = processQuery(mappedQuery, patternSelectPositions, dataForQuery);
@@ -119,6 +130,9 @@ public class QueryOperationUtility {
         if (!evaluatePages) {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
                 String query = entry.getKey();
+                if (!sortList.isEmpty()) {
+                    query = handleSort(sortList, query);
+                }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
                 if (!entry.getValue().isEmpty()) {
@@ -138,14 +152,14 @@ public class QueryOperationUtility {
                     q.setMaxResults(limit.maxResults());
                 }
 
-                if (firstChar == 'D' || firstChar == 'd') {
+                if (deletePredicate.test(firstChar) || updatePredicate.test(firstChar)) {
                     transactionManager.begin();
                     entityManager.joinTransaction();
                     int deleteReturn = q.executeUpdate();
                     entityManager.flush();
                     transactionManager.commit();
 
-                    return processDeleteReturn(method, deleteReturn);
+                    return processReturnQueryUpdate(method, deleteReturn);
                 } else {
                     objectToReturn = processReturnType(dataForQuery, q.getResultList());
                 }
@@ -162,7 +176,8 @@ public class QueryOperationUtility {
         return objectToReturn;
     }
 
-    public static Map<String, Set<String>> processQuery(String queryString, Map<Integer, String> patternPositions, QueryData dataForQuery) {
+    public static Map<String, Set<String>> processQuery(String queryString,
+                                                        Map<Integer, String> patternPositions, QueryData dataForQuery) {
         int querySize = queryString.length();
         int startIndex = 0;
         Set<String> parameters = new HashSet<>();
@@ -247,6 +262,14 @@ public class QueryOperationUtility {
                     queryBuilder.append(query.substring(deleteIndex + 6, fromIndex));
                 }
             }
+            case "UPDATE" -> {
+                queryBuilder.append("UPDATE");
+                int updateIndex = getIndexFromMap("UPDATE", patternPositions);
+                if (patternPositions.containsValue("SET")) {
+                    int setIndex = getIndexFromMap("SET", patternPositions);
+                    queryBuilder.append(query.substring(updateIndex + 6, setIndex));
+                }
+            }
             case "FROM" -> {
                 String entityName = getSingleEntityName(entityClass.getName());
                 if (entityName != null) {
@@ -255,8 +278,16 @@ public class QueryOperationUtility {
                     //need to see the resolution of entity from query path
                 }
             }
+            case "SET" -> {
+                queryBuilder.append(" SET ");
+                int setIndex = getIndexFromMap("SET", patternPositions);
+                if (patternPositions.containsValue("WHERE")) {
+                    int whereIndex = getIndexFromMap("WHERE", patternPositions);
+                    queryBuilder.append(query.substring(setIndex + 3, whereIndex));
+                }
+            }
             case "WHERE" -> {
-                if (!patternPositions.containsValue("FROM")) {
+                if (!patternPositions.containsValue("FROM") && !patternPositions.containsValue("UPDATE")) {
                     queryBuilder.append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" WHERE ");
                 } else {
                     queryBuilder.append(" WHERE ");
@@ -566,5 +597,32 @@ public class QueryOperationUtility {
             }
         }
         return queryArgs;
+
+    private static String handleSort(List<Sort<?>> sortList, String query) {
+        StringBuilder sortedQuery = new StringBuilder(query);
+        if (!sortList.isEmpty()) {
+            sortedQuery.append(" ORDER BY ");
+            boolean firstItem = true;
+            for (Sort<?> sort : sortList) {
+                if (!firstItem) {
+                    sortedQuery.append(", ");
+                }
+                if (sort.ignoreCase()) {
+                    sortedQuery.append("LOWER(");
+                }
+                sortedQuery.append(sort.property());
+                if (sort.ignoreCase()) {
+                    sortedQuery.append(")");
+                }
+                if (sort.isAscending()) {
+                    sortedQuery.append(" ASC");
+                }
+                if (sort.isDescending()) {
+                    sortedQuery.append(" DESC");
+                }
+                firstItem = false;
+            }
+        }
+        return sortedQuery.toString();
     }
 }
