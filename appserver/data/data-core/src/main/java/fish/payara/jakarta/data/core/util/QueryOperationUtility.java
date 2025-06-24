@@ -71,11 +71,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.stream.Stream;
-import static fish.payara.jakarta.data.core.util.DeleteOperationUtility.processDeleteReturn;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.parametersToExclude;
@@ -597,6 +596,7 @@ public class QueryOperationUtility {
             }
         }
         return queryArgs;
+    }
 
     private static String handleSort(List<Sort<?>> sortList, String query) {
         StringBuilder sortedQuery = new StringBuilder(query);
