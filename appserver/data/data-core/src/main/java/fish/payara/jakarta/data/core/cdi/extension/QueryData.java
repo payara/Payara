@@ -58,6 +58,8 @@ public class QueryData {
     private String queryString;
     private String countQueryString;
 
+    private int paramIndex = 0;
+
     public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
         this.repositoryInterface = repositoryInterface;
         this.method = method;
@@ -65,6 +67,18 @@ public class QueryData {
         this.declaredEntityClass = declaredEntityClass;
         this.queryType = queryType;
         this.entityMetadata = entityMetadata;
+    }
+
+    public int getParamIndex() {
+        return paramIndex;
+    }
+
+    public void setParamIndex(int paramIndex) {
+        this.paramIndex = paramIndex;
+    }
+
+    public void resetParamIndex() {
+        this.paramIndex = 0;
     }
 
     public Class<?> getRepositoryInterface() {

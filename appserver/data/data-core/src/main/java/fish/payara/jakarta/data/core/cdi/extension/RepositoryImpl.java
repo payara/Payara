@@ -119,6 +119,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
+            default -> objectToReturn = processQueryByNameOperation(args, dataForQuery);
         }
 
         return objectToReturn;
@@ -422,6 +423,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
                 getEntityManager(this.applicationName), getTransactionManager(), limit, sortList);
+    }
+
+    public Object processQueryByNameOperation(Object[] args, QueryData dataForQuery) {
+        return QueryOperationUtility.processQueryByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
     }
 
     public TransactionManager getTransactionManager() {

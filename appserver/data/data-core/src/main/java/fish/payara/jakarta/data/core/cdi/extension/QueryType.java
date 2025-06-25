@@ -48,5 +48,6 @@ public enum QueryType {
     DELETE,
     INSERT,
     FIND,
-    QUERY
+    QUERY,
+    QUERY_BY_NAME
 }
