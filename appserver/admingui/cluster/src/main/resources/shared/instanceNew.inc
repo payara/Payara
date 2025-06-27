@@ -51,7 +51,7 @@
             <sun:button id="newButton" text="$resource{i18n.button.OK}"
                 onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
-                py.generateInstanceNameIfRequired(name="#{pageSession.name}", autoname="#{pageSession.autoNameSelected}", instanceName="#{pageSession.name}");
+                py.generateAutoNameIfRequired(name="#{pageSession.name}", autoname="#{pageSession.autoNameSelected}", instanceName="#{pageSession.name}", emptyErrorMsg="$resource{i18ncs.instance.error.noname}");
 
                 if (!#{pageSession.autoNameSelected}) {
                     setAttribute(key="nameToCheck" value="#{pageSession.name}");
