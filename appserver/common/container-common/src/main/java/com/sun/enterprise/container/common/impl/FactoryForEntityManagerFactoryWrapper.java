@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.container.common.impl;
 
@@ -45,11 +47,8 @@ import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import org.glassfish.api.invocation.InvocationManager;
 
 import javax.naming.Context;
-import javax.naming.NamingException;
 
-
-public class FactoryForEntityManagerFactoryWrapper
-    implements NamingObjectFactory {
+public class FactoryForEntityManagerFactoryWrapper implements NamingObjectFactory {
 
     InvocationManager invMgr;
 
@@ -68,9 +67,7 @@ public class FactoryForEntityManagerFactoryWrapper
         return false;
     }
 
-    public Object create(Context ic)
-        throws NamingException {
-
+    public EntityManagerFactoryWrapper create(Context ic) {
         return new EntityManagerFactoryWrapper(unitName, invMgr, compEnvMgr);
     }
 
