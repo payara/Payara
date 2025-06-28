@@ -68,7 +68,7 @@
     setPageSessionAttribute(key="helpKey" value="$resource{help_common.realmNew}");
 />
     
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.realm.NewPageTitle}" guiOnLoad="initClassname('#{myOption}', true);" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.realm.NewPageTitle}" guiOnLoad="require(['webui/suntheme/inputTextField'], function() { initClassname('#{myOption}', true); });">
 <!define name="content">
     <event>
     <!beforeCreate
