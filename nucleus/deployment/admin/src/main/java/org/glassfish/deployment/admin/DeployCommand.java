@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -556,10 +556,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 type = archiveHandler.getArchiveType();
             }
             appProps.setProperty(Application.ARCHIVE_TYPE_PROP_NAME, type);
-            if (appProps.getProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP) == null) {
-                appProps.setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, Boolean.FALSE.toString());
-            }
-
             savedAppConfig.store(appProps);
 
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
