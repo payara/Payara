@@ -260,10 +260,18 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         } else if (method.isAnnotationPresent(Query.class)) {
             queryType = QueryType.QUERY;
         } else {
-            queryType = QueryType.QUERY_BY_NAME;
+            String methodName = method.getName();
+            if (methodName.startsWith("delete")) {
+                queryType = QueryType.DELETE_BY_NAME;
+            } else if (methodName.startsWith("count")) {
+                queryType = QueryType.COUNT_BY_NAME;
+            } else if (methodName.startsWith("exists")) {
+                queryType = QueryType.EXISTS_BY_NAME;
+            } else {
+                queryType = QueryType.FIND_BY_NAME;
+            }
         }
-        
-        queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, 
+        queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType,
                 queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName())));
     }
 

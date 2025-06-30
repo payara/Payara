@@ -41,6 +41,7 @@ package fish.payara.jakarta.data.core.cdi.extension;
 
 import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
+import fish.payara.jakarta.data.core.util.QueryByNameOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
@@ -119,7 +120,11 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-            default -> objectToReturn = processQueryByNameOperation(args, dataForQuery);
+            case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+            case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
         }
 
         return objectToReturn;
@@ -150,7 +155,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
                                     "ensure entity type is determinable from method signature.",
                             method.getName(), declaringClass.getName())
             );
-
         }
     }
 
@@ -423,10 +427,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
                 getEntityManager(this.applicationName), getTransactionManager(), limit, sortList);
-    }
-
-    public Object processQueryByNameOperation(Object[] args, QueryData dataForQuery) {
-        return QueryOperationUtility.processQueryByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
     }
 
     public TransactionManager getTransactionManager() {
