@@ -39,8 +39,10 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import jakarta.data.Sort;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -57,6 +59,9 @@ public class QueryData {
     private Set<String> jpqlParameters = new LinkedHashSet<>();
     private String queryString;
     private String countQueryString;
+    private String queryNext;
+    private String queryPrevious;
+    private List<Sort<Object>> orders;
 
     private int paramIndex = 0;
 
@@ -151,5 +156,29 @@ public class QueryData {
 
     public void setJpqlParameters(Set<String> jpqlParameters) {
         this.jpqlParameters = jpqlParameters;
+    }
+
+    public String getQueryNext() {
+        return queryNext;
+    }
+
+    public void setQueryNext(String queryNext) {
+        this.queryNext = queryNext;
+    }
+
+    public String getQueryPrevious() {
+        return queryPrevious;
+    }
+
+    public void setQueryPrevious(String queryPrevious) {
+        this.queryPrevious = queryPrevious;
+    }
+
+    public List<Sort<Object>> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Sort<Object>> orders) {
+        this.orders = orders;
     }
 }

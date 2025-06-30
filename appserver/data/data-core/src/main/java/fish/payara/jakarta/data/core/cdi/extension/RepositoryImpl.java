@@ -45,7 +45,6 @@ import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
-import jakarta.data.page.Page;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
@@ -77,6 +76,7 @@ import org.glassfish.internal.api.Globals;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
@@ -157,7 +157,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
         Limit limit = null;
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
-        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         if (args != null) {
             for (Object arg : args) {
                 if (arg instanceof Limit) {
