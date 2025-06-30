@@ -45,7 +45,7 @@
 #include "/security/realms/realmEditInitPage.inc"
 
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.realm.EditPageTitle}"
-    guiOnLoad="initClassname('#{myOption}', false);">
+guiOnLoad="require(['webui/suntheme/inputTextField'], function() { initClassname('#{myOption}', true); });">
 <!define name="content">
     <event>
     <!beforeCreate
