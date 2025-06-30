@@ -806,7 +806,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
-                <version>1.40</version>
+                <version>1.50</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
