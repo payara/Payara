@@ -40,8 +40,6 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
-import fish.payara.jakarta.data.core.querymethod.QueryMethodParser;
-import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
@@ -49,9 +47,6 @@ import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.metamodel.Attribute;
-import jakarta.persistence.metamodel.EntityType;
-import jakarta.persistence.metamodel.Metamodel;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -61,16 +56,12 @@ import jakarta.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -228,7 +219,6 @@ public class QueryOperationUtility {
 
         if (paramName != null) {
             parameters.add(paramName.toString());
-            paramName = null;
         }
 
         Map<String, Set<String>> queryMapping = new LinkedHashMap<>();
@@ -392,48 +382,4 @@ public class QueryOperationUtility {
         return resultList.isEmpty() ? null : resultList.get(0);
     }
 
-    private static int getAndIncrementParamIndex(QueryData dataForQuery) {
-        dataForQuery.setParamIndex(dataForQuery.getParamIndex() + 1);
-        return dataForQuery.getParamIndex();
-    }
-
-    private static List<Object> getQueryArguments(Object[] allArgs) {
-        if (allArgs == null) {
-            return Collections.emptyList();
-        }
-        List<Object> queryArgs = new ArrayList<>();
-        for (Object arg : allArgs) {
-            if (arg != null && parametersToExclude.stream().noneMatch(p -> p.isAssignableFrom(arg.getClass()))) {
-                queryArgs.add(arg);
-            }
-        }
-        return queryArgs;
-    }
-    private static String handleSort(List<Sort<?>> sortList, String query) {
-        StringBuilder sortedQuery = new StringBuilder(query);
-        if (!sortList.isEmpty()) {
-            sortedQuery.append(" ORDER BY ");
-            boolean firstItem = true;
-            for (Sort<?> sort : sortList) {
-                if (!firstItem) {
-                    sortedQuery.append(", ");
-                }
-                if (sort.ignoreCase()) {
-                    sortedQuery.append("LOWER(");
-                }
-                sortedQuery.append(sort.property());
-                if (sort.ignoreCase()) {
-                    sortedQuery.append(")");
-                }
-                if (sort.isAscending()) {
-                    sortedQuery.append(" ASC");
-                }
-                if (sort.isDescending()) {
-                    sortedQuery.append(" DESC");
-                }
-                firstItem = false;
-            }
-        }
-        return sortedQuery.toString();
-    }
 }
