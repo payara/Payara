@@ -39,6 +39,7 @@
  */
 package fish.payara.jakarta.data.core.util;
 
+import fish.payara.jakarta.data.core.cdi.extension.CursoredPageImpl;
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
 import fish.payara.jakarta.data.core.cdi.extension.PageImpl;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
@@ -59,8 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static fish.payara.jakarta.data.core.util.QueryOperationUtility.getIndexFromMap;
 
 /**
  * Utility class used to process Jakarta Data find operations
@@ -188,10 +187,16 @@ public class FindOperationUtility {
         if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
             builder.append(orderQuery != null ? orderQuery.toString() : "");
             dataForQuery.setQueryString(builder.toString());
+        } else { //cursor queries
+            
         }
+        
+        dataForQuery.setOrders(orders);
 
         if (Page.class.equals(method.getReturnType())) {
-            returnValue = new PageImpl(dataForQuery, args, pageRequest, em);
+            returnValue = new PageImpl<>(dataForQuery, args, pageRequest, em);
+        } else {
+            returnValue = new CursoredPageImpl<>(dataForQuery, args, pageRequest, em);
         }
 
         return returnValue;
@@ -237,7 +242,11 @@ public class FindOperationUtility {
         }
 
         if (hasWhere && dataForQuery.getQueryType().equals(QueryType.FIND)) {
-            builder.append(" WHERE ");
+            if(wherePosition >= 0) {
+                builder.append(" WHERE").append(dataForQuery.getQueryString().substring(wherePosition + 5));
+            } else {
+                builder.append(" WHERE");
+            }
         } else if (hasWhere && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
             builder.append(" WHERE ").append(dataForQuery.getQueryString().substring(wherePosition + 5));
         }

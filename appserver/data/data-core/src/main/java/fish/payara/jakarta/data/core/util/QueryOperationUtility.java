@@ -45,7 +45,6 @@ import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
-import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
@@ -58,7 +57,6 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -74,6 +72,7 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
@@ -89,15 +88,18 @@ public class QueryOperationUtility {
     private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
     private static final List<String> updateQueryPatterns = List.of("UPDATE", "SET", "WHERE");
 
-    private static Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
-    private static Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
+    private static final Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
+    private static final Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
+    
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               TransactionManager transactionManager, Limit limit, List<Sort<?>> sortList) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
+                                               TransactionManager transactionManager, Limit limit,
+                                               List<Sort<?>> sortList) throws HeuristicRollbackException,
+            SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
-        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         int length = mappedQuery.length();
         int firstCharPosition = 0;
         char firstChar = ' ';
