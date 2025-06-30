@@ -39,11 +39,13 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import fish.payara.jakarta.data.core.util.DataParameter;
 import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryByNameOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
+import jakarta.data.Order;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
@@ -159,23 +161,16 @@ public class RepositoryImpl<T> implements InvocationHandler {
     }
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
-        Limit limit = null;
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
-        if (args != null) {
-            for (Object arg : args) {
-                if (arg instanceof Limit) {
-                    limit = (Limit) arg;
-                }
-            }
-        }
+        DataParameter dataParameter = extractDataParameter(args);
 
         if (parameterAnnotations.length > 0) {
             Object returnObject = FindOperationUtility.processFindByOperation(
                     args, getEntityManager(this.applicationName),
-                    dataForQuery, limit, evaluatePages);
+                    dataForQuery, dataParameter, evaluatePages);
 
-            if (returnObject != null && (returnObject instanceof List<?>)) {
+            if (returnObject instanceof List<?>) {
                 List<Object> resultList = (List<Object>) returnObject;
                 return processReturnType(dataForQuery, resultList);
             } else {
@@ -185,7 +180,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         } else {
             // For "findAll" operations
             return FindOperationUtility.processFindAllOperation(dataForQuery.getDeclaredEntityClass(), getEntityManager(this.applicationName),
-                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery.getEntityMetadata(), limit
+                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery.getEntityMetadata(), dataParameter
             );
         }
     }
@@ -412,21 +407,28 @@ public class RepositoryImpl<T> implements InvocationHandler {
     }
 
     public Object processQueryOperation(Object[] args, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
+        DataParameter dataParameter = extractDataParameter(args);
+        return QueryOperationUtility.processQueryOperation(args, dataForQuery,
+                getEntityManager(this.applicationName), getTransactionManager(), dataParameter);
+    }
+
+    private DataParameter extractDataParameter(Object[] args) {
         Limit limit = null;
         List<Sort<?>> sortList = new ArrayList<>();
         if (args != null) {
             for (Object arg : args) {
-                if (arg instanceof Limit) {
-                    limit = (Limit) arg;
-                } else if (arg instanceof Sort) {
-                    sortList.add((Sort<?>) arg);
-                } else if (arg instanceof Sort[]) {
-                    Collections.addAll(sortList, (Sort<?>[]) arg);
+                if (arg instanceof Limit l) {
+                    limit = l;
+                } else if (arg instanceof Sort<?> sort) {
+                    sortList.add(sort);
+                } else if (arg instanceof Order<?> order) {
+                    order.forEach(sortList::add);
+                }else if (arg instanceof Sort<?>[] sorts) {
+                    Collections.addAll(sortList, sorts);
                 }
             }
         }
-        return QueryOperationUtility.processQueryOperation(args, dataForQuery,
-                getEntityManager(this.applicationName), getTransactionManager(), limit, sortList);
+        return new DataParameter(limit, sortList);
     }
 
     public TransactionManager getTransactionManager() {

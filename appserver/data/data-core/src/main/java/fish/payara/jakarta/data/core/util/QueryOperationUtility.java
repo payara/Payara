@@ -74,6 +74,7 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.handleSort;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
@@ -93,7 +94,7 @@ public class QueryOperationUtility {
     private static Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
-                                               TransactionManager transactionManager, Limit limit, List<Sort<?>> sortList) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
+                                               TransactionManager transactionManager, DataParameter dataParameter) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
@@ -129,8 +130,9 @@ public class QueryOperationUtility {
         if (!evaluatePages) {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
                 String query = entry.getKey();
+                List<Sort<?>> sortList = dataParameter.sortList();
                 if (!sortList.isEmpty()) {
-                    query = handleSort(sortList, query);
+                    query = handleSort(dataForQuery.getEntityMetadata(), sortList, query, false);
                 }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
@@ -146,6 +148,7 @@ public class QueryOperationUtility {
                         }
                     }
                 }
+                Limit limit = dataParameter.limit();
                 if (limit != null) {
                     q.setFirstResult((int) (limit.startAt() - 1));
                     q.setMaxResults(limit.maxResults());
@@ -165,6 +168,12 @@ public class QueryOperationUtility {
             }
         } else {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
+
+                List<Sort<?>> sortList = dataParameter.sortList();
+                if (!sortList.isEmpty()) {
+                    String query = handleSort(dataForQuery.getEntityMetadata(), sortList, entry.getKey(), false);
+                    dataForQuery.setQueryString(query);
+                }
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
@@ -383,6 +392,23 @@ public class QueryOperationUtility {
         return resultList.isEmpty() ? null : resultList.get(0);
     }
 
+    private static int getAndIncrementParamIndex(QueryData dataForQuery) {
+        dataForQuery.setParamIndex(dataForQuery.getParamIndex() + 1);
+        return dataForQuery.getParamIndex();
+    }
+
+    private static List<Object> getQueryArguments(Object[] allArgs) {
+        if (allArgs == null) {
+            return Collections.emptyList();
+        }
+        List<Object> queryArgs = new ArrayList<>();
+        for (Object arg : allArgs) {
+            if (arg != null && parametersToExclude.stream().noneMatch(p -> p.isAssignableFrom(arg.getClass()))) {
+                queryArgs.add(arg);
+            }
+        }
+        return queryArgs;
+    }
     private static String handleSort(List<Sort<?>> sortList, String query) {
         StringBuilder sortedQuery = new StringBuilder(query);
         if (!sortList.isEmpty()) {

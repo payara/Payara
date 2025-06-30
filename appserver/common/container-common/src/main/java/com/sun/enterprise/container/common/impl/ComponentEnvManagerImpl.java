@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022-2024] Payara Foundation and/or affiliates
+// Portions Copyright 2022-2025 Payara Foundation and/or affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.container.common.impl;
 
@@ -65,8 +66,10 @@ import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.types.EntityManagerReference;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
+import jakarta.persistence.EntityManager;
 import org.glassfish.concurro.cdi.ConcurrencyManagedCDIBeans;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.invocation.ApplicationEnvironment;
@@ -855,25 +858,25 @@ public class ComponentEnvManagerImpl
         return invMgr.peekAppEnvironment();
     }
 
-   
+    public FactoryForEntityManagerWrapper createFactoryForEntityManager(EntityManagerReference descriptor) {
+        return new FactoryForEntityManagerWrapper(descriptor, this);
+    }
 
-   
+    public FactoryForEntityManagerFactoryWrapper createFactoryForEntityManagerFactory(String unitName) {
+        return new FactoryForEntityManagerFactoryWrapper(unitName, invMgr, this);
+    }
 
-  
+    public class FactoryForEntityManagerWrapper implements NamingObjectProxy {
 
-    private class FactoryForEntityManagerWrapper
-        implements NamingObjectProxy {
-
-        private final EntityManagerReferenceDescriptor refDesc;
+        private final EntityManagerReference refDesc;
         private final ComponentEnvManager compEnvMgr;
 
-        FactoryForEntityManagerWrapper(EntityManagerReferenceDescriptor refDesc,
-            ComponentEnvManager compEnvMgr) {
+        FactoryForEntityManagerWrapper(EntityManagerReference refDesc, ComponentEnvManager compEnvMgr) {
             this.refDesc = refDesc;
             this.compEnvMgr = compEnvMgr;
         }
 
-        public Object create(Context ctx) {
+        public EntityManager create(Context ctx) {
             EntityManagerWrapper emWrapper = new EntityManagerWrapper(txManager, invMgr, compEnvMgr, callFlowAgent);
             emWrapper.initializeEMWrapper(refDesc.getUnitName(),
                     refDesc.getPersistenceContextType(),
