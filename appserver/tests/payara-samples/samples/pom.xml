@@ -54,43 +54,43 @@
     <name>Payara Samples - Parallel Tests Root</name>
 
     <modules>
-        <!--module>payara-expression-config-properties</module>
-        <module>clustered-singleton</module-->
+        <module>payara-expression-config-properties</module>   <!-- FISH-11495 -->
+        <module>clustered-singleton</module>   <!-- FISH-11496 -->
         <module>custom-loginmodule-realm</module>
-        <!--module>sfsb-passivation</module>
-        <module>dynamic-roles</module-->
+        <module>sfsb-passivation</module>   <!-- FISH-11497 -->
+        <module>dynamic-roles</module>   <!-- FISH-11498 -->
         <module>formauth</module>
-        <!--module>jacc-per-app</module>
-        <module>jaxrs-rolesallowed</module>
-        <module>jaxrs-rolesallowed-servlet</module>
-        <module>jaxws-security</module>
-        <module>jaxws-tracing</module-->
-        <module>legacy-mode-empty-beans-xml</module>
-        <module>microprofile-config</module>
-        <module>microprofile-endpoints</module>
-        <module>microprofile-healthcheck</module>
-        <module>oauth2</module>
-        <module>openid</module>
-        <module>rest-management</module>
-        <module>rolesPermitted</module>
-        <module>realm-identity-stores</module>
+        <module>jacc-per-app</module>
+        <module>jaxrs-rolesallowed</module>   <!-- FISH-10591 -->
+        <module>jaxrs-rolesallowed-servlet</module>   <!-- FISH-10592 -->
+        <module>jaxws-security</module>   <!-- FISH-11501 -->
+        <module>jaxws-tracing</module>   <!-- FISH-11499 -->
+        <module>legacy-mode-empty-beans-xml</module>   <!-- FISH-11500 -->
+        <module>microprofile-config</module>   <!-- FISH-11502 -->
+        <module>microprofile-endpoints</module>   <!-- FISH-11503 -->
+        <module>microprofile-healthcheck</module>   <!-- FISH-11504 -->
+        <module>oauth2</module>   <!-- FISH-11505 -->
+        <module>openid</module>   <!-- FISH-11506 -->
+        <module>rest-management</module>   <!-- FISH-11507 -->
+        <module>rolesPermitted</module>   <!-- FISH-11508 -->
+        <module>realm-identity-stores</module>   <!-- FISH-11509 -->
         <module>jakartaee-namespace-transformer</module>
-        <!--module>http</module-->
-        <module>logging</module>
-        <module>ejb-http-remoting</module>
-        <module>remote-ejb-tracing</module>
+        <module>http</module>   <!-- FISH-11510 -->
+        <module>logging</module>   <!-- FISH-11511 -->
+        <module>ejb-http-remoting</module>   <!-- FISH-11513 -->
+        <module>remote-ejb-tracing</module>   <!-- FISH-11514 -->
         <module>rolesallowed-unprotected-methods</module>
-        <module>microprofile-rc-ft</module>
-        <module>multiple-keystores</module>
+        <module>microprofile-rc-ft</module>   <!-- FISH-11515 -->
+        <module>multiple-keystores</module>   <!-- FISH-11516 -->
         <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
-        <!--<module>corba-read-timeout</module>-->
+        <!--<module>corba-read-timeout</module>-->   <!-- FISH-11517 -->
         <!--module>microprofile-rest-client</module-->
-        <module>concurrency</module>
+        <module>concurrency</module>   <!-- FISH-11521 -->
         <module>reproducers</module>
-        <module>opentelemetry</module>
-        <module>use-bundled-jsf-primefaces</module>
-        <module>mvc</module>
+        <module>opentelemetry</module>   <!-- FISH-11518 -->
+        <module>use-bundled-jsf-primefaces</module>   <!-- FISH-11519 -->
+        <module>mvc</module>   <!-- FISH-11520 -->
     </modules>
 
     <dependencyManagement>
