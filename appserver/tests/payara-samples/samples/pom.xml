@@ -74,7 +74,6 @@
         <module>rest-management</module>   <!-- FISH-11507 -->
         <module>rolesPermitted</module>   <!-- FISH-11508 -->
         <module>realm-identity-stores</module>   <!-- FISH-11509 -->
-        <module>jakartaee-namespace-transformer</module>
         <module>http</module>   <!-- FISH-11510 -->
         <module>logging</module>   <!-- FISH-11511 -->
         <module>ejb-http-remoting</module>   <!-- FISH-11513 -->
