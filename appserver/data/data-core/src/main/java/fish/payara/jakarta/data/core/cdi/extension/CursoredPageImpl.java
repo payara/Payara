@@ -6,11 +6,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getCursorValues;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.setParameterFromCursor;
 
 /**
  * This class represent the CursoredPage<T> implementation for pagination from the cursor model
@@ -25,19 +27,17 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     private EntityManager entityManager;
     private final List<T> results;
     private long totalElements = -1;
-    private boolean isPrevious;
-    
-    public CursoredPageImpl(QueryData queryData, Object[] args, PageRequest pageRequest, EntityManager em){
+    private boolean isForward;
+
+    public CursoredPageImpl(QueryData queryData, Object[] args, PageRequest pageRequest, EntityManager em) {
         this.queryData = queryData;
         this.args = args;
         this.pageRequest = pageRequest;
         this.entityManager = em;
-        this.isPrevious = this.pageRequest.mode() == PageRequest.Mode.CURSOR_PREVIOUS;
-        
-        Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
+        this.isForward = this.pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
 
-        int maxPageSize = pageRequest.size();
-        String sql = cursor.isEmpty() ? queryData.getQueryString() : "";
+        Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
+        String sql = cursor.isEmpty() ? queryData.getQueryString() : isForward ? queryData.getQueryNext() : queryData.getQueryPrevious();
 
         TypedQuery<T> query = (TypedQuery<T>) em.createQuery(sql, queryData.getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
@@ -52,16 +52,17 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
                 }
             }
         }
-        
+
         if (cursor.isPresent()) {
-           //check how to set the parameter for cursor 
+            //check how to set the parameter for cursor 
+            setParameterFromCursor(query, cursor.get(), queryData.getOrders(), queryData);
         }
-        
+
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
         results = query.getResultList();
     }
-    
+
     @Override
     public PageRequest.Cursor cursor(int index) {
         return null;
@@ -69,7 +70,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
     @Override
     public List<T> content() {
-        return results;
+        return results.size() > pageRequest.size() ? results.subList(0, pageRequest.size()) : results;
     }
 
     @Override
@@ -79,17 +80,17 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
     @Override
     public int numberOfElements() {
-        return results.size();
+        return results.size() > pageRequest.size() ? pageRequest.size() : results.size();
     }
 
     @Override
     public boolean hasNext() {
-        return results.size() >=  pageRequest.size();
+        return results.size() >= (isForward ? pageRequest.size() + 1 : 1);
     }
 
     @Override
     public boolean hasPrevious() {
-        return pageRequest.page() > 1;
+        return results.size() >= (isForward ? 1 : pageRequest.size() + 1);
     }
 
     @Override
@@ -99,15 +100,24 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
     @Override
     public PageRequest nextPageRequest() {
-        return PageRequest.afterCursor(PageRequest.Cursor.forKey(getCursorValues(results.get(results.size() - 1), 
-                this.queryData.getOrders(), this.queryData)),
-                pageRequest.page() + 1, pageRequest.size(), pageRequest.requestTotal());
+        if (hasNext()) {
+            return PageRequest.afterCursor(PageRequest.Cursor
+                            .forKey(getCursorValues(results.get(Math.min(pageRequest.size(), results.size()) - 1),
+                                    this.queryData.getOrders(), this.queryData)),
+                    pageRequest.page() + 1, pageRequest.size(), pageRequest.requestTotal());
+        } else {
+            throw new NoSuchElementException("Not an available page for cursor");
+        }
     }
 
     @Override
     public PageRequest previousPageRequest() {
-        return PageRequest.beforeCursor(PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
-                pageRequest.page() == 1 ? 1 : pageRequest.page() - 1, pageRequest.size(), pageRequest.requestTotal());
+        if (hasPrevious()) {
+            return PageRequest.beforeCursor(PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
+                    pageRequest.page() == 1 ? 1 : pageRequest.page() - 1, pageRequest.size(), pageRequest.requestTotal());
+        } else {
+            throw new NoSuchElementException("Not an available page for cursor");
+        }
     }
 
     @Override
@@ -168,9 +178,17 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
             return 0;
         }
     }
-    
+
     @Override
     public Stream<T> stream() {
         return content().stream();
+    }
+
+    @Override
+    public String toString() {
+        return "CursoredPage " +
+                "page=" + pageRequest.page() +
+                ", pageRequest=" + pageRequest +
+                ", from Entity=" + queryData.getDeclaredEntityClass().getName();
     }
 }

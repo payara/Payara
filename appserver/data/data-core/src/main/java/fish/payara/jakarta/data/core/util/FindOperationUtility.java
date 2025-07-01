@@ -61,6 +61,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.QueryOperationUtility.getAndIncrementParamIndex;
+
 /**
  * Utility class used to process Jakarta Data find operations
  */
@@ -100,6 +102,9 @@ public class FindOperationUtility {
                     attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
                 }
                 builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+                if (queryPosition > dataForQuery.getParamIndex()) {
+                    getAndIncrementParamIndex(dataForQuery);
+                }
             }
             queryPosition++;
         }
@@ -149,48 +154,24 @@ public class FindOperationUtility {
             }
         }
 
-        StringBuilder orderQuery = null;
+        String orderQuery = null;
 
         //We can't have a combinaton of sort from Query annotation value and parameters
         if (patternPositions != null && patternPositions.containsValue("ORDER") && orders.size() > 0) {
             throw new IllegalArgumentException("You can't add multiple sort parameters with Order By from the Query value");
         }
 
-        //create order query
-        for (Sort<?> sort : orders) {
-            if (orderQuery == null) {
-                orderQuery = new StringBuilder(" ORDER BY ");
-            } else {
-                orderQuery.append(", ");
-            }
+        boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
 
-            String propertyName = sort.property();
-            if (sort.ignoreCase()) {
-                orderQuery.append("LOWER(");
-            }
-
-            if (propertyName.charAt(propertyName.length() - 1) != ')' && dataForQuery.getQueryType().equals(QueryType.FIND)) {
-                orderQuery.append("o.");
-            }
-
-            orderQuery.append(propertyName);
-
-            if (sort.ignoreCase()) {
-                orderQuery.append(")");
-            }
-
-            if (sort.isDescending()) {
-                orderQuery.append(" DESC");
-            }
-        }
+        orderQuery = processSortForPagination(orders, dataForQuery, forward);
 
         if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
             builder.append(orderQuery != null ? orderQuery.toString() : "");
             dataForQuery.setQueryString(builder.toString());
         } else { //cursor queries
-            
+            createCursorQueries(dataForQuery, orders, orderQuery, forward);
         }
-        
+
         dataForQuery.setOrders(orders);
 
         if (Page.class.equals(method.getReturnType())) {
@@ -242,7 +223,7 @@ public class FindOperationUtility {
         }
 
         if (hasWhere && dataForQuery.getQueryType().equals(QueryType.FIND)) {
-            if(wherePosition >= 0) {
+            if (wherePosition >= 0) {
                 builder.append(" WHERE").append(dataForQuery.getQueryString().substring(wherePosition + 5));
             } else {
                 builder.append(" WHERE");
@@ -352,5 +333,100 @@ public class FindOperationUtility {
             // limit.maxResults() is guaranteed to be >= 1.
             query.setMaxResults(limit.maxResults());
         }
+    }
+
+    public static String processSortForPagination(List<Sort<Object>> orders, QueryData dataForQuery, boolean forward) {
+        //create order query
+        StringBuilder orderQuery = null;
+        for (Sort<?> sort : orders) {
+            if (orderQuery == null) {
+                orderQuery = new StringBuilder(" ORDER BY ");
+            } else {
+                orderQuery.append(", ");
+            }
+
+            String propertyName = sort.property();
+            if (sort.ignoreCase()) {
+                orderQuery.append("LOWER(");
+            }
+
+            if (propertyName.charAt(propertyName.length() - 1) != ')' && dataForQuery.getQueryType().equals(QueryType.FIND)) {
+                orderQuery.append("o.");
+            }
+
+            orderQuery.append(propertyName);
+
+            if (sort.ignoreCase()) {
+                orderQuery.append(")");
+            }
+
+            if (forward) {
+                if (sort.isDescending()) {
+                    orderQuery.append(" DESC");
+                }
+            } else {
+                if (sort.isAscending()) {
+                    orderQuery.append(" DESC");
+                }
+            }
+        }
+        return orderQuery.toString();
+    }
+
+    private static void createCursorQueries(QueryData dataForQuery, List<Sort<Object>> orders, String orderQuery, boolean forward) {
+        String prefixForParams = "?";
+        boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
+        StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
+        for (int i = 0; i < orders.size(); i++) {
+            cursorQuery.append(i == 0 ? "(" : " OR (");
+            Sort<?> sort = orders.get(i);
+            String propertyName = sort.property();
+            boolean asc = sort.isAscending();
+            boolean lower = sort.ignoreCase();
+            if (lower) {
+                cursorQuery.append(i == 0 ? "LOWER(" : " AND LOWER(");
+                appendAttribute(propertyName, cursorQuery);
+                cursorQuery.append(')');
+                if (forward) {
+                    cursorQuery.append(asc ? '>' : '<');
+                } else {
+                    cursorQuery.append(asc ? '<' : '>');
+                }
+                cursorQuery.append("LOWER(").append(prefixForParams).append(dataForQuery.getParamIndex() + 1).append(')');
+            } else {
+                cursorQuery.append(i == 0 ? "" : " AND ");
+                appendAttribute(propertyName, cursorQuery);
+                if (forward) {
+                    cursorQuery.append(asc ? '>' : '<');
+                } else {
+                    cursorQuery.append(asc ? '<' : '>');
+                }
+                cursorQuery.append(prefixForParams).append(dataForQuery.getParamIndex() + 1);
+            }
+        }
+        cursorQuery.append(")");
+        if (forward) {
+            dataForQuery.setQueryNext(new StringBuilder(dataForQuery.getQueryString())
+                    .append(cursorQuery).append(")").append(orderQuery).toString());
+        } else {
+            dataForQuery.setQueryPrevious(new StringBuilder(dataForQuery.getQueryString())
+                    .append(cursorQuery).append(")").append(orderQuery).toString());
+        }
+    }
+
+    public static void appendAttribute(String name, StringBuilder cursorQuery) {
+        if (name.charAt(name.length() - 1) != ')') {
+            cursorQuery.append("o.");
+        }
+        cursorQuery.append(name);
+    }
+
+    public static void setParameterFromCursor(Query query, PageRequest.Cursor cursor, List<Sort<Object>> orders, QueryData dataForQuery) {
+        int startValue = dataForQuery.getParamIndex();
+        for (Object cursorObject : cursor.elements()) {
+            startValue += 1;
+            query.setParameter(startValue, cursorObject);
+        }
+
     }
 }

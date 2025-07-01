@@ -90,7 +90,7 @@ public class QueryOperationUtility {
 
     private static final Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
     private static final Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
-    
+
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
                                                TransactionManager transactionManager, Limit limit,
@@ -460,18 +460,21 @@ public class QueryOperationUtility {
                 whereClause.append(" = ?").append(getAndIncrementParamIndex(dataForQuery));
             } else {
                 switch (condition.operator()) {
-                    case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "Like", "StartsWith", "EndsWith", "Contains" ->
+                            whereClause.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "LessThan" -> whereClause.append(" < ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "LessThanEqual" -> whereClause.append(" <= ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "GreaterThan" -> whereClause.append(" > ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "GreaterThanEqual" -> whereClause.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "GreaterThanEqual" ->
+                            whereClause.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "Between" -> whereClause.append(" BETWEEN ?").append(getAndIncrementParamIndex(dataForQuery))
                             .append(" AND ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "In" -> whereClause.append(" IN ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "Null" -> whereClause.append(" IS NULL");
                     case "True" -> whereClause.append(" = TRUE");
                     case "False" -> whereClause.append(" = FALSE");
-                    default -> throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
+                    default ->
+                            throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
                 }
             }
             if (condition.not()) {
@@ -582,7 +585,7 @@ public class QueryOperationUtility {
         return resultList.isEmpty() ? null : resultList.get(0);
     }
 
-    private static int getAndIncrementParamIndex(QueryData dataForQuery) {
+    public static int getAndIncrementParamIndex(QueryData dataForQuery) {
         dataForQuery.setParamIndex(dataForQuery.getParamIndex() + 1);
         return dataForQuery.getParamIndex();
     }
