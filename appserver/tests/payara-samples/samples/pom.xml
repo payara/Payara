@@ -74,7 +74,6 @@
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
-        <module>jakartaee-namespace-transformer</module>
         <!--module>http</module-->
         <module>logging</module>
         <module>ejb-http-remoting</module>
