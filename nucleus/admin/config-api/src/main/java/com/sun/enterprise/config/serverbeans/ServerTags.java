@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -195,7 +195,6 @@ public class ServerTags  {
     public static final String APPLICATION_REF = "application-ref";
     //public static final String ENABLED = "enabled";
     public static final String VIRTUAL_SERVERS = "virtual-servers";
-    public static final String CDI_DEV_MODE_ENABLED_PROP = "cdiDevModeEnabled";
     public static final String EMPTY_BEANS_XML_MODE_ALL_PROP = "emptyBeansXmlModeALL";
     
     //public static final String LB_ENABLED = "lb-enabled";
