@@ -275,9 +275,7 @@ public final class JSPCompiler {
                     "Null property name or value");
             }
 
-            if ("xpoweredBy".equals(pName)) {
-                jspc.setXpoweredBy(Boolean.valueOf(pValue));
-            } else if ("classdebuginfo".equals(pName)) {
+            if ("classdebuginfo".equals(pName)) {
                 jspc.setClassDebugInfo(Boolean.valueOf(pValue));
             } else if ("enablePooling".equals(pName)) {
                 jspc.setPoolingEnabled(Boolean.valueOf(pValue));

@@ -230,10 +230,6 @@
         <sun:property id="chunking"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Chunking}" helpText="$resource{i18n_web.http.ChunkingHelp}" >
             <sun:checkbox id="chunkingEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['chunkingEnabled']}" selectedValue="true" />
         </sun:property>
-
-        <sun:property id="XpoweredBy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.XpoweredBy}" helpText="$resource{i18n_web.http.XpoweredByHelp}" >
-            <sun:checkbox id="xpoweredByEnabled" selected="#{pageSession.httpMap['xpoweredBy']}" selectedValue="true" />
-        </sun:property>
     
         <sun:property id="ServerHeader"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.ServerHeader}" helpText="$resource{i18n_web.http.ServerHeaderHelp}" >
             <sun:checkbox id="serverHeaderEnabled" selected="#{pageSession.httpMap['serverHeader']}" selectedValue="true" />

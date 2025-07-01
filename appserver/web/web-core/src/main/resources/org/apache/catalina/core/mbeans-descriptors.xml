@@ -621,11 +621,6 @@
            description="Should Tomcat perform all authentications?"
                   type="boolean"/>
 
-    <attribute    name="xpoweredBy"
-           description="Is generation of X-Powered-By response header enabled/disabled?"
-                    is="true"
-                  type="boolean"/>
-
     <operation name="start" description="Start" impact="ACTION" returnType="void" />
     <operation name="stop" description="Stop" impact="ACTION" returnType="void" />
     <operation name="init" description="Init" impact="ACTION" returnType="void" />

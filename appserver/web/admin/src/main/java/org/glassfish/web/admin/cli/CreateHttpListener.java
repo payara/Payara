@@ -103,8 +103,6 @@ public class CreateHttpListener implements AdminCommand {
     String defaultVirtualServer;
     @Param(name = "servername", optional = true)
     String serverName;
-    @Param(name = "xpowered", optional = true, defaultValue = "true")
-    Boolean xPoweredBy;
     @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
     Boolean serverHeader;
     @Param(name = "xframe", optional = true, defaultValue = "true")
@@ -379,7 +377,6 @@ public class CreateHttpListener implements AdminCommand {
             .getCommand("create-http", context.getActionReport(), context.getLogger());
         command.protocolName = listenerId;
         command.defaultVirtualServer = defaultVirtualServer;
-        command.xPoweredBy = xPoweredBy;
         command.serverHeader = serverHeader;
         command.xFrameOptions = xFrameOptions; 
         command.serverName = serverName;

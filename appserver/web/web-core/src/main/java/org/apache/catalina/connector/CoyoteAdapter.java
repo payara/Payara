@@ -298,11 +298,6 @@ public class CoyoteAdapter extends HttpHandler {
         }
         // END SJSAS 6331392
 
-////            "X-Powered-By" header is set by GlassfishHttpCodecFilter
-//        if (connector.isXpoweredBy()) {
-//            response.addHeader("X-Powered-By", POWERED_BY);
-//        }
-
 
         // Parse and set Catalina and configuration specific 
         // request parameters

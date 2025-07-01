@@ -504,7 +504,6 @@ public class ServerTags  {
     public static final String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     public static final String SERVER_NAME = "server-name";
     public static final String REDIRECT_PORT = "redirect-port";
-    public static final String XPOWERED_BY = "xpowered-by";
     //public static final String ENABLED = "enabled";
     /** Tags for Element virtual-server */
     public static final String VIRTUAL_SERVER = "virtual-server";

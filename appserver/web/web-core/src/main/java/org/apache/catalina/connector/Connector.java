@@ -168,11 +168,6 @@ public class Connector
      */
     private int maxHttpHeaderSize = 4 * 1024;
 
-    /*
-     * Is generation of X-Powered-By response header enabled/disabled?
-     */
-    private boolean xpoweredBy;
-
     private boolean serverHeader;
     
     /*
@@ -1110,30 +1105,6 @@ public class Connector
                 log.log(Level.WARNING, "{0}is not supported .Setting default URLEncoding as {1}", new Object[]{uriEncoding, this.uriEncoding});
             }
         }
-    }
-
-    /**
-     * Indicates whether the generation of an X-Powered-By response header for
-     * servlet-generated responses is enabled or disabled for this Connector.
-     *
-     * @return true if generation of X-Powered-By response header is enabled,
-     * false otherwise
-     */
-    public boolean isXpoweredBy() {
-        return xpoweredBy;
-    }
-
-    /**
-     * Enables or disables the generation of an X-Powered-By header (with value
-     * Servlet/2.4) for all servlet-generated responses returned by this
-     * Connector.
-     *
-     * @param xpoweredBy true if generation of X-Powered-By response header is
-     * to be enabled, false otherwise
-     */
-    public void setXpoweredBy(boolean xpoweredBy) {
-        this.xpoweredBy = xpoweredBy;
-        setProperty("xpoweredBy", String.valueOf(xpoweredBy));
     }
     
     /**

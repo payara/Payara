@@ -902,8 +902,6 @@ public class PECoyoteConnector extends Connector {
             setProperty("sameSiteValue", http.getCookieSameSiteValue());
         }
 
-        setXpoweredBy(Boolean.valueOf(http.getXpoweredBy()));
-
         // Application root
         setWebAppRootPath(webContainer.getModulesRoot().getAbsolutePath());
 
