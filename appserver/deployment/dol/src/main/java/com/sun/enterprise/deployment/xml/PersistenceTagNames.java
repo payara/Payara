@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.deployment.xml;
 
@@ -46,23 +48,25 @@ package com.sun.enterprise.deployment.xml;
  */
 public interface PersistenceTagNames extends TagNames {
 
-    public static String PERSISTENCE = "persistence";
-    public static String PERSISTENCE_UNIT = "persistence-unit";
-    public static String DESCRIPTION = "description";
-    public static String PROVIDER = "provider";
-    public static String JTA_DATA_SOURCE = "jta-data-source";
-    public static String NON_JTA_DATA_SOURCE = "non-jta-data-source";
-    public static String JAR_FILE = "jar-file";
-    public static String MAPPING_FILE = "mapping-file";
-    public static String CLASS = "class";
-    public static String EXCLUDE_UNLISTED_CLASSES = "exclude-unlisted-classes";
-    public static String PROPERTIES = "properties";
-    public static String PROPERTY = "property";
-    public static String PROPERTY_NAME = "name";
-    public static String PROPERTY_VALUE = "value";
-    public static String NAME = "name";
-    public static String TRANSACTION_TYPE = "transaction-type";
-    public static String SHARED_CACHE_MODE = "shared-cache-mode";
-    public static String VALIDATION_MODE = "validation-mode";
+    String PERSISTENCE = "persistence";
+    String PERSISTENCE_UNIT = "persistence-unit";
+    String DESCRIPTION = "description";
+    String PROVIDER = "provider";
+    String JTA_DATA_SOURCE = "jta-data-source";
+    String NON_JTA_DATA_SOURCE = "non-jta-data-source";
+    String JAR_FILE = "jar-file";
+    String MAPPING_FILE = "mapping-file";
+    String CLASS = "class";
+    String EXCLUDE_UNLISTED_CLASSES = "exclude-unlisted-classes";
+    String PROPERTIES = "properties";
+    String PROPERTY = "property";
+    String PROPERTY_NAME = "name";
+    String PROPERTY_VALUE = "value";
+    String NAME = "name";
+    String TRANSACTION_TYPE = "transaction-type";
+    String SHARED_CACHE_MODE = "shared-cache-mode";
+    String VALIDATION_MODE = "validation-mode";
+    String SCOPE = "scope";
+    String QUALIFIER = "qualifier";
 
 }

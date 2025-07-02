@@ -292,4 +292,57 @@ public class DataCommonOperationUtility {
             }
         return cursorValues.toArray();
     }
+
+    public static String handleSort(EntityMetadata entityMetadata, List<Sort<?>> sortList, String query, boolean isFindOperation) {
+        StringBuilder sortedQuery = new StringBuilder(query);
+        if (!sortList.isEmpty()) {
+            appendSortQuery(entityMetadata, sortList, sortedQuery, isFindOperation);
+        }
+        return sortedQuery.toString();
+    }
+
+    public static void handleSort(EntityMetadata entityMetadata, List<Sort<?>> sortList, StringBuilder query, boolean isFindOperation) {
+        if (!sortList.isEmpty()) {
+            appendSortQuery(entityMetadata, sortList, query, isFindOperation);
+        }
+    }
+
+    private static void appendSortQuery(EntityMetadata entityMetadata, List<Sort<?>> sortList, StringBuilder sortedQuery, boolean isFindOperation) {
+        if (sortedQuery.toString().toUpperCase().contains("ORDER")) {
+            throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
+        }
+        sortedQuery.append(" ORDER BY ");
+        boolean firstItem = true;
+        for (Sort<?> sort : sortList) {
+            String propertyName = sort.property();
+            if (!entityMetadata.getAttributeNames().containsKey(propertyName.toLowerCase())) {
+                throw new IllegalArgumentException("The attribute " + propertyName +
+                        " is not mapped on the entity " + entityMetadata.getEntityName());
+            }
+            propertyName = entityMetadata.getAttributeNames().get(propertyName.toLowerCase());
+            if (!firstItem) {
+                sortedQuery.append(", ");
+            }
+            if (sort.ignoreCase()) {
+                sortedQuery.append("LOWER(");
+            }
+
+
+            if (isFindOperation && propertyName.charAt(propertyName.length() - 1) != ')') {
+                sortedQuery.append("o.");
+            }
+
+            sortedQuery.append(propertyName);
+            if (sort.ignoreCase()) {
+                sortedQuery.append(")");
+            }
+            if (sort.isAscending()) {
+                sortedQuery.append(" ASC");
+            }
+            if (sort.isDescending()) {
+                sortedQuery.append(" DESC");
+            }
+            firstItem = false;
+        }
+    }
 }

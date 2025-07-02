@@ -63,6 +63,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.QueryOperationUtility.getAndIncrementParamIndex;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.handleSort;
 
 /**
  * Utility class used to process Jakarta Data find operations
@@ -72,14 +73,18 @@ public class FindOperationUtility {
     public static final List<Class<?>> parametersToExclude = List.of(PageRequest.class, Limit.class, Order.class, Sort.class, Sort[].class);
 
     public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
-                                                    EntityMetadata entityMetadata, Limit limit) {
+                                                    EntityMetadata entityMetadata, DataParameter dataParameter) {
         String qlString = createBaseFindQuery(entityClass, orderByClause, entityMetadata);
+        List<Sort<?>> sortList = dataParameter.sortList();
+        if (!sortList.isEmpty()) {
+            qlString = handleSort(entityMetadata, sortList, qlString, true);
+        }
         Query query = em.createQuery(qlString);
-        verifyLimit(limit, query);
+        verifyLimit(dataParameter.limit(), query);
         return query.getResultStream();
     }
 
-    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, Limit limit, boolean evaluatePages) {
+    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, DataParameter dataParameter, boolean evaluatePages) {
         StringBuilder builder = new StringBuilder();
         builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
                 null, dataForQuery.getEntityMetadata()));
@@ -113,6 +118,10 @@ public class FindOperationUtility {
         if (hasWhere) {
             builder.append(")");
         }
+        List<Sort<?>> sortList = dataParameter.sortList();
+        if (!sortList.isEmpty()) {
+            handleSort(dataForQuery.getEntityMetadata(), sortList, builder, dataForQuery.getQueryType() == QueryType.FIND);
+        }
 
         dataForQuery.setQueryString(builder.toString());
 
@@ -128,7 +137,7 @@ public class FindOperationUtility {
                 }
             }
 
-            verifyLimit(limit, query);
+            verifyLimit(dataParameter.limit(), query);
 
             return query.getResultList();
         }
@@ -145,13 +154,7 @@ public class FindOperationUtility {
         for (Object param : args) {
             if (param instanceof PageRequest) { //Get info for PageRequest
                 pageRequest = (PageRequest) param;
-            } else if (param instanceof Order) { //Get info for orders
-                Iterable<Sort<Object>> order = (Iterable<Sort<Object>>) param;
-                preprocessOrder(orders, order, dataForQuery);
-            } else if (param instanceof Sort) {
-                preprocessOrder(orders, dataForQuery, (Sort<Object>) param);
-            } else if (param instanceof Sort[]) {
-                preprocessOrder(orders, dataForQuery, (Sort<Object>[]) param);
+                break;
             }
         }
 
