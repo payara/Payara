@@ -73,18 +73,19 @@ public class FindOperationUtility {
     public static final List<Class<?>> parametersToExclude = List.of(PageRequest.class, Limit.class, Order.class, Sort.class, Sort[].class);
 
     public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
-                                                    EntityMetadata entityMetadata, DataParameter dataParameter) {
-        String qlString = createBaseFindQuery(entityClass, orderByClause, entityMetadata);
+                                                    QueryData dataForQuery, DataParameter dataParameter) {
+        String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata());
         List<Sort<?>> sortList = dataParameter.sortList();
         if (!sortList.isEmpty()) {
-            qlString = handleSort(entityMetadata, sortList, qlString, true);
+            qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
         }
         Query query = em.createQuery(qlString);
         verifyLimit(dataParameter.limit(), query);
         return query.getResultStream();
     }
 
-    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery, DataParameter dataParameter, boolean evaluatePages) {
+    public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery,
+                                                DataParameter dataParameter, boolean evaluatePages) {
         StringBuilder builder = new StringBuilder();
         builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
                 null, dataForQuery.getEntityMetadata()));
@@ -118,17 +119,17 @@ public class FindOperationUtility {
         if (hasWhere) {
             builder.append(")");
         }
-        List<Sort<?>> sortList = dataParameter.sortList();
-        if (!sortList.isEmpty()) {
-            handleSort(dataForQuery.getEntityMetadata(), sortList, builder, dataForQuery.getQueryType() == QueryType.FIND);
-        }
 
         dataForQuery.setQueryString(builder.toString());
 
         //here place to process pagination
         if (evaluatePages) {
-            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, null);
+            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, null, dataParameter);
         } else {
+            if (!dataForQuery.getOrders().isEmpty()) {
+                handleSort(dataForQuery, dataForQuery.getOrders(), builder, dataForQuery.getQueryType() == QueryType.FIND, false, false);
+                dataForQuery.setQueryString(builder.toString());
+            }
             //check order conditions to improve select queries
             Query query = em.createQuery(dataForQuery.getQueryString());
             for (int i = 0; i < args.length; i++) {
@@ -145,43 +146,35 @@ public class FindOperationUtility {
 
 
     public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
-                                           Method method, StringBuilder builder, boolean hasWhere, Map<Integer, String> patternPositions) {
+                                           Method method, StringBuilder builder, boolean hasWhere,
+                                           Map<Integer, String> patternPositions, DataParameter dataParameter) {
         PageRequest pageRequest = null;
         Object returnValue = null;
-        List<Sort<Object>> orders = new ArrayList<>();
         createCountQuery(dataForQuery, hasWhere, dataForQuery.getQueryString().indexOf("WHERE"));
-        //evaluating parameters for pagination
-        for (Object param : args) {
-            if (param instanceof PageRequest) { //Get info for PageRequest
-                pageRequest = (PageRequest) param;
-                break;
-            }
-        }
-
-        String orderQuery = null;
-
-        //We can't have a combinaton of sort from Query annotation value and parameters
-        if (patternPositions != null && patternPositions.containsValue("ORDER") && orders.size() > 0) {
-            throw new IllegalArgumentException("You can't add multiple sort parameters with Order By from the Query value");
-        }
-
+        List<Sort<?>> sortList = dataParameter.sortList();
+        pageRequest = getPageRequest(args);
+        
         boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
         boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
-        if (isCursoredPage) {
+        if (isCursoredPage && dataForQuery.getQueryType() != QueryType.FIND) {
             //here to adapt query for Cursored mode
             preprocessQueryForCursoredMode(dataForQuery);
             builder = new StringBuilder(dataForQuery.getQueryString());
         }
-        orderQuery = processSortForPagination(orders, dataForQuery, forward);
-
-        if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
-            builder.append(orderQuery != null ? orderQuery.toString() : "");
-            dataForQuery.setQueryString(builder.toString());
-        } else { //cursor queries
-            createCursorQueries(dataForQuery, orders, orderQuery, forward, args);
+        
+        if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
+            createCursorQueries(dataForQuery, dataParameter.sortList(), forward, args);
+            builder = new StringBuilder(dataForQuery.getQueryString());
         }
+        
+        handleSort(dataForQuery, sortList, builder, 
+                dataForQuery.getQueryType() == QueryType.FIND, true, forward);
+        dataForQuery.setQueryString(builder.toString());
+        dataForQuery.setOrders(dataParameter.sortList());
 
-        dataForQuery.setOrders(orders);
+        if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
+            updateCursorQueries(dataForQuery);
+        }
 
         if (Page.class.equals(method.getReturnType())) {
             returnValue = new PageImpl<>(dataForQuery, args, pageRequest, em);
@@ -191,6 +184,25 @@ public class FindOperationUtility {
 
         return returnValue;
     }
+    
+    private static void updateCursorQueries(QueryData dataForQuery) {
+        if(dataForQuery.getQueryNext() != null && !dataForQuery.getQueryNext().contains("ORDER")) {
+            dataForQuery.setQueryNext(dataForQuery.getQueryNext() + dataForQuery.getQueryOrder());
+        }
+        
+        if(dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
+            dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + dataForQuery.getQueryOrder());
+        }
+    }
+
+    private static PageRequest getPageRequest(Object[] args) {
+        for (Object param : args) {
+            if (param instanceof PageRequest) { //Get info for PageRequest
+                return (PageRequest) param;
+            }
+        }
+        return null;
+    }
 
     private static void preprocessQueryForCursoredMode(QueryData dataForQuery) {
         String sql = dataForQuery.getQueryString();
@@ -198,35 +210,6 @@ public class FindOperationUtility {
         StringBuilder sqlBuilder = new StringBuilder().append(sql.substring(0, whereIndex + 5)).append(" (")
                 .append(sql.substring(whereIndex + 6, sql.length())).append(")");
         dataForQuery.setQueryString(sqlBuilder.toString());
-    }
-
-    public static void preprocessOrder(List<Sort<Object>> orders, Iterable<Sort<Object>> order, QueryData dataForQuery) {
-        for (Sort<Object> sort : order) {
-            if (sort == null) {
-                throw new MappingException("sort is null");
-            } else {
-                orders.add(validateSort(sort, dataForQuery.getEntityMetadata(), sort.property()));
-            }
-        }
-    }
-
-    public static void preprocessOrder(List<Sort<Object>> sorts, QueryData dataForQuery, Sort<Object>... sortArray) {
-        for (Sort<Object> sort : sortArray) {
-            if (sort == null) {
-                throw new MappingException("sort is null");
-            }
-            sorts.add(validateSort(sort, dataForQuery.getEntityMetadata(), sort.property()));
-        }
-    }
-
-    public static <T> Sort<T> validateSort(Sort<T> sort, EntityMetadata entityMetadata, String attributeName) {
-        String name = preprocessAttributeName(entityMetadata, attributeName);
-        if (name.equals(sort.property())) {
-            return sort;
-        } else {
-            return sort.isAscending() ? sort.ignoreCase() ? Sort.ascIgnoreCase(name) : Sort.asc(name)
-                    : sort.ignoreCase() ? Sort.descIgnoreCase(name) : Sort.desc(name);
-        }
     }
 
     public static void createCountQuery(QueryData dataForQuery, boolean hasWhere, int wherePosition) {
@@ -352,7 +335,7 @@ public class FindOperationUtility {
         }
     }
 
-    public static String processSortForPagination(List<Sort<Object>> orders, QueryData dataForQuery, boolean forward) {
+    public static String processSortForPagination(List<Sort<?>> orders, QueryData dataForQuery, boolean forward) {
         //create order query
         StringBuilder orderQuery = null;
         for (Sort<?> sort : orders) {
@@ -390,9 +373,54 @@ public class FindOperationUtility {
         return orderQuery.toString();
     }
 
-    private static void createCursorQueries(QueryData dataForQuery, List<Sort<Object>> orders, String orderQuery,
+    private static void createCursorQueries(QueryData dataForQuery, List<Sort<?>> orders,
                                             boolean forward, Object[] args) {
         String prefixForParams = dataForQuery.getJpqlParameters().isEmpty() ? "?" : ":cursor";
+        boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
+        StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
+        for (int i = 0; i < orders.size(); i++) {
+            cursorQuery.append(i == 0 ? "(" : " OR (");
+            int paramCount = getParamCount(dataForQuery, args);
+            for (int k = 0; k <= i; k++) {
+                Sort<?> sort = orders.get(k);
+                String propertyName = sort.property();
+                boolean asc = sort.isAscending();
+                boolean lower = sort.ignoreCase();
+                if (lower) {
+                    cursorQuery.append(k == 0 ? "LOWER(" : " AND LOWER(");
+                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
+                    cursorQuery.append(')');
+                    if (forward) {
+                        cursorQuery.append(k < i ? '=' : (asc ? '>' : '<'));
+                    } else {
+                        cursorQuery.append(k < i ? '=' : (asc ? '<' : '>'));
+                    }
+                    paramCount += 1;
+                    cursorQuery.append("LOWER(").append(prefixForParams).append(paramCount).append(')');
+                } else {
+                    cursorQuery.append(k == 0 ? "" : " AND ");
+                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
+                    if (forward) {
+                        cursorQuery.append(k < i ? '=' : (asc ? '>' : '<'));
+                    } else {
+                        cursorQuery.append(k < i ? '=' : (asc ? '<' : '>'));
+                    }
+                    paramCount += 1;
+                    cursorQuery.append(prefixForParams).append(paramCount);
+                }
+            }
+            cursorQuery.append(")");
+        }
+        if (forward) {
+            dataForQuery.setQueryNext(new StringBuilder(dataForQuery.getQueryString())
+                    .append(cursorQuery).append(")").toString());
+        } else {
+            dataForQuery.setQueryPrevious(new StringBuilder(dataForQuery.getQueryString())
+                    .append(cursorQuery).append(")").toString());
+        }
+    }
+    
+    public static int getParamCount(QueryData dataForQuery, Object[] args) {
         int paramCount = dataForQuery.getJpqlParameters().isEmpty() ? dataForQuery.getParamIndex() : dataForQuery.getJpqlParameters().size();
         if (paramCount == 0) {
             for (int i = 0; i < args.length; i++) {
@@ -401,45 +429,7 @@ public class FindOperationUtility {
                 }
             }
         }
-        boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
-        StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
-        for (int i = 0; i < orders.size(); i++) {
-            cursorQuery.append(i == 0 ? "(" : " OR (");
-            Sort<?> sort = orders.get(i);
-            String propertyName = sort.property();
-            boolean asc = sort.isAscending();
-            boolean lower = sort.ignoreCase();
-            if (lower) {
-                cursorQuery.append(i == 0 ? "LOWER(" : " AND LOWER(");
-                appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
-                cursorQuery.append(')');
-                if (forward) {
-                    cursorQuery.append(asc ? '>' : '<');
-                } else {
-                    cursorQuery.append(asc ? '<' : '>');
-                }
-                paramCount += 1;
-                cursorQuery.append("LOWER(").append(prefixForParams).append(paramCount).append(')');
-            } else {
-                cursorQuery.append(i == 0 ? "" : " AND ");
-                appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
-                if (forward) {
-                    cursorQuery.append(asc ? '>' : '<');
-                } else {
-                    cursorQuery.append(asc ? '<' : '>');
-                }
-                paramCount += 1;
-                cursorQuery.append(prefixForParams).append(paramCount);
-            }
-        }
-        cursorQuery.append(")");
-        if (forward) {
-            dataForQuery.setQueryNext(new StringBuilder(dataForQuery.getQueryString())
-                    .append(cursorQuery).append(")").append(orderQuery).toString());
-        } else {
-            dataForQuery.setQueryPrevious(new StringBuilder(dataForQuery.getQueryString())
-                    .append(cursorQuery).append(")").append(orderQuery).toString());
-        }
+        return paramCount;
     }
 
     public static void appendAttribute(String name, StringBuilder cursorQuery, QueryType queryType) {
@@ -449,7 +439,7 @@ public class FindOperationUtility {
         cursorQuery.append(name);
     }
 
-    public static void setParameterFromCursor(Query query, PageRequest.Cursor cursor, List<Sort<Object>> orders, QueryData dataForQuery, Object[] args) {
+    public static void setParameterFromCursor(Query query, PageRequest.Cursor cursor, List<Sort<?>> orders, QueryData dataForQuery, Object[] args) {
         int startValue = dataForQuery.getParamIndex();
         if (startValue == 0) {
             for (int i = 0; i < args.length; i++) {

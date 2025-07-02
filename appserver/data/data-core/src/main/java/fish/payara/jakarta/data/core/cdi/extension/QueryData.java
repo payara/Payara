@@ -61,7 +61,8 @@ public class QueryData {
     private String countQueryString;
     private String queryNext;
     private String queryPrevious;
-    private List<Sort<Object>> orders;
+    private String queryOrder;
+    private List<Sort<?>> orders;
 
     private int paramIndex = 0;
 
@@ -174,11 +175,19 @@ public class QueryData {
         this.queryPrevious = queryPrevious;
     }
 
-    public List<Sort<Object>> getOrders() {
+    public List<Sort<?>> getOrders() {
         return orders;
     }
 
-    public void setOrders(List<Sort<Object>> orders) {
+    public void setOrders(List<Sort<?>> orders) {
         this.orders = orders;
+    }
+
+    public String getQueryOrder() {
+        return queryOrder;
+    }
+
+    public void setQueryOrder(String queryOrder) {
+        this.queryOrder = queryOrder;
     }
 }

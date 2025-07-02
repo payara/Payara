@@ -273,7 +273,7 @@ public class DataCommonOperationUtility {
         }
     }
 
-    public static Object[] getCursorValues(Object entity, List<Sort<Object>> sorts, QueryData queryData) {
+    public static Object[] getCursorValues(Object entity, List<Sort<?>> sorts, QueryData queryData) {
         ArrayList<Object> cursorValues = new ArrayList<>();
         for (Sort<?> sort : sorts)
             try {
@@ -293,25 +293,31 @@ public class DataCommonOperationUtility {
         return cursorValues.toArray();
     }
 
-    public static String handleSort(EntityMetadata entityMetadata, List<Sort<?>> sortList, String query, boolean isFindOperation) {
+    public static String handleSort(QueryData dataForQuery, List<Sort<?>> sortList, String query, 
+                                    boolean isFindOperation, boolean hasPagination, boolean isForward) {
         StringBuilder sortedQuery = new StringBuilder(query);
         if (!sortList.isEmpty()) {
-            appendSortQuery(entityMetadata, sortList, sortedQuery, isFindOperation);
+            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward);
         }
         return sortedQuery.toString();
     }
 
-    public static void handleSort(EntityMetadata entityMetadata, List<Sort<?>> sortList, StringBuilder query, boolean isFindOperation) {
+    public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query, 
+                                  boolean isFindOperation, boolean hasPagination, boolean isForward) {
         if (!sortList.isEmpty()) {
-            appendSortQuery(entityMetadata, sortList, query, isFindOperation);
+            appendSortQuery(dataForQuery, sortList, query, isFindOperation, hasPagination, isForward);
         }
     }
 
-    private static void appendSortQuery(EntityMetadata entityMetadata, List<Sort<?>> sortList, StringBuilder sortedQuery, boolean isFindOperation) {
+    private static void appendSortQuery(QueryData dataForQuery, 
+                                        List<Sort<?>> sortList, StringBuilder sortedQuery, 
+                                        boolean isFindOperation, boolean hasPagination, 
+                                        boolean isForward) {
         if (sortedQuery.toString().toUpperCase().contains("ORDER")) {
             throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
         }
-        sortedQuery.append(" ORDER BY ");
+        EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
+        StringBuilder sortCriteria = new StringBuilder(" ORDER BY ");
         boolean firstItem = true;
         for (Sort<?> sort : sortList) {
             String propertyName = sort.property();
@@ -321,28 +327,43 @@ public class DataCommonOperationUtility {
             }
             propertyName = entityMetadata.getAttributeNames().get(propertyName.toLowerCase());
             if (!firstItem) {
-                sortedQuery.append(", ");
+                sortCriteria.append(", ");
             }
             if (sort.ignoreCase()) {
-                sortedQuery.append("LOWER(");
+                sortCriteria.append("LOWER(");
             }
 
 
             if (isFindOperation && propertyName.charAt(propertyName.length() - 1) != ')') {
-                sortedQuery.append("o.");
+                sortCriteria.append("o.");
             }
 
-            sortedQuery.append(propertyName);
+            sortCriteria.append(propertyName);
             if (sort.ignoreCase()) {
-                sortedQuery.append(")");
+                sortCriteria.append(")");
             }
-            if (sort.isAscending()) {
-                sortedQuery.append(" ASC");
-            }
-            if (sort.isDescending()) {
-                sortedQuery.append(" DESC");
+            
+            if(!hasPagination) {
+                if (sort.isAscending()) {
+                    sortCriteria.append(" ASC");
+                }
+                if (sort.isDescending()) {
+                    sortCriteria.append(" DESC");
+                }
+            } else {
+                if (isForward) {
+                    if (sort.isDescending()) {
+                        sortCriteria.append(" DESC");
+                    }
+                } else {
+                    if (sort.isAscending()) {
+                        sortCriteria.append(" DESC");
+                    }
+                }
             }
             firstItem = false;
         }
+        sortedQuery.append(sortCriteria.toString());
+        dataForQuery.setQueryOrder(sortCriteria.toString());
     }
 }

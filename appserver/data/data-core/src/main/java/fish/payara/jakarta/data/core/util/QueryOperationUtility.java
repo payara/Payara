@@ -132,7 +132,7 @@ public class QueryOperationUtility {
                 String query = entry.getKey();
                 List<Sort<?>> sortList = dataParameter.sortList();
                 if (!sortList.isEmpty()) {
-                    query = handleSort(dataForQuery.getEntityMetadata(), sortList, query, false);
+                    query = handleSort(dataForQuery, sortList, query, false, false, false);
                 }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
@@ -168,17 +168,11 @@ public class QueryOperationUtility {
             }
         } else {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
-
-                List<Sort<?>> sortList = dataParameter.sortList();
-                if (!sortList.isEmpty()) {
-                    String query = handleSort(dataForQuery.getEntityMetadata(), sortList, entry.getKey(), false);
-                    dataForQuery.setQueryString(query);
-                }
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
                     method, new StringBuilder(dataForQuery.getQueryString()), patternSelectPositions.containsValue("WHERE"),
-                    patternSelectPositions);
+                    patternSelectPositions, dataParameter);
         }
 
         return objectToReturn;

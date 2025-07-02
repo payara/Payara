@@ -176,7 +176,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         } else {
             // For "findAll" operations
             return FindOperationUtility.processFindAllOperation(dataForQuery.getDeclaredEntityClass(), getEntityManager(this.applicationName),
-                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery.getEntityMetadata(), dataParameter
+                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery, dataParameter
             );
         }
     }
