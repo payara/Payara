@@ -59,6 +59,8 @@
 
 -->
 
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
+
 <mbeans-descriptors>
 
   <mbean         name="CoyoteConnector"

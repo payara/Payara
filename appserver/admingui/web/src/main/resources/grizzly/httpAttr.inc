@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/httpAttr.inc -->
 
