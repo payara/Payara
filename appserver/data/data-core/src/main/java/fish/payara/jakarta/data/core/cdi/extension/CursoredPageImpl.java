@@ -55,7 +55,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
         if (cursor.isPresent()) {
             //check how to set the parameter for cursor 
-            setParameterFromCursor(query, cursor.get(), queryData.getOrders(), queryData);
+            setParameterFromCursor(query, cursor.get(), queryData.getOrders(), queryData, args);
         }
 
         query.setFirstResult(this.processOffset());

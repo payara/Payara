@@ -48,6 +48,7 @@ import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
+import jakarta.data.page.CursoredPage;
 import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
 import jakarta.data.repository.By;
@@ -162,14 +163,19 @@ public class FindOperationUtility {
         }
 
         boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
-
+        boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
+        if (isCursoredPage) {
+            //here to adapt query for Cursored mode
+            preprocessQueryForCursoredMode(dataForQuery);
+            builder = new StringBuilder(dataForQuery.getQueryString());
+        }
         orderQuery = processSortForPagination(orders, dataForQuery, forward);
 
         if (pageRequest.mode() == PageRequest.Mode.OFFSET) {
             builder.append(orderQuery != null ? orderQuery.toString() : "");
             dataForQuery.setQueryString(builder.toString());
         } else { //cursor queries
-            createCursorQueries(dataForQuery, orders, orderQuery, forward);
+            createCursorQueries(dataForQuery, orders, orderQuery, forward, args);
         }
 
         dataForQuery.setOrders(orders);
@@ -181,6 +187,14 @@ public class FindOperationUtility {
         }
 
         return returnValue;
+    }
+
+    private static void preprocessQueryForCursoredMode(QueryData dataForQuery) {
+        String sql = dataForQuery.getQueryString();
+        int whereIndex = sql.indexOf("WHERE");
+        StringBuilder sqlBuilder = new StringBuilder().append(sql.substring(0, whereIndex + 5)).append(" (")
+                .append(sql.substring(whereIndex + 6, sql.length())).append(")");
+        dataForQuery.setQueryString(sqlBuilder.toString());
     }
 
     public static void preprocessOrder(List<Sort<Object>> orders, Iterable<Sort<Object>> order, QueryData dataForQuery) {
@@ -373,8 +387,17 @@ public class FindOperationUtility {
         return orderQuery.toString();
     }
 
-    private static void createCursorQueries(QueryData dataForQuery, List<Sort<Object>> orders, String orderQuery, boolean forward) {
-        String prefixForParams = "?";
+    private static void createCursorQueries(QueryData dataForQuery, List<Sort<Object>> orders, String orderQuery,
+                                            boolean forward, Object[] args) {
+        String prefixForParams = dataForQuery.getJpqlParameters().isEmpty() ? "?" : ":cursor";
+        int paramCount = dataForQuery.getJpqlParameters().isEmpty() ? dataForQuery.getParamIndex() : dataForQuery.getJpqlParameters().size();
+        if (paramCount == 0) {
+            for (int i = 0; i < args.length; i++) {
+                if (!excludeParameter(args[i])) {
+                    paramCount = i + 1;
+                }
+            }
+        }
         boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
         StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
         for (int i = 0; i < orders.size(); i++) {
@@ -385,23 +408,25 @@ public class FindOperationUtility {
             boolean lower = sort.ignoreCase();
             if (lower) {
                 cursorQuery.append(i == 0 ? "LOWER(" : " AND LOWER(");
-                appendAttribute(propertyName, cursorQuery);
+                appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
                 cursorQuery.append(')');
                 if (forward) {
                     cursorQuery.append(asc ? '>' : '<');
                 } else {
                     cursorQuery.append(asc ? '<' : '>');
                 }
-                cursorQuery.append("LOWER(").append(prefixForParams).append(dataForQuery.getParamIndex() + 1).append(')');
+                paramCount += 1;
+                cursorQuery.append("LOWER(").append(prefixForParams).append(paramCount).append(')');
             } else {
                 cursorQuery.append(i == 0 ? "" : " AND ");
-                appendAttribute(propertyName, cursorQuery);
+                appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
                 if (forward) {
                     cursorQuery.append(asc ? '>' : '<');
                 } else {
                     cursorQuery.append(asc ? '<' : '>');
                 }
-                cursorQuery.append(prefixForParams).append(dataForQuery.getParamIndex() + 1);
+                paramCount += 1;
+                cursorQuery.append(prefixForParams).append(paramCount);
             }
         }
         cursorQuery.append(")");
@@ -414,18 +439,33 @@ public class FindOperationUtility {
         }
     }
 
-    public static void appendAttribute(String name, StringBuilder cursorQuery) {
-        if (name.charAt(name.length() - 1) != ')') {
+    public static void appendAttribute(String name, StringBuilder cursorQuery, QueryType queryType) {
+        if (name.charAt(name.length() - 1) != ')' && queryType == QueryType.FIND) {
             cursorQuery.append("o.");
         }
         cursorQuery.append(name);
     }
 
-    public static void setParameterFromCursor(Query query, PageRequest.Cursor cursor, List<Sort<Object>> orders, QueryData dataForQuery) {
+    public static void setParameterFromCursor(Query query, PageRequest.Cursor cursor, List<Sort<Object>> orders, QueryData dataForQuery, Object[] args) {
         int startValue = dataForQuery.getParamIndex();
-        for (Object cursorObject : cursor.elements()) {
-            startValue += 1;
-            query.setParameter(startValue, cursorObject);
+        if (startValue == 0) {
+            for (int i = 0; i < args.length; i++) {
+                if (!excludeParameter(args[i])) {
+                    startValue = i + 1;
+                }
+            }
+        }
+        if (dataForQuery.getJpqlParameters().isEmpty()) {
+            for (Object cursorObject : cursor.elements()) {
+                startValue += 1;
+                query.setParameter(startValue, cursorObject);
+            }
+        } else {
+            startValue = dataForQuery.getJpqlParameters().size();
+            for (Object cursorObject : cursor.elements()) {
+                startValue += 1;
+                query.setParameter("cursor" + startValue, cursorObject);
+            }
         }
 
     }
