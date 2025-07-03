@@ -214,9 +214,9 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
             DeployCommandParameters deployParams = deploymentContext.getCommandParameters(DeployCommandParameters.class);
 
             //If on DAS and not generating schema for remotes then return here
-            String jpaScemaGeneration = persistenceUnitDescriptor.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+            String jpaSchemaGeneration = persistenceUnitDescriptor.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
             String eclipselinkSchemaGeneration = persistenceUnitDescriptor.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
-            if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
+            if ("none".equals(jpaSchemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
                 return;
             } else {
                 InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
