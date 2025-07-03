@@ -56,13 +56,13 @@
     <modules>
         <module>payara-expression-config-properties</module>   <!-- FISH-11495 -->
         <module>clustered-singleton</module>   <!-- FISH-11496 -->
-        <module>custom-loginmodule-realm</module>
+        <!--module>custom-loginmodule-realm</module-->
         <module>sfsb-passivation</module>   <!-- FISH-11497 -->
         <module>dynamic-roles</module>   <!-- FISH-11498 -->
         <module>formauth</module>
-        <module>jacc-per-app</module>
+        <!--module>jacc-per-app</module-->
         <module>jaxrs-rolesallowed</module>   <!-- FISH-10591 -->
-        <module>jaxrs-rolesallowed-servlet</module>   <!-- FISH-10592 -->
+        <!--module>jaxrs-rolesallowed-servlet</module-->   <!-- FISH-10592 -->
         <module>jaxws-security</module>   <!-- FISH-11501 -->
         <module>jaxws-tracing</module>   <!-- FISH-11499 -->
         <module>legacy-mode-empty-beans-xml</module>   <!-- FISH-11500 -->
@@ -74,9 +74,9 @@
         <module>rest-management</module>   <!-- FISH-11507 -->
         <module>rolesPermitted</module>   <!-- FISH-11508 -->
         <module>realm-identity-stores</module>   <!-- FISH-11509 -->
-        <module>http</module>   <!-- FISH-11510 -->
+        <!-- module>http</module -->   <!-- FISH-11510 -->
         <module>logging</module>   <!-- FISH-11511 -->
-        <module>ejb-http-remoting</module>   <!-- FISH-11513 -->
+        <!-- module>ejb-http-remoting</module -->   <!-- FISH-11513 -->
         <module>remote-ejb-tracing</module>   <!-- FISH-11514 -->
         <module>rolesallowed-unprotected-methods</module>
         <module>microprofile-rc-ft</module>   <!-- FISH-11515 -->
