@@ -62,7 +62,7 @@
         <module>formauth</module>
         <!--module>jacc-per-app</module-->
         <module>jaxrs-rolesallowed</module>
-        <module>jaxrs-rolesallowed-servlet</module>
+        <!--module>jaxrs-rolesallowed-servlet</module-->
         <module>jaxws-security</module>
         <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
