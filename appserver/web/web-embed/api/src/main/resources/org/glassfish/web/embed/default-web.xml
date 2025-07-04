@@ -41,6 +41,8 @@
 
 -->
 
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates --> 
+
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
   <!-- ======================== Introduction ============================== -->
@@ -238,9 +240,6 @@
   <!--                       compiling JSP pages?  [default work directory  -->
   <!--                       for the current web application]               -->
   <!--                                                                      -->
-  <!--   xpoweredBy          Determines whether X-Powered-By response       -->
-  <!--                       header is added by generated servlet  [true]   -->
-  <!--                                                                      -->
   <!--   usePrecompiled      If true, it is assumed that JSPs have been     -->
   <!--                       precompiled, and their corresponding servlet   -->
   <!--                       classes have been bundled in the web           -->
@@ -285,10 +284,6 @@
   <servlet>
     <servlet-name>jsp</servlet-name>
     <servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>
-    <init-param>
-      <param-name>xpoweredBy</param-name>
-      <param-value>true</param-value>
-    </init-param>
     <init-param>
       <param-name>compilerSourceVM</param-name>
       <param-value>1.8</param-value>

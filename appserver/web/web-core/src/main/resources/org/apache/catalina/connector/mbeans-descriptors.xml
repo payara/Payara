@@ -59,6 +59,8 @@
 
 -->
 
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
+
 <mbeans-descriptors>
 
   <mbean         name="CoyoteConnector"
@@ -221,11 +223,6 @@
 
     <attribute    name="tomcatAuthentication"
            description="Should Tomcat perform all authentications?"
-                  type="boolean"/>
-
-    <attribute    name="xpoweredBy"
-           description="Is generation of X-Powered-By response header enabled/disabled?"
-                    is="true"
                   type="boolean"/>
 
     <operation name="start" description="Start" impact="ACTION" returnType="void" />
