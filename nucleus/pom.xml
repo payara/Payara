@@ -62,7 +62,7 @@
         <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
         <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.9.0</maven.invoker.plugin.version>
+        <maven.invoker.plugin.version>3.9.1</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
@@ -70,7 +70,7 @@
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.9.9</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.10</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -110,7 +110,7 @@
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>5.0.10</org.apache.felix.webconsole.version>
+        <org.apache.felix.webconsole.version>5.0.12</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
@@ -132,12 +132,12 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>5.17.0</mockito.version>
+        <mockito.version>5.18.0</mockito.version>
 
         <!-- Build -->
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.17</command-security-plugin.version>
+        <command-security-plugin.version>1.0.19</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.15</ant.version>
@@ -150,7 +150,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.1.21</kotlin-version>
+        <kotlin-version>2.2.0</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>
