@@ -64,7 +64,7 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
-        <!--module>jaxws-tracing</module-->
+        <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
         <module>microprofile-config</module>
         <module>microprofile-endpoints</module>
