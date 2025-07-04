@@ -349,7 +349,7 @@ public class QueryMethodParser {
     }
 
     public enum Action {
-        FIND, DELETE, COUNT, EXISTS
+        FIND, DELETE, COUNT, FIND_FOR_DELETE, EXISTS
     }
 
     private final String methodName;

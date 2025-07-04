@@ -49,5 +49,8 @@ public enum QueryType {
     INSERT,
     FIND,
     QUERY,
-    QUERY_BY_NAME
+    FIND_BY_NAME,
+    DELETE_BY_NAME,
+    COUNT_BY_NAME,
+    EXISTS_BY_NAME
 }
