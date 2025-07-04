@@ -47,10 +47,10 @@
 
 <h:body>
 
-    <h1>#{salutation.greet}</h1>
+    <h1>${salutation.greet}</h1>
 
-    <p>#{salutation.message}</p>
-    <p>This application is running on #{salutation.platform}, deployed on #{salutation.greetingDate}</p>
+    <p>${salutation.message}</p>
+    <p>This application is running on ${salutation.platform}, deployed on ${salutation.greetingDate}</p>
 
 </h:body>
 

@@ -45,10 +45,10 @@
     <title>Jakarta MVC</title>
 </h:head>
 <h:body>
-    <h1>#{greet}</h1>
+    <h1>${greet}</h1>
 
-    <p>#{message}</p>
-    <p>This application is running on #{platform}, deployed on #{date}</p>
+    <p>${message}</p>
+    <p>This application is running on ${platform}, deployed on ${date}</p>
 
 </h:body>
 </html>
