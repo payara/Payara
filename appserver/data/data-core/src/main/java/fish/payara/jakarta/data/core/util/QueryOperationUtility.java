@@ -586,7 +586,7 @@ public class QueryOperationUtility {
         return resultList.isEmpty() ? null : resultList.get(0);
     }
 
-    public static int getAndIncrementParamIndex(QueryData dataForQuery) {
+    private static int getAndIncrementParamIndex(QueryData dataForQuery) {
         dataForQuery.setParamIndex(dataForQuery.getParamIndex() + 1);
         return dataForQuery.getParamIndex();
     }

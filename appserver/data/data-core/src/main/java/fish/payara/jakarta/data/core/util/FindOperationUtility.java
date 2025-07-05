@@ -56,13 +56,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static fish.payara.jakarta.data.core.util.QueryOperationUtility.getAndIncrementParamIndex;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.handleSort;
 
 /**
@@ -109,9 +107,6 @@ public class FindOperationUtility {
                     attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
                 }
                 builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
-                if (queryPosition > dataForQuery.getParamIndex()) {
-                    getAndIncrementParamIndex(dataForQuery);
-                }
             }
             queryPosition++;
         }
@@ -126,8 +121,8 @@ public class FindOperationUtility {
         if (evaluatePages) {
             return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, null, dataParameter);
         } else {
-            if (!dataForQuery.getOrders().isEmpty()) {
-                handleSort(dataForQuery, dataForQuery.getOrders(), builder, dataForQuery.getQueryType() == QueryType.FIND, false, false);
+            if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
+                handleSort(dataForQuery, dataParameter.sortList(), builder, dataForQuery.getQueryType() == QueryType.FIND, false, false);
                 dataForQuery.setQueryString(builder.toString());
             }
             //check order conditions to improve select queries
@@ -440,14 +435,7 @@ public class FindOperationUtility {
     }
 
     public static void setParameterFromCursor(Query query, PageRequest.Cursor cursor, List<Sort<?>> orders, QueryData dataForQuery, Object[] args) {
-        int startValue = dataForQuery.getParamIndex();
-        if (startValue == 0) {
-            for (int i = 0; i < args.length; i++) {
-                if (!excludeParameter(args[i])) {
-                    startValue = i + 1;
-                }
-            }
-        }
+        int startValue = getParamCount(dataForQuery, args);
         if (dataForQuery.getJpqlParameters().isEmpty()) {
             for (Object cursorObject : cursor.elements()) {
                 startValue += 1;
