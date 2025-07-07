@@ -48,7 +48,6 @@ import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
-import jakarta.data.page.Page;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
@@ -80,6 +79,7 @@ import org.glassfish.internal.api.Globals;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnType;
 import static fish.payara.jakarta.data.core.util.InsertAndSaveOperationUtility.processInsertAndSaveOperationForArray;
@@ -162,9 +162,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
-        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         DataParameter dataParameter = extractDataParameter(args);
-
+        
         if (parameterAnnotations.length > 0) {
             Object returnObject = FindOperationUtility.processFindByOperation(
                     args, getEntityManager(this.applicationName),
@@ -180,7 +180,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         } else {
             // For "findAll" operations
             return FindOperationUtility.processFindAllOperation(dataForQuery.getDeclaredEntityClass(), getEntityManager(this.applicationName),
-                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery.getEntityMetadata(), dataParameter
+                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery, dataParameter
             );
         }
     }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web.connector.coyote;
 
@@ -901,8 +901,6 @@ public class PECoyoteConnector extends Connector {
         if (Boolean.parseBoolean(http.getCookieSameSiteEnabled())) {
             setProperty("sameSiteValue", http.getCookieSameSiteValue());
         }
-
-        setXpoweredBy(Boolean.valueOf(http.getXpoweredBy()));
 
         // Application root
         setWebAppRootPath(webContainer.getModulesRoot().getAbsolutePath());

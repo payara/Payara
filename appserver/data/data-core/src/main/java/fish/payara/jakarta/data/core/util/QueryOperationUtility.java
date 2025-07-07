@@ -43,7 +43,6 @@ import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
-import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
@@ -53,7 +52,6 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
@@ -66,6 +64,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.handleSort;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
@@ -81,15 +80,16 @@ public class QueryOperationUtility {
     private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
     private static final List<String> updateQueryPatterns = List.of("UPDATE", "SET", "WHERE");
 
-    private static Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
-    private static Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
+    private static final Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
+    private static final Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
+
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
                                                TransactionManager transactionManager, DataParameter dataParameter) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
-        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         int length = mappedQuery.length();
         int firstCharPosition = 0;
         char firstChar = ' ';
@@ -123,7 +123,7 @@ public class QueryOperationUtility {
                 String query = entry.getKey();
                 List<Sort<?>> sortList = dataParameter.sortList();
                 if (!sortList.isEmpty()) {
-                    query = handleSort(dataForQuery.getEntityMetadata(), sortList, query, false);
+                    query = handleSort(dataForQuery, sortList, query, false, false, false);
                 }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
@@ -159,17 +159,11 @@ public class QueryOperationUtility {
             }
         } else {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
-
-                List<Sort<?>> sortList = dataParameter.sortList();
-                if (!sortList.isEmpty()) {
-                    String query = handleSort(dataForQuery.getEntityMetadata(), sortList, entry.getKey(), false);
-                    dataForQuery.setQueryString(query);
-                }
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
                     method, new StringBuilder(dataForQuery.getQueryString()), patternSelectPositions.containsValue("WHERE"),
-                    patternSelectPositions);
+                    patternSelectPositions, dataParameter);
         }
 
         return objectToReturn;
@@ -372,6 +366,205 @@ public class QueryOperationUtility {
         Optional<Class<?>> found = parametersToExclude.stream().filter(p -> p.equals(parameterMethod.getParameterizedType())
                 || p.equals(parameterMethod.getType())).findAny();
         return found.isPresent();
+    }
+
+    /**
+     * Processes a query derived from the method name (e.g., findBy...).
+     * This version is aware of the JPA model and can generate JOINs for collection relationships.
+     */
+    public static Object processQueryByNameOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager) {
+        Method method = dataForQuery.getMethod();
+        String methodName = method.getName();
+
+        try {
+            QueryMethodParser parser = new QueryMethodParser(methodName).parse();
+            QueryMethodParser.Action action = parser.getAction();
+
+            Metamodel metamodel = entityManager.getMetamodel();
+            EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
+
+            StringBuilder jpql = new StringBuilder();
+            Map<String, String> joinAliases = new HashMap<>();
+            int joinCounter = 0;
+
+            // 1. Build SELECT/COUNT clause
+            buildSelectClause(jpql, action, dataForQuery);
+
+            // 2. Build WHERE clause with JOINs
+            buildWhereClause(jpql, parser.getConditions(), rootEntityType, "e", joinAliases, joinCounter, dataForQuery);
+            dataForQuery.resetParamIndex();
+
+            // 3. Build ORDER BY clause
+            buildOrderByClause(jpql, parser.getOrderBy(), rootEntityType, "e", joinAliases, joinCounter);
+
+            // 4. Create query and set parameters
+            jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
+            setQueryParameters(q, parser.getConditions(), args, dataForQuery);
+            dataForQuery.resetParamIndex();
+
+            // 5. Execute query and process return type
+            return executeQuery(q, action, parser, dataForQuery);
+
+        } catch (QueryMethodSyntaxException e) {
+            throw new MappingException("Failed to parse query from method name: " + methodName, e);
+        }
+    }
+
+    private static void buildSelectClause(StringBuilder jpql, QueryMethodParser.Action action, QueryData dataForQuery) {
+        String entityName = dataForQuery.getDeclaredEntityClass().getSimpleName();
+        switch (action) {
+            case FIND:
+                jpql.append("SELECT DISTINCT e FROM ").append(entityName).append(" e");
+                break;
+            case COUNT:
+            case EXISTS:
+                jpql.append("SELECT COUNT(DISTINCT e) FROM ").append(entityName).append(" e");
+                break;
+            default:
+                throw new UnsupportedOperationException("Action " + action + " is not supported for Query By Method Name.");
+        }
+    }
+
+    private static void buildWhereClause(StringBuilder jpql, List<QueryMethodParser.Condition> conditions, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases, int joinCounter, QueryData dataForQuery) {
+        if (conditions.isEmpty()) {
+            return;
+        }
+
+        StringBuilder whereClause = new StringBuilder(" WHERE ");
+        boolean firstCondition = true;
+        for (QueryMethodParser.Condition condition : conditions) {
+            if (!firstCondition) {
+                whereClause.append(" ").append(condition.precedingOperator().name()).append(" ");
+            }
+            firstCondition = false;
+
+            String propertyPath = buildPropertyPath(jpql, rootEntityType, rootAlias, condition.property(), joinAliases, joinCounter);
+            String propertyExpression = condition.ignoreCase() ? "UPPER(" + propertyPath + ")" : propertyPath;
+
+            if (condition.not()) {
+                whereClause.append("NOT (");
+            }
+            whereClause.append(propertyExpression);
+
+            if (condition.operator() == null) {
+                whereClause.append(" = ?").append(getAndIncrementParamIndex(dataForQuery));
+            } else {
+                switch (condition.operator()) {
+                    case "Like", "StartsWith", "EndsWith", "Contains" ->
+                            whereClause.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "LessThan" -> whereClause.append(" < ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "LessThanEqual" -> whereClause.append(" <= ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "GreaterThan" -> whereClause.append(" > ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "GreaterThanEqual" ->
+                            whereClause.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "Between" -> whereClause.append(" BETWEEN ?").append(getAndIncrementParamIndex(dataForQuery))
+                            .append(" AND ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "In" -> whereClause.append(" IN ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "Null" -> whereClause.append(" IS NULL");
+                    case "True" -> whereClause.append(" = TRUE");
+                    case "False" -> whereClause.append(" = FALSE");
+                    default ->
+                            throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
+                }
+            }
+            if (condition.not()) {
+                whereClause.append(")");
+            }
+        }
+        jpql.append(whereClause);
+    }
+
+    private static void buildOrderByClause(StringBuilder jpql, List<QueryMethodParser.OrderBy> orderByList, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases, int joinCounter) {
+        if (orderByList.isEmpty()) {
+            return;
+        }
+        jpql.append(" ORDER BY ");
+        StringJoiner joiner = new StringJoiner(", ");
+        for (QueryMethodParser.OrderBy orderBy : orderByList) {
+            String propertyPath = buildPropertyPath(jpql, rootEntityType, rootAlias, orderBy.property(), joinAliases, joinCounter);
+            String direction = (orderBy.ascDesc() == null || "Asc".equalsIgnoreCase(orderBy.ascDesc())) ? "ASC" : "DESC";
+            joiner.add(propertyPath + " " + direction);
+        }
+        jpql.append(joiner.toString());
+    }
+
+    private static String buildPropertyPath(StringBuilder jpql, EntityType<?> currentEntityType, String currentAlias, String propertyPath, Map<String, String> joinAliases, int joinCounter) {
+        String[] parts = propertyPath.split("\\.");
+        String resolvedPath = currentAlias;
+
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            Attribute<?, ?> attr = currentEntityType.getAttribute(part);
+
+            if (i < parts.length - 1) { // It's a traversal, not the final property
+                if (attr.isCollection()) {
+                    String joinPath = resolvedPath + "." + part;
+                    String alias = joinAliases.computeIfAbsent(joinPath, k -> "j" + (joinAliases.size() + 1));
+
+                    // Only add the JOIN clause if it hasn't been added before
+                    if (jpql.indexOf(" JOIN " + joinPath) == -1) {
+                        jpql.insert(jpql.indexOf(" WHERE") > 0 ? jpql.indexOf(" WHERE") : jpql.length(),
+                                " JOIN " + joinPath + " " + alias);
+                    }
+                    resolvedPath = alias;
+                    currentEntityType = (EntityType<?>) ((jakarta.persistence.metamodel.PluralAttribute) attr).getElementType();
+                } else { // It's a singular association (@ManyToOne, @OneToOne)
+                    resolvedPath += "." + part;
+                    currentEntityType = (EntityType<?>) ((jakarta.persistence.metamodel.SingularAttribute) attr).getType();
+                }
+            } else { // It's the final property in the path
+                resolvedPath += "." + part;
+            }
+        }
+        return resolvedPath;
+    }
+
+    private static void setQueryParameters(jakarta.persistence.Query q, List<QueryMethodParser.Condition> conditions, Object[] args, QueryData dataForQuery) {
+        List<Object> queryArgs = getQueryArguments(args);
+        int argIndex = 0;
+        for (QueryMethodParser.Condition condition : conditions) {
+            if (condition.operator() != null && (condition.operator().equals("Null") || condition.operator().equals("True") || condition.operator().equals("False"))) {
+                continue;
+            }
+
+            Object arg = queryArgs.get(argIndex);
+            Object processedArg = condition.ignoreCase() && arg instanceof String ? ((String) arg).toUpperCase() : arg;
+
+            if ("StartsWith".equals(condition.operator())) {
+                processedArg = processedArg + "%";
+            } else if ("EndsWith".equals(condition.operator())) {
+                processedArg = "%" + processedArg;
+            } else if ("Contains".equals(condition.operator()) || "Like".equals(condition.operator())) {
+                processedArg = "%" + processedArg + "%";
+            }
+
+            q.setParameter(getAndIncrementParamIndex(dataForQuery), processedArg);
+            argIndex++;
+
+            if ("Between".equals(condition.operator())) {
+                Object arg2 = queryArgs.get(argIndex);
+                Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toUpperCase() : arg2;
+                q.setParameter(getAndIncrementParamIndex(dataForQuery), processedArg2);
+                argIndex++;
+            }
+        }
+    }
+
+    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser.Action action, QueryMethodParser parser, QueryData dataForQuery) {
+        switch (action) {
+            case FIND:
+                if (parser.getLimit() != null) {
+                    q.setMaxResults(parser.getLimit());
+                }
+                return processReturnType(dataForQuery, q.getResultList());
+            case COUNT:
+                return q.getSingleResult();
+            case EXISTS:
+                long count = (long) q.getSingleResult();
+                return count > 0;
+            default:
+                throw new IllegalStateException("Unexpected action: " + action);
+        }
     }
 
     private static Object processReturnType(QueryData data, List<?> resultList) {

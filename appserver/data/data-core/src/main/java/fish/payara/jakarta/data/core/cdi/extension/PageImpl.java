@@ -46,6 +46,7 @@ import jakarta.persistence.TypedQuery;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 
@@ -82,9 +83,8 @@ public class PageImpl<T> implements Page<T> {
                 }
             }
         }
-        int maxPageSize = pageRequest.size();
         query.setFirstResult(this.processOffset());
-        query.setMaxResults(maxPageSize);
+        query.setMaxResults(pageRequest.size());
         results = query.getResultList();
         totalElements();
     }
@@ -193,6 +193,11 @@ public class PageImpl<T> implements Page<T> {
             throw new IllegalArgumentException("The page request does not support mode " + this.pageRequest.mode());
         }
         return (int) ((pageRequest.page() - 1) * pageRequest.size());
+    }
+
+    @Override
+    public Stream<T> stream() {
+        return content().stream();
     }
 
     @Override

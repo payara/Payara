@@ -225,7 +225,7 @@
 
     <properties>
         <!-- build versions -->
-        <maven.clean.plugin.version>3.4.1</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
@@ -233,7 +233,7 @@
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
-        <maven.gpg.plugin.version>3.2.7</maven.gpg.plugin.version>
+        <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
         <!-- Be careful updating to a higher version - an issue affecting 3.10.0-3.11.2 causes the aggregate jar to be empty -->
@@ -242,7 +242,7 @@
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
-        <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.6.0</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.0</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.7.0</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
@@ -282,7 +282,7 @@
         <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.0</jline.version>
+        <jline.version>3.30.2</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
@@ -308,7 +308,7 @@
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <jaxb-api.version>4.0.2</jaxb-api.version>
-        <jackson.version>2.19.0</jackson.version>
+        <jackson.version>2.19.1</jackson.version>
         <jersey.version>4.0.0-M2.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
@@ -333,7 +333,7 @@
         <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
-        <microprofile-metrics.version>5.1.0.payara-p1</microprofile-metrics.version>
+        <microprofile-metrics.version>5.1.2</microprofile-metrics.version>
         <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
         <microprofile-openapi.version>3.1.2</microprofile-openapi.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
@@ -346,7 +346,6 @@
         <hazelcast.version>5.3.6</hazelcast.version>
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
-        <!-- Needs FISH-10295 reapplying -->
         <weld.version>6.0.3.Final</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
@@ -368,7 +367,7 @@
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
-        <payara.transformer.version>0.2.13</payara.transformer.version>
+        <payara.transformer.version>0.2.14</payara.transformer.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
     </properties>
