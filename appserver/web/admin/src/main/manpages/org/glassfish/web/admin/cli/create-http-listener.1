@@ -9,7 +9,6 @@ SYNOPSIS
            {--default-virtual-server | --defaultvs} virtual-server
            [--servername server-name]
            [--acceptorthreads acceptor-threads]
-           [--xpowered={true|false}]
            [--redirectport redirect-port]
            [--securityenabled={false|true}]
            [--enabled={true|false}]
@@ -75,17 +74,6 @@ OPTIONS
            The number of acceptor threads for the listener socket. The
            recommended value is the number of processors in the machine. The
            default value is 1.
-
-       --xpowered
-           If set to true, adds the X-Powered-By: Servlet/3.0 and
-           X-Powered-By: JSP/2.0 headers to the appropriate responses. The
-           Servlet 3.0 specification defines the X-Powered-By: Servlet/3.0
-           header, which containers may add to servlet-generated responses.
-           Similarly, the JSP 2.0 specification defines the X-Powered-By:
-           JSP/2.0 header, which containers may add to responses that use JSP
-           technology. The goal of these headers is to aid in gathering
-           statistical data about the use of Servlet and JSP technology. The
-           default value is true.
 
        --redirectport
            Do not specify this option. This option is retained for

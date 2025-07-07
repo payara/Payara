@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -504,7 +504,6 @@ public class ServerTags  {
     public static final String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     public static final String SERVER_NAME = "server-name";
     public static final String REDIRECT_PORT = "redirect-port";
-    public static final String XPOWERED_BY = "xpowered-by";
     //public static final String ENABLED = "enabled";
     /** Tags for Element virtual-server */
     public static final String VIRTUAL_SERVER = "virtual-server";

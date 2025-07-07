@@ -39,7 +39,7 @@
     holder.
     
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/protocolNewButtons.jsf -->
 
@@ -79,7 +79,7 @@
                 gf.createEntity(endpoint="${newProxy}/#{pageSession.valueMap['Name']}/http"
                         attrs="#{pageSession.httpMap}"
                         convertToFalse={"uploadTimeoutEnabled", "cometSupportEnabled", "dnsLookupEnabled", "rcmSupportEnabled", "traceEnabled", "authPassThroughEnabled", 
-                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "xpoweredBy", "serverHeader", "XframeOptions" },
+                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "serverHeader", "XframeOptions" },
                         skipAttrs="#{pageSession.skipAttrsList}"
                         result => $attribute{newHttp});
 

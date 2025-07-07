@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2022-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates
 package org.apache.catalina.connector;
 
 import java.nio.charset.Charset;
@@ -297,11 +297,6 @@ public class CoyoteAdapter extends HttpHandler {
             return;
         }
         // END SJSAS 6331392
-
-////            "X-Powered-By" header is set by GlassfishHttpCodecFilter
-//        if (connector.isXpoweredBy()) {
-//            response.addHeader("X-Powered-By", POWERED_BY);
-//        }
 
 
         // Parse and set Catalina and configuration specific 

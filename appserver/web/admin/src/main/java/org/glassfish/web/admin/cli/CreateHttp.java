@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates] 
  */
 package org.glassfish.web.admin.cli;
 
@@ -112,8 +112,6 @@ public class CreateHttp implements AdminCommand {
     Boolean dnsLookupEnabled = false;
     @Param(name = "servername", optional = true, alias="serverName")
     String serverName;
-    @Param(name = "xpowered", optional = true, defaultValue = "true", alias="xpoweredBy")
-    Boolean xPoweredBy = false;
     @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
     Boolean serverHeader = false;
     @Param(name = "xframe", optional = true, defaultValue = "true", alias="xframeOptions")
@@ -197,7 +195,6 @@ public class CreateHttp implements AdminCommand {
                     http.setMaxConnections(maxConnections);
                     http.setRequestTimeoutSeconds(requestTimeoutSeconds);
                     http.setTimeoutSeconds(timeoutSeconds);
-                    http.setXpoweredBy(xPoweredBy == null ? null : xPoweredBy.toString());
                     http.setServerHeader(serverHeader == null ? null : serverHeader.toString());
                     http.setXframeOptions(xFrameOptions == null ? null : xFrameOptions.toString());
                     http.setServerName(serverName);

@@ -58,7 +58,7 @@
     limitations under the License.
 
 -->
-<!-- Portions copyright [2018] Payara Foundation and/or affiliates -->
+<!-- Portions copyright [2018-2025] Payara Foundation and/or affiliates -->
 
 <mbeans-descriptors>
 
@@ -619,11 +619,6 @@
 
     <attribute    name="tomcatAuthentication"
            description="Should Tomcat perform all authentications?"
-                  type="boolean"/>
-
-    <attribute    name="xpoweredBy"
-           description="Is generation of X-Powered-By response header enabled/disabled?"
-                    is="true"
                   type="boolean"/>
 
     <operation name="start" description="Start" impact="ACTION" returnType="void" />

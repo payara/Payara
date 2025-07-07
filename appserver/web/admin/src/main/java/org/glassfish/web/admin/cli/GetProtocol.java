@@ -1,7 +1,7 @@
 /* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2025] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -135,7 +135,6 @@ public class GetProtocol implements AdminCommand {
         report.appendMessage(String.format("Max Connections: %s seconds\n", protocol.getHttp().getMaxConnections()));
         report.appendMessage(String.format("Default Virtual Server: %s\n", protocol.getHttp().getDefaultVirtualServer()));
         report.appendMessage(String.format("Server Header: %s\n", protocol.getHttp().getServerHeader()));
-        report.appendMessage(String.format("X-Powered-By: %s\n", protocol.getHttp().getXpoweredBy()));
         if (verbose) {
             report.appendMessage(String.format("Request Timeout: %s seconds\n", protocol.getHttp().getRequestTimeoutSeconds()));
             report.appendMessage(String.format("Timeout: %s seconds\n", protocol.getHttp().getTimeoutSeconds()));
@@ -167,7 +166,6 @@ public class GetProtocol implements AdminCommand {
         properties.put("maxConnections", protocol.getHttp().getMaxConnections());
         properties.put("defaultVirtualServer", protocol.getHttp().getDefaultVirtualServer());
         properties.put("serverHeader", protocol.getHttp().getServerHeader());
-        properties.put("xPoweredBy", protocol.getHttp().getXpoweredBy());
         properties.put("requestTimeoutSeconds", protocol.getHttp().getRequestTimeoutSeconds());
         properties.put("timeoutSeconds", protocol.getHttp().getTimeoutSeconds());
         properties.put("dnsLookupEnabled", protocol.getHttp().getDnsLookupEnabled());
