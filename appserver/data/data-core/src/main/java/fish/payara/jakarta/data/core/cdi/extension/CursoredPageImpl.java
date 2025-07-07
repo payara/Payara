@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,38 +39,46 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
-import jakarta.data.page.Page;
+import jakarta.data.page.CursoredPage;
 import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getCursorValues;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.setParameterFromCursor;
 
 /**
- * This class represent the Page<T> implementation for pagination from the offset model
+ * This class represent the CursoredPage<T> implementation for pagination from the cursor model
  *
  * @param <T>
  */
-public class PageImpl<T> implements Page<T> {
+public class CursoredPageImpl<T> implements CursoredPage<T> {
 
     private final Object[] args;
     private final PageRequest pageRequest;
     private final QueryData queryData;
+    private EntityManager entityManager;
     private final List<T> results;
     private long totalElements = -1;
-    private EntityManager entityManager;
+    private boolean isForward;
 
-    public PageImpl(QueryData queryData, Object[] args, PageRequest pageRequest, EntityManager em) {
+    public CursoredPageImpl(QueryData queryData, Object[] args, PageRequest pageRequest, EntityManager em) {
         this.queryData = queryData;
         this.args = args;
         this.pageRequest = pageRequest;
         this.entityManager = em;
+        this.isForward = this.pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getDeclaredEntityClass());
+        Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
+        String sql = cursor.isEmpty() ? queryData.getQueryString() : isForward ? queryData.getQueryNext() : queryData.getQueryPrevious();
+
+        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(sql, queryData.getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -83,15 +91,25 @@ public class PageImpl<T> implements Page<T> {
                 }
             }
         }
+
+        if (cursor.isPresent()) {
+            //check how to set the parameter for cursor 
+            setParameterFromCursor(query, cursor.get(), queryData.getOrders(), queryData, args);
+        }
+
         query.setFirstResult(this.processOffset());
-        query.setMaxResults(pageRequest.size());
+        query.setMaxResults(pageRequest.size() + 1);
         results = query.getResultList();
-        totalElements();
+    }
+
+    @Override
+    public PageRequest.Cursor cursor(int index) {
+        return null;
     }
 
     @Override
     public List<T> content() {
-        return results;
+        return results.size() > pageRequest.size() ? results.subList(0, pageRequest.size()) : results;
     }
 
     @Override
@@ -101,17 +119,17 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public int numberOfElements() {
-        return results.size();
+        return results.size() > pageRequest.size() ? pageRequest.size() : results.size();
     }
 
     @Override
     public boolean hasNext() {
-        return totalPages() > pageRequest.page();
+        return results.size() >= (isForward ? pageRequest.size() + 1 : 1);
     }
 
     @Override
     public boolean hasPrevious() {
-        return pageRequest.page() > 1;
+        return results.size() >= (isForward ? 1 : pageRequest.size() + 1);
     }
 
     @Override
@@ -122,18 +140,22 @@ public class PageImpl<T> implements Page<T> {
     @Override
     public PageRequest nextPageRequest() {
         if (hasNext()) {
-            return PageRequest.ofPage(pageRequest.page() + 1, pageRequest.size(), pageRequest.requestTotal());
+            return PageRequest.afterCursor(PageRequest.Cursor
+                            .forKey(getCursorValues(results.get(Math.min(pageRequest.size(), results.size()) - 1),
+                                    this.queryData.getOrders(), this.queryData)),
+                    pageRequest.page() + 1, pageRequest.size(), pageRequest.requestTotal());
         } else {
-            throw new NoSuchElementException("No more elements");
+            throw new NoSuchElementException("Not an available page for cursor");
         }
     }
 
     @Override
     public PageRequest previousPageRequest() {
-        if (pageRequest.page() > 1) {
-            return PageRequest.ofPage(pageRequest.page() - 1, pageRequest.size(), pageRequest.requestTotal());
+        if (hasPrevious()) {
+            return PageRequest.beforeCursor(PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
+                    pageRequest.page() == 1 ? 1 : pageRequest.page() - 1, pageRequest.size(), pageRequest.requestTotal());
         } else {
-            throw new NoSuchElementException("No more elements");
+            throw new NoSuchElementException("Not an available page for cursor");
         }
     }
 
@@ -153,6 +175,11 @@ public class PageImpl<T> implements Page<T> {
     @Override
     public long totalPages() {
         return totalElements / pageRequest.size() + (totalElements % pageRequest.size() > 0 ? 1 : 0);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return results.iterator();
     }
 
     public long countTotalElements() {
@@ -183,16 +210,12 @@ public class PageImpl<T> implements Page<T> {
         }
     }
 
-    @Override
-    public Iterator<T> iterator() {
-        return results.iterator();
-    }
-
     public int processOffset() {
-        if (this.pageRequest.mode() != PageRequest.Mode.OFFSET) {
-            throw new IllegalArgumentException("The page request does not support mode " + this.pageRequest.mode());
+        if (this.pageRequest.mode() == PageRequest.Mode.OFFSET) {
+            return (int) ((pageRequest.page() - 1) * pageRequest.size());
+        } else {
+            return 0;
         }
-        return (int) ((pageRequest.page() - 1) * pageRequest.size());
     }
 
     @Override
@@ -202,8 +225,9 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public String toString() {
-        return "Page:" + this.pageRequest.page() +
-                " From Entity:" + this.queryData.getDeclaredEntityClass().getName() +
-                " page size:" + this.pageRequest.size();
+        return "CursoredPage " +
+                "page=" + pageRequest.page() +
+                ", pageRequest=" + pageRequest +
+                ", from Entity=" + queryData.getDeclaredEntityClass().getName();
     }
 }

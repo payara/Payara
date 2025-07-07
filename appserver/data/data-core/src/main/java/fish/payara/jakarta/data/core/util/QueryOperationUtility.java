@@ -45,7 +45,6 @@ import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
-import jakarta.data.page.Page;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
@@ -58,7 +57,6 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -75,6 +73,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.handleSort;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.getSingleEntityName;
@@ -90,15 +89,16 @@ public class QueryOperationUtility {
     private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
     private static final List<String> updateQueryPatterns = List.of("UPDATE", "SET", "WHERE");
 
-    private static Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
-    private static Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
+    private static final Predicate<Character> deletePredicate = c -> c == 'D' || c == 'd';
+    private static final Predicate<Character> updatePredicate = c -> c == 'U' || c == 'u';
+
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
                                                TransactionManager transactionManager, DataParameter dataParameter) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
-        boolean evaluatePages = Page.class.equals(dataForQuery.getMethod().getReturnType());
+        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         int length = mappedQuery.length();
         int firstCharPosition = 0;
         char firstChar = ' ';
@@ -132,7 +132,7 @@ public class QueryOperationUtility {
                 String query = entry.getKey();
                 List<Sort<?>> sortList = dataParameter.sortList();
                 if (!sortList.isEmpty()) {
-                    query = handleSort(dataForQuery.getEntityMetadata(), sortList, query, false);
+                    query = handleSort(dataForQuery, sortList, query, false, false, false);
                 }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
@@ -168,17 +168,11 @@ public class QueryOperationUtility {
             }
         } else {
             for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
-
-                List<Sort<?>> sortList = dataParameter.sortList();
-                if (!sortList.isEmpty()) {
-                    String query = handleSort(dataForQuery.getEntityMetadata(), sortList, entry.getKey(), false);
-                    dataForQuery.setQueryString(query);
-                }
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
                     method, new StringBuilder(dataForQuery.getQueryString()), patternSelectPositions.containsValue("WHERE"),
-                    patternSelectPositions);
+                    patternSelectPositions, dataParameter);
         }
 
         return objectToReturn;
@@ -467,18 +461,21 @@ public class QueryOperationUtility {
                 whereClause.append(" = ?").append(getAndIncrementParamIndex(dataForQuery));
             } else {
                 switch (condition.operator()) {
-                    case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "Like", "StartsWith", "EndsWith", "Contains" ->
+                            whereClause.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "LessThan" -> whereClause.append(" < ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "LessThanEqual" -> whereClause.append(" <= ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "GreaterThan" -> whereClause.append(" > ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "GreaterThanEqual" -> whereClause.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "GreaterThanEqual" ->
+                            whereClause.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "Between" -> whereClause.append(" BETWEEN ?").append(getAndIncrementParamIndex(dataForQuery))
                             .append(" AND ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "In" -> whereClause.append(" IN ?").append(getAndIncrementParamIndex(dataForQuery));
                     case "Null" -> whereClause.append(" IS NULL");
                     case "True" -> whereClause.append(" = TRUE");
                     case "False" -> whereClause.append(" = FALSE");
-                    default -> throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
+                    default ->
+                            throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
                 }
             }
             if (condition.not()) {
