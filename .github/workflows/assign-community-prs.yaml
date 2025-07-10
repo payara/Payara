@@ -40,10 +40,8 @@ jobs:
       - name: Notify MS Teams channel
         id: notify-ms-teams
         if: success()
-        uses: simbo/msteams-message-card-action@latest
+        uses: tlolkema/simple-teams-message@main
         with:
           webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
-          title: A new Community Contribution has been raised (or re-opened)!
-          message: <code>${{ env.PR_TITLE }}</code> assigned to <strong>${{ env.SELECTED_ASSIGNEE }}</strong>
-          buttons: |
-            View PR on GitHub ${{ env.PR_URL }}
+          message_title: A new Community Contribution has been raised (or re-opened)!
+          message_description: ${{ env.PR_TITLE }} assigned to ${{ env.SELECTED_ASSIGNEE }}
