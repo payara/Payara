@@ -82,13 +82,4 @@ jobs:
           webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
           message_title: Payara Community Repository Metrics - ${{ env.last_month }}
           message_description: The following are metrics for the Payara Community repository. "R" is for Raised Issues, "C" is for Closed Issues
-          extra_text_blocks: |
-            Avg time to first response: R=${{ env.time_to_first_response_1 }}, C=${{ env.time_to_first_response_2 }}||| 
-            Avg time to close: R=${{ env.time_to_close_1 }}, C=${{ env.time_to_close_2 }}|||
-            Avg time spent in Open status: R=${{ env.time_in_open_status_1 }}, C=${{ env.time_in_open_status_2 }}|||
-            Avg time spent in Pending status: R=${{ env.time_in_pending_status_1 }}, C=${{ env.time_in_pending_status_2 }}|||
-            Avg time spent in Accepted status: R=${{ env.time_in_accepted_status_1 }}, C=${{ env.time_in_accepted_status_2 }}
-            |||
-            Open Issues: ${{ env.num_items_opened }}|||
-            Closed Issues: ${{ env.num_items_closed }}|||
-            Escalated Issues: ${{ fromJSON(steps.count-accepted-issues.outputs.result) }}
+          extra_text_blocks: "Avg time to first response: R=${{ env.time_to_first_response_1 }}, C=${{ env.time_to_first_response_2 }}|||Avg time to close: R=${{ env.time_to_close_1 }}, C=${{ env.time_to_close_2 }}|||Avg time spent in Open status: R=${{ env.time_in_open_status_1 }}, C=${{ env.time_in_open_status_2 }}|||Avg time spent in Pending status: R=${{ env.time_in_pending_status_1 }}, C=${{ env.time_in_pending_status_2 }}|||Avg time spent in Accepted status: R=${{ env.time_in_accepted_status_1 }}, C=${{ env.time_in_accepted_status_2 }}|||Open Issues: ${{ env.num_items_opened }}|||Closed Issues: ${{ env.num_items_closed }}|||Escalated Issues: ${{ fromJSON(steps.count-accepted-issues.outputs.result) }}"
