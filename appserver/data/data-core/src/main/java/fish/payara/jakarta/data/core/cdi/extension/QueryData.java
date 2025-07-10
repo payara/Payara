@@ -79,14 +79,6 @@ public class QueryData {
         return paramIndex;
     }
 
-    public void setParamIndex(int paramIndex) {
-        this.paramIndex = paramIndex;
-    }
-
-    public void resetParamIndex() {
-        this.paramIndex = 0;
-    }
-
     public Class<?> getRepositoryInterface() {
         return repositoryInterface;
     }

@@ -204,7 +204,6 @@ public class QueryByNameOperationUtility {
         }
 
         jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
-        dataForQuery.resetParamIndex();
         setQueryParameters(q, parser.getConditions(), args, dataForQuery);
 
         return q;
@@ -260,6 +259,7 @@ public class QueryByNameOperationUtility {
     private static String buildWhereConditions(List<QueryMethodParser.Condition> conditions, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases, QueryData dataForQuery) {
         StringBuilder whereClause = new StringBuilder();
         boolean firstCondition = true;
+        int paramIndex = 0;
         for (QueryMethodParser.Condition condition : conditions) {
             if (!firstCondition) {
                 whereClause.append(" ").append(condition.precedingOperator().name()).append(" ");
@@ -273,16 +273,16 @@ public class QueryByNameOperationUtility {
             whereClause.append(propertyExpression);
 
             if (condition.operator() == null) {
-                whereClause.append(" = ?").append(getAndIncrementParamIndex(dataForQuery));
+                whereClause.append(" = ?").append(++paramIndex);
             } else {
                 switch (condition.operator()) {
-                    case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "LessThan" -> whereClause.append(" < ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "LessThanEqual" -> whereClause.append(" <= ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "GreaterThan" -> whereClause.append(" > ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "GreaterThanEqual" -> whereClause.append(" >= ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "Between" -> whereClause.append(" BETWEEN ?").append(getAndIncrementParamIndex(dataForQuery)).append(" AND ?").append(getAndIncrementParamIndex(dataForQuery));
-                    case "In" -> whereClause.append(" IN ?").append(getAndIncrementParamIndex(dataForQuery));
+                    case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(++paramIndex);
+                    case "LessThan" -> whereClause.append(" < ?").append(++paramIndex);
+                    case "LessThanEqual" -> whereClause.append(" <= ?").append(++paramIndex);
+                    case "GreaterThan" -> whereClause.append(" > ?").append(++paramIndex);
+                    case "GreaterThanEqual" -> whereClause.append(" >= ?").append(++paramIndex);
+                    case "Between" -> whereClause.append(" BETWEEN ?").append(++paramIndex).append(" AND ?").append(++paramIndex);
+                    case "In" -> whereClause.append(" IN ?").append(++paramIndex);
                     case "Null" -> whereClause.append(" IS NULL");
                     case "True" -> whereClause.append(" = TRUE");
                     case "False" -> whereClause.append(" = FALSE");
@@ -323,6 +323,7 @@ public class QueryByNameOperationUtility {
     private static void setQueryParameters(jakarta.persistence.Query q, List<QueryMethodParser.Condition> conditions, Object[] args, QueryData dataForQuery) {
         List<Object> queryArgs = getQueryArguments(args);
         int argIndex = 0;
+        int paramIndex = 0;
         for (QueryMethodParser.Condition condition : conditions) {
             if (condition.operator() != null && (condition.operator().equals("Null") || condition.operator().equals("True") || condition.operator().equals("False"))) {
                 continue;
@@ -339,13 +340,13 @@ public class QueryByNameOperationUtility {
                 processedArg = "%" + processedArg + "%";
             }
 
-            q.setParameter(getAndIncrementParamIndex(dataForQuery), processedArg);
+            q.setParameter(++paramIndex, processedArg);
             argIndex++;
 
             if ("Between".equals(condition.operator())) {
                 Object arg2 = queryArgs.get(argIndex);
                 Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toUpperCase() : arg2;
-                q.setParameter(getAndIncrementParamIndex(dataForQuery), processedArg2);
+                q.setParameter(++paramIndex, processedArg2);
                 argIndex++;
             }
         }
@@ -375,11 +376,6 @@ public class QueryByNameOperationUtility {
         if (Stream.class.isAssignableFrom(returnType)) return resultList.stream();
         if (Optional.class.isAssignableFrom(returnType)) return resultList.stream().findFirst();
         return resultList.isEmpty() ? null : resultList.get(0);
-    }
-
-    private static int getAndIncrementParamIndex(QueryData dataForQuery) {
-        dataForQuery.setParamIndex(dataForQuery.getParamIndex() + 1);
-        return dataForQuery.getParamIndex();
     }
 
     private static List<Object> getQueryArguments(Object[] allArgs) {
