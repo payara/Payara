@@ -94,7 +94,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public static final Logger logger = Logger.getLogger(RepositoryImpl.class.getName());
 
     private final Class<T> repositoryInterface;
-    private Map<Class<?>, List<QueryData>> queriesPerEntityClass;
     private final Map<Method, QueryData> queries = new HashMap<>();
     private final String applicationName;
     private TransactionManager transactionManager;
@@ -102,15 +101,17 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
-        this.queriesPerEntityClass = queriesPerEntityClass;
         this.applicationName = applicationName;
+
+        Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
+                .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
+        queries.putAll(r);
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //In this method we can add implementation to execute dynamic queries
         logger.info("executing method:" + method.getName());
-        preProcessQuery();
         QueryData dataForQuery = queries.get(method);
         evaluateDataQuery(dataForQuery, method);
         Object objectToReturn = null;
@@ -210,12 +211,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
             clause.append(" DESC");
         }
         return clause.toString();
-    }
-
-    public void preProcessQuery() {
-        Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
-                .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
-        queries.putAll(r);
     }
 
     public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
