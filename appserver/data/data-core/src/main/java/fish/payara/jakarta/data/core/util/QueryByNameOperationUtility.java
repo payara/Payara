@@ -43,7 +43,9 @@ import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import fish.payara.jakarta.data.core.querymethod.QueryMethodParser;
 import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.exceptions.MappingException;
+import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
@@ -81,25 +83,15 @@ public class QueryByNameOperationUtility {
     /**
      * Processes a DELETE operation derived from the method name (e.g., deleteBy...).
      * This is a two-step process to correctly handle JPA cascades:
-     * 1. It internally calls buildAndExecuteQuery to run a 'FIND' query, fetching all entities that match the criteria.
+     * 1. It internally calls a helper method to run a 'FIND' query, fetching all entities that match the criteria.
      * 2. It then iterates through the fetched entities and calls entityManager.remove() on each within a new transaction.
      * This method requires a TransactionManager to perform the modification.
      */
     public static Object processDeleteByNameOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager, TransactionManager transactionManager) {
-        // Step 1: Find the entities to be deleted.
-        Object findResult = buildAndExecuteQuery(args, dataForQuery, entityManager, QueryMethodParser.Action.DELETE);
+        // Step 1: Find all entities matching the delete criteria using a dedicated helper.
+        List<?> entitiesToDelete = findEntitiesForModification(args, dataForQuery, entityManager);
 
-        // The findResult can be a single entity or a List. We must handle both cases.
-        List<?> entitiesToDelete;
-        if (findResult instanceof List) {
-            entitiesToDelete = (List<?>) findResult;
-        } else if (findResult != null) {
-            entitiesToDelete = Collections.singletonList(findResult);
-        } else {
-            entitiesToDelete = Collections.emptyList();
-        }
-
-        if (entitiesToDelete == null || entitiesToDelete.isEmpty()) {
+        if (entitiesToDelete.isEmpty()) {
             return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
         }
 
@@ -108,9 +100,11 @@ public class QueryByNameOperationUtility {
             transactionManager.begin();
             entityManager.joinTransaction();
             for (Object entity : entitiesToDelete) {
-                entityManager.remove(entity);
+                // To be safe, merge the entity to ensure it's managed before removing.
+                entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
             }
             transactionManager.commit();
+            clearCaches(entityManager);
         } catch (Exception e) {
             try {
                 transactionManager.rollback();
@@ -121,6 +115,33 @@ public class QueryByNameOperationUtility {
         }
 
         return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
+    }
+
+    private static void clearCaches(EntityManager entityManager) {
+        EntityManagerFactory factory = entityManager.getEntityManagerFactory();
+        if (factory !=  null) {
+            Cache cache = factory.getCache();
+            if (cache != null) {
+                cache.evictAll();
+            }
+        }
+        entityManager.clear();
+    }
+
+    /**
+     * A specialized helper method that builds and executes a FIND query to fetch entities
+     * that will be modified (e.g., deleted). It ALWAYS returns the full List of results,
+     * bypassing the normal processReturnType logic which might mistakenly return a single element.
+     */
+    private static List<?> findEntitiesForModification(Object[] args, QueryData dataForQuery, EntityManager entityManager) {
+        try {
+            QueryMethodParser parser = new QueryMethodParser(dataForQuery.getMethod().getName()).parse();
+            // We build the query as a FIND, regardless of the original method's action.
+            jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, QueryMethodParser.Action.FIND);
+            return q.getResultList();
+        } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
+            throw new MappingException("Failed to find entities for modification for method: " + dataForQuery.getMethod().getName(), e);
+        }
     }
 
     /**
@@ -138,56 +159,55 @@ public class QueryByNameOperationUtility {
     }
 
     // --- CENTRALIZED BUILD AND EXECUTION LOGIC ---
+
     private static Object buildAndExecuteQuery(Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action expectedAction) {
         Method method = dataForQuery.getMethod();
         String methodName = method.getName();
 
         try {
-            dataForQuery.resetParamIndex();
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
-
-            QueryMethodParser.Action executionAction = (expectedAction == QueryMethodParser.Action.DELETE) ? QueryMethodParser.Action.FIND_FOR_DELETE : expectedAction;
-
             if (parser.getAction() != expectedAction) {
                 throw new IllegalStateException("Mismatched action type. Expected " + expectedAction + " but got " + parser.getAction());
             }
 
-            Metamodel metamodel = entityManager.getMetamodel();
-            EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
-
-            String rootAlias = "e";
-            StringBuilder jpql = new StringBuilder();
-            StringBuilder joinClause = new StringBuilder();
-            Map<String, String> joinAliases = new HashMap<>();
-
-            // 1. Build the initial SELECT ... FROM ... clause
-            buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
-
-            // 2. Build all necessary JOINs based on conditions and ordering
-            buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
-
-            // 3. Append the JOINs to the main query
-            jpql.append(joinClause);
-
-            // 4. Append the WHERE clause if there are conditions
-            if (!parser.getConditions().isEmpty()) {
-                jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
-            }
-
-            // 5. Append the ORDER BY clause if it's a FIND query
-            if (executionAction == QueryMethodParser.Action.FIND && !parser.getOrderBy().isEmpty()) {
-                jpql.append(buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases));
-            }
-
-            jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
-            dataForQuery.resetParamIndex();
-            setQueryParameters(q, parser.getConditions(), args, dataForQuery);
-
-            return executeQuery(q, parser, dataForQuery, executionAction);
+            jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, expectedAction);
+            return executeQuery(q, parser, dataForQuery);
 
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
             throw new MappingException("Failed to build or execute query from method name: " + methodName, e);
         }
+    }
+
+    /**
+     * Builds a jakarta.persistence.Query object from a parsed method name.
+     * This is a central helper used by all `...ByName` operations.
+     */
+    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action executionAction) {
+        Metamodel metamodel = entityManager.getMetamodel();
+        EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
+
+        String rootAlias = "e";
+        StringBuilder jpql = new StringBuilder();
+        StringBuilder joinClause = new StringBuilder();
+        Map<String, String> joinAliases = new HashMap<>();
+
+        buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
+        buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
+
+        jpql.append(joinClause);
+
+        if (!parser.getConditions().isEmpty()) {
+            jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
+        }
+        if (executionAction == QueryMethodParser.Action.FIND && !parser.getOrderBy().isEmpty()) {
+            jpql.append(buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases));
+        }
+
+        jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
+        dataForQuery.resetParamIndex();
+        setQueryParameters(q, parser.getConditions(), args, dataForQuery);
+
+        return q;
     }
 
     // --- QUERY BUILDING HELPER METHODS ---
@@ -331,22 +351,21 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser parser, QueryData dataForQuery, QueryMethodParser.Action executionAction) {
-        switch (executionAction) {
+    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser parser, QueryData dataForQuery) {
+        QueryMethodParser.Action action = parser.getAction();
+        switch (action) {
             case FIND:
                 if (parser.getLimit() != null) {
                     q.setMaxResults(parser.getLimit());
                 }
                 return processReturnType(dataForQuery, q.getResultList());
-            case FIND_FOR_DELETE:
-                return q.getResultList();
             case COUNT:
                 return q.getSingleResult();
             case EXISTS:
                 long count = (long) q.getSingleResult();
                 return count > 0;
             default:
-                throw new IllegalStateException("Unexpected execution action: " + executionAction);
+                throw new IllegalStateException("Unexpected execution action: " + action);
         }
     }
 
