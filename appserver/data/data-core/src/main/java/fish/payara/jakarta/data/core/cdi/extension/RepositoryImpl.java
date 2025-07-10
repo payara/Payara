@@ -77,7 +77,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
@@ -113,7 +112,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
         //In this method we can add implementation to execute dynamic queries
         logger.info("executing method:" + method.getName());
         QueryData dataForQuery = queries.get(method);
-        evaluateDataQuery(dataForQuery, method);
         Object objectToReturn = null;
         switch (dataForQuery.getQueryType()) {
             case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
@@ -131,34 +129,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
 
         return objectToReturn;
-    }
-
-    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
-        if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> entityType = findEntityTypeInMethod(method);
-            if (entityType != null) {
-                dataForQuery.setDeclaredEntityClass(entityType);
-                return;
-            }
-            Class<?> declaringClass = method.getDeclaringClass();
-            Method[] allMethods = declaringClass.getMethods();
-            for (Method interfaceMethod : allMethods) {
-                if (interfaceMethod.equals(method)) {
-                    continue;
-                }
-                entityType = findEntityTypeInMethod(interfaceMethod);
-                if (entityType != null) {
-                    dataForQuery.setDeclaredEntityClass(entityType);
-                    return;
-                }
-            }
-            throw new MappingException(
-                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                    "Either extend a repository interface with entity type parameters or " +
-                                    "ensure entity type is determinable from method signature.",
-                            method.getName(), declaringClass.getName())
-            );
-        }
     }
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
