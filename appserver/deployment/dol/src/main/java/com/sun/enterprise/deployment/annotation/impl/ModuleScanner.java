@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates.]
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.deployment.annotation.impl;
 
@@ -81,14 +82,14 @@ public abstract class ModuleScanner<T> extends JavaEEScanner implements Scanner<
     protected ClassLoader classLoader = null;
     protected Parser classParser = null;
 
-    private Set<URI> scannedURI = new HashSet<>();
+    protected Set<URI> scannedURI = new HashSet<>();
 
     private boolean needScanAnnotation = false;
 
     @Inject
     PayaraExecutorService executorService;
-    
-    private Set<String> entries = new HashSet<>();
+
+    protected Set<String> entries = new HashSet<>();
 
     public static final Logger deplLogger = com.sun.enterprise.deployment.util.DOLUtils.deplLogger;
 
