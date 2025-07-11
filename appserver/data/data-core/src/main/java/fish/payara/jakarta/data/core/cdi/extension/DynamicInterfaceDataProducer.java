@@ -39,6 +39,7 @@
  */
 package fish.payara.jakarta.data.core.cdi.extension;
 
+import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.DataRepository;
 import jakarta.data.repository.Delete;
 import jakarta.data.repository.Find;
@@ -72,6 +73,7 @@ import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.preprocesEntityMetadata;
 
 /**
@@ -260,11 +262,54 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         } else if (method.isAnnotationPresent(Query.class)) {
             queryType = QueryType.QUERY;
         } else {
-            queryType = QueryType.QUERY_BY_NAME;
+            String methodName = method.getName();
+            if (methodName.startsWith("delete")) {
+                queryType = QueryType.DELETE_BY_NAME;
+            } else if (methodName.startsWith("count")) {
+                queryType = QueryType.COUNT_BY_NAME;
+            } else if (methodName.startsWith("exists")) {
+                queryType = QueryType.EXISTS_BY_NAME;
+            } else {
+                queryType = QueryType.FIND_BY_NAME;
+            }
         }
-        
-        queries.add(new QueryData(repository, method, declaredEntityClass, entityParamType, 
-                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName())));
+        QueryData dataForQuery = new QueryData(repository, method, declaredEntityClass, entityParamType,
+                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName()));
+
+        try {
+            evaluateDataQuery(dataForQuery, method);
+            queries.add(dataForQuery);
+        } catch (MappingException e) {
+            logger.warning(e.getMessage());
+        }
+    }
+
+    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
+        if (dataForQuery.getDeclaredEntityClass() == null) {
+            Class<?> entityType = findEntityTypeInMethod(method);
+            if (entityType != null) {
+                dataForQuery.setDeclaredEntityClass(entityType);
+                return;
+            }
+            Class<?> declaringClass = method.getDeclaringClass();
+            Method[] allMethods = declaringClass.getMethods();
+            for (Method interfaceMethod : allMethods) {
+                if (interfaceMethod.equals(method)) {
+                    continue;
+                }
+                entityType = findEntityTypeInMethod(interfaceMethod);
+                if (entityType != null) {
+                    dataForQuery.setDeclaredEntityClass(entityType);
+                    return;
+                }
+            }
+            throw new MappingException(
+                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                    "Either extend a repository interface with entity type parameters or " +
+                                    "ensure entity type is determinable from method signature.",
+                            method.getName(), declaringClass.getName())
+            );
+        }
     }
 
     @Override

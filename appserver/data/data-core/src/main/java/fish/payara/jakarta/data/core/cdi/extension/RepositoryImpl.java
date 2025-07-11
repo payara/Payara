@@ -42,6 +42,7 @@ package fish.payara.jakarta.data.core.cdi.extension;
 import fish.payara.jakarta.data.core.util.DataParameter;
 import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
+import fish.payara.jakarta.data.core.util.QueryByNameOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
 import jakarta.data.Order;
@@ -76,7 +77,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
-import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
@@ -93,7 +93,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public static final Logger logger = Logger.getLogger(RepositoryImpl.class.getName());
 
     private final Class<T> repositoryInterface;
-    private Map<Class<?>, List<QueryData>> queriesPerEntityClass;
     private final Map<Method, QueryData> queries = new HashMap<>();
     private final String applicationName;
     private TransactionManager transactionManager;
@@ -101,17 +100,18 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
-        this.queriesPerEntityClass = queriesPerEntityClass;
         this.applicationName = applicationName;
+
+        Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
+                .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
+        queries.putAll(r);
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //In this method we can add implementation to execute dynamic queries
         logger.info("executing method:" + method.getName());
-        preProcessQuery();
         QueryData dataForQuery = queries.get(method);
-        evaluateDataQuery(dataForQuery, method);
         Object objectToReturn = null;
         switch (dataForQuery.getQueryType()) {
             case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
@@ -121,39 +121,14 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
             case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-            default -> objectToReturn = processQueryByNameOperation(args, dataForQuery);
+            case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+            case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
         }
 
         return objectToReturn;
-    }
-
-    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
-        if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> entityType = findEntityTypeInMethod(method);
-            if (entityType != null) {
-                dataForQuery.setDeclaredEntityClass(entityType);
-                return;
-            }
-            Class<?> declaringClass = method.getDeclaringClass();
-            Method[] allMethods = declaringClass.getMethods();
-            for (Method interfaceMethod : allMethods) {
-                if (interfaceMethod.equals(method)) {
-                    continue;
-                }
-                entityType = findEntityTypeInMethod(interfaceMethod);
-                if (entityType != null) {
-                    dataForQuery.setDeclaredEntityClass(entityType);
-                    return;
-                }
-            }
-            throw new MappingException(
-                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                    "Either extend a repository interface with entity type parameters or " +
-                                    "ensure entity type is determinable from method signature.",
-                            method.getName(), declaringClass.getName())
-            );
-
-        }
     }
 
     public Object processFindOperation(Object[] args, QueryData dataForQuery) {
@@ -206,12 +181,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
             clause.append(" DESC");
         }
         return clause.toString();
-    }
-
-    public void preProcessQuery() {
-        Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
-                .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
-        queries.putAll(r);
     }
 
     public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
@@ -425,10 +394,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         }
         return new DataParameter(limit, sortList);
-    }
-
-    public Object processQueryByNameOperation(Object[] args, QueryData dataForQuery) {
-        return QueryOperationUtility.processQueryByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
     }
 
     public TransactionManager getTransactionManager() {
