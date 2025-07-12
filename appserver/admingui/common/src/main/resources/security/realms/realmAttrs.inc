@@ -84,7 +84,7 @@
         </sun:propertySheetSection>
     </sun:propertySheet>
 "<br><br>
-    <sun:propertySheetSection id="fileSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}" >
+    <sun:propertySheetSection id="fileSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.file.FileRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{fileSectionId});
         />
@@ -99,7 +99,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="certSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="certSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.certificate.CertificateRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{certSectionId});
         />  
@@ -108,7 +108,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="ldapSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="ldapSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.ldap.LDAPRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{ldapSectionId});
         />
@@ -126,7 +126,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="solarisSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="solarisSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.solaris.SolarisRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{solarisSectionId});
         />  
@@ -138,7 +138,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="pamSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="pamSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.pam.PAMRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{pamSectionId});
         />
@@ -147,7 +147,7 @@
         </sun:property>
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="jdbcSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="jdbcSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{jdbcSectionId});
         />  
