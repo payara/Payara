@@ -107,6 +107,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.deployment</groupId>
+            <artifactId>deployment-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.core</groupId>
+            <artifactId>kernel</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
