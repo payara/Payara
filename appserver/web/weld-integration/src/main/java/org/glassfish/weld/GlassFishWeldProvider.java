@@ -163,7 +163,10 @@ public class GlassFishWeldProvider implements CDIProvider {
 
     private static BundleDescriptor getBundleDescriptor() {
         BundleDescriptor bundle = null;
-        Object componentEnv = invocationManager.getCurrentInvocation().getJNDIEnvironment();
+        Object componentEnv = null;
+        if (!invocationManager.isInvocationStackEmpty()) {
+            componentEnv = invocationManager.getCurrentInvocation().getJNDIEnvironment();
+        }
         if( componentEnv instanceof EjbDescriptor) {
             bundle = (BundleDescriptor)
                     ((EjbDescriptor) componentEnv).getEjbBundleDescriptor().
