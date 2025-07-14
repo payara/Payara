@@ -62,7 +62,7 @@
     </developers>
 
     <properties>
-        <selenium-server.version>2.40.0</selenium-server.version>
+        <selenium-server.version>2.53.0</selenium-server.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
