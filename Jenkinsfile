@@ -112,7 +112,7 @@ pipeline {
                          }
                      }
                  }
-                stage('MP TCK Runners') {
+                stage('MicroProfile Config TCK') {
                     agent {
                         label 'general-purpose'
                     }
@@ -134,6 +134,312 @@ pipeline {
                         -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
                         -Ppayara-server-remote,full"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile Config TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f -pl MicroProfile-Config"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile Fault Tolerance TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-Fault-Tolerance"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile Health TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-Health"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile JWT Auth TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-JWT-Auth"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile Metrics TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-Metrics"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile OpenAPI TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-OpenAPI"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile OpenTelemetry Tracing TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-OpenTelemetry-Tracing"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile OpenTracing TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-OpenTracing"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'mp-tck-log.zip'
+                        }
+                    }
+                }
+                stage('MicroProfile REST Client TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps{
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+                            branches: [[name: "*/microprofile-6.1"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Ppayara-server-remote,full
+                        -f MicroProfile-Rest-Client"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
