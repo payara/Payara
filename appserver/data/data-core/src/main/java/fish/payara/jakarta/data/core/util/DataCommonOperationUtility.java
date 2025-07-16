@@ -100,29 +100,23 @@ public class DataCommonOperationUtility {
             return results.stream();
         } else if (evaluateReturnTypeVoidPredicate.test(returnType)) {
             return null;
-        } else if (returnType.equals(Optional.class)) {
-            if (results.isEmpty()) {
-                return Optional.empty();
-            } else {
-                if (results.size() > 1) {
-                    throw new NonUniqueResultException("There are more than one result for the query");
-                }
-                return Optional.ofNullable(results.get(0));
-            }
-        } else if (returnType.equals(dataForQuery.getDeclaredEntityClass())) {
-            if (results.isEmpty()) {
-                throw new EmptyResultException("There are no results for the query");
-            }
-
-            if (results.size() > 1) {
+        } else if (results.size() > 1) {
+            if (returnType.equals(Optional.class) || returnType.equals(dataForQuery.getDeclaredEntityClass())) {
                 throw new NonUniqueResultException("There are more than one result for the query");
             }
-
-            return results.getFirst();
-        } else if (!results.isEmpty()) {
             return results;
+        } else if (returnType.equals(Optional.class)) {
+            return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
         }
-        return null;
+        else {
+            if (results.isEmpty()) {
+                if (returnType.equals(dataForQuery.getDeclaredEntityClass())) {
+                    throw new EmptyResultException("There are no results for the query");
+                }
+                return null;
+            }
+            return results.getFirst();
+        }
     }
 
     public static EntityManager getEntityManager(String applicationName) {
