@@ -209,7 +209,7 @@ public class DataCommonOperationUtility {
     public static Class<?> findEntityTypeInMethod(Method method) {
         Class<?> returnType = method.getReturnType();
         if (!void.class.equals(returnType) && !Void.class.equals(returnType)) {
-            if (Collection.class.isAssignableFrom(returnType)
+            if (Iterable.class.isAssignableFrom(returnType)
                     || Stream.class.isAssignableFrom(returnType)
                     || Optional.class.isAssignableFrom(returnType) || Page.class.isAssignableFrom(returnType)) {
                 Type genericReturnType = method.getGenericReturnType();
@@ -227,7 +227,7 @@ public class DataCommonOperationUtility {
         for (Parameter param : method.getParameters()) {
             Class<?> paramType = param.getType();
             if (!paramType.isPrimitive() && !paramType.equals(String.class)) {
-                if (Collection.class.isAssignableFrom(paramType)
+                if (Iterable.class.isAssignableFrom(paramType)
                         || Stream.class.isAssignableFrom(paramType)) {
                     Type paramGenericType = param.getParameterizedType();
                     if (paramGenericType instanceof ParameterizedType) {
