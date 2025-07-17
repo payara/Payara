@@ -535,7 +535,7 @@ pipeline {
                         -Dpayara_domain=${DOMAIN_NAME} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Ppayara-server-remote,stable,payara6"""
+                        -Ppayara-server-remote,stable"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
