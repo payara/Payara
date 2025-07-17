@@ -39,7 +39,7 @@
  */
 package fish.payara.samples.corba.read.timeout;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 @Stateless
 public class TimeoutTestServiceBean implements TimeoutTestService {
