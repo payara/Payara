@@ -57,6 +57,9 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.inject.spi.PassivationCapable;
 import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -202,7 +205,97 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 }
             }
         }
+        return inferEntityTypeFromMethods(repositoryInterface);
+    }
+
+    private Class<?> inferEntityTypeFromMethods(Class<?> repositoryInterface) {
+        logger.info("Inferring entity type from methods");
+
+        for (Method method : repositoryInterface.getMethods()) {
+            if (method.isAnnotationPresent(Insert.class) ||
+                    method.isAnnotationPresent(Save.class) ||
+                    method.isAnnotationPresent(Update.class) ||
+                    method.isAnnotationPresent(Delete.class)) {
+
+                Class<?> entityType = findEntityTypeInMethodSignature(method);
+                if (entityType != null) {
+                    logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
+                    return entityType;
+                }
+            }
+
+            if (method.getName().startsWith("find") ||
+                    method.getName().startsWith("delete") ||
+                    method.getName().startsWith("count") ||
+                    method.getName().startsWith("exists")) {
+
+                Class<?> entityType = findEntityTypeInMethodSignature(method);
+                if (entityType != null) {
+                    logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
+                    return entityType;
+                }
+            }
+        }
+
         return null;
+    }
+
+    private Class<?> findEntityTypeInMethodSignature(Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (isEntityCandidate(returnType)) {
+            return returnType;
+        }
+
+        if (returnType.isArray()) {
+            Class<?> componentType = returnType.getComponentType();
+            if (isEntityCandidate(componentType)) {
+                return componentType;
+            }
+        }
+
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) genericReturnType;
+            Type[] args = paramType.getActualTypeArguments();
+            if (args.length > 0 && args[0] instanceof Class) {
+                Class<?> argClass = (Class<?>) args[0];
+                if (isEntityCandidate(argClass)) {
+                    return argClass;
+                }
+            }
+        }
+
+        for (Parameter param : method.getParameters()) {
+            Class<?> paramType = param.getType();
+            if (isEntityCandidate(paramType)) {
+                return paramType;
+            }
+
+            if (paramType.isArray()) {
+                Class<?> componentType = paramType.getComponentType();
+                if (isEntityCandidate(componentType)) {
+                    return componentType;
+                }
+            }
+
+            if (param.isVarArgs()) {
+                Class<?> componentType = paramType.getComponentType();
+                if (isEntityCandidate(componentType)) {
+                    return componentType;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isEntityCandidate(Class<?> clazz) {
+        if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
+                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class)) {
+            return false;
+        }
+
+        return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
     }
 
     public Class<?> getEntityParamClass(Method method) {
