@@ -57,6 +57,9 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.inject.spi.PassivationCapable;
 import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -185,24 +188,117 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @return the entity class used of the operation
      */
     private Class<?> getEntityType(Class<?> repositoryInterface) {
-        Class<?>[] interfaceClasses = repositoryInterface.getInterfaces();
-        for (Type type : repositoryInterface.getGenericInterfaces()) {
-            if (type instanceof ParameterizedType parameterizedType) {
-                for (Class<?> interfaceClass : interfaceClasses) {
-                    if (interfaceClass.equals(parameterizedType.getRawType())) {
-                        if (DataRepository.class.isAssignableFrom(interfaceClass)) {
-                            Type[] typeParams = parameterizedType.getActualTypeArguments();
-                            Type firstParamType = typeParams.length > 0 ? typeParams[0] : null;
-                            if (firstParamType instanceof Class) {
-                                return (Class<?>) firstParamType;
-                            }
-                        }
-                        break;
+        Class<?> entityType = getEntityTypeFromGenerics(repositoryInterface);
+        if (entityType != null) {
+            return entityType;
+        }
+        return inferEntityTypeFromMethods(repositoryInterface);
+    }
+
+    private Class<?> getEntityTypeFromGenerics(Class<?> repositoryInterface) {
+        for (Type genericInterface : repositoryInterface.getGenericInterfaces()) {
+            if (genericInterface instanceof ParameterizedType pType) {
+                if (pType.getRawType() instanceof Class<?> rawType && DataRepository.class.isAssignableFrom(rawType)) {
+                    Type typeArgument = pType.getActualTypeArguments()[0];
+                    if (typeArgument instanceof Class) {
+                        return (Class<?>) typeArgument;
                     }
                 }
             }
         }
+        for (Class<?> superInterface : repositoryInterface.getInterfaces()) {
+            Class<?> entityType = getEntityTypeFromGenerics(superInterface);
+            if (entityType != null) {
+                return entityType;
+            }
+        }
         return null;
+    }
+
+    private Class<?> inferEntityTypeFromMethods(Class<?> repositoryInterface) {
+        logger.info("Inferring entity type from methods");
+        for (Method method : repositoryInterface.getMethods()) {
+            if (isRepositoryMethodCandidate(method)) {
+                Class<?> entityType = findEntityTypeInMethodSignature(method);
+                if (entityType != null) {
+                    logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
+                    return entityType;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isRepositoryMethodCandidate(Method method) {
+        if (method.isAnnotationPresent(Insert.class) ||
+                method.isAnnotationPresent(Save.class) ||
+                method.isAnnotationPresent(Update.class) ||
+                method.isAnnotationPresent(Delete.class) ||
+                method.isAnnotationPresent(Find.class)) {
+            return true;
+        }
+        String methodName = method.getName();
+        return methodName.startsWith("find") ||
+                methodName.startsWith("delete") ||
+                methodName.startsWith("count") ||
+                methodName.startsWith("exists");
+    }
+
+    private Class<?> findEntityTypeInMethodSignature(Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (isEntityCandidate(returnType)) {
+            return returnType;
+        }
+
+        if (returnType.isArray()) {
+            Class<?> componentType = returnType.getComponentType();
+            if (isEntityCandidate(componentType)) {
+                return componentType;
+            }
+        }
+
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType) genericReturnType;
+            Type[] args = paramType.getActualTypeArguments();
+            if (args.length > 0 && args[0] instanceof Class) {
+                Class<?> argClass = (Class<?>) args[0];
+                if (isEntityCandidate(argClass)) {
+                    return argClass;
+                }
+            }
+        }
+
+        for (Parameter param : method.getParameters()) {
+            Class<?> paramType = param.getType();
+            if (isEntityCandidate(paramType)) {
+                return paramType;
+            }
+
+            if (paramType.isArray()) {
+                Class<?> componentType = paramType.getComponentType();
+                if (isEntityCandidate(componentType)) {
+                    return componentType;
+                }
+            }
+
+            if (param.isVarArgs()) {
+                Class<?> componentType = paramType.getComponentType();
+                if (isEntityCandidate(componentType)) {
+                    return componentType;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isEntityCandidate(Class<?> clazz) {
+        if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
+                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class)) {
+            return false;
+        }
+        return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
     }
 
     public Class<?> getEntityParamClass(Method method) {
