@@ -55,7 +55,7 @@ import java.net.URI;
  *
  * @author Jerome Dochez
  */
-public interface Archive {
+public interface Archive extends AutoCloseable {
     
     /**
      * closes this archive and releases all resources
