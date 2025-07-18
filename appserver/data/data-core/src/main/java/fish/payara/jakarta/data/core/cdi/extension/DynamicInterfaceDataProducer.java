@@ -188,47 +188,37 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @return the entity class used of the operation
      */
     private Class<?> getEntityType(Class<?> repositoryInterface) {
-        Class<?>[] interfaceClasses = repositoryInterface.getInterfaces();
-        for (Type type : repositoryInterface.getGenericInterfaces()) {
-            if (type instanceof ParameterizedType parameterizedType) {
-                for (Class<?> interfaceClass : interfaceClasses) {
-                    if (interfaceClass.equals(parameterizedType.getRawType())) {
-                        if (DataRepository.class.isAssignableFrom(interfaceClass)) {
-                            Type[] typeParams = parameterizedType.getActualTypeArguments();
-                            Type firstParamType = typeParams.length > 0 ? typeParams[0] : null;
-                            if (firstParamType instanceof Class) {
-                                return (Class<?>) firstParamType;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
+        Class<?> entityType = getEntityTypeFromGenerics(repositoryInterface);
+        if (entityType != null) {
+            return entityType;
         }
         return inferEntityTypeFromMethods(repositoryInterface);
     }
 
-    private Class<?> inferEntityTypeFromMethods(Class<?> repositoryInterface) {
-        logger.info("Inferring entity type from methods");
-
-        for (Method method : repositoryInterface.getMethods()) {
-            if (method.isAnnotationPresent(Insert.class) ||
-                    method.isAnnotationPresent(Save.class) ||
-                    method.isAnnotationPresent(Update.class) ||
-                    method.isAnnotationPresent(Delete.class)) {
-
-                Class<?> entityType = findEntityTypeInMethodSignature(method);
-                if (entityType != null) {
-                    logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
-                    return entityType;
+    private Class<?> getEntityTypeFromGenerics(Class<?> repositoryInterface) {
+        for (Type genericInterface : repositoryInterface.getGenericInterfaces()) {
+            if (genericInterface instanceof ParameterizedType pType) {
+                if (pType.getRawType() instanceof Class<?> rawType && DataRepository.class.isAssignableFrom(rawType)) {
+                    Type typeArgument = pType.getActualTypeArguments()[0];
+                    if (typeArgument instanceof Class) {
+                        return (Class<?>) typeArgument;
+                    }
                 }
             }
+        }
+        for (Class<?> superInterface : repositoryInterface.getInterfaces()) {
+            Class<?> entityType = getEntityTypeFromGenerics(superInterface);
+            if (entityType != null) {
+                return entityType;
+            }
+        }
+        return null;
+    }
 
-            if (method.getName().startsWith("find") ||
-                    method.getName().startsWith("delete") ||
-                    method.getName().startsWith("count") ||
-                    method.getName().startsWith("exists")) {
-
+    private Class<?> inferEntityTypeFromMethods(Class<?> repositoryInterface) {
+        logger.info("Inferring entity type from methods");
+        for (Method method : repositoryInterface.getMethods()) {
+            if (isRepositoryMethodCandidate(method)) {
                 Class<?> entityType = findEntityTypeInMethodSignature(method);
                 if (entityType != null) {
                     logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
@@ -236,8 +226,22 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 }
             }
         }
-
         return null;
+    }
+
+    private boolean isRepositoryMethodCandidate(Method method) {
+        if (method.isAnnotationPresent(Insert.class) ||
+                method.isAnnotationPresent(Save.class) ||
+                method.isAnnotationPresent(Update.class) ||
+                method.isAnnotationPresent(Delete.class) ||
+                method.isAnnotationPresent(Find.class)) {
+            return true;
+        }
+        String methodName = method.getName();
+        return methodName.startsWith("find") ||
+                methodName.startsWith("delete") ||
+                methodName.startsWith("count") ||
+                methodName.startsWith("exists");
     }
 
     private Class<?> findEntityTypeInMethodSignature(Method method) {
@@ -294,7 +298,6 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class)) {
             return false;
         }
-
         return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
     }
 
