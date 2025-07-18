@@ -76,6 +76,7 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
