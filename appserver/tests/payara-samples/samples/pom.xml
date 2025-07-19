@@ -84,7 +84,7 @@
         <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
-        <!--module>microprofile-rest-client</module-->
+        <module>microprofile-rest-client</module>
         <module>concurrency</module>
         <module>reproducers</module>
         <module>opentelemetry</module>
