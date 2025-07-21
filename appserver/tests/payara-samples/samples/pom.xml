@@ -74,7 +74,7 @@
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
-        <!--module>http</module-->
+        <module>http</module>
         <module>logging</module>
         <!--module>ejb-http-remoting</module-->
         <module>remote-ejb-tracing</module>
