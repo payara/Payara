@@ -297,7 +297,7 @@
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <soteria.version>4.0.1</soteria.version>
+        <soteria.version>4.0.1.payara-p1</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
         <!-- Needs FISH-9690 reapplying -->
         <grizzly.version>4.1.0.payara-p1</grizzly.version>
