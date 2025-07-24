@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2024] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2020-2025] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.deployment.*;
-import com.sun.enterprise.deployment.annotation.factory.AnnotatedElementHandlerFactory;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.annotation.factory.SJSASFactory;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -51,28 +51,50 @@ import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.PERSISTENCE_DD_ENTRY;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY;
 import static com.sun.enterprise.deployment.io.DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY;
-import com.sun.enterprise.deployment.util.*;
+import com.sun.enterprise.deployment.util.ComponentPostVisitor;
+import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.util.TracerVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
-import org.glassfish.apf.*;
+import org.glassfish.apf.AnnotationProcessorException;
+import org.glassfish.apf.ErrorHandler;
+import org.glassfish.apf.ProcessingResult;
+import org.glassfish.apf.ResultType;
 import org.glassfish.apf.Scanner;
-import org.glassfish.apf.impl.DefaultErrorHandler;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import org.glassfish.deployment.common.*;
+import org.glassfish.deployment.common.DeploymentProperties;
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.DescriptorVisitor;
+import org.glassfish.deployment.common.InstalledLibrariesResolver;
+import org.glassfish.deployment.common.ModuleDescriptor;
+import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.*;
 import jakarta.inject.Inject;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Contract;
 import org.xml.sax.SAXParseException;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -138,9 +160,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
     // runtime xml validation error level reporting/recovering
     private String runtimeValidationLevel = "parsing";
 
-    // error handler for annotation processing
-    private ErrorHandler annotationErrorHandler = null;
-
     private static final String WSDL = ".wsdl";
     private static final String XML = ".xml";
     private static final String XSD = ".xsd";
@@ -166,22 +185,18 @@ public abstract class Archivist<T extends BundleDescriptor> {
     protected ServiceLocator habitat;
 
     @Inject
-    protected ServiceLocator locator;
+    SJSASFactory annotationFactory;
 
     @Inject
-    SJSASFactory annotationFactory;
+    Deployment deployment;
+
+    @Deprecated(forRemoval = true)
+    protected ServiceLocator locator = null;
 
     @Inject
     ArchiveFactory archiveFactory;
 
     protected List<ExtensionsArchivist> extensionsArchivists;
-
-    /**
-     * Creates new Archivist
-     */
-    public Archivist() {
-        annotationErrorHandler = new DefaultErrorHandler();
-    }
 
     /**
      * initializes this instance from another archivist, this is used to
@@ -194,7 +209,6 @@ public abstract class Archivist<T extends BundleDescriptor> {
         isValidatingXML = other.isValidatingXML;
         validationLevel = other.validationLevel;
         classLoader = other.classLoader;
-        annotationErrorHandler = other.annotationErrorHandler;
     }
 
     /**
@@ -590,24 +604,8 @@ public abstract class Archivist<T extends BundleDescriptor> {
             return null;
         }
 
-        AnnotatedElementHandler aeHandler =
-                AnnotatedElementHandlerFactory.createAnnotatedElementHandler(
-                        bundleDesc);
-
-        if (aeHandler == null) {
-            return null;
-        }
-
-        Parser parser = null;
-        if (archive.getParentArchive() != null) {
-            parser = archive.getParentArchive().getExtraData(Parser.class);
-        } else {
-            parser = archive.getExtraData(Parser.class);
-        }
-
-        scanner.process(archive, bundleDesc, classLoader, parser);
-
-        if (!scanner.getElements().isEmpty()) {
+//        if (!scanner.getElements().isEmpty()) {
+        if (true) {
             if (((BundleDescriptor) bundleDesc).isDDWithNoAnnotationAllowed()) {
                 // if we come into this block, it means an old version
                 // of deployment descriptor has annotation which is not correct
@@ -624,62 +622,16 @@ public abstract class Archivist<T extends BundleDescriptor> {
                                 "{0} in archive {1} is of version {2}, which cannot support annotations in an application.  Please upgrade the deployment descriptor to be a version supported by Java EE 5.0 (or later).",
                                 new Object[]{ddName, archiveName, bundleDesc.getSpecVersion()}));
             }
-            boolean isFullAttribute = false;
-            if (bundleDesc instanceof BundleDescriptor) {
-                isFullAttribute = ((BundleDescriptor) bundleDesc).isFullAttribute();
-            }
+//            boolean isFullAttribute = false;
+//            if (bundleDesc instanceof BundleDescriptor) {
+//                isFullAttribute = ((BundleDescriptor) bundleDesc).isFullAttribute();
+//            }
 
-            AnnotationProcessor ap = annotationFactory.getAnnotationProcessor(isFullAttribute);
-            ProcessingContext ctx = getProcessingContext(bundleDesc, archive, ap);
-            ctx.setArchive(archive);
-            if (annotationErrorHandler != null) {
-                ctx.setErrorHandler(annotationErrorHandler);
-            }
-            ctx.setProcessingInput(scanner);
-            ctx.pushHandler(aeHandler);
-
-            // Make sure there is a classloader available on the descriptor
-            // during annotation processing.
-            ClassLoader originalBundleClassLoader = null;
-            try {
-                originalBundleClassLoader = bundleDesc.getClassLoader();
-            } catch (Exception e) {
-                // getClassLoader can throw exception if not available
-            }
-
-            // Only set classloader if it's not already set.
-            if (originalBundleClassLoader == null) {
-                bundleDesc.setClassLoader(classLoader);
-            }
-
-            try {
-                return ap.process(ctx);
-            } finally {
-                if (originalBundleClassLoader == null) {
-                    bundleDesc.setClassLoader(null);
-                }
-            }
+            DeploymentContext deploymentContext = deployment.getCurrentDeploymentContext();
+            annotationFactory.processAnnotations(deploymentContext, bundleDesc, archive);
+//            ProcessingContext ctx = getProcessingContext(bundleDesc, archive, ap);
         }
         return null;
-    }
-
-    private ProcessingContext getProcessingContext(
-            RootDeploymentDescriptor bundleDesc,
-            ReadableArchive archive,
-            AnnotationProcessor ap) {
-
-        ProcessingContext ctx = null;
-        ApplicationState state = archive.getExtraData(ApplicationState.class);
-        if (state != null) {
-            ctx = state.getProcessingContext(bundleDesc.getClass(), ProcessingContext.class);
-        }
-        if (ctx == null) {
-            ctx = ap.createContext();
-            if (state != null) {
-                state.addProcessingContext(bundleDesc.getClass(), ctx);
-            }
-        }
-        return ctx;
     }
 
     /**
@@ -1222,14 +1174,14 @@ public abstract class Archivist<T extends BundleDescriptor> {
      * @param annotationErrorHandler
      */
     public void setAnnotationErrorHandler(ErrorHandler annotationErrorHandler) {
-        this.annotationErrorHandler = annotationErrorHandler;
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
      * @return annotation ErrorHandler of this archivist
      */
     public ErrorHandler getAnnotationErrorHandler() {
-        return annotationErrorHandler;
+        throw new UnsupportedOperationException("No longer supported.");
     }
 
     /**
