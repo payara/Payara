@@ -70,7 +70,7 @@
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.9.10</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.11</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -104,7 +104,7 @@
         <gmbal.version>4.0.3</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
-        <commons-io.version>2.19.0</commons-io.version>
+        <commons-io.version>2.20.0</commons-io.version>
 
         <mimepull.version>1.10.0</mimepull.version>
 
