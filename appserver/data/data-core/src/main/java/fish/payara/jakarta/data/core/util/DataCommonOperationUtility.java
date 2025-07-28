@@ -146,7 +146,7 @@ public class DataCommonOperationUtility {
             return factory.createEntityManager();
         }
 
-        throw new AmbiguousPersistenceUnitException(String.format("For the application '%s', specify a single persistence unit for Jakarta Data by setting the property '%s' to 'true' in persistence.xml.", applicationName, PERSISTENCE_UNIT_ENABLED_PROPERTY));
+        throw new AmbiguousPersistenceUnitException(String.format("For the application '%s', specify a single persistence unit for Jakarta Data by setting the property '%s' to 'true' in its persistence.xml.", applicationName, PERSISTENCE_UNIT_ENABLED_PROPERTY));
     }
 
     public static ApplicationRegistry getRegistry() {
