@@ -74,7 +74,8 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.mq</groupId>
-            <artifactId>imq</artifactId>
+            <artifactId>mq-client</artifactId>
+            <version>${openmq.version}</version>
             <scope>provided</scope>
         </dependency>
 
