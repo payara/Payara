@@ -64,13 +64,13 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -79,6 +79,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
  * Class for common utility methods
  */
 public class DataCommonOperationUtility {
+
+    private static final String PERSISTENCE_UNIT_ENABLED_PROPERTY = "fish.payara.data.usePU";
 
     public static Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
             || Void.class.equals(returnType);
@@ -124,10 +126,27 @@ public class DataCommonOperationUtility {
         ApplicationInfo applicationInfo = applicationRegistry.get(applicationName);
         List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
         if (factoryList.size() == 1) {
-            EntityManagerFactory factory = factoryList.get(0);
+            EntityManagerFactory factory = factoryList.getFirst();
             return factory.createEntityManager();
         }
-        return null;
+
+        List<EntityManagerFactory> result = factoryList.stream().filter(factory -> {
+            Map<String, Object> properties = factory.getProperties();
+            if (properties == null || properties.isEmpty()) {
+                return false;
+            }
+            if (!properties.containsKey(PERSISTENCE_UNIT_ENABLED_PROPERTY)) {
+                return false;
+            }
+            return Boolean.parseBoolean((String) properties.get(PERSISTENCE_UNIT_ENABLED_PROPERTY));
+        }).toList();
+
+        if (result.size() == 1) {
+            EntityManagerFactory factory = result.getFirst();
+            return factory.createEntityManager();
+        }
+
+        throw new AmbiguousPersistenceUnitException(String.format("For the application '%s', specify a single persistence unit for Jakarta Data by setting the property '%s' to 'true' in its persistence.xml.", applicationName, PERSISTENCE_UNIT_ENABLED_PROPERTY));
     }
 
     public static ApplicationRegistry getRegistry() {
