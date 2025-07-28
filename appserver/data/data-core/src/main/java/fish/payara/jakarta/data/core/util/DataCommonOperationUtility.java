@@ -80,6 +80,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
  */
 public class DataCommonOperationUtility {
 
+    private static final String PERSISTENCE_UNIT_ENABLED_PROPERTY = "fish.payara.data.usePU";
+
     public static Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
             || Void.class.equals(returnType);
 
@@ -133,17 +135,17 @@ public class DataCommonOperationUtility {
             if (properties == null || properties.isEmpty()) {
                 return false;
             }
-            if (!properties.containsKey("fish.payara.jakarta.data.usePU")) {
+            if (!properties.containsKey(PERSISTENCE_UNIT_ENABLED_PROPERTY)) {
                 return false;
             }
-            return Boolean.parseBoolean((String) properties.get("fish.payara.jakarta.data.usePU"));
+            return Boolean.parseBoolean((String) properties.get(PERSISTENCE_UNIT_ENABLED_PROPERTY));
         }).toList();
 
         if (result.size() == 1) {
             EntityManagerFactory factory = result.getFirst();
             return factory.createEntityManager();
         }
-        throw new UnambiguousPersistenceUnitException(String.format("Multiple persistence units found for application '%s', try setting the 'fish.payara.jakarta.data.usePU' property to true", applicationName));
+        throw new AmbiguousPersistenceUnitException(String.format("Multiple persistence units found for application '%s', try setting the '%s' property to true", applicationName, PERSISTENCE_UNIT_ENABLED_PROPERTY));
     }
 
     public static ApplicationRegistry getRegistry() {

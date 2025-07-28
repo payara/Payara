@@ -39,8 +39,8 @@
  */
 package fish.payara.jakarta.data.core.util;
 
-public class UnambiguousPersistenceUnitException extends RuntimeException {
-    public UnambiguousPersistenceUnitException(String message) {
+public class AmbiguousPersistenceUnitException extends RuntimeException {
+    public AmbiguousPersistenceUnitException(String message) {
         super(message);
     }
 }
