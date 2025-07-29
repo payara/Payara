@@ -666,5 +666,5 @@ void saveLogsAndCleanup(String logArchiveName) {
 
 void setPayaraVersionInPom() {
     echo "*#*#*#*#*#*#*#*#*#*#*#*#  Updating pom.xml payara.version property for Shrinkwrap resolver  *#*#*#*#*#*#*#*#*#*#*#*#"
-    sh script: 'sed -i "s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${pom.version}<\\/payara\\.version>/g" pom.xml', label: "sed -i pom.xml"
+    sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${pom.version}<\\/payara\\.version>/g\" pom.xml", label: "sed -i pom.xml"
 }
