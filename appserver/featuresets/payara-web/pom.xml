@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>7.2025.1.Alpha4-SNAPSHOT</version>
+        <version>7.2025.1.Alpha5-SNAPSHOT</version>
     </parent>
     
     <artifactId>payara-web-featureset</artifactId>
