@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package com.sun.jts.jta;
 
@@ -358,7 +358,6 @@ public class TransactionServiceProperties {
         }
 
         public void run() {
-            ResourceRecoveryManager recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
             if (interval <= 0) {
                 // Only start the recovery thread if the interval value is set, and set to a positive value
                 return;
@@ -369,9 +368,14 @@ public class TransactionServiceProperties {
                        + "tx is enabled with interval " + interval);
             }
             int prevSize = 0;
+            ResourceRecoveryManager recoveryManager = null;
             try {
                 while(true) {
                     Thread.sleep(interval*1000L);
+                    if (recoveryManager == null) {
+                        recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
+                    }
+
                     if (!RecoveryManager.isIncompleteTxRecoveryRequired()) {
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.FINE, "Incomplete transaction recovery is "
