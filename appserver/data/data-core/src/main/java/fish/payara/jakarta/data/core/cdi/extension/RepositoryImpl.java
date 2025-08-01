@@ -113,19 +113,36 @@ public class RepositoryImpl<T> implements InvocationHandler {
         logger.info("executing method:" + method.getName());
         QueryData dataForQuery = queries.get(method);
         Object objectToReturn = null;
-        switch (dataForQuery.getQueryType()) {
-            case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
-            case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
-            case DELETE ->
-                    objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
-            case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-            case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
-            case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-            case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
-            case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+
+        try {
+            switch (dataForQuery.getQueryType()) {
+                case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
+                case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
+                case DELETE ->
+                        objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+                case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
+                case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
+                case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
+                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+            }
+        } catch (jakarta.validation.ConstraintViolationException e) {
+            // Re-throw ConstraintViolationException directly
+            throw e;
+        } catch (Exception e) {
+            // Check if the cause is a ConstraintViolationException
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                if (cause instanceof jakarta.validation.ConstraintViolationException) {
+                    throw cause;
+                }
+                cause = cause.getCause();
+            }
+            // If not, throw the original exception
+            throw e;
         }
 
         return objectToReturn;
@@ -150,9 +167,28 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         } else {
             // For "findAll" operations
-            return FindOperationUtility.processFindAllOperation(dataForQuery.getDeclaredEntityClass(), getEntityManager(this.applicationName),
-                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery, dataParameter
+            Object result = FindOperationUtility.processFindAllOperation(
+                    dataForQuery.getDeclaredEntityClass(),
+                    getEntityManager(this.applicationName),
+                    extractOrderByClause(dataForQuery.getMethod()),
+                    dataForQuery,
+                    dataParameter
             );
+
+            // Check if the method returns Stream
+            Class<?> returnType = dataForQuery.getMethod().getReturnType();
+            if (Stream.class.isAssignableFrom(returnType)) {
+                // If result is already a Stream, return it
+                if (result instanceof Stream) {
+                    return result;
+                }
+                // If result is a List, convert to Stream
+                if (result instanceof List) {
+                    return ((List<?>) result).stream();
+                }
+            }
+
+            return result;
         }
     }
 
