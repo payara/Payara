@@ -206,6 +206,7 @@ public class TransactionManagerImpl implements TransactionManager {
             // This will release locks in RecoveryManager which were created
             // by RecoveryManager.initialize() call in the TransactionFactoryImpl constructor
             // if startup recovery didn't happen yet.
+            _logger.log(Level.FINE, "Initialising transaction recovery from TransactionManagerImpl");
             TransactionServiceProperties.initRecovery(true);
 
             // V2-commented-out transactionStates = new Hashtable();

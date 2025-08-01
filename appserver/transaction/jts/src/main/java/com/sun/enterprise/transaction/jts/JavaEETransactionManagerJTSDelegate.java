@@ -409,6 +409,7 @@ public class JavaEETransactionManagerJTSDelegate
     }
 
     public void initRecovery(boolean force) {
+        _logger.log(Level.FINE, "Initialising transaction recovery from JavaEETransactionManagerJTSDelegate");
         TransactionServiceProperties.initRecovery(force);
     }
 
