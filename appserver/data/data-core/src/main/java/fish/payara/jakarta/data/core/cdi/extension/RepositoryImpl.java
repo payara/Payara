@@ -130,19 +130,26 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
             }
         } catch (jakarta.validation.ConstraintViolationException e) {
+            // Re-throw ConstraintViolationException directly
             throw e;
         } catch (Exception e) {
-            Throwable cause = e;
-            while (cause != null) {
+            // Unwrap nested exceptions
+            Throwable current = e;
+            while (current != null) {
+                if (current instanceof jakarta.validation.ConstraintViolationException) {
+                    throw current;
+                }
+                current = current.getCause();
+            }
+
+            // If it's a RuntimeException that wraps our exception
+            if (e instanceof RuntimeException && e.getCause() != null) {
+                Throwable cause = e.getCause();
                 if (cause instanceof jakarta.validation.ConstraintViolationException) {
                     throw cause;
                 }
-                if (cause instanceof java.lang.reflect.UndeclaredThrowableException &&
-                        cause.getCause() instanceof jakarta.validation.ConstraintViolationException) {
-                    throw cause.getCause();
-                }
-                cause = cause.getCause();
             }
+
             throw e;
         }
 
