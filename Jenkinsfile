@@ -163,8 +163,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -200,8 +200,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -237,8 +237,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -274,8 +274,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -311,8 +311,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -348,8 +348,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -385,8 +385,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
@@ -422,8 +422,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/FISH-11660"]],
-                            userRemoteConfigs: [[url: "https://github.com/kalinchan/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/microprofile-6.1-Payara7"]],
+                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setPayaraVersionInPom "${pom.version}"
