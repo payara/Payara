@@ -64,6 +64,8 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
+
+import fish.payara.internal.api.DeployPreviousApplicationsRunLevel;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.CommandRunner;
@@ -365,6 +367,14 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             logger.log(level, "Startup level done in " +
                 (startupFinishTime - initFinishTime) + " ms");
         }
+
+        if (Boolean.parseBoolean(System.getProperty("fish.payara.delay-server-ready"))) {
+            if (!proceedTo(DeployPreviousApplicationsRunLevel.VAL)) {
+                appInstanceListener.stopRecordingTimes();
+                return false;
+            }
+            events.send(new Event(EventTypes.SERVER_READY), false);
+        }
         
         if (!proceedTo(PostStartupRunLevel.VAL)) {
             appInstanceListener.stopRecordingTimes();
@@ -431,7 +441,11 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         env.setStatus(ServerEnvironment.Status.started);
-        events.send(new Event(EventTypes.SERVER_READY), false);
+        if (Boolean.parseBoolean(System.getProperty("fish.payara.delay-server-ready"))) {
+            events.send(new Event(EventTypes.SERVER_STARTED), false);
+        } else {
+            events.send(new Event(EventTypes.SERVER_READY), false);
+        }
         pidWriter.writePidFile();
         
         return true;
