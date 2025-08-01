@@ -128,6 +128,11 @@
             <artifactId>monitoring-console-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
