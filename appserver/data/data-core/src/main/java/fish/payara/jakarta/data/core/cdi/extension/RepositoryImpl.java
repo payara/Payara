@@ -47,7 +47,6 @@ import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
-import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
@@ -57,6 +56,10 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -72,9 +75,6 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
@@ -130,18 +130,19 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
             }
         } catch (jakarta.validation.ConstraintViolationException e) {
-            // Re-throw ConstraintViolationException directly
             throw e;
         } catch (Exception e) {
-            // Check if the cause is a ConstraintViolationException
-            Throwable cause = e.getCause();
+            Throwable cause = e;
             while (cause != null) {
                 if (cause instanceof jakarta.validation.ConstraintViolationException) {
                     throw cause;
                 }
+                if (cause instanceof java.lang.reflect.UndeclaredThrowableException &&
+                        cause.getCause() instanceof jakarta.validation.ConstraintViolationException) {
+                    throw cause.getCause();
+                }
                 cause = cause.getCause();
             }
-            // If not, throw the original exception
             throw e;
         }
 
@@ -152,7 +153,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         DataParameter dataParameter = extractDataParameter(args);
-        
+
         if (parameterAnnotations.length > 0) {
             Object returnObject = FindOperationUtility.processFindByOperation(
                     args, getEntityManager(this.applicationName),
@@ -162,7 +163,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 List<Object> resultList = (List<Object>) returnObject;
                 return processReturnType(dataForQuery, resultList);
             } else {
-                //here to return the instance of a page
                 return returnObject;
             }
         } else {
@@ -175,17 +175,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     dataParameter
             );
 
-            // Check if the method returns Stream
-            Class<?> returnType = dataForQuery.getMethod().getReturnType();
-            if (Stream.class.isAssignableFrom(returnType)) {
-                // If result is already a Stream, return it
-                if (result instanceof Stream) {
-                    return result;
-                }
-                // If result is a List, convert to Stream
-                if (result instanceof List) {
-                    return ((List<?>) result).stream();
-                }
+            if (result instanceof List && Stream.class.isAssignableFrom(dataForQuery.getMethod().getReturnType())) {
+                return ((List<?>) result).stream();
             }
 
             return result;
@@ -221,24 +212,24 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        List<Object> results = null;
+        List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
 
-        if (dataForQuery.getEntityParamType().isArray()) { //save multiple entities from array reference
+        if (dataForQuery.getEntityParamType().isArray()) {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
-        } else if (arg instanceof Iterable toIterate) { //save multiple entities from list reference
+        } else if (arg instanceof Iterable toIterate) {
             results = new ArrayList<>();
             startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) toIterate)) {
+            for (Object e : toIterate) {
                 results.add(em.merge(e));
             }
             endTransaction();
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
-        } else if (args[0] != null) { //save a single entity
+        } else if (args[0] != null) {
             startTransactionAndJoin();
             entity = em.merge(args[0]);
             endTransaction();

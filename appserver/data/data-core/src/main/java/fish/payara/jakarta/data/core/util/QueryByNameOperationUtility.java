@@ -372,9 +372,26 @@ public class QueryByNameOperationUtility {
 
     private static Object processReturnType(QueryData data, List<?> resultList) {
         Class<?> returnType = data.getMethod().getReturnType();
-        if (List.class.isAssignableFrom(returnType)) return resultList;
-        if (Stream.class.isAssignableFrom(returnType)) return resultList.stream();
-        if (Optional.class.isAssignableFrom(returnType)) return resultList.stream().findFirst();
+
+        if (List.class.isAssignableFrom(returnType)) {
+            return resultList;
+        }
+        if (Stream.class.isAssignableFrom(returnType)) {
+            return resultList.stream();
+        }
+        if (Optional.class.isAssignableFrom(returnType)) {
+            return resultList.stream().findFirst();
+        }
+
+        if (returnType.isArray()) {
+            Class<?> componentType = returnType.getComponentType();
+            Object array = java.lang.reflect.Array.newInstance(componentType, resultList.size());
+            for (int i = 0; i < resultList.size(); i++) {
+                java.lang.reflect.Array.set(array, i, resultList.get(i));
+            }
+            return array;
+        }
+
         return resultList.isEmpty() ? null : resultList.get(0);
     }
 
