@@ -129,28 +129,15 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
                 default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
             }
-        } catch (jakarta.validation.ConstraintViolationException e) {
-            // Re-throw ConstraintViolationException directly
-            throw e;
-        } catch (Exception e) {
-            // Unwrap nested exceptions
-            Throwable current = e;
-            while (current != null) {
-                if (current instanceof jakarta.validation.ConstraintViolationException) {
-                    throw current;
-                }
-                current = current.getCause();
-            }
-
-            // If it's a RuntimeException that wraps our exception
-            if (e instanceof RuntimeException && e.getCause() != null) {
-                Throwable cause = e.getCause();
+        } catch (Throwable t) {
+            Throwable cause = t;
+            while (cause != null) {
                 if (cause instanceof jakarta.validation.ConstraintViolationException) {
                     throw cause;
                 }
+                cause = cause.getCause();
             }
-
-            throw e;
+            throw t;
         }
 
         return objectToReturn;
