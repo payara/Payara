@@ -56,6 +56,11 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -68,9 +73,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -107,37 +114,59 @@ public class RepositoryImpl<T> implements InvocationHandler {
         queries.putAll(r);
     }
 
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+    public static void validateMethodArguments(Method method, Object[] args) {
+        Annotation[][] paramAnnotations = method.getParameterAnnotations();
+        for (int i = 0; i < paramAnnotations.length; i++) {
+            boolean hasValidation = false;
+            for (Annotation annotation : paramAnnotations[i]) {
+                if (annotation.annotationType().equals(Valid.class)) {
+                    hasValidation = true;
+                    break;
+                }
+            }
+            if (hasValidation && args != null && args.length > i && args[i] != null) {
+                Object arg = args[i];
+                if (arg instanceof Iterable<?> it) {
+                    List<ConstraintViolation<Object>> allViolations = new ArrayList<>();
+                    for (Object e : it) {
+                        Set<ConstraintViolation<Object>> violations = validator.validate(e);
+                        allViolations.addAll(violations);
+                    }
+                    if (!allViolations.isEmpty()) {
+                        throw new ConstraintViolationException(new HashSet<>(allViolations));
+                    }
+                } else {
+                    Set<ConstraintViolation<Object>> violations = validator.validate(arg);
+                    if (!violations.isEmpty()) {
+                        throw new ConstraintViolationException(violations);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //In this method we can add implementation to execute dynamic queries
         logger.info("executing method:" + method.getName());
         QueryData dataForQuery = queries.get(method);
-        Object objectToReturn = null;
+        Object objectToReturn;
 
-        try {
-            switch (dataForQuery.getQueryType()) {
-                case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
-                case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
-                case DELETE ->
-                        objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
-                case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-                case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
-                case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
-                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-                default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
-            }
-        } catch (Throwable t) {
-            Throwable cause = t;
-            while (cause != null) {
-                if (cause instanceof jakarta.validation.ConstraintViolationException) {
-                    throw cause;
-                }
-                cause = cause.getCause();
-            }
-            throw t;
+        switch (dataForQuery.getQueryType()) {
+            case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
+            case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
+            case DELETE ->
+                    objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+            case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
+            case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
+            case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
+            case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+            case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+            default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
         }
 
         return objectToReturn;
@@ -206,6 +235,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
+        validateMethodArguments(dataForQuery.getMethod(), args);
         List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
@@ -237,7 +267,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processInsertOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        List<Object> results = null;
+        validateMethodArguments(dataForQuery.getMethod(), args);
+        List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
@@ -349,7 +380,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        List<Object> results = null;
+        validateMethodArguments(dataForQuery.getMethod(), args);
+        List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
