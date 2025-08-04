@@ -322,7 +322,7 @@ public class TransactionServiceProperties {
                         interval = Integer.parseInt(value);
                     }
                     new RecoveryHelperThread(serviceLocator, interval,
-                            Boolean.parseBoolean(properties.getProperty("delay-recovery-lookup", "false")))
+                            Boolean.parseBoolean(properties.getProperty("delay-recovery-lookup")))
                             .start();
                 }
                 // Release all locks
