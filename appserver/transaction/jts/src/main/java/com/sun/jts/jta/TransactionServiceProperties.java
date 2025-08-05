@@ -328,7 +328,7 @@ public class TransactionServiceProperties {
                         interval = Integer.parseInt(value);
                     }
                     new RecoveryHelperThread(serviceLocator, interval,
-                            Boolean.parseBoolean(properties.getProperty(LAZY_RECOVERY_LOOKUP_PROPERTY)))
+                            Boolean.parseBoolean(properties.getProperty(LAZY_RECOVERY_LOOKUP_PROPERTY, "true")))
                             .start();
                 }
                 // Release all locks

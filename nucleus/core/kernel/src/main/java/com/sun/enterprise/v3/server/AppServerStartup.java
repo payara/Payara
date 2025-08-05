@@ -174,10 +174,10 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
      * When set, SERVER_READY will fire once all `DeployPreviousApplicationsRunLevel` services
      * have initialised, and SERVER_STARTED will be fired in place of where SERVER_READY would normally.
      *
-     * This will be enabled by default in Community (opt-out instead of opt-in).
+     * Enabled by default.
      *
      * This is to counter a side effect of us changing the run levels to apply a structured order to the post-boot and
-     * deployment services in FISH-6588 (introduced in version 5.47.0) to prevent a race between post-boot scripts
+     * deployment services in FISH-6588 (introduced in version 6.2022.2) to prevent a race between post-boot scripts
      * and previously deployed applications; all of these services used to run at the same `StartupRunLevel`
      * and so would've been initialised by the time the `SERVER_READY` event would've fired.
      */
@@ -368,7 +368,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             return false;
         }
 
-        boolean readyAfterApplications = Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY));
+        boolean readyAfterApplications = Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY, "true"));
         if (!postStartupJob(readyAfterApplications)) {
             appInstanceListener.stopRecordingTimes();
             return false;
