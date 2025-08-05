@@ -381,6 +381,7 @@ public class TransactionServiceProperties {
             }
             if (interval <= 0) {
                 // Only start the recovery thread if the interval value is set, and set to a positive value
+                _logger.log(Level.FINE, "pending-txn-cleanup-interval is set to < 0: skipping recovery for incomplete tx");
                 return;
             }
 
