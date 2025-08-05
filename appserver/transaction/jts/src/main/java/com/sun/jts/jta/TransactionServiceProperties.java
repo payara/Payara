@@ -322,7 +322,7 @@ public class TransactionServiceProperties {
                         interval = Integer.parseInt(value);
                     }
                     new RecoveryHelperThread(serviceLocator, interval,
-                            Boolean.parseBoolean(properties.getProperty("lazy-lookup")))
+                            Boolean.parseBoolean(properties.getProperty("pending-txn-lazy-lookup")))
                             .start();
                 }
                 // Release all locks
