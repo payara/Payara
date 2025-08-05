@@ -367,8 +367,9 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
-        
-        if (!postStartupJob()) {
+
+        boolean readyAfterApplications = Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY));
+        if (!postStartupJob(readyAfterApplications)) {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
@@ -380,7 +381,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 (startupFinishTime - initFinishTime) + " ms");
         }
 
-        if (Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY))) {
+        if (readyAfterApplications) {
             if (!proceedTo(DeployPreviousApplicationsRunLevel.VAL)) {
                 appInstanceListener.stopRecordingTimes();
                 return false;
@@ -401,12 +402,12 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
         return true;
     }
-    
+
     /**
      * 
      * @return True if started successfully, false otherwise
      */
-    private boolean postStartupJob() {
+    private boolean postStartupJob(boolean readyAfterApplications) {
         LinkedList<Future<Result<Thread>>> futures = appInstanceListener.getFutures();
 
         env.setStatus(ServerEnvironment.Status.starting);
@@ -453,7 +454,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         env.setStatus(ServerEnvironment.Status.started);
-        if (Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY))) {
+        if (readyAfterApplications) {
             events.send(new Event(EventTypes.SERVER_STARTED), false);
         } else {
             events.send(new Event(EventTypes.SERVER_READY), false);
