@@ -167,10 +167,12 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     
     private final static String THREAD_POLICY_PROPERTY = "org.glassfish.startupThreadPolicy";
     private final static String MAX_STARTUP_THREAD_PROPERTY = "org.glassfish.maxStartupThreads";
-    
+
     private final static String POLICY_FULLY_THREADED = "FULLY_THREADED";
     private final static String POLICY_USE_NO_THREADS = "USE_NO_THREADS";
-    
+
+    private final static String DELAY_SERVER_READY_PROPERTY = "fish.payara.delay-server-ready";
+
     private final static int DEFAULT_STARTUP_THREADS = 4;
     private final static String FELIX_PLATFORM = "Felix";
     private final static String STATIC_PLATFORM = "Static";
@@ -368,7 +370,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 (startupFinishTime - initFinishTime) + " ms");
         }
 
-        if (Boolean.parseBoolean(System.getProperty("fish.payara.delay-server-ready"))) {
+        if (Boolean.parseBoolean(System.getProperty(DELAY_SERVER_READY_PROPERTY))) {
             if (!proceedTo(DeployPreviousApplicationsRunLevel.VAL)) {
                 appInstanceListener.stopRecordingTimes();
                 return false;
@@ -441,7 +443,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         env.setStatus(ServerEnvironment.Status.started);
-        if (Boolean.parseBoolean(System.getProperty("fish.payara.delay-server-ready"))) {
+        if (Boolean.parseBoolean(System.getProperty(DELAY_SERVER_READY_PROPERTY))) {
             events.send(new Event(EventTypes.SERVER_STARTED), false);
         } else {
             events.send(new Event(EventTypes.SERVER_READY), false);
