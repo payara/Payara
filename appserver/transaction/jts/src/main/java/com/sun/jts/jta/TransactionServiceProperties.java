@@ -322,7 +322,7 @@ public class TransactionServiceProperties {
                         interval = Integer.parseInt(value);
                     }
                     new RecoveryHelperThread(serviceLocator, interval,
-                            Boolean.parseBoolean(properties.getProperty("delay-recovery-lookup")))
+                            Boolean.parseBoolean(properties.getProperty("lazy-lookup")))
                             .start();
                 }
                 // Release all locks
@@ -351,19 +351,19 @@ public class TransactionServiceProperties {
     private static class RecoveryHelperThread extends Thread {
         private int interval;
         private ServiceLocator serviceLocator;
-        private boolean delayLookup;
+        private boolean lazyLookup;
 
-        RecoveryHelperThread(ServiceLocator serviceLocator, int interval, boolean delayRecoveryLookup) {
+        RecoveryHelperThread(ServiceLocator serviceLocator, int interval, boolean lazyLookup) {
             setName("Recovery Helper Thread");
             setDaemon(true);
             this.serviceLocator = serviceLocator;
             this.interval = interval;
-            this.delayLookup = delayRecoveryLookup;
+            this.lazyLookup = lazyLookup;
         }
 
         public void run() {
             ResourceRecoveryManager recoveryManager = null;
-            if (!delayLookup) {
+            if (!lazyLookup) {
                 recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
             }
             if (interval <= 0) {
