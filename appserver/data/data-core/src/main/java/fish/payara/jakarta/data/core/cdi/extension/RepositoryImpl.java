@@ -200,7 +200,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
             if (result instanceof List<?> resultList) {
                 Method method = dataForQuery.getMethod();
-                validateReturnValue(method, resultList);
+                validateReturnValue(method, resultList != null ? resultList : Collections.emptyList());
                 if (Stream.class.isAssignableFrom(method.getReturnType())) {
                     return resultList.stream();
                 }
