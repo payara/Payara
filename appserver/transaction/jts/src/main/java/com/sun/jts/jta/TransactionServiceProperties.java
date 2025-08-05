@@ -165,6 +165,10 @@ public class TransactionServiceProperties {
                                 }
                             }
 
+                        } else if (name.equals("pending-txn-lazy-lookup")) {
+                            if (isValueSet(value)) {
+                                jtsProperties.put("pending-txn-lazy-lookup", value);
+                            }
                         }
                     }
 
