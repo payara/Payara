@@ -374,6 +374,10 @@ public class TransactionServiceProperties {
                         "{0} is not enabled: looking up {1} service before pending-txn-cleanup-interval, {2}, has elapsed",
                         new Object[]{LAZY_RECOVERY_LOOKUP_PROPERTY, ResourceRecoveryManager.class.getSimpleName(), interval});
                 recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
+            } else {
+                _logger.log(Level.FINE,
+                        "{0} is enabled: looking up {1} service after pending-txn-cleanup-interval, {2}, has elapsed",
+                        new Object[]{LAZY_RECOVERY_LOOKUP_PROPERTY, ResourceRecoveryManager.class.getSimpleName(), interval});
             }
             if (interval <= 0) {
                 // Only start the recovery thread if the interval value is set, and set to a positive value
@@ -389,12 +393,6 @@ public class TransactionServiceProperties {
                 while(true) {
                     Thread.sleep(interval*1000L);
                     if (recoveryManager == null) {
-                        if (lazyLookup) {
-                            _logger.log(Level.FINE,
-                                    "{0} is enabled: looking up {1} service after pending-txn-cleanup-interval, {2}, has elapsed",
-                                    new Object[]{LAZY_RECOVERY_LOOKUP_PROPERTY, ResourceRecoveryManager.class.getSimpleName(), interval});
-                        }
-
                         recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
                     }
 
