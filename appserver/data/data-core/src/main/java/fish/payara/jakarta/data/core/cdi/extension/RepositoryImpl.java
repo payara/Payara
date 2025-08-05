@@ -265,6 +265,32 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return entity;
     }
 
+    private boolean entityExistsConstraintViolation(Throwable t) {
+        while (t != null) {
+            if (t instanceof jakarta.persistence.EntityExistsException) {
+                return true;
+            }
+            if (t instanceof java.sql.SQLIntegrityConstraintViolationException) {
+                return true;
+            }
+            String msg = t.getMessage();
+            if (msg != null) {
+                String lower = msg.toLowerCase();
+                if (lower.contains("constraint") && lower.contains("violation")) {
+                    return true;
+                }
+                if (lower.contains("unique") && lower.contains("violation")) {
+                    return true;
+                }
+                if (lower.contains("duplicate") && lower.contains("key")) {
+                    return true;
+                }
+            }
+            t = t.getCause();
+        }
+        return false;
+    }
+
     public Object processInsertOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
         validateMethodArguments(dataForQuery.getMethod(), args);
@@ -273,25 +299,32 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
 
-        if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
-            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
-        } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
-            results = new ArrayList<>();
-            startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) toIterate)) {
-                em.persist(e);
-                results.add(e);
-            }
-            endTransaction();
+        try {
+            if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
+                return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
+            } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
+                results = new ArrayList<>();
+                startTransactionAndJoin();
+                for (Object e : ((Iterable<?>) toIterate)) {
+                    em.persist(e);
+                    results.add(e);
+                }
+                endTransaction();
 
-            if (!results.isEmpty()) {
-                return processReturnType(dataForQuery, results);
+                if (!results.isEmpty()) {
+                    return processReturnType(dataForQuery, results);
+                }
+            } else if (arg != null) { //insert a single entity
+                startTransactionAndJoin();
+                entity = args[0];
+                em.persist(args[0]);
+                endTransaction();
             }
-        } else if (arg != null) { //insert a single entity
-            startTransactionAndJoin();
-            entity = args[0];
-            em.persist(args[0]);
-            endTransaction();
+        } catch (Throwable t) {
+            if (entityExistsConstraintViolation(t)) {
+                throw new jakarta.data.exceptions.EntityExistsException("Entity already exists", t);
+            }
+            throw t;
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
