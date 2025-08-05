@@ -68,13 +68,15 @@ public final class EventTypes<T> {
     public static final EventTypes<?> POST_SERVER_INIT = create(POST_SERVER_INIT_NAME);
     public static final EventTypes<?> SERVER_STARTUP = create(SERVER_STARTUP_NAME);
     /**
-     * SERVER_STARTED is only used if `fish.payara.delay-server-ready` system property is set.
+     * SERVER_STARTED is only used if `fish.payara.ready-after-applications` system property is set.
      * When set, this will fire where SERVER_READY would normally fire in `AppServerStartup#postStartUpJob`.
      * In this case, SERVER_READY will instead fire once all `DeployPreviousApplicationsRunLevel` services
      * have initialised.
      *
-     * This is a side effect of us changing the run levels to apply a structured order to the post-boot and deployment
-     * services in FISH-6588 (introduced in version 5.47.0) to prevent a race between post-boot scripts
+     * This will be enabled by default in Community (opt-out instead of opt-in).
+     *
+     * This is to counter a side effect of us changing the run levels to apply a structured order to the post-boot and
+     * deployment services in FISH-6588 (introduced in version 5.47.0) to prevent a race between post-boot scripts
      * and previously deployed applications; all of these services used to run at the same `StartupRunLevel`
      * and so would've been initialised by the time the `SERVER_READY` event would've fired.
       */

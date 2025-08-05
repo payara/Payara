@@ -68,7 +68,6 @@ import jakarta.inject.Singleton;
 import fish.payara.internal.api.DeployPreviousApplicationsRunLevel;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener.Event;
@@ -171,7 +170,18 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     private final static String POLICY_FULLY_THREADED = "FULLY_THREADED";
     private final static String POLICY_USE_NO_THREADS = "USE_NO_THREADS";
 
-    private final static String DELAY_SERVER_READY_PROPERTY = "fish.payara.delay-server-ready";
+    /**
+     * When set, SERVER_READY will fire once all `DeployPreviousApplicationsRunLevel` services
+     * have initialised, and SERVER_STARTED will be fired in place of where SERVER_READY would normally.
+     *
+     * This will be enabled by default in Community (opt-out instead of opt-in).
+     *
+     * This is to counter a side effect of us changing the run levels to apply a structured order to the post-boot and
+     * deployment services in FISH-6588 (introduced in version 5.47.0) to prevent a race between post-boot scripts
+     * and previously deployed applications; all of these services used to run at the same `StartupRunLevel`
+     * and so would've been initialised by the time the `SERVER_READY` event would've fired.
+     */
+    private final static String READY_AFTER_APPLICATIONS_PROPERTY = "fish.payara.ready-after-applications";
 
     private final static int DEFAULT_STARTUP_THREADS = 4;
     private final static String FELIX_PLATFORM = "Felix";
@@ -370,7 +380,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
                 (startupFinishTime - initFinishTime) + " ms");
         }
 
-        if (Boolean.parseBoolean(System.getProperty(DELAY_SERVER_READY_PROPERTY))) {
+        if (Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY))) {
             if (!proceedTo(DeployPreviousApplicationsRunLevel.VAL)) {
                 appInstanceListener.stopRecordingTimes();
                 return false;
@@ -443,7 +453,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         env.setStatus(ServerEnvironment.Status.started);
-        if (Boolean.parseBoolean(System.getProperty(DELAY_SERVER_READY_PROPERTY))) {
+        if (Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY))) {
             events.send(new Event(EventTypes.SERVER_STARTED), false);
         } else {
             events.send(new Event(EventTypes.SERVER_READY), false);
