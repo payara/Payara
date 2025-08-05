@@ -80,11 +80,6 @@ public class FindOperationUtility {
             qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
         }
         Query query = em.createQuery(qlString);
-
-        Size size = dataForQuery.getMethod().getAnnotation(Size.class);
-        if (size != null && size.max() < Integer.MAX_VALUE) {
-            query.setMaxResults(size.max());
-        }
         verifyLimit(dataParameter.limit(), query);
         Class<?> returnType = dataForQuery.getMethod().getReturnType();
         if (List.class.isAssignableFrom(returnType)) {

@@ -198,11 +198,24 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     dataParameter
             );
 
-            if (result instanceof List && Stream.class.isAssignableFrom(dataForQuery.getMethod().getReturnType())) {
-                return ((List<?>) result).stream();
+            if (result instanceof List<?> resultList) {
+                Method method = dataForQuery.getMethod();
+                validateReturnValue(method, resultList);
+                if (Stream.class.isAssignableFrom(method.getReturnType())) {
+                    return resultList.stream();
+                }
+                return resultList;
             }
 
             return result;
+        }
+    }
+
+    private void validateReturnValue(Method method, Object returnValue) {
+        Set<ConstraintViolation<Object>> violations = validator.forExecutables()
+                .validateReturnValue(null, method, returnValue);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
         }
     }
 
