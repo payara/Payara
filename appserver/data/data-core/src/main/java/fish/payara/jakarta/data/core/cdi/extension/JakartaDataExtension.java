@@ -66,6 +66,11 @@ public class JakartaDataExtension implements Extension {
 
     private static final Logger logger = Logger.getLogger(JakartaDataExtension.class.getName());
 
+    /**
+     * This is the built-in provider name
+     */
+    private static final String PROVIDER_NAME = "Payara";
+
     private String applicationName;
 
     public JakartaDataExtension() {
@@ -101,6 +106,14 @@ public class JakartaDataExtension implements Extension {
         List<Class<?>> classListResult = new ArrayList<>();
         root:
         for (Class<?> clazz : classList) {
+            Repository repository = clazz.getAnnotation(Repository.class);
+            if (repository != null) {
+                String dataProvider = repository.provider();
+                boolean provide = Repository.ANY_PROVIDER.equals(dataProvider) || PROVIDER_NAME.equalsIgnoreCase(dataProvider);
+                if (!provide) {
+                    continue root;
+                }
+            }
             Type[] types = clazz.getGenericInterfaces();
             for (Type type : types) {
                 if (type instanceof ParameterizedType parameterizedType) {
