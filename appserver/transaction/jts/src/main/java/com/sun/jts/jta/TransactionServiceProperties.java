@@ -90,6 +90,8 @@ public class TransactionServiceProperties {
     private static volatile boolean orbAvailable = false;
     private static volatile boolean recoveryInitialized = false;
 
+    private static final String LAZY_RECOVERY_LOOKUP_PROPERTY = "pending-txn-lazy-lookup";
+
     public static synchronized Properties getJTSProperties (ServiceLocator serviceLocator, boolean isORBAvailable) {
         if (orbAvailable == isORBAvailable && properties != null) {
             // We will need to update the properties if ORB availability changed
@@ -165,9 +167,9 @@ public class TransactionServiceProperties {
                                 }
                             }
 
-                        } else if (name.equals("pending-txn-lazy-lookup")) {
+                        } else if (name.equals(LAZY_RECOVERY_LOOKUP_PROPERTY)) {
                             if (isValueSet(value)) {
-                                jtsProperties.put("pending-txn-lazy-lookup", value);
+                                jtsProperties.put(LAZY_RECOVERY_LOOKUP_PROPERTY, value);
                             }
                         }
                     }
@@ -326,7 +328,7 @@ public class TransactionServiceProperties {
                         interval = Integer.parseInt(value);
                     }
                     new RecoveryHelperThread(serviceLocator, interval,
-                            Boolean.parseBoolean(properties.getProperty("pending-txn-lazy-lookup")))
+                            Boolean.parseBoolean(properties.getProperty(LAZY_RECOVERY_LOOKUP_PROPERTY)))
                             .start();
                 }
                 // Release all locks
@@ -369,8 +371,8 @@ public class TransactionServiceProperties {
             ResourceRecoveryManager recoveryManager = null;
             if (!lazyLookup) {
                 _logger.log(Level.FINE,
-                        "pending-txn-lazy-lookup is not enabled: looking up {0} service before pending-txn-cleanup-interval, {1}, has elapsed",
-                        new Object[]{ResourceRecoveryManager.class.getSimpleName(), interval});
+                        "{0} is not enabled: looking up {1} service before pending-txn-cleanup-interval, {2}, has elapsed",
+                        new Object[]{LAZY_RECOVERY_LOOKUP_PROPERTY, ResourceRecoveryManager.class.getSimpleName(), interval});
                 recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
             }
             if (interval <= 0) {
@@ -389,8 +391,8 @@ public class TransactionServiceProperties {
                     if (recoveryManager == null) {
                         if (lazyLookup) {
                             _logger.log(Level.FINE,
-                                    "pending-txn-lazy-lookup is enabled: looking up {0} service after pending-txn-cleanup-interval, {1}, has elapsed",
-                                    new Object[]{ResourceRecoveryManager.class.getSimpleName(), interval});
+                                    "{0} is enabled: looking up {1} service after pending-txn-cleanup-interval, {2}, has elapsed",
+                                    new Object[]{LAZY_RECOVERY_LOOKUP_PROPERTY, ResourceRecoveryManager.class.getSimpleName(), interval});
                         }
 
                         recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
