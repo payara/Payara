@@ -386,7 +386,7 @@ public class TransactionServiceProperties {
                     if (!RecoveryManager.isIncompleteTxRecoveryRequired()) {
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.FINE, "Incomplete transaction recovery is "
-                                    + "not requeired,  waiting for the next interval");
+                                    + "not required,  waiting for the next interval");
                         continue;
                     }
                     if (RecoveryManager.sizeOfInCompleteTx() <= prevSize) {
