@@ -174,7 +174,12 @@ public class WebDirContext extends FileDirContext {
         if ((file != null && file.isDirectory()) ||
                 (jfEntry != null && jfEntry.getJarEntry().isDirectory())) {
             WebDirContext tempContext = new WebDirContext(env);
-            tempContext.docBase = name;
+            if (file == null) {
+                tempContext.docBase = name;
+            }
+            else {
+                tempContext.setDocBase(file.getAbsolutePath());
+            }
             tempContext.setAllowLinking(getAllowLinking());
             tempContext.setCaseSensitive(isCaseSensitive());
             tempContext.setJarFileResourcesProvider(jarFileResourcesProvider);

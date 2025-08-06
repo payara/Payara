@@ -67,6 +67,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
+import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.Resource;
 import org.glassfish.web.loader.WebappClassLoader;
 
@@ -1021,6 +1022,9 @@ public class WebappLoader
             Object object = resources.lookup(classesPath);
             if (object instanceof DirContext) {
                 classes = (DirContext) object;
+                if (object instanceof FileDirContext) {
+                    ((FileDirContext)object).setDocBase(servletContext.getRealPath(""));
+                }
             }
         } catch(NamingException e) {
             // Silent catch: it's valid that no /WEB-INF/classes collection
