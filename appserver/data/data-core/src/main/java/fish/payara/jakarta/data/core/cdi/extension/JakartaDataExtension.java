@@ -42,11 +42,17 @@ package fish.payara.jakarta.data.core.cdi.extension;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import jakarta.data.repository.Repository;
+import jakarta.data.spi.EntityDefining;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
+import jakarta.persistence.Entity;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +65,11 @@ import java.util.stream.Collectors;
 public class JakartaDataExtension implements Extension {
 
     private static final Logger logger = Logger.getLogger(JakartaDataExtension.class.getName());
+
+    /**
+     * This is the built-in provider name
+     */
+    private static final String PROVIDER_NAME = "Payara";
 
     private String applicationName;
 
@@ -91,7 +102,42 @@ public class JakartaDataExtension implements Extension {
     }
 
     private List<Class<?>> locateAndGetRepositories(ScanResult scan) {
-        return scan.getClassesWithAnnotation(Repository.class).loadClasses();
+        List<Class<?>> classList = scan.getClassesWithAnnotation(Repository.class).loadClasses();
+        List<Class<?>> classListResult = new ArrayList<>();
+        root:
+        for (Class<?> clazz : classList) {
+            Repository repository = clazz.getAnnotation(Repository.class);
+            if (repository != null) {
+                String dataProvider = repository.provider();
+                boolean provide = Repository.ANY_PROVIDER.equals(dataProvider) || PROVIDER_NAME.equalsIgnoreCase(dataProvider);
+                if (!provide) {
+                    continue root;
+                }
+            }
+            Type[] types = clazz.getGenericInterfaces();
+            for (Type type : types) {
+                if (type instanceof ParameterizedType parameterizedType) {
+                    Type[] typeParams = parameterizedType.getActualTypeArguments();
+                    Type entityType = typeParams.length > 0 ? typeParams[0] : null;
+                    if (entityType != null) {
+                        Annotation[] annotations = ((Class) entityType).getAnnotations();
+                        for (Annotation annotation : annotations) {
+                            Class<? extends Annotation> annotationType = annotation.annotationType();
+                            if (annotationType.equals(Entity.class)) {
+                                classListResult.add(clazz);
+                                continue root;
+                            } else if (annotationType.isAnnotationPresent(EntityDefining.class)) {
+                                continue root;
+                            } else {
+                                continue root;
+                            }
+                        }
+                    }
+                }
+            }
+            classListResult.add(clazz);
+        }
+        return classListResult;
     }
 
     public String getApplicationName() {
