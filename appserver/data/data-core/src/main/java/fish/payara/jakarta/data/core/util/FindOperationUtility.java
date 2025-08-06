@@ -54,6 +54,8 @@ import jakarta.data.page.PageRequest;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.validation.constraints.Size;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -70,7 +72,7 @@ public class FindOperationUtility {
 
     public static final List<Class<?>> parametersToExclude = List.of(PageRequest.class, Limit.class, Order.class, Sort.class, Sort[].class);
 
-    public static Stream<?> processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
+    public static Object processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
                                                     QueryData dataForQuery, DataParameter dataParameter) {
         String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata());
         List<Sort<?>> sortList = dataParameter.sortList();
@@ -79,7 +81,14 @@ public class FindOperationUtility {
         }
         Query query = em.createQuery(qlString);
         verifyLimit(dataParameter.limit(), query);
-        return query.getResultStream();
+        Class<?> returnType = dataForQuery.getMethod().getReturnType();
+        if (List.class.isAssignableFrom(returnType)) {
+            return query.getResultList();
+        } else if (Stream.class.isAssignableFrom(returnType)) {
+            return query.getResultStream();
+        } else {
+            return query.getResultList();
+        }
     }
 
     public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery,
@@ -138,7 +147,6 @@ public class FindOperationUtility {
             return query.getResultList();
         }
     }
-
 
     public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
                                            Method method, StringBuilder builder, boolean hasWhere,

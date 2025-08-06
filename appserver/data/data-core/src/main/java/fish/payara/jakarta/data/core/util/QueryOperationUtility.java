@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
+import jakarta.annotation.Nullable;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
@@ -372,6 +373,24 @@ public class QueryOperationUtility {
 
     private static Object processReturnType(QueryData data, List<?> resultList) {
         Class<?> returnType = data.getMethod().getReturnType();
+
+        if (List.class.isAssignableFrom(returnType)) {
+            return resultList;
+        }
+
+        if (Stream.class.isAssignableFrom(returnType)) {
+            return resultList.stream();
+        }
+
+        if (Optional.class.isAssignableFrom(returnType)) {
+            return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
+        }
+
+        return handleArrays(resultList, returnType);
+    }
+
+    @Nullable
+    static Object handleArrays(List<?> resultList, Class<?> returnType) {
         if (returnType.isArray()) {
             Class<?> componentType = returnType.getComponentType();
             Object array = java.lang.reflect.Array.newInstance(componentType, resultList.size());
@@ -380,9 +399,7 @@ public class QueryOperationUtility {
             }
             return array;
         }
-        if (List.class.isAssignableFrom(returnType)) return resultList;
-        if (Stream.class.isAssignableFrom(returnType)) return resultList.stream();
-        if (Optional.class.isAssignableFrom(returnType)) return resultList.stream().findFirst();
+
         return resultList.isEmpty() ? null : resultList.get(0);
     }
 

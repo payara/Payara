@@ -47,7 +47,6 @@ import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
-import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
@@ -57,6 +56,15 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
@@ -65,16 +73,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
@@ -107,19 +114,53 @@ public class RepositoryImpl<T> implements InvocationHandler {
         queries.putAll(r);
     }
 
+    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+    public static void validateMethodArguments(Method method, Object[] args) {
+        Annotation[][] paramAnnotations = method.getParameterAnnotations();
+        for (int i = 0; i < paramAnnotations.length; i++) {
+            boolean hasValidation = false;
+            for (Annotation annotation : paramAnnotations[i]) {
+                if (annotation.annotationType().equals(Valid.class)) {
+                    hasValidation = true;
+                    break;
+                }
+            }
+            if (hasValidation && args != null && args.length > i && args[i] != null) {
+                Object arg = args[i];
+                if (arg instanceof Iterable<?> it) {
+                    List<ConstraintViolation<Object>> allViolations = new ArrayList<>();
+                    for (Object e : it) {
+                        Set<ConstraintViolation<Object>> violations = validator.validate(e);
+                        allViolations.addAll(violations);
+                    }
+                    if (!allViolations.isEmpty()) {
+                        throw new ConstraintViolationException(new HashSet<>(allViolations));
+                    }
+                } else {
+                    Set<ConstraintViolation<Object>> violations = validator.validate(arg);
+                    if (!violations.isEmpty()) {
+                        throw new ConstraintViolationException(violations);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //In this method we can add implementation to execute dynamic queries
         logger.info("executing method:" + method.getName());
         QueryData dataForQuery = queries.get(method);
-        Object objectToReturn = null;
+        Object objectToReturn;
+
         switch (dataForQuery.getQueryType()) {
             case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
             case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
             case DELETE ->
                     objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-            case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
+            case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
             case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
             case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
@@ -131,11 +172,11 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return objectToReturn;
     }
 
-    public Object processFindOperation(Object[] args, QueryData dataForQuery) {
+    public Object processFindOperation(Object proxy, Object[] args, QueryData dataForQuery) {
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         DataParameter dataParameter = extractDataParameter(args);
-        
+
         if (parameterAnnotations.length > 0) {
             Object returnObject = FindOperationUtility.processFindByOperation(
                     args, getEntityManager(this.applicationName),
@@ -145,14 +186,36 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 List<Object> resultList = (List<Object>) returnObject;
                 return processReturnType(dataForQuery, resultList);
             } else {
-                //here to return the instance of a page
                 return returnObject;
             }
         } else {
             // For "findAll" operations
-            return FindOperationUtility.processFindAllOperation(dataForQuery.getDeclaredEntityClass(), getEntityManager(this.applicationName),
-                    extractOrderByClause(dataForQuery.getMethod()), dataForQuery, dataParameter
+            Object result = FindOperationUtility.processFindAllOperation(
+                    dataForQuery.getDeclaredEntityClass(),
+                    getEntityManager(this.applicationName),
+                    extractOrderByClause(dataForQuery.getMethod()),
+                    dataForQuery,
+                    dataParameter
             );
+
+            if (result instanceof List<?> resultList) {
+                Method method = dataForQuery.getMethod();
+                validateReturnValue(proxy, method, resultList != null ? resultList : Collections.emptyList());
+                if (Stream.class.isAssignableFrom(method.getReturnType())) {
+                    return resultList.stream();
+                }
+                return resultList;
+            }
+
+            return result;
+        }
+    }
+
+    private void validateReturnValue(Object bean, Method method, Object returnValue) {
+        Set<ConstraintViolation<Object>> violations = validator.forExecutables()
+                .validateReturnValue(bean, method, returnValue);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
         }
     }
 
@@ -185,24 +248,25 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processSaveOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        List<Object> results = null;
+        validateMethodArguments(dataForQuery.getMethod(), args);
+        List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
 
-        if (dataForQuery.getEntityParamType().isArray()) { //save multiple entities from array reference
+        if (dataForQuery.getEntityParamType().isArray()) {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
-        } else if (arg instanceof Iterable toIterate) { //save multiple entities from list reference
+        } else if (arg instanceof Iterable toIterate) {
             results = new ArrayList<>();
             startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) toIterate)) {
+            for (Object e : toIterate) {
                 results.add(em.merge(e));
             }
             endTransaction();
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
-        } else if (args[0] != null) { //save a single entity
+        } else if (args[0] != null) {
             startTransactionAndJoin();
             entity = em.merge(args[0]);
             endTransaction();
@@ -216,7 +280,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processInsertOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
             HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        List<Object> results = null;
+        validateMethodArguments(dataForQuery.getMethod(), args);
+        List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
@@ -328,7 +393,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        List<Object> results = null;
+        validateMethodArguments(dataForQuery.getMethod(), args);
+        List<Object> results;
         Object entity = null;
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();

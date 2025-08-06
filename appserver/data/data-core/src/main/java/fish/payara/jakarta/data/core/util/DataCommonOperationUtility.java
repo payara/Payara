@@ -90,35 +90,52 @@ public class DataCommonOperationUtility {
 
     public static Object processReturnType(QueryData dataForQuery, List<Object> results) {
         Class<?> returnType = dataForQuery.getMethod().getReturnType();
+
+        if (evaluateReturnTypeVoidPredicate.test(returnType)) {
+            return null;
+        }
+
+        if (List.class.isAssignableFrom(returnType)) {
+            return results;
+        }
+
+        if (Stream.class.isAssignableFrom(returnType)) {
+            return results.stream();
+        }
+
+        if (Optional.class.isAssignableFrom(returnType)) {
+            if (results.size() > 1) {
+                throw new NonUniqueResultException("There are more than one result for the query");
+            }
+            return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
+        }
+
         if (returnType.isArray()) {
-            if (dataForQuery.getDeclaredEntityClass() != null && returnType.getComponentType().isAssignableFrom(dataForQuery.getDeclaredEntityClass())) {
+            if (dataForQuery.getDeclaredEntityClass() != null &&
+                    returnType.getComponentType().isAssignableFrom(dataForQuery.getDeclaredEntityClass())) {
                 Object[] returnValue = (Object[]) Array.newInstance(dataForQuery.getDeclaredEntityClass(), results.size());
                 return results.toArray(returnValue);
             } else {
                 Object[] returnValue = (Object[]) Array.newInstance(returnType.getComponentType(), results.size());
                 return results.toArray(returnValue);
             }
-        } else if (Stream.class.equals(returnType)) {
-            return results.stream();
-        } else if (evaluateReturnTypeVoidPredicate.test(returnType)) {
-            return null;
-        } else if (results.size() > 1) {
-            if (returnType.equals(Optional.class) || returnType.equals(dataForQuery.getDeclaredEntityClass())) {
+        }
+
+        if (results.size() > 1) {
+            if (returnType.equals(dataForQuery.getDeclaredEntityClass())) {
                 throw new NonUniqueResultException("There are more than one result for the query");
             }
             return results;
-        } else if (returnType.equals(Optional.class)) {
-            return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
         }
-        else {
-            if (results.isEmpty()) {
-                if (returnType.equals(dataForQuery.getDeclaredEntityClass())) {
-                    throw new EmptyResultException("There are no results for the query");
-                }
-                return null;
+
+        if (results.isEmpty()) {
+            if (returnType.equals(dataForQuery.getDeclaredEntityClass())) {
+                throw new EmptyResultException("There are no results for the query");
             }
-            return results.getFirst();
+            return null;
         }
+
+        return results.get(0);
     }
 
     public static EntityManager getEntityManager(String applicationName) {

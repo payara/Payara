@@ -64,6 +64,7 @@ import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
+import static fish.payara.jakarta.data.core.util.QueryOperationUtility.handleArrays;
 
 /**
  * Utility class used to process Jakarta Data "Query by Method Name" operations.
@@ -372,10 +373,18 @@ public class QueryByNameOperationUtility {
 
     private static Object processReturnType(QueryData data, List<?> resultList) {
         Class<?> returnType = data.getMethod().getReturnType();
-        if (List.class.isAssignableFrom(returnType)) return resultList;
-        if (Stream.class.isAssignableFrom(returnType)) return resultList.stream();
-        if (Optional.class.isAssignableFrom(returnType)) return resultList.stream().findFirst();
-        return resultList.isEmpty() ? null : resultList.get(0);
+
+        if (List.class.isAssignableFrom(returnType)) {
+            return resultList;
+        }
+        if (Stream.class.isAssignableFrom(returnType)) {
+            return resultList.stream();
+        }
+        if (Optional.class.isAssignableFrom(returnType)) {
+            return resultList.stream().findFirst();
+        }
+
+        return handleArrays(resultList, returnType);
     }
 
     private static List<Object> getQueryArguments(Object[] allArgs) {
