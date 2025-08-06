@@ -160,7 +160,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             case DELETE ->
                     objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
             case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-            case FIND -> objectToReturn = processFindOperation(args, dataForQuery);
+            case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
             case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
             case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
             case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
@@ -172,7 +172,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return objectToReturn;
     }
 
-    public Object processFindOperation(Object[] args, QueryData dataForQuery) {
+    public Object processFindOperation(Object proxy, Object[] args, QueryData dataForQuery) {
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         DataParameter dataParameter = extractDataParameter(args);
@@ -198,11 +198,24 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     dataParameter
             );
 
-            if (result instanceof List && Stream.class.isAssignableFrom(dataForQuery.getMethod().getReturnType())) {
-                return ((List<?>) result).stream();
+            if (result instanceof List<?> resultList) {
+                Method method = dataForQuery.getMethod();
+                validateReturnValue(proxy, method, resultList != null ? resultList : Collections.emptyList());
+                if (Stream.class.isAssignableFrom(method.getReturnType())) {
+                    return resultList.stream();
+                }
+                return resultList;
             }
 
             return result;
+        }
+    }
+
+    private void validateReturnValue(Object bean, Method method, Object returnValue) {
+        Set<ConstraintViolation<Object>> violations = validator.forExecutables()
+                .validateReturnValue(bean, method, returnValue);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
         }
     }
 
