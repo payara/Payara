@@ -390,7 +390,11 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
 
         List<Object> ids = getIds(entitiesToDelete);
-
+        // Before querying the database, check if any of the provided entities are transient (have a null ID).
+        // If so, the TCK expects an OptimisticLockingFailureException immediately.
+        if (ids.stream().anyMatch(java.util.Objects::isNull)) {
+            throw new OptimisticLockingFailureException("Attempted to delete one or more transient entities (ID is null).");
+        }
         startTransactionComponents();
         startTransactionAndJoin();
 
