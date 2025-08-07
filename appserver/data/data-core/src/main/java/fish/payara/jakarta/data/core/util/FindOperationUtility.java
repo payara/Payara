@@ -100,24 +100,47 @@ public class FindOperationUtility {
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
         int queryPosition = 1;
         boolean hasWhere = false;
+
+        boolean hasBy = false;
         for (Annotation[] annotations : parameterAnnotations) {
             for (Annotation annotation : annotations) {
                 if (annotation instanceof By) {
+                    hasBy = true;
                     attributeValue = ((By) annotation).value();
                 }
-                if (!hasWhere) {
-                    builder.append(" WHERE (");
-                    hasWhere = true;
-                } else {
-                    builder.append(" AND ");
-                }
-
-                if (attributeValue != null) {
-                    attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
-                }
-                builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             }
+        }
+
+        if (!hasBy && parameterAnnotations.length == 1) {
+            // Use utilitário para obter o nome do campo ID
+            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+            if (!hasWhere) {
+                builder.append(" WHERE (");
+                hasWhere = true;
+            }
+            builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             queryPosition++;
+        } else {
+            // Lógica original
+            for (Annotation[] annotations : parameterAnnotations) {
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof By) {
+                        attributeValue = ((By) annotation).value();
+                    }
+                    if (!hasWhere) {
+                        builder.append(" WHERE (");
+                        hasWhere = true;
+                    } else {
+                        builder.append(" AND ");
+                    }
+
+                    if (attributeValue != null) {
+                        attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
+                    }
+                    builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+                }
+                queryPosition++;
+            }
         }
 
         if (hasWhere) {

@@ -40,6 +40,7 @@
 package fish.payara.jakarta.data.core.cdi.extension;
 
 import fish.payara.jakarta.data.core.util.DataParameter;
+import fish.payara.jakarta.data.core.util.EntityIntrospectionUtil;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryByNameOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
@@ -398,7 +399,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         startTransactionComponents();
         startTransactionAndJoin();
         // Dynamically get the name of the ID field from the entity's metadata.
-        String idFieldName = findIdAccessor(declaredEntityClass).getName();
+        String idFieldName = EntityIntrospectionUtil.findIdAccessor(declaredEntityClass).getName();
         // For getter methods like getId(), we need to convert it to a field name "id".
         if (idFieldName.startsWith("get") && idFieldName.length() > 3) {
             idFieldName = Character.toLowerCase(idFieldName.charAt(3)) + idFieldName.substring(4);
@@ -437,9 +438,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
     }
 
-    // cache to avoid reflection overload
-    private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
-
     /**
      * Helper method to extract IDs from a list of entities using reflection.
      * This version is robust and finds the ID by looking for the @Id annotation,
@@ -452,7 +450,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return Collections.emptyList();
         }
         // Find the ID accessor for the entity type of the first element.
-        Member idAccessor = findIdAccessor(entities.get(0).getClass());
+        Member idAccessor = EntityIntrospectionUtil.findIdAccessor(entities.get(0).getClass());
 
         return entities.stream()
                 .map(entity -> {
@@ -469,39 +467,6 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     }
                 })
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Finds the accessor (Method or Field) for the ID of an entity class,
-     * identified by the @Id annotation. Results are cached for performance.
-     */
-    private Member findIdAccessor(Class<?> entityClass) {
-        return idAccessorCache.computeIfAbsent(entityClass, key -> {
-            // 1. Check methods first
-            for (Method method : key.getMethods()) {
-                if (method.isAnnotationPresent(Id.class)) {
-                    return method;
-                }
-            }
-            // 2. If no method found, check fields
-            for (Field field : key.getFields()) {
-                if (field.isAnnotationPresent(Id.class)) {
-                    return field;
-                }
-            }
-            // 3. Check non-public fields as a fallback
-            for (Field field : key.getDeclaredFields()) {
-                if (field.isAnnotationPresent(Id.class)) {
-                    try {
-                        field.setAccessible(true); // Make private field accessible
-                        return field;
-                    } catch (Exception e) {
-                        // Ignore security exceptions, etc.
-                    }
-                }
-            }
-            throw new MappingException("No @Id annotation found on any method or field for entity class: " + key.getName());
-        });
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
