@@ -39,10 +39,16 @@
  */
 package fish.payara.jakarta.data.core.util;
 
+import fish.payara.jakarta.data.core.cdi.extension.CursoredPageImpl;
+import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
+import fish.payara.jakarta.data.core.cdi.extension.PageImpl;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
 import fish.payara.jakarta.data.core.querymethod.QueryMethodParser;
 import fish.payara.jakarta.data.core.querymethod.QueryMethodSyntaxException;
+import jakarta.data.Sort;
 import jakarta.data.exceptions.MappingException;
+import jakarta.data.page.Page;
+import jakarta.data.page.PageRequest;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -62,8 +68,12 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.extractDataParameter;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.createQueriesForPagination;
 import static fish.payara.jakarta.data.core.util.FindOperationUtility.excludeParameter;
+import static fish.payara.jakarta.data.core.util.FindOperationUtility.getPageRequest;
 import static fish.payara.jakarta.data.core.util.QueryOperationUtility.handleArrays;
 
 /**
@@ -164,16 +174,20 @@ public class QueryByNameOperationUtility {
     private static Object buildAndExecuteQuery(Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action expectedAction) {
         Method method = dataForQuery.getMethod();
         String methodName = method.getName();
-
+        
+        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
+        
         try {
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
             if (parser.getAction() != expectedAction) {
                 throw new IllegalStateException("Mismatched action type. Expected " + expectedAction + " but got " + parser.getAction());
             }
-
-            jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, expectedAction);
-            return executeQuery(q, parser, dataForQuery);
-
+            if (evaluatePages) {
+                return buildQueryFromParserWithPagination(parser, args, dataForQuery, entityManager, expectedAction);
+            } else {
+                jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, expectedAction);
+                return executeQuery(q, parser, dataForQuery);
+            }
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
             throw new MappingException("Failed to build or execute query from method name: " + methodName, e);
         }
@@ -183,7 +197,9 @@ public class QueryByNameOperationUtility {
      * Builds a jakarta.persistence.Query object from a parsed method name.
      * This is a central helper used by all `...ByName` operations.
      */
-    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action executionAction) {
+    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args, 
+                                                                  QueryData dataForQuery, EntityManager entityManager,
+                                                                  QueryMethodParser.Action executionAction) {
         Metamodel metamodel = entityManager.getMetamodel();
         EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
 
@@ -208,6 +224,76 @@ public class QueryByNameOperationUtility {
         setQueryParameters(q, parser.getConditions(), args, dataForQuery);
 
         return q;
+    }
+
+    private static Object buildQueryFromParserWithPagination(QueryMethodParser parser, Object[] args,
+                                                             QueryData dataForQuery, EntityManager entityManager,
+                                                             QueryMethodParser.Action executionAction) {
+        Metamodel metamodel = entityManager.getMetamodel();
+        EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
+        PageRequest pageRequest = null;
+        Object returnValue = null;
+        String rootAlias = "e";
+        StringBuilder jpql = new StringBuilder();
+        StringBuilder joinClause = new StringBuilder();
+        StringBuilder countClause = new StringBuilder();
+        Map<String, String> joinAliases = new HashMap<>();
+        DataParameter dataParameter = extractDataParameter(args);
+        List<Sort<?>> sortList = dataParameter.sortList();
+        pageRequest = getPageRequest(args);
+
+
+        buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
+        buildQueryClause(countClause, QueryMethodParser.Action.COUNT, dataForQuery, rootAlias);
+        buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
+
+        jpql.append(joinClause);
+
+        if (!parser.getConditions().isEmpty()) {
+            jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
+            countClause.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
+        }
+
+        //consolidates order criteria from method name and order attributes
+        List<Sort<?>> sortsFromMethodName = new ArrayList<>();
+        if (!parser.getOrderBy().isEmpty()) {
+            List<QueryMethodParser.OrderBy> orders = parser.getOrderBy();
+            for (QueryMethodParser.OrderBy order : orders) {
+                EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
+
+                if (!entityMetadata.getAttributeNames().containsKey(order.property().toLowerCase())) {
+                    throw new IllegalArgumentException("The attribute " + order.property() +
+                            " is not mapped on the entity " + entityMetadata.getEntityName());
+                }
+
+                String direction = (order.ascDesc() == null || "Asc".equalsIgnoreCase(order.ascDesc())) ? "ASC" : "DESC";
+
+                if (direction.equals("ASC")) {
+                    sortsFromMethodName.add(Sort.asc(order.property()));
+                } else {
+                    sortsFromMethodName.add(Sort.desc(order.property()));
+                }
+            }
+        }
+
+        if (!sortsFromMethodName.isEmpty() && sortList != null) {
+            sortsFromMethodName.addAll(sortList);
+            dataForQuery.setOrders(sortsFromMethodName);
+        }
+
+        dataForQuery.setQueryString(jpql.toString());
+        dataForQuery.setCountQueryString(jpql.toString());
+
+        createQueriesForPagination(pageRequest, dataForQuery.getMethod(), dataForQuery,
+                new StringBuilder(dataForQuery.getQueryString()), args, dataForQuery.getOrders(), rootAlias);
+
+        if (Page.class.equals(dataForQuery.getMethod().getReturnType())) {
+            returnValue = new PageImpl<>(dataForQuery, args, pageRequest, entityManager);
+        } else {
+            returnValue = new CursoredPageImpl<>(dataForQuery, args, pageRequest, entityManager);
+        }
+
+        return returnValue;
     }
 
     // --- QUERY BUILDING HELPER METHODS ---

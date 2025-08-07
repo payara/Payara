@@ -54,12 +54,9 @@ import jakarta.data.page.PageRequest;
 import jakarta.data.repository.By;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import jakarta.validation.constraints.Size;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -128,10 +125,12 @@ public class FindOperationUtility {
 
         //here place to process pagination
         if (evaluatePages) {
-            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, null, dataParameter);
+            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, dataParameter);
         } else {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
-                handleSort(dataForQuery, dataParameter.sortList(), builder, dataForQuery.getQueryType() == QueryType.FIND, false, false);
+                handleSort(dataForQuery, dataParameter.sortList(), builder, 
+                        dataForQuery.getQueryType() == QueryType.FIND, false, 
+                        false, null);
                 dataForQuery.setQueryString(builder.toString());
             }
             //check order conditions to improve select queries
@@ -149,35 +148,14 @@ public class FindOperationUtility {
     }
 
     public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
-                                           Method method, StringBuilder builder, boolean hasWhere,
-                                           Map<Integer, String> patternPositions, DataParameter dataParameter) {
+                                           Method method, StringBuilder builder, boolean hasWhere, DataParameter dataParameter) {
         PageRequest pageRequest = null;
         Object returnValue = null;
         createCountQuery(dataForQuery, hasWhere, dataForQuery.getQueryString().indexOf("WHERE"));
         List<Sort<?>> sortList = dataParameter.sortList();
         pageRequest = getPageRequest(args);
         
-        boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
-        boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
-        if (isCursoredPage && dataForQuery.getQueryType() != QueryType.FIND) {
-            //here to adapt query for Cursored mode
-            preprocessQueryForCursoredMode(dataForQuery);
-            builder = new StringBuilder(dataForQuery.getQueryString());
-        }
-        
-        if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
-            createCursorQueries(dataForQuery, dataParameter.sortList(), forward, args);
-            builder = new StringBuilder(dataForQuery.getQueryString());
-        }
-        
-        handleSort(dataForQuery, sortList, builder, 
-                dataForQuery.getQueryType() == QueryType.FIND, true, forward);
-        dataForQuery.setQueryString(builder.toString());
-        dataForQuery.setOrders(dataParameter.sortList());
-
-        if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
-            updateCursorQueries(dataForQuery);
-        }
+        createQueriesForPagination(pageRequest, method, dataForQuery, builder, args, sortList, null);
 
         if (Page.class.equals(method.getReturnType())) {
             returnValue = new PageImpl<>(dataForQuery, args, pageRequest, em);
@@ -186,6 +164,32 @@ public class FindOperationUtility {
         }
 
         return returnValue;
+    }
+
+    public static void createQueriesForPagination(PageRequest pageRequest, Method method, QueryData dataForQuery,
+                                                  StringBuilder builder,
+                                                  Object[] args, List<Sort<?>> sortList, String rootAlias) {
+        boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
+        boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
+        if (isCursoredPage && dataForQuery.getQueryType() != QueryType.FIND) {
+            //here to adapt query for Cursored mode
+            preprocessQueryForCursoredMode(dataForQuery);
+            builder = new StringBuilder(dataForQuery.getQueryString());
+        }
+
+        if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
+            createCursorQueries(dataForQuery, sortList, forward, args, rootAlias);
+            builder = new StringBuilder(dataForQuery.getQueryString());
+        }
+
+        handleSort(dataForQuery, sortList, builder,
+                dataForQuery.getQueryType() == QueryType.FIND, true, forward, rootAlias);
+        dataForQuery.setQueryString(builder.toString());
+        dataForQuery.setOrders(sortList);
+
+        if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
+            updateCursorQueries(dataForQuery);
+        }
     }
     
     private static void updateCursorQueries(QueryData dataForQuery) {
@@ -198,7 +202,7 @@ public class FindOperationUtility {
         }
     }
 
-    private static PageRequest getPageRequest(Object[] args) {
+    public static PageRequest getPageRequest(Object[] args) {
         for (Object param : args) {
             if (param instanceof PageRequest) { //Get info for PageRequest
                 return (PageRequest) param;
@@ -377,7 +381,7 @@ public class FindOperationUtility {
     }
 
     private static void createCursorQueries(QueryData dataForQuery, List<Sort<?>> orders,
-                                            boolean forward, Object[] args) {
+                                            boolean forward, Object[] args, String rootAlias) {
         String prefixForParams = dataForQuery.getJpqlParameters().isEmpty() ? "?" : ":cursor";
         boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
         StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
@@ -391,7 +395,7 @@ public class FindOperationUtility {
                 boolean lower = sort.ignoreCase();
                 if (lower) {
                     cursorQuery.append(k == 0 ? "LOWER(" : " AND LOWER(");
-                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
+                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType(), rootAlias);
                     cursorQuery.append(')');
                     if (forward) {
                         cursorQuery.append(k < i ? '=' : (asc ? '>' : '<'));
@@ -402,7 +406,7 @@ public class FindOperationUtility {
                     cursorQuery.append("LOWER(").append(prefixForParams).append(paramCount).append(')');
                 } else {
                     cursorQuery.append(k == 0 ? "" : " AND ");
-                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType());
+                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType(), rootAlias);
                     if (forward) {
                         cursorQuery.append(k < i ? '=' : (asc ? '>' : '<'));
                     } else {
@@ -435,9 +439,13 @@ public class FindOperationUtility {
         return paramCount;
     }
 
-    public static void appendAttribute(String name, StringBuilder cursorQuery, QueryType queryType) {
+    public static void appendAttribute(String name, StringBuilder cursorQuery, QueryType queryType, String rootAlias) {
         if (name.charAt(name.length() - 1) != ')' && queryType == QueryType.FIND) {
             cursorQuery.append("o.");
+        }
+        
+        if (rootAlias != null && !rootAlias.isEmpty()) {
+            cursorQuery.append(rootAlias).append(".");
         }
         cursorQuery.append(name);
     }
