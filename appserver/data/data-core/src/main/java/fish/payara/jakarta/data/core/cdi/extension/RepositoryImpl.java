@@ -40,17 +40,17 @@
 package fish.payara.jakarta.data.core.cdi.extension;
 
 import fish.payara.jakarta.data.core.util.DataParameter;
-import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryByNameOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
 import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
+import jakarta.data.exceptions.MappingException;
 import jakarta.data.exceptions.OptimisticLockingFailureException;
-import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Id;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -68,7 +68,9 @@ import org.glassfish.internal.api.Globals;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,8 +79,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -428,18 +430,71 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
     }
 
-    private static List<Object> getIds(List<?> arr) {
-        List<Object> ids = arr.stream()
+    // cache to avoid reflection overload
+    private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
+
+    /**
+     * Helper method to extract IDs from a list of entities using reflection.
+     * This version is robust and finds the ID by looking for the @Id annotation,
+     * not a fixed "getId" method name.
+     * @param entities The list of entities.
+     * @return A list of corresponding entity IDs.
+     */
+    private List<Object> getIds(List<?> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // Find the ID accessor for the entity type of the first element.
+        Member idAccessor = findIdAccessor(entities.get(0).getClass());
+
+        return entities.stream()
                 .map(entity -> {
                     try {
-                        Method getId = entity.getClass().getMethod("getId");
-                        return getId.invoke(entity);
+                        if (idAccessor instanceof Method) {
+                            return ((Method) idAccessor).invoke(entity);
+                        } else if (idAccessor instanceof Field) {
+                            return ((Field) idAccessor).get(entity);
+                        }
+                        // This should not happen if findIdAccessor works correctly
+                        throw new MappingException("No ID accessor found for entity: " + entity.getClass().getName());
                     } catch (Exception e) {
-                        throw new RuntimeException("Error to get entity ID", e);
+                        throw new MappingException("Failed to get ID from entity of type " + entity.getClass().getName(), e);
                     }
                 })
                 .collect(Collectors.toList());
-        return ids;
+    }
+
+    /**
+     * Finds the accessor (Method or Field) for the ID of an entity class,
+     * identified by the @Id annotation. Results are cached for performance.
+     */
+    private Member findIdAccessor(Class<?> entityClass) {
+        return idAccessorCache.computeIfAbsent(entityClass, key -> {
+            // 1. Check methods first
+            for (Method method : key.getMethods()) {
+                if (method.isAnnotationPresent(Id.class)) {
+                    return method;
+                }
+            }
+            // 2. If no method found, check fields
+            for (Field field : key.getFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    return field;
+                }
+            }
+            // 3. Check non-public fields as a fallback
+            for (Field field : key.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    try {
+                        field.setAccessible(true); // Make private field accessible
+                        return field;
+                    } catch (Exception e) {
+                        // Ignore security exceptions, etc.
+                    }
+                }
+            }
+            throw new MappingException("No @Id annotation found on any method or field for entity class: " + key.getName());
+        });
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
