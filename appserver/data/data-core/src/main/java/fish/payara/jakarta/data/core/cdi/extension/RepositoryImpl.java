@@ -397,11 +397,17 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
         startTransactionComponents();
         startTransactionAndJoin();
-
+        // Dynamically get the name of the ID field from the entity's metadata.
+        String idFieldName = findIdAccessor(declaredEntityClass).getName();
+        // For getter methods like getId(), we need to convert it to a field name "id".
+        if (idFieldName.startsWith("get") && idFieldName.length() > 3) {
+            idFieldName = Character.toLowerCase(idFieldName.charAt(3)) + idFieldName.substring(4);
+        }
         try {
             // Step 1: Verify that all entities to be deleted actually exist in the database.
             // This is required to comply with the TCK specification of throwing OptimisticLockingFailureException.
-            String countQueryStr = "SELECT count(e) FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
+            // The query now uses the dynamically discovered ID field name.
+            String countQueryStr = "SELECT count(e) FROM " + declaredEntityClass.getSimpleName() + " e WHERE e." + idFieldName + " IN :ids";
             Long foundCount = (Long) em.createQuery(countQueryStr)
                     .setParameter("ids", ids)
                     .getSingleResult();
@@ -411,16 +417,13 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 transactionManager.rollback();
                 throw new OptimisticLockingFailureException("Attempted to delete one or more entities that do not exist in the database, or have a version mismatch.");
             }
-
             // Step 2: If all entities exist, proceed with an efficient bulk delete.
-            String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
+            String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e." + idFieldName + " IN :ids";
             int returnValue = em.createQuery(deleteQuery)
                     .setParameter("ids", ids)
                     .executeUpdate();
-
             endTransaction();
             return processReturnQueryUpdate(method, returnValue);
-
         } catch (Exception e) {
             // Ensure rollback on any other failure.
             if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
