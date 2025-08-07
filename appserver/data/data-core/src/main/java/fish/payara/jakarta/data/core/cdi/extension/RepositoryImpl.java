@@ -557,8 +557,12 @@ public class RepositoryImpl<T> implements InvocationHandler {
     }
 
     public void startTransactionAndJoin() throws SystemException, NotSupportedException {
-        transactionManager.begin();
-        em.joinTransaction();
+        if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
+            transactionManager.begin();
+            em.joinTransaction();
+        } else {
+            em.joinTransaction();
+        }
     }
 
     public void endTransaction() throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
