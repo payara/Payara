@@ -164,8 +164,8 @@ public class QueryOperationUtility {
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
-                    method, new StringBuilder(dataForQuery.getQueryString()), patternSelectPositions.containsValue("WHERE"),
-                    patternSelectPositions, dataParameter);
+                    method, new StringBuilder(dataForQuery.getQueryString()), 
+                    patternSelectPositions.containsValue("WHERE"), dataParameter);
         }
 
         return objectToReturn;

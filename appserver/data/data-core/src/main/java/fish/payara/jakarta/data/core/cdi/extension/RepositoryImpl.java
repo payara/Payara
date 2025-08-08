@@ -44,9 +44,6 @@ import fish.payara.jakarta.data.core.util.DeleteOperationUtility;
 import fish.payara.jakarta.data.core.util.FindOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryByNameOperationUtility;
 import fish.payara.jakarta.data.core.util.QueryOperationUtility;
-import jakarta.data.Limit;
-import jakarta.data.Order;
-import jakarta.data.Sort;
 import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
@@ -84,6 +81,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.evaluateReturnTypeVoidPredicate;
+import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.extractDataParameter;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.getEntityManager;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.jakarta.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
@@ -442,26 +440,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
                 getEntityManager(this.applicationName), getTransactionManager(), dataParameter);
     }
-
-    private DataParameter extractDataParameter(Object[] args) {
-        Limit limit = null;
-        List<Sort<?>> sortList = new ArrayList<>();
-        if (args != null) {
-            for (Object arg : args) {
-                if (arg instanceof Limit l) {
-                    limit = l;
-                } else if (arg instanceof Sort<?> sort) {
-                    sortList.add(sort);
-                } else if (arg instanceof Order<?> order) {
-                    order.forEach(sortList::add);
-                }else if (arg instanceof Sort<?>[] sorts) {
-                    Collections.addAll(sortList, sorts);
-                }
-            }
-        }
-        return new DataParameter(limit, sortList);
-    }
-
+    
     public TransactionManager getTransactionManager() {
         ServiceLocator locator = Globals.get(ServiceLocator.class);
         ServiceHandle<TransactionManager> inhabitant =
