@@ -338,9 +338,15 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 endTransaction();
             }
         } catch (Throwable t) {
-            if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
-                transactionManager.rollback();
-            }
+            try {
+                if (transactionManager != null) {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                }
+            } catch (Exception ex) {}
             if (entityExistsConstraintViolation(t)) {
                 throw new jakarta.data.exceptions.EntityExistsException("Entity already exists", t);
             }
@@ -429,10 +435,16 @@ public class RepositoryImpl<T> implements InvocationHandler {
             endTransaction();
             return processReturnQueryUpdate(method, returnValue);
         } catch (Exception e) {
-            // Ensure rollback on any other failure.
-            if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
-                transactionManager.rollback();
-            }
+            try {
+                if (transactionManager != null) {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        // Ensure rollback on any other failure.
+                        transactionManager.rollback();
+                    }
+                }
+            } catch (Exception ex) {}
             // Re-throw the original exception if it's the one we expect, or wrap it.
             if (e instanceof OptimisticLockingFailureException) {
                 throw e;
