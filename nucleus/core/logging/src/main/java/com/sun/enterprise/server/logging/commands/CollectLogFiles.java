@@ -146,11 +146,13 @@ public class CollectLogFiles implements AdminCommand {
             try {
 
                 String sourceDir = "";
-                if (logFileDetails.contains("${com.sun.aas.instanceRoot}/logs")) {
-                    sourceDir = env.getInstanceRoot() + File.separator + "logs";
-                } else {
-                    sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
+
+                String instanceRoot = env.getInstanceRoot().toString();
+                if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
+                    logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
+
+                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
 
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, targetServer.getName());
             } catch (Exception ex) {
@@ -292,11 +294,12 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
                 String sourceDir = "";
-                if (logFileDetails.contains("${com.sun.aas.instanceRoot}/logs")) {
-                    sourceDir = env.getInstanceRoot() + File.separator + "logs";
-                } else {
-                    sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
+                String instanceRoot = env.getInstanceRoot().toString();
+                if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
+                    logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
+
+                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
 
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report,
                         SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME);
