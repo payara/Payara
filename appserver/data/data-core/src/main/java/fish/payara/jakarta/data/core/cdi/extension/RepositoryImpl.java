@@ -259,26 +259,20 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {
             results = new ArrayList<>();
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             for (Object e : toIterate) {
                 results.add(em.merge(e));
             }
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (args[0] != null) {
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             entity = em.merge(args[0]);
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
         }
@@ -301,15 +295,12 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
             results = new ArrayList<>();
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             for (Object e : ((Iterable<?>) toIterate)) {
                 em.persist(e);
                 results.add(e);
             }
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
 
@@ -317,13 +308,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg != null) { //insert a single entity
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             entity = args[0];
             em.persist(args[0]);
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
         }
@@ -343,22 +331,16 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
         if (args == null) { // delete all records
             startTransactionComponents();
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
             returnValue = em.createQuery(deleteAllQuery).executeUpdate();
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
         } else if (args[0] instanceof List arr) {
             // existing list handling code
             startTransactionComponents();
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             List<Object> ids = getIds((List<?>) arr);
             if (!ids.isEmpty()) {
                 String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
@@ -366,7 +348,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                         .setParameter("ids", ids)
                         .executeUpdate();
             }
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
         } else {
@@ -390,10 +372,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 );
             } else if (args[0] != null) { // delete single entity
                 startTransactionComponents();
-                boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+                boolean transactionStarted = startTransactionAndJoin();
                 try {
                     Method getId = args[0].getClass().getMethod("getId");
                     Object id = getId.invoke(args[0]);
@@ -404,7 +383,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 } catch (Exception e) {
                     throw new RuntimeException("Error to get entity ID", e);
                 }
-                if (!userTransaction) {
+                if (!transactionStarted) {
                 endTransaction();
             }
             }
@@ -438,15 +417,12 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (dataForQuery.getEntityParamType().isArray()) { //update multiple entities from array reference
             int length = Array.getLength(args[0]);
             results = new ArrayList<>(length);
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             for (int i = 0; i < length; i++) {
                 em.merge(Array.get(args[0], i));
                 results.add(Array.get(args[0], i));
             }
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
 
@@ -455,15 +431,12 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         } else if (arg instanceof List toIterate) { //update multiple entities
             results = new ArrayList<>();
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             for (Object e : ((Iterable<?>) toIterate)) {
                 entity = em.merge(e);
                 results.add(entity);
             }
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
 
@@ -471,12 +444,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg != null) { //update single entity
-            boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-            if (!userTransaction) {
-                startTransactionAndJoin();
-            }
+            boolean transactionStarted = startTransactionAndJoin();
             entity = em.merge(args[0]);
-            if (!userTransaction) {
+            if (!transactionStarted) {
                 endTransaction();
             }
         }
@@ -529,9 +499,13 @@ public class RepositoryImpl<T> implements InvocationHandler {
         em = getEntityManager(this.applicationName);
     }
 
-    public void startTransactionAndJoin() throws SystemException, NotSupportedException {
+    public boolean startTransactionAndJoin() throws SystemException, NotSupportedException {
+        if (transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+            return false;
+        }
         transactionManager.begin();
         em.joinTransaction();
+        return true;
     }
 
     public void endTransaction() throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
