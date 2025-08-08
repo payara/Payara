@@ -45,6 +45,7 @@ import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Array;
@@ -65,15 +66,19 @@ public class InsertAndSaveOperationUtility {
         int length = Array.getLength(args[0]);
         List<Object> results = null;
         results = new ArrayList<>(length);
-        tm.begin();
-        em.joinTransaction();
+        boolean userTransaction = tm.getStatus() == Status.STATUS_ACTIVE;
+        if (!userTransaction) {
+            tm.begin();
+            em.joinTransaction();
+        }
         for (int i = 0; i < length; i++) {
             em.persist(Array.get(args[0], i));
             results.add(Array.get(args[0], i));
         }
-
-        em.flush();
-        tm.commit();
+        if (!userTransaction) {
+            em.flush();
+            tm.commit();
+        }
 
         if (!results.isEmpty()) {
             return processReturnType(dataForQuery, results);

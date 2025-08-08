@@ -51,6 +51,7 @@ import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import jakarta.validation.ConstraintViolation;
@@ -256,18 +257,22 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {
             results = new ArrayList<>();
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             for (Object e : toIterate) {
                 results.add(em.merge(e));
             }
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (args[0] != null) {
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             entity = em.merge(args[0]);
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
@@ -288,21 +293,25 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
             results = new ArrayList<>();
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             for (Object e : ((Iterable<?>) toIterate)) {
                 em.persist(e);
                 results.add(e);
             }
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
 
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg != null) { //insert a single entity
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             entity = args[0];
             em.persist(args[0]);
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
@@ -320,14 +329,16 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
         if (args == null) { // delete all records
             startTransactionComponents();
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
             returnValue = em.createQuery(deleteAllQuery).executeUpdate();
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
         } else if (args[0] instanceof List arr) {
             // existing list handling code
             startTransactionComponents();
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             List<Object> ids = getIds((List<?>) arr);
             if (!ids.isEmpty()) {
                 String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
@@ -335,7 +346,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
                         .setParameter("ids", ids)
                         .executeUpdate();
             }
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
         } else {
             // Handle @By annotation cases
             Optional<Annotation> byFound = Arrays.stream(parameterAnnotations)
@@ -357,7 +370,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 );
             } else if (args[0] != null) { // delete single entity
                 startTransactionComponents();
-                startTransactionAndJoin();
+                boolean transactionStarted = startTransactionAndJoin();
                 try {
                     Method getId = args[0].getClass().getMethod("getId");
                     Object id = getId.invoke(args[0]);
@@ -368,7 +381,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 } catch (Exception e) {
                     throw new RuntimeException("Error to get entity ID", e);
                 }
+                if (!transactionStarted) {
                 endTransaction();
+            }
             }
         }
 
@@ -400,32 +415,38 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (dataForQuery.getEntityParamType().isArray()) { //update multiple entities from array reference
             int length = Array.getLength(args[0]);
             results = new ArrayList<>(length);
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             for (int i = 0; i < length; i++) {
                 em.merge(Array.get(args[0], i));
                 results.add(Array.get(args[0], i));
             }
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
 
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg instanceof List toIterate) { //update multiple entities
             results = new ArrayList<>();
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             for (Object e : ((Iterable<?>) toIterate)) {
                 entity = em.merge(e);
                 results.add(entity);
             }
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
 
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg != null) { //update single entity
-            startTransactionAndJoin();
+            boolean transactionStarted = startTransactionAndJoin();
             entity = em.merge(args[0]);
-            endTransaction();
+            if (!transactionStarted) {
+                endTransaction();
+            }
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
@@ -457,9 +478,13 @@ public class RepositoryImpl<T> implements InvocationHandler {
         em = getEntityManager(this.applicationName);
     }
 
-    public void startTransactionAndJoin() throws SystemException, NotSupportedException {
+    public boolean startTransactionAndJoin() throws SystemException, NotSupportedException {
+        if (transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+            return false;
+        }
         transactionManager.begin();
         em.joinTransaction();
+        return true;
     }
 
     public void endTransaction() throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {

@@ -55,6 +55,7 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
+import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 
@@ -107,18 +108,30 @@ public class QueryByNameOperationUtility {
         }
 
         // Step 2: Remove the found entities within a transaction.
+        boolean userTransaction = false;
         try {
-            transactionManager.begin();
-            entityManager.joinTransaction();
+            userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
+        } catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            if (!userTransaction) {
+                transactionManager.begin();
+                entityManager.joinTransaction();
+            }
             for (Object entity : entitiesToDelete) {
                 // To be safe, merge the entity to ensure it's managed before removing.
                 entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
             }
-            transactionManager.commit();
-            clearCaches(entityManager);
+            if (!userTransaction) {
+                transactionManager.commit();
+                clearCaches(entityManager);
+            }
         } catch (Exception e) {
             try {
-                transactionManager.rollback();
+                if (!userTransaction) {
+                    transactionManager.rollback();
+                }
             } catch (SystemException se) {
                 throw new RuntimeException("Rollback failed", se);
             }
