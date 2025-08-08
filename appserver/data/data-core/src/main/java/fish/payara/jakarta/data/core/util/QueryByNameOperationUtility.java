@@ -200,8 +200,44 @@ public class QueryByNameOperationUtility {
         if (!parser.getConditions().isEmpty()) {
             jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
         }
-        if (executionAction == QueryMethodParser.Action.FIND && !parser.getOrderBy().isEmpty()) {
-            jpql.append(buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases));
+
+        String orderByClause = null;
+        if (executionAction == QueryMethodParser.Action.FIND) {
+            // 1. Using Order/Sort param if exists
+            Method method = dataForQuery.getMethod();
+            Class<?>[] paramTypes = method.getParameterTypes();
+            int orderParamIndex = -1;
+            for (int i = 0; i < paramTypes.length; i++) {
+                if (jakarta.data.Order.class.isAssignableFrom(paramTypes[i]) ||
+                        jakarta.data.Sort.class.isAssignableFrom(paramTypes[i])) {
+                    orderParamIndex = i;
+                    break;
+                }
+            }
+            if (orderParamIndex >= 0 && args != null && args.length > orderParamIndex && args[orderParamIndex] != null) {
+                Object orderArg = args[orderParamIndex];
+                if (orderArg instanceof jakarta.data.Order<?> order) {
+                    StringJoiner joiner = new StringJoiner(", ");
+                    for (jakarta.data.Sort<?> sort : order) {
+                        String property = sort.property();
+                        String direction = sort.isAscending() ? "ASC" : "DESC";
+                        joiner.add(rootAlias + "." + property + " " + direction);
+                    }
+                    if (joiner.length() > 0) {
+                        orderByClause = " ORDER BY " + joiner.toString();
+                    }
+                } else if (orderArg instanceof jakarta.data.Sort<?> sort) {
+                    String property = sort.property();
+                    String direction = sort.isAscending() ? "ASC" : "DESC";
+                    orderByClause = " ORDER BY " + rootAlias + "." + property + " " + direction;
+                }
+            } else if (orderByClause == null && !parser.getOrderBy().isEmpty()) {
+                // 2. Else use OrderBy from method name (parser)
+                orderByClause = buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases);
+            }
+            if (orderByClause != null) {
+                jpql.append(orderByClause);
+            }
         }
 
         jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
