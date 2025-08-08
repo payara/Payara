@@ -338,6 +338,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 endTransaction();
             }
         } catch (Throwable t) {
+            if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                transactionManager.rollback();
+            }
             if (entityExistsConstraintViolation(t)) {
                 throw new jakarta.data.exceptions.EntityExistsException("Entity already exists", t);
             }
