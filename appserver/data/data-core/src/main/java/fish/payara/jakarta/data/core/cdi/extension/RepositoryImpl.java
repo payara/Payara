@@ -158,19 +158,24 @@ public class RepositoryImpl<T> implements InvocationHandler {
         QueryData dataForQuery = queries.get(method);
         Object objectToReturn;
 
-        switch (dataForQuery.getQueryType()) {
-            case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
-            case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
-            case DELETE ->
-                    objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
-            case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-            case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
-            case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-            case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
-            case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+        try {
+            switch (dataForQuery.getQueryType()) {
+                case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
+                case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
+                case DELETE ->
+                        objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+                case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
+                case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
+                case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
+                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+            }
+        } catch (jakarta.persistence.OptimisticLockException e) {
+            // Expected in Data TCK
+            throw new jakarta.data.exceptions.OptimisticLockingFailureException(e.getMessage(), e);
         }
 
         return objectToReturn;
