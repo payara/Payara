@@ -580,7 +580,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
             transactionManager.begin();
             em.joinTransaction();
-        } else {
+        } else if (transactionManager.getStatus() != jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
             em.joinTransaction();
         }
     }
