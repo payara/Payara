@@ -410,36 +410,43 @@ public class RepositoryImpl<T> implements InvocationHandler {
         startTransactionAndJoin();
         try {
             for (Object entity : entitiesToDelete) {
-                if (em.contains(entity)) {
-                    em.remove(entity);
-                } else {
-                    Object id = getId(entity);
-                    if (id == null) {
-                        throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
+                try {
+                    if (em.contains(entity)) {
+                        em.remove(entity);
+                    } else {
+                        Object id = getId(entity);
+                        if (id == null) {
+                            throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
+                        }
+                        Object found = em.find(declaredEntityClass, id);
+                        if (found == null) {
+                            throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
+                        }
+                        Object managedEntity = em.merge(entity);
+                        em.remove(managedEntity);
                     }
-                    Object found = em.find(declaredEntityClass, id);
-                    if (found == null) {
-                        throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
+                } catch (OptimisticLockException ole) {
+                    if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                        transactionManager.rollback();
                     }
-                    Object managedEntity = em.merge(entity);
-                    em.remove(managedEntity);
+                    throw new OptimisticLockingFailureException(ole);
                 }
             }
             endTransaction();
-            // The return value for remove(entity) is typically void, but we return the count for consistency.
             return processReturnQueryUpdate(method, entitiesToDelete.size());
 
-        } catch (OptimisticLockException jpaOlex) {
-            // This is the exception thrown by the JPA provider on a version mismatch.
-            // We catch it, roll back, and re-throw the standard Jakarta Data exception.
-            transactionManager.rollback();
-            throw new OptimisticLockingFailureException(jpaOlex);
+        } catch (OptimisticLockingFailureException ole) {
+            throw ole;
         } catch (Exception e) {
             if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
                 transactionManager.rollback();
             }
-            if (e instanceof OptimisticLockingFailureException) {
-                throw e;
+            Throwable cause = e.getCause();
+            while (cause != null) {
+                if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
+                    throw new OptimisticLockingFailureException(cause);
+                }
+                cause = cause.getCause();
             }
             throw new RuntimeException("Error during delete operation", e);
         }
