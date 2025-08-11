@@ -46,6 +46,7 @@ import jakarta.data.exceptions.MappingException;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
@@ -88,34 +89,64 @@ public class QueryByNameOperationUtility {
      * 2. It then iterates through the fetched entities and calls entityManager.remove() on each within a new transaction.
      * This method requires a TransactionManager to perform the modification.
      */
-    public static Object processDeleteByNameOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager, TransactionManager transactionManager) {
-        // Step 1: Find all entities matching the delete criteria using a dedicated helper.
+    public static Object processDeleteByNameOperation(Object[] args,
+                                                      QueryData dataForQuery,
+                                                      EntityManager entityManager,
+                                                      TransactionManager transactionManager) {
         List<?> entitiesToDelete = findEntitiesForModification(args, dataForQuery, entityManager);
 
         if (entitiesToDelete.isEmpty()) {
             return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
         }
 
-        // Step 2: Remove the found entities within a transaction.
+        boolean newTx = false;
         try {
-            transactionManager.begin();
-            entityManager.joinTransaction();
-            for (Object entity : entitiesToDelete) {
-                // To be safe, merge the entity to ensure it's managed before removing.
-                entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+            if (transactionManager != null) {
+                int status = transactionManager.getStatus();
+                if (status == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
+                    transactionManager.begin();
+                    newTx = true;
+                }
+                entityManager.joinTransaction();
             }
-            transactionManager.commit();
+
+            for (Object entity : entitiesToDelete) {
+                Object managed = entityManager.contains(entity) ? entity : entityManager.merge(entity);
+                entityManager.remove(managed);
+            }
+
+            if (newTx) {
+                entityManager.flush();
+                transactionManager.commit();
+            }
+
             clearCaches(entityManager);
+            return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
+
+        } catch (OptimisticLockException ole) {
+            if (newTx) {
+                try {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                } catch (Exception ignore) {}
+            }
+            throw new jakarta.data.exceptions.OptimisticLockingFailureException(ole.getMessage(), ole);
+
         } catch (Exception e) {
-            try {
-                transactionManager.rollback();
-            } catch (SystemException se) {
-                throw new RuntimeException("Rollback failed", se);
+            if (newTx) {
+                try {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                } catch (Exception ignore) {}
             }
             throw new MappingException("Failed to execute delete operation", e);
         }
-
-        return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
     }
 
     private static void clearCaches(EntityManager entityManager) {

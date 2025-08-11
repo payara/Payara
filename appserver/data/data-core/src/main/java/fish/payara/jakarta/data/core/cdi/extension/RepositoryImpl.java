@@ -380,16 +380,35 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method)
             throws SystemException, NotSupportedException, HeuristicRollbackException,
             HeuristicMixedException, RollbackException {
+
         if (args == null) {
-            // Handles deleteAll() with no arguments (bulk delete)
+            // deleteAll()
             startTransactionComponents();
+            int before = transactionManager.getStatus();
+            boolean newTx = (before == jakarta.transaction.Status.STATUS_NO_TRANSACTION);
             startTransactionAndJoin();
-            String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
-            int deletedCount = em.createQuery(deleteAllQuery).executeUpdate();
-            endTransaction();
-            return processReturnQueryUpdate(method, deletedCount);
+            try {
+                String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
+                int deletedCount = em.createQuery(deleteAllQuery).executeUpdate();
+                em.flush();
+                if (newTx) {
+                    transactionManager.commit();
+                }
+                return processReturnQueryUpdate(method, deletedCount);
+            } catch (Exception e) {
+                safeRollback();
+                // Se for OtimisticLock de provedor, mapeia adequadamente
+                Throwable cause = e;
+                while (cause != null) {
+                    if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
+                        throw new OptimisticLockingFailureException(cause);
+                    }
+                    cause = cause.getCause();
+                }
+                throw new RuntimeException("Error during bulk delete operation", e);
+            }
         }
-        // Unifies handling for List, Stream, Array, and single entity arguments into a single List.
+
         Object arg = args[0];
         List<?> entitiesToDelete;
         if (arg instanceof Stream) {
@@ -407,41 +426,41 @@ public class RepositoryImpl<T> implements InvocationHandler {
         }
 
         startTransactionComponents();
+        int before = transactionManager.getStatus();
+        boolean newTx = (before == jakarta.transaction.Status.STATUS_NO_TRANSACTION);
         startTransactionAndJoin();
+
         try {
             for (Object entity : entitiesToDelete) {
-                try {
-                    if (em.contains(entity)) {
-                        em.remove(entity);
-                    } else {
-                        Object id = getId(entity);
-                        if (id == null) {
-                            throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
-                        }
-                        Object found = em.find(declaredEntityClass, id);
-                        if (found == null) {
-                            throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
-                        }
-                        Object managedEntity = em.merge(entity);
-                        em.remove(managedEntity);
+                if (!em.contains(entity)) {
+                    Object id = getId(entity);
+                    if (id == null) {
+                        throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
                     }
-                } catch (OptimisticLockException ole) {
-                    if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
-                        transactionManager.rollback();
+                    Object found = em.find(declaredEntityClass, id);
+                    if (found == null) {
+                        throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
                     }
-                    throw new OptimisticLockingFailureException(ole);
+                    entity = em.merge(entity); // dispara OptimisticLockException se versão não bater
                 }
+                em.remove(entity);
             }
-            endTransaction();
+
+            em.flush();
+            if (newTx) {
+                transactionManager.commit();
+            }
             return processReturnQueryUpdate(method, entitiesToDelete.size());
 
+        } catch (OptimisticLockException jpaOlex) {
+            safeRollback();
+            throw new OptimisticLockingFailureException(jpaOlex);
         } catch (OptimisticLockingFailureException ole) {
+            safeRollback();
             throw ole;
         } catch (Exception e) {
-            if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
-                transactionManager.rollback();
-            }
-            Throwable cause = e.getCause();
+            safeRollback();
+            Throwable cause = e;
             while (cause != null) {
                 if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
                     throw new OptimisticLockingFailureException(cause);
@@ -449,6 +468,20 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 cause = cause.getCause();
             }
             throw new RuntimeException("Error during delete operation", e);
+        }
+    }
+
+    private void safeRollback() {
+        try {
+            if (transactionManager != null) {
+                int status = transactionManager.getStatus();
+                if (status == jakarta.transaction.Status.STATUS_ACTIVE
+                        || status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                    transactionManager.rollback();
+                }
+            }
+        } catch (Exception ignore) {
+            // intentionally ignore rollback exceptions
         }
     }
 
