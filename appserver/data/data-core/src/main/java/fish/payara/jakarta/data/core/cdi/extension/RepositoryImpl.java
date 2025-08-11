@@ -410,26 +410,19 @@ public class RepositoryImpl<T> implements InvocationHandler {
         startTransactionAndJoin();
         try {
             for (Object entity : entitiesToDelete) {
-                // Instead of a bulk delete, we now use the JPA lifecycle.
-                // We must check if the entity is managed by the current persistence context.
                 if (em.contains(entity)) {
-                    // If it's already managed, we can remove it directly.
                     em.remove(entity);
                 } else {
-                    // If it's detached (like in the TCK test), we must first find it by its ID
-                    // to get the managed instance, and then remove that instance.
-                    // This allows the JPA provider to perform optimistic lock checks correctly.
                     Object id = getId(entity);
                     if (id == null) {
                         throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
                     }
-                    Object managedEntity = em.find(declaredEntityClass, id);
-                    if (managedEntity != null) {
-                        em.remove(managedEntity);
-                    } else {
-                        // The entity does not exist in the database.
+                    Object found = em.find(declaredEntityClass, id);
+                    if (found == null) {
                         throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
                     }
+                    Object managedEntity = em.merge(entity);
+                    em.remove(managedEntity);
                 }
             }
             endTransaction();
