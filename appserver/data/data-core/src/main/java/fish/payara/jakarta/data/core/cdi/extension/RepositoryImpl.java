@@ -52,6 +52,7 @@ import jakarta.data.exceptions.OptimisticLockingFailureException;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Id;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -501,11 +502,21 @@ public class RepositoryImpl<T> implements InvocationHandler {
             int length = Array.getLength(args[0]);
             results = new ArrayList<>(length);
             startTransactionAndJoin();
-            for (int i = 0; i < length; i++) {
-                em.merge(Array.get(args[0], i));
-                results.add(Array.get(args[0], i));
+            try {
+                for (int i = 0; i < length; i++) {
+                    em.merge(Array.get(args[0], i));
+                    results.add(Array.get(args[0], i));
+                }
+                endTransaction();
+            } catch (OptimisticLockException optimisticLockException) {
+                transactionManager.rollback();
+                throw new OptimisticLockingFailureException(optimisticLockException);
+            } catch (Exception e) {
+                if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                    transactionManager.rollback();
+                }
+                throw new RuntimeException("Error during update operation for multiple entities", e);
             }
-            endTransaction();
 
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
@@ -513,19 +524,39 @@ public class RepositoryImpl<T> implements InvocationHandler {
         } else if (arg instanceof List toIterate) { //update multiple entities
             results = new ArrayList<>();
             startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) toIterate)) {
-                entity = em.merge(e);
-                results.add(entity);
+            try {
+                for (Object e : ((Iterable<?>) toIterate)) {
+                    entity = em.merge(e);
+                    results.add(entity);
+                }
+                endTransaction();
+            } catch (OptimisticLockException jpaOlex) {
+                transactionManager.rollback();
+                throw new OptimisticLockingFailureException(jpaOlex);
+            } catch (Exception e) {
+                if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                    transactionManager.rollback();
+                }
+                throw new RuntimeException("Error during update operation for multiple entities", e);
             }
-            endTransaction();
 
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg != null) { //update single entity
             startTransactionAndJoin();
-            entity = em.merge(args[0]);
-            endTransaction();
+            try {
+                entity = em.merge(args[0]);
+                endTransaction();
+            } catch (OptimisticLockException optimisticLockException) {
+                transactionManager.rollback();
+                throw new OptimisticLockingFailureException(optimisticLockException);
+            } catch (Exception e) {
+                if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                    transactionManager.rollback();
+                }
+                throw new RuntimeException("Error during update operation", e);
+            }
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
@@ -580,7 +611,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
             transactionManager.begin();
             em.joinTransaction();
-        } else if (transactionManager.getStatus() != jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+        } else {
             em.joinTransaction();
         }
     }
