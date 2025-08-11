@@ -519,8 +519,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
             startTransactionAndJoin();
             try {
                 for (int i = 0; i < length; i++) {
-                    em.merge(Array.get(args[0], i));
-                    results.add(Array.get(args[0], i));
+                    Object original = Array.get(args[0], i);
+                    Object merged = em.merge(original);
+                    results.add(merged);
                 }
                 endTransaction();
             } catch (OptimisticLockException optimisticLockException) {
