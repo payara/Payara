@@ -41,6 +41,8 @@ package fish.payara.jakarta.data.core.util;
 
 import fish.payara.jakarta.data.core.cdi.extension.EntityMetadata;
 import fish.payara.jakarta.data.core.cdi.extension.QueryData;
+import jakarta.data.Limit;
+import jakarta.data.Order;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.DataException;
 import jakarta.data.exceptions.EmptyResultException;
@@ -64,6 +66,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -327,22 +330,22 @@ public class DataCommonOperationUtility {
                                     boolean isFindOperation, boolean hasPagination, boolean isForward) {
         StringBuilder sortedQuery = new StringBuilder(query);
         if (!sortList.isEmpty()) {
-            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward);
+            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward, null);
         }
         return sortedQuery.toString();
     }
 
     public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query, 
-                                  boolean isFindOperation, boolean hasPagination, boolean isForward) {
+                                  boolean isFindOperation, boolean hasPagination, boolean isForward, String rootAlias) {
         if (!sortList.isEmpty()) {
-            appendSortQuery(dataForQuery, sortList, query, isFindOperation, hasPagination, isForward);
+            appendSortQuery(dataForQuery, sortList, query, isFindOperation, hasPagination, isForward, rootAlias);
         }
     }
 
     private static void appendSortQuery(QueryData dataForQuery, 
                                         List<Sort<?>> sortList, StringBuilder sortedQuery, 
                                         boolean isFindOperation, boolean hasPagination, 
-                                        boolean isForward) {
+                                        boolean isForward, String rootAlias) {
         if (sortedQuery.toString().toUpperCase().contains("ORDER")) {
             throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
         }
@@ -362,10 +365,13 @@ public class DataCommonOperationUtility {
             if (sort.ignoreCase()) {
                 sortCriteria.append("LOWER(");
             }
-
-
+            
             if (isFindOperation && propertyName.charAt(propertyName.length() - 1) != ')') {
                 sortCriteria.append("o.");
+            }
+            
+            if (rootAlias != null && !rootAlias.isEmpty() && propertyName.charAt(propertyName.length() - 1) != ')') {
+                sortCriteria.append(rootAlias).append(".");
             }
 
             sortCriteria.append(propertyName);
@@ -395,5 +401,24 @@ public class DataCommonOperationUtility {
         }
         sortedQuery.append(sortCriteria.toString());
         dataForQuery.setQueryOrder(sortCriteria.toString());
+    }
+
+    public static DataParameter extractDataParameter(Object[] args) {
+        Limit limit = null;
+        List<Sort<?>> sortList = new ArrayList<>();
+        if (args != null) {
+            for (Object arg : args) {
+                if (arg instanceof Limit l) {
+                    limit = l;
+                } else if (arg instanceof Sort<?> sort) {
+                    sortList.add(sort);
+                } else if (arg instanceof Order<?> order) {
+                    order.forEach(sortList::add);
+                } else if (arg instanceof Sort<?>[] sorts) {
+                    Collections.addAll(sortList, sorts);
+                }
+            }
+        }
+        return new DataParameter(limit, sortList);
     }
 }
