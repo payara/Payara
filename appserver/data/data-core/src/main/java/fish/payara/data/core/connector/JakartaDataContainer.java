@@ -49,7 +49,7 @@ import org.jvnet.hk2.annotations.Service;
  * This container will help to process Jakarta Data annotations
  * @author Alfonso Valdez
  */
-@Service(name = "fish.payara.data.core.JakartaDataContainer")
+@Service(name = "fish.payara.data.core.connector.JakartaDataContainer")
 @PerLookup
 public class JakartaDataContainer implements Container {
     @Override
