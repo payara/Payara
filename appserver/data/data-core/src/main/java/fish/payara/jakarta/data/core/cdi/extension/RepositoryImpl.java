@@ -51,7 +51,6 @@ import jakarta.data.exceptions.MappingException;
 import jakarta.data.exceptions.OptimisticLockingFailureException;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Id;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
@@ -506,7 +505,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
-            NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+            NotSupportedException {
         validateMethodArguments(dataForQuery.getMethod(), args);
         List<Object> results;
         Object entity = null;
