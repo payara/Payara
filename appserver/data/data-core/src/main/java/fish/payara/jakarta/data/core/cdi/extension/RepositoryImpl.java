@@ -109,6 +109,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final String applicationName;
     private TransactionManager transactionManager;
     private EntityManager em;
+    private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -405,53 +406,45 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return processReturnQueryUpdate(method, 0);
         }
 
-        List<Object> ids = getIds(entitiesToDelete);
-        // Before querying the database, check if any of the provided entities are transient (have a null ID).
-        // If so, the TCK expects an OptimisticLockingFailureException immediately.
-        if (ids.stream().anyMatch(java.util.Objects::isNull)) {
-            throw new OptimisticLockingFailureException("Attempted to delete one or more transient entities (ID is null).");
-        }
         startTransactionComponents();
         startTransactionAndJoin();
-        // Dynamically get the name of the ID field from the entity's metadata.
-        String idFieldName = EntityIntrospectionUtil.findIdAccessor(declaredEntityClass).getName();
-        // For getter methods like getId(), we need to convert it to a field name "id".
-        if (idFieldName.startsWith("get") && idFieldName.length() > 3) {
-            idFieldName = Character.toLowerCase(idFieldName.charAt(3)) + idFieldName.substring(4);
-        }
         try {
-            // Step 1: Verify that all entities to be deleted actually exist in the database.
-            // This is required to comply with the TCK specification of throwing OptimisticLockingFailureException.
-            // The query now uses the dynamically discovered ID field name.
-            String countQueryStr = "SELECT count(e) FROM " + declaredEntityClass.getSimpleName() + " e WHERE e." + idFieldName + " IN :ids";
-            Long foundCount = (Long) em.createQuery(countQueryStr)
-                    .setParameter("ids", ids)
-                    .getSingleResult();
-            if (foundCount.intValue() != ids.size()) {
-                // If the number of found entities does not match the number of provided IDs,
-                // it means one or more entities do not exist.
-                transactionManager.rollback();
-                throw new OptimisticLockingFailureException("Attempted to delete one or more entities that do not exist in the database, or have a version mismatch.");
-            }
-            // Step 2: If all entities exist, proceed with an efficient bulk delete.
-            String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e." + idFieldName + " IN :ids";
-            int returnValue = em.createQuery(deleteQuery)
-                    .setParameter("ids", ids)
-                    .executeUpdate();
-            endTransaction();
-            return processReturnQueryUpdate(method, returnValue);
-        } catch (Exception e) {
-            try {
-                if (transactionManager != null) {
-                    int status = transactionManager.getStatus();
-                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
-                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
-                        // Ensure rollback on any other failure.
-                        transactionManager.rollback();
+            for (Object entity : entitiesToDelete) {
+                // Instead of a bulk delete, we now use the JPA lifecycle.
+                // We must check if the entity is managed by the current persistence context.
+                if (em.contains(entity)) {
+                    // If it's already managed, we can remove it directly.
+                    em.remove(entity);
+                } else {
+                    // If it's detached (like in the TCK test), we must first find it by its ID
+                    // to get the managed instance, and then remove that instance.
+                    // This allows the JPA provider to perform optimistic lock checks correctly.
+                    Object id = getId(entity);
+                    if (id == null) {
+                        throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
+                    }
+                    Object managedEntity = em.find(declaredEntityClass, id);
+                    if (managedEntity != null) {
+                        em.remove(managedEntity);
+                    } else {
+                        // The entity does not exist in the database.
+                        throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
                     }
                 }
-            } catch (Exception ex) {}
-            // Re-throw the original exception if it's the one we expect, or wrap it.
+            }
+            endTransaction();
+            // The return value for remove(entity) is typically void, but we return the count for consistency.
+            return processReturnQueryUpdate(method, entitiesToDelete.size());
+
+        } catch (OptimisticLockException jpaOlex) {
+            // This is the exception thrown by the JPA provider on a version mismatch.
+            // We catch it, roll back, and re-throw the standard Jakarta Data exception.
+            transactionManager.rollback();
+            throw new OptimisticLockingFailureException(jpaOlex);
+        } catch (Exception e) {
+            if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                transactionManager.rollback();
+            }
             if (e instanceof OptimisticLockingFailureException) {
                 throw e;
             }
@@ -460,34 +453,23 @@ public class RepositoryImpl<T> implements InvocationHandler {
     }
 
     /**
-     * Helper method to extract IDs from a list of entities using reflection.
-     * This version is robust and finds the ID by looking for the @Id annotation,
-     * not a fixed "getId" method name.
-     * @param entities The list of entities.
-     * @return A list of corresponding entity IDs.
+     * Helper method to extract the ID from a single entity.
      */
-    private List<Object> getIds(List<?> entities) {
-        if (entities == null || entities.isEmpty()) {
-            return Collections.emptyList();
+    private Object getId(Object entity) {
+        if (entity == null) {
+            return null;
         }
-        // Find the ID accessor for the entity type of the first element.
-        Member idAccessor = EntityIntrospectionUtil.findIdAccessor(entities.get(0).getClass());
-
-        return entities.stream()
-                .map(entity -> {
-                    try {
-                        if (idAccessor instanceof Method) {
-                            return ((Method) idAccessor).invoke(entity);
-                        } else if (idAccessor instanceof Field) {
-                            return ((Field) idAccessor).get(entity);
-                        }
-                        // This should not happen if findIdAccessor works correctly
-                        throw new MappingException("No ID accessor found for entity: " + entity.getClass().getName());
-                    } catch (Exception e) {
-                        throw new MappingException("Failed to get ID from entity of type " + entity.getClass().getName(), e);
-                    }
-                })
-                .collect(Collectors.toList());
+        Member idAccessor = EntityIntrospectionUtil.findIdAccessor(entity.getClass());
+        try {
+            if (idAccessor instanceof Method) {
+                return ((Method) idAccessor).invoke(entity);
+            } else if (idAccessor instanceof Field) {
+                return ((Field) idAccessor).get(entity);
+            }
+            throw new MappingException("No ID accessor found for entity: " + entity.getClass().getName());
+        } catch (Exception e) {
+            throw new MappingException("Failed to get ID from entity of type " + entity.getClass().getName(), e);
+        }
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
