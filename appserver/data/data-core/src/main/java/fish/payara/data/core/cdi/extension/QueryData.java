@@ -63,6 +63,7 @@ public class QueryData {
     private String queryPrevious;
     private String queryOrder;
     private List<Sort<?>> orders;
+    private boolean isUserTransaction = false;
 
     private int paramIndex = 0;
 
@@ -181,5 +182,13 @@ public class QueryData {
 
     public void setQueryOrder(String queryOrder) {
         this.queryOrder = queryOrder;
+    }
+
+    public boolean isUserTransaction() {
+        return isUserTransaction;
+    }
+
+    public void setUserTransaction(boolean userTransaction) {
+        isUserTransaction = userTransaction;
     }
 }
