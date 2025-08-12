@@ -195,6 +195,16 @@ public class QueryMethodParser {
      * @return number of tokens of the following operator, 0 is there is no operator
      */
     private int followsOperator() {
+        if (follows(KEYWORD_LESS, KEYWORD_THAN, KEYWORD_EQUAL)
+                || follows(KEYWORD_GREATER, KEYWORD_THAN, KEYWORD_EQUAL)) {
+            return 3;
+        }
+        if (follows(KEYWORD_ENDS, KEYWORD_WITH)
+                || follows(KEYWORD_STARTS, KEYWORD_WITH)
+                || follows(KEYWORD_LESS, KEYWORD_THAN)
+                || follows(KEYWORD_GREATER, KEYWORD_THAN)) {
+            return 2;
+        }
         if (follows(KEYWORD_CONTAINS)
                 || follows(KEYWORD_BETWEEN)
                 || follows(KEYWORD_LIKE)
@@ -203,16 +213,6 @@ public class QueryMethodParser {
                 || follows(KEYWORD_TRUE)
                 || follows(KEYWORD_FALSE)) {
             return 1;
-        }
-        if (follows(KEYWORD_ENDS, KEYWORD_WITH)
-                || follows(KEYWORD_STARTS, KEYWORD_WITH)
-                || follows(KEYWORD_LESS, KEYWORD_THAN)
-                || follows(KEYWORD_GREATER, KEYWORD_THAN)) {
-            return 2;
-        }
-        if (follows(KEYWORD_LESS, KEYWORD_THAN, KEYWORD_EQUAL)
-                || follows(KEYWORD_GREATER, KEYWORD_THAN, KEYWORD_EQUAL)) {
-            return 3;
         }
         return 0;
     }

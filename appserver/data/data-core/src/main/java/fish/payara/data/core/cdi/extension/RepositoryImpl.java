@@ -40,18 +40,19 @@
 package fish.payara.data.core.cdi.extension;
 
 import fish.payara.data.core.util.DataParameter;
-import fish.payara.data.core.util.DeleteOperationUtility;
+import fish.payara.data.core.util.EntityIntrospectionUtil;
 import fish.payara.data.core.util.FindOperationUtility;
 import fish.payara.data.core.util.QueryByNameOperationUtility;
 import fish.payara.data.core.util.QueryOperationUtility;
-import jakarta.data.repository.By;
+import jakarta.data.exceptions.MappingException;
+import jakarta.data.exceptions.OptimisticLockingFailureException;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
-import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import jakarta.validation.ConstraintViolation;
@@ -65,7 +66,9 @@ import org.glassfish.internal.api.Globals;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,8 +77,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -103,6 +106,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final String applicationName;
     private TransactionManager transactionManager;
     private EntityManager em;
+    private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
         this.repositoryInterface = repositoryInterface;
@@ -153,19 +157,24 @@ public class RepositoryImpl<T> implements InvocationHandler {
         QueryData dataForQuery = queries.get(method);
         Object objectToReturn;
 
-        switch (dataForQuery.getQueryType()) {
-            case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
-            case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
-            case DELETE ->
-                    objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
-            case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-            case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
-            case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-            case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
-            case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
-            default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+        try {
+            switch (dataForQuery.getQueryType()) {
+                case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
+                case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
+                case DELETE ->
+                        objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), dataForQuery.getMethod());
+                case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
+                case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
+                case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
+                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, dataForQuery, getEntityManager(this.applicationName));
+                default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+            }
+        } catch (jakarta.persistence.OptimisticLockException e) {
+            // Expected in Data TCK
+            throw new jakarta.data.exceptions.OptimisticLockingFailureException(e.getMessage(), e);
         }
 
         return objectToReturn;
@@ -257,28 +266,50 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {
             results = new ArrayList<>();
-            boolean transactionStarted = startTransactionAndJoin();
+            startTransactionAndJoin();
             for (Object e : toIterate) {
                 results.add(em.merge(e));
             }
-            if (!transactionStarted) {
-                endTransaction();
-            }
+            endTransaction();
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (args[0] != null) {
-            boolean transactionStarted = startTransactionAndJoin();
+            startTransactionAndJoin();
             entity = em.merge(args[0]);
-            if (!transactionStarted) {
-                endTransaction();
-            }
+            endTransaction();
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
             entity = null;
         }
         return entity;
+    }
+
+    private boolean entityExistsConstraintViolation(Throwable t) {
+        while (t != null) {
+            if (t instanceof jakarta.persistence.EntityExistsException) {
+                return true;
+            }
+            if (t instanceof java.sql.SQLIntegrityConstraintViolationException) {
+                return true;
+            }
+            String msg = t.getMessage();
+            if (msg != null) {
+                String lower = msg.toLowerCase();
+                if (lower.contains("constraint") && lower.contains("violation")) {
+                    return true;
+                }
+                if (lower.contains("unique") && lower.contains("violation")) {
+                    return true;
+                }
+                if (lower.contains("duplicate") && lower.contains("key")) {
+                    return true;
+                }
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 
     public Object processInsertOperation(Object[] args, QueryData dataForQuery) throws SystemException, NotSupportedException,
@@ -289,29 +320,41 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
         startTransactionComponents();
 
-        if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
-            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
-        } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
-            results = new ArrayList<>();
-            boolean transactionStarted = startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) toIterate)) {
-                em.persist(e);
-                results.add(e);
-            }
-            if (!transactionStarted) {
+        try {
+            if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
+                return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
+            } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
+                results = new ArrayList<>();
+                startTransactionAndJoin();
+                for (Object e : ((Iterable<?>) toIterate)) {
+                    em.persist(e);
+                    results.add(e);
+                }
                 endTransaction();
-            }
 
-            if (!results.isEmpty()) {
-                return processReturnType(dataForQuery, results);
-            }
-        } else if (arg != null) { //insert a single entity
-            boolean transactionStarted = startTransactionAndJoin();
-            entity = args[0];
-            em.persist(args[0]);
-            if (!transactionStarted) {
+                if (!results.isEmpty()) {
+                    return processReturnType(dataForQuery, results);
+                }
+            } else if (arg != null) { //insert a single entity
+                startTransactionAndJoin();
+                entity = args[0];
+                em.persist(args[0]);
                 endTransaction();
             }
+        } catch (Throwable t) {
+            try {
+                if (transactionManager != null) {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                }
+            } catch (Exception ex) {}
+            if (entityExistsConstraintViolation(t)) {
+                throw new jakarta.data.exceptions.EntityExistsException("Entity already exists", t);
+            }
+            throw t;
         }
 
         if (evaluateReturnTypeVoidPredicate.test(dataForQuery.getMethod().getReturnType())) {
@@ -321,91 +364,146 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return entity;
     }
 
+    /**
+     * Processes standard delete operations, such as delete(entity) or deleteById(id).
+     * This version has been completely rewritten to be more robust and TCK-compliant.
+     *
+     * @param args The arguments passed to the repository method.
+     * @param declaredEntityClass The primary entity class for the repository.
+     * @param method The repository method that was invoked.
+     * @return The number of deleted entities, converted to the method's return type.
+     * @throws ... various transaction exceptions
+     */
     public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, Method method)
             throws SystemException, NotSupportedException, HeuristicRollbackException,
             HeuristicMixedException, RollbackException {
-        int returnValue = 0;
-        Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 
-        if (args == null) { // delete all records
+        if (args == null) {
+            // deleteAll()
             startTransactionComponents();
-            boolean transactionStarted = startTransactionAndJoin();
-            String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
-            returnValue = em.createQuery(deleteAllQuery).executeUpdate();
-            if (!transactionStarted) {
-                endTransaction();
-            }
-        } else if (args[0] instanceof List arr) {
-            // existing list handling code
-            startTransactionComponents();
-            boolean transactionStarted = startTransactionAndJoin();
-            List<Object> ids = getIds((List<?>) arr);
-            if (!ids.isEmpty()) {
-                String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id IN :ids";
-                returnValue = em.createQuery(deleteQuery)
-                        .setParameter("ids", ids)
-                        .executeUpdate();
-            }
-            if (!transactionStarted) {
-                endTransaction();
-            }
-        } else {
-            // Handle @By annotation cases
-            Optional<Annotation> byFound = Arrays.stream(parameterAnnotations)
-                    .flatMap(Arrays::stream)
-                    .filter(a -> a instanceof By)
-                    .findFirst();
-            final boolean hasByAnnotation = byFound.isPresent();
-
-            if (hasByAnnotation) {
-                startTransactionComponents();
-                QueryData queryData = queries.get(method);
-                returnValue = DeleteOperationUtility.processDeleteByOperation(
-                        args,
-                        declaredEntityClass,
-                        getTransactionManager(),
-                        getEntityManager(this.applicationName),
-                        queryData.getEntityMetadata(),
-                        method
-                );
-            } else if (args[0] != null) { // delete single entity
-                startTransactionComponents();
-                boolean transactionStarted = startTransactionAndJoin();
-                try {
-                    Method getId = args[0].getClass().getMethod("getId");
-                    Object id = getId.invoke(args[0]);
-                    String deleteQuery = "DELETE FROM " + declaredEntityClass.getSimpleName() + " e WHERE e.id = :id";
-                    returnValue = em.createQuery(deleteQuery)
-                            .setParameter("id", id)
-                            .executeUpdate();
-                } catch (Exception e) {
-                    throw new RuntimeException("Error to get entity ID", e);
+            int before = transactionManager.getStatus();
+            boolean newTx = (before == jakarta.transaction.Status.STATUS_NO_TRANSACTION);
+            startTransactionAndJoin();
+            try {
+                String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
+                int deletedCount = em.createQuery(deleteAllQuery).executeUpdate();
+                em.flush();
+                if (newTx) {
+                    transactionManager.commit();
                 }
-                if (!transactionStarted) {
-                endTransaction();
-            }
+                return processReturnQueryUpdate(method, deletedCount);
+            } catch (Exception e) {
+                safeRollback();
+                // Se for OtimisticLock de provedor, mapeia adequadamente
+                Throwable cause = e;
+                while (cause != null) {
+                    if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
+                        throw new OptimisticLockingFailureException(cause);
+                    }
+                    cause = cause.getCause();
+                }
+                throw new RuntimeException("Error during bulk delete operation", e);
             }
         }
 
-        return processReturnQueryUpdate(method, returnValue);
+        Object arg = args[0];
+        List<?> entitiesToDelete;
+        if (arg instanceof Stream) {
+            entitiesToDelete = ((Stream<?>) arg).toList();
+        } else if (arg instanceof List) {
+            entitiesToDelete = (List<?>) arg;
+        } else if (arg.getClass().isArray()) {
+            entitiesToDelete = Arrays.asList((Object[]) arg);
+        } else {
+            entitiesToDelete = Collections.singletonList(arg);
+        }
+
+        if (entitiesToDelete.isEmpty()) {
+            return processReturnQueryUpdate(method, 0);
+        }
+
+        startTransactionComponents();
+        int before = transactionManager.getStatus();
+        boolean newTx = (before == jakarta.transaction.Status.STATUS_NO_TRANSACTION);
+        startTransactionAndJoin();
+
+        try {
+            for (Object entity : entitiesToDelete) {
+                if (!em.contains(entity)) {
+                    Object id = getId(entity);
+                    if (id == null) {
+                        throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
+                    }
+                    Object found = em.find(declaredEntityClass, id);
+                    if (found == null) {
+                        throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
+                    }
+                    entity = em.merge(entity); // dispara OptimisticLockException se versão não bater
+                }
+                em.remove(entity);
+            }
+
+            em.flush();
+            if (newTx) {
+                transactionManager.commit();
+            }
+            return processReturnQueryUpdate(method, entitiesToDelete.size());
+
+        } catch (OptimisticLockException jpaOlex) {
+            safeRollback();
+            throw new OptimisticLockingFailureException(jpaOlex);
+        } catch (OptimisticLockingFailureException ole) {
+            safeRollback();
+            throw ole;
+        } catch (Exception e) {
+            safeRollback();
+            Throwable cause = e;
+            while (cause != null) {
+                if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
+                    throw new OptimisticLockingFailureException(cause);
+                }
+                cause = cause.getCause();
+            }
+            throw new RuntimeException("Error during delete operation", e);
+        }
     }
 
-    private static List<Object> getIds(List<?> arr) {
-        List<Object> ids = arr.stream()
-                .map(entity -> {
-                    try {
-                        Method getId = entity.getClass().getMethod("getId");
-                        return getId.invoke(entity);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error to get entity ID", e);
-                    }
-                })
-                .collect(Collectors.toList());
-        return ids;
+    private void safeRollback() {
+        try {
+            if (transactionManager != null) {
+                int status = transactionManager.getStatus();
+                if (status == jakarta.transaction.Status.STATUS_ACTIVE
+                        || status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                    transactionManager.rollback();
+                }
+            }
+        } catch (Exception ignore) {
+            // intentionally ignore rollback exceptions
+        }
+    }
+
+    /**
+     * Helper method to extract the ID from a single entity.
+     */
+    private Object getId(Object entity) {
+        if (entity == null) {
+            return null;
+        }
+        Member idAccessor = EntityIntrospectionUtil.findIdAccessor(entity.getClass());
+        try {
+            if (idAccessor instanceof Method) {
+                return ((Method) idAccessor).invoke(entity);
+            } else if (idAccessor instanceof Field) {
+                return ((Field) idAccessor).get(entity);
+            }
+            throw new MappingException("No ID accessor found for entity: " + entity.getClass().getName());
+        } catch (Exception e) {
+            throw new MappingException("Failed to get ID from entity of type " + entity.getClass().getName(), e);
+        }
     }
 
     public Object processUpdateOperation(Object[] args, QueryData dataForQuery) throws SystemException,
-            NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
+            NotSupportedException {
         validateMethodArguments(dataForQuery.getMethod(), args);
         List<Object> results;
         Object entity = null;
@@ -415,13 +513,22 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (dataForQuery.getEntityParamType().isArray()) { //update multiple entities from array reference
             int length = Array.getLength(args[0]);
             results = new ArrayList<>(length);
-            boolean transactionStarted = startTransactionAndJoin();
-            for (int i = 0; i < length; i++) {
-                em.merge(Array.get(args[0], i));
-                results.add(Array.get(args[0], i));
-            }
-            if (!transactionStarted) {
+            startTransactionAndJoin();
+            try {
+                for (int i = 0; i < length; i++) {
+                    Object original = Array.get(args[0], i);
+                    Object merged = em.merge(original);
+                    results.add(merged);
+                }
                 endTransaction();
+            } catch (OptimisticLockException optimisticLockException) {
+                transactionManager.rollback();
+                throw new OptimisticLockingFailureException(optimisticLockException);
+            } catch (Exception e) {
+                if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                    transactionManager.rollback();
+                }
+                throw new RuntimeException("Error during update operation for multiple entities", e);
             }
 
             if (!results.isEmpty()) {
@@ -429,23 +536,39 @@ public class RepositoryImpl<T> implements InvocationHandler {
             }
         } else if (arg instanceof List toIterate) { //update multiple entities
             results = new ArrayList<>();
-            boolean transactionStarted = startTransactionAndJoin();
-            for (Object e : ((Iterable<?>) toIterate)) {
-                entity = em.merge(e);
-                results.add(entity);
-            }
-            if (!transactionStarted) {
+            startTransactionAndJoin();
+            try {
+                for (Object e : ((Iterable<?>) toIterate)) {
+                    entity = em.merge(e);
+                    results.add(entity);
+                }
                 endTransaction();
+            } catch (OptimisticLockException jpaOlex) {
+                transactionManager.rollback();
+                throw new OptimisticLockingFailureException(jpaOlex);
+            } catch (Exception e) {
+                if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                    transactionManager.rollback();
+                }
+                throw new RuntimeException("Error during update operation for multiple entities", e);
             }
 
             if (!results.isEmpty()) {
                 return processReturnType(dataForQuery, results);
             }
         } else if (arg != null) { //update single entity
-            boolean transactionStarted = startTransactionAndJoin();
-            entity = em.merge(args[0]);
-            if (!transactionStarted) {
+            startTransactionAndJoin();
+            try {
+                entity = em.merge(args[0]);
                 endTransaction();
+            } catch (OptimisticLockException optimisticLockException) {
+                transactionManager.rollback();
+                throw new OptimisticLockingFailureException(optimisticLockException);
+            } catch (Exception e) {
+                if (transactionManager != null && transactionManager.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                    transactionManager.rollback();
+                }
+                throw new RuntimeException("Error during update operation", e);
             }
         }
 
@@ -461,7 +584,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
                 getEntityManager(this.applicationName), getTransactionManager(), dataParameter);
     }
-    
+
     public TransactionManager getTransactionManager() {
         ServiceLocator locator = Globals.get(ServiceLocator.class);
         ServiceHandle<TransactionManager> inhabitant =
@@ -478,13 +601,13 @@ public class RepositoryImpl<T> implements InvocationHandler {
         em = getEntityManager(this.applicationName);
     }
 
-    public boolean startTransactionAndJoin() throws SystemException, NotSupportedException {
-        if (transactionManager.getStatus() == Status.STATUS_ACTIVE) {
-            return false;
+    public void startTransactionAndJoin() throws SystemException, NotSupportedException {
+        if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
+            transactionManager.begin();
+            em.joinTransaction();
+        } else {
+            em.joinTransaction();
         }
-        transactionManager.begin();
-        em.joinTransaction();
-        return true;
     }
 
     public void endTransaction() throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {

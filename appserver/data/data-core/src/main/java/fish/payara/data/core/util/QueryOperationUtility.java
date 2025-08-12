@@ -114,15 +114,8 @@ public class QueryOperationUtility {
                     patternUpdatePositions = preprocessQueryString(mappedQuery, updateQueryPatterns);
                     queryMapping = processQuery(mappedQuery, patternUpdatePositions, dataForQuery);
                 } else {
-                    StringBuilder builder = new StringBuilder();
-                    if (!mappedQuery.contains("SELECT") && !mappedQuery.contains("FROM") && !mappedQuery.contains("WHERE")) {
-                        builder.append("FROM ");
-                        builder.append(dataForQuery.getDeclaredEntityClass().getSimpleName());
-                        builder.append(" ");
-                    }
-                    builder.append(mappedQuery);
-                    patternSelectPositions = preprocessQueryString(builder.toString(), selectQueryPatterns);
-                    queryMapping = processQuery(builder.toString(), patternSelectPositions, dataForQuery);
+                    patternSelectPositions = preprocessQueryString(mappedQuery, selectQueryPatterns);
+                    queryMapping = processQuery(mappedQuery, patternSelectPositions, dataForQuery);
                 }
             }
         }
@@ -156,16 +149,11 @@ public class QueryOperationUtility {
                 }
 
                 if (deletePredicate.test(firstChar) || updatePredicate.test(firstChar)) {
-                    boolean userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-                    if (!userTransaction) {
-                        transactionManager.begin();
-                        entityManager.joinTransaction();
-                    }
+                    transactionManager.begin();
+                    entityManager.joinTransaction();
                     int deleteReturn = q.executeUpdate();
-                    if (!userTransaction) {
-                        entityManager.flush();
-                        transactionManager.commit();
-                    }
+                    entityManager.flush();
+                    transactionManager.commit();
 
                     return processReturnQueryUpdate(method, deleteReturn);
                 } else {
@@ -308,9 +296,7 @@ public class QueryOperationUtility {
             case "ORDER" -> {
                 int whereIndex = getIndexFromMap("WHERE", patternPositions);
                 int orderIndex = getIndexFromMap("ORDER", patternPositions);
-                if (whereIndex != -1) {
-                    queryBuilder.append(query.substring(whereIndex + 6, orderIndex));
-                }
+                queryBuilder.append(query.substring(whereIndex + 6, orderIndex));
                 if (patternPositions.containsValue("BY")) {
                     queryBuilder.append(" ORDER BY ").append(query.substring(orderIndex + 9));
                 }

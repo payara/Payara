@@ -52,11 +52,10 @@ import jakarta.data.page.PageRequest;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Metamodel;
-import jakarta.transaction.Status;
-import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
@@ -99,46 +98,64 @@ public class QueryByNameOperationUtility {
      * 2. It then iterates through the fetched entities and calls entityManager.remove() on each within a new transaction.
      * This method requires a TransactionManager to perform the modification.
      */
-    public static Object processDeleteByNameOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager, TransactionManager transactionManager) {
-        // Step 1: Find all entities matching the delete criteria using a dedicated helper.
+    public static Object processDeleteByNameOperation(Object[] args,
+                                                      QueryData dataForQuery,
+                                                      EntityManager entityManager,
+                                                      TransactionManager transactionManager) {
         List<?> entitiesToDelete = findEntitiesForModification(args, dataForQuery, entityManager);
 
         if (entitiesToDelete.isEmpty()) {
             return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
         }
 
-        // Step 2: Remove the found entities within a transaction.
-        boolean userTransaction = false;
+        boolean newTx = false;
         try {
-            userTransaction = transactionManager.getStatus() == Status.STATUS_ACTIVE;
-        } catch (SystemException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            if (!userTransaction) {
-                transactionManager.begin();
+            if (transactionManager != null) {
+                int status = transactionManager.getStatus();
+                if (status == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
+                    transactionManager.begin();
+                    newTx = true;
+                }
                 entityManager.joinTransaction();
             }
+
             for (Object entity : entitiesToDelete) {
-                // To be safe, merge the entity to ensure it's managed before removing.
-                entityManager.remove(entityManager.contains(entity) ? entity : entityManager.merge(entity));
+                Object managed = entityManager.contains(entity) ? entity : entityManager.merge(entity);
+                entityManager.remove(managed);
             }
-            if (!userTransaction) {
+
+            if (newTx) {
+                entityManager.flush();
                 transactionManager.commit();
-                clearCaches(entityManager);
             }
+
+            clearCaches(entityManager);
+            return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
+
+        } catch (OptimisticLockException ole) {
+            if (newTx) {
+                try {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                } catch (Exception ignore) {}
+            }
+            throw new jakarta.data.exceptions.OptimisticLockingFailureException(ole.getMessage(), ole);
+
         } catch (Exception e) {
-            try {
-                if (!userTransaction) {
-                    transactionManager.rollback();
-                }
-            } catch (SystemException se) {
-                throw new RuntimeException("Rollback failed", se);
+            if (newTx) {
+                try {
+                    int status = transactionManager.getStatus();
+                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                        transactionManager.rollback();
+                    }
+                } catch (Exception ignore) {}
             }
             throw new MappingException("Failed to execute delete operation", e);
         }
-
-        return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
     }
 
     private static void clearCaches(EntityManager entityManager) {
@@ -187,9 +204,9 @@ public class QueryByNameOperationUtility {
     private static Object buildAndExecuteQuery(Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action expectedAction) {
         Method method = dataForQuery.getMethod();
         String methodName = method.getName();
-        
+
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
-        
+
         try {
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
             if (parser.getAction() != expectedAction) {
@@ -210,7 +227,7 @@ public class QueryByNameOperationUtility {
      * Builds a jakarta.persistence.Query object from a parsed method name.
      * This is a central helper used by all `...ByName` operations.
      */
-    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args, 
+    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args,
                                                                   QueryData dataForQuery, EntityManager entityManager,
                                                                   QueryMethodParser.Action executionAction) {
         Metamodel metamodel = entityManager.getMetamodel();
@@ -229,8 +246,44 @@ public class QueryByNameOperationUtility {
         if (!parser.getConditions().isEmpty()) {
             jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
         }
-        if (executionAction == QueryMethodParser.Action.FIND && !parser.getOrderBy().isEmpty()) {
-            jpql.append(buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases));
+
+        String orderByClause = null;
+        if (executionAction == QueryMethodParser.Action.FIND) {
+            // 1. Using Order/Sort param if exists
+            Method method = dataForQuery.getMethod();
+            Class<?>[] paramTypes = method.getParameterTypes();
+            int orderParamIndex = -1;
+            for (int i = 0; i < paramTypes.length; i++) {
+                if (jakarta.data.Order.class.isAssignableFrom(paramTypes[i]) ||
+                        jakarta.data.Sort.class.isAssignableFrom(paramTypes[i])) {
+                    orderParamIndex = i;
+                    break;
+                }
+            }
+            if (orderParamIndex >= 0 && args != null && args.length > orderParamIndex && args[orderParamIndex] != null) {
+                Object orderArg = args[orderParamIndex];
+                if (orderArg instanceof jakarta.data.Order<?> order) {
+                    StringJoiner joiner = new StringJoiner(", ");
+                    for (jakarta.data.Sort<?> sort : order) {
+                        String property = sort.property();
+                        String direction = sort.isAscending() ? "ASC" : "DESC";
+                        joiner.add(rootAlias + "." + property + " " + direction);
+                    }
+                    if (joiner.length() > 0) {
+                        orderByClause = " ORDER BY " + joiner.toString();
+                    }
+                } else if (orderArg instanceof jakarta.data.Sort<?> sort) {
+                    String property = sort.property();
+                    String direction = sort.isAscending() ? "ASC" : "DESC";
+                    orderByClause = " ORDER BY " + rootAlias + "." + property + " " + direction;
+                }
+            } else if (orderByClause == null && !parser.getOrderBy().isEmpty()) {
+                // 2. Else use OrderBy from method name (parser)
+                orderByClause = buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases);
+            }
+            if (orderByClause != null) {
+                jpql.append(orderByClause);
+            }
         }
 
         jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());

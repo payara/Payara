@@ -102,20 +102,15 @@ public class DeleteOperationUtility {
             builder.append(")");
         }
 
-        boolean userTransaction = tm.getStatus() == Status.STATUS_ACTIVE;
-        if (!userTransaction) {
-            tm.begin();
-            em.joinTransaction();
-        }
+        tm.begin();
+        em.joinTransaction();
         Query q = em.createQuery(builder.toString());
         for (int i = 0; i < args.length; i++) {
             q.setParameter(i + 1, args[i]);
         }
         int rowsAffected = q.executeUpdate();
-        if (!userTransaction) {
-            em.flush();
-            tm.commit();
-        }
+        em.flush();
+        tm.commit();
 
         logger.info("Rows affected from delete operation: " + rowsAffected);
         return rowsAffected;
@@ -136,18 +131,13 @@ public class DeleteOperationUtility {
                                                  EntityManager em, String idNameValue) throws SystemException,
             NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
         String query = createDeleteOperationSingleEntity(declaredEntityClass, idNameValue);
-        boolean userTransaction = tm.getStatus() == Status.STATUS_ACTIVE;
-        if (!userTransaction) {
-            tm.begin();
-            em.joinTransaction();
-        }
+        tm.begin();
+        em.joinTransaction();
         Query q = em.createQuery(query);
         q.setParameter(1, args[0]);
         int rowsAffected = q.executeUpdate();
-        if (!userTransaction) {
-            em.flush();
-            tm.commit();
-        }
+        em.flush();
+        tm.commit();
         logger.info("Rows affected from delete operation:" + rowsAffected);
         return rowsAffected;
     }

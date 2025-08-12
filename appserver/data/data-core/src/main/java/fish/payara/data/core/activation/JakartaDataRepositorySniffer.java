@@ -97,7 +97,7 @@ public class JakartaDataRepositorySniffer implements Sniffer {
 
     @Override
     public String getModuleType() {
-        return "jakarta-data";
+        return "data";
     }
 
     @Override
