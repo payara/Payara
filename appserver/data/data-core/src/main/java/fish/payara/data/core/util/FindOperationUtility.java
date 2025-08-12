@@ -109,7 +109,6 @@ public class FindOperationUtility {
         }
 
         if (!hasBy && parameterAnnotations.length == 1) {
-            // Use utilitário para obter o nome do campo ID
             attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
             if (!hasWhere) {
                 builder.append(" WHERE (");
@@ -118,7 +117,6 @@ public class FindOperationUtility {
             builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             queryPosition++;
         } else {
-            // Lógica original
             for (Annotation[] annotations : parameterAnnotations) {
                 for (Annotation annotation : annotations) {
                     if (annotation instanceof By) {
