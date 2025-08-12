@@ -437,7 +437,6 @@ public class DataCommonOperationUtility {
         
         if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
             transactionManager.begin();
-            em.joinTransaction();
             dataForQuery.setNewTransaction(true);
         } 
         
