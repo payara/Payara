@@ -68,9 +68,11 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
+import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
 import static fish.payara.data.core.util.DataCommonOperationUtility.extractDataParameter;
 import static fish.payara.data.core.util.DataCommonOperationUtility.paginationPredicate;
 import static fish.payara.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
+import static fish.payara.data.core.util.DataCommonOperationUtility.startTransactionAndJoin;
 import static fish.payara.data.core.util.FindOperationUtility.createQueriesForPagination;
 import static fish.payara.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.data.core.util.FindOperationUtility.getPageRequest;
@@ -107,54 +109,39 @@ public class QueryByNameOperationUtility {
         if (entitiesToDelete.isEmpty()) {
             return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
         }
-
-        boolean newTx = false;
+        
         try {
-            if (transactionManager != null) {
-                int status = transactionManager.getStatus();
-                if (status == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
-                    transactionManager.begin();
-                    newTx = true;
-                }
-                entityManager.joinTransaction();
-            }
+            startTransactionAndJoin(transactionManager,entityManager,dataForQuery);
 
             for (Object entity : entitiesToDelete) {
                 Object managed = entityManager.contains(entity) ? entity : entityManager.merge(entity);
                 entityManager.remove(managed);
             }
 
-            if (newTx) {
-                entityManager.flush();
-                transactionManager.commit();
-            }
+            endTransaction(transactionManager,entityManager,dataForQuery);
 
             clearCaches(entityManager);
             return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
 
         } catch (OptimisticLockException ole) {
-            if (newTx) {
-                try {
-                    int status = transactionManager.getStatus();
-                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
-                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
-                        transactionManager.rollback();
-                    }
-                } catch (Exception ignore) {}
-            }
+            doTransactionRollback(dataForQuery, transactionManager);
             throw new jakarta.data.exceptions.OptimisticLockingFailureException(ole.getMessage(), ole);
-
         } catch (Exception e) {
-            if (newTx) {
-                try {
-                    int status = transactionManager.getStatus();
-                    if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
-                            status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
-                        transactionManager.rollback();
-                    }
-                } catch (Exception ignore) {}
-            }
+            doTransactionRollback(dataForQuery, transactionManager);
             throw new MappingException("Failed to execute delete operation", e);
+        }
+    }
+    
+    private static void doTransactionRollback(QueryData dataForQuery, TransactionManager transactionManager) {
+        if (dataForQuery.isNewTransaction()) {
+            try {
+                int status = transactionManager.getStatus();
+                if (status == jakarta.transaction.Status.STATUS_ACTIVE ||
+                        status == jakarta.transaction.Status.STATUS_MARKED_ROLLBACK) {
+                    transactionManager.rollback();
+                }
+                dataForQuery.setNewTransaction(false);
+            } catch (Exception ignore) {}
         }
     }
 
