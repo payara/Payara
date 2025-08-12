@@ -332,6 +332,8 @@ public class QueryByNameOperationUtility {
         if (!sortsFromMethodName.isEmpty() && sortList != null) {
             sortsFromMethodName.addAll(sortList);
             dataForQuery.setOrders(sortsFromMethodName);
+        } else if(sortList != null) {
+            dataForQuery.setOrders(sortList);
         }
 
         dataForQuery.setQueryString(jpql.toString());

@@ -43,6 +43,7 @@ import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -84,14 +85,18 @@ public class PageImpl<T> implements Page<T> {
             }
         }
         query.setFirstResult(this.processOffset());
-        query.setMaxResults(pageRequest.size());
+        query.setMaxResults(pageRequest.size() + (pageRequest.size() == Integer.MAX_VALUE ? 0 : 1));
         results = query.getResultList();
-        totalElements();
+        if(pageRequest.requestTotal()) {
+            totalElements();
+        }
     }
 
     @Override
     public List<T> content() {
-        return results;
+        int size = results.size();
+        int max = pageRequest.size();
+        return size > max ? results.subList(0,max) : results;
     }
 
     @Override
@@ -101,12 +106,15 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public int numberOfElements() {
-        return results.size();
+        int size = results.size();
+        int max = pageRequest.size();
+        return size > max ? max : size;
     }
 
     @Override
     public boolean hasNext() {
-        return totalPages() > pageRequest.page();
+        return results.size() > pageRequest.size() ||
+                pageRequest.size() == Integer.MAX_VALUE && results.size() == pageRequest.size();        
     }
 
     @Override
