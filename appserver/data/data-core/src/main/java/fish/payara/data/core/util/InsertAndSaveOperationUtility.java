@@ -67,12 +67,12 @@ public class InsertAndSaveOperationUtility {
         int length = Array.getLength(args[0]);
         List<Object> results = null;
         results = new ArrayList<>(length);
-        startTransactionAndJoin(tm, em, dataForQuery.isUserTransaction());
+        startTransactionAndJoin(tm, em, dataForQuery);
         for (int i = 0; i < length; i++) {
             em.persist(Array.get(args[0], i));
             results.add(Array.get(args[0], i));
         }
-        endTransaction(tm, em, dataForQuery.isUserTransaction());
+        endTransaction(tm, em, dataForQuery);
 
         if (!results.isEmpty()) {
             return processReturnType(dataForQuery, results);

@@ -429,25 +429,29 @@ public class DataCommonOperationUtility {
     }
 
     public static void startTransactionAndJoin(TransactionManager transactionManager,
-                                               EntityManager em, boolean isUserManagedTransaction) throws SystemException, NotSupportedException {
+                                               EntityManager em, QueryData dataForQuery) throws SystemException, NotSupportedException {
         
-        if (isUserManagedTransaction) {
+        if (dataForQuery.isUserTransaction()) {
             return;
         }
         
         if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
             transactionManager.begin();
             em.joinTransaction();
+            dataForQuery.setNewTransaction(true);
         } 
         
         em.joinTransaction();
     }
 
     public static void endTransaction(TransactionManager transactionManager,
-                                      EntityManager em, boolean isUserManagedTransaction) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
-        if(!isUserManagedTransaction) {
+                                      EntityManager em, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
+        if(!dataForQuery.isUserTransaction()) {
             em.flush();
-            transactionManager.commit();
+            if (dataForQuery.isNewTransaction()) {
+                transactionManager.commit();
+                dataForQuery.setNewTransaction(false);
+            }
         }
     }
 }

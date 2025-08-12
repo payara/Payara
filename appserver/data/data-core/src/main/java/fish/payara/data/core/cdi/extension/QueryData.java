@@ -64,6 +64,7 @@ public class QueryData {
     private String queryOrder;
     private List<Sort<?>> orders;
     private boolean isUserTransaction = false;
+    private boolean isNewTransaction = false;
 
     private int paramIndex = 0;
 
@@ -190,5 +191,13 @@ public class QueryData {
 
     public void setUserTransaction(boolean userTransaction) {
         isUserTransaction = userTransaction;
+    }
+
+    public boolean isNewTransaction() {
+        return isNewTransaction;
+    }
+
+    public void setNewTransaction(boolean newTransaction) {
+        isNewTransaction = newTransaction;
     }
 }

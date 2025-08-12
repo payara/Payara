@@ -150,9 +150,9 @@ public class QueryOperationUtility {
                 }
 
                 if (deletePredicate.test(firstChar) || updatePredicate.test(firstChar)) {
-                    startTransactionAndJoin(transactionManager, entityManager, dataForQuery.isUserTransaction());
+                    startTransactionAndJoin(transactionManager, entityManager, dataForQuery);
                     int deleteReturn = q.executeUpdate();
-                    endTransaction(transactionManager, entityManager, dataForQuery.isUserTransaction());
+                    endTransaction(transactionManager, entityManager, dataForQuery);
 
                     return processReturnQueryUpdate(method, deleteReturn);
                 } else {
