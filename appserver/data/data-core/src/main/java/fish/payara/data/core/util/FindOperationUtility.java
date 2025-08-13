@@ -71,7 +71,8 @@ public class FindOperationUtility {
 
     public static Object processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
                                                     QueryData dataForQuery, DataParameter dataParameter) {
-        String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata());
+        final boolean ADD_DISTINCT_CLAUSE = true;
+        String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
         List<Sort<?>> sortList = dataParameter.sortList();
         if (!sortList.isEmpty()) {
             qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
@@ -282,8 +283,14 @@ public class FindOperationUtility {
     }
 
     public static String createBaseFindQuery(Class<?> entityClass, String orderByClause, EntityMetadata entityMetadata) {
+        return createBaseFindQuery(entityClass, orderByClause, entityMetadata, false);
+    }
+
+    public static String createBaseFindQuery(Class<?> entityClass, String orderByClause,
+                                             EntityMetadata entityMetadata, boolean isAddDistinct) {
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
+        builder.append("SELECT " + (isAddDistinct ? "DISTINCT " : ""))
+               .append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
 
         if (orderByClause != null && !orderByClause.isEmpty()) {
             builder.append(processOrderByClause(orderByClause, entityMetadata));
