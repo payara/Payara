@@ -252,7 +252,7 @@ public class QueryByNameOperationUtility {
             }
             for (Sort<?> sort : dynamicSorts) {
                 String propertyPath = findAliasedPath(sort.property(), rootEntityType, rootAlias, joinAliases);
-                String expr = sort.ignoreCase() ? "UPPER(" + propertyPath ")" :propertyPath;
+                String expr = sort.ignoreCase() ? "UPPER(" + propertyPath + ")" : propertyPath;
                 String direction = sort.isAscending() ? "ASC" : "DESC";
                 orderSegments.add(expr + " " + direction);
             }
