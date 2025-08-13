@@ -46,6 +46,7 @@ import fish.payara.data.core.cdi.extension.QueryData;
 import fish.payara.data.core.querymethod.QueryMethodParser;
 import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Sort;
+import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
@@ -409,13 +410,13 @@ public class QueryByNameOperationUtility {
             firstCondition = false;
 
             String propertyPath = findAliasedPath(condition.property(), rootEntityType, rootAlias, joinAliases);
-            String propertyExpression = condition.ignoreCase() ? "UPPER(" + propertyPath + ")" : propertyPath;
+            String propertyExpression = condition.ignoreCase() ? "LOWER(" + propertyPath + ")" : propertyPath;
 
             if (condition.not()) whereClause.append("NOT (");
             whereClause.append(propertyExpression);
 
             if (condition.operator() == null) {
-                whereClause.append(" = ?").append(++paramIndex);
+                whereClause.append(" = ").append(condition.ignoreCase() ? "LOWER(":"").append("?").append(++paramIndex).append(condition.ignoreCase() ? ")":"");
             } else {
                 switch (condition.operator()) {
                     case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(++paramIndex);
@@ -472,7 +473,7 @@ public class QueryByNameOperationUtility {
             }
 
             Object arg = queryArgs.get(argIndex);
-            Object processedArg = condition.ignoreCase() && arg instanceof String ? ((String) arg).toUpperCase() : arg;
+            Object processedArg = condition.ignoreCase() && arg instanceof String ? ((String) arg).toLowerCase() : arg;
 
             if ("StartsWith".equals(condition.operator())) {
                 processedArg = processedArg + "%";
@@ -487,7 +488,7 @@ public class QueryByNameOperationUtility {
 
             if ("Between".equals(condition.operator())) {
                 Object arg2 = queryArgs.get(argIndex);
-                Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toUpperCase() : arg2;
+                Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toLowerCase() : arg2;
                 q.setParameter(++paramIndex, processedArg2);
                 argIndex++;
             }
@@ -523,6 +524,10 @@ public class QueryByNameOperationUtility {
         }
         if (Optional.class.isAssignableFrom(returnType)) {
             return resultList.stream().findFirst();
+        }
+        if (resultList != null && resultList.isEmpty() && data.getDeclaredEntityClass().equals(returnType)) {
+            throw new EmptyResultException("The expected result is empty, to return an empty result you should need to return a different type" +
+                    "like: List, Optional, Page, CursorPage or Stream");
         }
 
         return handleArrays(resultList, returnType);
