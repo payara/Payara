@@ -110,16 +110,16 @@ public class QueryByNameOperationUtility {
         if (entitiesToDelete.isEmpty()) {
             return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
         }
-        
+
         try {
-            startTransactionAndJoin(transactionManager,entityManager,dataForQuery);
+            startTransactionAndJoin(transactionManager, entityManager, dataForQuery);
 
             for (Object entity : entitiesToDelete) {
                 Object managed = entityManager.contains(entity) ? entity : entityManager.merge(entity);
                 entityManager.remove(managed);
             }
 
-            endTransaction(transactionManager,entityManager,dataForQuery);
+            endTransaction(transactionManager, entityManager, dataForQuery);
 
             clearCaches(entityManager);
             return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
@@ -132,7 +132,7 @@ public class QueryByNameOperationUtility {
             throw new MappingException("Failed to execute delete operation", e);
         }
     }
-    
+
     private static void doTransactionRollback(QueryData dataForQuery, TransactionManager transactionManager) {
         if (dataForQuery.isNewTransaction()) {
             try {
@@ -142,13 +142,14 @@ public class QueryByNameOperationUtility {
                     transactionManager.rollback();
                 }
                 dataForQuery.setNewTransaction(false);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
     }
 
     private static void clearCaches(EntityManager entityManager) {
         EntityManagerFactory factory = entityManager.getEntityManagerFactory();
-        if (factory !=  null) {
+        if (factory != null) {
             Cache cache = factory.getCache();
             if (cache != null) {
                 cache.evictAll();
@@ -333,7 +334,7 @@ public class QueryByNameOperationUtility {
         if (!sortsFromMethodName.isEmpty() && sortList != null) {
             sortsFromMethodName.addAll(sortList);
             dataForQuery.setOrders(sortsFromMethodName);
-        } else if(sortList != null) {
+        } else if (sortList != null) {
             dataForQuery.setOrders(sortList);
         }
 
@@ -416,20 +417,23 @@ public class QueryByNameOperationUtility {
             whereClause.append(propertyExpression);
 
             if (condition.operator() == null) {
-                whereClause.append(" = ").append(condition.ignoreCase() ? "LOWER(":"").append("?").append(++paramIndex).append(condition.ignoreCase() ? ")":"");
+                whereClause.append(" = ").append(condition.ignoreCase() ? "LOWER(" : "").append("?").append(++paramIndex).append(condition.ignoreCase() ? ")" : "");
             } else {
                 switch (condition.operator()) {
-                    case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(++paramIndex);
+                    case "Like", "StartsWith", "EndsWith", "Contains" ->
+                            whereClause.append(" LIKE ?").append(++paramIndex);
                     case "LessThan" -> whereClause.append(" < ?").append(++paramIndex);
                     case "LessThanEqual" -> whereClause.append(" <= ?").append(++paramIndex);
                     case "GreaterThan" -> whereClause.append(" > ?").append(++paramIndex);
                     case "GreaterThanEqual" -> whereClause.append(" >= ?").append(++paramIndex);
-                    case "Between" -> whereClause.append(" BETWEEN ?").append(++paramIndex).append(" AND ?").append(++paramIndex);
+                    case "Between" ->
+                            whereClause.append(" BETWEEN ?").append(++paramIndex).append(" AND ?").append(++paramIndex);
                     case "In" -> whereClause.append(" IN ?").append(++paramIndex);
                     case "Null" -> whereClause.append(" IS NULL");
                     case "True" -> whereClause.append(" = TRUE");
                     case "False" -> whereClause.append(" = FALSE");
-                    default -> throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
+                    default ->
+                            throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
                 }
             }
             if (condition.not()) whereClause.append(")");
