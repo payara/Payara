@@ -46,6 +46,7 @@ import fish.payara.data.core.cdi.extension.QueryData;
 import fish.payara.data.core.querymethod.QueryMethodParser;
 import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Sort;
+import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
@@ -109,16 +110,16 @@ public class QueryByNameOperationUtility {
         if (entitiesToDelete.isEmpty()) {
             return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
         }
-        
+
         try {
-            startTransactionAndJoin(transactionManager,entityManager,dataForQuery);
+            startTransactionAndJoin(transactionManager, entityManager, dataForQuery);
 
             for (Object entity : entitiesToDelete) {
                 Object managed = entityManager.contains(entity) ? entity : entityManager.merge(entity);
                 entityManager.remove(managed);
             }
 
-            endTransaction(transactionManager,entityManager,dataForQuery);
+            endTransaction(transactionManager, entityManager, dataForQuery);
 
             clearCaches(entityManager);
             return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
@@ -131,7 +132,7 @@ public class QueryByNameOperationUtility {
             throw new MappingException("Failed to execute delete operation", e);
         }
     }
-    
+
     private static void doTransactionRollback(QueryData dataForQuery, TransactionManager transactionManager) {
         if (dataForQuery.isNewTransaction()) {
             try {
@@ -141,13 +142,14 @@ public class QueryByNameOperationUtility {
                     transactionManager.rollback();
                 }
                 dataForQuery.setNewTransaction(false);
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
     }
 
     private static void clearCaches(EntityManager entityManager) {
         EntityManagerFactory factory = entityManager.getEntityManagerFactory();
-        if (factory !=  null) {
+        if (factory != null) {
             Cache cache = factory.getCache();
             if (cache != null) {
                 cache.evictAll();
@@ -350,7 +352,7 @@ public class QueryByNameOperationUtility {
         if (!sortsFromMethodName.isEmpty() && sortList != null) {
             sortsFromMethodName.addAll(sortList);
             dataForQuery.setOrders(sortsFromMethodName);
-        } else if(sortList != null) {
+        } else if (sortList != null) {
             dataForQuery.setOrders(sortList);
         }
 
@@ -427,26 +429,29 @@ public class QueryByNameOperationUtility {
             firstCondition = false;
 
             String propertyPath = findAliasedPath(condition.property(), rootEntityType, rootAlias, joinAliases);
-            String propertyExpression = condition.ignoreCase() ? "UPPER(" + propertyPath + ")" : propertyPath;
+            String propertyExpression = condition.ignoreCase() ? "LOWER(" + propertyPath + ")" : propertyPath;
 
             if (condition.not()) whereClause.append("NOT (");
             whereClause.append(propertyExpression);
 
             if (condition.operator() == null) {
-                whereClause.append(" = ?").append(++paramIndex);
+                whereClause.append(" = ").append(condition.ignoreCase() ? "LOWER(" : "").append("?").append(++paramIndex).append(condition.ignoreCase() ? ")" : "");
             } else {
                 switch (condition.operator()) {
-                    case "Like", "StartsWith", "EndsWith", "Contains" -> whereClause.append(" LIKE ?").append(++paramIndex);
+                    case "Like", "StartsWith", "EndsWith", "Contains" ->
+                            whereClause.append(" LIKE ?").append(++paramIndex);
                     case "LessThan" -> whereClause.append(" < ?").append(++paramIndex);
                     case "LessThanEqual" -> whereClause.append(" <= ?").append(++paramIndex);
                     case "GreaterThan" -> whereClause.append(" > ?").append(++paramIndex);
                     case "GreaterThanEqual" -> whereClause.append(" >= ?").append(++paramIndex);
-                    case "Between" -> whereClause.append(" BETWEEN ?").append(++paramIndex).append(" AND ?").append(++paramIndex);
+                    case "Between" ->
+                            whereClause.append(" BETWEEN ?").append(++paramIndex).append(" AND ?").append(++paramIndex);
                     case "In" -> whereClause.append(" IN ?").append(++paramIndex);
                     case "Null" -> whereClause.append(" IS NULL");
                     case "True" -> whereClause.append(" = TRUE");
                     case "False" -> whereClause.append(" = FALSE");
-                    default -> throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
+                    default ->
+                            throw new UnsupportedOperationException("Operator " + condition.operator() + " not supported.");
                 }
             }
             if (condition.not()) whereClause.append(")");
@@ -490,7 +495,7 @@ public class QueryByNameOperationUtility {
             }
 
             Object arg = queryArgs.get(argIndex);
-            Object processedArg = condition.ignoreCase() && arg instanceof String ? ((String) arg).toUpperCase() : arg;
+            Object processedArg = condition.ignoreCase() && arg instanceof String ? ((String) arg).toLowerCase() : arg;
 
             if ("StartsWith".equals(condition.operator())) {
                 processedArg = processedArg + "%";
@@ -505,7 +510,7 @@ public class QueryByNameOperationUtility {
 
             if ("Between".equals(condition.operator())) {
                 Object arg2 = queryArgs.get(argIndex);
-                Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toUpperCase() : arg2;
+                Object processedArg2 = condition.ignoreCase() && arg2 instanceof String ? ((String) arg2).toLowerCase() : arg2;
                 q.setParameter(++paramIndex, processedArg2);
                 argIndex++;
             }
@@ -541,6 +546,10 @@ public class QueryByNameOperationUtility {
         }
         if (Optional.class.isAssignableFrom(returnType)) {
             return resultList.stream().findFirst();
+        }
+        if (resultList != null && resultList.isEmpty() && data.getDeclaredEntityClass().equals(returnType)) {
+            throw new EmptyResultException("The expected result is empty, to return an empty result you should need to return a different type" +
+                    "like: List, Optional, Page, CursorPage or Stream");
         }
 
         return handleArrays(resultList, returnType);

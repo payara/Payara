@@ -157,11 +157,14 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //In this method we can add implementation to execute dynamic queries
         logger.info("executing method:" + method.getName());
+        if (method.isDefault()) {
+            return InvocationHandler.invokeDefault(proxy, method, args);
+        }
+        
         QueryData dataForQuery = queries.get(method);
         Object objectToReturn;
         startTransactionComponents();
         prevalidateTransaction(dataForQuery);
-
         try {
             switch (dataForQuery.getQueryType()) {
                 case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);

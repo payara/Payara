@@ -87,7 +87,7 @@ public class PageImpl<T> implements Page<T> {
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + (pageRequest.size() == Integer.MAX_VALUE ? 0 : 1));
         results = query.getResultList();
-        if(pageRequest.requestTotal()) {
+        if (pageRequest.requestTotal()) {
             totalElements();
         }
     }
@@ -96,7 +96,7 @@ public class PageImpl<T> implements Page<T> {
     public List<T> content() {
         int size = results.size();
         int max = pageRequest.size();
-        return size > max ? results.subList(0,max) : results;
+        return size > max ? results.subList(0, max) : results;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class PageImpl<T> implements Page<T> {
     @Override
     public boolean hasNext() {
         return results.size() > pageRequest.size() ||
-                pageRequest.size() == Integer.MAX_VALUE && results.size() == pageRequest.size();        
+                pageRequest.size() == Integer.MAX_VALUE && results.size() == pageRequest.size();
     }
 
     @Override
