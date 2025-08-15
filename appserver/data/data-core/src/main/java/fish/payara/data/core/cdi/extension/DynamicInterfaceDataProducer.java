@@ -66,6 +66,8 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -268,34 +270,17 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 }
             }
         }
-
-        for (Parameter param : method.getParameters()) {
-            Class<?> paramType = param.getType();
-            if (isEntityCandidate(paramType)) {
-                return paramType;
-            }
-
-            if (paramType.isArray()) {
-                Class<?> componentType = paramType.getComponentType();
-                if (isEntityCandidate(componentType)) {
-                    return componentType;
-                }
-            }
-
-            if (param.isVarArgs()) {
-                Class<?> componentType = paramType.getComponentType();
-                if (isEntityCandidate(componentType)) {
-                    return componentType;
-                }
-            }
+        Class<?> entityClass = findEntityTypeInMethod(method);
+        if (isEntityCandidate(entityClass)) {
+            return entityClass;
         }
-
         return null;
     }
 
     private boolean isEntityCandidate(Class<?> clazz) {
         if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
-                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class)) {
+                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class) ||
+                clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class)) {
             return false;
         }
         return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
