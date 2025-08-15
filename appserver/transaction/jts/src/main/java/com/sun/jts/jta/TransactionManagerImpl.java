@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates
 
 package com.sun.jts.jta;
 
@@ -206,6 +207,7 @@ public class TransactionManagerImpl implements TransactionManager {
             // This will release locks in RecoveryManager which were created
             // by RecoveryManager.initialize() call in the TransactionFactoryImpl constructor
             // if startup recovery didn't happen yet.
+            _logger.log(Level.FINER, "Initialising transaction recovery from TransactionManagerImpl");
             TransactionServiceProperties.initRecovery(true);
 
             // V2-commented-out transactionStates = new Hashtable();

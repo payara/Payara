@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2022 Payara Foundation and/or its affiliates.
+// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates.
 
 package org.glassfish.api.event;
 
@@ -60,12 +60,25 @@ public final class EventTypes<T> {
     // stock events.
     public static final String POST_SERVER_INIT_NAME = "post_server_init";
     public static final String SERVER_STARTUP_NAME = "server_startup";
+    public static final String SERVER_STARTED_NAME = "server_started";
     public static final String SERVER_READY_NAME = "server_ready";
     public static final String PREPARE_SHUTDOWN_NAME = "prepare_shutdown";
     public static final String SERVER_SHUTDOWN_NAME = "server_shutdown";
 
     public static final EventTypes<?> POST_SERVER_INIT = create(POST_SERVER_INIT_NAME);
     public static final EventTypes<?> SERVER_STARTUP = create(SERVER_STARTUP_NAME);
+    /**
+     * SERVER_STARTED is only used if `fish.payara.ready-after-applications` system property is set to false.
+     * When set, this will fire where SERVER_READY would normally fire in `AppServerStartup#postStartUpJob`.
+     * In this case, SERVER_READY will instead fire once all `DeployPreviousApplicationsRunLevel` services
+     * have initialised.
+     *
+     * This is to counter a side effect of us changing the run levels to apply a structured order to the post-boot and
+     * deployment services in FISH-6588 (introduced in version 6.2022.2) to prevent a race between post-boot scripts
+     * and previously deployed applications; all of these services used to run at the same `StartupRunLevel`
+     * and so would've been initialised by the time the `SERVER_READY` event would've fired.
+      */
+    public static final EventTypes<?> SERVER_STARTED = create(SERVER_STARTED_NAME);
     public static final EventTypes<?> SERVER_READY = create(SERVER_READY_NAME);
     public static final EventTypes<?> SERVER_SHUTDOWN = create(SERVER_SHUTDOWN_NAME);
     public static final EventTypes<?> PREPARE_SHUTDOWN = create(PREPARE_SHUTDOWN_NAME);
