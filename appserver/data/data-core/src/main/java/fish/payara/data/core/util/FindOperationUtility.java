@@ -395,14 +395,8 @@ public class FindOperationUtility {
                 orderQuery.append(")");
             }
 
-            if (forward) {
-                if (sort.isDescending()) {
-                    orderQuery.append(" DESC");
-                }
-            } else {
-                if (sort.isAscending()) {
-                    orderQuery.append(" DESC");
-                }
+            if (forward && sort.isDescending()) {
+                orderQuery.append(" DESC");
             }
         }
         return orderQuery.toString();
