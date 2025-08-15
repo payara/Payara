@@ -266,8 +266,12 @@ public class QueryMethodParser {
 
     private void grammarMax() throws QueryMethodSyntaxException {
         try {
-            limit = Integer.valueOf(current());
-            next();
+            if (!follows(KEYWORD_BY)) {
+                limit = Integer.valueOf(current());
+                next();
+            } else if (follows(KEYWORD_BY)) {
+                grammarRestriction();
+            }
         } catch (NumberFormatException ex) {
             throw new QueryMethodSyntaxException("Expected number", methodName, currentToken, tokens, tokensPositions);
             //throw new QueryMethodSyntaxException("Error in method name '" + methodName + "', position " + tokensPositions.get(currentToken) + " should be a number, is '" + current() + "'");
