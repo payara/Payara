@@ -66,7 +66,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
@@ -349,23 +351,17 @@ public class QueryByNameOperationUtility {
             }
         }
 
-        // Prioritize sortList for TCK compliance
         List<Sort<?>> finalOrders = new ArrayList<>();
-        if (sortList != null && !sortList.isEmpty()) {
-            finalOrders.addAll(sortList);
+        if (!parser.getOrderBy().isEmpty()) {
+            finalOrders.addAll(sortsFromMethodName);
         }
-        if (!sortsFromMethodName.isEmpty()) {
-            java.util.Set<String> seen = new java.util.LinkedHashSet<>();
-            for (Sort<?> s : finalOrders) {
-                seen.add(s.property().toLowerCase());
-            }
-            for (Sort<?> s : sortsFromMethodName) {
-                String key = s.property().toLowerCase();
-                if (!seen.contains(key)) {
-                    finalOrders.add(s);
-                    seen.add(key);
-                }
-            }
+        if (sortList != null && !sortList.isEmpty()) {
+            Set<String> staticProperties = finalOrders.stream()
+                    .map(Sort::property)
+                    .collect(Collectors.toSet());
+            sortList.stream()
+                    .filter(sort -> !staticProperties.contains(sort.property()))
+                    .forEach(finalOrders::add);
         }
         dataForQuery.setOrders(finalOrders);
 
