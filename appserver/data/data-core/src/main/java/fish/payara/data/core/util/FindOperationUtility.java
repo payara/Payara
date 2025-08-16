@@ -75,7 +75,7 @@ public class FindOperationUtility {
         String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
         List<Sort<?>> sortList = dataParameter.sortList();
         if (!sortList.isEmpty()) {
-            qlString = handleSort(dataForQuery, sortList, qlString, true, false, true);
+            qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
         }
         Query query = em.createQuery(qlString);
         verifyLimit(dataParameter.limit(), query);
@@ -150,7 +150,7 @@ public class FindOperationUtility {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
                 handleSort(dataForQuery, dataParameter.sortList(), builder, 
                         dataForQuery.getQueryType() == QueryType.FIND, false, 
-                        true, null);
+                        false, null);
                 dataForQuery.setQueryString(builder.toString());
             }
             //check order conditions to improve select queries
@@ -216,10 +216,21 @@ public class FindOperationUtility {
         if(dataForQuery.getQueryNext() != null && !dataForQuery.getQueryNext().contains("ORDER")) {
             dataForQuery.setQueryNext(dataForQuery.getQueryNext() + dataForQuery.getQueryOrder());
         }
-        
         if(dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
-            dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + dataForQuery.getQueryOrder());
+            String reversedOrder = reverseOrderClause(dataForQuery.getQueryOrder());
+            dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + reversedOrder);
         }
+    }
+
+    private static String reverseOrderClause(String orderClause) {
+        if (orderClause == null || orderClause.isEmpty()) {
+            return orderClause;
+        }
+        String result = orderClause;
+        result = result.replace(" ASC", " TEMP_DESC");
+        result = result.replace(" DESC", " ASC");
+        result = result.replace(" TEMP_DESC", " DESC");
+        return result;
     }
 
     public static PageRequest getPageRequest(Object[] args) {
