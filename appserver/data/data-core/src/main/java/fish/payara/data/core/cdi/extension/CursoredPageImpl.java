@@ -66,7 +66,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     private final PageRequest pageRequest;
     private final QueryData queryData;
     private EntityManager entityManager;
-    private final List<T> results;
+    private List<T> results;
     private long totalElements = -1;
     private boolean isForward;
 
@@ -114,6 +114,11 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         System.out.println("Results before reverse (size=" + results.size() + "): " + results);
 
         if (!isForward && !results.isEmpty()) {
+            if (results.size() > pageRequest.size()) {
+                results = results.subList(0, pageRequest.size());
+                System.out.println("Results after removing extra element (size=" + results.size() + "): " + results);
+            }
+
             Collections.reverse(results);
             System.out.println("Results after reverse: " + results);
         }
