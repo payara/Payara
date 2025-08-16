@@ -116,24 +116,31 @@ public class FindOperationUtility {
                 hasWhere = true;
             }
             builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+            queryPosition++;
         } else {
-            for (Annotation[] annotations : parameterAnnotations) {
-                for (Annotation annotation : annotations) {
+            for (int i = 0; i < parameterAnnotations.length; i++) {
+                boolean foundBy = false;
+                for (Annotation annotation : parameterAnnotations[i]) {
                     if (annotation instanceof By) {
                         attributeValue = ((By) annotation).value();
+                        foundBy = true;
+                        break;
                     }
-                    if (!hasWhere) {
-                        builder.append(" WHERE (");
-                        hasWhere = true;
-                    } else {
-                        builder.append(" AND ");
-                    }
-
-                    if (attributeValue != null) {
-                        attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
-                    }
-                    builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
                 }
+                if (!foundBy && i < args.length && excludeParameter(args[i])) {
+                    continue;
+                }
+                if (!hasWhere) {
+                    builder.append(" WHERE (");
+                    hasWhere = true;
+                } else {
+                    builder.append(" AND ");
+                }
+                if (attributeValue != null) {
+                    attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
+                }
+                builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+                queryPosition++;
             }
         }
 
@@ -216,21 +223,10 @@ public class FindOperationUtility {
         if(dataForQuery.getQueryNext() != null && !dataForQuery.getQueryNext().contains("ORDER")) {
             dataForQuery.setQueryNext(dataForQuery.getQueryNext() + dataForQuery.getQueryOrder());
         }
-        if(dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
-            String reversedOrder = reverseOrderClause(dataForQuery.getQueryOrder());
-            dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + reversedOrder);
-        }
-    }
 
-    private static String reverseOrderClause(String orderClause) {
-        if (orderClause == null || orderClause.isEmpty()) {
-            return orderClause;
+        if(dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
+            dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + dataForQuery.getQueryOrder());
         }
-        String result = orderClause;
-        result = result.replace(" ASC", " TEMP_DESC");
-        result = result.replace(" DESC", " ASC");
-        result = result.replace(" TEMP_DESC", " DESC");
-        return result;
     }
 
     public static PageRequest getPageRequest(Object[] args) {
