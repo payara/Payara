@@ -349,11 +349,11 @@ public class QueryByNameOperationUtility {
             }
         }
 
-        if (!sortsFromMethodName.isEmpty() && sortList != null) {
-            sortsFromMethodName.addAll(sortList);
-            dataForQuery.setOrders(sortsFromMethodName);
-        } else if (sortList != null) {
+        // Prioritize sortList for TCK compliance
+        if (sortList != null && !sortList.isEmpty()) {
             dataForQuery.setOrders(sortList);
+        } else if (!sortsFromMethodName.isEmpty()) {
+            dataForQuery.setOrders(sortsFromMethodName);
         }
 
         dataForQuery.setQueryString(jpql.toString());
