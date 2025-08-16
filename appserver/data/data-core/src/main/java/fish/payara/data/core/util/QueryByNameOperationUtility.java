@@ -350,11 +350,24 @@ public class QueryByNameOperationUtility {
         }
 
         // Prioritize sortList for TCK compliance
+        List<Sort<?>> finalOrders = new ArrayList<>();
         if (sortList != null && !sortList.isEmpty()) {
-            dataForQuery.setOrders(sortList);
-        } else if (!sortsFromMethodName.isEmpty()) {
-            dataForQuery.setOrders(sortsFromMethodName);
+            finalOrders.addAll(sortList);
         }
+        if (!sortsFromMethodName.isEmpty()) {
+            java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+            for (Sort<?> s : finalOrders) {
+                seen.add(s.property().toLowerCase());
+            }
+            for (Sort<?> s : sortsFromMethodName) {
+                String key = s.property().toLowerCase();
+                if (!seen.contains(key)) {
+                    finalOrders.add(s);
+                    seen.add(key);
+                }
+            }
+        }
+        dataForQuery.setOrders(finalOrders);
 
         dataForQuery.setQueryString(jpql.toString());
         dataForQuery.setCountQueryString(jpql.toString());
