@@ -75,7 +75,7 @@ public class FindOperationUtility {
         String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
         List<Sort<?>> sortList = dataParameter.sortList();
         if (!sortList.isEmpty()) {
-            qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
+            qlString = handleSort(dataForQuery, sortList, qlString, true, false, true);
         }
         Query query = em.createQuery(qlString);
         verifyLimit(dataParameter.limit(), query);
@@ -116,7 +116,6 @@ public class FindOperationUtility {
                 hasWhere = true;
             }
             builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
-            queryPosition++;
         } else {
             for (Annotation[] annotations : parameterAnnotations) {
                 for (Annotation annotation : annotations) {
@@ -135,7 +134,6 @@ public class FindOperationUtility {
                     }
                     builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
                 }
-                queryPosition++;
             }
         }
 
@@ -152,7 +150,7 @@ public class FindOperationUtility {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
                 handleSort(dataForQuery, dataParameter.sortList(), builder, 
                         dataForQuery.getQueryType() == QueryType.FIND, false, 
-                        false, null);
+                        true, null);
                 dataForQuery.setQueryString(builder.toString());
             }
             //check order conditions to improve select queries
@@ -368,38 +366,6 @@ public class FindOperationUtility {
             // limit.maxResults() is guaranteed to be >= 1.
             query.setMaxResults(limit.maxResults());
         }
-    }
-
-    public static String processSortForPagination(List<Sort<?>> orders, QueryData dataForQuery, boolean forward) {
-        //create order query
-        StringBuilder orderQuery = null;
-        for (Sort<?> sort : orders) {
-            if (orderQuery == null) {
-                orderQuery = new StringBuilder(" ORDER BY ");
-            } else {
-                orderQuery.append(", ");
-            }
-
-            String propertyName = sort.property();
-            if (sort.ignoreCase()) {
-                orderQuery.append("LOWER(");
-            }
-
-            if (propertyName.charAt(propertyName.length() - 1) != ')' && dataForQuery.getQueryType().equals(QueryType.FIND)) {
-                orderQuery.append("o.");
-            }
-
-            orderQuery.append(propertyName);
-
-            if (sort.ignoreCase()) {
-                orderQuery.append(")");
-            }
-
-            if (forward && sort.isDescending()) {
-                orderQuery.append(" DESC");
-            }
-        }
-        return orderQuery.toString();
     }
 
     private static void createCursorQueries(QueryData dataForQuery, List<Sort<?>> orders,
