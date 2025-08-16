@@ -332,27 +332,50 @@ public class DataCommonOperationUtility {
         return cursorValues.toArray();
     }
 
-    public static String handleSort(QueryData dataForQuery, List<Sort<?>> sortList, String query, 
+    public static String handleSort(QueryData dataForQuery, List<Sort<?>> sortList, String query,
                                     boolean isFindOperation, boolean hasPagination, boolean isForward) {
         StringBuilder sortedQuery = new StringBuilder(query);
         if (!sortList.isEmpty()) {
-            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward, null);
+            String rootAlias = deriveAliasFromQuery(query);
+            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward, rootAlias);
         }
         return sortedQuery.toString();
     }
 
-    public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query, 
+    public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query,
                                   boolean isFindOperation, boolean hasPagination, boolean isForward, String rootAlias) {
         if (!sortList.isEmpty()) {
+            if (rootAlias == null || rootAlias.isEmpty()) {
+                rootAlias = deriveAliasFromQuery(query.toString());
+            }
             appendSortQuery(dataForQuery, sortList, query, isFindOperation, hasPagination, isForward, rootAlias);
         }
+    }
+
+    private static String deriveAliasFromQuery(String ql) {
+        if (ql == null) return null;
+        String upper = ql.toUpperCase();
+        int fromIdx = upper.indexOf(" FROM ");
+        if (fromIdx < 0) return null;
+        int pos = fromIdx + 6;
+        int n = ql.length();
+        while (pos < n && Character.isWhitespace(ql.charAt(pos))) pos++;
+        while (pos < n && !Character.isWhitespace(ql.charAt(pos))) pos++;
+        while (pos < n && Character.isWhitespace(ql.charAt(pos))) pos++;
+        int start = pos;
+        while (pos < n && Character.isJavaIdentifierPart(ql.charAt(pos))) pos++;
+        if (start < pos) {
+            return ql.substring(start, pos);
+        }
+        return null;
     }
 
     private static void appendSortQuery(QueryData dataForQuery, 
                                         List<Sort<?>> sortList, StringBuilder sortedQuery, 
                                         boolean isFindOperation, boolean hasPagination, 
                                         boolean isForward, String rootAlias) {
-        if (sortedQuery.toString().toUpperCase().contains("ORDER")) {
+        String upper = sortedQuery.toString().toUpperCase();
+        if (upper.contains(" ORDER BY ")) {
             throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
         }
         EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
@@ -365,35 +388,39 @@ public class DataCommonOperationUtility {
                         " is not mapped on the entity " + entityMetadata.getEntityName());
             }
             propertyName = entityMetadata.getAttributeNames().get(propertyName.toLowerCase());
+
             if (!firstItem) {
                 sortCriteria.append(", ");
             }
+
+            boolean isFunctionExpr = propertyName.charAt(propertyName.length() - 1) == ')';
+
+            if (!isFunctionExpr) {
+                if (isFindOperation) {
+                    sortCriteria.append("o.");
+                } else if (rootAlias != null && !rootAlias.isEmpty()) {
+                    sortCriteria.append(rootAlias).append(".");
+                }
+            }
+
             if (sort.ignoreCase()) {
                 sortCriteria.append("LOWER(");
             }
-            
-            if (isFindOperation && propertyName.charAt(propertyName.length() - 1) != ')') {
-                sortCriteria.append("o.");
-            }
-            
-            if (rootAlias != null && !rootAlias.isEmpty() && propertyName.charAt(propertyName.length() - 1) != ')') {
-                sortCriteria.append(rootAlias).append(".");
-            }
-
             sortCriteria.append(propertyName);
             if (sort.ignoreCase()) {
                 sortCriteria.append(")");
             }
-            
+
             if (!hasPagination) {
                 sortCriteria.append(sort.isAscending() ? " ASC" : " DESC");
             } else {
                 boolean ascDirection = isForward ? sort.isAscending() : sort.isDescending();
                 sortCriteria.append(ascDirection ? " ASC" : " DESC");
             }
+
             firstItem = false;
         }
-        sortedQuery.append(sortCriteria.toString());
+        sortedQuery.append(sortCriteria);
         dataForQuery.setQueryOrder(sortCriteria.toString());
     }
 
