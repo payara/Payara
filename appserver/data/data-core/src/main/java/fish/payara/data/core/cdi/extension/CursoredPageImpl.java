@@ -152,9 +152,8 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     @Override
     public PageRequest previousPageRequest() {
         if (hasPrevious()) {
-            int lastIndex = results.size() - 1;
             return PageRequest.beforeCursor(
-                    PageRequest.Cursor.forKey(getCursorValues(results.get(lastIndex), this.queryData.getOrders(), this.queryData)),
+                    PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
                     pageRequest.page() == 1 ? 1 : pageRequest.page() - 1,
                     pageRequest.size(),
                     pageRequest.requestTotal()
