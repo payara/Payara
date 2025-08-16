@@ -385,23 +385,11 @@ public class DataCommonOperationUtility {
                 sortCriteria.append(")");
             }
             
-            if(!hasPagination) {
-                if (sort.isAscending()) {
-                    sortCriteria.append(" ASC");
-                }
-                if (sort.isDescending()) {
-                    sortCriteria.append(" DESC");
-                }
+            if (!hasPagination) {
+                sortCriteria.append(sort.isAscending() ? " ASC" : " DESC");
             } else {
-                if (isForward) {
-                    if (sort.isDescending()) {
-                        sortCriteria.append(" DESC");
-                    }
-                } else {
-                    if (sort.isAscending()) {
-                        sortCriteria.append(" ASC");
-                    }
-                }
+                boolean ascDirection = isForward ? sort.isAscending() : sort.isDescending();
+                sortCriteria.append(ascDirection ? " ASC" : " DESC");
             }
             firstItem = false;
         }
