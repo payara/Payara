@@ -399,7 +399,7 @@ public class DataCommonOperationUtility {
                     }
                 } else {
                     if (sort.isAscending()) {
-                        sortCriteria.append(" DESC");
+                        sortCriteria.append(" ASC");
                     }
                 }
             }
