@@ -101,11 +101,23 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
+
+        System.out.println("=== DEBUG CursoredPageImpl ===");
+        System.out.println("PageRequest mode: " + pageRequest.mode());
+        System.out.println("isForward: " + isForward);
+        System.out.println("processOffset(): " + this.processOffset());
+        System.out.println("pageRequest.size(): " + pageRequest.size());
+        System.out.println("setMaxResults: " + (pageRequest.size() + 1));
+
         results = query.getResultList();
+
+        System.out.println("Results before reverse (size=" + results.size() + "): " + results);
 
         if (!isForward && !results.isEmpty()) {
             Collections.reverse(results);
+            System.out.println("Results after reverse: " + results);
         }
+        System.out.println("============================");
     }
 
     @Override
