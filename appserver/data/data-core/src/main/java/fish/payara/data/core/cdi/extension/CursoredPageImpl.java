@@ -43,6 +43,8 @@ import jakarta.data.page.CursoredPage;
 import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -100,6 +102,10 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
         results = query.getResultList();
+
+        if (!isForward && !results.isEmpty()) {
+            Collections.reverse(results);
+        }
     }
 
     @Override
