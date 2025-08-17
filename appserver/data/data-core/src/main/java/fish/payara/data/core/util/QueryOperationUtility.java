@@ -43,10 +43,12 @@ import fish.payara.data.core.cdi.extension.QueryData;
 import jakarta.annotation.Nullable;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
+import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
@@ -396,6 +398,19 @@ public class QueryOperationUtility {
 
         if (Optional.class.isAssignableFrom(returnType)) {
             return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
+        }
+
+        if (!returnType.isArray() && data.getDeclaredEntityClass().equals(returnType)) {
+            if (resultList == null || resultList.isEmpty()) {
+                throw new EmptyResultException("No result found for query");
+            }
+            if (resultList.size() > 1) {
+                throw new NonUniqueResultException(
+                        "Query method " + data.getMethod().getName() +
+                                " is expected to return a single result but found " + resultList.size() + " results"
+                );
+            }
+            return resultList.get(0);
         }
 
         return handleArrays(resultList, returnType);
