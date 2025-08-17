@@ -102,27 +102,18 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
 
-        System.out.println("=== DEBUG CursoredPageImpl ===");
-        System.out.println("PageRequest mode: " + pageRequest.mode());
-        System.out.println("isForward: " + isForward);
-        System.out.println("processOffset(): " + this.processOffset());
-        System.out.println("pageRequest.size(): " + pageRequest.size());
-        System.out.println("setMaxResults: " + (pageRequest.size() + 1));
-
         results = query.getResultList();
-
-        System.out.println("Results before reverse (size=" + results.size() + "): " + results);
-
         if (!isForward && !results.isEmpty()) {
             if (results.size() > pageRequest.size()) {
                 results = results.subList(0, pageRequest.size());
-                System.out.println("Results after removing extra element (size=" + results.size() + "): " + results);
             }
 
             Collections.reverse(results);
-            System.out.println("Results after reverse: " + results);
         }
-        System.out.println("============================");
+
+        if (pageRequest.requestTotal()) {
+            totalElements();
+        }
     }
 
     @Override
@@ -201,6 +192,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
     @Override
     public long totalPages() {
+        totalElements = totalElements();
         return totalElements / pageRequest.size() + (totalElements % pageRequest.size() > 0 ? 1 : 0);
     }
 
