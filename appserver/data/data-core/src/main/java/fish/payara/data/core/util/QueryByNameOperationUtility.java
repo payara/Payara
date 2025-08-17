@@ -62,6 +62,7 @@ import jakarta.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -198,13 +199,12 @@ public class QueryByNameOperationUtility {
         String methodName = method.getName();
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
 
-        Limit limitFromArgs = null;
-        for (Object arg : args) {
-            if (arg instanceof Limit) {
-                limitFromArgs = (Limit) arg;
-                break;
-            }
-        }
+        Limit limitFromArgs = args != null && args.length > 0 ?
+                Arrays.stream(args)
+                        .filter(arg -> arg instanceof Limit)
+                        .map(arg -> (Limit) arg)
+                        .findFirst()
+                        .orElse(null) : null;
 
         try {
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
