@@ -93,6 +93,9 @@ public class QueryOperationUtility {
         Method method = dataForQuery.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
+
+        mappedQuery = handlesEmptyQuery(dataForQuery, mappedQuery);
+
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         int length = mappedQuery.length();
         int firstCharPosition = 0;
@@ -169,6 +172,15 @@ public class QueryOperationUtility {
         }
 
         return objectToReturn;
+    }
+
+    private static String handlesEmptyQuery(QueryData dataForQuery, String mappedQuery) {
+        if (mappedQuery == null || mappedQuery.trim().isEmpty()) {
+            String entityName = dataForQuery.getDeclaredEntityClass().getSimpleName();
+            mappedQuery = "FROM " + entityName;
+            dataForQuery.setQueryString(mappedQuery);
+        }
+        return mappedQuery;
     }
 
     public static Map<String, Set<String>> processQuery(String queryString,
