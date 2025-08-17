@@ -336,8 +336,7 @@ public class DataCommonOperationUtility {
                                     boolean isFindOperation, boolean hasPagination, boolean isForward) {
         StringBuilder sortedQuery = new StringBuilder(query);
         if (!sortList.isEmpty()) {
-            String rootAlias = deriveAliasFromQuery(query);
-            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward, rootAlias);
+            appendSortQuery(dataForQuery, sortList, sortedQuery, isFindOperation, hasPagination, isForward, null);
         }
         return sortedQuery.toString();
     }
@@ -345,32 +344,11 @@ public class DataCommonOperationUtility {
     public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query,
                                   boolean isFindOperation, boolean hasPagination, boolean isForward, String rootAlias) {
         if (!sortList.isEmpty()) {
-            if (rootAlias == null || rootAlias.isEmpty()) {
-                rootAlias = deriveAliasFromQuery(query.toString());
-            }
             appendSortQuery(dataForQuery, sortList, query, isFindOperation, hasPagination, isForward, rootAlias);
         }
     }
 
-    private static String deriveAliasFromQuery(String ql) {
-        if (ql == null) return null;
-        String upper = ql.toUpperCase();
-        int fromIdx = upper.indexOf(" FROM ");
-        if (fromIdx < 0) return null;
-        int pos = fromIdx + 6;
-        int n = ql.length();
-        while (pos < n && Character.isWhitespace(ql.charAt(pos))) pos++;
-        while (pos < n && !Character.isWhitespace(ql.charAt(pos))) pos++;
-        while (pos < n && Character.isWhitespace(ql.charAt(pos))) pos++;
-        int start = pos;
-        while (pos < n && Character.isJavaIdentifierPart(ql.charAt(pos))) pos++;
-        if (start < pos) {
-            return ql.substring(start, pos);
-        }
-        return null;
-    }
-
-    private static void appendSortQuery(QueryData dataForQuery, 
+    private static void appendSortQuery(QueryData dataForQuery,
                                         List<Sort<?>> sortList, StringBuilder sortedQuery, 
                                         boolean isFindOperation, boolean hasPagination, 
                                         boolean isForward, String rootAlias) {
