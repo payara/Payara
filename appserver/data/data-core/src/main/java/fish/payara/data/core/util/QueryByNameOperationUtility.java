@@ -45,6 +45,7 @@ import fish.payara.data.core.cdi.extension.PageImpl;
 import fish.payara.data.core.cdi.extension.QueryData;
 import fish.payara.data.core.querymethod.QueryMethodParser;
 import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
+import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.MappingException;
@@ -195,8 +196,15 @@ public class QueryByNameOperationUtility {
     private static Object buildAndExecuteQuery(Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action expectedAction) {
         Method method = dataForQuery.getMethod();
         String methodName = method.getName();
-
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
+
+        Limit limitFromArgs = null;
+        for (Object arg : args) {
+            if (arg instanceof Limit) {
+                limitFromArgs = (Limit) arg;
+                break;
+            }
+        }
 
         try {
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
@@ -207,6 +215,12 @@ public class QueryByNameOperationUtility {
                 return buildQueryFromParserWithPagination(parser, args, dataForQuery, entityManager, expectedAction);
             } else {
                 jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, expectedAction);
+                if (limitFromArgs != null) {
+                    if (limitFromArgs.startAt() > 1) {
+                        q.setFirstResult((int) (limitFromArgs.startAt() - 1));
+                    }
+                    q.setMaxResults(limitFromArgs.maxResults());
+                }
                 return executeQuery(q, parser, dataForQuery);
             }
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
