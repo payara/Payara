@@ -193,7 +193,7 @@ public class PageImpl<T> implements Page<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return results.iterator();
+        return content().iterator();
     }
 
     public int processOffset() {
