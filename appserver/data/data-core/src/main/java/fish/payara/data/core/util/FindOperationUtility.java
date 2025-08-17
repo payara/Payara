@@ -52,10 +52,14 @@ import jakarta.data.page.CursoredPage;
 import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
 import jakarta.data.repository.By;
+import jakarta.data.repository.Find;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -109,8 +113,27 @@ public class FindOperationUtility {
             }
         }
 
+        boolean hasFindAnnotation = dataForQuery.getMethod().isAnnotationPresent(Find.class);
         if (!hasBy && parameterAnnotations.length == 1) {
-            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+            if (hasFindAnnotation) {
+                Parameter[] parameters = dataForQuery.getMethod().getParameters();
+                if (parameters.length > 0) {
+                    String paramName = parameters[0].getName();
+                    if (!paramName.startsWith("arg")) {
+                        attributeValue = paramName;
+                    } else {
+                        attributeValue = inferAttributeNameByType(
+                                parameters[0].getType(),
+                                dataForQuery.getDeclaredEntityClass()
+                        );
+                        if (attributeValue == null) {
+                            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+                        }
+                    }
+                }
+            } else {
+                attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+            }
             if (!hasWhere) {
                 builder.append(" WHERE (");
                 hasWhere = true;
@@ -172,6 +195,42 @@ public class FindOperationUtility {
 
             return query.getResultList();
         }
+    }
+
+    private static String inferAttributeNameByType(Class<?> paramType, Class<?> entityClass) {
+        String foundFieldName = null;
+        int count = 0;
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()) ||
+                    Modifier.isTransient(field.getModifiers())) {
+                continue;
+            }
+            if (field.getType().equals(paramType) ||
+                    (isPrimitiveWrapper(field.getType(), paramType))) {
+                foundFieldName = field.getName();
+                count++;
+            }
+        }
+        return count == 1 ? foundFieldName : null;
+    }
+
+    private static boolean isPrimitiveWrapper(Class<?> type1, Class<?> type2) {
+        return (type1 == Integer.class && type2 == int.class) ||
+                (type1 == int.class && type2 == Integer.class) ||
+                (type1 == Long.class && type2 == long.class) ||
+                (type1 == long.class && type2 == Long.class) ||
+                (type1 == Double.class && type2 == double.class) ||
+                (type1 == double.class && type2 == Double.class) ||
+                (type1 == Float.class && type2 == float.class) ||
+                (type1 == float.class && type2 == Float.class) ||
+                (type1 == Boolean.class && type2 == boolean.class) ||
+                (type1 == boolean.class && type2 == Boolean.class) ||
+                (type1 == Character.class && type2 == char.class) ||
+                (type1 == char.class && type2 == Character.class) ||
+                (type1 == Byte.class && type2 == byte.class) ||
+                (type1 == byte.class && type2 == Byte.class) ||
+                (type1 == Short.class && type2 == short.class) ||
+                (type1 == short.class && type2 == Short.class);
     }
 
     public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
