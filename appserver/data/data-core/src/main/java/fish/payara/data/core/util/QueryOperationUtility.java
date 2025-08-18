@@ -48,7 +48,7 @@ import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.NonUniqueResultException;
+import jakarta.data.exceptions.NonUniqueResultException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;

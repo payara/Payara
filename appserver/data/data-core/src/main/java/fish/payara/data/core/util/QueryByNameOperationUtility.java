@@ -54,7 +54,7 @@ import jakarta.data.page.PageRequest;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NonUniqueResultException;
+import jakarta.data.exceptions.NonUniqueResultException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
