@@ -54,6 +54,7 @@ import jakarta.data.page.PageRequest;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
@@ -574,7 +575,15 @@ public class QueryByNameOperationUtility {
             throw new EmptyResultException("The expected result is empty, to return an empty result you should need to return a different type" +
                     "like: List, Optional, Page, CursorPage or Stream");
         }
-
+        if (!returnType.isArray() && data.getDeclaredEntityClass().equals(returnType)) {
+            if (resultList.size() > 1) {
+                throw new NonUniqueResultException(
+                        "Query method " + data.getMethod().getName() +
+                                " is expected to return a single result but found " + resultList.size() + " results"
+                );
+            }
+            return resultList.get(0);
+        }
         return handleArrays(resultList, returnType);
     }
 
