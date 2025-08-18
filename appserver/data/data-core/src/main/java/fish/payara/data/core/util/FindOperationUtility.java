@@ -141,8 +141,10 @@ public class FindOperationUtility {
             builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             queryPosition++;
         } else {
+            Parameter[] parameters = dataForQuery.getMethod().getParameters();
             for (int i = 0; i < parameterAnnotations.length; i++) {
                 boolean foundBy = false;
+                attributeValue = null;
                 for (Annotation annotation : parameterAnnotations[i]) {
                     if (annotation instanceof By) {
                         attributeValue = ((By) annotation).value();
@@ -153,6 +155,25 @@ public class FindOperationUtility {
                 if (!foundBy && i < args.length && excludeParameter(args[i])) {
                     continue;
                 }
+                if (!foundBy && i < parameters.length) {
+                    String paramName = parameters[i].getName();
+                    if (!paramName.startsWith("arg")) {
+                        attributeValue = paramName;
+                    } else {
+                        attributeValue = inferAttributeNameByType(
+                                parameters[i].getType(),
+                                dataForQuery.getDeclaredEntityClass()
+                        );
+                        if (attributeValue == null) {
+                            attributeValue = inferAttributeFromMethodName(
+                                    dataForQuery.getMethod().getName(),
+                                    i,
+                                    parameters[i].getType(),
+                                    dataForQuery.getDeclaredEntityClass()
+                            );
+                        }
+                    }
+                }
                 if (!hasWhere) {
                     builder.append(" WHERE (");
                     hasWhere = true;
@@ -161,6 +182,12 @@ public class FindOperationUtility {
                 }
                 if (attributeValue != null) {
                     attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
+                } else {
+                    throw new MappingException(
+                            "Cannot determine attribute name for parameter " + i +
+                                    " of method " + dataForQuery.getMethod().getName() +
+                                    ". Consider using @By annotation or compiling with -parameters flag."
+                    );
                 }
                 builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
                 queryPosition++;
@@ -212,6 +239,37 @@ public class FindOperationUtility {
             }
         }
         return count == 1 ? foundFieldName : null;
+    }
+
+    private static String inferAttributeFromMethodName(String methodName, int paramIndex,
+                                                       Class<?> paramType, Class<?> entityClass) {
+        if (methodName.startsWith("find") && methodName.length() > 4) {
+            String suffix = methodName.substring(4);
+            String potentialName = suffix.substring(0, 1).toLowerCase() + suffix.substring(1);
+
+            if (paramType == boolean.class || paramType == Boolean.class) {
+                if (hasField(entityClass, "is" + suffix)) {
+                    return "is" + suffix;
+                }
+                if (hasField(entityClass, potentialName)) {
+                    return potentialName;
+                }
+            } else {
+                if (hasField(entityClass, potentialName)) {
+                    return potentialName;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasField(Class<?> clazz, String fieldName) {
+        try {
+            clazz.getDeclaredField(fieldName);
+            return true;
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
     }
 
     private static boolean isPrimitiveWrapper(Class<?> type1, Class<?> type2) {
