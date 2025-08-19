@@ -74,7 +74,7 @@ public class FindOperationUtility {
     public static final List<Class<?>> parametersToExclude = List.of(PageRequest.class, Limit.class, Order.class, Sort.class, Sort[].class);
 
     public static Object processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
-                                                    QueryData dataForQuery, DataParameter dataParameter) {
+                                                 QueryData dataForQuery, DataParameter dataParameter) {
         final boolean ADD_DISTINCT_CLAUSE = true;
         String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
         List<Sort<?>> sortList = dataParameter.sortList();
@@ -205,8 +205,8 @@ public class FindOperationUtility {
             return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, dataParameter);
         } else {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
-                handleSort(dataForQuery, dataParameter.sortList(), builder, 
-                        dataForQuery.getQueryType() == QueryType.FIND, false, 
+                handleSort(dataForQuery, dataParameter.sortList(), builder,
+                        dataForQuery.getQueryType() == QueryType.FIND, false,
                         false, null);
                 dataForQuery.setQueryString(builder.toString());
             }
@@ -298,7 +298,7 @@ public class FindOperationUtility {
         createCountQuery(dataForQuery, hasWhere, dataForQuery.getQueryString().indexOf("WHERE"));
         List<Sort<?>> sortList = dataParameter.sortList();
         pageRequest = getPageRequest(args);
-        
+
         createQueriesForPagination(pageRequest, method, dataForQuery, builder, args, sortList, null);
 
         if (Page.class.equals(method.getReturnType())) {
@@ -345,13 +345,13 @@ public class FindOperationUtility {
         System.out.println("Final query: " + dataForQuery.getQueryString());
         System.out.println("=======================================");
     }
-    
+
     private static void updateCursorQueries(QueryData dataForQuery) {
-        if(dataForQuery.getQueryNext() != null && !dataForQuery.getQueryNext().contains("ORDER")) {
+        if (dataForQuery.getQueryNext() != null && !dataForQuery.getQueryNext().contains("ORDER")) {
             dataForQuery.setQueryNext(dataForQuery.getQueryNext() + dataForQuery.getQueryOrder());
         }
 
-        if(dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
+        if (dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
             dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + dataForQuery.getQueryOrder());
         }
     }
@@ -403,7 +403,7 @@ public class FindOperationUtility {
     public static String preprocessAttributeName(EntityMetadata entityMetadata, String attributeValue) {
         if (attributeValue.endsWith(")")) {
             //process this(id)
-            return getIDParameterName(attributeValue);
+            return getIDParameterName(entityMetadata, attributeValue);
         } else {
             if (entityMetadata.getAttributeNames().containsKey(attributeValue.toLowerCase())) {
                 return entityMetadata.getAttributeNames().get(attributeValue.toLowerCase());
@@ -422,7 +422,7 @@ public class FindOperationUtility {
                                              EntityMetadata entityMetadata, boolean isAddDistinct) {
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT " + (isAddDistinct ? "DISTINCT " : ""))
-               .append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
+                .append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
 
         if (orderByClause != null && !orderByClause.isEmpty()) {
             builder.append(processOrderByClause(orderByClause, entityMetadata));
@@ -485,12 +485,14 @@ public class FindOperationUtility {
         return null;
     }
 
-    public static String getIDParameterName(String idNameValue) {
-        if (idNameValue != null) {
-            int idx = idNameValue.lastIndexOf("(");
-            return idNameValue.substring(0, idx);
+    public static String getIDParameterName(EntityMetadata entityMetadata, String idNameValue) {
+        if (idNameValue.length() == 8
+                && idNameValue.regionMatches(true, idNameValue.length() - 6, "(this", 0, 5)
+                && idNameValue.regionMatches(true, 0, "id", 0, 2)) {
+            return entityMetadata.getAttributeNames().get(By.ID);
+        } else {
+            return null;
         }
-        return null;
     }
 
     private static void verifyLimit(Limit limit, Query query) {
@@ -548,7 +550,7 @@ public class FindOperationUtility {
                     .append(cursorQuery).append(")").toString());
         }
     }
-    
+
     public static int getParamCount(QueryData dataForQuery, Object[] args) {
         int paramCount = dataForQuery.getJpqlParameters().isEmpty() ? dataForQuery.getParamIndex() : dataForQuery.getJpqlParameters().size();
         if (paramCount == 0) {
@@ -565,7 +567,7 @@ public class FindOperationUtility {
         if (name.charAt(name.length() - 1) != ')' && queryType == QueryType.FIND) {
             cursorQuery.append("o.");
         }
-        
+
         if (rootAlias != null && !rootAlias.isEmpty()) {
             cursorQuery.append(rootAlias).append(".");
         }
