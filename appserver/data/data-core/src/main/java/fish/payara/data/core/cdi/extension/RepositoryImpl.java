@@ -403,32 +403,53 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 return processReturnQueryUpdate(method, deletedCount);
             } catch (Exception e) {
                 safeRollback();
+                Throwable cause = e;
+                while (cause != null) {
+                    if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
+                        throw new OptimisticLockingFailureException(cause);
+                    }
+                    cause = cause.getCause();
+                }
                 throw new RuntimeException("Error during bulk delete operation", e);
             }
         }
 
         Object arg = args[0];
-        List<?> entitiesToDelete;
 
         if (isDeleteById) {
+            List<?> ids;
+            if (arg instanceof Stream) {
+                ids = ((Stream<?>) arg).toList();
+            } else if (arg instanceof List) {
+                ids = (List<?>) arg;
+            } else if (arg.getClass().isArray()) {
+                ids = Arrays.asList((Object[]) arg);
+            } else {
+                ids = Collections.singletonList(arg);
+            }
+
+            if (ids.isEmpty()) {
+                return processReturnQueryUpdate(method, 0);
+            }
+
             startTransactionAndJoin(transactionManager, em, dataForQuery);
             try {
-                Object entity = em.find(declaredEntityClass, arg);
-                if (entity == null) {
-                    endTransaction(transactionManager, em, dataForQuery);
-                    return processReturnQueryUpdate(method, 0);
+                int deletedCount = 0;
+                for (Object id : ids) {
+                    Object entity = em.find(declaredEntityClass, id);
+                    if (entity != null) {
+                        em.remove(entity);
+                        deletedCount++;
+                    }
                 }
-                em.remove(entity);
                 endTransaction(transactionManager, em, dataForQuery);
-                return processReturnQueryUpdate(method, 1);
-            } catch (OptimisticLockException jpaOlex) {
-                safeRollback();
-                throw new OptimisticLockingFailureException(jpaOlex);
+                return processReturnQueryUpdate(method, deletedCount);
             } catch (Exception e) {
                 safeRollback();
                 throw new RuntimeException("Error during deleteById operation", e);
             }
         } else {
+            List<?> entitiesToDelete;
             if (arg instanceof Stream) {
                 entitiesToDelete = ((Stream<?>) arg).toList();
             } else if (arg instanceof List) {
@@ -449,13 +470,17 @@ public class RepositoryImpl<T> implements InvocationHandler {
                     if (!em.contains(entity)) {
                         Object id = getId(entity);
                         if (id == null) {
-                            throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
+                            throw new OptimisticLockingFailureException(
+                                    "Attempted to delete a transient entity (ID is null)."
+                            );
                         }
                         Object found = em.find(declaredEntityClass, id);
                         if (found == null) {
-                            throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
+                            throw new OptimisticLockingFailureException(
+                                    "Attempted to delete an entity that does not exist in the database."
+                            );
                         }
-                        entity = em.merge(entity);
+                        entity = em.merge(entity); // Pode lançar OptimisticLockException se versão não bater
                     }
                     em.remove(entity);
                 }
@@ -466,8 +491,19 @@ public class RepositoryImpl<T> implements InvocationHandler {
             } catch (OptimisticLockException jpaOlex) {
                 safeRollback();
                 throw new OptimisticLockingFailureException(jpaOlex);
+            } catch (OptimisticLockingFailureException ole) {
+                safeRollback();
+                throw ole;
             } catch (Exception e) {
                 safeRollback();
+                Throwable cause = e;
+                while (cause != null) {
+                    if (cause instanceof OptimisticLockException ||
+                            cause instanceof jakarta.persistence.OptimisticLockException) {
+                        throw new OptimisticLockingFailureException(cause);
+                    }
+                    cause = cause.getCause();
+                }
                 throw new RuntimeException("Error during delete operation", e);
             }
         }
