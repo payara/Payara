@@ -315,12 +315,6 @@ public class FindOperationUtility {
                                                   Object[] args, List<Sort<?>> sortList, String rootAlias) {
         boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
 
-        System.out.println("=== DEBUG createQueriesForPagination ===");
-        System.out.println("PageRequest mode: " + (pageRequest != null ? pageRequest.mode() : "null"));
-        System.out.println("Forward: " + forward);
-        System.out.println("SortList: " + sortList);
-        System.out.println("Original query: " + builder.toString());
-
         boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
         if (isCursoredPage && dataForQuery.getQueryType() != QueryType.FIND) {
             //here to adapt query for Cursored mode
@@ -341,9 +335,6 @@ public class FindOperationUtility {
         if (pageRequest.mode() != PageRequest.Mode.OFFSET) {
             updateCursorQueries(dataForQuery);
         }
-
-        System.out.println("Final query: " + dataForQuery.getQueryString());
-        System.out.println("=======================================");
     }
 
     private static void updateCursorQueries(QueryData dataForQuery) {
