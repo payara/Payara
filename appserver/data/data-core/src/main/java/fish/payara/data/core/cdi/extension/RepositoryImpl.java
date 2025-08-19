@@ -389,9 +389,10 @@ public class RepositoryImpl<T> implements InvocationHandler {
      * @return The number of deleted entities, converted to the method's return type.
      * @throws ... various transaction exceptions
      */
-    public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass, 
-                                         Method method, QueryData dataForQuery) 
+    public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass,
+                                         Method method, QueryData dataForQuery)
             throws SystemException, NotSupportedException {
+        boolean isDeleteById = method.getName().startsWith("deleteById");
 
         if (args == null) {
             startTransactionAndJoin(transactionManager, em, dataForQuery);
@@ -402,70 +403,73 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 return processReturnQueryUpdate(method, deletedCount);
             } catch (Exception e) {
                 safeRollback();
-                // Se for OtimisticLock de provedor, mapeia adequadamente
-                Throwable cause = e;
-                while (cause != null) {
-                    if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
-                        throw new OptimisticLockingFailureException(cause);
-                    }
-                    cause = cause.getCause();
-                }
                 throw new RuntimeException("Error during bulk delete operation", e);
             }
         }
 
         Object arg = args[0];
         List<?> entitiesToDelete;
-        if (arg instanceof Stream) {
-            entitiesToDelete = ((Stream<?>) arg).toList();
-        } else if (arg instanceof List) {
-            entitiesToDelete = (List<?>) arg;
-        } else if (arg.getClass().isArray()) {
-            entitiesToDelete = Arrays.asList((Object[]) arg);
-        } else {
-            entitiesToDelete = Collections.singletonList(arg);
-        }
 
-        if (entitiesToDelete.isEmpty()) {
-            return processReturnQueryUpdate(method, 0);
-        }
-        
-        startTransactionAndJoin(transactionManager, em, dataForQuery);
-        try {
-            for (Object entity : entitiesToDelete) {
-                if (!em.contains(entity)) {
-                    Object id = getId(entity);
-                    if (id == null) {
-                        throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
-                    }
-                    Object found = em.find(declaredEntityClass, id);
-                    if (found == null) {
-                        throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
-                    }
-                    entity = em.merge(entity); // dispara OptimisticLockException se versão não bater
+        if (isDeleteById) {
+            startTransactionAndJoin(transactionManager, em, dataForQuery);
+            try {
+                Object entity = em.find(declaredEntityClass, arg);
+                if (entity == null) {
+                    endTransaction(transactionManager, em, dataForQuery);
+                    return processReturnQueryUpdate(method, 0);
                 }
                 em.remove(entity);
+                endTransaction(transactionManager, em, dataForQuery);
+                return processReturnQueryUpdate(method, 1);
+            } catch (OptimisticLockException jpaOlex) {
+                safeRollback();
+                throw new OptimisticLockingFailureException(jpaOlex);
+            } catch (Exception e) {
+                safeRollback();
+                throw new RuntimeException("Error during deleteById operation", e);
+            }
+        } else {
+            if (arg instanceof Stream) {
+                entitiesToDelete = ((Stream<?>) arg).toList();
+            } else if (arg instanceof List) {
+                entitiesToDelete = (List<?>) arg;
+            } else if (arg.getClass().isArray()) {
+                entitiesToDelete = Arrays.asList((Object[]) arg);
+            } else {
+                entitiesToDelete = Collections.singletonList(arg);
             }
 
-            endTransaction(transactionManager, em, dataForQuery);
-            return processReturnQueryUpdate(method, entitiesToDelete.size());
+            if (entitiesToDelete.isEmpty()) {
+                return processReturnQueryUpdate(method, 0);
+            }
 
-        } catch (OptimisticLockException jpaOlex) {
-            safeRollback();
-            throw new OptimisticLockingFailureException(jpaOlex);
-        } catch (OptimisticLockingFailureException ole) {
-            safeRollback();
-            throw ole;
-        } catch (Exception e) {
-            safeRollback();
-            Throwable cause = e;
-            while (cause != null) {
-                if (cause instanceof OptimisticLockException || cause instanceof jakarta.persistence.OptimisticLockException) {
-                    throw new OptimisticLockingFailureException(cause);
+            startTransactionAndJoin(transactionManager, em, dataForQuery);
+            try {
+                for (Object entity : entitiesToDelete) {
+                    if (!em.contains(entity)) {
+                        Object id = getId(entity);
+                        if (id == null) {
+                            throw new OptimisticLockingFailureException("Attempted to delete a transient entity (ID is null).");
+                        }
+                        Object found = em.find(declaredEntityClass, id);
+                        if (found == null) {
+                            throw new OptimisticLockingFailureException("Attempted to delete an entity that does not exist in the database.");
+                        }
+                        entity = em.merge(entity);
+                    }
+                    em.remove(entity);
                 }
-                cause = cause.getCause();
+
+                endTransaction(transactionManager, em, dataForQuery);
+                return processReturnQueryUpdate(method, entitiesToDelete.size());
+
+            } catch (OptimisticLockException jpaOlex) {
+                safeRollback();
+                throw new OptimisticLockingFailureException(jpaOlex);
+            } catch (Exception e) {
+                safeRollback();
+                throw new RuntimeException("Error during delete operation", e);
             }
-            throw new RuntimeException("Error during delete operation", e);
         }
     }
 
