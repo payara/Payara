@@ -231,6 +231,16 @@ public class QueryOperationUtility {
             parameters.add(paramName.toString());
         }
 
+        //for update operation
+        if (patternPositions.containsValue("UPDATE") && patternPositions.containsValue("SET") && !patternPositions.containsValue("WHERE")) {
+            for (Map.Entry<Integer, String> entry : patternPositions.entrySet()) {
+                if (entry.getValue().equals("SET")) {
+                    Integer startPositionSet = entry.getKey();
+                    queryBuilder.append(queryString.substring(startPositionSet + 4));
+                }
+            }
+        }
+
         Map<String, Set<String>> queryMapping = new LinkedHashMap<>();
         queryMapping.put(queryBuilder.toString(), parameters);
         dataForQuery.setQueryString(queryBuilder.toString());
