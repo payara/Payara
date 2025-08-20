@@ -190,7 +190,7 @@ public class FindOperationUtility {
 
         // Process pagination or execute query
         if (evaluatePages) {
-            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, dataParameter);
+            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, false, dataParameter);
         } else {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
                 handleSort(dataForQuery, dataParameter.sortList(), builder,
@@ -283,10 +283,11 @@ public class FindOperationUtility {
     }
 
     public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
-                                           Method method, StringBuilder builder, boolean hasWhere, DataParameter dataParameter) {
+                                           Method method, StringBuilder builder, boolean hasWhere, boolean hasOrder, DataParameter dataParameter) {
         PageRequest pageRequest = null;
         Object returnValue = null;
-        createCountQuery(dataForQuery, hasWhere, dataForQuery.getQueryString().indexOf("WHERE"));
+        createCountQuery(dataForQuery, hasWhere, hasOrder,
+                dataForQuery.getQueryString().indexOf("WHERE"), dataForQuery.getQueryString().indexOf("ORDER"));
         List<Sort<?>> sortList = dataParameter.sortList();
         pageRequest = getPageRequest(args);
 
@@ -355,7 +356,8 @@ public class FindOperationUtility {
         dataForQuery.setQueryString(sqlBuilder.toString());
     }
 
-    public static void createCountQuery(QueryData dataForQuery, boolean hasWhere, int wherePosition) {
+    public static void createCountQuery(QueryData dataForQuery, boolean hasWhere, boolean hasOrder,
+                                        int wherePosition, int orderPosition) {
         StringBuilder builder = new StringBuilder();
         if (dataForQuery.getQueryType().equals(QueryType.FIND)) {
             builder.append("SELECT COUNT(").append("o").append(") FROM ")
@@ -371,8 +373,10 @@ public class FindOperationUtility {
             } else {
                 builder.append(" WHERE");
             }
-        } else if (hasWhere && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
+        } else if (hasWhere && !hasOrder && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
             builder.append(" WHERE ").append(dataForQuery.getQueryString().substring(wherePosition + 5));
+        } else if (hasWhere && hasOrder && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
+            builder.append(" WHERE ").append(dataForQuery.getQueryString().substring(wherePosition + 5, orderPosition));
         }
         dataForQuery.setCountQueryString(builder.toString());
     }

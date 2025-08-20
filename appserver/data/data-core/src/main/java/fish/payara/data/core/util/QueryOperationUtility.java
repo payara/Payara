@@ -170,7 +170,7 @@ public class QueryOperationUtility {
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
                     method, new StringBuilder(dataForQuery.getQueryString()),
-                    patternSelectPositions.containsValue("WHERE"), dataParameter);
+                    patternSelectPositions.containsValue("WHERE"), patternSelectPositions.containsValue("ORDER"), dataParameter);
         }
 
         return objectToReturn;
