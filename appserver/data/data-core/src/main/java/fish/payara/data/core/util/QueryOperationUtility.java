@@ -321,10 +321,9 @@ public class QueryOperationUtility {
                 int orderIndex = getIndexFromMap("ORDER", patternPositions);
                 int fromIndex = getIndexFromMap("FROM", patternPositions);
                 int selectIndex = getIndexFromMap("SELECT", patternPositions);
-                if (fromIndex != -1) {
+                if (fromIndex != -1 && whereIndex == -1) {
                     queryBuilder.append(query.substring(fromIndex + 5, orderIndex));
-                }
-                if (whereIndex != -1) {
+                } else if (whereIndex != -1) {
                     queryBuilder.append(query.substring(whereIndex + 6, orderIndex));
                 }
 
@@ -332,11 +331,11 @@ public class QueryOperationUtility {
                     String entityName = getSingleEntityName(entityClass.getName());
                     queryBuilder.append(query.substring(selectIndex + 6, orderIndex));
                     queryBuilder.append(" FROM ").append(entityName);
-                } else if(fromIndex == -1 && whereIndex == -1 && selectIndex == -1) {
+                } else if (fromIndex == -1 && whereIndex == -1 && selectIndex == -1) {
                     String entityName = getSingleEntityName(entityClass.getName());
                     queryBuilder.append(" FROM ").append(entityName);
                 }
-                
+
                 if (patternPositions.containsValue("BY")) {
                     queryBuilder.append(" ORDER BY ").append(query.substring(orderIndex + 9));
                 }
