@@ -98,104 +98,88 @@ public class FindOperationUtility {
         StringBuilder builder = new StringBuilder();
         builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
                 null, dataForQuery.getEntityMetadata()));
-        String attributeValue = null;
+
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
+        Parameter[] parameters = dataForQuery.getMethod().getParameters();
         int queryPosition = 1;
         boolean hasWhere = false;
 
-        boolean hasBy = false;
-        for (Annotation[] annotations : parameterAnnotations) {
-            for (Annotation annotation : annotations) {
-                if (annotation instanceof By) {
-                    hasBy = true;
-                    attributeValue = ((By) annotation).value();
-                    // Handle special case for id(this)
-                    if ("id(this)".equals(attributeValue)) {
-                        attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
-                    }
-                }
+        // Process each parameter
+        for (int i = 0; i < parameters.length; i++) {
+            if (i < args.length && excludeParameter(args[i])) {
+                continue;
             }
-        }
 
-        boolean hasFindAnnotation = dataForQuery.getMethod().isAnnotationPresent(Find.class);
-        if (!hasBy && parameterAnnotations.length == 1) {
-            if (hasFindAnnotation) {
-                Parameter[] parameters = dataForQuery.getMethod().getParameters();
-                if (parameters.length > 0) {
-                    String paramName = parameters[0].getName();
-                    if (!paramName.startsWith("arg")) {
-                        attributeValue = paramName;
-                    } else {
-                        attributeValue = inferAttributeNameByType(
-                                parameters[0].getType(),
-                                dataForQuery.getDeclaredEntityClass()
-                        );
-                        if (attributeValue == null) {
-                            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
-                        }
-                    }
-                }
-            } else {
-                attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
-            }
-            if (!hasWhere) {
-                builder.append(" WHERE (");
-                hasWhere = true;
-            }
-            builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
-            queryPosition++;
-        } else {
-            Parameter[] parameters = dataForQuery.getMethod().getParameters();
-            for (int i = 0; i < parameterAnnotations.length; i++) {
-                boolean foundBy = false;
-                attributeValue = null;
+            String attributeValue = null;
+            boolean foundBy = false;
+
+            // Check for @By annotation
+            if (i < parameterAnnotations.length) {
                 for (Annotation annotation : parameterAnnotations[i]) {
                     if (annotation instanceof By) {
                         attributeValue = ((By) annotation).value();
+                        // Handle special case for id(this)
+                        if ("id(this)".equals(attributeValue)) {
+                            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+                        }
                         foundBy = true;
                         break;
                     }
                 }
-                if (!foundBy && i < args.length && excludeParameter(args[i])) {
-                    continue;
-                }
-                if (!foundBy && i < parameters.length) {
-                    String paramName = parameters[i].getName();
-                    if (!paramName.startsWith("arg")) {
-                        attributeValue = paramName;
-                    } else {
-                        attributeValue = inferAttributeNameByType(
+            }
+
+            // If no @By annotation, try to infer attribute name
+            if (!foundBy) {
+                String paramName = parameters[i].getName();
+                if (!paramName.startsWith("arg")) {
+                    attributeValue = paramName;
+                } else {
+                    // Try to infer by type
+                    attributeValue = inferAttributeNameByType(
+                            parameters[i].getType(),
+                            dataForQuery.getDeclaredEntityClass()
+                    );
+
+                    // If still null, try to infer from method name
+                    if (attributeValue == null) {
+                        attributeValue = inferAttributeFromMethodName(
+                                dataForQuery.getMethod().getName(),
+                                i,
                                 parameters[i].getType(),
                                 dataForQuery.getDeclaredEntityClass()
                         );
-                        if (attributeValue == null) {
-                            attributeValue = inferAttributeFromMethodName(
-                                    dataForQuery.getMethod().getName(),
-                                    i,
-                                    parameters[i].getType(),
-                                    dataForQuery.getDeclaredEntityClass()
-                            );
-                        }
+                    }
+
+                    // For methods like findById without @By, use ID field
+                    if (attributeValue == null && parameters.length == 1 &&
+                            !dataForQuery.getMethod().isAnnotationPresent(Find.class)) {
+                        attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
                     }
                 }
-                if (!hasWhere) {
-                    builder.append(" WHERE (");
-                    hasWhere = true;
-                } else {
-                    builder.append(" AND ");
-                }
-                if (attributeValue != null) {
-                    attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
-                } else {
-                    throw new MappingException(
-                            "Cannot determine attribute name for parameter " + i +
-                                    " of method " + dataForQuery.getMethod().getName() +
-                                    ". Consider using @By annotation or compiling with -parameters flag."
-                    );
-                }
-                builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
-                queryPosition++;
             }
+
+            // Validate we have an attribute name
+            if (attributeValue == null) {
+                throw new MappingException(
+                        "Cannot determine attribute name for parameter " + i +
+                                " of method " + dataForQuery.getMethod().getName() +
+                                ". Consider using @By annotation or compiling with -parameters flag."
+                );
+            }
+
+            // Preprocess attribute name if needed
+            attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
+
+            // Build WHERE clause
+            if (!hasWhere) {
+                builder.append(" WHERE (");
+                hasWhere = true;
+            } else {
+                builder.append(" AND ");
+            }
+
+            builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
+            queryPosition++;
         }
 
         if (hasWhere) {
@@ -204,21 +188,24 @@ public class FindOperationUtility {
 
         dataForQuery.setQueryString(builder.toString());
 
-        //here place to process pagination
+        // Process pagination or execute query
         if (evaluatePages) {
             return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, dataParameter);
         } else {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
-                handleSort(dataForQuery, dataParameter.sortList(), builder, 
-                        dataForQuery.getQueryType() == QueryType.FIND, false, 
+                handleSort(dataForQuery, dataParameter.sortList(), builder,
+                        dataForQuery.getQueryType() == QueryType.FIND, false,
                         false, null);
                 dataForQuery.setQueryString(builder.toString());
             }
-            //check order conditions to improve select queries
+
             Query query = em.createQuery(dataForQuery.getQueryString());
+
+            // Set parameters
+            int paramIndex = 1;
             for (int i = 0; i < args.length; i++) {
                 if (!excludeParameter(args[i])) {
-                    query.setParameter(i + 1, args[i]);
+                    query.setParameter(paramIndex++, args[i]);
                 }
             }
 
