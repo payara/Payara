@@ -247,7 +247,7 @@ public class QueryByNameOperationUtility {
 
         buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
 
-        List<Sort<?>> dynamicSorts = collectSortsFromArgs(dataForQuery.getMethod(), args);
+        List<Sort<?>> dynamicSorts = parameter.sortList();
         buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
         if (executionAction == QueryMethodParser.Action.FIND) {
             for (Sort<?> sort : dynamicSorts) {
