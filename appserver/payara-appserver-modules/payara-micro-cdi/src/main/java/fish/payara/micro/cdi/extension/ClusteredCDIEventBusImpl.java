@@ -100,7 +100,7 @@ public class ClusteredCDIEventBusImpl implements CDIEventListener, ClusteredCDIE
         }
         runtime.addCDIListener(this);
         if (runtime.isClustered()) {
-            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
+            Logger.getLogger(ClusteredCDIEventBusImpl.class.getName()).log(Level.FINE, "Clustered CDI Event bus initialized");
         }
     }
 
