@@ -200,7 +200,8 @@ public class QueryByNameOperationUtility {
         String methodName = method.getName();
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
 
-        Limit limitFromArgs = args != null && args.length > 0 ?
+        DataParameter parameter = extractDataParameter(args);
+        Limit limitFromArgs = parameter.limit();
                 Arrays.stream(args)
                         .filter(arg -> arg instanceof Limit)
                         .map(arg -> (Limit) arg)
