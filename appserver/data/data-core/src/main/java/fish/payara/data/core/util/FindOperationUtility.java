@@ -109,6 +109,10 @@ public class FindOperationUtility {
                 if (annotation instanceof By) {
                     hasBy = true;
                     attributeValue = ((By) annotation).value();
+                    // Handle special case for id(this)
+                    if ("id(this)".equals(attributeValue)) {
+                        attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+                    }
                 }
             }
         }
