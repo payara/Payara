@@ -332,7 +332,11 @@ public class QueryOperationUtility {
                     String entityName = getSingleEntityName(entityClass.getName());
                     queryBuilder.append(query.substring(selectIndex + 6, orderIndex));
                     queryBuilder.append(" FROM ").append(entityName);
+                } else if(fromIndex == -1 && whereIndex == -1 && selectIndex == -1) {
+                    String entityName = getSingleEntityName(entityClass.getName());
+                    queryBuilder.append(" FROM ").append(entityName);
                 }
+                
                 if (patternPositions.containsValue("BY")) {
                     queryBuilder.append(" ORDER BY ").append(query.substring(orderIndex + 9));
                 }
