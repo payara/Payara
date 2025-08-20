@@ -82,7 +82,7 @@ import static fish.payara.data.core.util.FindOperationUtility.processPagination;
  */
 public class QueryOperationUtility {
 
-    private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER", "BY", "GROUP", "HAVING");
+    private static final List<String> selectQueryPatterns = List.of("SELECT", "FROM", "WHERE", "ORDER BY", "GROUP BY", "HAVING");
     private static final List<String> deleteQueryPatterns = List.of("DELETE", "FROM", "WHERE");
     private static final List<String> updateQueryPatterns = List.of("UPDATE", "SET", "WHERE");
 
@@ -169,7 +169,7 @@ public class QueryOperationUtility {
                 validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
-                    method, new StringBuilder(dataForQuery.getQueryString()), 
+                    method, new StringBuilder(dataForQuery.getQueryString()),
                     patternSelectPositions.containsValue("WHERE"), dataParameter);
         }
 
@@ -316,15 +316,28 @@ public class QueryOperationUtility {
                     queryBuilder.append(query.substring(whereIndex + 6));
                 }
             }
-            case "ORDER" -> {
+            case "ORDER BY" -> {
                 int whereIndex = getIndexFromMap("WHERE", patternPositions);
-                int orderIndex = getIndexFromMap("ORDER", patternPositions);
-                queryBuilder.append(query.substring(whereIndex + 6, orderIndex));
-                if (patternPositions.containsValue("BY")) {
+                int orderIndex = getIndexFromMap("ORDER BY", patternPositions);
+                int fromIndex = getIndexFromMap("FROM", patternPositions);
+                int selectIndex = getIndexFromMap("SELECT", patternPositions);
+                if (fromIndex != -1) {
+                    queryBuilder.append(query.substring(fromIndex + 5, orderIndex));
+                }
+                if (whereIndex != -1) {
+                    queryBuilder.append(query.substring(whereIndex + 6, orderIndex));
+                }
+
+                if (fromIndex == -1 && whereIndex == -1 && selectIndex != -1) {
+                    String entityName = getSingleEntityName(entityClass.getName());
+                    queryBuilder.append(query.substring(selectIndex + 6, orderIndex));
+                    queryBuilder.append(" FROM ").append(entityName);
+                }
+                if (patternPositions.containsValue("ORDER BY")) {
                     queryBuilder.append(" ORDER BY ").append(query.substring(orderIndex + 9));
                 }
             }
-            case "GROUP" -> {
+            case "GROUP BY" -> {
                 int whereIndex = getIndexFromMap("WHERE", patternPositions);
                 int groupIndex = getIndexFromMap("GROUP", patternPositions);
                 int havingIndex = getIndexFromMap("HAVING", patternPositions);
