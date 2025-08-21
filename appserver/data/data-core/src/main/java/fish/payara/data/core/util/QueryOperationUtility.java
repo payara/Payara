@@ -289,11 +289,20 @@ public class QueryOperationUtility {
                 }
             }
             case "FROM" -> {
-                String entityName = getSingleEntityName(entityClass.getName());
-                if (entityName != null) {
-                    queryBuilder.append("FROM ").append(entityName);
+                int whereIndex = getIndexFromMap("WHERE", patternPositions);
+                int fromIndex = getIndexFromMap("FROM", patternPositions);
+                if (fromIndex != -1 && whereIndex != -1) {
+                    String entityName = query.substring(fromIndex + 5, whereIndex);
+                    if (!entityName.trim().isEmpty()) {
+                        queryBuilder.append("FROM ").append(entityName);
+                    }
                 } else {
-                    //need to see the resolution of entity from query path
+                    String entityName = getSingleEntityName(entityClass.getName());
+                    if (entityName != null) {
+                        queryBuilder.append("FROM ").append(entityName);
+                    } else {
+                        //need to see the resolution of entity from query path
+                    }
                 }
             }
             case "SET" -> {
