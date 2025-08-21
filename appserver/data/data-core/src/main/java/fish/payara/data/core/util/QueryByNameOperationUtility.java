@@ -45,6 +45,7 @@ import fish.payara.data.core.cdi.extension.PageImpl;
 import fish.payara.data.core.cdi.extension.QueryData;
 import fish.payara.data.core.querymethod.QueryMethodParser;
 import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
+import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.MappingException;
@@ -53,6 +54,7 @@ import jakarta.data.page.PageRequest;
 import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.data.exceptions.NonUniqueResultException;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
@@ -61,12 +63,15 @@ import jakarta.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
@@ -193,8 +198,10 @@ public class QueryByNameOperationUtility {
     private static Object buildAndExecuteQuery(Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action expectedAction) {
         Method method = dataForQuery.getMethod();
         String methodName = method.getName();
-
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
+
+        DataParameter parameter = extractDataParameter(args);
+        Limit limitFromArgs = parameter.limit();
 
         try {
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
@@ -205,6 +212,12 @@ public class QueryByNameOperationUtility {
                 return buildQueryFromParserWithPagination(parser, args, dataForQuery, entityManager, expectedAction);
             } else {
                 jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, expectedAction);
+                if (limitFromArgs != null) {
+                    if (limitFromArgs.startAt() > 1) {
+                        q.setFirstResult((int) (limitFromArgs.startAt() - 1));
+                    }
+                    q.setMaxResults(limitFromArgs.maxResults());
+                }
                 return executeQuery(q, parser, dataForQuery);
             }
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
@@ -228,7 +241,15 @@ public class QueryByNameOperationUtility {
         Map<String, String> joinAliases = new HashMap<>();
 
         buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
+
+        DataParameter parameter = extractDataParameter(args);
+        List<Sort<?>> dynamicSorts = parameter.sortList();
         buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
+        if (executionAction == QueryMethodParser.Action.FIND) {
+            for (Sort<?> sort : dynamicSorts) {
+                buildJoinsForPath(joinClause, rootEntityType, rootAlias, sort.property(), joinAliases);
+            }
+        }
 
         jpql.append(joinClause);
 
@@ -236,45 +257,25 @@ public class QueryByNameOperationUtility {
             jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
         }
 
-        String orderByClause = null;
         if (executionAction == QueryMethodParser.Action.FIND) {
-            // 1. Using Order/Sort param if exists
-            Method method = dataForQuery.getMethod();
-            Class<?>[] paramTypes = method.getParameterTypes();
-            int orderParamIndex = -1;
-            for (int i = 0; i < paramTypes.length; i++) {
-                if (jakarta.data.Order.class.isAssignableFrom(paramTypes[i]) ||
-                        jakarta.data.Sort.class.isAssignableFrom(paramTypes[i])) {
-                    orderParamIndex = i;
-                    break;
+            List<String> orderSegments = new ArrayList<>();
+            if (!parser.getOrderBy().isEmpty()) {
+                for (QueryMethodParser.OrderBy ob : parser.getOrderBy()) {
+                    String propertyPath = findAliasedPath(ob.property(), rootEntityType, rootAlias, joinAliases);
+                    String direction = (ob.ascDesc() == null || "Asc".equalsIgnoreCase(ob.ascDesc())) ? "ASC" : "DESC";
+                    orderSegments.add(propertyPath + " " + direction);
                 }
             }
-            if (orderParamIndex >= 0 && args != null && args.length > orderParamIndex && args[orderParamIndex] != null) {
-                Object orderArg = args[orderParamIndex];
-                if (orderArg instanceof jakarta.data.Order<?> order) {
-                    StringJoiner joiner = new StringJoiner(", ");
-                    for (jakarta.data.Sort<?> sort : order) {
-                        String property = sort.property();
-                        String direction = sort.isAscending() ? "ASC" : "DESC";
-                        joiner.add(rootAlias + "." + property + " " + direction);
-                    }
-                    if (joiner.length() > 0) {
-                        orderByClause = " ORDER BY " + joiner.toString();
-                    }
-                } else if (orderArg instanceof jakarta.data.Sort<?> sort) {
-                    String property = sort.property();
-                    String direction = sort.isAscending() ? "ASC" : "DESC";
-                    orderByClause = " ORDER BY " + rootAlias + "." + property + " " + direction;
-                }
-            } else if (orderByClause == null && !parser.getOrderBy().isEmpty()) {
-                // 2. Else use OrderBy from method name (parser)
-                orderByClause = buildOrderByClause(parser.getOrderBy(), rootEntityType, rootAlias, joinAliases);
+            for (Sort<?> sort : dynamicSorts) {
+                String propertyPath = findAliasedPath(sort.property(), rootEntityType, rootAlias, joinAliases);
+                String expr = sort.ignoreCase() ? "UPPER(" + propertyPath + ")" : propertyPath;
+                String direction = sort.isAscending() ? "ASC" : "DESC";
+                orderSegments.add(expr + " " + direction);
             }
-            if (orderByClause != null) {
-                jpql.append(orderByClause);
+            if (!orderSegments.isEmpty()) {
+                jpql.append(" ORDER BY ").append(String.join(", ", orderSegments));
             }
         }
-
         jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
         setQueryParameters(q, parser.getConditions(), args, dataForQuery);
 
@@ -331,12 +332,19 @@ public class QueryByNameOperationUtility {
             }
         }
 
-        if (!sortsFromMethodName.isEmpty() && sortList != null) {
-            sortsFromMethodName.addAll(sortList);
-            dataForQuery.setOrders(sortsFromMethodName);
-        } else if (sortList != null) {
-            dataForQuery.setOrders(sortList);
+        List<Sort<?>> finalOrders = new ArrayList<>();
+        if (!parser.getOrderBy().isEmpty()) {
+            finalOrders.addAll(sortsFromMethodName);
         }
+        if (sortList != null && !sortList.isEmpty()) {
+            Set<String> staticProperties = finalOrders.stream()
+                    .map(Sort::property)
+                    .collect(Collectors.toSet());
+            sortList.stream()
+                    .filter(sort -> !staticProperties.contains(sort.property()))
+                    .forEach(finalOrders::add);
+        }
+        dataForQuery.setOrders(finalOrders);
 
         dataForQuery.setQueryString(jpql.toString());
         dataForQuery.setCountQueryString(jpql.toString());
@@ -533,7 +541,15 @@ public class QueryByNameOperationUtility {
             throw new EmptyResultException("The expected result is empty, to return an empty result you should need to return a different type" +
                     "like: List, Optional, Page, CursorPage or Stream");
         }
-
+        if (!returnType.isArray() && data.getDeclaredEntityClass().equals(returnType)) {
+            if (resultList.size() > 1) {
+                throw new NonUniqueResultException(
+                        "Query method " + data.getMethod().getName() +
+                                " is expected to return a single result but found " + resultList.size() + " results"
+                );
+            }
+            return resultList.get(0);
+        }
         return handleArrays(resultList, returnType);
     }
 

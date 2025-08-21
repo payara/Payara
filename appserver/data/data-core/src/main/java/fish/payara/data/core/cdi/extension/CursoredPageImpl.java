@@ -43,6 +43,8 @@ import jakarta.data.page.CursoredPage;
 import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -64,7 +66,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     private final PageRequest pageRequest;
     private final QueryData queryData;
     private EntityManager entityManager;
-    private final List<T> results;
+    private List<T> results;
     private long totalElements = -1;
     private boolean isForward;
 
@@ -99,7 +101,19 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
+
         results = query.getResultList();
+        if (!isForward && !results.isEmpty()) {
+            if (results.size() > pageRequest.size()) {
+                results = results.subList(0, pageRequest.size());
+            }
+
+            Collections.reverse(results);
+        }
+
+        if (pageRequest.requestTotal()) {
+            totalElements();
+        }
     }
 
     @Override
@@ -152,8 +166,12 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     @Override
     public PageRequest previousPageRequest() {
         if (hasPrevious()) {
-            return PageRequest.beforeCursor(PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
-                    pageRequest.page() == 1 ? 1 : pageRequest.page() - 1, pageRequest.size(), pageRequest.requestTotal());
+            return PageRequest.beforeCursor(
+                    PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
+                    pageRequest.page() == 1 ? 1 : pageRequest.page() - 1,
+                    pageRequest.size(),
+                    pageRequest.requestTotal()
+            );
         } else {
             throw new NoSuchElementException("Not an available page for cursor");
         }
@@ -174,6 +192,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
 
     @Override
     public long totalPages() {
+        totalElements = totalElements();
         return totalElements / pageRequest.size() + (totalElements % pageRequest.size() > 0 ? 1 : 0);
     }
 

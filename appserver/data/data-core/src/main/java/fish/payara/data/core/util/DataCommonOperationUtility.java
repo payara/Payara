@@ -332,7 +332,7 @@ public class DataCommonOperationUtility {
         return cursorValues.toArray();
     }
 
-    public static String handleSort(QueryData dataForQuery, List<Sort<?>> sortList, String query, 
+    public static String handleSort(QueryData dataForQuery, List<Sort<?>> sortList, String query,
                                     boolean isFindOperation, boolean hasPagination, boolean isForward) {
         StringBuilder sortedQuery = new StringBuilder(query);
         if (!sortList.isEmpty()) {
@@ -341,18 +341,19 @@ public class DataCommonOperationUtility {
         return sortedQuery.toString();
     }
 
-    public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query, 
+    public static void handleSort(QueryData dataForQuery, List<Sort<?>> sortList, StringBuilder query,
                                   boolean isFindOperation, boolean hasPagination, boolean isForward, String rootAlias) {
         if (!sortList.isEmpty()) {
             appendSortQuery(dataForQuery, sortList, query, isFindOperation, hasPagination, isForward, rootAlias);
         }
     }
 
-    private static void appendSortQuery(QueryData dataForQuery, 
+    private static void appendSortQuery(QueryData dataForQuery,
                                         List<Sort<?>> sortList, StringBuilder sortedQuery, 
                                         boolean isFindOperation, boolean hasPagination, 
                                         boolean isForward, String rootAlias) {
-        if (sortedQuery.toString().toUpperCase().contains("ORDER")) {
+        String upper = sortedQuery.toString().toUpperCase();
+        if (upper.contains(" ORDER BY ")) {
             throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
         }
         EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
@@ -365,47 +366,39 @@ public class DataCommonOperationUtility {
                         " is not mapped on the entity " + entityMetadata.getEntityName());
             }
             propertyName = entityMetadata.getAttributeNames().get(propertyName.toLowerCase());
+
             if (!firstItem) {
                 sortCriteria.append(", ");
             }
+
+            boolean isFunctionExpr = propertyName.charAt(propertyName.length() - 1) == ')';
+
+            if (!isFunctionExpr) {
+                if (isFindOperation) {
+                    sortCriteria.append("o.");
+                } else if (rootAlias != null && !rootAlias.isEmpty()) {
+                    sortCriteria.append(rootAlias).append(".");
+                }
+            }
+
             if (sort.ignoreCase()) {
                 sortCriteria.append("LOWER(");
             }
-            
-            if (isFindOperation && propertyName.charAt(propertyName.length() - 1) != ')') {
-                sortCriteria.append("o.");
-            }
-            
-            if (rootAlias != null && !rootAlias.isEmpty() && propertyName.charAt(propertyName.length() - 1) != ')') {
-                sortCriteria.append(rootAlias).append(".");
-            }
-
             sortCriteria.append(propertyName);
             if (sort.ignoreCase()) {
                 sortCriteria.append(")");
             }
-            
-            if(!hasPagination) {
-                if (sort.isAscending()) {
-                    sortCriteria.append(" ASC");
-                }
-                if (sort.isDescending()) {
-                    sortCriteria.append(" DESC");
-                }
+
+            if (!hasPagination) {
+                sortCriteria.append(sort.isAscending() ? " ASC" : " DESC");
             } else {
-                if (isForward) {
-                    if (sort.isDescending()) {
-                        sortCriteria.append(" DESC");
-                    }
-                } else {
-                    if (sort.isAscending()) {
-                        sortCriteria.append(" DESC");
-                    }
-                }
+                boolean ascDirection = isForward ? sort.isAscending() : sort.isDescending();
+                sortCriteria.append(ascDirection ? " ASC" : " DESC");
             }
+
             firstItem = false;
         }
-        sortedQuery.append(sortCriteria.toString());
+        sortedQuery.append(sortCriteria);
         dataForQuery.setQueryOrder(sortCriteria.toString());
     }
 

@@ -52,10 +52,14 @@ import jakarta.data.page.CursoredPage;
 import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
 import jakarta.data.repository.By;
+import jakarta.data.repository.Find;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -71,7 +75,8 @@ public class FindOperationUtility {
 
     public static Object processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
                                                     QueryData dataForQuery, DataParameter dataParameter) {
-        String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata());
+        final boolean ADD_DISTINCT_CLAUSE = true;
+        String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
         List<Sort<?>> sortList = dataParameter.sortList();
         if (!sortList.isEmpty()) {
             qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
@@ -93,49 +98,88 @@ public class FindOperationUtility {
         StringBuilder builder = new StringBuilder();
         builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
                 null, dataForQuery.getEntityMetadata()));
-        String attributeValue = null;
+
         Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
+        Parameter[] parameters = dataForQuery.getMethod().getParameters();
         int queryPosition = 1;
         boolean hasWhere = false;
 
-        boolean hasBy = false;
-        for (Annotation[] annotations : parameterAnnotations) {
-            for (Annotation annotation : annotations) {
-                if (annotation instanceof By) {
-                    hasBy = true;
-                    attributeValue = ((By) annotation).value();
+        // Process each parameter
+        for (int i = 0; i < parameters.length; i++) {
+            if (i < args.length && excludeParameter(args[i])) {
+                continue;
+            }
+
+            String attributeValue = null;
+            boolean foundBy = false;
+
+            // Check for @By annotation
+            if (i < parameterAnnotations.length) {
+                for (Annotation annotation : parameterAnnotations[i]) {
+                    if (annotation instanceof By) {
+                        attributeValue = ((By) annotation).value();
+                        // Handle special case for id(this)
+                        if ("id(this)".equals(attributeValue)) {
+                            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+                        }
+                        foundBy = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!hasBy && parameterAnnotations.length == 1) {
-            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+            // If no @By annotation, try to infer attribute name
+            if (!foundBy) {
+                String paramName = parameters[i].getName();
+                if (!paramName.startsWith("arg")) {
+                    attributeValue = paramName;
+                } else {
+                    // Try to infer by type
+                    attributeValue = inferAttributeNameByType(
+                            parameters[i].getType(),
+                            dataForQuery.getDeclaredEntityClass()
+                    );
+
+                    // If still null, try to infer from method name
+                    if (attributeValue == null) {
+                        attributeValue = inferAttributeFromMethodName(
+                                dataForQuery.getMethod().getName(),
+                                i,
+                                parameters[i].getType(),
+                                dataForQuery.getDeclaredEntityClass()
+                        );
+                    }
+
+                    // For methods like findById without @By, use ID field
+                    if (attributeValue == null && parameters.length == 1 &&
+                            !dataForQuery.getMethod().isAnnotationPresent(Find.class)) {
+                        attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
+                    }
+                }
+            }
+
+            // Validate we have an attribute name
+            if (attributeValue == null) {
+                throw new MappingException(
+                        "Cannot determine attribute name for parameter " + i +
+                                " of method " + dataForQuery.getMethod().getName() +
+                                ". Consider using @By annotation or compiling with -parameters flag."
+                );
+            }
+
+            // Preprocess attribute name if needed
+            attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
+
+            // Build WHERE clause
             if (!hasWhere) {
                 builder.append(" WHERE (");
                 hasWhere = true;
+            } else {
+                builder.append(" AND ");
             }
+
             builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             queryPosition++;
-        } else {
-            for (Annotation[] annotations : parameterAnnotations) {
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof By) {
-                        attributeValue = ((By) annotation).value();
-                    }
-                    if (!hasWhere) {
-                        builder.append(" WHERE (");
-                        hasWhere = true;
-                    } else {
-                        builder.append(" AND ");
-                    }
-
-                    if (attributeValue != null) {
-                        attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
-                    }
-                    builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
-                }
-                queryPosition++;
-            }
         }
 
         if (hasWhere) {
@@ -144,18 +188,19 @@ public class FindOperationUtility {
 
         dataForQuery.setQueryString(builder.toString());
 
-        //here place to process pagination
+        // Process pagination or execute query
         if (evaluatePages) {
             return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, dataParameter);
         } else {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
-                handleSort(dataForQuery, dataParameter.sortList(), builder, 
-                        dataForQuery.getQueryType() == QueryType.FIND, false, 
+                handleSort(dataForQuery, dataParameter.sortList(), builder,
+                        dataForQuery.getQueryType() == QueryType.FIND, false,
                         false, null);
                 dataForQuery.setQueryString(builder.toString());
             }
-            //check order conditions to improve select queries
+
             Query query = em.createQuery(dataForQuery.getQueryString());
+
             for (int i = 0; i < args.length; i++) {
                 if (!excludeParameter(args[i])) {
                     query.setParameter(i + 1, args[i]);
@@ -166,6 +211,73 @@ public class FindOperationUtility {
 
             return query.getResultList();
         }
+    }
+
+    private static String inferAttributeNameByType(Class<?> paramType, Class<?> entityClass) {
+        String foundFieldName = null;
+        int count = 0;
+        for (Field field : entityClass.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()) ||
+                    Modifier.isTransient(field.getModifiers())) {
+                continue;
+            }
+            if (field.getType().equals(paramType) ||
+                    (isPrimitiveWrapper(field.getType(), paramType))) {
+                foundFieldName = field.getName();
+                count++;
+            }
+        }
+        return count == 1 ? foundFieldName : null;
+    }
+
+    private static String inferAttributeFromMethodName(String methodName, int paramIndex,
+                                                       Class<?> paramType, Class<?> entityClass) {
+        if (methodName.startsWith("find") && methodName.length() > 4) {
+            String suffix = methodName.substring(4);
+            String potentialName = suffix.substring(0, 1).toLowerCase() + suffix.substring(1);
+
+            if (paramType == boolean.class || paramType == Boolean.class) {
+                if (hasField(entityClass, "is" + suffix)) {
+                    return "is" + suffix;
+                }
+                if (hasField(entityClass, potentialName)) {
+                    return potentialName;
+                }
+            } else {
+                if (hasField(entityClass, potentialName)) {
+                    return potentialName;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasField(Class<?> clazz, String fieldName) {
+        try {
+            clazz.getDeclaredField(fieldName);
+            return true;
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
+    }
+
+    private static boolean isPrimitiveWrapper(Class<?> type1, Class<?> type2) {
+        return (type1 == Integer.class && type2 == int.class) ||
+                (type1 == int.class && type2 == Integer.class) ||
+                (type1 == Long.class && type2 == long.class) ||
+                (type1 == long.class && type2 == Long.class) ||
+                (type1 == Double.class && type2 == double.class) ||
+                (type1 == double.class && type2 == Double.class) ||
+                (type1 == Float.class && type2 == float.class) ||
+                (type1 == float.class && type2 == Float.class) ||
+                (type1 == Boolean.class && type2 == boolean.class) ||
+                (type1 == boolean.class && type2 == Boolean.class) ||
+                (type1 == Character.class && type2 == char.class) ||
+                (type1 == char.class && type2 == Character.class) ||
+                (type1 == Byte.class && type2 == byte.class) ||
+                (type1 == byte.class && type2 == Byte.class) ||
+                (type1 == Short.class && type2 == short.class) ||
+                (type1 == short.class && type2 == Short.class);
     }
 
     public static Object processPagination(EntityManager em, QueryData dataForQuery, Object[] args,
@@ -191,6 +303,7 @@ public class FindOperationUtility {
                                                   StringBuilder builder,
                                                   Object[] args, List<Sort<?>> sortList, String rootAlias) {
         boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
+
         boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
         if (isCursoredPage && dataForQuery.getQueryType() != QueryType.FIND) {
             //here to adapt query for Cursored mode
@@ -217,7 +330,7 @@ public class FindOperationUtility {
         if(dataForQuery.getQueryNext() != null && !dataForQuery.getQueryNext().contains("ORDER")) {
             dataForQuery.setQueryNext(dataForQuery.getQueryNext() + dataForQuery.getQueryOrder());
         }
-        
+
         if(dataForQuery.getQueryPrevious() != null && !dataForQuery.getQueryPrevious().contains("ORDER")) {
             dataForQuery.setQueryPrevious(dataForQuery.getQueryPrevious() + dataForQuery.getQueryOrder());
         }
@@ -282,8 +395,14 @@ public class FindOperationUtility {
     }
 
     public static String createBaseFindQuery(Class<?> entityClass, String orderByClause, EntityMetadata entityMetadata) {
+        return createBaseFindQuery(entityClass, orderByClause, entityMetadata, false);
+    }
+
+    public static String createBaseFindQuery(Class<?> entityClass, String orderByClause,
+                                             EntityMetadata entityMetadata, boolean isAddDistinct) {
         StringBuilder builder = new StringBuilder();
-        builder.append("SELECT ").append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
+        builder.append("SELECT " + (isAddDistinct ? "DISTINCT " : ""))
+               .append("o").append(" FROM ").append(getSingleEntityName(entityClass.getName())).append(" o");
 
         if (orderByClause != null && !orderByClause.isEmpty()) {
             builder.append(processOrderByClause(orderByClause, entityMetadata));
@@ -361,44 +480,6 @@ public class FindOperationUtility {
             // limit.maxResults() is guaranteed to be >= 1.
             query.setMaxResults(limit.maxResults());
         }
-    }
-
-    public static String processSortForPagination(List<Sort<?>> orders, QueryData dataForQuery, boolean forward) {
-        //create order query
-        StringBuilder orderQuery = null;
-        for (Sort<?> sort : orders) {
-            if (orderQuery == null) {
-                orderQuery = new StringBuilder(" ORDER BY ");
-            } else {
-                orderQuery.append(", ");
-            }
-
-            String propertyName = sort.property();
-            if (sort.ignoreCase()) {
-                orderQuery.append("LOWER(");
-            }
-
-            if (propertyName.charAt(propertyName.length() - 1) != ')' && dataForQuery.getQueryType().equals(QueryType.FIND)) {
-                orderQuery.append("o.");
-            }
-
-            orderQuery.append(propertyName);
-
-            if (sort.ignoreCase()) {
-                orderQuery.append(")");
-            }
-
-            if (forward) {
-                if (sort.isDescending()) {
-                    orderQuery.append(" DESC");
-                }
-            } else {
-                if (sort.isAscending()) {
-                    orderQuery.append(" DESC");
-                }
-            }
-        }
-        return orderQuery.toString();
     }
 
     private static void createCursorQueries(QueryData dataForQuery, List<Sort<?>> orders,

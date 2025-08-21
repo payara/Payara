@@ -53,9 +53,29 @@ public class EntityIntrospectionUtil {
         if (idAccessor instanceof Field) {
             return idAccessor.getName();
         } else if (idAccessor instanceof Method) {
+            // When the ID accessor is a method, we need to find the actual field
+            // that corresponds to this getter method, not derive it from the method name
+
+            // First, try to find the field directly by @Id annotation
+            for (Field field : entityClass.getDeclaredFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    return field.getName();
+                }
+            }
+
+            // If no field found with @Id, try to find it in public fields
+            for (Field field : entityClass.getFields()) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    return field.getName();
+                }
+            }
+
+            // Only if we can't find the actual field, fall back to deriving from method name
             String methodName = idAccessor.getName();
             if (methodName.startsWith("get") && methodName.length() > 3) {
                 return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+            } else if (methodName.startsWith("is") && methodName.length() > 2) {
+                return Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
             }
             return methodName;
         }
