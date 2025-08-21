@@ -300,8 +300,6 @@ public class QueryOperationUtility {
                     String entityName = getSingleEntityName(entityClass.getName());
                     if (entityName != null) {
                         queryBuilder.append("FROM ").append(entityName);
-                    } else {
-                        //need to see the resolution of entity from query path
                     }
                 }
             }
