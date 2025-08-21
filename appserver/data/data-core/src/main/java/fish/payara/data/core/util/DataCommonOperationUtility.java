@@ -84,6 +84,8 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
+import static fish.payara.data.core.cdi.extension.DynamicInterfaceDataProducer.isEntityCandidate;
+
 /**
  * Class for common utility methods
  */
@@ -255,12 +257,14 @@ public class DataCommonOperationUtility {
                 if (genericReturnType instanceof ParameterizedType) {
                     ParameterizedType paramType = (ParameterizedType) genericReturnType;
                     Type typeArgument = paramType.getActualTypeArguments()[0];
-                    return getGenericClass(typeArgument);
+                    Class<?> cl = getGenericClass(typeArgument);
+                    return evaluateReturnEntity(cl);
                 }
             } else if (returnType.isArray()) {
-                return returnType.getComponentType();
+                Class<?> cl = returnType.getComponentType();
+                return evaluateReturnEntity(cl);
             } else if (!returnType.isPrimitive() && !returnType.equals(String.class)) {
-                return returnType;
+                return evaluateReturnEntity(returnType);
             }
         }
         for (Parameter param : method.getParameters()) {
@@ -272,16 +276,26 @@ public class DataCommonOperationUtility {
                     if (paramGenericType instanceof ParameterizedType) {
                         ParameterizedType parameterizedType = (ParameterizedType) paramGenericType;
                         Type typeArgument = parameterizedType.getActualTypeArguments()[0];
-                        return getGenericClass(typeArgument);
+                        Class<?> cl = getGenericClass(typeArgument);
+                        return evaluateReturnEntity(cl);
                     }
                 } else if (paramType.isArray()) {
-                    return paramType.getComponentType();
+                    Class<?> cl = paramType.getComponentType();
+                    return evaluateReturnEntity(cl);
                 } else {
-                    return paramType;
+                    return evaluateReturnEntity(paramType);
                 }
             }
         }
         return null;
+    }
+    
+    public static Class<?> evaluateReturnEntity(Class<?> cl) {
+        if (isEntityCandidate(cl)) {
+            return cl;
+        } else {
+            return null;
+        }
     }
 
     public static Class<?> getGenericClass(Type type) {

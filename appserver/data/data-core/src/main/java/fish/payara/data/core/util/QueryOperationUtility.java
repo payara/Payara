@@ -67,11 +67,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
-import static fish.payara.data.core.util.DataCommonOperationUtility.handleSort;
-import static fish.payara.data.core.util.DataCommonOperationUtility.paginationPredicate;
-import static fish.payara.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
-import static fish.payara.data.core.util.DataCommonOperationUtility.startTransactionAndJoin;
+import static fish.payara.data.core.util.DataCommonOperationUtility.*;
 import static fish.payara.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.data.core.util.FindOperationUtility.getSingleEntityName;
 import static fish.payara.data.core.util.FindOperationUtility.parametersToExclude;
@@ -97,6 +93,10 @@ public class QueryOperationUtility {
         String mappedQuery = queryAnnotation.value();
 
         mappedQuery = handlesEmptyQuery(dataForQuery, mappedQuery);
+        Class<?> identifiedClass = findEntityTypeInMethod(method);
+        if (identifiedClass != null && !identifiedClass.equals(dataForQuery.getDeclaredEntityClass())) {
+            dataForQuery.setDeclaredEntityClass(identifiedClass);
+        }
 
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         int length = mappedQuery.length();

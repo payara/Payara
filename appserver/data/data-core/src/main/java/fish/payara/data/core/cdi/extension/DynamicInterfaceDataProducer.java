@@ -277,7 +277,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         return null;
     }
 
-    private boolean isEntityCandidate(Class<?> clazz) {
+    public static boolean isEntityCandidate(Class<?> clazz) {
         if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
                 clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class) ||
                 clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class)) {
