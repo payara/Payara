@@ -307,6 +307,8 @@ public class DataCommonOperationUtility {
             return Integer.valueOf(returnValue);
         } else if (method.getReturnType().equals(Void.TYPE)) {
             return null;
+        } else if (method.getReturnType().equals(Boolean.TYPE)) {
+            return returnValue != 0;
         } else {
             return Long.valueOf(returnValue);
         }
