@@ -292,6 +292,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 hotDeployService.removeApplicationState(path);
             }
 
+            if (Boolean.TRUE.equals(isUseWarLibs()) && "war".equals(archiveHandler.getArchiveType())) {
+                DeploymentUtils.useWarLibraries(initialContext);
+            }
+
             structuredTracing.register(initialContext);
 
             span.finish();

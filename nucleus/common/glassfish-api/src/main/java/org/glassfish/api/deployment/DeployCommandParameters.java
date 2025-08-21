@@ -179,6 +179,10 @@ public class DeployCommandParameters extends OpsParams {
       return loadOnly;
     }
 
+    @Param(name=ParameterNames.WARLIBS, optional=true, defaultValue="false")
+    public Boolean useWarLibs = false;
+    public Boolean isUseWarLibs() {return useWarLibs;}
+
     @Param(optional=true, defaultValue="false")
     public Boolean generatermistubs = false;
     public Boolean isGenerateRMIStubs() {
@@ -307,6 +311,7 @@ public class DeployCommandParameters extends OpsParams {
         public static final String HOT_DEPLOY = "hotdeploy";
         public static final String SOURCES_CHANGED = "sourceschanged";
         public static final String METADATA_CHANGED = "metadatachanged";
+        public static final String WARLIBS = "warlibs";
     }
     
 }
