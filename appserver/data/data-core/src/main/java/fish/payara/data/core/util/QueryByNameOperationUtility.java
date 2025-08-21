@@ -200,12 +200,8 @@ public class QueryByNameOperationUtility {
         String methodName = method.getName();
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
 
-        Limit limitFromArgs = args != null && args.length > 0 ?
-                Arrays.stream(args)
-                        .filter(arg -> arg instanceof Limit)
-                        .map(arg -> (Limit) arg)
-                        .findFirst()
-                        .orElse(null) : null;
+        DataParameter parameter = extractDataParameter(args);
+        Limit limitFromArgs = parameter.limit();
 
         try {
             QueryMethodParser parser = new QueryMethodParser(methodName).parse();
@@ -246,7 +242,8 @@ public class QueryByNameOperationUtility {
 
         buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
 
-        List<Sort<?>> dynamicSorts = collectSortsFromArgs(dataForQuery.getMethod(), args);
+        DataParameter parameter = extractDataParameter(args);
+        List<Sort<?>> dynamicSorts = parameter.sortList();
         buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
         if (executionAction == QueryMethodParser.Action.FIND) {
             for (Sort<?> sort : dynamicSorts) {
@@ -283,37 +280,6 @@ public class QueryByNameOperationUtility {
         setQueryParameters(q, parser.getConditions(), args, dataForQuery);
 
         return q;
-    }
-
-    /**
-      * Collect all dynamic sorts received by argument:
-      * - jakarta.data.Order
-      * - jakarta.data.Sort
-      * - varargs Sort...
-      */
-    private static List<Sort<?>> collectSortsFromArgs(Method method, Object[] args) {
-        List<Sort<?>> result = new ArrayList<>();
-        if (args == null || args.length == 0) {
-            return result;
-        }
-        for (Object arg : args) {
-            if (arg == null) continue;
-            if (arg instanceof jakarta.data.Order<?> order) {
-                for (jakarta.data.Sort<?> s : order) {
-                    result.add(s);
-                }
-            } else if (arg instanceof jakarta.data.Sort<?> s) {
-                result.add(s);
-            } else if (arg.getClass().isArray()
-                    && jakarta.data.Sort.class.isAssignableFrom(arg.getClass().getComponentType())) {
-                for (Object o : (Object[]) arg) {
-                    if (o instanceof jakarta.data.Sort<?> so) {
-                        result.add(so);
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     private static Object buildQueryFromParserWithPagination(QueryMethodParser parser, Object[] args,

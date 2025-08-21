@@ -201,11 +201,9 @@ public class FindOperationUtility {
 
             Query query = em.createQuery(dataForQuery.getQueryString());
 
-            // Set parameters
-            int paramIndex = 1;
             for (int i = 0; i < args.length; i++) {
                 if (!excludeParameter(args[i])) {
-                    query.setParameter(paramIndex++, args[i]);
+                    query.setParameter(i + 1, args[i]);
                 }
             }
 
