@@ -40,12 +40,14 @@
 package fish.payara.data.core.cdi.extension;
 
 import fish.payara.data.core.util.DataParameter;
+import fish.payara.data.core.util.DeleteOperationUtility;
 import fish.payara.data.core.util.EntityIntrospectionUtil;
 import fish.payara.data.core.util.FindOperationUtility;
 import fish.payara.data.core.util.QueryByNameOperationUtility;
 import fish.payara.data.core.util.QueryOperationUtility;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.exceptions.OptimisticLockingFailureException;
+import jakarta.data.repository.By;
 import jakarta.data.repository.OrderBy;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
@@ -160,7 +162,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         if (method.isDefault()) {
             return InvocationHandler.invokeDefault(proxy, method, args);
         }
-        
+
         QueryData dataForQuery = queries.get(method);
         Object objectToReturn;
         startTransactionComponents();
@@ -169,21 +171,21 @@ public class RepositoryImpl<T> implements InvocationHandler {
             switch (dataForQuery.getQueryType()) {
                 case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
                 case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
-                case DELETE ->
-                        objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(), 
-                                dataForQuery.getMethod(), dataForQuery);
+                case DELETE -> objectToReturn = processDeleteOperation(args, dataForQuery.getDeclaredEntityClass(),
+                        dataForQuery.getMethod(), dataForQuery);
                 case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
                 case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
                 case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args, 
+                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args,
                         dataForQuery, getEntityManager(this.applicationName));
-                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args, 
+                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args,
                         dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
-                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args, 
+                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args,
                         dataForQuery, getEntityManager(this.applicationName));
-                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args, 
+                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args,
                         dataForQuery, getEntityManager(this.applicationName));
-                default -> throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
+                default ->
+                        throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
             }
         } catch (jakarta.persistence.OptimisticLockException e) {
             // Expected in Data TCK
@@ -365,7 +367,8 @@ public class RepositoryImpl<T> implements InvocationHandler {
                         transactionManager.rollback();
                     }
                 }
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+            }
             if (entityExistsConstraintViolation(t)) {
                 throw new jakarta.data.exceptions.EntityExistsException("Entity already exists", t);
             }
@@ -383,18 +386,25 @@ public class RepositoryImpl<T> implements InvocationHandler {
      * Processes standard delete operations, such as delete(entity) or deleteById(id).
      * This version has been completely rewritten to be more robust and TCK-compliant.
      *
-     * @param args The arguments passed to the repository method.
+     * @param args                The arguments passed to the repository method.
      * @param declaredEntityClass The primary entity class for the repository.
-     * @param method The repository method that was invoked.
+     * @param method              The repository method that was invoked.
      * @return The number of deleted entities, converted to the method's return type.
      * @throws ... various transaction exceptions
      */
     public Object processDeleteOperation(Object[] args, Class<?> declaredEntityClass,
                                          Method method, QueryData dataForQuery)
-            throws SystemException, NotSupportedException {
+            throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException  {
         boolean isDeleteById = method.getName().startsWith("deleteById");
+        Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
+        int resultDelete = 0;
+        boolean hasBy = Arrays.stream(parameterAnnotations).flatMap(Arrays::stream).anyMatch(a -> a instanceof By);
 
-        if (args == null) {
+        if (hasBy) {
+            resultDelete = DeleteOperationUtility.processDeleteByOperation(args, declaredEntityClass,
+                    transactionManager, em, dataForQuery, method);
+            return processReturnQueryUpdate(method, resultDelete);
+        } else if (args == null && !hasBy) {
             startTransactionAndJoin(transactionManager, em, dataForQuery);
             try {
                 String deleteAllQuery = "DELETE FROM " + declaredEntityClass.getSimpleName();
