@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2017-2025 Payara Foundation and/or its affiliates
  */
 
 package com.sun.enterprise.v3.server;
@@ -64,9 +64,10 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
 import jakarta.inject.Singleton;
+
+import fish.payara.internal.api.DeployPreviousApplicationsRunLevel;
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener.Event;
@@ -165,10 +166,23 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
     
     private final static String THREAD_POLICY_PROPERTY = "org.glassfish.startupThreadPolicy";
     private final static String MAX_STARTUP_THREAD_PROPERTY = "org.glassfish.maxStartupThreads";
-    
+
     private final static String POLICY_FULLY_THREADED = "FULLY_THREADED";
     private final static String POLICY_USE_NO_THREADS = "USE_NO_THREADS";
-    
+
+    /**
+     * When set, SERVER_READY will fire once all `DeployPreviousApplicationsRunLevel` services
+     * have initialised, and SERVER_STARTED will be fired in place of where SERVER_READY would normally.
+     *
+     * Enabled by default.
+     *
+     * This is to counter a side effect of us changing the run levels to apply a structured order to the post-boot and
+     * deployment services in FISH-6588 (introduced in version 6.2022.2) to prevent a race between post-boot scripts
+     * and previously deployed applications; all of these services used to run at the same `StartupRunLevel`
+     * and so would've been initialised by the time the `SERVER_READY` event would've fired.
+     */
+    private final static String READY_AFTER_APPLICATIONS_PROPERTY = "fish.payara.ready-after-applications";
+
     private final static int DEFAULT_STARTUP_THREADS = 4;
     private final static String FELIX_PLATFORM = "Felix";
     private final static String STATIC_PLATFORM = "Static";
@@ -353,8 +367,9 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
-        
-        if (!postStartupJob()) {
+
+        boolean readyAfterApplications = Boolean.parseBoolean(System.getProperty(READY_AFTER_APPLICATIONS_PROPERTY, "true"));
+        if (!postStartupJob(readyAfterApplications)) {
             appInstanceListener.stopRecordingTimes();
             return false;
         }
@@ -364,6 +379,14 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
             startupFinishTime = System.currentTimeMillis();
             logger.log(level, "Startup level done in " +
                 (startupFinishTime - initFinishTime) + " ms");
+        }
+
+        if (readyAfterApplications) {
+            if (!proceedTo(DeployPreviousApplicationsRunLevel.VAL)) {
+                appInstanceListener.stopRecordingTimes();
+                return false;
+            }
+            events.send(new Event(EventTypes.SERVER_READY), false);
         }
         
         if (!proceedTo(PostStartupRunLevel.VAL)) {
@@ -379,12 +402,12 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
         return true;
     }
-    
+
     /**
      * 
      * @return True if started successfully, false otherwise
      */
-    private boolean postStartupJob() {
+    private boolean postStartupJob(boolean readyAfterApplications) {
         LinkedList<Future<Result<Thread>>> futures = appInstanceListener.getFutures();
 
         env.setStatus(ServerEnvironment.Status.starting);
@@ -431,7 +454,11 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         env.setStatus(ServerEnvironment.Status.started);
-        events.send(new Event(EventTypes.SERVER_READY), false);
+        if (readyAfterApplications) {
+            events.send(new Event(EventTypes.SERVER_STARTED), false);
+        } else {
+            events.send(new Event(EventTypes.SERVER_READY), false);
+        }
         pidWriter.writePidFile();
         
         return true;

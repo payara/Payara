@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.loader;
 
@@ -67,6 +67,7 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.util.StringManager;
 import org.apache.naming.resources.DirContextURLStreamHandler;
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory;
+import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.Resource;
 import org.glassfish.web.loader.WebappClassLoader;
 
@@ -1021,6 +1022,9 @@ public class WebappLoader
             Object object = resources.lookup(classesPath);
             if (object instanceof DirContext) {
                 classes = (DirContext) object;
+                if (object instanceof FileDirContext) {
+                    ((FileDirContext)object).setDocBase(servletContext.getRealPath(""));
+                }
             }
         } catch(NamingException e) {
             // Silent catch: it's valid that no /WEB-INF/classes collection
