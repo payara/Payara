@@ -67,11 +67,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
-import static fish.payara.data.core.util.DataCommonOperationUtility.handleSort;
-import static fish.payara.data.core.util.DataCommonOperationUtility.paginationPredicate;
-import static fish.payara.data.core.util.DataCommonOperationUtility.processReturnQueryUpdate;
-import static fish.payara.data.core.util.DataCommonOperationUtility.startTransactionAndJoin;
+import static fish.payara.data.core.util.DataCommonOperationUtility.*;
 import static fish.payara.data.core.util.FindOperationUtility.excludeParameter;
 import static fish.payara.data.core.util.FindOperationUtility.getSingleEntityName;
 import static fish.payara.data.core.util.FindOperationUtility.parametersToExclude;
@@ -97,6 +93,10 @@ public class QueryOperationUtility {
         String mappedQuery = queryAnnotation.value();
 
         mappedQuery = handlesEmptyQuery(dataForQuery, mappedQuery);
+        Class<?> identifiedClass = findEntityTypeInMethod(method);
+        if (identifiedClass != null && !identifiedClass.equals(dataForQuery.getDeclaredEntityClass())) {
+            dataForQuery.setDeclaredEntityClass(identifiedClass);
+        }
 
         boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
         int length = mappedQuery.length();
@@ -170,7 +170,7 @@ public class QueryOperationUtility {
             }
             objectToReturn = processPagination(entityManager, dataForQuery, args,
                     method, new StringBuilder(dataForQuery.getQueryString()),
-                    patternSelectPositions.containsValue("WHERE"), dataParameter);
+                    patternSelectPositions.containsValue("WHERE"), patternSelectPositions.containsValue("ORDER"), dataParameter);
         }
 
         return objectToReturn;
@@ -289,11 +289,18 @@ public class QueryOperationUtility {
                 }
             }
             case "FROM" -> {
-                String entityName = getSingleEntityName(entityClass.getName());
-                if (entityName != null) {
-                    queryBuilder.append("FROM ").append(entityName);
+                int whereIndex = getIndexFromMap("WHERE", patternPositions);
+                int fromIndex = getIndexFromMap("FROM", patternPositions);
+                if (fromIndex != -1 && whereIndex != -1) {
+                    String entityName = query.substring(fromIndex + 5, whereIndex);
+                    if (!entityName.trim().isEmpty()) {
+                        queryBuilder.append("FROM ").append(entityName);
+                    }
                 } else {
-                    //need to see the resolution of entity from query path
+                    String entityName = getSingleEntityName(entityClass.getName());
+                    if (entityName != null) {
+                        queryBuilder.append("FROM ").append(entityName);
+                    }
                 }
             }
             case "SET" -> {
