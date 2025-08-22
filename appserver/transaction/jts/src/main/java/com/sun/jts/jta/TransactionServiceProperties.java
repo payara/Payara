@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package com.sun.jts.jta;
 
@@ -89,6 +89,8 @@ public class TransactionServiceProperties {
     private static Properties properties = null;
     private static volatile boolean orbAvailable = false;
     private static volatile boolean recoveryInitialized = false;
+
+    private static final String RECOVER_TRANSACTION_DELAY_PROPERTY = "recover-txn-delay";
 
     public static synchronized Properties getJTSProperties (ServiceLocator serviceLocator, boolean isORBAvailable) {
         if (orbAvailable == isORBAvailable && properties != null) {
@@ -165,6 +167,10 @@ public class TransactionServiceProperties {
                                 }
                             }
 
+                        } else if (name.equals(RECOVER_TRANSACTION_DELAY_PROPERTY)) {
+                            if (isValueSet(value)) {
+                                jtsProperties.put(RECOVER_TRANSACTION_DELAY_PROPERTY, value);
+                            }
                         }
                     }
 
@@ -321,7 +327,17 @@ public class TransactionServiceProperties {
                     if (isValueSet(value)) {
                         interval = Integer.parseInt(value);
                     }
-                    new RecoveryHelperThread(serviceLocator, interval).start();
+                    int recoveryDelay = -1;
+                    value = properties.getProperty(RECOVER_TRANSACTION_DELAY_PROPERTY);
+                    if (isValueSet(value)) {
+                        try {
+                            recoveryDelay = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            _logger.log(Level.FINE,"{0} is not an integer, will fall back to default of -1",
+                                    RECOVER_TRANSACTION_DELAY_PROPERTY);
+                        }
+                    }
+                    new RecoveryHelperThread(serviceLocator, interval, recoveryDelay).start();
                 }
                 // Release all locks
                 RecoveryManager.startResyncThread();
@@ -349,18 +365,36 @@ public class TransactionServiceProperties {
     private static class RecoveryHelperThread extends Thread {
         private int interval;
         private ServiceLocator serviceLocator;
+        private int recoveryDelay;
 
-        RecoveryHelperThread(ServiceLocator serviceLocator, int interval) {
+        RecoveryHelperThread(ServiceLocator serviceLocator, int interval, int recoveryDelay) {
             setName("Recovery Helper Thread");
             setDaemon(true);
             this.serviceLocator = serviceLocator;
             this.interval = interval;
+            this.recoveryDelay = recoveryDelay;
         }
 
         public void run() {
-            ResourceRecoveryManager recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
+            ResourceRecoveryManager recoveryManager = null;
+            if (recoveryDelay < 0) {
+                _logger.log(Level.FINE, "{0} is set to {1} (disabled)",
+                        new Object[]{RECOVER_TRANSACTION_DELAY_PROPERTY, recoveryDelay});
+            } else {
+                _logger.log(Level.FINE, "{0} is set to {1}, will wait for {1} seconds before attempting recovery",
+                        new Object[]{RECOVER_TRANSACTION_DELAY_PROPERTY, recoveryDelay});
+                try {
+                    Thread.sleep(recoveryDelay * 1000L);
+                } catch (InterruptedException e) {
+                    if (_logger.isLoggable(Level.FINE))
+                        _logger.log(Level.FINE, "Exception occurred waiting for recovery delay, will now continue.", e);
+                }
+            }
+            recoveryManager = serviceLocator.getService(ResourceRecoveryManager.class);
+
             if (interval <= 0) {
                 // Only start the recovery thread if the interval value is set, and set to a positive value
+                _logger.log(Level.FINE, "pending-txn-cleanup-interval is set to < 0: skipping recovery for incomplete tx");
                 return;
             }
 
@@ -375,7 +409,7 @@ public class TransactionServiceProperties {
                     if (!RecoveryManager.isIncompleteTxRecoveryRequired()) {
                         if (_logger.isLoggable(Level.FINE))
                             _logger.log(Level.FINE, "Incomplete transaction recovery is "
-                                    + "not requeired,  waiting for the next interval");
+                                    + "not required,  waiting for the next interval");
                         continue;
                     }
                     if (RecoveryManager.sizeOfInCompleteTx() <= prevSize) {
