@@ -80,5 +80,10 @@
             <artifactId>jakarta.faces</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.smallrye</groupId>
+            <artifactId>jandex</artifactId>
+            <version>${jandex.version}</version>
+        </dependency>
     </dependencies>
 </project>
