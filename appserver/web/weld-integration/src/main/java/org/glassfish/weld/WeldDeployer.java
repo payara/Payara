@@ -122,6 +122,7 @@ import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.InjectionServices;
+import org.jboss.weld.injection.spi.ResourceInjectionServices;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
@@ -350,11 +351,13 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
 
                 InjectionServices injectionServices = new InjectionServicesImpl(deploymentImpl.injectionManager, bundle, deploymentImpl);
+                ResourceInjectionServices resourceInjectionServices = new ResourceInjectionServicesImpl();
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE, ADDING_INJECTION_SERVICES, new Object[]{injectionServices, beanDeploymentArchive.getId()});
                 }
 
                 beanDeploymentArchive.getServices().add(InjectionServices.class, injectionServices);
+                beanDeploymentArchive.getServices().add(ResourceInjectionServices.class, resourceInjectionServices);
                 EEModuleDescriptor eeModuleDescriptor = getEEModuleDescriptor(beanDeploymentArchive);
                 if (eeModuleDescriptor != null) {
                     beanDeploymentArchive.getServices().add(EEModuleDescriptor.class, eeModuleDescriptor);
