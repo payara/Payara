@@ -179,9 +179,8 @@ public class DeployCommandParameters extends OpsParams {
       return loadOnly;
     }
 
-    @Param(name=ParameterNames.WARLIBS, optional=true, defaultValue="false")
+    @Param(name = ParameterNames.WARLIBS, optional = true, defaultValue = "false")
     public Boolean useWarLibs = false;
-    public Boolean isUseWarLibs() {return useWarLibs;}
 
     @Param(optional=true, defaultValue="false")
     public Boolean generatermistubs = false;

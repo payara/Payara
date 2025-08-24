@@ -292,10 +292,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 hotDeployService.removeApplicationState(path);
             }
 
-            if (Boolean.TRUE.equals(isUseWarLibs()) && "war".equals(archiveHandler.getArchiveType())) {
-                DeploymentUtils.useWarLibraries(initialContext);
-            }
-
             structuredTracing.register(initialContext);
 
             span.finish();
@@ -560,6 +556,9 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
                 type = archiveHandler.getArchiveType();
             }
             appProps.setProperty(Application.ARCHIVE_TYPE_PROP_NAME, type);
+            if (useWarLibs != null) {
+                appProps.setProperty(DeploymentProperties.WARLIBS, useWarLibs.toString());
+            }
             savedAppConfig.store(appProps);
 
             deploymentContext.addTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, previousTargets);
