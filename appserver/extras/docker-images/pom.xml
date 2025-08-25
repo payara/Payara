@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2021-2024 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2021-2025 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -57,9 +57,9 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.jdk11.tag>11.0.27-jdk</docker.jdk11.tag>
-        <docker.jdk17.tag>17.0.15-jdk</docker.jdk17.tag>
-        <docker.jdk21.tag>21.0.7-jdk</docker.jdk21.tag>
+        <docker.jdk11.tag>11.0.28-jdk</docker.jdk11.tag>
+        <docker.jdk17.tag>17.0.16-jdk</docker.jdk17.tag>
+        <docker.jdk21.tag>21.0.8-jdk</docker.jdk21.tag>
 
         <!-- List of platform architectures which we wish to build Docker images for -
                 shouldn't have anything not provided as an option by ${docker.java.repository}.
