@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta1</version>
     </parent>
     <artifactId>console-payara-branding-plugin-l10n</artifactId>
     

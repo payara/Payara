@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.load-balancer</groupId>
         <artifactId>load-balancer</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta1</version>
     </parent>
     <artifactId>gf-load-balancer-connector</artifactId>
     <packaging>glassfish-jar</packaging>

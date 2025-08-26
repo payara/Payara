@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>nucleus-security</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta1</version>
     </parent>
     <artifactId>ssl-impl</artifactId>
     <packaging>glassfish-jar</packaging>

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta1</version>
     </parent>
 
     <artifactId>dol</artifactId>
