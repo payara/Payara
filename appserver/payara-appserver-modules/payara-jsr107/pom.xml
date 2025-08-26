@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>7.2025.1.Beta1</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
     <artifactId>payara-jsr107</artifactId>
     <packaging>glassfish-jar</packaging>

@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>repackaged</artifactId>
-        <version>7.2025.1.Beta1</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
     <artifactId>http-matchers-repackaged</artifactId>
 

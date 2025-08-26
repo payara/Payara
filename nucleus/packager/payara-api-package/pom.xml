@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>7.2025.1.Beta1</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
     <artifactId>payara-api-package</artifactId>
     <name>Nucleus Payara API Package</name>

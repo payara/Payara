@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>7.2025.1.Beta1</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>jacc.provider.inmemory</artifactId>

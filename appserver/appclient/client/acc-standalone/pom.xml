@@ -61,7 +61,7 @@
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>7.2025.1.Beta1</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-client</artifactId>
