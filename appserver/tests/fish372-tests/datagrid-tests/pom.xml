@@ -46,7 +46,7 @@
   <parent>
     <artifactId>fish372-tests</artifactId>
     <groupId>fish.payara.server</groupId>
-    <version>6.2025.9-SNAPSHOT</version>
+    <version>6.2025.9</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>datagrid-tests</artifactId>

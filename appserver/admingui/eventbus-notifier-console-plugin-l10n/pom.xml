@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.9</version>
     </parent>
  
     <artifactId>eventbus-notifier-console-plugin-l10n</artifactId>

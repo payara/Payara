@@ -43,7 +43,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.9</version>
     </parent>
 
     <artifactId>microprofile-opentracing</artifactId>

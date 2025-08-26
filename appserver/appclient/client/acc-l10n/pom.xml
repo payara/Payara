@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-client-module-l10n</artifactId>

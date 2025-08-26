@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>common</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.9</version>
     </parent>
 
     <artifactId>glassfish-ee-api</artifactId>

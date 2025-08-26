@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp-l10n</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.9</version>
     </parent>
     <artifactId>cmp-support-sqlstore-l10n</artifactId>
     
