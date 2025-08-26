@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>6.2025.9</version>
+        <version>6.2025.10-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.extras</groupId>

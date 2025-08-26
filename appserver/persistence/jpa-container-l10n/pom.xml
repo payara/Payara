@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>6.2025.9</version>
+        <version>6.2025.10-SNAPSHOT</version>
     </parent>
     <artifactId>jpa-container-l10n</artifactId>
     

@@ -80,7 +80,7 @@ of COPY_LIB map constant.)
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>6.2025.9</version>
+        <version>6.2025.10-SNAPSHOT</version>
     </parent>
     <groupId>org.glassfish.tests</groupId>
     <artifactId>nucleus-admin</artifactId>
