@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 package com.sun.enterprise.transaction.jts;
 
 import java.util.Arrays;
@@ -409,6 +409,7 @@ public class JavaEETransactionManagerJTSDelegate
     }
 
     public void initRecovery(boolean force) {
+        _logger.log(Level.FINER, "Initialising transaction recovery from JavaEETransactionManagerJTSDelegate");
         TransactionServiceProperties.initRecovery(force);
     }
 

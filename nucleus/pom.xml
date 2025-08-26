@@ -85,7 +85,7 @@
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
 
         <junit.version>4.13.2</junit.version>
-        <testng.version>7.5.1</testng.version>
+        <testng.version>7.11.0</testng.version>
 
         <ldapbp.version>1.0</ldapbp.version>
 
@@ -132,7 +132,7 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>5.18.0</mockito.version>
+        <mockito.version>5.19.0</mockito.version>
 
         <!-- Build -->
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
@@ -150,7 +150,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.2.0</kotlin-version>
+        <kotlin-version>2.2.10</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>
