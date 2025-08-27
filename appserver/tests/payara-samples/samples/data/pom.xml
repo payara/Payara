@@ -2,19 +2,195 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>data</artifactId>
+  <parent>
+    <groupId>fish.payara.samples</groupId>
+    <artifactId>payara-samples-profiled-tests</artifactId>
+    <version>7.2025.1.Alpha5-SNAPSHOT</version>
+  </parent>
 
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+  <artifactId>data</artifactId>
+  <name>Payara Samples - Data (Arquillian/H2)</name>
+  <packaging>jar</packaging>
 
+  <properties>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <jakarta.data.version>1.0.1</jakarta.data.version>
+    <jakarta.persistence.version>3.2.0</jakarta.persistence.version>
+
+    <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <arquillian.version>1.7.0.Alpha13</arquillian.version>
+    <shrinkwrap.version>1.2.6</shrinkwrap.version>
+    <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
+    <shrinkwrap.resolver.version>3.1.4</shrinkwrap.resolver.version>
+
+    <h2.version>2.2.224</h2.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Align Arquillian components -->
+      <dependency>
+        <groupId>org.jboss.arquillian</groupId>
+        <artifactId>arquillian-bom</artifactId>
+        <version>${arquillian.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Align ShrinkWrap core -->
+      <dependency>
+        <groupId>org.jboss.shrinkwrap</groupId>
+        <artifactId>shrinkwrap-bom</artifactId>
+        <version>${shrinkwrap.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Align ShrinkWrap Maven Resolver -->
+      <dependency>
+        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+        <artifactId>shrinkwrap-resolver-bom</artifactId>
+        <version>${shrinkwrap.resolver.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Jakarta Data API: provided by the container/provider; not packaged in WAR -->
+    <dependency>
+      <groupId>jakarta.data</groupId>
+      <artifactId>jakarta.data-api</artifactId>
+      <version>${jakarta.data.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- JPA API: provided by the container -->
+    <dependency>
+      <groupId>jakarta.persistence</groupId>
+      <artifactId>jakarta.persistence-api</artifactId>
+      <version>${jakarta.persistence.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- JUnit 5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Arquillian JUnit 5 integration -->
+    <dependency>
+      <groupId>org.jboss.arquillian.junit5</groupId>
+      <artifactId>arquillian-junit5-container</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ShrinkWrap core for @Deployment -->
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-impl-base</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ShrinkWrap Maven Resolver (to add H2 and other libs into the deployment) -->
+    <dependency>
+      <groupId>org.jboss.shrinkwrap.resolver</groupId>
+      <artifactId>shrinkwrap-resolver-api-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap.resolver</groupId>
+      <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- H2 driver: available at test time; include via ShrinkWrap into the WAR when needed -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>${h2.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Samples test utilities (managed in parent) -->
+    <dependency>
+      <groupId>fish.payara.samples</groupId>
+      <artifactId>samples-test-utils</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>fish.payara.samples</groupId>
+      <artifactId>test-domain-setup</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Arquillian container adapter (Payara). Uncomment and choose the adapter if not inherited via parent profile. -->
+    <!--
+    <dependency>
+      <groupId>fish.payara.arquillian</groupId>
+      <artifactId>payara-arquillian-container-remote</artifactId>
+      <version>2.5</version>
+      <scope>test</scope>
+    </dependency>
+    -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Surefire configured for JUnit 5 + Arquillian JUnit 5 -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <failIfNoTests>false</failIfNoTests>
+          <properties>
+            <configurationParameters>junit.jupiter.extensions.autodetection.enabled=true</configurationParameters>
+          </properties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- Optional: Profiles to select a specific Payara Arquillian adapter if not supplied by the parent -->
+  <!--
+  <profiles>
+    <profile>
+      <id>payara-remote</id>
+      <dependencies>
+        <dependency>
+          <groupId>fish.payara.arquillian</groupId>
+          <artifactId>payara-arquillian-container-remote</artifactId>
+          <version>2.5</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>payara-managed</id>
+      <dependencies>
+        <dependency>
+          <groupId>fish.payara.arquillian</groupId>
+          <artifactId>payara-arquillian-container-managed</artifactId>
+          <version>2.5</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+  -->
 </project>
