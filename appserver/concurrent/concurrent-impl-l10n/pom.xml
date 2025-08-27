@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.10-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>concurrent-impl-l10n</artifactId>

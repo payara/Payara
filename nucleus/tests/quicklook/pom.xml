@@ -71,7 +71,7 @@ utilities are in the NucleusTestUtils class.
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>6.2025.9-SNAPSHOT</version>
+        <version>6.2025.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>nucleus-quicklook</artifactId>

@@ -46,7 +46,7 @@
   <parent>
       <groupId>fish.payara.server</groupId>
       <artifactId>payara-parent</artifactId>
-      <version>6.2025.9-SNAPSHOT</version>
+      <version>6.2025.10-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
   </parent>
 
