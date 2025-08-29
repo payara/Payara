@@ -22,7 +22,7 @@ The test application (`jcache-rest.war`) is compiled from the [Payara Examples r
 1. Ensure Docker is running on your system
 2. Navigate to the test directory:
    ```bash
-   cd appserver/tests/jcache-test
+   cd appserver/extras/docker-images/tests/src/test/java/fish/payara/jcache-test
    ```
 3. Run the test using Maven:
    ```bash
