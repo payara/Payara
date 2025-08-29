@@ -35,7 +35,7 @@ The test uses the following components:
 - Payara Micro 6.2025.8 (Docker image: `payara/micro:6.2025.8`)
 - TestNG for test execution
 - Java 11+ HTTP Client for making REST calls
-- TestContainers for managing the Docker containers
+- TestContainers for managing the Docker containers with Payara Micro
 
 ## Test Endpoints
 
@@ -43,14 +43,3 @@ The test verifies the following REST endpoints:
 - `PUT /jcache-rest/api/cache/{key}` - Store a value in the cache
 - `GET /jcache-rest/api/cache/{key}` - Retrieve a value from the cache
 - `DELETE /jcache-rest/api/cache/{key}` - Remove a value from the cache
-
-## Debugging
-
-To enable debug logging, add the following JVM argument when running Maven:
-```bash
-mvn test -Djava.util.logging.config.file=src/test/resources/logging.properties
-```
-
-## License
-
-This test is part of the Payara Server project and is licensed under the same terms as Payara Server.
