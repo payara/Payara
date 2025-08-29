@@ -26,6 +26,7 @@ SYNOPSIS
            [--asyncreplication={true|false}]
            [--lbenabled={true|false}]
            [--keepstate={false|true}]
+           [--warlibs={false|true}]
            [--libraries jar_file[,jar_file]*]
            [--target target]
            [--type pkg-type]
@@ -280,6 +281,11 @@ OPTIONS
            and saves it in memory. To restore the data, the class loader of
            the newly redeployed application deserializes the data that was
            previously saved.
+
+       --warlibs
+           If set to true, enables an application to make use of shared
+           libraries installed to `domain_dir/lib/warlibs`.
+           Default is false.
 
        --libraries
            A comma-separated list of library JAR files. Specify the library
