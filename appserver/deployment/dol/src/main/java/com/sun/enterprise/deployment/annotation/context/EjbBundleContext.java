@@ -79,8 +79,11 @@ public class EjbBundleContext extends ResourceContainerContextImpl {
      * Return null if corresponding descriptor is not found.
      */
     public AnnotatedElementHandler createContextForEjb() {
-        Class ejbClass = (Class)this.getProcessingContext().getProcessor(
-                ).getLastAnnotatedElement(ElementType.TYPE);
+        Class ejbClass = null;
+        if (getProcessingContext().getProcessor() != null) {
+            ejbClass = (Class) this.getProcessingContext().getProcessor(
+            ).getLastAnnotatedElement(ElementType.TYPE);
+        }
         EjbDescriptor[] ejbDescs = null;
         String ejbClassName = null;
         if (ejbClass != null) {
@@ -137,13 +140,16 @@ public class EjbBundleContext extends ResourceContainerContextImpl {
      * Return null if corresponding descriptor is not found.
      */
     public AnnotatedElementHandler createContextForEjbInterceptor() {
+        EjbInterceptor ejbInterceptor = null;
+        if (getProcessingContext().getProcessor() != null) {
         Class interceptorClass =
                 (Class)this.getProcessingContext().getProcessor(
                 ).getLastAnnotatedElement(ElementType.TYPE);
-        EjbInterceptor ejbInterceptor =
+        ejbInterceptor =
                 this.getDescriptor().getInterceptorByClassName(
                 interceptorClass.getName());
-        
+        }
+
         AnnotatedElementHandler aeHandler = null;
         if (ejbInterceptor != null) {
             aeHandler = new EjbInterceptorContext(ejbInterceptor);
