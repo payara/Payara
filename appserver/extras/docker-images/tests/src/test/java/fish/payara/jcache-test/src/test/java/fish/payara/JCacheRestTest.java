@@ -67,7 +67,8 @@ public class JCacheRestTest {
     @BeforeClass
     public void setUp() throws Exception {
         network = Network.newNetwork();
-        DockerImageName payaraImg = DockerImageName.parse("payara/micro:6.2025.8");
+        String payaraVersion = System.getProperty("payara.version");
+        DockerImageName payaraImg = DockerImageName.parse("payara/micro:" + payaraVersion);
 
         for (int instanceIndex = 0; instanceIndex < 3; instanceIndex++) {
             nodes[instanceIndex] = new GenericContainer<>(payaraImg)

@@ -26,7 +26,7 @@ The test application (`jcache-rest.war`) is compiled from the [Payara Examples r
    ```
 3. Run the test using Maven:
    ```bash
-   mvn clean test
+   mvn clean test -Dpayara.version=6.2025.9
    ```
 
 ## Test Details
