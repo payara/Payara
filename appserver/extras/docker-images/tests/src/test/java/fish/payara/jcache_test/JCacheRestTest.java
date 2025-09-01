@@ -45,6 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -61,7 +62,7 @@ import java.time.Duration;
 public class JCacheRestTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(JCacheRestTest.class);
-    private static GenericContainer<?>[] nodes = new GenericContainer<?>[3];
+    private static final GenericContainer<?>[] nodes = new GenericContainer<?>[3];
     private static HttpClient client;
     private static Network network;
 
@@ -75,7 +76,7 @@ public class JCacheRestTest {
         DockerImageName payaraImg = DockerImageName.parse("payara/micro");
 
         for (int instanceIndex = 0; instanceIndex < 3; instanceIndex++) {
-            nodes[instanceIndex] = new GenericContainer<>(payaraImg)
+            GenericContainer<?> container = new GenericContainer<>(payaraImg)
                     .withNetwork(network)
                     .withNetworkAliases("node" + instanceIndex)
                     .withExposedPorts(8080)
@@ -84,9 +85,11 @@ public class JCacheRestTest {
                             "/opt/payara/deployments/jcache-rest.war"
                     )
                     .withReuse(true)
+                    .withLogConsumer(new Slf4jLogConsumer(LOG))
                     .waitingFor(Wait.forLogMessage(".*Payara Micro.+ ready.+\\n", 1));
 
-            nodes[instanceIndex].start();
+            container.start();
+            nodes[instanceIndex] = container;
         }
     }
 
