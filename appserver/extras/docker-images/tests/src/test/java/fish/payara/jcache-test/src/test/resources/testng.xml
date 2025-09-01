@@ -1,8 +1,0 @@
-<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
-<suite name="PayaraMicroClusterSuite">
-    <test name="ClusteredJCacheTest">
-        <classes>
-            <class name="fish.payara.JCacheRestTest"/>
-        </classes>
-    </test>
-</suite>

@@ -37,16 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara;
+package fish.payara.jcache_test;
 
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import org.testcontainers.containers.wait.strategy.Wait;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -54,21 +58,21 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-import static org.testng.Assert.assertEquals;
-
 public class JCacheRestTest {
 
-    private final GenericContainer<?>[] nodes = new GenericContainer<?>[3];
-    private final HttpClient client = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(5))
-            .build();
-    private Network network;
+    private static final Logger LOG = LoggerFactory.getLogger(JCacheRestTest.class);
+    private static GenericContainer<?>[] nodes = new GenericContainer<?>[3];
+    private static HttpClient client;
+    private static Network network;
 
-    @BeforeClass
-    public void setUp() throws Exception {
+    @BeforeAll
+    public static void setUp() throws Exception {
+        client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(5))
+                .build();
+
         network = Network.newNetwork();
-        String payaraVersion = System.getProperty("payara.version");
-        DockerImageName payaraImg = DockerImageName.parse("payara/micro:" + payaraVersion);
+        DockerImageName payaraImg = DockerImageName.parse("payara/micro");
 
         for (int instanceIndex = 0; instanceIndex < 3; instanceIndex++) {
             nodes[instanceIndex] = new GenericContainer<>(payaraImg)
@@ -77,7 +81,7 @@ public class JCacheRestTest {
                     .withExposedPorts(8080)
                     .withCopyFileToContainer(
                             MountableFile.forClasspathResource("jcache-rest.war"),
-                            "/opt/payara/deployments/jcache-rest.war" // just copy the WAR here
+                            "/opt/payara/deployments/jcache-rest.war"
                     )
                     .withReuse(true)
                     .waitingFor(Wait.forLogMessage(".*Payara Micro.+ ready.+\\n", 1));
@@ -106,7 +110,7 @@ public class JCacheRestTest {
             String actualValue = get(nodes[instanceIndex], key1);
             boolean success = value1.equals(actualValue);
             System.out.println("  " + (success ? "✓" : "✗") + " Verified: " + key1 + " = " + actualValue + " (expected: " + value1 + ")");
-            assertEquals(actualValue, value1,
+            Assertions.assertEquals(actualValue, value1,
                     String.format("Value mismatch for key '%s' on %s", key1, nodeName));
         }
 
@@ -125,7 +129,7 @@ public class JCacheRestTest {
             String actualValue = get(nodes[instanceIndex], key2);
             boolean success = value2.equals(actualValue);
             System.out.println("  " + (success ? "✓" : "✗") + " Verified: " + key2 + " = " + actualValue + " (expected: " + value2 + ")");
-            assertEquals(actualValue, value2,
+            Assertions.assertEquals(actualValue, value2,
                     String.format("Value mismatch for key '%s' on %s", key2, nodeName));
         }
 
@@ -144,31 +148,31 @@ public class JCacheRestTest {
             String actualValue = get(nodes[instanceIndex], key3);
             boolean success = value3.equals(actualValue);
             System.out.println("  " + (success ? "✓" : "✗") + " Verified: " + key3 + " = " + actualValue + " (expected: " + value3 + ")");
-            assertEquals(actualValue, value3,
+            Assertions.assertEquals(actualValue, value3,
                     String.format("Value mismatch for key '%s' on %s", key3, nodeName));
         }
     }
 
-    @AfterClass(alwaysRun = true)
-    public void tearDown() {
+    @AfterAll
+    public static void tearDown() {
         System.out.println("STOPPING DOWN JCACHE CLUSTER TEST...");
 
         for (var node : nodes) {
             if (node != null && node.isRunning()) {
                 node.close();
             }
+        }
 
-            if (network != null) {
-                network.close();
-            }
+        if (network != null) {
+            network.close();
         }
     }
 
-    private String baseUrl(GenericContainer<?> node) {
+    private static String baseUrl(GenericContainer<?> node) {
         return "http://" + node.getHost() + ":" + node.getMappedPort(8080);
     }
 
-    private void put(GenericContainer<?> node, String key, String value) throws Exception {
+    private static void put(GenericContainer<?> node, String key, String value) throws Exception {
         String url = baseUrl(node) + "/jcache-rest/webresources/cache?key=" + key;
         System.out.println("\n[PUT] Node: " + node.getContainerInfo().getName() +
                 " | URL: " + url +
@@ -184,7 +188,7 @@ public class JCacheRestTest {
         System.out.println("[PUT] Status: " + response.statusCode());
     }
 
-    private String get(GenericContainer<?> node, String key) throws Exception {
+    private static String get(GenericContainer<?> node, String key) throws Exception {
         String url = baseUrl(node) + "/jcache-rest/webresources/cache?key=" + key;
         System.out.println("\n[GET] Node: " + node.getContainerInfo().getName() +
                 " | URL: " + url +
