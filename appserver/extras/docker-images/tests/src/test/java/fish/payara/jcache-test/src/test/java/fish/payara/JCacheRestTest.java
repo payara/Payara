@@ -46,6 +46,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -77,20 +78,17 @@ public class JCacheRestTest {
                             MountableFile.forClasspathResource("jcache-rest.war"),
                             "/opt/payara/deployments/jcache-rest.war" // just copy the WAR here
                     )
-                    .withReuse(true);
+                    .withReuse(true)
+                    .waitingFor(Wait.forLogMessage(".*Payara Micro.+ ready.+\\n", 1));
 
             nodes[instanceIndex].start();
         }
-
-        // wait for nodes to start
-        Thread.sleep(5000);
     }
 
     @Test
     public void testJCacheCluster() throws Exception {
         System.out.println("STARTING JCACHE CLUSTER TEST...");
         System.out.println("Initializing: Waiting for cluster to stabilize...");
-        Thread.sleep(5000);
 
         // Test 1: Store on node 1 and verify on all nodes
         System.out.println("TEST 1: Single Node Write");
@@ -99,9 +97,6 @@ public class JCacheRestTest {
 
         System.out.println("Storing: " + key1 + " = " + value1 + " on node 1");
         put(nodes[0], key1, value1);
-
-        System.out.println("Waiting: 5 seconds for replication...");
-        Thread.sleep(5000);
 
         // Verify on all nodes
         System.out.println("Verifying: key '" + key1 + "' on all nodes");
@@ -122,9 +117,6 @@ public class JCacheRestTest {
         System.out.println("Storing: " + key2 + " = " + value2 + " on node 2");
         put(nodes[1], key2, value2);
 
-        System.out.println("Waiting: 5 seconds for replication...");
-        Thread.sleep(5000);
-
         // Verify on all nodes
         System.out.println("Verifying: key '" + key2 + "' on all nodes");
         for (int instanceIndex = 0; instanceIndex < nodes.length; instanceIndex++) {
@@ -143,9 +135,6 @@ public class JCacheRestTest {
 
         System.out.println("Storing: " + key3 + " = " + value3 + " on node 3");
         put(nodes[2], key3, value3);
-
-        System.out.println("Waiting: 5 seconds for replication...");
-        Thread.sleep(5000);
 
         // Verify on all nodes
         System.out.println("Verifying: key '" + key3 + "' on all nodes");
