@@ -241,14 +241,14 @@
 
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
-        <snakeyaml.version>2.4</snakeyaml.version>
+        <snakeyaml.version>2.5</snakeyaml.version>
         <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
         <mojarra.version>4.0.11.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
         <krazo.version>3.0.1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>4.0.1.payara-p4</eclipselink.version>
+        <eclipselink.version>4.0.7.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.8.0</eclipselink.asm.version>
         <openmq.version>6.5.1.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
@@ -284,7 +284,7 @@
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
         <jaxb-api.version>4.0.2</jaxb-api.version>
-        <jackson.version>2.19.2</jackson.version>
+        <jackson.version>2.20.0</jackson.version>
         <jersey.version>3.1.11.payara-p1-SNAPSHOT</jersey.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
