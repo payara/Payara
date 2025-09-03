@@ -59,7 +59,6 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.InjectionInfo;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.faces.config.WebConfiguration;
 import com.sun.faces.spi.AnnotationScanner;
 import com.sun.faces.spi.DiscoverableInjectionProvider;
 import com.sun.faces.spi.HighAvailabilityEnabler;
@@ -76,10 +75,6 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
 import static com.sun.enterprise.web.Constants.DEPLOYMENT_CONTEXT_ATTRIBUTE;
-import static com.sun.enterprise.web.Constants.ENABLE_HA_ATTRIBUTE;
-import static com.sun.enterprise.web.Constants.IS_DISTRIBUTABLE_ATTRIBUTE;
-import static com.sun.faces.config.WebConfiguration.BooleanWebContextInitParameter.EnableAgressiveSessionDirtying;
-import static java.lang.Boolean.TRUE;
 import static java.security.AccessController.doPrivileged;
 import static java.util.logging.Level.FINE;
 import static org.glassfish.api.invocation.ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
@@ -457,24 +452,24 @@ public class GlassFishInjectionProvider extends DiscoverableInjectionProvider im
         // 1> has <distributable /> in the web.xml
         // 2> Was deployed with --availabilityenabled --target <clustername>
         
-        WebConfiguration config = WebConfiguration.getInstance(ctx);
-        if (!config.isSet(EnableAgressiveSessionDirtying)) {
-            Object isDistributableObj = ctx.getAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
-            Object enableHAObj = ctx.getAttribute(ENABLE_HA_ATTRIBUTE);
-            
-            if (isDistributableObj instanceof Boolean && enableHAObj instanceof Boolean) {
-                boolean isDistributable = (Boolean) isDistributableObj;
-                boolean enableHA = (Boolean) enableHAObj;
-
-                if (LOGGER.isLoggable(FINE)) {
-                    LOGGER.log(FINE, "isDistributable = {0} enableHA = {1}", new Object[] { isDistributable, enableHA });
-                }
-                
-                if (isDistributable && enableHA) {
-                    LOGGER.fine("setting the EnableAgressiveSessionDirtying to true");
-                    config.overrideContextInitParameter(EnableAgressiveSessionDirtying, TRUE);
-                }
-            }
-        }
+//        WebConfiguration config = WebConfiguration.getInstance(ctx);
+//        if (!config.isSet(EnableAgressiveSessionDirtying)) {
+//            Object isDistributableObj = ctx.getAttribute(IS_DISTRIBUTABLE_ATTRIBUTE);
+//            Object enableHAObj = ctx.getAttribute(ENABLE_HA_ATTRIBUTE);
+//
+//            if (isDistributableObj instanceof Boolean && enableHAObj instanceof Boolean) {
+//                boolean isDistributable = (Boolean) isDistributableObj;
+//                boolean enableHA = (Boolean) enableHAObj;
+//
+//                if (LOGGER.isLoggable(FINE)) {
+//                    LOGGER.log(FINE, "isDistributable = {0} enableHA = {1}", new Object[] { isDistributable, enableHA });
+//                }
+//
+//                if (isDistributable && enableHA) {
+//                    LOGGER.fine("setting the EnableAgressiveSessionDirtying to true");
+//                    config.overrideContextInitParameter(EnableAgressiveSessionDirtying, TRUE);
+//                }
+//            }
+//        }
     }
 }

@@ -62,10 +62,10 @@
             <scope>provided</scope>
         </dependency>
 
+	<!-- Mojarra -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.faces</artifactId>
-            <version>3.0.2</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -96,7 +96,6 @@
         <dependency>
             <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
-            <version>${jsftemplating.version}</version>
             <optional>true</optional>
             <scope>compile</scope>
             <exclusions>
@@ -109,7 +108,6 @@
         <dependency>
             <groupId>org.glassfish.jsftemplating</groupId>
             <artifactId>jsftemplating-dt</artifactId>
-            <version>${jsftemplating.version}</version>
             <optional>true</optional>
             <scope>compile</scope>
         </dependency>
@@ -153,7 +151,7 @@
 
     <build>
         <plugins>
-            <plugin>
+<!--            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <executions>
@@ -164,7 +162,7 @@
                         <configuration>
                             <instructions>
                                 <Embed-Dependency>*;artifactId=jakarta.faces|jsftemplating|jsftemplating-dt;inline=true</Embed-Dependency>
-                                <!-- Contents are exported with additional mandatory attribute, so they wouldn't match general import for e. g. jakarta.faces -->
+                                 Contents are exported with additional mandatory attribute, so they wouldn't match general import for e. g. jakarta.faces 
                                 <Export-Package>fish.payara.server.internal.admingui,
                                     !com.sun.faces.tlddoc-resources,
                                     com.sun.faces.*;com.sun.jsft.*;com.sun.jsftemplating.*;jakarta.faces.*;version="3.0";usage="admingui";mandatory:=usage</Export-Package>
@@ -173,7 +171,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>

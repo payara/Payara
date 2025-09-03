@@ -42,7 +42,11 @@
     Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
 -->
 
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
     <context-param>
         <param-name>com.sun.jsftemplating.DEBUG</param-name>
         <param-value>false</param-value>
@@ -141,6 +145,10 @@
     <servlet-mapping>
         <servlet-name>FacesServlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>FacesServlet</servlet-name>

@@ -79,6 +79,16 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
@@ -106,6 +116,20 @@
             <groupId>org.glassfish.woodstock</groupId>
             <artifactId>woodstock-webui-jsf</artifactId>
             <version>${woodstock-jsf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.faces.extensions</groupId>
+                        <artifactId>jsf-extensions-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.faces.extensions</groupId>
+                        <artifactId>jsf-extensions-dynamic-faces</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.help</groupId>
+                        <artifactId>javahelp</artifactId>
+                    </exclusion>
+                </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
