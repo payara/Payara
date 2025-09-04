@@ -51,6 +51,7 @@ import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
+import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 import com.sun.enterprise.security.ee.authorization.cache.PermissionCache;
 import com.sun.enterprise.security.ee.authorization.cache.PermissionCacheFactory;
 import com.sun.enterprise.security.web.integration.GlassFishPrincipalMapper;
@@ -174,6 +175,7 @@ public final class EJBSecurityManager implements SecurityManager {
                 () -> SecurityContext.getCurrent().getSubject(),
                 () -> new GlassFishPrincipalMapper(contextId));
 
+        authorizationService.setRequestSupplier(contextId, WebAuthorizationManagerService::getCurrentRequest);
         authorizationService.addPermissionsToPolicy(
                 PayaraToExousiaConverter.convertEJBMethodPermissions(ejbDescriptor));
 

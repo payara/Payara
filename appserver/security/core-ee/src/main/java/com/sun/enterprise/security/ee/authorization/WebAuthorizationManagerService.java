@@ -158,7 +158,7 @@ public class WebAuthorizationManagerService {
     private final WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
     private boolean register = true;
 
-    private final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
+    private static final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
     private AuthorizationService authorizationService;
     
     public WebAuthorizationManagerService(WebBundleDescriptor webBundleDescriptor, boolean register) throws PolicyContextException {
@@ -527,5 +527,8 @@ public class WebAuthorizationManagerService {
         return uri.replaceAll(":", "%3A");
     }
 
+    public static HttpServletRequest getCurrentRequest() {
+        return currentRequest.get();
+    }
 }
         
