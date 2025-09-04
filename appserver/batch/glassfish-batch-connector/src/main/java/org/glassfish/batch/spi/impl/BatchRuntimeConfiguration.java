@@ -57,16 +57,16 @@ public interface BatchRuntimeConfiguration
     @Attribute
     String getDataSourceLookupName();
 
-    @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService")
+    @Attribute(defaultValue = BatchRuntimeHelper.DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME)
     String getExecutorServiceLookupName();
 
-    @Attribute(defaultValue = "APP")
+    @Attribute(defaultValue = BatchRuntimeHelper.DEFAULT_SCHEMA_NAME)
     String getSchemaName();
     
-    @Attribute(required = false,  defaultValue = "")
+    @Attribute(required = false,  defaultValue = BatchRuntimeHelper.DEFAULT_TABLE_PREFIX)
     String getTablePrefix();
 
-    @Attribute(required = false,  defaultValue = "")
+    @Attribute(required = false,  defaultValue = BatchRuntimeHelper.DEFAULT_TABLE_SUFFIX)
     String getTableSuffix();   
     
     public void setDataSourceLookupName(String value);
