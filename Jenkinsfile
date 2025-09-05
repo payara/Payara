@@ -351,12 +351,12 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/FISH-11827-Jersey-3.1.11"]],
+                            userRemoteConfigs: [[url: "https://github.com/Viii3/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-
+                        sh "mvn dependency:tree -fn"
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
@@ -388,8 +388,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/FISH-11827-Jersey-3.1.11"]],
+                            userRemoteConfigs: [[url: "https://github.com/Viii3/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
@@ -425,12 +425,12 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/FISH-11827-Jersey-3.1.11"]],
+                            userRemoteConfigs: [[url: "https://github.com/Viii3/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-
+                        sh "mvn dependency:tree -fn"
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
