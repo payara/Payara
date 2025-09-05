@@ -89,7 +89,7 @@ public class InstallJaccProviderTest {
         WebArchive archive =
             create(WebArchive.class)
                 .addClasses(
-                    JaccInstaller.class,
+                        PolicyRegistrationInstaller.class,
                     LoggingTestPolicy.class,
                     ProtectedServlet.class,
                     TestAuthenticationMechanism.class,
