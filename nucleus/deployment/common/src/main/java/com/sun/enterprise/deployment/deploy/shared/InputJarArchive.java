@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2025] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -51,6 +51,7 @@ import org.glassfish.hk2.api.PerLookup;
 import java.io.*;
 import org.glassfish.hk2.utilities.CleanerFactory;
 import java.util.*;
+import java.util.concurrent.atomic.LongAccumulator;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -780,5 +781,11 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
             e = null;
         }
     }
-}
 
+    @Override
+    public long getArchiveCrc() {
+        LongAccumulator checksum = new LongAccumulator(Long::sum, 0);
+        jarFile.entries().asIterator().forEachRemaining(entry -> checksum.accumulate(entry.getCrc()));
+        return checksum.get();
+    }
+}
