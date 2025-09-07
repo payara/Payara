@@ -303,4 +303,277 @@ public class DataH2ModuleTests {
         // Method kept only for compatibility (do not use with try-with-resources).
         return em;
     }
+
+    // ====== Level 2 - Comprehensive Query Operations Tests ======
+
+    @Test
+    public void testEmployeeSalaryRangeQueries() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Test findBySalaryBetween
+        var midRange = employees.findBySalaryBetween(new BigDecimal("90000"), new BigDecimal("110000"));
+        assertEquals(3, midRange.size()); // Alice(95k), Bob(105k), Eve(99k)
+        
+        // Test findBySalaryGreaterThan
+        var highSalary = employees.findBySalaryGreaterThan(new BigDecimal("100000"));
+        assertEquals(2, highSalary.size()); // Bob(105k), Dan(130k)
+        
+        // Test findBySalaryIn
+        var specificSalaries = employees.findBySalaryIn(
+            List.of(new BigDecimal("95000"), new BigDecimal("130000")));
+        assertEquals(2, specificSalaries.size()); // Alice(95k), Dan(130k)
+
+        utx.commit();
+    }
+
+    @Test
+    public void testEmployeeNamePatternQueries() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Test findByLastNameLikeIgnoreCase with pattern
+        var namesWithA = employees.findByLastNameLikeIgnoreCase("%a%");
+        assertTrue(namesWithA.size() >= 3); // Anderson, Barker, Clark
+        
+        // Test findByLastNameNotLike
+        var notEndingWithE = employees.findByLastNameNotLike("%e");
+        assertTrue(notEndingWithE.size() >= 3); // Should exclude none from our test data
+        
+        // Test boolean combinations
+        var aliceAnderson = employees.findByFirstNameAndLastName("Alice", "Anderson");
+        assertEquals(1, aliceAnderson.size());
+        assertEquals(emp1, aliceAnderson.get(0).id);
+        
+        var aliceOrBob = employees.findByFirstNameOrLastName("Alice", "Barker");
+        assertEquals(2, aliceOrBob.size()); // Alice Anderson + Bob Barker
+
+        utx.commit();
+    }
+
+    @Test
+    public void testEmployeeNullValueQueries() throws Exception {
+        setupTestData();
+        
+        // Try to add an employee with null addressId for testing
+        utx.begin();
+        UUID empNoAddr = UUID.randomUUID();
+        boolean nullAddressAllowed = false;
+        try {
+            em.persist(Employee.of(empNoAddr, "John", "Doe", "john@test.com", comp1, null, 
+                                  "Intern", new BigDecimal("50000"), true, LocalDate.of(2023,6,1)));
+            em.flush(); // Force constraint check
+            utx.commit();
+            nullAddressAllowed = true;
+        } catch (Exception e) {
+            // addressId column doesn't allow null - rollback
+            utx.rollback();
+        }
+        
+        utx.begin();
+        
+        // Test null checks based on schema capabilities
+        var noAddress = employees.findByAddressIdIsNull();
+        if (nullAddressAllowed) {
+            assertEquals(1, noAddress.size());
+            assertEquals(empNoAddr, noAddress.get(0).id);
+        } else {
+            assertEquals(0, noAddress.size()); // No employees with null addressId in schema
+        }
+        
+        var withAddress = employees.findByAddressIdIsNotNull();
+        int expectedWithAddress = nullAddressAllowed ? 5 : 5; // Original 5 employees have addresses
+        assertEquals(expectedWithAddress, withAddress.size());
+
+        utx.commit();
+    }
+
+    @Test
+    public void testEmployeeAggregationQueries() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Test countByActive
+        long activeCount = employees.countByActive(true);
+        assertEquals(4L, activeCount); // Alice, Bob, Dan, Eve are active
+        
+        long inactiveCount = employees.countByActive(false);
+        assertEquals(1L, inactiveCount); // Carol is inactive
+        
+        // Test existsByEmailIgnoreCase
+        assertTrue(employees.existsByEmailIgnoreCase("ALICE@ACME.COM"));
+        assertTrue(employees.existsByEmailIgnoreCase("eve@globex.com"));
+        assertFalse(employees.existsByEmailIgnoreCase("nonexistent@test.com"));
+
+        utx.commit();
+    }
+
+    @Test
+    public void testEmployeePaginationQueries() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Test findAllOrderBySalaryDesc with pagination
+        var topEarners = employees.findAllOrderBySalaryDesc(0, 2);
+        assertEquals(2, topEarners.size());
+        assertEquals(emp4, topEarners.get(0).id); // Dan (130k)
+        assertEquals(emp2, topEarners.get(1).id); // Bob (105k)
+        
+        var nextEarners = employees.findAllOrderBySalaryDesc(2, 2);
+        assertEquals(2, nextEarners.size());
+        
+        // Test findByCompanyOrderByLastNameAsc with pagination
+        var acmeEmployees = employees.findByCompanyOrderByLastNameAsc(comp1, 0, 2);
+        assertEquals(2, acmeEmployees.size());
+        
+        utx.commit();
+    }
+
+    @Test
+    public void testCompanyEnhancedQueries() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Test new company query methods
+        var techCompanies = companies.findByIndustry("Technology");
+        assertEquals(1, techCompanies.size());
+        assertEquals(comp2, techCompanies.get(0).id);
+        
+        var activeCompanies = companies.findByActive(true);
+        assertEquals(1, activeCompanies.size());
+        assertEquals(comp1, activeCompanies.get(0).id);
+        
+        var inactiveCompanies = companies.findByActive(false);
+        assertEquals(1, inactiveCompanies.size());
+        assertEquals(comp2, inactiveCompanies.get(0).id);
+        
+        // Test pattern matching
+        var companiesWithCorp = companies.findByNameLikeIgnoreCase("%corp%");
+        assertEquals(1, companiesWithCorp.size());
+        assertEquals(comp1, companiesWithCorp.get(0).id);
+        
+        // Test aggregations
+        long activeCount = companies.countByActive(true);
+        assertEquals(1L, activeCount);
+        
+        assertTrue(companies.existsByNameIgnoreCase("ACME CORPORATION"));
+        assertFalse(companies.existsByNameIgnoreCase("Nonexistent Company"));
+
+        utx.commit();
+    }
+
+    @Test
+    public void testAddressEnhancedQueries() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Test address query methods
+        var springfieldAddresses = addresses.findByCity("Springfield");
+        assertEquals(1, springfieldAddresses.size());
+        assertEquals(addr1, springfieldAddresses.get(0).id);
+        
+        var massachusettsAddresses = addresses.findByState("MA");
+        assertEquals(1, massachusettsAddresses.size());
+        assertEquals(addr1, massachusettsAddresses.get(0).id);
+        
+        var usAddresses = addresses.findByCountry("US");
+        assertEquals(3, usAddresses.size()); // All test addresses are in US
+        
+        // Test pattern matching on city
+        var citiesWithMetro = addresses.findByCityLikeIgnoreCase("%metro%");
+        assertEquals(1, citiesWithMetro.size());
+        assertEquals(addr2, citiesWithMetro.get(0).id); // Metropolis
+        
+        // Test aggregations
+        long usCount = addresses.countByCountry("US");
+        assertEquals(3L, usCount);
+        
+        assertTrue(addresses.existsByPostalCode("01101"));
+        assertFalse(addresses.existsByPostalCode("99999"));
+
+        utx.commit();
+    }
+
+    @Test
+    public void testComprehensiveCrudOperations() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Test comprehensive CRUD for all repositories
+        
+        // Create new entities
+        UUID newAddrId = UUID.randomUUID();
+        Address newAddr = Address.of(newAddrId, "123 Test St", "TestCity", "TS", "12345", "US");
+        addresses.save(newAddr);
+        
+        UUID newCompId = UUID.randomUUID();
+        Company newComp = Company.of(newCompId, "Test Corp", "Testing", true, newAddrId, Instant.now());
+        companies.save(newComp);
+        
+        UUID newEmpId = UUID.randomUUID();
+        Employee newEmp = Employee.of(newEmpId, "Test", "User", "test@test.com", newCompId, 
+                                     newAddrId, "Tester", new BigDecimal("75000"), true, LocalDate.now());
+        employees.save(newEmp);
+        
+        // Verify saves
+        assertTrue(addresses.existsById(newAddrId));
+        assertTrue(companies.existsById(newCompId));
+        assertTrue(employees.existsById(newEmpId));
+        
+        // Test counts
+        assertEquals(1L, addresses.count());
+        assertEquals(1L, companies.count());
+        assertEquals(1L, employees.count());
+        
+        // Test findAll
+        assertEquals(1, addresses.findAll().count());
+        assertEquals(1, companies.findAll().count());
+        assertEquals(1, employees.findAll().count());
+        
+        // Test updates
+        newEmp.salary = new BigDecimal("80000");
+        employees.save(newEmp);
+        
+        var updatedEmp = employees.findById(newEmpId);
+        assertTrue(updatedEmp.isPresent());
+        assertEquals(new BigDecimal("80000"), updatedEmp.get().salary);
+        
+        // Test deletes
+        employees.deleteById(newEmpId);
+        companies.deleteById(newCompId);
+        addresses.deleteById(newAddrId);
+        
+        assertEquals(0L, addresses.count());
+        assertEquals(0L, companies.count());
+        assertEquals(0L, employees.count());
+
+        utx.commit();
+    }
+
+    @Test
+    public void testStreamOperationsAndFiltering() throws Exception {
+        setupTestData();
+        utx.begin();
+
+        // Complex stream operations
+        var highEarnersInAcme = employees.findAll()
+                .filter(e -> comp1.equals(e.companyId))
+                .filter(e -> e.salary != null && e.salary.compareTo(new BigDecimal("100000")) >= 0)
+                .sorted(Comparator.comparing((Employee emp) -> emp.salary).reversed())
+                .map(e -> e.firstName + " " + e.lastName + " (" + e.salary + ")")
+                .collect(Collectors.toList());
+        
+        assertEquals(2, highEarnersInAcme.size());
+        assertTrue(highEarnersInAcme.get(0).contains("Dan Doe")); // Highest salary first
+        
+        // Test complex filtering and grouping
+        var employeesByCompany = employees.findAll()
+                .collect(Collectors.groupingBy(e -> e.companyId, Collectors.counting()));
+        
+        assertEquals(2L, employeesByCompany.size()); // 2 companies
+        assertEquals(3L, employeesByCompany.get(comp1).longValue()); // 3 employees in Acme
+        assertEquals(2L, employeesByCompany.get(comp2).longValue()); // 2 employees in Globex
+
+        utx.commit();
+    }
 }
