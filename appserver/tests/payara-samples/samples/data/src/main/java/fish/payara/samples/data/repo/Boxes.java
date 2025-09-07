@@ -1,9 +1,11 @@
 package fish.payara.samples.data.repo;
 
 import fish.payara.samples.data.entity.Box;
+import jakarta.data.Order;
 import jakarta.data.repository.BasicRepository;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface Boxes extends BasicRepository<Box, String> {
     
@@ -80,4 +82,21 @@ public interface Boxes extends BasicRepository<Box, String> {
     default boolean existsById(String id) {
         return findById(id).isPresent();
     }
+    
+    // TCK-like bulk operations
+    Box[] addMultiple(Box... boxes);
+    Box[] modifyMultiple(Box... boxes);
+    void removeMultiple(Box... boxes);
+    
+    // TCK-like bulk delete with count
+    long deleteByCodeLike(String pattern);
+    
+    // TCK-like methods with Order support
+    List<Box> findByCodeBetween(String from, String to, Order order);
+    
+    // TCK-like custom query methods (implemented in JpaBoxes)
+    Stream<Box> findByVolumeWithFactorBetween(double min, double max, double factor);
+    
+    // TCK-like custom query methods (implemented in JpaBoxes)
+    List<Box> findByNameLengthAndVolumeBelow(int nameLength, double maxVolume);
 }

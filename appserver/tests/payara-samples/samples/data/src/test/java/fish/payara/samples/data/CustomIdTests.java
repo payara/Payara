@@ -305,4 +305,152 @@ public class CustomIdTests {
 
         utx.commit();
     }
+
+    @Test
+    public void testTCKStyleBulkOperations() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Test addMultiple - similar to TCK testMultipleInsertUpdateDelete
+        Box[] added = boxes.addMultiple(
+            Box.of("BULK-001", "Bulk Box 1", "CARDBOARD", "BROWN", 10, 10, 10, true),
+            Box.of("BULK-002", "Bulk Box 2", "PLASTIC", "BLUE", 15, 15, 15, false),
+            Box.of("BULK-003", "Bulk Box 3", "METAL", "SILVER", 20, 20, 20, true)
+        );
+
+        assertEquals(3, added.length);
+        assertEquals("BULK-001", added[0].code);
+        assertEquals("BULK-002", added[1].code);
+        assertEquals("BULK-003", added[2].code);
+
+        // Modify the boxes
+        added[0].color = "WHITE";
+        added[1].material = "WOOD";
+
+        // Test modifyMultiple
+        Box[] modified = boxes.modifyMultiple(added[0], added[1]);
+        assertEquals(2, modified.length);
+        assertEquals("WHITE", modified[0].color);
+        assertEquals("WOOD", modified[1].material);
+
+        // Test removeMultiple
+        boxes.removeMultiple(added[0], added[2]);
+
+        // Verify only BULK-002 remains
+        var remaining = boxes.findByCodeBetween("BULK-001", "BULK-999", null);
+        assertEquals(1, remaining.size());
+        assertEquals("BULK-002", remaining.get(0).code);
+
+        utx.commit();
+    }
+
+    @Test
+    public void testTCKStyleBulkDelete() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Create test data with pattern
+        em.persist(Box.of("TEST-BOX-001", "Test Box 1", "CARDBOARD", "BROWN", 10, 10, 10, true));
+        em.persist(Box.of("TEST-BOX-002", "Test Box 2", "PLASTIC", "BLUE", 15, 15, 15, false));
+        em.persist(Box.of("TEST-BOX-003", "Test Box 3", "METAL", "SILVER", 20, 20, 20, true));
+        em.persist(Box.of("OTHER-001", "Other Box", "WOOD", "NATURAL", 5, 5, 5, true));
+
+        utx.commit();
+
+        utx.begin();
+
+        // Test deleteByCodeLike - similar to TCK deleteByProductNumLike
+        long deletedCount = boxes.deleteByCodeLike("TEST-BOX-%");
+        assertEquals(3L, deletedCount);
+
+        // Verify only the OTHER box remains
+        long totalCount = boxes.count();
+        assertEquals(1L, totalCount);
+
+        var remaining = boxes.findAll().toList();
+        assertEquals("OTHER-001", remaining.get(0).code);
+
+        utx.commit();
+    }
+
+    @Test
+    public void testTCKStyleOrderSupport() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Create test data
+        em.persist(Box.of("CODE-B", "Box B", "CARDBOARD", "BROWN", 10, 10, 10, true));
+        em.persist(Box.of("CODE-D", "Box D", "PLASTIC", "BLUE", 15, 15, 15, false));
+        em.persist(Box.of("CODE-A", "Box A", "METAL", "SILVER", 20, 20, 20, true));
+        em.persist(Box.of("CODE-C", "Box C", "WOOD", "NATURAL", 5, 5, 5, true));
+
+        utx.commit();
+
+        utx.begin();
+
+        // Test findByCodeBetween with Order - similar to TCK testIdAttributeWithDifferentName
+        var ordered = boxes.findByCodeBetween("CODE-A", "CODE-D", 
+            jakarta.data.Order.by(jakarta.data.Sort.asc("name")));
+
+        assertEquals(4, ordered.size());
+        assertEquals("Box A", ordered.get(0).name);  // "Box A" comes first alphabetically
+        assertEquals("Box B", ordered.get(1).name);
+        assertEquals("Box C", ordered.get(2).name);
+        assertEquals("Box D", ordered.get(3).name);
+
+        utx.commit();
+    }
+
+    @Test
+    public void testTCKStyleQueryMethods() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Create test data for query methods
+        em.persist(Box.of("QUERY-001", "Small", "CARDBOARD", "BROWN", 10, 10, 10, true));    // Volume: 1000, factor*1000=500
+        em.persist(Box.of("QUERY-002", "Medium", "PLASTIC", "BLUE", 15, 15, 15, false));     // Volume: 3375, factor*3375=1687.5
+        em.persist(Box.of("QUERY-003", "Large", "METAL", "SILVER", 20, 20, 20, true));       // Volume: 8000, factor*8000=4000
+        em.persist(Box.of("QUERY-004", "Tiny", "WOOD", "NATURAL", 5, 5, 5, true));           // Volume: 125, factor*125=62.5
+
+        utx.commit();
+
+        utx.begin();
+
+        // Test @Query with named parameters - similar to TCK testQueryWithNamedParameters
+        var found = boxes.findByVolumeWithFactorBetween(400, 2000, 0.5).toList();
+        assertEquals(2, found.size()); // Small (500) and Medium (1687.5)
+
+        // Test @Query with positional parameters - similar to TCK testQueryWithPositionalParameters
+        var shortNamed = boxes.findByNameLengthAndVolumeBelow(5, 2000);
+        assertEquals(1, shortNamed.size()); // Only "Small" has 5 characters and volume < 2000
+
+        var veryShortNamed = boxes.findByNameLengthAndVolumeBelow(4, 10000);
+        assertEquals(1, veryShortNamed.size()); // Only "Tiny" has 4 characters
+
+        utx.commit();
+    }
+
+    @Test
+    public void testOptimisticLockingOnDelete() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Create a box for testing
+        Box testBox = Box.of("OPT-001", "Optimistic Box", "CARDBOARD", "WHITE", 10, 10, 10, true);
+        em.persist(testBox);
+
+        utx.commit();
+
+        utx.begin();
+
+        // Try to remove a box that doesn't exist - should throw OptimisticLockingFailureException
+        try {
+            boxes.removeMultiple(Box.of("NON-EXISTENT", "Non Existent", "WOOD", "BROWN", 5, 5, 5, false));
+            fail("Should throw OptimisticLockingFailureException for non-existent entity");
+        } catch (jakarta.data.exceptions.OptimisticLockingFailureException e) {
+            // Expected
+        }
+
+        utx.commit();
+    }
 }

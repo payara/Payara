@@ -280,4 +280,42 @@ public class OptimisticLockingTests {
         assertNotNull("Version should be set", updated.version);
         utx.commit();
     }
+
+    @Test
+    public void testOptimisticLockingOnDelete() throws Exception {
+        clearDatabase();
+        utx.begin();
+
+        // Create an order for testing
+        VersionedOrder order = VersionedOrder.of(UUID.randomUUID(), "ORD-DELETE-TEST", "Delete User", 
+                                                new BigDecimal("50.00"), Instant.now(), "PENDING", "Test delete");
+        em.persist(order);
+        UUID orderId = order.id;
+        
+        utx.commit(); // Commit to persist the order
+
+        // Update the order in a separate transaction to change version
+        utx.begin();
+        var orderToUpdate = em.find(VersionedOrder.class, orderId);
+        orderToUpdate.status = "CONFIRMED";
+        em.flush(); // This increments the version
+        utx.commit();
+
+        // Now try to delete using the repository method - should work fine
+        // This test primarily verifies that delete operations work correctly with versioned entities
+        utx.begin();
+        try {
+            versionedOrders.deleteById(orderId);
+            utx.commit();
+            
+            // Verify deletion succeeded
+            utx.begin();
+            var deleted = em.find(VersionedOrder.class, orderId);
+            assertNull("Order should be deleted", deleted);
+            utx.commit();
+        } catch (Exception e) {
+            utx.rollback();
+            fail("Delete should succeed: " + e.getMessage());
+        }
+    }
 }

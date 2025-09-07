@@ -67,6 +67,12 @@ public class Box {
                         Integer heightCm, Integer depthCm, String material, String color, Boolean stackable) {
         return new Box(code, name, description, widthCm, heightCm, depthCm, material, color, stackable);
     }
+    
+    // Simplified static factory method for tests
+    public static Box of(String code, String name, String material, String color, 
+                        int widthCm, int heightCm, int depthCm, boolean stackable) {
+        return new Box(code, name, name + " description", widthCm, heightCm, depthCm, material, color, stackable);
+    }
 
     /**
      * Calculate the volume of the box in cubic centimeters.
