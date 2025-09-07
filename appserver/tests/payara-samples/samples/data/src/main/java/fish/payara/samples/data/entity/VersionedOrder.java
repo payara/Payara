@@ -22,13 +22,13 @@ public class VersionedOrder {
     @Column(name = "customer_name")
     public String customerName;
 
-    @Column(name = "total_amount")
+    @Column(name = "total_amount", nullable = false) // explicitly updatable
     public BigDecimal totalAmount;
 
     @Column(name = "order_date")
     public Instant orderDate;
 
-    @Column(name = "status")
+    @Column(name = "status", nullable = false) // explicitly updatable
     public String status; // e.g., "PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"
 
     @Column(name = "notes")

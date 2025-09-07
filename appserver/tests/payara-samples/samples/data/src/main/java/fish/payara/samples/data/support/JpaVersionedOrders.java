@@ -15,4 +15,33 @@ public class JpaVersionedOrders extends JpaBasicRepository<VersionedOrder, UUID>
     public JpaVersionedOrders(EntityManager entityManager) {
         super(entityManager, VersionedOrder.class);
     }
+    
+    @Override
+    public <S extends VersionedOrder> S save(S entity) {
+        if (entity == null) return entity;
+
+        // Generate ID if necessary
+        if (entity.id == null) {
+            entity.id = UUID.randomUUID();
+        }
+
+        // If already managed in current context, changes will be flushed on commit
+        if (em.contains(entity)) {
+            // Nothing to do - entity is managed
+            return entity;
+        } else {
+            // Check existence in database to decide between persist and merge
+            VersionedOrder existing = em.find(VersionedOrder.class, entity.id);
+            if (existing == null) {
+                em.persist(entity);
+            } else {
+                // merge ensures changes to detached entity are applied
+                entity = em.merge(entity);
+            }
+        }
+
+        // In JTA, commit also does flush; still, force flush to reflect in tests immediately
+        em.flush();
+        return entity;
+    }
 }
