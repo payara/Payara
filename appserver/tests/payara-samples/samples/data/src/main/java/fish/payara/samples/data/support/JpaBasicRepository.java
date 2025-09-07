@@ -5,7 +5,6 @@ import jakarta.data.exceptions.NonUniqueResultException;
 import jakarta.data.repository.BasicRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 
 import java.util.ArrayList;
@@ -31,40 +30,31 @@ public abstract class JpaBasicRepository<E, ID> implements BasicRepository<E, ID
     // BasicRepository: <S extends E> S save(S entity)
     @Override
     public <S extends E> S save(S entity) {
-        return tx(() -> em.merge(entity));
+        return em.merge(entity);
     }
 
     // BasicRepository: <S extends E> Iterable<S> saveAll(Iterable<S> entities)
     public <S extends E> Iterable<S> saveAll(Iterable<S> entities) {
         List<S> result = new ArrayList<>();
-        tx(() -> {
-            for (S e : entities) {
-                result.add(em.merge(e));
-            }
-            return null;
-        });
+        for (S e : entities) {
+            result.add(em.merge(e));
+        }
         return result;
     }
 
     // BasicRepository: void delete(E entity)
     @Override
     public void delete(E entity) {
-        tx(() -> {
-            E managed = em.contains(entity) ? entity : em.merge(entity);
-            em.remove(managed);
-            return null;
-        });
+        E managed = em.contains(entity) ? entity : em.merge(entity);
+        em.remove(managed);
     }
 
     // BasicRepository: void deleteAll(Iterable<E> entities)
     public void deleteAll(Iterable<E> entities) {
-        tx(() -> {
-            for (E e : entities) {
-                E managed = em.contains(e) ? e : em.merge(e);
-                em.remove(managed);
-            }
-            return null;
-        });
+        for (E e : entities) {
+            E managed = em.contains(e) ? e : em.merge(e);
+            em.remove(managed);
+        }
     }
 
     // BasicRepository 1.0.1 also declares: void deleteAll(List<? extends E> entities)
@@ -75,23 +65,17 @@ public abstract class JpaBasicRepository<E, ID> implements BasicRepository<E, ID
     }
 
     public void deleteAll() {
-        tx(() -> {
-            em.createQuery("DELETE FROM " + entityClass.getSimpleName()).executeUpdate();
-            return null;
-        });
+        em.createQuery("DELETE FROM " + entityClass.getSimpleName()).executeUpdate();
     }
 
     @Override
     public void deleteById(ID id) {
-        tx(() -> {
-            try {
-                E ref = em.getReference(entityClass, id);
-                em.remove(ref);
-            } catch (jakarta.persistence.EntityNotFoundException ignore) {
-                // Idempotent when entity does not exist
-            }
-            return null;
-        });
+        try {
+            E ref = em.getReference(entityClass, id);
+            em.remove(ref);
+        } catch (jakarta.persistence.EntityNotFoundException ignore) {
+            // Idempotent when entity does not exist
+        }
     }
 
     @Override
@@ -115,22 +99,4 @@ public abstract class JpaBasicRepository<E, ID> implements BasicRepository<E, ID
         return list.get(0);
     }
 
-    private <T> T tx(SupplierEx<T> supplier) {
-        EntityTransaction tx = em.getTransaction();
-        boolean started = !tx.isActive();
-        if (started) tx.begin();
-        try {
-            T t = supplier.get();
-            if (started) tx.commit();
-            return t;
-        } catch (RuntimeException ex) {
-            if (started && tx.isActive()) tx.rollback();
-            throw ex;
-        }
-    }
-
-    @FunctionalInterface
-    private interface SupplierEx<T> {
-        T get();
-    }
 }
