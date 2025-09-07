@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.server.internal.test-utils</groupId>

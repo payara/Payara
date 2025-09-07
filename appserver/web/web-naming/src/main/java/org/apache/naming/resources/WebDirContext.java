@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2024] Payara Foundation and/or affiliates
+// Portions Copyright [2024-2025] Payara Foundation and/or affiliates
 
 package org.apache.naming.resources;
 
@@ -174,7 +174,11 @@ public class WebDirContext extends FileDirContext {
         if ((file != null && file.isDirectory()) ||
                 (jfEntry != null && jfEntry.getJarEntry().isDirectory())) {
             WebDirContext tempContext = new WebDirContext(env);
-            tempContext.docBase = name;
+            if (file == null) {
+                tempContext.docBase = name;
+            } else {
+                tempContext.setDocBase(file.getAbsolutePath());
+            }
             tempContext.setAllowLinking(getAllowLinking());
             tempContext.setCaseSensitive(isCaseSensitive());
             tempContext.setJarFileResourcesProvider(jarFileResourcesProvider);

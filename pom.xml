@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2025.1.Alpha5-SNAPSHOT</version>
+    <version>7.2025.1.Beta2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -244,7 +244,7 @@
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
         <maven.enforcer.plugin.version>3.6.1</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
-        <maven.flatten.plugin.version>1.7.1</maven.flatten.plugin.version>
+        <maven.flatten.plugin.version>1.7.2</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
         <license-maven-plugin.version>2.6.0</license-maven-plugin.version>
 
@@ -282,7 +282,7 @@
         <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.2</jline.version>
+        <jline.version>3.30.5</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
@@ -363,7 +363,7 @@
         <jbi.version>1.0</jbi.version>
         <epicyro.version>3.1.0</epicyro.version>
         <mail.version>2.1.3</mail.version>
-        <angus.mail.version>2.0.3</angus.mail.version>
+        <angus.mail.version>2.0.4</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>

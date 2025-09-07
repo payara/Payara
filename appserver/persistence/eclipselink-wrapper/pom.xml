@@ -47,7 +47,7 @@
     <parent>
     <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
     <artifactId>eclipselink-wrapper</artifactId>
     <packaging>pom</packaging>

@@ -32,7 +32,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>microprofile-endpoints</artifactId>
-        <version>7.2025.1.Alpha5-SNAPSHOT</version>
+        <version>7.2025.1.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>microprofile-secure-endpoints</artifactId>
