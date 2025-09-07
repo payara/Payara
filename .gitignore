@@ -28,3 +28,4 @@ appserver/tests/quicklook/quicklook_summary.txt
 .flattened-pom.xml
 **/__pycache__
 appserver/packager/legal/src/main/resources/glassfish/legal/3RD-PARTY-LICENSE.txt
+/appserver/tests/payara-samples/samples/data/.claude/settings.local.json

@@ -12,9 +12,18 @@ import fish.payara.samples.data.support.JpaEmployees;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+// Arquillian + ShrinkWrap
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -22,9 +31,26 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
+@RunWith(Arquillian.class)
 public class DataH2ModuleTests {
+
+    // Empacota um WAR de teste com as classes do módulo + persistence.xml + H2
+    @Deployment
+    public static WebArchive createDeployment() {
+        var libs = Maven.resolver()
+                .loadPomFromFile("pom.xml")
+                .resolve("com.h2database:h2", "jakarta.data:jakarta.data-api")
+                .withTransitivity()
+                .asFile();
+
+        return ShrinkWrap.create(WebArchive.class, "samples-data-tests.war")
+                .addPackages(true, "fish.payara.samples.data") // inclui entidades/repos/classes de suporte
+                .addAsResource("META-INF/persistence.xml")     // persistence.xml de teste (RESOURCE_LOCAL + H2)
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml") // habilita CDI (inofensivo)
+                .addAsLibraries(libs); // inclui driver H2 + Jakarta Data API
+    }
 
     private EntityManagerFactory emf;
     private EntityManager em;
@@ -46,8 +72,8 @@ public class DataH2ModuleTests {
     private UUID emp4 = UUID.randomUUID();
     private UUID emp5 = UUID.randomUUID();
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         emf = Persistence.createEntityManagerFactory("samples-dataPU");
         em = emf.createEntityManager();
 
@@ -75,25 +101,26 @@ public class DataH2ModuleTests {
         ));
     }
 
-    @AfterEach
-    void teardown() {
+    @After
+    public void teardown() {
         if (em != null) em.close();
         if (emf != null) emf.close();
     }
 
     @Test
-    void testBasicRepositoryBuiltInMethods_Employees() {
+    public void testBasicRepositoryBuiltInMethods_Employees() {
         assertEquals(5, employees.findAll().count());
 
         // findById
-        Employee e2 = employees.findById(emp2).orElseThrow();
+        Employee e2 = employees.findById(emp2).orElse(null);
+        assertNotNull(e2);
         assertEquals("Bob", e2.firstName);
         assertEquals(new BigDecimal("105000"), e2.salary);
 
         // save (update)
         e2.salary = new BigDecimal("107500");
         employees.save(e2);
-        assertEquals(new BigDecimal("107500"), employees.findById(emp2).orElseThrow().salary);
+        assertEquals(new BigDecimal("107500"), employees.findById(emp2).orElse(null).salary);
 
         // save (create)
         UUID emp6 = UUID.randomUUID();
@@ -103,11 +130,11 @@ public class DataH2ModuleTests {
 
         // delete(E)
         employees.delete(e2);
-        assertTrue(employees.findById(emp2).isEmpty());
+        assertFalse(employees.findById(emp2).isPresent());
 
         // deleteById
         employees.deleteById(emp3);
-        assertTrue(employees.findById(emp3).isEmpty());
+        assertFalse(employees.findById(emp3).isPresent());
 
         // deleteAll(Iterable)
         var rest = employees.findAll().collect(Collectors.toList());
@@ -116,7 +143,7 @@ public class DataH2ModuleTests {
     }
 
     @Test
-    void testBasicRepositoryBuiltInMethods_Addresses() {
+    public void testBasicRepositoryBuiltInMethods_Addresses() {
         List<Address> list = addresses.findAll()
                 .sorted(Comparator.comparing(a -> a.id))
                 .collect(Collectors.toList());
@@ -124,14 +151,14 @@ public class DataH2ModuleTests {
         assertEquals(addr1, list.get(0).id);
 
         addresses.deleteById(addr1);
-        assertTrue(addresses.findById(addr1).isEmpty());
+        assertFalse(addresses.findById(addr1).isPresent());
 
         addresses.save(Address.of(addr1, "1 First St", "Springfield", "MA", "01101", "US"));
         assertTrue(addresses.findById(addr1).isPresent());
     }
 
     @Test
-    void testCompaniesContainsIgnoreCase() {
+    public void testCompaniesContainsIgnoreCase() {
         var active = ((JpaCompanies) companies).findByNameContainsIgnoreCase("ACME");
         assertEquals(1, active.size());
         assertEquals(comp1, active.get(0).id);
@@ -142,7 +169,7 @@ public class DataH2ModuleTests {
     }
 
     @Test
-    void testEmployeesQueriesInspiredByTCK() {
+    public void testEmployeesQueriesInspiredByTCK() {
         // active by company (JPQL)
         var acmeActive = ((JpaEmployees) employees).findActiveByCompanyJPQL(comp1)
                 .stream().map(e -> e.email).collect(Collectors.toList());
@@ -154,27 +181,41 @@ public class DataH2ModuleTests {
         assertEquals(emp5, byEmail.get(0).id);
 
         // ignore-case "single" com exceções como no TCK
-        assertDoesNotThrow(() -> ((JpaEmployees) employees).findByEmailIgnoreCaseSingle("alice@acme.com"));
-        assertThrows(jakarta.data.exceptions.EmptyResultException.class,
-                () -> ((JpaEmployees) employees).findByEmailIgnoreCaseSingle("nobody@acme.com"));
+        try {
+            ((JpaEmployees) employees).findByEmailIgnoreCaseSingle("alice@acme.com");
+        } catch (Exception e) {
+            fail("Should not throw exception for existing email");
+        }
+        
+        try {
+            ((JpaEmployees) employees).findByEmailIgnoreCaseSingle("nobody@acme.com");
+            fail("Should throw EmptyResultException");
+        } catch (jakarta.data.exceptions.EmptyResultException e) {
+            // Expected
+        }
 
         // Provoque NonUniqueResultException inserindo duplicata de email (com case diferente)
         UUID dupId = UUID.randomUUID();
         employees.save(Employee.of(dupId, "ALICE", "ANDERSON", "ALICE@ACME.COM",
                 comp1, addr1, "Developer", new BigDecimal("95000"), true, LocalDate.of(2021,1,11)));
-        assertThrows(jakarta.data.exceptions.NonUniqueResultException.class,
-                () -> ((JpaEmployees) employees).findByEmailIgnoreCaseSingle("alice@acme.com"));
+        
+        try {
+            ((JpaEmployees) employees).findByEmailIgnoreCaseSingle("alice@acme.com");
+            fail("Should throw NonUniqueResultException");
+        } catch (jakarta.data.exceptions.NonUniqueResultException e) {
+            // Expected
+        }
     }
 
     @Test
-    void testTopNBySalary_Descending() {
+    public void testTopNBySalary_Descending() {
         var top3 = ((JpaEmployees) employees).findTopNBySalaryDescJPQL(3);
         assertEquals(List.of(emp4, emp2, emp5),
                 top3.stream().map(e -> e.id).collect(Collectors.toList()));
     }
 
     @Test
-    void testMixedSortingViaStream() {
+    public void testMixedSortingViaStream() {
         var sorted = employees.findAll()
                 .sorted(Comparator
                         .comparing((Employee e) -> e.lastName)
@@ -195,13 +236,13 @@ public class DataH2ModuleTests {
     }
 
     @Test
-    void testEdgeCases_emptyAndNotFound() {
+    public void testEdgeCases_emptyAndNotFound() {
         // Novo EM/Repos vazios
         try (var ignored = newAutoCloseableEM()) {
             EntityManager em2 = ignored;
             Employees emptyEmployees = new JpaEmployees(em2);
             assertEquals(0, emptyEmployees.findAll().count());
-            assertTrue(emptyEmployees.findById(UUID.randomUUID()).isEmpty());
+            assertFalse(emptyEmployees.findById(UUID.randomUUID()).isPresent());
 
             // Deletar inexistentes
             emptyEmployees.deleteById(UUID.randomUUID());

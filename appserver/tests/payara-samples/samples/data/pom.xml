@@ -23,7 +23,7 @@
     <jakarta.persistence.version>3.2.0</jakarta.persistence.version>
 
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
-    <arquillian.version>1.7.0.Alpha13</arquillian.version>
+    <arquillian.version>1.7.0.Final</arquillian.version>
     <shrinkwrap.version>1.2.6</shrinkwrap.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
     <shrinkwrap.resolver.version>3.1.4</shrinkwrap.resolver.version>
@@ -87,10 +87,18 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Arquillian JUnit 5 integration -->
+    <!-- Arquillian JUnit 4 integration (mais estável) -->
     <dependency>
-      <groupId>org.jboss.arquillian.junit5</groupId>
-      <artifactId>arquillian-junit5-container</artifactId>
+      <groupId>org.jboss.arquillian.junit</groupId>
+      <artifactId>arquillian-junit-container</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JUnit 4 para compatibilidade com Arquillian -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
 
@@ -126,71 +134,37 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Samples test utilities (managed in parent) -->
+    <!-- EclipseLink JPA Provider for testing -->
     <dependency>
-      <groupId>fish.payara.samples</groupId>
-      <artifactId>samples-test-utils</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>fish.payara.samples</groupId>
-      <artifactId>test-domain-setup</artifactId>
+      <groupId>org.eclipse.persistence</groupId>
+      <artifactId>eclipselink</artifactId>
+      <version>4.0.4</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- Arquillian container adapter (Payara). Uncomment and choose the adapter if not inherited via parent profile. -->
-    <!--
-    <dependency>
-      <groupId>fish.payara.arquillian</groupId>
-      <artifactId>payara-arquillian-container-remote</artifactId>
-      <version>2.5</version>
-      <scope>test</scope>
-    </dependency>
-    -->
   </dependencies>
 
   <build>
     <plugins>
-      <!-- Surefire configured for JUnit 5 + Arquillian JUnit 5 -->
+      <!-- Surefire configured for JUnit 4 + Arquillian -->
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
         <configuration>
           <useModulePath>false</useModulePath>
-          <failIfNoTests>false</failIfNoTests>
-          <properties>
-            <configurationParameters>junit.jupiter.extensions.autodetection.enabled=true</configurationParameters>
-          </properties>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/*Tests.java</include>
+          </includes>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit4</artifactId>
+            <version>3.2.5</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
-
-  <!-- Optional: Profiles to select a specific Payara Arquillian adapter if not supplied by the parent -->
-  <!--
-  <profiles>
-    <profile>
-      <id>payara-remote</id>
-      <dependencies>
-        <dependency>
-          <groupId>fish.payara.arquillian</groupId>
-          <artifactId>payara-arquillian-container-remote</artifactId>
-          <version>2.5</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>payara-managed</id>
-      <dependencies>
-        <dependency>
-          <groupId>fish.payara.arquillian</groupId>
-          <artifactId>payara-arquillian-container-managed</artifactId>
-          <version>2.5</version>
-          <scope>test</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
-  -->
 </project>
