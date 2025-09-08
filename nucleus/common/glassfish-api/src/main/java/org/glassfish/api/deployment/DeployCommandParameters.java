@@ -180,7 +180,7 @@ public class DeployCommandParameters extends OpsParams {
     }
 
     @Param(name = ParameterNames.WARLIBS, optional = true)
-    public Boolean useWarLibs = false;
+    public Boolean useWarLibs;
 
     @Param(optional=true, defaultValue="false")
     public Boolean generatermistubs = false;
