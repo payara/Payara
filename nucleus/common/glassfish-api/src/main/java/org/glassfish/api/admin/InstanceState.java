@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 [Payara Foundation and/or its affiliates]
 
 package org.glassfish.api.admin;
 
@@ -106,6 +107,14 @@ public class InstanceState {
 
             public String getDisplayString() {
                 return " never started";
+            }
+        },
+        UNKNOWN {
+            public String getDescription() {
+                return "UNKNOWN";
+            }
+            public String getDisplayString() {
+                return " unknown";
             }
         };
 
