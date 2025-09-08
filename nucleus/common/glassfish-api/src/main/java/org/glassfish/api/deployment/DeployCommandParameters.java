@@ -179,7 +179,7 @@ public class DeployCommandParameters extends OpsParams {
       return loadOnly;
     }
 
-    @Param(name = ParameterNames.WARLIBS, optional = true, defaultValue = "false")
+    @Param(name = ParameterNames.WARLIBS, optional = true)
     public Boolean useWarLibs = false;
 
     @Param(optional=true, defaultValue="false")
