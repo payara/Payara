@@ -507,10 +507,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *      <property name="jaas-context" value="fileRealm"/>
      *  </auth-realm>
      *  <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate"/>
-     *  <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+     *  <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory">
      *      <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      *  </jacc-provider>
-     *  <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="simple" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"/>
+     *  <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="simple" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"/>
      *  <audit-module classname="com.sun.enterprise.security.Audit" name="default">
      *      <property name="auditOn" value="false"/>
      *  </audit-module>
@@ -625,10 +625,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     /* Loop through all jacc-provider elements in the template and create JaccProvider config objects.
      * Cursor should already be at first jacc-provider START_ELEMENT.
      * from template:
-     * <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+     * <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory">
      *  <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      * </jacc-provider>
-     * <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="simple" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"/>
+     * <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="simple" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"/>
      */
     private void createJaccProvider(SecurityService ss) throws PropertyVetoException {
         while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("audit-module"))) {

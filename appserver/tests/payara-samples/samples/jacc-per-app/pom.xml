@@ -55,13 +55,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.tests</groupId>
-            <artifactId>jacc-provider-repackaged</artifactId>
-            <classifier>jakartaee9</classifier>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
@@ -80,6 +73,15 @@
             <groupId>jakarta.authorization</groupId>
             <artifactId>jakarta.authorization-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
