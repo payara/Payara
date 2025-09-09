@@ -55,13 +55,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.tests</groupId>
-            <artifactId>jacc-provider-repackaged</artifactId>
-            <classifier>jakartaee9</classifier>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>fish.payara.api</groupId>
             <artifactId>payara-api</artifactId>
             <scope>provided</scope>
