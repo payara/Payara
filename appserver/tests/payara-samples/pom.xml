@@ -287,17 +287,6 @@
                 <artifactId>jersey-mp-rest-client</artifactId>
                 <version>${jersey.version}</version>
                 <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.microprofile.rest.client</groupId>
-                        <artifactId>microprofile-rest-client-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.rest.client</groupId>
-                <artifactId>microprofile-rest-client-api</artifactId>
-                <version>${microprofile-rest-client.version}</version>
             </dependency>
             <dependency>
                 <groupId>fish.payara.api</groupId>
