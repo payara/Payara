@@ -5,104 +5,57 @@ import jakarta.data.repository.BasicRepository;
 import jakarta.data.repository.Repository;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * BasicRepository + some default methods to mimic TCK-style custom capabilities without a provider.
+ * Pure Jakarta Data repository for Company - all methods implemented by provider
  */
 @Repository
 public interface Companies extends BasicRepository<Company, UUID> {
-
-    /**
-     * Example: case-insensitive contains on company name.
-     * Implemented as a default method using findAll().
-     */
+    
+    // Basic query methods - Jakarta Data will implement automatically
+    List<Company> findByName(String name);
+    List<Company> findByIndustry(String industry);
+    List<Company> findByDescription(String description);
+    
+    // Pattern matching
+    List<Company> findByNameLike(String pattern);
+    List<Company> findByIndustryLike(String pattern);
+    List<Company> findByDescriptionLike(String pattern);
+    
+    // Combination queries
+    List<Company> findByNameAndIndustry(String name, String industry);
+    
+    // Count operations
+    long countByIndustry(String industry);
+    
+    // Existence checks
+    boolean existsByName(String name);
+    boolean existsByNameAndIndustry(String name, String industry);
+    
+    // Missing methods that need default implementations
+    List<Company> findByActive(boolean active);
+    
     default List<Company> findByNameContainsIgnoreCase(String token) {
-        String t = token == null ? "" : token.toLowerCase(Locale.ROOT);
-        return this.findAll()
-                .filter(c -> c.name != null && c.name.toLowerCase(Locale.ROOT).contains(t))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Example: active companies only.
-     */
-    default List<Company> findActive() {
-        return this.findAll().filter(c -> c.active).collect(Collectors.toList());
-    }
-
-    // Additional query methods for comprehensive TCK coverage
-
-    /**
-     * Find companies by industry (exact match).
-     */
-    default List<Company> findByIndustry(String industry) {
-        return this.findAll()
-                .filter(c -> industry == null ? c.industry == null : industry.equals(c.industry))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Find companies by active status.
-     */
-    default List<Company> findByActive(boolean active) {
-        return this.findAll()
-                .filter(c -> c.active == active)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Find companies where industry is null.
-     */
-    default List<Company> findByIndustryIsNull() {
-        return this.findAll()
-                .filter(c -> c.industry == null)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Find companies where industry is not null.
-     */
-    default List<Company> findByIndustryIsNotNull() {
-        return this.findAll()
-                .filter(c -> c.industry != null)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Find companies where name matches pattern (case insensitive).
-     * Pattern should use % as wildcard.
-     */
-    default List<Company> findByNameLikeIgnoreCase(String pattern) {
-        if (pattern == null) return List.of();
-        String regex = pattern.toLowerCase(Locale.ROOT).replace("%", ".*");
-        return this.findAll()
-                .filter(c -> c.name != null && 
-                            c.name.toLowerCase(Locale.ROOT).matches(regex))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Count companies by active status.
-     */
-    default long countByActive(boolean active) {
-        return this.findAll()
-                .filter(c -> c.active == active)
-                .count();
-    }
-
-    /**
-     * Check if company with given name exists (case insensitive).
-     */
-    default boolean existsByNameIgnoreCase(String name) {
-        String target = name == null ? "" : name.toLowerCase(Locale.ROOT);
-        return this.findAll()
-                .anyMatch(c -> c.name != null && c.name.toLowerCase(Locale.ROOT).equals(target));
+        String t = token == null ? "" : token.toLowerCase();
+        return findAll().filter(c -> c.name != null && 
+                               c.name.toLowerCase().contains(t)).toList();
     }
     
-    // Add missing count() and existsById() methods
+    default List<Company> findByNameLikeIgnoreCase(String pattern) {
+        String regex = pattern.toLowerCase().replace("%", ".*");
+        return findAll().filter(c -> c.name != null && 
+                               c.name.toLowerCase().matches(regex)).toList();
+    }
+    
+    default long countByActive(boolean active) {
+        return findAll().filter(c -> c.active == active).count();
+    }
+    
+    default boolean existsByNameIgnoreCase(String name) {
+        return findAll().anyMatch(c -> c.name != null && c.name.equalsIgnoreCase(name));
+    }
+    
     default long count() {
         return findAll().count();
     }

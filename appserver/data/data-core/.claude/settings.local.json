@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/luise/git/Payara/appserver/tests/payara-samples/samples/data/src/main/java/fish/payara/samples/data/repo/**)",
+      "Read(//c/Users/luise/git/Payara/appserver/tests/payara-samples/samples/data/src/main/java/**)",
+      "Read(//c/Users/luise/git/Payara/appserver/tests/payara-samples/samples/data/src/test/java/**)",
+      "Read(//c/Users/luise/git/Payara/appserver/tests/payara-samples/samples/data/**)",
+      "Bash(mvn -Dtest=CustomIdTests test)",
+      "Bash(mvn:*)",
+      "Read(//c/code/data-tck/jakarta.data.jakarta.data-tck-1.0.1-sources/ee/jakarta/tck/data/web/validation/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

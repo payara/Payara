@@ -12,7 +12,7 @@
       <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
       <property name="eclipselink.logging.level" value="FINE"/>
       <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
-      <property name="jakarta.persistence.validation.mode" value="NONE"/>
+      <property name="jakarta.persistence.validation.mode" value="AUTO"/>
     </properties>
   </persistence-unit>
 </persistence>

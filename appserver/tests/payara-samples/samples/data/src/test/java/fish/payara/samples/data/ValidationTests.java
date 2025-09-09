@@ -2,7 +2,7 @@ package fish.payara.samples.data;
 
 import fish.payara.samples.data.entity.Rectangle;
 import fish.payara.samples.data.repo.Rectangles;
-import fish.payara.samples.data.support.JpaRectangles;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.UserTransaction;
@@ -34,18 +34,13 @@ public class ValidationTests {
 
     @Deployment
     public static WebArchive createDeployment() {
-        var libs = Maven.resolver()
-                .loadPomFromFile("pom.xml")
-                .resolve("jakarta.data:jakarta.data-api")
-                .withTransitivity()
-                .asFile();
-
         return ShrinkWrap.create(WebArchive.class, "validation-tests.war")
-                .addPackages(true, "fish.payara.samples.data") // includes entities/repos/support classes
+                .addPackages(true, "fish.payara.samples.data.entity")  // entities
+                .addPackages(true, "fish.payara.samples.data.repo")    // repository interfaces
+                .addPackages(true, "fish.payara.samples.data.support") // JPA implementations
                 .addAsResource("META-INF/persistence.xml")     // test persistence.xml (JTA + Payara default)
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml") // basic web.xml
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml") // enables CDI (harmless)
-                .addAsLibraries(libs); // includes Jakarta Data API
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml"); // enables CDI
     }
 
     @PersistenceContext(unitName = "samples-dataPU")
@@ -54,17 +49,13 @@ public class ValidationTests {
     @Resource
     private UserTransaction utx;
 
+    @Inject
     private Rectangles rectangles;
 
     private UUID rect1 = UUID.randomUUID();
     private UUID rect2 = UUID.randomUUID();
     private UUID rect3 = UUID.randomUUID();
     private UUID rect4 = UUID.randomUUID();
-
-    @Before
-    public void setup() throws Exception {
-        rectangles = new JpaRectangles(em);
-    }
 
     // Clear rectangles table and commit
     private void clearDatabase() throws Exception {
@@ -115,8 +106,11 @@ public class ValidationTests {
         Rectangle validRect = Rectangle.of(UUID.randomUUID(), "Valid Rectangle", 15, 20);
         rectangles.save(validRect);
         
-        // Verify it was saved using findAll since we can't rely on count() or existsById()
-        long count = rectangles.findAll().count();
+        utx.commit(); // Commit save to ensure visibility
+        utx.begin();
+        
+        // Verify it was saved - now count should see the persisted entity
+        long count = rectangles.count();
         assertEquals(1L, count);
 
         utx.commit();
@@ -128,23 +122,29 @@ public class ValidationTests {
         utx.begin();
 
         try {
-            // Should fail validation due to null name
+            // Should fail validation due to null name - following TCK pattern
             Rectangle invalidRect = Rectangle.of(UUID.randomUUID(), null, 10, 10);
-            rectangles.save(invalidRect);
-            em.flush(); // Force validation
-            fail("Should throw exception for null name");
-        } catch (ConstraintViolationException e) {
-            // Expected - Bean Validation constraint violation
-            assertTrue(e.getMessage().contains("Name cannot be null") || 
-                      e.getMessage().contains("NotNull"));
-        } catch (jakarta.persistence.PersistenceException e) {
-            // Expected - database constraint violation
-            assertTrue(e.getMessage().toLowerCase().contains("null") ||
-                      e.getMessage().toLowerCase().contains("constraint") ||
-                      e.getCause() instanceof java.sql.SQLException);
+            
+            // TCK expects this to throw ConstraintViolationException
+            try {
+                rectangles.save(invalidRect);
+                fail("Expected ConstraintViolationException to be thrown");
+            } catch (ConstraintViolationException e) {
+                // Expected - this is the correct behavior
+            }
+            
+            utx.rollback();
+            utx.begin();
+            
+            // Verify no entities were persisted due to validation failure
+            long count = rectangles.count();
+            assertEquals("No rectangles should persist when violating constraints", 0L, count);
+            
+        } finally {
+            if (utx.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                utx.rollback();
+            }
         }
-
-        utx.rollback();
     }
 
     @Test
@@ -152,35 +152,30 @@ public class ValidationTests {
         clearDatabase();
         utx.begin();
 
-        boolean validationTriggered = false;
         try {
-            // Try to create rectangle with width < 1
+            // Should fail validation due to width < 1 - following TCK pattern
             Rectangle invalidRect = Rectangle.of(UUID.randomUUID(), "Invalid Rectangle", 0, 10);
-            rectangles.save(invalidRect);
-            em.flush(); // Force validation/persistence
             
-            // If we reach here, validation didn't trigger - that's ok in some environments
-            // Just verify the constraint is defined correctly in the entity
-            assertNotNull("Entity should have width field", invalidRect.width);
-            assertEquals(Integer.valueOf(0), invalidRect.width);
+            // TCK expects this to throw ConstraintViolationException
+            try {
+                rectangles.save(invalidRect);
+                fail("Expected ConstraintViolationException to be thrown");
+            } catch (ConstraintViolationException e) {
+                // Expected - this is the correct behavior
+            }
             
-        } catch (ConstraintViolationException e) {
-            // Expected - Bean Validation constraint violation
-            validationTriggered = true;
-            assertTrue("Should contain width validation message", 
-                      e.getMessage().contains("Width must be at least 1") || 
-                      e.getMessage().contains("must be greater than or equal to 1"));
-        } catch (jakarta.persistence.PersistenceException e) {
-            // Expected - database constraint violation or Bean Validation triggered by JPA
-            validationTriggered = true;
-            String msg = e.getMessage().toLowerCase();
-            assertTrue("Should contain constraint-related message",
-                      msg.contains("width") || msg.contains("constraint") ||
-                      e.getCause() instanceof ConstraintViolationException);
+            utx.rollback();
+            utx.begin();
+            
+            // Verify no entities were persisted due to validation failure
+            long count = rectangles.count();
+            assertEquals("No rectangles should persist when violating constraints", 0L, count);
+            
+        } finally {
+            if (utx.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
+                utx.rollback();
+            }
         }
-        
-        // Test passes whether validation triggered or not - both are valid scenarios
-        utx.rollback();
     }
 
     @Test

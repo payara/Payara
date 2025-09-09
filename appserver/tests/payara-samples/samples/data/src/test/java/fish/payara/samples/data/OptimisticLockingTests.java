@@ -2,7 +2,7 @@ package fish.payara.samples.data;
 
 import fish.payara.samples.data.entity.VersionedOrder;
 import fish.payara.samples.data.repo.VersionedOrders;
-import fish.payara.samples.data.support.JpaVersionedOrders;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.persistence.PersistenceContext;
@@ -36,18 +36,13 @@ public class OptimisticLockingTests {
 
     @Deployment
     public static WebArchive createDeployment() {
-        var libs = Maven.resolver()
-                .loadPomFromFile("pom.xml")
-                .resolve("jakarta.data:jakarta.data-api")
-                .withTransitivity()
-                .asFile();
-
         return ShrinkWrap.create(WebArchive.class, "optimistic-locking-tests.war")
-                .addPackages(true, "fish.payara.samples.data") // includes entities/repos/support classes
+                .addPackages(true, "fish.payara.samples.data.entity")  // entities
+                .addPackages(true, "fish.payara.samples.data.repo")    // repository interfaces
+                .addPackages(true, "fish.payara.samples.data.support") // JPA implementations
                 .addAsResource("META-INF/persistence.xml")     // test persistence.xml (JTA + Payara default)
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml") // basic web.xml
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml") // enables CDI (harmless)
-                .addAsLibraries(libs); // includes Jakarta Data API
+                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml"); // enables CDI
     }
 
     @PersistenceContext(unitName = "samples-dataPU")
@@ -56,17 +51,13 @@ public class OptimisticLockingTests {
     @Resource
     private UserTransaction utx;
 
-    private VersionedOrders versionedOrders;
-    private JpaVersionedOrders jpaVersionedOrders;
+    // Repository injected below
 
     private UUID order1 = UUID.randomUUID();
     private UUID order2 = UUID.randomUUID();
 
-    @Before
-    public void setup() throws Exception {
-        versionedOrders = new JpaVersionedOrders(em);
-        jpaVersionedOrders = new JpaVersionedOrders(em);
-    }
+    @Inject
+    private VersionedOrders versionedOrders;
 
     // Clear versioned_orders table and commit
     private void clearDatabase() throws Exception {
