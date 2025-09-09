@@ -94,7 +94,7 @@ public class RegisterLoginModuleTest extends AsadminTest {
                 "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
                 "--property", "jaas-context=fileRealm:file=test2", "test2");
         System.out.println(result.getOutput());
-        assertEquals(CommandResult.ExitStatus.WARNING, result.getExitStatus());
+        assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
         assertContains("fileRealm is already configured", result.getOutput());
 
         result = asadmin("delete-auth-realm", "test2");
@@ -110,7 +110,7 @@ public class RegisterLoginModuleTest extends AsadminTest {
                 "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
                 "--property", "file=test3", "test3");
         System.out.println(result.getOutput());
-        assertEquals(CommandResult.ExitStatus.WARNING, result.getExitStatus());
+        assertEquals(CommandResult.ExitStatus.SUCCESS, result.getExitStatus());
         assertContains("No JAAS context is defined", result.getOutput());
 
         result = asadmin("delete-auth-realm", "test3");
