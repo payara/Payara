@@ -343,7 +343,7 @@
         <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
-        <hazelcast.version>5.3.8-payara-1</hazelcast.version>
+        <hazelcast.version>5.5.0-payara-1-SNAPSHOT</hazelcast.version>
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
         <weld.version>6.0.3.Final</weld.version>
