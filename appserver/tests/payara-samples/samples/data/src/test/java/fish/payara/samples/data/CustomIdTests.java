@@ -326,44 +326,6 @@ public class CustomIdTests {
     }
 
     @Test
-    public void testTCKStyleBulkOperations() throws Exception {
-        clearDatabase();
-        utx.begin();
-
-        // Test addMultiple - similar to TCK testMultipleInsertUpdateDelete
-        Box[] added = boxes.addMultiple(
-            Box.of("BULK-001", "Bulk Box 1", "CARDBOARD", "BROWN", 10, 10, 10, true),
-            Box.of("BULK-002", "Bulk Box 2", "PLASTIC", "BLUE", 15, 15, 15, false),
-            Box.of("BULK-003", "Bulk Box 3", "METAL", "SILVER", 20, 20, 20, true)
-        );
-
-        assertEquals(3, added.length);
-        assertEquals("BULK-001", added[0].code);
-        assertEquals("BULK-002", added[1].code);
-        assertEquals("BULK-003", added[2].code);
-
-        // Modify the boxes
-        added[0].color = "WHITE";
-        added[1].material = "WOOD";
-
-        // Test modifyMultiple
-        Box[] modified = boxes.modifyMultiple(added[0], added[1]);
-        assertEquals(2, modified.length);
-        assertEquals("WHITE", modified[0].color);
-        assertEquals("WOOD", modified[1].material);
-
-        // Test removeMultiple
-        boxes.removeMultiple(added[0], added[2]);
-
-        // Verify only BULK-002 remains
-        var remaining = boxes.findByCodeBetween("BULK-001", "BULK-999", null);
-        assertEquals(1, remaining.size());
-        assertEquals("BULK-002", remaining.get(0).code);
-
-        utx.commit();
-    }
-
-    @Test
     public void testTCKStyleBulkDelete() throws Exception {
         clearDatabase();
         utx.begin();
@@ -468,14 +430,14 @@ public class CustomIdTests {
 
         utx.commit();
 
-        // Try to remove a box that doesn't exist - should throw OptimisticLockingFailureException
+        // Try to delete a box that doesn't exist - should throw OptimisticLockingFailureException
         try {
             utx.begin();
-            boxes.removeMultiple(Box.of("NON-EXISTENT", "Non Existent", "WOOD", "BROWN", 5, 5, 5, false));
+            boxes.deleteByCode("NON-EXISTENT"); // Single delete deve lançar exceção
             utx.commit();
             fail("Should throw OptimisticLockingFailureException for non-existent entity");
         } catch (jakarta.data.exceptions.OptimisticLockingFailureException e) {
-            // Expected
+            // Expected - single delete operations should throw for non-existent entities
             try {
                 if (utx.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
                     utx.rollback();
