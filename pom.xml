@@ -333,7 +333,7 @@
         <stax2-api.version>4.2.2</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
-        <mail.version>2.1.4</mail.version>
+        <mail.version>2.1.3</mail.version>
         <angus.mail.version>2.0.4</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
