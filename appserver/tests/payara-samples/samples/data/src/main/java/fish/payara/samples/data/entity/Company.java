@@ -3,7 +3,7 @@ package fish.payara.samples.data.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-@jakarta.persistence.Entity
+@Entity
 @jakarta.persistence.Table(name = "Company")
 public class Company {
     @jakarta.persistence.Id
