@@ -260,7 +260,7 @@
         <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>1.1.0</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.5</jline.version>
+        <jline.version>3.30.6</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>3.1</payara-arquillian-container.version>
