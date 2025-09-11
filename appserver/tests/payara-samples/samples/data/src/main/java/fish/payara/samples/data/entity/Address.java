@@ -2,7 +2,7 @@ package fish.payara.samples.data.entity;
 
 import java.util.UUID;
 
-@jakarta.persistence.Entity
+@Entity
 @jakarta.persistence.Table(name = "Address")
 public class Address {
     @jakarta.persistence.Id
