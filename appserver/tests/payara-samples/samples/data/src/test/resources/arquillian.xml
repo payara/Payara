@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns="http://jboss.org/schema/arquillian"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+  <!-- Managed: starts and stops Payara server automatically -->
+  <container qualifier="payara-server-managed" default="true">
+    <configuration>
+      <payaraHome>target/payara7</payaraHome>
+      <adminPort>4848</adminPort>
+      <httpPort>8080</httpPort>
+      <deploymentTimeout>300000</deploymentTimeout>
+      <debug>false</debug>
+    </configuration>
+  </container>
+</arquillian>
