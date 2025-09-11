@@ -81,7 +81,7 @@
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
-        <nimbus-jose-jwt.version>10.4.2</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>10.5</nimbus-jose-jwt.version>
         <accessors-smart.version>2.6.0</accessors-smart.version>
         <json-smart.version>2.6.0</json-smart.version>
         <reactor-core.version>3.7.11</reactor-core.version>
