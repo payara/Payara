@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
 
-    Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 
  */
@@ -52,6 +52,7 @@ import com.sun.enterprise.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
@@ -156,12 +157,16 @@ public final class InstanceInfo {
 
     public final String getDisplayState() {
         StringBuilder display = new StringBuilder();
-        display.append(isRunning() ?
-            InstanceState.StateType.RUNNING.getDisplayString() :
-            InstanceState.StateType.NOT_RUNNING.getDisplayString());
+        if (isRunning() == null) {
+            display.append(InstanceState.StateType.UNKNOWN.getDisplayString());
+        } else {
+            display.append(Boolean.TRUE.equals(isRunning()) ?
+                    InstanceState.StateType.RUNNING.getDisplayString() :
+                    InstanceState.StateType.NOT_RUNNING.getDisplayString());
+        }
 
         if (ssState == InstanceState.StateType.RESTART_REQUIRED) {
-            if (isRunning()) {
+            if (Boolean.TRUE.equals(isRunning())) {
                 display.append("; ").append(InstanceState.StateType.RESTART_REQUIRED.getDisplayString());
             }
             List<String> failedCmds = stateService.getFailedCommands(name);
@@ -181,7 +186,7 @@ public final class InstanceInfo {
         return state;
     }
 
-    public final boolean isRunning() {
+    public final Boolean isRunning() {
         if (state == null) {
             getFutureResult();
         }
@@ -226,8 +231,13 @@ public final class InstanceInfo {
                 state = formatTime(uptime);
                 running = true;
             }
-        }
-        catch (Exception e) {
+        } catch (TimeoutException e) {
+            uptime = -1;
+            state = UNKNOWN;
+            ssState = stateService.setState(name, InstanceState.StateType.UNKNOWN, false);
+            running = null;
+            pid = -1;
+        } catch (Exception e) {
             uptime = -1;
             state = NOT_RUNNING;
             ssState = stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false);
@@ -320,8 +330,9 @@ public final class InstanceInfo {
     private final InstanceStateService stateService;
     private final Server svr;
     private int pid;
-    private boolean running;
+    private Boolean running;
     private static final String NOT_RUNNING = Strings.get("ListInstances.NotRunning");
+    private static final String UNKNOWN = Strings.get("ListInstances.Unknown");
     private static final String NAME = Strings.get("ListInstances.name");
     private static final String HOST = Strings.get("ListInstances.host");
     private static final String PORT = Strings.get("ListInstances.port");
