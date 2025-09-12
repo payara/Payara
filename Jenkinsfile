@@ -351,8 +351,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/FISH-11827-Jersey-3.1.11"]],
+                            userRemoteConfigs: [[url: "https://github.com/Viii3/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
@@ -388,8 +388,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/FISH-11827-Jersey-3.1.11"]],
+                            userRemoteConfigs: [[url: "https://github.com/Viii3/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
@@ -425,8 +425,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-6.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+                            branches: [[name: "*/FISH-11827-Jersey-3.1.11"]],
+                            userRemoteConfigs: [[url: "https://github.com/Viii3/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
