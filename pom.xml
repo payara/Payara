@@ -209,7 +209,7 @@
         <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
