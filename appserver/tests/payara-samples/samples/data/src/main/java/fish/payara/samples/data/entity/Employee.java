@@ -3,11 +3,14 @@ package fish.payara.samples.data.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "Employee")
+@Entity
+@Table(name = "Employee")
 public class Employee {
-    @jakarta.persistence.Id
+    @Id
     public UUID id;
 
     public String firstName;

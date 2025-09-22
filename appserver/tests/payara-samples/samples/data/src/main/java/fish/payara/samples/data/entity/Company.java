@@ -2,11 +2,14 @@ package fish.payara.samples.data.entity;
 
 import java.time.Instant;
 import java.util.UUID;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "Company")
+@Entity
+@Table(name = "Company")
 public class Company {
-    @jakarta.persistence.Id
+    @Id
     public UUID id;
 
     public String name;
