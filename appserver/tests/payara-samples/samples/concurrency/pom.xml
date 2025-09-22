@@ -57,7 +57,6 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <arquillian-bom.version>1.10.0.Final</arquillian-bom.version>
         <junit-jupiter.version>5.13.4</junit-jupiter.version>
         <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.4</jakarta-concurrent.version>
@@ -68,7 +67,7 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>${arquillian-bom.version}</version>
+                <version>${arquillian.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>

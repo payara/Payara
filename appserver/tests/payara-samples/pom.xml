@@ -76,6 +76,7 @@
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+        <arquillian.version>1.10.0.Final</arquillian.version>
     </properties>
 
     <modules>
@@ -301,7 +302,7 @@
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
                 <!-- >= 1.7.0 supports parallel testing -->
-                <version>1.10.0.Final</version>
+                <version>${arquillian.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>

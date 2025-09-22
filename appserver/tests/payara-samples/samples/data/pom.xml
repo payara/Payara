@@ -18,7 +18,6 @@
     <maven.compiler.source>${jdk.version}</maven.compiler.source>
     <maven.compiler.target>${jdk.version}</maven.compiler.target>
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
-    <arquillian.version>1.7.0.Final</arquillian.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
   </properties>
 
