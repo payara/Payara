@@ -15,9 +15,8 @@
   <packaging>jar</packaging>
 
   <properties>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>${jdk.version}</maven.compiler.source>
+    <maven.compiler.target>${jdk.version}</maven.compiler.target>
     <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <arquillian.version>1.7.0.Final</arquillian.version>
     <shrinkwrap.version>1.2.6</shrinkwrap.version>
@@ -83,14 +82,14 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Arquillian JUnit 4 integration (mais estável) -->
+    <!-- Arquillian JUnit 4 integration -->
     <dependency>
       <groupId>org.jboss.arquillian.junit</groupId>
       <artifactId>arquillian-junit-container</artifactId>
       <scope>test</scope>
     </dependency>
 
-    <!-- JUnit 4 para compatibilidade com Arquillian -->
+    <!-- JUnit 4 for Arquillian compatibility -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -145,7 +144,6 @@
       <!-- Surefire configured for JUnit 4 + Arquillian -->
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
         <configuration>
           <useModulePath>false</useModulePath>
           <includes>

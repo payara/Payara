@@ -433,7 +433,7 @@ public class CustomIdTests {
         // Try to delete a box that doesn't exist - should throw OptimisticLockingFailureException
         try {
             utx.begin();
-            boxes.deleteByCode("NON-EXISTENT"); // Single delete deve lançar exceção
+            boxes.deleteByCode("NON-EXISTENT");
             utx.commit();
             fail("Should throw OptimisticLockingFailureException for non-existent entity");
         } catch (jakarta.data.exceptions.OptimisticLockingFailureException e) {
