@@ -22,8 +22,6 @@
     <shrinkwrap.version>1.2.6</shrinkwrap.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
     <shrinkwrap.resolver.version>3.1.4</shrinkwrap.resolver.version>
-
-    <h2.version>2.2.224</h2.version>
   </properties>
 
   <dependencyManagement>
@@ -125,7 +123,7 @@
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>${h2.version}</version>
+      <version>${h2db.version}</version>
       <scope>test</scope>
     </dependency>
 
