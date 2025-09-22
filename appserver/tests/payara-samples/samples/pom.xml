@@ -60,7 +60,7 @@
         <module>sfsb-passivation</module>
         <module>dynamic-roles</module>
         <module>formauth</module>
-        <!--module>jacc-per-app</module-->
+        <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
         <!--module>jaxrs-rolesallowed-servlet</module-->
         <module>jaxws-security</module>

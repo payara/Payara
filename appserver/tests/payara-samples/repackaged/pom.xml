@@ -55,7 +55,6 @@
     
     <modules>
         <module>http-matchers-repackaged</module>
-        <module>jacc-provider-repackaged</module>
         <module>smallrye-config-repackaged</module>
     </modules>
 

@@ -7,9 +7,8 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
-import org.omnifaces.jaccprovider.TestPolicyConfigurationFactory;
-
 import fish.payara.jacc.JaccConfigurationFactory;
+import jakarta.security.jacc.PolicyFactory;
 
 /**
  * The core of this sample; installing our own JACC Policy for the current web application.
@@ -18,15 +17,12 @@ import fish.payara.jacc.JaccConfigurationFactory;
  *
  */
 @WebListener
-public class JaccInstaller implements ServletContextListener {
+public class PolicyRegistrationInstaller implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-
-        JaccConfigurationFactory.getJaccConfigurationFactory().registerContextProvider(
-                getAppContextId(sce.getServletContext()),
-                new TestPolicyConfigurationFactory());
-
+        PolicyFactory policyFactory = PolicyFactory.getPolicyFactory();
+        policyFactory.setPolicy(new LoggingTestPolicy(policyFactory.getPolicy()));
     }
 
     private String getAppContextId(ServletContext servletContext) {
