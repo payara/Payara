@@ -608,11 +608,6 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>fish.payara.monitoring-console</groupId>
-                <artifactId>monitoring-console-api</artifactId>
-                <version>${monitoring-console-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
                 <version>${osgi-resource-locator.version}</version>

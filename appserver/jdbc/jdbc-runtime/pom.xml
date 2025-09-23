@@ -91,10 +91,6 @@
             <artifactId>jdbc-config</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>fish.payara.server.internal.test-utils</groupId>
