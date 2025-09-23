@@ -340,6 +340,11 @@ public class ClientValidationTest {
             return responseCode;
         }
     }
+
+    /**
+     * @return true if the correct warning is found in the logs
+     * @throws IOException
+     */
     public boolean checkForAPIValidationFailure() throws IOException {
         List<String> log = viewLog();
         for (String line : log) {
