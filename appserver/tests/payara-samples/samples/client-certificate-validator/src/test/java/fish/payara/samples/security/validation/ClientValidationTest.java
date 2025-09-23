@@ -48,31 +48,48 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.omnifaces.utils.security.Certificates;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import java.net.URL;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
-import java.security.cert.CertificateException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author James Hillyard
  */
 
-@Ignore
 @RunWith(PayaraArquillianTestRunner.class)
 @SincePayara("5.2021.8")
 public class ClientValidationTest {
@@ -80,7 +97,11 @@ public class ClientValidationTest {
     private static String certPath;
 
     private static final String CERTIFICATE_ALIAS = "omnikey";
+    private static final String KEYSTORE_PASSWORD = "changeit";
+    private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
+    private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
+    private static final Logger logger = Logger.getLogger(ClientValidationTest.class.getName());
 
     @Deployment
     public static WebArchive deploy() {
@@ -98,51 +119,231 @@ public class ClientValidationTest {
 
     @Test
     @InSequence(1)
-    public void generateCertsInTrustStore() throws IOException {
+    public void generateCertsInTrustStore() throws Exception {
         if (ServerOperations.isServer()) {
             certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
+
+            // Verify keystore was created
+            if (certPath == null || !new File(certPath).exists()) {
+                throw new IOException("Failed to generate client keystore at: " + certPath);
+            }
+
+            try {
+                // Load the keystore
+                KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+                try (FileInputStream fis = new FileInputStream(certPath)) {
+                    keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
+                }
+
+                // Set up key manager factory with PKCS12
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance(
+                        KeyManagerFactory.getDefaultAlgorithm());
+                kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
+
+                // Set up trust manager that trusts all certificates (for testing only)
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                        new X509TrustManager() {
+                            public X509Certificate[] getAcceptedIssuers() {
+                                return null;
+                            }
+                            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                        }
+                };
+
+                // Initialize SSL context
+                SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+                sslContext.init(kmf.getKeyManagers(), trustAllCerts, new java.security.SecureRandom());
+
+                // Set as default
+                SSLContext.setDefault(sslContext);
+                HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+
+                // For testing, accept all hostnames
+                HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to configure SSL context: " + e.getMessage(), e);
+                throw e;
+            }
         }
     }
 
     @Test
     @InSequence(2)
     public void validationFailTest() throws Exception {
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        SSLSocketFactory sslSocketFactory = getSslSocketFactory(certPath, kmf, CERTIFICATE_ALIAS);
-        assertEquals(401, callEndpoint(sslSocketFactory));
-        assertTrue(checkForAPIValidationFailure());
+        // Configure SSL system properties
+        String domainDir = System.getProperty("com.sun.aas.instanceRoot");
+        String keystorePath = domainDir + "/config/keystore.p12";
+        String truststorePath = domainDir + "/config/cacerts.p12";
 
-    }
+        // Set all system properties for SSL at once
+        System.setProperty("javax.net.ssl.keyStore", keystorePath);
+        System.setProperty("javax.net.ssl.keyStorePassword", KEYSTORE_PASSWORD);
+        System.setProperty("javax.net.ssl.keyStoreType", KEYSTORE_TYPE);
+        System.setProperty("javax.net.ssl.trustStore", truststorePath);
+        System.setProperty("javax.net.ssl.trustStorePassword", KEYSTORE_PASSWORD);
+        System.setProperty("javax.net.ssl.trustStoreType", KEYSTORE_TYPE);
+        System.setProperty("javax.net.debug", "all");
+        System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+        System.setProperty("https.protocols", "TLSv1.2");
+
+        // Verify keystore exists and is readable
+        File keystoreFile = new File(certPath);
+        if (!keystoreFile.exists()) {
+            fail("Keystore file does not exist: " + certPath);
+        }
+        if (!keystoreFile.canRead()) {
+            fail("Cannot read keystore file: " + certPath);
+        }
+
+        KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+        try (FileInputStream fis = new FileInputStream(certPath)) {
+            keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
+        }
+
+        // Set up key manager factory with PKCS12
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
+
+        // Create a trust manager that trusts all certificates (for testing only)
+        TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        // Initialize SSL context with the trust managers using TLSv1.2
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(kmf.getKeyManagers(), trustAllCerts, new java.security.SecureRandom());
+
+        // Get the socket factory and make the call
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+        int statusCode = callEndpoint(sslSocketFactory);
+
+        // Verify the response status code
+        if (statusCode != 401) {
+            fail("Expected status code 401 but got: " + statusCode);
+        }
+
+        // Verify the certificate validation failure was logged by the API
+        boolean validationFailed = checkForAPIValidationFailure();
+        if (!validationFailed) {
+            fail("Expected certificate validation failure in server logs but none found");
+        }
+    };
 
     private static int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
-        URL url = new URL(LOCALHOST_URL);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setSSLSocketFactory(sslSocketFactory);
-        return connection.getResponseCode();
+        HttpsURLConnection connection = null;
+        int responseCode = 500; // Default error code
+
+        try {
+            try {
+                URL url = new URI(LOCALHOST_URL).toURL();
+                connection = (HttpsURLConnection) url.openConnection();
+            } catch (java.net.URISyntaxException e) {
+                throw new IOException("Invalid URL: " + LOCALHOST_URL, e);
+            }
+
+            connection.setSSLSocketFactory(sslSocketFactory);
+            connection.setHostnameVerifier((hostname, session) -> true);
+
+            // Set request method and headers
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "*/*");
+            connection.setRequestProperty("Connection", "close");
+            connection.setDoOutput(true);
+
+            // Make the request and read the response
+            responseCode = connection.getResponseCode();
+
+            // Read the response
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+
+                String responseBody = response.toString();
+                logger.log(Level.FINER, "Response: {0}", responseBody);
+
+                return responseCode;
+            }
+        } catch (SSLException e) {
+            // Log SSL errors
+            if (e instanceof SSLHandshakeException) {
+                logger.log(Level.SEVERE, "SSL Handshake Failed: {0}", e.getMessage());
+            } else {
+                logger.log(Level.SEVERE, "SSL Error: {0}", e.getMessage());
+            }
+            logger.log(Level.FINER, "SSL Error details", e);
+
+            // Try to get more error details if connection is available
+            if (connection != null) {
+                try (InputStream es = connection.getErrorStream()) {
+                    if (es != null) {
+                        try (BufferedReader in = new BufferedReader(new InputStreamReader(es))) {
+                            String inputLine;
+                            StringBuilder errorResponse = new StringBuilder();
+                            while ((inputLine = in.readLine()) != null) {
+                                errorResponse.append(inputLine);
+                            }
+                            if (errorResponse.length() > 0) {
+                                logger.log(Level.SEVERE, "Error response: {0}", errorResponse.toString());
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Could not read error response: {0}", ex.getMessage());
+                }
+            }
+
+            // If we have a response code, use it, otherwise rethrow the exception
+            if (connection != null) {
+                try {
+                    return connection.getResponseCode();
+                } catch (IOException ex) {
+                    // If we can't get the response code, rethrow the original exception
+                    throw e;
+                }
+            } else {
+                throw e;
+            }
+
+        } finally {
+            // Ensure the connection is closed
+            if (connection != null) {
+                try {
+                    connection.disconnect();
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Error disconnecting: {0}", e.getMessage());
+                }
+            }
+
+            // Make sure we always return a response code
+            if (responseCode == 500 && connection != null) {
+                try {
+                    return connection.getResponseCode();
+                } catch (IOException e) {
+                    return 500;
+                }
+            }
+            return responseCode;
+        }
     }
-
-    private static SSLSocketFactory getSslSocketFactory(String certPath, KeyManagerFactory kmf, String alias) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException {
-        String keystorePassword = "changeit";
-
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        keyStore.load(new FileInputStream(certPath), keystorePassword.toCharArray());
-        kmf.init(keyStore, keystorePassword.toCharArray());
-
-        KeyManager[] keyManagers = kmf.getKeyManagers();
-
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(new KeyManager[]{new MyKeyManager((X509ExtendedKeyManager) keyManagers[0], alias)}, null, null);
-        return ctx.getSocketFactory();
-    }
-
-    /**
-     * @return true if the correct warning is found in the logs
-     * @throws IOException
-     */
     public boolean checkForAPIValidationFailure() throws IOException {
         List<String> log = viewLog();
         for (String line : log) {
-            if (line.contains("Certificate Validation Failed via API")) {
+            if (line.contains(EXPECTED_VALIDATION_ERROR)) {
                 return true;
             }
         }
