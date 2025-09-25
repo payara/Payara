@@ -128,7 +128,7 @@
     <dependency>
       <groupId>org.eclipse.persistence</groupId>
       <artifactId>eclipselink</artifactId>
-      <version>4.0.4</version>
+      <version>${eclipselink.version}</version>
       <scope>test</scope>
     </dependency>
 
