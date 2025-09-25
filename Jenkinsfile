@@ -589,7 +589,9 @@ pipeline {
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
-                        -f appserver/tests/payara-samples """
+                        -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
+                        -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
+                        -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
