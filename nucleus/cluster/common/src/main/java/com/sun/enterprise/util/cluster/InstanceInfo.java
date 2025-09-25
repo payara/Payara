@@ -203,11 +203,20 @@ public final class InstanceInfo {
 
             if ((!instanceLocation.endsWith(res.getServer().getName()))
                     || (res.getReport().getActionExitCode() != ActionReport.ExitCode.SUCCESS)) {
-                uptime = -1;
-                state = NOT_RUNNING;
-                running = false;
-                pid = -1;
-                ssState = stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false);
+                // this can be a timeout
+                if (res.getReport().getMessage().contains("No response")) {
+                    running = null;
+                    state = UNKNOWN;
+                    uptime = -1;
+                    pid = -1;
+                    ssState = stateService.setState(name, InstanceState.StateType.UNKNOWN, false);
+                } else {
+                    uptime = -1;
+                    running = false;
+                    state = NOT_RUNNING;
+                    pid = -1;
+                    ssState = stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false);
+                }
             }
             else {
                 Properties props = res.getReport().getTopMessagePart().getProps();
