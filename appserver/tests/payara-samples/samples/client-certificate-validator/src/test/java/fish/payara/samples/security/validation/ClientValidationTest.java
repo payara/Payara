@@ -329,14 +329,6 @@ public class ClientValidationTest {
                 }
             }
 
-            // Make sure we always return a response code
-            if (responseCode == 500 && connection != null) {
-                try {
-                    return connection.getResponseCode();
-                } catch (IOException e) {
-                    return 500;
-                }
-            }
             return responseCode;
         }
     }
@@ -362,6 +354,4 @@ public class ClientValidationTest {
         Path serverLog = ServerOperations.getDomainPath("logs/server.log");
         return Files.readAllLines(serverLog);
     }
-
-
 }
