@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 -->
 <!initPage
@@ -193,6 +193,7 @@
                 gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{pageSession.dgName}/dg-server-ref",
                     id="Ref" result="#{requestScope.listOfInstances}");
                 mapPut(map="#{pageSession.dgInstanceMap}" key="#{pageSession.dgName}" value="#{requestScope.listOfInstances}");
+                gf.listInstances(optionKeys={"id"} optionValues={"$pageSession{dgName}"}, statusMap="#{requestScope.statusMap}");
             />
         </event>
         "<table border="1">
@@ -200,7 +201,6 @@
             <event>
             <!beforeEncode
                 setAttribute(key="tmp" value="#{instance}");
-                gf.listInstances(optionKeys={"id"} optionValues={"$attribute{tmp}"}, statusMap="#{requestScope.statusMap}");
                 setAttribute(key="status" value="#{requestScope.statusMap['$attribute{tmp}']}");
                 setAttribute(key="statusString" value="$resource{i18nc.status.image.$attribute{status}}  &nbsp;  $resource{i18nc.status.$attribute{status}}");
             />
