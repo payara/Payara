@@ -106,10 +106,6 @@
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-api</artifactId>
-        </dependency>
         
         <dependency>
             <groupId>fish.payara.api</groupId>

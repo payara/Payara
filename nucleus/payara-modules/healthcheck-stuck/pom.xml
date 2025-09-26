@@ -70,10 +70,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <artifactId>healthcheck-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-api</artifactId>
-        </dependency>
     </dependencies>
 
 </project>
