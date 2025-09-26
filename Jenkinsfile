@@ -99,7 +99,6 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
-                        -Dpayara.version=${pom.version} \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -133,11 +132,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Ppayara-server-remote,full \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -170,11 +170,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Ppayara-server-remote,full \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -207,11 +208,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
@@ -245,11 +247,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Ppayara-server-remote,full \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -282,11 +285,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Ppayara-server-remote,full \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -319,11 +323,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Ppayara-server-remote,full \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -356,11 +361,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
@@ -393,11 +399,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
@@ -430,11 +437,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara6" \
                         -Ppayara-server-remote,full \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -467,11 +475,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,stable"
@@ -501,6 +510,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh "rm -rf /tmp/cargo*"
@@ -538,11 +548,12 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
+                        updatePomPayaraVersion("${pom.version}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean install --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all -Dpayara.version=${pom.version} \
+                        -Djavax.xml.accessExternalSchema=all \
                         -Dpayara_domain=${DOMAIN_NAME} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
@@ -575,15 +586,15 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
-                        -Dpayara.version=${pom.version} \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
-                        -f appserver/tests/payara-samples """
+                        -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
+                        -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
+                        -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
-                        -Dpayara.version=${pom.version} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/payara-micro """
@@ -592,13 +603,12 @@ pipeline {
                         sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
+                        -f appserver/tests/functional/embeddedtest """
 
                         sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Dversion=${pom.version} -f appserver/tests/functional/embeddedtest """
-
+                        -f appserver/tests/functional/embeddedtest """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
@@ -660,4 +670,9 @@ void saveLogsAndCleanup(String logArchiveName) {
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
+}
+
+void updatePomPayaraVersion(String payaraVersion) {
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Updating pom.xml payara.version property for Shrinkwrap resolver  *#*#*#*#*#*#*#*#*#*#*#*#'
+    sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
 }
