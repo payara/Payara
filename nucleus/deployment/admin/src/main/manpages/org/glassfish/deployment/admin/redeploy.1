@@ -25,6 +25,7 @@ SYNOPSIS
            [--asyncreplication={true|false}]
            [--lbenabled={true|false}]
            [--keepstate={false|true}]
+           [--warlibs={false|true}]
            [--libraries jar_file[,jar_file]*]
            [--target target]
            [--type pkg-type]
@@ -263,6 +264,12 @@ OPTIONS
            the newly redeployed application deserializes the data that was
            previously saved.
 
+       --warlibs
+           If set to true, enables an application to make use of shared
+           libraries installed to `domain_dir/lib/warlibs`.
+           Default is false.
+           This parameter takes precedence over enabling warlibs in --properties.
+
        --libraries
            A comma-separated list of library JAR files. Specify the library
            JAR files by their relative or absolute paths. Specify relative
@@ -394,6 +401,11 @@ OPTIONS
            preserveAppScopedResources
                If set to true, preserves any application-scoped resources and
                restores them during redeployment. Default is false.
+
+           warlibs={false|true}
+               If set to true, enables an application to make use of shared
+               libraries installed to `domain_dir/lib/warlibs`.
+               Default is false.
 
            Other available properties are determined by the implementation of
            the component that is being redeployed.
