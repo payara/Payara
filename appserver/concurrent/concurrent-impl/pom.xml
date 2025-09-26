@@ -86,6 +86,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.test-utils</groupId>
+            <artifactId>utils</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
