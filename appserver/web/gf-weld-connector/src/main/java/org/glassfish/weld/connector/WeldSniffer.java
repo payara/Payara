@@ -245,7 +245,7 @@ public class WeldSniffer extends GenericSniffer {
     }
 
     // make sure it's not an extension
-    if ( ! WeldUtils.isValidBdaBasedOnExtensionAndBeansXml( context.getSource() )) {
+    if ( ! WeldUtils.isValidBdaBasedOnExtensionAndBeansXml(context, context.getSource() )) {
       return null;
     }
 
