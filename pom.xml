@@ -334,7 +334,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
         <mail.version>2.1.5</mail.version>
-        <angus.mail.version>2.0.4</angus.mail.version>
+        <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
