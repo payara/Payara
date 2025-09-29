@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -48,6 +48,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.v3.admin.adapter.AdminEndpointDecider;
+import fish.payara.admin.cluster.ExecutorServiceFactory;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandRunner.CommandInvocation;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import static java.lang.Math.min;
@@ -177,18 +177,8 @@ public class ClusterCommandHelper {
         // Holds responses from the threads running the command
         ArrayBlockingQueue<CommandRunnable> responseQueue = new ArrayBlockingQueue<>(nInstances);
 
-        int threadPoolSize = 1;
-        if (!rolling) {
-            // Make the thread pool use the smaller of the number of instances
-            // or half the admin thread pool size
-            threadPoolSize = min(nInstances, getAdminThreadPoolSize() / 2);
-
-            if (threadPoolSize < 1) {
-                threadPoolSize = 1;
-            }
-        }
-
-        ExecutorService threadPool = Executors.newFixedThreadPool(threadPoolSize);
+        ExecutorServiceFactory.ExecutorServiceHolder holder = ExecutorServiceFactory.newFixedThreadPool(domain, nInstances, rolling);
+        ExecutorService threadPool = holder.getExecutorService();
 
         if (map == null) {
             map = new ParameterMap();
@@ -196,7 +186,7 @@ public class ClusterCommandHelper {
 
 
         logger.info(String.format(
-                "Executing %s on %d instances using a thread pool of size %d: %s", command, nInstances, threadPoolSize,
+                "Executing %s on %d instances using a thread pool of size %d: %s", command, nInstances, holder.getThreadPoolSize(),
                 serverListToString(targetServers)));
 
         progress.setTotalStepCount(nInstances);
