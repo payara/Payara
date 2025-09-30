@@ -132,8 +132,6 @@ public class PhoneHomeCore implements EventListener {
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapPhoneHome();
-        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
-            shutdownPhoneHome();
         }
     }
 
