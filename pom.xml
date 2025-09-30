@@ -248,7 +248,7 @@
         <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
         <krazo.version>3.0.1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>4.0.1.payara-p4</eclipselink.version>
+        <eclipselink.version>4.0.8</eclipselink.version>
         <eclipselink.asm.version>9.8.0</eclipselink.asm.version>
         <openmq.version>6.5.1.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
@@ -434,7 +434,7 @@
                                     <classesDirectory>${project.build.directory}/site/apidocs</classesDirectory>
                                     <classifier>javadoc</classifier>
                                     <archive>
-                                        <manifestFile />
+                                        <manifestFile/>
                                     </archive>
                                 </configuration>
                             </execution>
