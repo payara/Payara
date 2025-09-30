@@ -56,6 +56,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -85,6 +86,8 @@ public class PhoneHomeCore implements EventListener {
 
     @Inject
     private Domain domain;
+
+    private ScheduledFuture<?> scheduledFuture;
 
     @PostConstruct
     public void postConstruct() {
@@ -136,11 +139,14 @@ public class PhoneHomeCore implements EventListener {
 
     private void bootstrapPhoneHome() {
         if (enabled) {
-            executor.scheduleAtFixedRate(new PhoneHomeTask(phoneHomeId.toString(), domain, env), 0, 1, TimeUnit.DAYS);
+            scheduledFuture = executor.scheduleAtFixedRate(new PhoneHomeTask(phoneHomeId.toString(), domain, env), 0, 1, TimeUnit.DAYS);
         }
     }
 
     private void shutdownPhoneHome() {
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+        }
     }
 
     public void start() {
