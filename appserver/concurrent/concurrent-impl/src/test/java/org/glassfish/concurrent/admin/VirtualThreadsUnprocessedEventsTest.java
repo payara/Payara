@@ -123,6 +123,7 @@ public class VirtualThreadsUnprocessedEventsTest extends ConfigApiTest implement
 
             transactions.waitForDrain();
             assertNotNull(propertyChangeEvent);
+            assertEquals("use-virtual-threads", propertyChangeEvent.getPropertyName());
 
             bean.removeListener(resourcesConfigListener);
         }
