@@ -67,9 +67,6 @@ public class ResourcesConfigListener implements ConfigListener {
             = StringManager.getManager(ManagedExecutorServiceBaseManager.class);
 
     @Inject
-    private Domain domain;
-
-    @Inject
     private Transactions transactions;
 
     @Override
