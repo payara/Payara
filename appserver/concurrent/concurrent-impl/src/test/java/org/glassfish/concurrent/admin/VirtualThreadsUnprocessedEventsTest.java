@@ -133,9 +133,11 @@ public class VirtualThreadsUnprocessedEventsTest extends ConfigApiTest implement
     }
 
 
+    @Override
     public void transactionCommited(List<PropertyChangeEvent> changes) {
     }
 
+    @Override
     public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
         changes.stream().map(
                 UnprocessedChangeEvents::getUnprocessed
