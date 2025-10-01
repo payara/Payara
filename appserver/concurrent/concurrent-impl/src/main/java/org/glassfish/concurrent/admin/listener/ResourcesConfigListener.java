@@ -40,7 +40,6 @@
 package org.glassfish.concurrent.admin.listener;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.i18n.StringManager;
 import fish.payara.internal.api.PostBootRunLevel;
 import jakarta.annotation.PostConstruct;
@@ -52,8 +51,7 @@ import org.glassfish.concurrent.config.ManagedThreadFactory;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.ObservableBean;
+import org.jvnet.hk2.config.Transactions;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -70,6 +68,9 @@ public class ResourcesConfigListener implements ConfigListener {
 
     @Inject
     private Domain domain;
+
+    @Inject
+    private Transactions transactions;
 
     @Override
     public UnprocessedChangeEvents changed(PropertyChangeEvent[] events) {
@@ -94,8 +95,6 @@ public class ResourcesConfigListener implements ConfigListener {
 
     @PostConstruct
     public void postConstruct() {
-        Resources resources = domain.getResources();
-        ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(resources);
-        bean.addListener(this);
+        transactions.addListenerForType(ResourcesConfigListener.class, this);
     }
 }
