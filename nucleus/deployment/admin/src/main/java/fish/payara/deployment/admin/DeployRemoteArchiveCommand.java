@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.common.util.admin.ParameterMapExtractor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -69,6 +70,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -172,7 +174,17 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
             ActionReport subReport = actionReport.addSubActionsReport();
             CommandRunner.CommandInvocation commandInvocation =
                     commandRunner.getCommandInvocation("deploy", subReport, context.getSubject());
-            ParameterMap parameters = createAndPopulateParameterMap(fileToDeploy);
+            ParameterMap parameters;
+            final ParameterMapExtractor extractor = new ParameterMapExtractor(this);
+            try {
+                List<String> excludedParameters = new ArrayList<>();
+                excludedParameters.add("path");
+                parameters = extractor.extract(excludedParameters);
+            } catch (IllegalArgumentException | IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+            parameters.add("path", fileToDeploy.getAbsolutePath());
+
             commandInvocation.parameters(parameters);
             commandInvocation.execute();
         } else {
@@ -180,131 +192,5 @@ public class DeployRemoteArchiveCommand extends DeployCommandParameters implemen
                     + "\nSee the server log for more details");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
-
-    private ParameterMap createAndPopulateParameterMap(File fileToDeploy) {
-        ParameterMap parameterMap = new ParameterMap();
-
-        parameterMap.add("name", name);
-        parameterMap.add("path", fileToDeploy.getAbsolutePath());
-        parameterMap.add("contextroot", contextroot);
-
-        if (virtualservers != null) {
-            parameterMap.add("virtualservers", virtualservers);
-        }
-
-        if (libraries != null) {
-            parameterMap.add("libraries", libraries);
-        }
-
-        if (force != null) {
-            parameterMap.add("force", force.toString());
-        }
-
-        if (precompilejsp != null) {
-            parameterMap.add("precompilejsp", precompilejsp.toString());
-        }
-
-        if (verify != null) {
-            parameterMap.add("verify", verify.toString());
-        }
-
-        if (retrieve != null) {
-            parameterMap.add("retrieve", retrieve);
-        }
-
-        if (dbvendorname != null) {
-            parameterMap.add("dbvendorname", dbvendorname);
-        }
-
-        if (createtables != null) {
-            parameterMap.add("createtables", createtables.toString());
-        }
-
-        if (dropandcreatetables != null) {
-            parameterMap.add("dropandcreatetables", dropandcreatetables.toString());
-        }
-
-        if (uniquetablenames != null) {
-            parameterMap.add("uniquetablenames", uniquetablenames.toString());
-        }
-
-        if (deploymentplan != null) {
-            parameterMap.add("deploymentplan", deploymentplan.getAbsolutePath());
-        }
-
-        if (altdd != null) {
-            parameterMap.add("altdd", altdd.getAbsolutePath());
-        }
-
-        if (runtimealtdd != null) {
-            parameterMap.add("runtimealtdd", runtimealtdd.getAbsolutePath());
-        }
-
-        if (enabled != null) {
-            parameterMap.add("enabled", enabled.toString());
-        }
-
-        if (generatermistubs != null) {
-            parameterMap.add("generatermistubs", generatermistubs.toString());
-        }
-
-        if (availabilityenabled != null) {
-            parameterMap.add("availabilityenabled", availabilityenabled.toString());
-        }
-
-        if (asyncreplication != null) {
-            parameterMap.add("asyncreplication", asyncreplication.toString());
-        }
-
-        if (target != null) {
-            parameterMap.add("target", target);
-        }
-
-        if (keepreposdir != null) {
-            parameterMap.add("keepreposdir", keepreposdir.toString());
-        }
-
-        if (keepfailedstubs != null) {
-            parameterMap.add("keepfailedstubs", keepfailedstubs.toString());
-        }
-
-        if (isredeploy != null) {
-            parameterMap.add("isredeploy", isredeploy.toString());
-        }
-
-        if (logReportedErrors != null) {
-            parameterMap.add("logReportedErrors", logReportedErrors.toString());
-        }
-
-        if (properties != null) {
-            String propertiesString = properties.toString();
-            propertiesString = propertiesString.replaceAll(", ", ":");
-            parameterMap.add("properties", propertiesString);
-        }
-
-        if (property != null) {
-            String propertyString = property.toString();
-            propertyString = propertyString.replaceAll(", ", ":");
-            parameterMap.add("property", propertyString);
-        }
-
-        if (type != null) {
-            parameterMap.add("type", type);
-        }
-
-        if (keepstate != null) {
-            parameterMap.add("keepstate", keepstate.toString());
-        }
-
-        if (lbenabled != null) {
-            parameterMap.add("lbenabled", lbenabled);
-        }
-
-        if (deploymentorder != null) {
-            parameterMap.add("deploymentorder", deploymentorder.toString());
-        }
-
-        return parameterMap;
     }
 }
