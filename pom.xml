@@ -224,7 +224,7 @@
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
         <maven.enforcer.plugin.version>3.6.1</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
-        <maven.flatten.plugin.version>1.7.2</maven.flatten.plugin.version>
+        <maven.flatten.plugin.version>1.7.3</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
         <license-maven-plugin.version>2.7.0</license-maven-plugin.version>
 
