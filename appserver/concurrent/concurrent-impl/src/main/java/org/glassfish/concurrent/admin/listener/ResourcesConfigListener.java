@@ -43,12 +43,12 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.i18n.StringManager;
 import fish.payara.internal.api.PostBootRunLevel;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import org.glassfish.concurrent.admin.ManagedExecutorServiceBaseManager;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.concurrent.config.ManagedThreadFactory;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigListener;
@@ -63,7 +63,7 @@ import java.util.List;
 
 @Service
 @RunLevel(PostBootRunLevel.VAL)
-public class ResourcesConfigListener implements ConfigListener, PostConstruct {
+public class ResourcesConfigListener implements ConfigListener {
 
     private static StringManager sm
             = StringManager.getManager(ManagedExecutorServiceBaseManager.class);
@@ -92,7 +92,7 @@ public class ResourcesConfigListener implements ConfigListener, PostConstruct {
         return new UnprocessedChangeEvents(unprocessedChangeEvents);
     }
 
-    @Override
+    @PostConstruct
     public void postConstruct() {
         Resources resources = domain.getResources();
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(resources);
