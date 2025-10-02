@@ -39,7 +39,6 @@
  */
 package org.glassfish.concurrent.admin.listener;
 
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.i18n.StringManager;
 import fish.payara.internal.api.PostBootRunLevel;
 import jakarta.annotation.PostConstruct;
@@ -58,6 +57,7 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Service
 @RunLevel(PostBootRunLevel.VAL)
@@ -76,15 +76,17 @@ public class ResourcesConfigListener implements ConfigListener {
         for (PropertyChangeEvent propertyChangeEvent : events) {
             Object source = propertyChangeEvent.getSource();
 
-            if (!(source instanceof ManagedExecutorService
-                    || source instanceof ManagedScheduledExecutorService)
-                    || source instanceof ManagedThreadFactory) {
-                continue;
-            }
+            if (evaluateInterfaces(
+                    source.getClass(), clazz ->
+                            clazz == ManagedExecutorService.class
+                                    || clazz == ManagedScheduledExecutorService.class
+                                    || clazz == ManagedThreadFactory.class)
+                    && "use-virtual-threads".equals(propertyChangeEvent.getPropertyName())
+                    && !propertyChangeEvent.getOldValue().equals(propertyChangeEvent.getNewValue())) {
 
-            if ("use-virtual-threads".equals(propertyChangeEvent.getPropertyName())
-                    && (!propertyChangeEvent.getOldValue().equals(propertyChangeEvent.getNewValue()))) {
-                unprocessedChangeEvents.add(new UnprocessedChangeEvent(propertyChangeEvent, sm.getString("virtual.threads.change.requires.restart")));
+                unprocessedChangeEvents.add(
+                    new UnprocessedChangeEvent(
+                            propertyChangeEvent, sm.getString("virtual.threads.change.requires.restart")));
             }
         }
         return new UnprocessedChangeEvents(unprocessedChangeEvents);
@@ -93,5 +95,15 @@ public class ResourcesConfigListener implements ConfigListener {
     @PostConstruct
     public void postConstruct() {
         transactions.addListenerForType(ResourcesConfigListener.class, this);
+    }
+
+    private boolean evaluateInterfaces(Class<?> clazz, Predicate<Class<?>> function) {
+        for (Class<?> interfaceClazz : clazz.getInterfaces()) {
+            if (function.test(interfaceClazz)) {
+                return true;
+            }
+            return evaluateInterfaces(interfaceClazz, function);
+        }
+        return false;
     }
 }
