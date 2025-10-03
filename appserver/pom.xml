@@ -582,12 +582,6 @@
                 <version>${jboss-logging.version}</version>
                 <optional>true</optional>
             </dependency>
-            
-            <dependency>
-                <groupId>fish.payara.monitoring-console</groupId>
-                <artifactId>monitoring-console-api</artifactId>
-                <version>${monitoring-console-api.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>fish.payara.security.connectors</groupId>
