@@ -139,21 +139,7 @@ public abstract class AbstractHandler implements AnnotationHandler {
      */
     protected void log(Level level, AnnotationInfo ainfo,
             String localizedMessage) throws AnnotationProcessorException {
-        if (Level.SEVERE.equals(level)) {
-            ainfo.getProcessingContext().getErrorHandler().error(
-                new AnnotationProcessorException(localizedMessage, ainfo));
-        } else if (Level.WARNING.equals(level)) {
-            ainfo.getProcessingContext().getErrorHandler().warning(
-                new AnnotationProcessorException(localizedMessage, ainfo));
-        } else if (Level.FINE.equals(level)) {
-            ainfo.getProcessingContext().getErrorHandler().fine(
-                new AnnotationProcessorException(localizedMessage, ainfo));
-        } else if (ainfo != null) {
-            ainfo.getProcessingContext().getProcessor().log(
-                level, ainfo, localizedMessage);
-        } else {
-            logger.log(level, localizedMessage);
-        }
+        logger.log(level, localizedMessage);
     }
 
     protected String getInjectionMethodPropertyName(Method method,
