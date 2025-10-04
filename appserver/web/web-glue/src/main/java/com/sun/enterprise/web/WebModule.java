@@ -200,6 +200,7 @@ public class WebModule extends PwcWebModule implements Context {
 
     private static final String WS_SERVLET_CONTEXT_LISTENER =
         "com.sun.xml.ws.transport.http.servlet.WSServletContextListener";
+    public static final String CACHE_TTL_APP_PROPERTY = "cacheTTL";
 
     // ----------------------------------------------------- Instance Variables
 
@@ -1466,6 +1467,14 @@ public class WebModule extends PwcWebModule implements Context {
             configureProperty(vs, contextPath, name, value);
         }
 
+        if (getWebModuleConfig() != null && getWebModuleConfig().getDeploymentContext() != null) {
+            var appProperties = getWebModuleConfig().getDeploymentContext().getAppProps();
+            String cacheTTL = appProperties.getProperty(CACHE_TTL_APP_PROPERTY);
+            if (cacheTTL != null) {
+                configureProperty(vs, contextPath, CACHE_TTL_APP_PROPERTY, cacheTTL);
+            }
+        }
+
         // sen-web.xml preserved for backward compatibility
         final SunWebAppImpl configBean = getIasWebAppConfigBean();
         if (configBean != null && configBean.sizeWebProperty() > 0) {
@@ -1552,6 +1561,8 @@ public class WebModule extends PwcWebModule implements Context {
             vs.setDefaultWebXmlLocation(value);
         } else if(name.startsWith("alternatedocroot_")) {
             parseAlternateDocBase(name, value);
+        } else if(CACHE_TTL_APP_PROPERTY.equalsIgnoreCase(name)) {
+            setCacheTTL(Integer.parseInt(value));
         } else if(name.startsWith("valve_") ||
             name.startsWith("listener_") ||
             name.startsWith("send-error_")) {
