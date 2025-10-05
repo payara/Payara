@@ -90,7 +90,7 @@
         <ldapbp.version>1.0</ldapbp.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
-        <classmate.version>1.7.0</classmate.version>
+        <classmate.version>1.7.1</classmate.version>
         <jboss-logging.version>3.6.1.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
@@ -110,7 +110,7 @@
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>5.0.14</org.apache.felix.webconsole.version>
+        <org.apache.felix.webconsole.version>5.0.18</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
@@ -132,7 +132,7 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>5.19.0</mockito.version>
+        <mockito.version>5.20.0</mockito.version>
 
         <!-- Build -->
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
