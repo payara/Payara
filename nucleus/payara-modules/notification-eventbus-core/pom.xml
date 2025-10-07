@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>6.2025.10</version>
+        <version>6.2025.11-SNAPSHOT</version>
     </parent>
     <artifactId>notification-eventbus-core</artifactId>
     <packaging>glassfish-jar</packaging>

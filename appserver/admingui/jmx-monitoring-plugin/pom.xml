@@ -45,7 +45,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
     <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>admingui</artifactId>
-    <version>6.2025.10</version>
+    <version>6.2025.11-SNAPSHOT</version>
   </parent>
 
   <artifactId>jmx-monitoring-plugin</artifactId>

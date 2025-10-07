@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>6.2025.10</version>
+        <version>6.2025.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>config-types</artifactId>

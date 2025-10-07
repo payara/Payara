@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>common</artifactId>
-        <version>6.2025.10</version>
+        <version>6.2025.11-SNAPSHOT</version>
     </parent>
     <artifactId>annotation-framework</artifactId>
     <packaging>glassfish-jar</packaging>

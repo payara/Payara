@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.resources</groupId>
         <artifactId>resources</artifactId>
-        <version>6.2025.10</version>
+        <version>6.2025.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>javamail</artifactId>
