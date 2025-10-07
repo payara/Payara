@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.10</version>
     </parent>
     <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
     <artifactId>payara-appserver-modules</artifactId>

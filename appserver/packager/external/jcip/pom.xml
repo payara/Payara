@@ -45,7 +45,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>external</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.10</version>
     </parent>
     <artifactId>jcip-annotations-repackaged</artifactId>
     <name>jcip-annotations repackaged</name>

@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.10</version>
     </parent>
 
     <artifactId>ejb-http-endpoint</artifactId>

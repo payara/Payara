@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.10</version>
     </parent>
     
     <artifactId>rest-service</artifactId>

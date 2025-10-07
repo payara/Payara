@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.10</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

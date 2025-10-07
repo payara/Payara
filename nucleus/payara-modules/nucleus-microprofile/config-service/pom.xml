@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>nucleus-microprofile</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.10</version>
     </parent>
 
     <artifactId>microprofile-config-service</artifactId>
