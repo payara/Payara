@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>nucleus-deployment</artifactId>
-        <version>6.2025.10-SNAPSHOT</version>
+        <version>6.2025.11-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus-schemas</artifactId>
     <packaging>distribution-fragment</packaging>
