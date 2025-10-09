@@ -677,7 +677,7 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>${license-maven-plugin.version}</version>
                     <configuration>
-                        <outputDirectory>${project.basedir}/appserver/packager/legal/src/main/resources/glassfish/legal</outputDirectory>
+                        <outputDirectory>${project.basedir}/appserver/packager/legal/src/main/resources/legal</outputDirectory>
                         <thirdPartyFilename>3RD-PARTY-LICENSE.txt</thirdPartyFilename>
                         <excludedGroups>fish.payara.*</excludedGroups>
                         <fileTemplate>appserver/packager/legal/src/main/resources/license-template.ftl</fileTemplate>
