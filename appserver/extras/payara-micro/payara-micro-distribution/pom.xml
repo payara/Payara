@@ -506,5 +506,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>legal-fragment</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
