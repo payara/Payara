@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
-// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.web;
 
@@ -52,6 +51,7 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.security.ee.SecurityDeployer;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
@@ -234,6 +234,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     private Deployment deployment;
+
+    @Inject
+    private SecurityDeployer securityDeployer;
 
     private final Map<String, WebConnector> connectorMap = new HashMap<>();
 
@@ -1480,6 +1483,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected void loadStandaloneWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig) {
         try {
             loadWebModule(virtualServer, webModuleConfig, "null", null);
+            securityDeployer.loadWebPolicy(webModuleConfig.getDescriptor(), false);
         } catch (Throwable t) {
             logger.log(SEVERE, format(rb.getString(LOAD_WEB_MODULE_ERROR), webModuleConfig.getName()), t);
         }
@@ -1769,24 +1773,13 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         webModule.setI18nInfo();
         if (webBundleDescriptor != null) {
             final boolean isSystem = webModuleConfig.isSystemObjectType();
-            // Security will generate policy for system default web module
-            if (!webModuleName.startsWith(DEFAULT_WEB_MODULE_NAME)) {
-                final Realm realm = serviceLocator.getService(Realm.class);
-                logger.finest(() -> "Realm provided by the service locator: " + realm);
-                if ("null".equals(j2eeApplication)) {
-                    if (realm instanceof RealmInitializer) {
-                        ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem,
-                                virtualServer.getAuthRealmName());
-                        webModule.setRealm(realm);
-                    }
-                } else {
-                    if (realm instanceof RealmInitializer) {
-                        ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem,
-                                null);
-                        webModule.setRealm(realm);
-                    }
-                }
+            final Realm realm = serviceLocator.getService(Realm.class);
+            logger.finest(() -> "Realm provided by the service locator: " + realm);
+            if (realm instanceof RealmInitializer) {
+                ((RealmInitializer) realm).initializeRealm(webBundleDescriptor, isSystem,
+                    virtualServer.getAuthRealmName());
             }
+            webModule.setRealm(realm);
             // post processing DOL object for standalone web module
             if (webBundleDescriptor.getApplication() != null && webBundleDescriptor.getApplication().isVirtual()) {
                 webBundleDescriptor.visit(new WebValidatorWithoutCL());
