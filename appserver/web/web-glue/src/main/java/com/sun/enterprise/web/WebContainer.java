@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -51,6 +51,7 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.WebComponentDescriptor;
+import com.sun.enterprise.security.ee.SecurityDeployer;
 import com.sun.enterprise.security.integration.RealmInitializer;
 import com.sun.enterprise.server.logging.LoggingRuntime;
 import com.sun.enterprise.util.Result;
@@ -233,6 +234,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     private Deployment deployment;
+
+    @Inject
+    private SecurityDeployer securityDeployer;
 
     private final Map<String, WebConnector> connectorMap = new HashMap<>();
 
@@ -1479,6 +1483,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected void loadStandaloneWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig) {
         try {
             loadWebModule(virtualServer, webModuleConfig, "null", null);
+            securityDeployer.loadWebPolicy(webModuleConfig.getDescriptor(), false);
         } catch (Throwable t) {
             logger.log(SEVERE, format(rb.getString(LOAD_WEB_MODULE_ERROR), webModuleConfig.getName()), t);
         }

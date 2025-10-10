@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.security.ee;
 
@@ -253,7 +253,7 @@ public class SecurityDeployer extends SimpleDeployer<SecurityContainer, DummyApp
      * @param remove boolean indicated whether any existing policy statements are removed form context before translation
      * @throws DeploymentException
      */
-    private void loadWebPolicy(WebBundleDescriptor webBundleDescriptor, boolean remove) throws DeploymentException {
+    public void loadWebPolicy(WebBundleDescriptor webBundleDescriptor, boolean remove) throws DeploymentException {
         try {
             if (webBundleDescriptor != null) {
                 if (remove) {
