@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2025.10-SNAPSHOT</version>
+    <version>6.2025.11-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -212,7 +212,7 @@
         <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.9.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
@@ -222,7 +222,7 @@
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
-        <maven.enforcer.plugin.version>3.6.1</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.6.2</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.7.3</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
@@ -249,7 +249,7 @@
         <krazo.version>3.0.1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>4.0.7.payara-p1</eclipselink.version>
-        <eclipselink.asm.version>9.8.0</eclipselink.asm.version>
+        <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
         <openmq.version>6.5.1.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
@@ -321,7 +321,7 @@
         <weld.version>5.1.6.Final</weld.version>
         <tyrus.version>2.1.5.payara-p2</tyrus.version>
         <jsp-impl.version>3.2.2</jsp-impl.version>
-        <asm.version>9.8</asm.version>
+        <asm.version>9.9</asm.version>
         <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
         <websocket-api.version>2.1.1</websocket-api.version>
         <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
