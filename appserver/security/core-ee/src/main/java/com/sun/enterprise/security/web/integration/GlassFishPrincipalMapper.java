@@ -69,6 +69,10 @@ public class GlassFishPrincipalMapper implements PrincipalMapper {
             mappedRoles.addAll(callerToRoles.get(callerPrincipal.getName()));
         }
 
+        if (callerPrincipal != null && !isAnyAuthenticatedUserRoleMapped()) {
+            mappedRoles.add("**");
+        }
+
         return mappedRoles;
     }
 
