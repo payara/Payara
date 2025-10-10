@@ -149,7 +149,7 @@
 
         <awaitility.version>4.3.0</awaitility.version>
 
-        <okhttp3-version>4.12.0</okhttp3-version>
+        <okhttp3-version>5.2.1</okhttp3-version>
         <kotlin-version>2.2.20</kotlin-version>
 
         <payara.deployment.transformer.version>1.3</payara.deployment.transformer.version>
