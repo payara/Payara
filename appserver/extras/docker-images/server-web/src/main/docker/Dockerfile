@@ -93,6 +93,7 @@ RUN true \
     && echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" >> ${PASSWORD_FILE} \
     && ${PAYARA_DIR}/bin/asadmin --user ${ADMIN_USER} --passwordfile=/tmp/password-change-file.txt change-admin-password --domain_name=${DOMAIN_NAME} \
     && sed -i 's/<\/java-config>/  <jvm-options>-Djdk\.util\.zip\.disableZip64ExtraFieldValidation=true<\/jvm-options>\n      <\/java-config>/g'  ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/domain.xml \
+    && sed -i 's/<\/java-config>/<\/java-config>\n      <phone-home-runtime-configuration enabled="false"><\/phone-home-runtime-configuration>/g'  ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/domain.xml \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} start-domain ${DOMAIN_NAME} \
     && ${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} enable-secure-admin \
     && for MEMORY_JVM_OPTION in \
@@ -109,6 +110,7 @@ RUN true \
         /tmp/password-change-file.txt \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/osgi-cache \
         ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/logs \
+    && sed -i '/<phone-home-runtime-configuration/d' ${PAYARA_DIR}/glassfish/domains/${DOMAIN_NAME}/config/domain.xml \
     && true
 
 ENTRYPOINT ["tini", "--"]

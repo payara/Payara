@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *    Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *    Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
  *     and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,20 +11,20 @@
  *     https://github.com/payara/Payara/blob/main/LICENSE.txt
  *     See the License for the specific
  *     language governing permissions and limitations under the License.
- * 
+ *
  *     When distributing the software, include this License Header Notice in each
  *     file and include the License file at glassfish/legal/LICENSE.txt.
- * 
+ *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
  *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *     file that accompanied this code.
- * 
+ *
  *     Modifications:
  *     If applicable, add the following below the License Header, with the fields
  *     enclosed by brackets [] replaced by your own identifying information:
  *     "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *     Contributor(s):
  *     If you wish your version of this file to be governed by only the CDDL or
  *     only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -41,12 +41,6 @@ package fish.payara.nucleus.phonehome;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
-import java.beans.PropertyVetoException;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -61,6 +55,10 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import java.util.UUID;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 /**
  *
  * @author David Weaver
@@ -68,44 +66,41 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "phonehome-core")
 @RunLevel(StartupRunLevel.VAL)
 public class PhoneHomeCore implements EventListener {
-    
-    private static final String THREAD_NAME = "PhoneHomeThread";
-    
-    private static PhoneHomeCore theCore;
-    private static Boolean overrideEnabled;
+
     private boolean enabled;
-    
+
     private UUID phoneHomeId;
-    
+
     @Inject
     private PayaraExecutorService executor;
-    
+
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     PhoneHomeRuntimeConfiguration configuration;
-    
+
     @Inject
     private ServerEnvironment env;
-    
+
     @Inject
     private Events events;
-    
+
     @Inject
     private Domain domain;
-    
+
+    private ScheduledFuture<?> scheduledFuture;
+
     @PostConstruct
     public void postConstruct() {
-        theCore = this;
         events.register(this);
-        
+
         if (env.isDas()) {
-             
+
             if (configuration == null) {
-                enabled = true;    
+                enabled = true;
                 phoneHomeId = UUID.randomUUID();
             } else {
                 enabled = Boolean.valueOf(configuration.getEnabled());
-                
+
                 // Get the UUID from the config if one is present, otherwise use a randomly generated one
                 try {
                     phoneHomeId = UUID.fromString(configuration.getPhoneHomeId());
@@ -114,29 +109,21 @@ public class PhoneHomeCore implements EventListener {
                     //PAYARA-2249 don't bother updating domain.xml in micro as likely a waste of time
                     if (!env.isMicro()) {
                         try {
-                            ConfigSupport.apply(new SingleConfigCode<PhoneHomeRuntimeConfiguration>() {
-                                @Override
-                                public Object run(PhoneHomeRuntimeConfiguration configurationProxy)
-                                        throws PropertyVetoException, TransactionFailure {
-                                    configurationProxy.setPhoneHomeId(phoneHomeId.toString());
-                                    return configurationProxy;
-                                }
+                            ConfigSupport.apply((SingleConfigCode<PhoneHomeRuntimeConfiguration>) configurationProxy -> {
+                                configurationProxy.setPhoneHomeId(phoneHomeId.toString());
+                                return configurationProxy;
                             }, configuration);
-                        } catch(TransactionFailure e) {
+                        } catch (TransactionFailure e) {
                             // Ignore and just don't write the ID to the config file
                         }
                     }
-                }  
-            }
-            
-            if (overrideEnabled != null) {
-                enabled = overrideEnabled;
+                }
             }
         } else {
             enabled = false;
-        }        
+        }
     }
-    
+
     /**
      *
      * @param event
@@ -145,39 +132,31 @@ public class PhoneHomeCore implements EventListener {
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapPhoneHome();
-        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
-            shutdownPhoneHome();
         }
     }
-    
+
     private void bootstrapPhoneHome() {
         if (enabled) {
-            executor.scheduleAtFixedRate(new PhoneHomeTask(phoneHomeId.toString(), domain, env), 0, 1, TimeUnit.DAYS);
+            scheduledFuture = executor.scheduleAtFixedRate(new PhoneHomeTask(phoneHomeId.toString(), domain, env), 0, 1, TimeUnit.DAYS);
         }
     }
-    
+
     private void shutdownPhoneHome() {
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+        }
     }
-    
-    public void enable(){
-        setEnabled(true);
-    }
-    public void disable(){
-        setEnabled(false);
-    }
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-    
+
     public void start() {
         if (this.enabled) {
             shutdownPhoneHome();
-            bootstrapPhoneHome();         
+            bootstrapPhoneHome();
         } else {
             this.enabled = true;
             bootstrapPhoneHome();
         }
     }
+
     public void stop() {
         if (this.enabled) {
             this.enabled = false;
@@ -185,7 +164,4 @@ public class PhoneHomeCore implements EventListener {
         }
     }
 
-    public static void setOverrideEnabled(boolean enabled) {
-        overrideEnabled = enabled;
-    }
 }

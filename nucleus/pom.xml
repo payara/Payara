@@ -90,7 +90,7 @@
         <ldapbp.version>1.0</ldapbp.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
-        <classmate.version>1.7.0</classmate.version>
+        <classmate.version>1.7.1</classmate.version>
         <jboss-logging.version>3.6.1.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
@@ -110,7 +110,7 @@
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>5.0.12</org.apache.felix.webconsole.version>
+        <org.apache.felix.webconsole.version>5.0.18</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
@@ -118,7 +118,7 @@
         <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.7.4.payara-p1</org.apache.felix.fileinstall.version>
         <org.apache.felix.configadmin.version>1.9.26</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.2.12</org.apache.felix.scr.version>
+        <org.apache.felix.scr.version>2.2.14</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
         <!-- OSGi Promise and Function is required for Apache Felix scr -->
@@ -132,12 +132,12 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>5.19.0</mockito.version>
+        <mockito.version>5.20.0</mockito.version>
 
         <!-- Build -->
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
         <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.19</command-security-plugin.version>
+        <command-security-plugin.version>1.0.20</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.15</ant.version>
@@ -150,7 +150,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.2.10</kotlin-version>
+        <kotlin-version>2.2.20</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>

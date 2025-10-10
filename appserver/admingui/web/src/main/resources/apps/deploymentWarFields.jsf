@@ -96,6 +96,10 @@
         <sun:checkbox id="force"  label=" " selected="#{pageSession.war['force']}" selectedValue="true" />
 </sun:property>
 
+<sun:property id="warLibraries" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.warlibs}" helpText="$resource{i18n.deploy.warlibsHelp}">
+    <sun:checkbox id="warLibraries" label=" " selected="#{pageSession.war['warlibs']}" selectedValue="true"/>
+</sun:property>
+
 <sun:property id="keepState" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}">
         <sun:checkbox id="keepState"  label=" "  selected="#{pageSession.war['keepState']}" selectedValue="true" />
 </sun:property>

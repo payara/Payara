@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -47,8 +47,13 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.cluster.InstanceInfo;
 import static com.sun.enterprise.v3.admin.cluster.Constants.*;
+
+import fish.payara.admin.cluster.ExecutorServiceFactory;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.logging.*;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -238,49 +243,81 @@ public class ListInstancesCommand implements AdminCommand {
         return !SystemPropertyConstants.DAS_SERVER_NAME.equals(name);
     }
 
-    private void yesStatus(List<Server> serverList, int timeoutInMsec, Logger logger) {
+    // Get all servers InstanceInfos in parallel, limited by fixed thread pool
+    private void getInfos(List<Server> serverList, int timeoutInMsec, Logger logger) {
         // Gather a list of InstanceInfo -- one per instance in domain.xml
         RemoteInstanceCommandHelper helper = new RemoteInstanceCommandHelper(habitat);
+        ExecutorServiceFactory.ExecutorServiceHolder holder = ExecutorServiceFactory.newFixedThreadPool(domain, serverList.size(), false);
+        ExecutorService executorService = holder.getExecutorService();
+        try {
+            List<Future<InstanceInfo>> futures = new ArrayList<>();
 
-        for (Server server : serverList) {
-            boolean clustered = server.getCluster() != null;
-            int port = helper.getAdminPort(server);
-            String host = server.getAdminHost();
+            for (Server server : serverList) {
+                futures.add(executorService.submit(() -> {
+                    boolean clustered = server.getCluster() != null;
+                    int port = helper.getAdminPort(server);
+                    String host = server.getAdminHost();
 
-            if (standaloneonly && clustered) {
-                continue;
+                    if (standaloneonly && clustered) {
+                        return null;
+                    }
+
+                    String name = server.getName();
+
+                    if (name == null) {
+                        return null;   // can this happen?!?
+                    }
+
+                    StringBuilder deploymentGroup = new StringBuilder();
+                    for (DeploymentGroup dg : server.getDeploymentGroup()) {
+                        deploymentGroup.append(dg.getName()).append(' ');
+                    }
+
+                    Cluster cluster = domain.getClusterForInstance(name);
+                    String clusterName = (cluster != null) ? cluster.getName() : null;
+                    // skip DAS
+                    if (notDas(name)) {
+                        ActionReport tReport = habitat.getService(ActionReport.class, "html");
+                        return new InstanceInfo(
+                                habitat,
+                                server,
+                                port,
+                                host,
+                                clusterName,
+                                deploymentGroup.toString(),
+                                logger,
+                                timeoutInMsec,
+                                tReport,
+                                stateService);
+                    }
+
+                    return null;
+                }));
             }
 
-            String name = server.getName();
-
-            if (name == null) {
-                continue;   // can this happen?!?
+            // Collect results
+            for (Future<InstanceInfo> future : futures) {
+                try {
+                    InstanceInfo ii = future.get(); // blocking
+                    if (ii != null) {
+                        infos.add(ii);
+                    }
+                } catch (InterruptedException e) {
+                    logger.warning("InterruptedException processing server: " + e.getMessage());
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    logger.warning("ExecutionException processing server: " + e.getMessage());
+                }
             }
-            
-            StringBuilder deploymentGroup = new StringBuilder();
-            for (DeploymentGroup dg : server.getDeploymentGroup()) {
-                deploymentGroup.append(dg.getName()).append(' ');
-            }
-
-            Cluster cluster = domain.getClusterForInstance(name);
-            String clusterName = (cluster != null) ? cluster.getName() : null;
-            // skip DAS
-            if (notDas(name)) {
-                ActionReport tReport = habitat.getService(ActionReport.class, "html");
-                InstanceInfo ii = new InstanceInfo(
-                        habitat,
-                        server,
-                        port,
-                        host,
-                        clusterName,
-                        deploymentGroup.toString(),
-                        logger,
-                        timeoutInMsec,
-                        tReport,
-                        stateService);
-                infos.add(ii);
-            }
+        } finally {
+            executorService.shutdown();
         }
+    }
+
+    private void yesStatus(List<Server> serverList, int timeoutInMsec, Logger logger) {
+
+        getInfos(serverList, timeoutInMsec, logger);
+
         if (infos.isEmpty()) {
             report.setMessage(NONE);
             return;
@@ -292,14 +329,20 @@ public class ListInstancesCommand implements AdminCommand {
         infos.sort(Comparator.comparing(InstanceInfo::getName));
         for (InstanceInfo ii : infos) {
             String name = ii.getName();
-            String value = (ii.isRunning()) ? InstanceState.StateType.RUNNING.getDescription()
-                    : InstanceState.StateType.NOT_RUNNING.getDescription();
-            InstanceState.StateType state = (ii.isRunning())
-                    ? (stateService.setState(name, InstanceState.StateType.RUNNING, false))
-                    : (stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false));
+            String value = InstanceState.StateType.UNKNOWN.getDescription();
+            InstanceState.StateType state = null;
+            if (ii.isRunning() == null) {
+                state = stateService.setState(name, InstanceState.StateType.UNKNOWN, false);
+            } else {
+                value = (Boolean.TRUE.equals(ii.isRunning())) ? InstanceState.StateType.RUNNING.getDescription()
+                        : InstanceState.StateType.NOT_RUNNING.getDescription();
+                state = (Boolean.TRUE.equals(ii.isRunning()))
+                        ? (stateService.setState(name, InstanceState.StateType.RUNNING, false))
+                        : (stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false));
+            }
             List<String> failedCmds = stateService.getFailedCommands(name);
             if (state == InstanceState.StateType.RESTART_REQUIRED) {
-                if (ii.isRunning()) {
+                if (Boolean.TRUE.equals(ii.isRunning())) {
                     value = InstanceState.StateType.RESTART_REQUIRED.getDescription();
                 }
             }
@@ -311,7 +354,7 @@ public class ListInstancesCommand implements AdminCommand {
             if (state == InstanceState.StateType.RESTART_REQUIRED) {
                 insDetails.put("restartReasons", failedCmds);
             }
-            if (ii.isRunning()) {
+            if (Boolean.TRUE.equals(ii.isRunning())) {
                 insDetails.put("uptime", ii.getUptime());
             }
             instanceList.add(insDetails);
