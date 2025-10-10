@@ -243,7 +243,7 @@
         <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
         <snakeyaml.version>2.5</snakeyaml.version>
         <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
-        <mojarra.version>4.0.11.payara-p1</mojarra.version>
+        <mojarra.version>4.0.11.payara-p2-SNAPSHOT</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
         <krazo.version>3.0.1</krazo.version>
@@ -279,7 +279,7 @@
         <grizzly.version>4.0.2.payara-p2</grizzly.version>
         <servlet-api.version>6.0.0</servlet-api.version>
         <jakarta.el-api.version>5.0.1</jakarta.el-api.version>
-        <expressly.version>5.0.0.payara-p2</expressly.version>
+        <expressly.version>5.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
