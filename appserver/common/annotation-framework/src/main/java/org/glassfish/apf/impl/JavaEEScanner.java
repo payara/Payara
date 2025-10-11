@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
  /*
  * JavaEEScanner.java
@@ -47,8 +47,6 @@
 package org.glassfish.apf.impl;
 
 import org.glassfish.apf.ComponentInfo;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.ParsingContext;
 import org.glassfish.hk2.classmodel.reflect.Types;
 
 import java.io.File;
@@ -64,24 +62,14 @@ public abstract class JavaEEScanner {
     Types types;
 
     public ComponentInfo getComponentInfo(Class componentImpl) {
-        return new ComponentDefinition(componentImpl);
+        throw new UnsupportedOperationException("No longer supported");
     }
 
     protected void initTypes(File file) throws IOException {
-        ParsingContext context = new ParsingContext.Builder().build();
-        try (Parser cp = new Parser(context)) {
-            cp.parse(file, null);
-            try {
-                cp.awaitTermination();
-            } catch (InterruptedException e) {
-                throw new IOException(e);
-            }
-            types = cp.getContext().getTypes();
-        }
+        throw new UnsupportedOperationException("No longer supported");
     }
 
     public Types getTypes() {
-        return types;
+        throw new UnsupportedOperationException("No longer supported");
     }
-
 }

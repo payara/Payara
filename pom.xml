@@ -287,6 +287,7 @@
         <jackson.version>2.20.0</jackson.version>
         <jersey.version>3.1.11.payara-p1</jersey.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
+        <jandex.version>3.3.1</jandex.version>
         <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
         <hibernate.validator.osgi.version>8.0.1.Final</hibernate.validator.osgi.version>
         <jaxb-impl.version>4.0.6</jaxb-impl.version>

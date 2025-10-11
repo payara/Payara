@@ -48,12 +48,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.URI;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -65,6 +63,7 @@ import jakarta.enterprise.context.*;
 import jakarta.enterprise.inject.Model;
 import jakarta.enterprise.inject.Stereotype;
 import jakarta.faces.flow.FlowScoped;
+import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
@@ -73,17 +72,11 @@ import javax.xml.parsers.SAXParserFactory;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
-import org.glassfish.hk2.classmodel.reflect.AnnotationType;
-import org.glassfish.hk2.classmodel.reflect.ClassModel;
-import org.glassfish.hk2.classmodel.reflect.FieldModel;
-import org.glassfish.hk2.classmodel.reflect.MethodModel;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.deployment.JandexIndexer;
+import org.glassfish.internal.deployment.JandexIndexer.Index;
+import org.jboss.jandex.AnnotationInstance;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -113,6 +106,9 @@ public class WeldUtils {
     // which does not have CDI implementation. So, we use the class name as a string.
     private static final String SERVICES_CLASSNAME = "jakarta.enterprise.inject.spi.Extension";
     private static final String BCE_SERVICES_CLASSNAME = "jakarta.enterprise.inject.build.compatible.spi.BuildCompatibleExtension";
+    private static final String CDI_ENABLING_ANNOTATIONS_CACHE_METADATA = "fish.payara.cdi.enabling.annotations.cache.metadata";
+    private static final String CDI_ANNOTATED_CLASS_NAMES_METADATA = "fish.payara.cdi.annotated.class.names.metadata";
+
     public static final String META_INF_SERVICES_EXTENSION = "META-INF" + SEPARATOR_CHAR + SERVICES_DIR +
             SEPARATOR_CHAR + SERVICES_CLASSNAME;
     public static final String META_INF_BCE_SERVICES_EXTENSION =  "META-INF" + SEPARATOR_CHAR + SERVICES_DIR +
@@ -134,42 +130,45 @@ public class WeldUtils {
      */
     public enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
+    static final Set<Class<? extends Annotation>> cdiScopeAnnotationClasses;
     protected static final Set<String> cdiScopeAnnotations;
     static {
-        final HashSet<String> cdi = new HashSet<>();
-        cdi.add(Scope.class.getName());
-        cdi.add(NormalScope.class.getName());
-        cdi.add("jakarta.faces.view.ViewScoped");
-        cdi.add("jakarta.faces.flow.FlowScoped");
-        cdi.add(ConversationScoped.class.getName());
-        cdi.add(FlowScoped.class.getName());
-        cdi.add(ApplicationScoped.class.getName());
-        cdi.add(SessionScoped.class.getName());
-        cdi.add(RequestScoped.class.getName());
-        cdi.add(Dependent.class.getName());
-        cdi.add(Singleton.class.getName());
-        cdi.add(Model.class.getName());
+        final HashSet<Class<? extends Annotation>> cdi = new HashSet<>();
+        cdi.add(Scope.class);
+        cdi.add(NormalScope.class);
+        cdi.add(ConversationScoped.class);
+        cdi.add(ViewScoped.class);
+        cdi.add(FlowScoped.class);
+        cdi.add(ApplicationScoped.class);
+        cdi.add(SessionScoped.class);
+        cdi.add(RequestScoped.class);
+        cdi.add(Dependent.class);
+        cdi.add(Singleton.class);
+        cdi.add(Model.class);
 
-        cdiScopeAnnotations = Collections.unmodifiableSet(cdi);
+        cdiScopeAnnotationClasses = Collections.unmodifiableSet(cdi);
+        cdiScopeAnnotations = cdiScopeAnnotationClasses.stream().map(Class::getName).collect(Collectors.toSet());
     }
 
-    protected static final Set<String> cdiEnablingAnnotations;
+    static final Set<String> cdiEnablingAnnotations;
+    static final Set<Class<? extends Annotation>> cdiEnablingAnnotationClasses;
     static {
         // CDI scopes
-        final HashSet<String> cdi = new HashSet<>(cdiScopeAnnotations);
+        final HashSet<Class<? extends Annotation>> cdi = new HashSet<>(cdiScopeAnnotationClasses);
 
         // 1.2 updates
-        cdi.add(Decorator.class.getName());
-        cdi.add(Interceptor.class.getName());
-        cdi.add(Stereotype.class.getName());
+        cdi.add(Decorator.class);
+        cdi.add(Interceptor.class);
+        cdi.add(Stereotype.class);
 
         // EJB annotations
-        cdi.add(MessageDriven.class.getName());
-        cdi.add(Stateful.class.getName());
-        cdi.add(Stateless.class.getName());
-        cdi.add(jakarta.ejb.Singleton.class.getName());
+        cdi.add(MessageDriven.class);
+        cdi.add(Stateful.class);
+        cdi.add(Stateless.class);
+        cdi.add(jakarta.ejb.Singleton.class);
 
-        cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
+        cdiEnablingAnnotationClasses = Collections.unmodifiableSet(cdi);
+        cdiEnablingAnnotations = cdiEnablingAnnotationClasses.stream().map(Class::getName).collect(Collectors.toSet());
     }
 
 
@@ -183,10 +182,15 @@ public class WeldUtils {
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
-        if(!isValidBdaBasedOnExtensionAndBeansXml(archive)) {
-            return false;
-        }
-        return isImplicitBeanArchive(context, archive.getURI());
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archive.getURI()))
+                .values().stream().findAny().get();
+        return index.implicitBeanArchive(() -> {
+            if(!isValidBdaBasedOnExtensionAndBeansXml(context, archive)) {
+                return false;
+            }
+            return isImplicitBeanArchive(context, archive.getURI());
+        });
     }
 
     /**
@@ -198,9 +202,11 @@ public class WeldUtils {
      * @return true, if it is an implicit bean deployment archive; otherwise, false.
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, URI archivePath) {
-        return (isImplicitBeanDiscoveryEnabled(context) && hasCDIEnablingAnnotations(context, archivePath));
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archivePath))
+                .values().stream().findAny().get();
+        return index.implicitBeanArchive(() -> isImplicitBeanDiscoveryEnabled(context) && hasCDIEnablingAnnotations(context, archivePath));
     }
-
 
     /**
      * Determine whether there are any beans annotated with annotations that should enable CDI
@@ -212,7 +218,10 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified path
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, URI path) {
-        return hasCDIEnablingAnnotations(context, Collections.singleton(path));
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(path))
+                .values().stream().findAny().get();
+        return index.hasCDIEnablingAnnotations(() -> hasCDIEnablingAnnotations(context, Collections.singleton(path)));
     }
 
 
@@ -226,19 +235,12 @@ public class WeldUtils {
      * @return true, if there is at least one bean annotated with a qualified annotation in the specified paths
      */
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
-        final Set<String> exclusions = new HashSet<>();
-        for (final Type type : getAllTypes(context, paths)) {
-            if (!(type instanceof AnnotationType) && type.wasDefinedIn(paths)) {
-                for (final AnnotationModel am : type.getAnnotations()) {
-                    final AnnotationType at = am.getType();
-                    if (isCDIEnablingAnnotation(at, exclusions)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+        Map<String, Index> indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, paths);
+        boolean result = Arrays.stream(getCDIEnablingAnnotations(context))
+                .anyMatch(annotation -> indexes.values().stream()
+                        .anyMatch(index -> !index.getIndex().getAnnotations(annotation).isEmpty()));
+        return result;
     }
 
     /**
@@ -250,23 +252,41 @@ public class WeldUtils {
      * @return An array of annotation type names; The array could be empty if none are found.
      */
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
-        final Set<String> result = new HashSet<>();
+        String[] annotations = context.getTransientAppMetaData(CDI_ENABLING_ANNOTATIONS_CACHE_METADATA, String[].class);
+        if (annotations != null) {
+            return annotations;
+        }
+        var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
+        Set<String> appCdiEnablingAnnotations = indexes.values().stream()
+                .flatMap(index -> index.getIndex().getKnownClasses().stream())
+                .flatMap(classInfo -> classInfo.annotations().stream())
+                .map(annotationClass -> annotationClass.name().toString())
+                .collect(Collectors.toSet());
 
-        final Set<String> exclusions = new HashSet<>();
-        for (final Type type : getAllTypes(context, List.of())) {
-            if (!(type instanceof AnnotationType)) {
-                for (final AnnotationModel am : type.getAnnotations()) {
-                    final AnnotationType at = am.getType();
-                    if (isCDIEnablingAnnotation(at, exclusions)) {
-                        result.add(at.getName());
+        Set<String> additionalAnnotations = new HashSet<>();
+        appCdiEnablingAnnotations.stream()
+                .filter(annotation -> !cdiEnablingAnnotations.contains(annotation))
+                .forEach(annotation -> {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends Annotation> cls = (Class<? extends Annotation>) context.getClassLoader()
+                        .loadClass(annotation);
+                for (var annotationClass : cdiEnablingAnnotationClasses) {
+                    if (cls.isAnnotationPresent(annotationClass)) {
+                        additionalAnnotations.add(annotation);
+                        break;
                     }
                 }
+            } catch (ClassNotFoundException | NullPointerException e) {
             }
-        }
-
-        return result.toArray(new String[0]);
+        });
+        annotations = appCdiEnablingAnnotations.stream()
+                .filter(annotation -> cdiEnablingAnnotations.contains(annotation)
+                        || additionalAnnotations.contains(annotation))
+                .toArray(String[]::new);
+        context.addTransientAppMetaData(CDI_ENABLING_ANNOTATIONS_CACHE_METADATA, annotations);
+        return annotations;
     }
-
 
     /**
      * Get the names of any classes that are annotated with bean-defining annotations, which should
@@ -277,22 +297,23 @@ public class WeldUtils {
      * @return A collection of class names; The collection could be empty if none are found.
      */
     public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
-        final Set<String> result = new HashSet<>();
-        final Set<String> cdiEnablingAnnotations = new HashSet<>();
-        Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
-
-        for (final Type type : getAllTypes(context, List.of())) {
-            if (!(type instanceof AnnotationType)) {
-                for (final AnnotationModel am : type.getAnnotations()) {
-                    final AnnotationType at = am.getType();
-                    if (cdiEnablingAnnotations.contains(at.getName())) {
-                        result.add(type.getName());
-                        break;
-                    }
-                }
-            }
+        @SuppressWarnings("unchecked")
+        Set<String> result = context.getTransientAppMetaData(CDI_ANNOTATED_CLASS_NAMES_METADATA, Set.class);
+        if (result != null) {
+            return result;
         }
 
+        final Set<String> cdiEnablingAnnotations = new HashSet<>();
+        Collections.addAll(cdiEnablingAnnotations, getCDIEnablingAnnotations(context));
+        var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(context);
+        result = new HashSet<>();
+        var finalResult = result;
+        indexes.values().forEach(index -> cdiEnablingAnnotations
+                .forEach(annotation -> finalResult.addAll(index.getIndex().getAnnotations(annotation).stream()
+                        .map(WeldUtils::mapAnnotationToClassName)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toSet()))));
+        context.addTransientAppMetaData(CDI_ANNOTATED_CLASS_NAMES_METADATA, result);
         return result;
     }
 
@@ -300,60 +321,24 @@ public class WeldUtils {
      * Searches through the known class names of a {@link BeanDeploymentArchive} to determine which have fields or
      * methods with the {@link Inject} annotation.
      *
-     * @param types The Types obtained from a {@link DeploymentContext}'s transient metadata
+     * @param deploymentContext The deployment context
      * @param knownClassNames The known class names of a {@link BeanDeploymentArchive}
      * @return The class names from the given list which have fields or methods annotated with {@link Inject}
      */
-    public static Collection<String> getInjectionTargetClassNames(Types types, Collection<String> knownClassNames) {
-        final Set<String> result = new HashSet<>();
-
-        if (types != null) {
-            for (String knownClassName : knownClassNames) {
-                Type type = types.getBy(knownClassName);
-
-                if (type != null && type instanceof ClassModel) {
-                    boolean injectionTarget = false;
-
-                    Collection<FieldModel> fieldModels = ((ClassModel) type).getFields();
-                    for (FieldModel fieldModel : fieldModels) {
-                        injectionTarget = annotatedWithInject(fieldModel.getAnnotations());
-                        if (injectionTarget) {
-                            break;
-                        }
-                    }
-
-                    if (!injectionTarget) {
-                        Collection<MethodModel> methodModels = type.getMethods();
-                        for (MethodModel methodModel : methodModels) {
-                            injectionTarget = annotatedWithInject(methodModel.getAnnotations());
-                            if (injectionTarget) {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (injectionTarget) {
-                        result.add(type.getName());
-                    }
+    public static Collection<String> getInjectionTargetClassNames(DeploymentContext deploymentContext,
+                                                                  Collection<String> knownClassNames) {
+        var indexes = Globals.getDefaultHabitat().getService(JandexIndexer.class).getAllIndexes(deploymentContext);
+        Set<String> result = new HashSet<>();
+        indexes.values().forEach(index -> {
+            for (AnnotationInstance annotationInstance : index.getIndex().getAnnotations(Inject.class)) {
+                String className = mapAnnotationToClassName(annotationInstance);
+                if (className != null && knownClassNames.contains(className)) {
+                    result.add(className);
                 }
             }
-        }
-
+        });
         return result;
     }
-
-    private static boolean annotatedWithInject(Collection<AnnotationModel> annotationModels) {
-        boolean injectionTarget = false;
-        for (AnnotationModel annotationModel : annotationModels) {
-            if (annotationModel.getType().getName().equals(Inject.class.getName())) {
-                injectionTarget = true;
-                break;
-            }
-        }
-
-        return injectionTarget;
-    }
-
 
     /**
      * Determine whether the specified class is annotated with a CDI scope annotation.
@@ -377,47 +362,6 @@ public class WeldUtils {
     public static boolean hasCDIEnablingAnnotation(Class clazz) {
         return hasValidAnnotation(clazz, cdiEnablingAnnotations, null);
     }
-
-
-    /**
-     * Determine if the specified annotation type is a CDI-enabling annotation
-     *
-     * @param annotationType The annotation type to check
-     *
-     * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
-     */
-    private static boolean isCDIEnablingAnnotation(AnnotationType annotationType) {
-        return isCDIEnablingAnnotation(annotationType, new HashSet<>());
-    }
-
-
-    /**
-     * Determine if the specified annotation type is a CDI-enabling annotation
-     *
-     * @param annotationType    The annotation type to check
-     * @param exclusions The Set of annotation type names that should be excluded from the analysis
-     *
-     * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
-     */
-    private static boolean isCDIEnablingAnnotation(AnnotationType annotationType,
-                                                   Set<String>    exclusions) {
-
-        final String annotationTypeName = annotationType.getName();
-        if (cdiEnablingAnnotations.contains(annotationTypeName)) {
-            return true;
-        } else if (exclusions.add(annotationTypeName)) {
-            // If the annotation type itself is not an excluded type, then check its annotation
-            // types, exclude itself to avoid infinite recursion
-            for (AnnotationModel parent : annotationType.getAnnotations()) {
-                if (isCDIEnablingAnnotation(parent.getType(), exclusions)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
 
     /**
      * Determine whether the specified class is annotated with one of the annotations in the specified
@@ -481,7 +425,7 @@ public class WeldUtils {
         final String annotationTypeName = annotationType.getName();
         if (validTypeNames.contains(annotationTypeName) && !excludedTypeNames.contains(annotationTypeName)) {
             return true;
-        } else if (excludedTypeNames.add(annotationTypeName)){
+        } else if (excludedTypeNames.add(annotationTypeName)) {
             // If the annotation type itself is not an excluded type, then check its annotation
             // types, exclude itself (to avoid infinite recursion)
             for (Annotation parent : annotationType.getAnnotations()) {
@@ -492,23 +436,6 @@ public class WeldUtils {
         }
 
         return false;
-    }
-
-
-    private static Types getTypes(DeploymentContext context) {
-        String metadataKey = Types.class.getName();
-
-        Types types = (Types) context.getTransientAppMetadata().get(metadataKey);
-        while (types == null) {
-            context = ((ExtendedDeploymentContext) context).getParentContext();
-            if (context != null) {
-                types = (Types) context.getTransientAppMetadata().get(metadataKey);
-            } else {
-                break;
-            }
-        }
-
-        return types;
     }
 
     public static int getPreLoaderThreads() {
@@ -597,15 +524,20 @@ public class WeldUtils {
      * @return false if there is an extension and no beans.xml
      * true otherwise
      */
-    public static boolean isValidBdaBasedOnExtensionAndBeansXml(ReadableArchive archive) {
-        try {
-            if (hasExtension(archive) && !hasBeansXML(archive)) {
-                // Extensions and no beans.xml: not a bda
-                return false;
+    public static boolean isValidBdaBasedOnExtensionAndBeansXml(DeploymentContext context, ReadableArchive archive) {
+        var index = Globals.getDefaultHabitat().getService(JandexIndexer.class)
+                .getIndexesByURI(context, Collections.singleton(archive.getURI()))
+                .values().stream().findAny().get();
+        return index.isValidBdaBasedOnExtensionAndBeansXml(() -> {
+            try {
+                if (hasExtension(archive) && !hasBeansXML(archive)) {
+                    // Extensions and no beans.xml: not a bda
+                    return false;
+                }
+            } catch (IOException ignore) {
             }
-        } catch (IOException ignore) {
-        }
-        return true;
+            return true;
+        });
     }
 
     public static boolean hasExtension(ReadableArchive archive) {
@@ -693,24 +625,6 @@ public class WeldUtils {
         return beanDiscoveryMode;
     }
 
-    private static List<Type> getAllTypes(DeploymentContext context, Collection<URI> paths) {
-        final Types types = getTypes(context);
-        if (types == null) {
-            return List.of();
-        }
-
-        List<Type> allTypes = new ArrayList<>(types.getAllTypes());
-        Map<String, DeploymentUtils.WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
-        for (URI path : paths.isEmpty() ? cache.keySet().stream().map(Path::of).map(Path::toUri)
-                .collect(Collectors.toList()) : paths) {
-            var descriptor = cache.get(path.getRawPath());
-            if (descriptor != null) {
-                allTypes.addAll(descriptor.getTypes());
-            }
-        }
-        return allTypes;
-    }
-
     private static class LocalDefaultHandler extends DefaultHandler {
         String beanDiscoveryMode = null;
 
@@ -731,5 +645,30 @@ public class WeldUtils {
         private SAXStoppedIntentionallyException() {
             super();
         }
+    }
+
+    private static String mapAnnotationToClassName(AnnotationInstance annotationInstance) {
+        String className = null;
+        switch (annotationInstance.target().kind()) {
+            case CLASS:
+                className = annotationInstance.target().asClass().name().toString();
+                break;
+            case FIELD:
+                className = annotationInstance.target().asField().declaringClass().name().toString();
+                break;
+            case METHOD:
+                className = annotationInstance.target().asMethod().receiverType().name().toString();
+                break;
+            case METHOD_PARAMETER:
+                className = annotationInstance.target().asMethodParameter().method().receiverType().name().toString();
+                break;
+            case TYPE:
+                className = annotationInstance.target().asType().asClass().toString();
+                break;
+            case RECORD_COMPONENT:
+                className = annotationInstance.target().asRecordComponent().declaringClass().name().toString();
+                break;
+        }
+        return className;
     }
 }
