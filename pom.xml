@@ -299,8 +299,7 @@
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <soteria.version>4.0.1.payara-p1</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
-        <!-- Needs FISH-9690 reapplying -->
-        <grizzly.version>4.1.0-M1.payara-p1</grizzly.version>
+        <grizzly.version>4.1.0-M1.payara-p2</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
