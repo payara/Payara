@@ -9,12 +9,12 @@ REM  General Public License Version 2 only ("GPL") or the Common Development
 REM  and Distribution License("CDDL") (collectively, the "License").  You
 REM  may not use this file except in compliance with the License.  You can
 REM  obtain a copy of the License at
-REM  https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-REM  or packager/legal/LICENSE.txt.  See the License for the specific
+REM  https://github.com/payara/Payara/blob/master/LICENSE.txt
+REM  See the License for the specific
 REM  language governing permissions and limitations under the License.
 REM 
 REM  When distributing the software, include this License Header Notice in each
-REM  file and include the License file at packager/legal/LICENSE.txt.
+REM  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 REM 
 REM  GPL Classpath Exception:
 REM  Oracle designates this particular file as subject to the "Classpath"
