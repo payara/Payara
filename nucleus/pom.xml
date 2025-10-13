@@ -145,7 +145,7 @@
         <javadoc.options>-Xdoclint:none</javadoc.options>
 
         <!-- Debug / analysis -->
-        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
 
         <awaitility.version>4.3.0</awaitility.version>
 
