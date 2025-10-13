@@ -8,7 +8,7 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
  * See the License for the specific
  * language governing permissions and limitations under the License.
  *
@@ -103,7 +103,7 @@ public class TextClassWriter implements ClassWriter {
         writer.write(" * and Distribution License(\"CDDL\") (collectively, the \"License\").  You\n");
         writer.write(" * may not use this file except in compliance with the License.  You can\n");
         writer.write(" * obtain a copy of the License at\n");
-        writer.write(" * https://github.com/payara/Payara/blob/master/LICENSE.txt\n");
+        writer.write(" * https://github.com/payara/Payara/blob/main/LICENSE.txt\n");
         writer.write(" * See the License for the specific\n");
         writer.write(" * language governing permissions and limitations under the License.\n");
         writer.write(" *\n");

@@ -9,7 +9,7 @@ REM  General Public License Version 2 only ("GPL") or the Common Development
 REM  and Distribution License("CDDL") (collectively, the "License").  You
 REM  may not use this file except in compliance with the License.  You can
 REM  obtain a copy of the License at
-REM  https://github.com/payara/Payara/blob/master/LICENSE.txt
+REM  https://github.com/payara/Payara/blob/main/LICENSE.txt
 REM  See the License for the specific
 REM  language governing permissions and limitations under the License.
 REM
