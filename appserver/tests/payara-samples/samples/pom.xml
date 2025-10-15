@@ -91,6 +91,7 @@
         <module>opentelemetry</module>
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>
+        <module>versioned-deployment</module>
     </modules>
 
     <dependencyManagement>
