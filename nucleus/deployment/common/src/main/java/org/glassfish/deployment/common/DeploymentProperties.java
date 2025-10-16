@@ -543,6 +543,7 @@ public class DeploymentProperties extends Properties {
     public static final String ALT_DD = "altdd";
     public static final String RUNTIME_ALT_DD = "runtimealtdd";
     public static final String COMMAND_PARAMS = "commandparams";
+    public static final String WARLIBS = "warlibs";
 
     public static final String PROTOCOL = "protocol";
     public static final String HOST = "host";

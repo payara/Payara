@@ -226,13 +226,13 @@
     <properties>
         <!-- build versions -->
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
         <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.9.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
@@ -240,13 +240,13 @@
         <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
         <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
+        <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
-        <maven.enforcer.plugin.version>3.6.1</maven.enforcer.plugin.version>
+        <maven.enforcer.plugin.version>3.6.2</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
-        <maven.flatten.plugin.version>1.7.2</maven.flatten.plugin.version>
+        <maven.flatten.plugin.version>1.7.3</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
-        <license-maven-plugin.version>2.6.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.7.0</license-maven-plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -263,14 +263,14 @@
 
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
-        <snakeyaml.version>2.4</snakeyaml.version>
+        <snakeyaml.version>2.5</snakeyaml.version>
         <mojarra.version>4.1.3</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
         <krazo.version>4.0.0</krazo.version>
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>5.0.0-B08</eclipselink.version>
-        <eclipselink.asm.version>9.8.0</eclipselink.asm.version>
+        <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
         <!-- Needs FISH-28, FISH-642, and FISH-7273 reapplying? -->
         <openmq.version>6.6.0</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
@@ -282,7 +282,7 @@
         <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
         <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.5</jline.version>
+        <jline.version>3.30.6</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
@@ -299,16 +299,15 @@
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <soteria.version>4.0.1.payara-p1</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
-        <!-- Needs FISH-9690 reapplying -->
-        <grizzly.version>4.1.0.payara-p1</grizzly.version>
+        <grizzly.version>4.1.0-M1.payara-p2</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.5.payara-p1</parsson.version>
-        <jakarta.activation-api.version>2.1.3</jakarta.activation-api.version>
-        <jaxb-api.version>4.0.2</jaxb-api.version>
-        <jackson.version>2.19.2</jackson.version>
+        <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
+        <jaxb-api.version>4.0.4</jaxb-api.version>
+        <jackson.version>2.20.0</jackson.version>
         <jersey.version>4.0.0-M2.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
@@ -317,7 +316,7 @@
         <hibernate.validator.version>9.0.0.Final</hibernate.validator.version>
         <hibernate.validator.osgi.version>9.0</hibernate.validator.osgi.version>
         <hibernate.validator.osgi.version.upperbound>10.0</hibernate.validator.osgi.version.upperbound>
-        <jaxb-impl.version>4.0.5</jaxb-impl.version>
+        <jaxb-impl.version>4.0.6</jaxb-impl.version>
         <jsonp-api.version>2.1.3</jsonp-api.version>
         <jakarta.authentication-api.version>3.1.0</jakarta.authentication-api.version>
         <jakarta.authorization-api.version>3.0.0</jakarta.authorization-api.version>
@@ -349,7 +348,7 @@
         <weld.version>6.0.3.Final</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
-        <asm.version>9.8</asm.version>
+        <asm.version>9.9</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
@@ -361,8 +360,8 @@
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
         <epicyro.version>3.1.0</epicyro.version>
-        <mail.version>2.1.3</mail.version>
-        <angus.mail.version>2.0.4</angus.mail.version>
+        <mail.version>2.1.5</mail.version>
+        <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
