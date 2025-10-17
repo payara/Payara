@@ -1503,12 +1503,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
     // PRIVATE METHODS
     private RequestBody insertDefaultRequestBody(ApiContext context,
-            Operation operation, MethodModel method) {
-        return insertRequestBody(context, operation, method, jakarta.ws.rs.core.MediaType.APPLICATION_JSON);
-    }
-
-    private RequestBody insertRequestBody(ApiContext context,
-                                          Operation operation, MethodModel method, String type) {
+                                          Operation operation, MethodModel method) {
         RequestBody requestBody = new RequestBodyImpl();
 
         // Get the request body type of the method
@@ -1535,7 +1530,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (hidden == null || !hidden) {
             mediaType.schema(createSchema(context, bodyType));
         }
-        requestBody.getContent().addMediaType(type, mediaType);
+        requestBody.getContent().addMediaType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON, mediaType);
 
         operation.setRequestBody(requestBody);
         return requestBody;
