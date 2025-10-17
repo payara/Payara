@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -103,12 +103,12 @@ public class TextClassWriter implements ClassWriter {
         writer.write(" * and Distribution License(\"CDDL\") (collectively, the \"License\").  You\n");
         writer.write(" * may not use this file except in compliance with the License.  You can\n");
         writer.write(" * obtain a copy of the License at\n");
-        writer.write(" * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html\n");
-        writer.write(" * or packager/legal/LICENSE.txt.  See the License for the specific\n");
+        writer.write(" * https://github.com/payara/Payara/blob/main/LICENSE.txt\n");
+        writer.write(" * See the License for the specific\n");
         writer.write(" * language governing permissions and limitations under the License.\n");
         writer.write(" *\n");
         writer.write(" * When distributing the software, include this License Header Notice in each\n");
-        writer.write(" * file and include the License file at packager/legal/LICENSE.txt.\n");
+        writer.write(" * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.\n");
         writer.write(" *\n");
         writer.write(" * GPL Classpath Exception:\n");
         writer.write(" * Oracle designates this particular file as subject to the \"Classpath\"\n");
