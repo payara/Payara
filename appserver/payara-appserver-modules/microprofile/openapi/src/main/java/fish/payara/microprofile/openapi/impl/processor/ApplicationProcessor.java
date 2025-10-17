@@ -1502,8 +1502,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     // PRIVATE METHODS
-    private RequestBody insertDefaultRequestBody(ApiContext context,
-                                          Operation operation, MethodModel method) {
+    private RequestBody insertDefaultRequestBody(ApiContext context, Operation operation, MethodModel method) {
         RequestBody requestBody = new RequestBodyImpl();
 
         // Get the request body type of the method
