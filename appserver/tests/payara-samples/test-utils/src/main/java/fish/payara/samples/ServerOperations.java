@@ -373,6 +373,7 @@ public class ServerOperations {
         if (!isServer()) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
+        logger.info("Adding system property");
         List<String> cmd = new ArrayList<>();
 
         cmd.add("create-system-properties");
@@ -626,8 +627,10 @@ public class ServerOperations {
         if (serverCertificateChain.length == 0) {
             throw new IllegalStateException("Could not obtain certificates from server.");
         }
+        logger.info("Obtained certificate from server. Storing it in client trust store");
         String trustStorePath = SecurityUtils.createTempJKSTrustStore(serverCertificateChain);
         System.setProperty("javax.net.ssl.truststore", trustStorePath);
+        logger.info("Reading trust store from: " + trustStorePath);
         return new File(trustStorePath).toURI().toURL();
     }
 
