@@ -52,8 +52,6 @@ import java.io.Reader;
 import org.glassfish.embeddable.CommandResult;
 import org.junit.Test;
 
-import fish.payara.samples.ServerOperations;
-
 public class RegisterLoginModuleTest extends AsadminTest {
 
     @Test

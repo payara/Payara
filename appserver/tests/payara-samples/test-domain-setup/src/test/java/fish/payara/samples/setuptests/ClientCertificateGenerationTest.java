@@ -65,19 +65,8 @@ public class ClientCertificateGenerationTest {
 
     @Test
     public void uploadClientCertificate() throws IOException {
-        // This test needs to run on the server side
-        if (!ServerOperations.isServer()) {
-            return; // Skip if not running in server mode
-        }
-        
-        try {
-            // Generate and add the client key store to the container's trust store
-            String keyStorePath = ServerOperations.generateClientKeyStore(true);
-            if (keyStorePath == null || keyStorePath.isEmpty()) {
-                throw new IllegalStateException("Failed to generate client key store");
-            }
-        } catch (Exception e) {
-            throw new IOException("Error in uploadClientCertificate: " + e.getMessage(), e);
+        if (ServerOperations.isServer()) {
+            ServerOperations.generateClientKeyStore(true);
         }
     }
 }

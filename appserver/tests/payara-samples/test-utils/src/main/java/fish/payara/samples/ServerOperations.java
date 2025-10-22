@@ -73,6 +73,7 @@ import static fish.payara.samples.SecurityUtils.getCertificateChainFromServer;
 import static fish.payara.samples.SecurityUtils.getHostFromCertificate;
 import static fish.payara.samples.ServerOperations.RuntimeType.CLIENT;
 import static fish.payara.samples.ServerOperations.ServerType.MICRO;
+
 import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -106,16 +107,23 @@ public class ServerOperations {
     private static final RuntimeType runtimeType;
 
     static {
-        // Default to CLIENT runtime type since we can't detect server environment
-        runtimeType = CLIENT;
+        // Try to detect if we're running in a server environment by checking the classloader
+        String packageName = ServerOperations.class.getClassLoader().getClass().getPackage().getName();
+        if (packageName.startsWith("org.glassfish") || packageName.startsWith("com.sun.enterprise")) {
+            runtimeType = RuntimeType.SERVER;
+        } else {
+            runtimeType = RuntimeType.CLIENT;
+        }
 
-        // Try to get server type from system property
+        // Handle server type configuration
         String serverTypeStr = System.getProperty("payara.containerType");
         if (serverTypeStr != null) {
+            // Use explicitly specified server type
             serverType = ServerType.valueOf(serverTypeStr);
         } else {
-            // Default to SERVER if not specified
+            // Default to SERVER if not specified, which is the most common case
             serverType = ServerType.SERVER;
+            logger.info("No payara.containerType specified, defaulting to SERVER");
         }
     }
 
@@ -136,9 +144,6 @@ public class ServerOperations {
      * supported containers
      */
     public static void addUserToContainerIdentityStore(String authRealm, String username, String groups) {
-        if (runtimeType == RuntimeType.SERVER) {
-            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
-        }
         List<String> cmd = new ArrayList<>();
         cmd.add("create-file-user");
         cmd.add("--groups");
@@ -162,10 +167,9 @@ public class ServerOperations {
     }
 
     public static void addUsersToContainerIdentityStore(String username, String group, String fileAuthRealmName) {
-        if (runtimeType == RuntimeType.SERVER) {
-            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
-        }
         List<String> cmd = new ArrayList<>();
+
+        logger.info("Adding user to container identity store");
 
         cmd.add("create-file-user");
         cmd.add("--groups");
@@ -180,123 +184,58 @@ public class ServerOperations {
         CliCommands.payaraGlassFish(cmd);
     }
 
-    /**
-     * Gets the path to a file or directory within the domain directory.
-     * Tries to determine the domain directory from system properties first,
-     * then falls back to a relative path from the current working directory.
-     *
-     * @param relativePathInDomain the path relative to the domain directory
-     * @return the resolved path
-     * @throws IllegalStateException if the domain directory cannot be determined
-     */
     public static Path getDomainPath(String relativePathInDomain) {
-        // First try to get from system property (works in server environment)
-        String instanceRootPath = System.getProperty("com.sun.aas.instanceRoot");
-        if (instanceRootPath != null) {
-            Path instanceRoot = Paths.get(instanceRootPath);
-            if (instanceRoot.toFile().exists()) {
-                return instanceRoot.resolve(relativePathInDomain);
-            }
+        if (runtimeType != RuntimeType.SERVER) {
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
 
-        // Try to get from payara.home system property
-        String payaraHome = System.getProperty("payara.home");
-        if (payaraHome != null) {
-            Path domainPath = Paths.get(payaraHome, "..", "glassfish", "domains", "domain1");
-            if (domainPath.toFile().exists()) {
-                return domainPath.resolve(relativePathInDomain);
-            }
+        Path instanceRoot = Paths.get(System.getProperty("com.sun.aas.instanceRoot", "none"));
+        if (!instanceRoot.toFile().exists()) {
+            throw new IllegalStateException("Cannot determine domain path");
         }
-
-        // Try relative path from current working directory (for tests)
-        Path currentDir = Paths.get("");
-        Path domainPath = currentDir.resolve("target")
-                                  .resolve("payara6")
-                                  .resolve("glassfish")
-                                  .resolve("domains")
-                                  .resolve("domain1");
-
-        if (domainPath.toFile().exists()) {
-            return domainPath.resolve(relativePathInDomain);
-        }
-
-        // Last resort: try to find any domain directory in the standard location
-        domainPath = Paths.get("target")
-                         .resolve("payara6")
-                         .resolve("glassfish")
-                         .resolve("domains")
-                         .toFile()
-                         .listFiles((dir, name) -> !name.equals("__asadmin"))[0]
-                         .toPath();
-
-        if (domainPath != null && domainPath.toFile().exists()) {
-            return domainPath.resolve(relativePathInDomain);
-        }
-
-        throw new IllegalStateException("Cannot determine domain path. Tried: "
-            + "com.sun.aas.instanceRoot system property, payara.home system property, "
-            + "and relative paths from current directory: " + currentDir.toAbsolutePath());
+        return instanceRoot.resolve(relativePathInDomain);
     }
 
-    /**
-     * Adds a certificate to the container's trust store if running in a server environment.
-     * In test environments, logs the operation but doesn't actually modify any trust stores.
-     */
     static void addCertificateToContainerTrustStore(Certificate clientCertificate, KeyPair clientKeyPair) throws IOException {
         addCertificateToContainerTrustStore(clientCertificate, clientKeyPair, DEFAULT_ALIAS);
     }
 
-    /**
-     * Adds a certificate to the container's trust store if running in a server environment.
-     * In test environments, logs the operation but doesn't actually modify any trust stores.
-     */
     static void addCertificateToContainerTrustStore(Certificate clientCertificate, KeyPair clientKeyPair, String alias) throws IOException {
         if (runtimeType != RuntimeType.SERVER) {
-            logger.info("Skipping certificate addition to trust store in non-server environment");
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+        }
+        Path cacertsPath = getDomainPath("config/cacerts.p12");
+        if (!cacertsPath.toFile().exists()) {
+            logger.severe("The container trust store at " + cacertsPath.toAbsolutePath() + " does not exists");
+            logger.severe("Is the domain \"" + getDomainName() + "\" correct?");
             return;
         }
 
-        try {
-            Path cacertsPath = getDomainPath("config/cacerts.p12");
-            if (!cacertsPath.toFile().exists()) {
-                logger.warning("The container trust store at " + cacertsPath.toAbsolutePath() + " does not exist");
-                logger.warning("Is the domain \"" + getDomainName() + "\" correct?");
-                return;
-            }
+        logger.info("*** Adding certificate to container trust store: " + cacertsPath.toAbsolutePath());
 
-            logger.info("*** Adding certificate to container trust store: " + cacertsPath.toAbsolutePath());
-
-            // Only attempt to modify the trust store if we have write permissions
-            if (!cacertsPath.toFile().canWrite()) {
-                logger.warning("No write permissions for trust store, skipping certificate addition");
-                return;
-            }
-
-            KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            try (InputStream in = new FileInputStream(cacertsPath.toAbsolutePath().toFile())) {
-                keyStore.load(in, "changeit".toCharArray());
-            }
+        KeyStore keyStore;
+        try (InputStream in = new FileInputStream(cacertsPath.toAbsolutePath().toFile())) {
+            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keyStore.load(in, "changeit".toCharArray());
 
             keyStore.setCertificateEntry(alias, clientCertificate);
 
-            try (FileOutputStream out = new FileOutputStream(cacertsPath.toAbsolutePath().toFile())) {
-                keyStore.store(out, "changeit".toCharArray());
-            }
+            keyStore.store(new FileOutputStream(cacertsPath.toAbsolutePath().toFile()), "changeit".toCharArray());
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+            throw new IllegalStateException(e);
+        }
 
-            // Create directory for client certificate if it doesn't exist
-            Path downloadPath = getDomainPath("docroot/" + CLIENT_CERTIFICATE_PATH);
-            downloadPath.toFile().mkdirs();
-
-            // Save certificate to file
-            Path certFile = downloadPath.resolve(CLIENT_CERTIFICATE_FILE);
-            try (FileOutputStream fw = new FileOutputStream(certFile.toFile());
-                 ObjectOutputStream ostrm = new ObjectOutputStream(fw)) {
-                ostrm.writeObject(clientCertificate);
-            }
-        } catch (Exception e) {
-            throw new IOException("Could not add certificate to trust store: " + e.getMessage(), e);
+        Path downloadPath = getDomainPath("docroot/" + CLIENT_CERTIFICATE_PATH);
+        downloadPath.toFile().mkdirs();
+        downloadPath = downloadPath.resolve(CLIENT_CERTIFICATE_FILE);
+        downloadPath.toFile().delete();
+        try (FileOutputStream fw = new FileOutputStream(downloadPath.toFile())) {
+            ObjectOutputStream ostrm = new ObjectOutputStream(fw);
+            ostrm.writeObject(clientCertificate);
+            ostrm.writeObject(clientKeyPair);
         }
     }
+
 
     /**
      * Switch the provided URL to use the admin port if the running server supports
@@ -307,7 +246,7 @@ public class ServerOperations {
      *
      * @param url the url to transform
      * @return the transformed URL, or null if the running server isn't using an
-     *         admin listener.
+     * admin listener.
      */
     public static URL toAdminPort(URL url) {
         try {
@@ -323,7 +262,7 @@ public class ServerOperations {
      *
      * @param url the url to transform
      * @return the transformed URL, or null if the running server isn't using a
-     *         secure listener.
+     * secure listener.
      */
     public static URL toContainerHttps(URL url) {
         if ("https".equals(url.getProtocol())) {
@@ -352,10 +291,10 @@ public class ServerOperations {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
         URL result = new URL(
-            protocol,
-            url.getHost(),
-            port,
-            url.getFile()
+                protocol,
+                url.getHost(),
+                port,
+                url.getFile()
         );
 
         logger.info("Changing base URL from " + url + " into " + result);
@@ -421,16 +360,16 @@ public class ServerOperations {
         cmd.add("com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm");
         cmd.add("--property");
         cmd.add(
-            "jaas-context=jdbcDigestRealm:" +
-            "encoding=HASHED:" +
-            "password-column=password:" +
-            "datasource-jndi=java\\:comp/DefaultDataSource:" +
-            "group-table=grouptable:"+
-            "charset=UTF-8:" +
-            "user-table=usertable:" +
-            "group-name-column=groupname:" +
-            "digest-algorithm=None:" +
-            "user-name-column=username");
+                "jaas-context=jdbcDigestRealm:" +
+                        "encoding=HASHED:" +
+                        "password-column=password:" +
+                        "datasource-jndi=java\\:comp/DefaultDataSource:" +
+                        "group-table=grouptable:" +
+                        "charset=UTF-8:" +
+                        "user-table=usertable:" +
+                        "group-name-column=groupname:" +
+                        "digest-algorithm=None:" +
+                        "user-name-column=username");
 
         cmd.add("eesamplesdigestrealm");
 
@@ -488,8 +427,8 @@ public class ServerOperations {
     /**
      *
      * @param addToContainer Adds the client certificate to the truststore
-     * @param expired if true will create an expired SSL certificate
-     * @param alias the alias of the keystore, useful to not cause conflict with the cert of another payara-sample
+     * @param expired        if true will create an expired SSL certificate
+     * @param alias          the alias of the keystore, useful to not cause conflict with the cert of another payara-sample
      * @return path to the new keystore created
      * @throws IOException
      */
@@ -500,29 +439,22 @@ public class ServerOperations {
 
         // Create a certificate containing the client public key and signed with the private key
         X509Certificate clientCertificate;
-        if(expired) {
+        if (expired) {
             clientCertificate = SecurityUtils.createExpiredSelfSignedCertificate(clientKeyPair);
-        }
-        else {
+        } else {
             clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
         }
 
 
         if (addToContainer) {
-            if (runtimeType == RuntimeType.SERVER) {
-                // Only attempt to add to container trust store if we're in a server context
-                try {
-                    // Add the client certificate that we just generated to the trust store of the server.
-                    // That way the server will trust our certificate.
-                    // Set the actual domain used with -Dpayara.domain.name=[domain name]
-                    addCertificateToContainerTrustStore(clientCertificate, clientKeyPair, alias);
-                } catch (Exception e) {
-                    logger.warning("Could not add certificate to container trust store: " + e.getMessage());
-                    // Continue with key store generation even if adding to trust store fails
-                }
-            } else {
-                logger.info("Skipping container trust store update in non-server context");
+            if (runtimeType != RuntimeType.SERVER) {
+                throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
             }
+
+            // Add the client certificate that we just generated to the trust store of the server.
+            // That way the server will trust our certificate.
+            // Set the actual domain used with -Dpayara.domain.name=[domain name]
+            addCertificateToContainerTrustStore(clientCertificate, clientKeyPair, alias);
         }
 
         // Create a new local key store containing the client private key and the certificate
@@ -542,15 +474,15 @@ public class ServerOperations {
 
     public static String addClientCertificateFromServer(URL base) throws IOException {
         if (runtimeType != CLIENT) {
-           throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
 
         try (InputStream istr = base.toURI().resolve("..")
                 .resolve(String.format("%s/%s", CLIENT_CERTIFICATE_PATH, CLIENT_CERTIFICATE_FILE))
                 .toURL().openStream()) {
             ObjectInputStream ois = new ObjectInputStream(istr);
-            X509Certificate clientCertificate = (X509Certificate)ois.readObject();
-            KeyPair clientKeyPair = (KeyPair)ois.readObject();
+            X509Certificate clientCertificate = (X509Certificate) ois.readObject();
+            KeyPair clientKeyPair = (KeyPair) ois.readObject();
             String clientKeyStorePath = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
             System.setProperty("javax.net.ssl.keystore", clientKeyStorePath);
             setSSLSystemProperties();
@@ -662,95 +594,52 @@ public class ServerOperations {
      */
     public static boolean enableDataGridEncryption() throws IOException {
         if (!isServer() || runtimeType != RuntimeType.SERVER) {
-            logger.info("Skipping Data Grid encryption enablement in non-server environment");
-            return true; // Return true to allow tests to proceed
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
 
-        try {
-            if (CliCommands.payaraGlassFish("get-hazelcast-configuration", "--checkencrypted") == 0) {
-                logger.info("Data Grid Encryption Already Enabled");
-                return false;
-            }
-
-            logger.info("Enabling Data Grid Encryption");
-            boolean success = CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true") == 0;
-
-            if (success) {
-                logger.info("Generating Encryption Key");
-                File passwordfile = new File("datagrid-passwordfile.txt");
-                passwordfile.delete();
-                try (FileWriter fw = new FileWriter(passwordfile)) {
-                    fw.append("AS_ADMIN_MASTERPASSWORD=changeit");
-                }
-                success = CliCommands.payaraGlassFish("-W", passwordfile.getAbsolutePath(),
-                        "generate-encryption-key", "--dontcheckifrunning", getDomainName()) == 0;
-            }
-            if (!success) {
-                throw new IOException("Could not enable DataGrid encryption");
-            }
-            return success;
-        } catch (Exception e) {
-            throw new IOException("Error enabling DataGrid encryption: " + e.getMessage(), e);
+        if (CliCommands.payaraGlassFish("get-hazelcast-configuration", "--checkencrypted") == 0) {
+            logger.info("Data Grid Encryption Already Enabled");
+            return false;
         }
+
+        logger.info("Enabling Data Grid Encryption");
+        boolean success = true;
+        success &= CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "true") == 0;
+
+        logger.info("Generating Encryption Key");
+        File passwordfile = new File("datagrid-passwordfile.txt");
+        passwordfile.delete();
+        try (FileWriter fw = new FileWriter(passwordfile)) {
+            fw.append("AS_ADMIN_MASTERPASSWORD=changeit");
+        }
+        success &= CliCommands.payaraGlassFish("-W", passwordfile.getAbsolutePath(),
+                "generate-encryption-key", "--dontcheckifrunning", getDomainName()) == 0;
+        if (!success) {
+            throw new IllegalStateException("Cannot enable DataGrid Encryption");
+        }
+        return true;
     }
 
-    /**
-     * Disables Data Grid encryption if running in a server environment.
-     * In test environments, logs the operation but doesn't actually modify any configuration.
-     *
-     * @return true if encryption was disabled or if running in a test environment, false if not enabled
-     * @throws IOException if there's an error disabling encryption
-     */
-    public static boolean disableDataGridEncryption() throws IOException {
+    public static boolean disableDataGridEncryption() {
         if (!isServer() || runtimeType != RuntimeType.SERVER) {
-            logger.info("Skipping Data Grid encryption disablement in non-server environment");
-            return true; // Return true to allow tests to proceed
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
 
-        try {
-            if (CliCommands.payaraGlassFish("get-hazelcast-configuration", "--checkencrypted") != 0) {
-                logger.info("Data Grid Encryption Not Enabled");
-                return false;
-            }
-
-            logger.info("Disabling Data Grid Encryption");
-            boolean success = CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false") == 0;
-            if (!success) {
-                throw new IOException("Could not disable DataGrid encryption");
-            }
-            return success;
-        } catch (Exception e) {
-            throw new IOException("Error disabling DataGrid encryption: " + e.getMessage(), e);
+        if (CliCommands.payaraGlassFish("get-hazelcast-configuration", "--checkencrypted") != 0) {
+            logger.info("Data Grid Encryption Not Enabled");
+            return false;
         }
+
+        logger.info("Disabling Data Grid Encryption");
+        if (CliCommands.payaraGlassFish("set-hazelcast-configuration", "--encryptdatagrid", "false") != 0) {
+            throw new IllegalStateException("Cannot disable DataGrid Encryption");
+        }
+        return true;
     }
 
     public static String getDomainName() {
-        if (domain == null) {
-            // First try system property
-            domain = System.getProperty("payara.domain.name");
-
-            if (domain == null) {
-                // Then try to get from server if we're in server context
-                try {
-                    domain = getPayaraDomainFromServer();
-                    if (domain != null) {
-                        logger.info("Using domain \"" + domain + "\" obtained from server");
-                    }
-                } catch (IllegalStateException e) {
-                    // Not in server context, use default
-                    domain = "domain1";
-                    logger.info("Using default domain \"" + domain + "\" (not running in server context)");
-                }
-            } else {
-                logger.info("Using domain \"" + domain + "\" from system property");
-            }
-
-            // If still null, use default
-            if (domain == null) {
-                domain = "domain1";
-                logger.info("Using default domain \"" + domain + "\"");
-            }
-        }
+        String domain = System.getProperty("payara.domain.name", "domain1");
+        logger.info("Using domain: " + domain);
         return domain;
     }
 }
