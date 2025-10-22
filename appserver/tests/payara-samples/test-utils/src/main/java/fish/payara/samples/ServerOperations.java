@@ -638,8 +638,21 @@ public class ServerOperations {
     }
 
     public static String getDomainName() {
-        String domain = System.getProperty("payara.domain.name", "domain1");
-        logger.info("Using domain: " + domain);
+        String domain = System.getProperty("payara.domain.name");
+        if (domain == null) {
+            domain = getPayaraDomainFromServer();
+            if (domain != null) {
+                logger.info("Using domain \"" + domain + "\" obtained from server. " +
+                        "If this is not correct use -Dpayara.domain.name to override.");
+            } else {
+                // Default to domain1
+                domain = "domain1";
+                logger.info("Using default domain \"" + domain + "\".");
+            }
+        } else {
+            logger.info("Using domain \"" + domain + "\" obtained from system property.");
+        }
+
         return domain;
     }
 }
