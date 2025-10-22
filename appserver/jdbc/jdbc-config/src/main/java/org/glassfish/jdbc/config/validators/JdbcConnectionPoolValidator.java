@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -105,6 +105,16 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
 
     private boolean validateSteadyPoolSize(final JdbcConnectionPool jdbcPool) {
         final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
+        if (steadyPoolSize == null) {
+            String property = jdbcPool.getSteadyPoolSize();
+            if (property != null) {
+                String resolvedProperty = resolve(property);
+                if (resolvedProperty == null) {
+                    // User has specified env / mpconfig value, which can be defined in application later
+                    return true;
+                }
+            }
+        }
         return steadyPoolSize != null && steadyPoolSize >= 0;
     }
 
@@ -113,14 +123,18 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
         final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
         final String propertyValue = jdbcPool.getMaxPoolSize();
         final String value = propertyValue == null ? Constants.DEFAULT_MAX_POOL_SIZE : propertyValue;
-        final Integer maxPoolSize = toInteger(resolve(value));
+        String resolvedValue = resolve(value);
+        if (resolvedValue == null) {
+            // User has specified env / mpconfig value, which can be defined in application later
+            return true;
+        }
+        final Integer maxPoolSize = toInteger(resolvedValue);
+
         if (maxPoolSize == null || maxPoolSize < 1) {
             return false;
         }
-        if (steadyPoolSize != null && steadyPoolSize > maxPoolSize) {
-            return false;
-        }
-        return true;
+
+        return steadyPoolSize == null || steadyPoolSize <= maxPoolSize;
     }
 
 
