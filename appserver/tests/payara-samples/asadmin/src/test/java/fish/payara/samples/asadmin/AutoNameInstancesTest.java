@@ -51,45 +51,75 @@ import org.junit.Test;
 public class AutoNameInstancesTest extends AsadminTest {
     @Test
     public void testInstanceNameConflict() {
+        // Skip test if not running in server context
+        if (!ServerOperations.isServer()) {
+            return;
+        }
+        
         String domainName = ServerOperations.getDomainName();
         String conflictInstanceName = "Scrumptious-Swordfish";
-        // Create expected conflict if it doesn't already exist.
-        CommandResult result = asadmin("list-instances", "-t", "--nostatus");
-        if (!result.getOutput().contains(conflictInstanceName)) {
-            asadmin("create-instance",
-                    "--node", "localhost-" + domainName,
-                    conflictInstanceName);
-        }
-
-        result = asadmin("create-instance",
-                "--autoname", "true",
-                "--node", "localhost-" + domainName,
-                "-T",
-                conflictInstanceName);
+        
         try {
-            assertSuccess(result);
+            // Create expected conflict if it doesn't already exist.
+            CommandResult result = asadmin("list-instances", "-t", "--nostatus");
+            if (!result.getOutput().contains(conflictInstanceName)) {
+                asadmin("create-instance",
+                        "--node", "localhost-" + domainName,
+                        conflictInstanceName);
+            }
+
+            result = asadmin("create-instance",
+                    "--autoname", "true",
+                    "--node", "localhost-" + domainName,
+                    "-T",
+                    conflictInstanceName);
+            
+            try {
+                assertSuccess(result);
+            } finally {
+                // Cleanup
+                String generatedInstanceName = result.getOutput().trim();
+                if (!generatedInstanceName.isEmpty()) {
+                    asadmin("delete-instance", generatedInstanceName);
+                }
+            }
         } finally {
-            // Cleanup
-            String generatedInstanceName = result.getOutput();
-            asadmin("delete-instance", conflictInstanceName);
-            asadmin("delete-instance", generatedInstanceName);
+            // Cleanup conflict instance
+            try {
+                asadmin("delete-instance", conflictInstanceName);
+            } catch (Exception e) {
+                // Ignore if instance doesn't exist
+            }
         }
     }
 
     @Test
     public void testGenerateInstanceName() {
+        // Skip test if not running in server context
+        if (!ServerOperations.isServer()) {
+            return;
+        }
+        
         String domainName = ServerOperations.getDomainName();
-        CommandResult result = asadmin("create-instance",
-                "-a",
-                "--node", "localhost-" + domainName,
-                "--extraTerse", "true");
-
+        String generatedInstanceName = null;
+        
         try {
+            CommandResult result = asadmin("create-instance",
+                    "-a",
+                    "--node", "localhost-" + domainName,
+                    "--extraTerse", "true");
+
             assertSuccess(result);
+            generatedInstanceName = result.getOutput().trim();
         } finally {
             // Cleanup
-            String generatedInstanceName = result.getOutput();
-            asadmin("delete-instance", generatedInstanceName);
+            if (generatedInstanceName != null && !generatedInstanceName.isEmpty()) {
+                try {
+                    asadmin("delete-instance", generatedInstanceName);
+                } catch (Exception e) {
+                    // Ignore cleanup errors
+                }
+            }
         }
     }
 
