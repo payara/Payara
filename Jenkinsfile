@@ -96,6 +96,10 @@ pipeline {
                          retry(3)
                     }
                      steps {
+                        // Temporary workaround for out of date AMI
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Update APT *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh script: "sudo apt-get update --allow-releaseinfo-change", label: "Updating apt"
+
                          setupDomain()
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
@@ -570,6 +574,10 @@ pipeline {
                         unstash name: 'payara-micro'
                         unstash name: 'payara-embedded-all'
                         unstash name: 'payara-embedded-web'
+
+                        // Temporary workaround for out of date AMI
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Update APT *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh script: "sudo apt-get update --allow-releaseinfo-change", label: "Updating apt"
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
