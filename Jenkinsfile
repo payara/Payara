@@ -571,6 +571,10 @@ pipeline {
                         unstash name: 'payara-embedded-all'
                         unstash name: 'payara-embedded-web'
 
+                        // Temporary workaround for out of date AMI
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Update APT *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh script: "sudo apt-get update --allow-releaseinfo-change", label: "Updating apt"
+
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
