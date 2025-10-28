@@ -76,30 +76,7 @@
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>payara-embedded-all</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>ldapbp-repackaged</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>libpam4j-repackaged</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>tiger-types</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>jmxremote_optional-repackaged</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>opentracing-repackaged</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
