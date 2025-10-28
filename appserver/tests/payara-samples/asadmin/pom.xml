@@ -89,6 +89,7 @@
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
             <artifactId>notification-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>

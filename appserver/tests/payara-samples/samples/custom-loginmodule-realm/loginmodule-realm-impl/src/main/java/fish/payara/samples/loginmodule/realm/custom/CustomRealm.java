@@ -3,8 +3,7 @@ package fish.payara.samples.loginmodule.realm.custom;
 import java.util.*;
 
 /**
- * Simplified standalone CustomRealm implementation.
- * This version removes Payara dependencies and works with standard Java only.
+ * Realm wrapper for supporting Custom authentication.
  */
 public final class CustomRealm {
 
