@@ -88,7 +88,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.appclient</groupId>
+            <groupId>fish.payara.extras</groupId>
             <artifactId>payara-embedded-all</artifactId>
             <scope>test</scope>
         </dependency>
