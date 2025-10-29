@@ -390,6 +390,12 @@
                 <classifier>jakartaee9</classifier>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>fish.payara.extras</groupId>
+                <artifactId>payara-embedded-all</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
