@@ -151,7 +151,7 @@
 
     <build>
         <plugins>
-<!--            <plugin>
+            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <executions>
@@ -162,16 +162,16 @@
                         <configuration>
                             <instructions>
                                 <Embed-Dependency>*;artifactId=jakarta.faces|jsftemplating|jsftemplating-dt;inline=true</Embed-Dependency>
-                                 Contents are exported with additional mandatory attribute, so they wouldn't match general import for e. g. jakarta.faces 
+                                <!-- Contents are exported with additional mandatory attribute, so they wouldn't match general import for e. g. jakarta.faces -->
                                 <Export-Package>fish.payara.server.internal.admingui,
                                     !com.sun.faces.tlddoc-resources,
-                                    com.sun.faces.*;com.sun.jsft.*;com.sun.jsftemplating.*;jakarta.faces.*;version="3.0";usage="admingui";mandatory:=usage</Export-Package>
+                                    com.sun.faces.*;com.sun.jsft.*;com.sun.jsftemplating.*;jakarta.faces.*;version="4.0";usage="admingui";mandatory:=usage</Export-Package>
                                 <Import-Package>!com.sun.faces.*,!jakarta.faces.*,!com.sun.jsftemplating.*,!com.sun.jsft,!org.apache.jasper.compiler,*</Import-Package>
                             </instructions>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>

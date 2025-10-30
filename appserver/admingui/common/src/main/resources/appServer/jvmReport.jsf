@@ -58,8 +58,8 @@
     />
     <sun:html id="html2"> 
         <sun:head id="propertyhead" title="JVM Report" >
-            <sun:script url="/jakarta.faces.resource/jsf.js.jsf?ln=jakarta.faces" />
-            <sun:script url="/resource/js/adminjsf.js" />
+            <sun:script url="/jakarta.faces.resource/faces.js.jsf?ln=jakarta.faces" />
+            <sun:script url="/resource/common/js/adminjsf.js" />
         </sun:head>
         <sun:body id="body3">
             <sun:form id="propertyForm">
