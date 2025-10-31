@@ -269,7 +269,7 @@
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
         <krazo.version>4.0.0</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>5.0.0-B08</eclipselink.version>
+        <eclipselink.version>5.0.0-B11.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
         <!-- Needs FISH-28, FISH-642, and FISH-7273 reapplying? -->
         <openmq.version>6.6.0</openmq.version>
