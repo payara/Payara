@@ -57,7 +57,7 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.jdk21.tag>21.0.8-jdk</docker.jdk21.tag>
+        <docker.jdk21.tag>21.0.9-jdk</docker.jdk21.tag>
 
         <!-- List of platform architectures which we wish to build Docker images for -
                 shouldn't have anything not provided as an option by ${docker.java.repository}.
