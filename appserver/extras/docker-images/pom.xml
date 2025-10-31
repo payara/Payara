@@ -57,7 +57,7 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.jdk11.tag>11.0.28-jdk</docker.jdk11.tag>
+        <docker.jdk11.tag>11.0.29-jdk</docker.jdk11.tag>
         <docker.jdk17.tag>17.0.16-jdk</docker.jdk17.tag>
         <docker.jdk21.tag>21.0.8-jdk</docker.jdk21.tag>
 
