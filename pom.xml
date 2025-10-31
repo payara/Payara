@@ -268,7 +268,7 @@
         <concurro.version>3.0.2.payara-p1</concurro.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.security-connectors.version>3.1.2</payara.security-connectors.version>
-        <hk2.version>3.0.1.payara-p5</hk2.version>
+        <hk2.version>3.1.1.payara-p1</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
