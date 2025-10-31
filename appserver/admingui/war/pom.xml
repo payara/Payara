@@ -147,11 +147,40 @@
         <dependency>
             <groupId>org.glassfish.woodstock</groupId>
             <artifactId>woodstock-webui-jsf</artifactId>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.faces.extensions</groupId>
+                        <artifactId>jsf-extensions-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.faces.extensions</groupId>
+                        <artifactId>jsf-extensions-dynamic-faces</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.help</groupId>
+                        <artifactId>javahelp</artifactId>
+                    </exclusion>
+                </exclusions>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.admingui</groupId>
             <artifactId>faces-compat</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.faces</groupId>
+            <artifactId>jakarta.faces-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.el</groupId>
+            <artifactId>jakarta.el-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

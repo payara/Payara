@@ -67,6 +67,7 @@
             getPreference(default="#{false}", root="glassfish/layout", key="hideRight", value="#{sessionScope.hideRight}");
         </ui:event>
         <sun:head id="head" title="#{guiTitle}" javaScript="true" debug="false" parseOnLoad="false">
+            <sun:script url="/jakarta.faces.resource/faces.js.jsf?ln=jakarta.faces" />
             <h:outputScript name="jsf.js" library="jakarta.faces" target="head" />
         <f:verbatim>
             <link rel="stylesheet" type="text/css" href="#{request.contextPath}/resources/yui/reset-fonts-grids.css"/>
