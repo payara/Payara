@@ -847,19 +847,15 @@
 
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
-                <artifactId>imq</artifactId>
-                <version>${openmq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.mq</groupId>
-                <artifactId>imqjmx</artifactId>
-                <version>${openmq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.mq</groupId>
                 <artifactId>mq-distribution</artifactId>
                 <version>${openmq.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.mq</groupId>
+                <artifactId>mq-client</artifactId>
+                <version>${openmq.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.eclipse</groupId>
                 <artifactId>yasson</artifactId>
