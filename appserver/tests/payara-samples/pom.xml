@@ -367,19 +367,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-
-            <dependency>
-                <groupId>fish.payara.server.internal.extras</groupId>
-                <artifactId>payara-micro-boot</artifactId>
-                <version>${payara.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>fish.payara.server.internal.payara-modules</groupId>
-                <artifactId>notification-core</artifactId>
-                <version>${payara.version}</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>net.sourceforge.htmlunit</groupId>
                 <artifactId>htmlunit</artifactId>

@@ -73,21 +73,6 @@
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.admin</groupId>
-            <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.common</groupId>
-            <artifactId>simple-glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
