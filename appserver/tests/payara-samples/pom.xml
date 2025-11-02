@@ -83,7 +83,6 @@
         can only be serially executed - they change configuration
         that other modules depend on
         -->
-        <module>asadmin</module>
         <module>ejb-invoker-secure-endpoint</module>
         <!-- Can be executed in parallel -->
         <module>samples</module>
