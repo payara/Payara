@@ -115,6 +115,29 @@ pipeline {
                          }
                      }
                  }
+                stage('Asadmin tests') {
+                    agent {
+                        label('general-purpose')
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps {
+                        setupDomain()
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """
+                        cd appserver/tests/functional/asadmin && python3 run_all_tests.py"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            stopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'asadmin-log.zip'
+                        }
+                    }
+                }
                 stage('MicroProfile Config TCK') {
                     agent {
                         label 'general-purpose'
