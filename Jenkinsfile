@@ -88,30 +88,7 @@ pipeline {
                         }
                     }
                 }
-                 stage('Asadmin tests') {
-                     agent {
-                         label('general-purpose')
-                     }
-                     options {
-                         retry(3)
-                     }
-                     steps {
-                         setupDomain()
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         sh """
-                         export PAYARA_HOME=${pwd()}/appserver/distributions/payara/target/stage/payara7
-                         cd appserver/tests/functional/asadmin && python3 run_all_tests.py"""
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                     post {
-                         always {
-                             stopDomain()
-                         }
-                         cleanup {
-                             saveLogsAndCleanup 'asadmin-log.zip'
-                         }
-                     }
-                 }
+
                  stage('Payara Samples Tests') {
                      agent {
                          label 'general-purpose'
@@ -581,6 +558,30 @@ pipeline {
                         }
                     }
                 }
+                stage('Payara Functional Asadmin Tests') {
+                     agent {
+                         label('general-purpose')
+                     }
+                     options {
+                         retry(3)
+                     }
+                     steps {
+                         setupDomain()
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                         sh """
+                         export PAYARA_HOME=${pwd()}/appserver/distributions/payara/target/stage/payara7
+                         cd appserver/tests/functional/asadmin && python3 run_all_tests.py"""
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                     }
+                     post {
+                         always {
+                             stopDomain()
+                         }
+                         cleanup {
+                             saveLogsAndCleanup 'asadmin-log.zip'
+                         }
+                     }
+                 }
                 stage('Payara Functional Tests') {
                     agent {
                         label 'general-purpose'
