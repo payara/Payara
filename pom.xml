@@ -269,7 +269,7 @@
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
         <krazo.version>4.0.0</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>5.0.0-B11.payara-p1</eclipselink.version>
+        <eclipselink.version>5.0.0-B08</eclipselink.version>
         <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
         <openmq.version>6.7.0.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
