@@ -6,7 +6,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.11</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>sfsb-passivation</artifactId>

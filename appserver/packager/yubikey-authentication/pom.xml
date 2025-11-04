@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2025.11</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>yubikey-authentication</artifactId>
     <name>Yubikey Authentication Package</name>

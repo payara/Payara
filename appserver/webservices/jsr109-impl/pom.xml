@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>6.2025.11</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>jsr109-impl</artifactId>
     <packaging>glassfish-jar</packaging>

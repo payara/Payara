@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>6.2025.11</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-timer-databases</artifactId>
