@@ -60,10 +60,10 @@
         <build.id>${build.number}</build.id>
 
         <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
-        <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
+        <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
         <maven.invoker.plugin.version>3.9.1</maven.invoker.plugin.version>
-        <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
+        <maven.war.plugin.version>3.5.0</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
@@ -145,7 +145,7 @@
         <javadoc.options>-Xdoclint:none</javadoc.options>
 
         <!-- Debug / analysis -->
-        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
 
         <awaitility.version>4.3.0</awaitility.version>
 
