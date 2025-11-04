@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.11</version>
     </parent>
     <artifactId>payara-ml-featureset</artifactId>
     <name>Payara Multi-Language Featureset</name>

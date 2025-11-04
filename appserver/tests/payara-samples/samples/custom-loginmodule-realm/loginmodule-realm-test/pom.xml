@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>custom-loginmodule-realm</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.11</version>
     </parent>
 
     <artifactId>loginmodule-realm-test</artifactId>

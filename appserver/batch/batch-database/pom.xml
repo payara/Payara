@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.11</version>
     </parent>
 
     <artifactId>batch-databases</artifactId>

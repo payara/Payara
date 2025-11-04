@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.11</version>
     </parent>
     <artifactId>payara-rest-endpoints</artifactId>
     <name>Payara REST Endpoint information</name>

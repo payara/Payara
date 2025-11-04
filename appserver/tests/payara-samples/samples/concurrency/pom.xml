@@ -45,7 +45,7 @@
     <parent>
         <artifactId>payara-samples-profiled-tests</artifactId>
         <groupId>fish.payara.samples</groupId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.11</version>
     </parent>
 
     <artifactId>concurrency</artifactId>

@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>common</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.11</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>stats77-l10n</artifactId>
