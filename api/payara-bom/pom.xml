@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>7.2025.1</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>

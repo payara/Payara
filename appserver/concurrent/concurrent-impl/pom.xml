@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>7.2025.1</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-impl</artifactId>
     <packaging>glassfish-jar</packaging>

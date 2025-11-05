@@ -43,7 +43,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>7.2025.1</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>
     <artifactId>healthcheck-service-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
