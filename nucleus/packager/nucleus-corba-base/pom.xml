@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>7.2025.1.Beta2-SNAPSHOT</version>
+        <version>7.2025.1</version>
     </parent>
     <artifactId>nucleus-corba-base</artifactId>
     <name>Nucleus Base CORBA APIs Package</name>
