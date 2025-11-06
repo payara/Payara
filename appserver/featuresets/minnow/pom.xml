@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>minnow</artifactId>
     <name>Glassfish Minnow Featureset</name>

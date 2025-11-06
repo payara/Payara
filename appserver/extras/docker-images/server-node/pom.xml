@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>docker-images</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>server-node-docker-image</artifactId>
     <packaging>pom</packaging>
