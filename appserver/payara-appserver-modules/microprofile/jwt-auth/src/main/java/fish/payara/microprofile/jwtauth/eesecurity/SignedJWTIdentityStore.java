@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -109,8 +109,8 @@ public class SignedJWTIdentityStore implements IdentityStore {
         Optional<String> publicKeyLocation = readConfigOptional(Names.VERIFIER_PUBLIC_KEY_LOCATION, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey.location
         Optional<String> publicKey = readConfigOptional(Names.VERIFIER_PUBLIC_KEY, properties, config); //mp.jwt.verifyAndParseEncryptedJWT.publickey
         Optional<String> decryptKeyLocation = readConfigOptional(Names.DECRYPTOR_KEY_LOCATION, properties, config); //mp.jwt.decrypt.key.location
-        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties), publicKeyLocation);
-        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties), decryptKeyLocation);
+        publicKeyStore = new JwtPublicKeyStore(readPublicKeyCacheTTL(properties), readKeyCacheRetainOnErrorDuration(properties), publicKeyLocation);
+        privateKeyStore = new JwtPrivateKeyStore(readPublicKeyCacheTTL(properties), readKeyCacheRetainOnErrorDuration(properties), decryptKeyLocation);
 
         // Signing is required by default, it doesn't parse if not signed
         isEncryptionRequired = decryptKeyLocation.isPresent();
@@ -184,6 +184,14 @@ public class SignedJWTIdentityStore implements IdentityStore {
         		.map(Long::valueOf)
         		.map(Duration::ofMillis)
         		.orElseGet( () -> Duration.ofMinutes(5));
+    }
+
+    private Duration readKeyCacheRetainOnErrorDuration(Optional<Properties> properties) {
+        return properties
+                .map(props -> props.getProperty("publicKey.cache.retain-on-error-duration"))
+                .map(Long::valueOf)
+                .map(Duration::ofMillis)
+                .orElse(Duration.ZERO);
     }
     
     private Optional<String> readAudience(Optional<Properties> properties) {

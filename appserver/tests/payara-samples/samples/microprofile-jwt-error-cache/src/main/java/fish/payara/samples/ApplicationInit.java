@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples;
 
-package fish.payara.microprofile.jwtauth.eesecurity;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
+import org.eclipse.microprofile.auth.LoginConfig;
 
-import java.time.Duration;
-import java.util.Optional;
-
-public class CacheableString {
-
-    private String value;
-    private Duration cacheTTL;
-    private Duration retainOnErrorDuration;
-
-    public static CacheableString empty(Duration cacheTTL) {
-        return from(null, cacheTTL, Duration.ZERO);
-    }
-
-    public static CacheableString from(String value, Duration cacheTTL, Duration retainOnErrorDuration) {
-        CacheableString instance = new CacheableString();
-        instance.cacheTTL = cacheTTL;
-        instance.retainOnErrorDuration = retainOnErrorDuration;
-        instance.value = value;
-        return instance;
-    }
-
-    public Optional<String> getValue() {
-        return Optional.ofNullable(value);
-    }
-
-    public Duration getCacheTTL() {
-        return cacheTTL;
-    }
-
-    public boolean isPresent() {
-        return value != null;
-    }
-
-    public Duration getRetainOnErrorDuration() {
-        return retainOnErrorDuration;
-    }
+@ApplicationScoped
+@ApplicationPath("/")
+@LoginConfig(authMethod = "MP-JWT", realmName = "test")
+public class ApplicationInit extends Application {
 }
