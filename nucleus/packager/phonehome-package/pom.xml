@@ -23,7 +23,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>7.2025.1.Beta2-SNAPSHOT</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>
     <artifactId>phonehome-package</artifactId>
     <name>Nucleus Phonehome Package</name>

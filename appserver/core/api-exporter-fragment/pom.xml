@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>core</artifactId>
-        <version>7.2025.1.Beta2-SNAPSHOT</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>
     <artifactId>api-exporter-fragment</artifactId>
     <name>GlassFish API Exporter Module Fragment</name>

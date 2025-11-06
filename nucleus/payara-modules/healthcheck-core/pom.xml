@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>7.2025.1.Beta2-SNAPSHOT</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>
     <artifactId>healthcheck-core</artifactId>
     <packaging>glassfish-jar</packaging>
