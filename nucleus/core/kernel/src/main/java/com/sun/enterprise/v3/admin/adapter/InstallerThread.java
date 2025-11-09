@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.adapter;
 
@@ -153,8 +153,11 @@ final class InstallerThread extends Thread {
                 webe.setSniffer("web");
                 Engine sece = singleModule.createChild(Engine.class);
                 sece.setSniffer("security");
+                Engine cdie = singleModule.createChild(Engine.class);
+                cdie.setSniffer("cdi");
                 singleModule.getEngines().add(webe);
                 singleModule.getEngines().add(sece);
+                singleModule.getEngines().add(cdie);
                 Server s = (Server) proxies[1];
                 List<ApplicationRef> arefs = s.getApplicationRef();
                 ApplicationRef aref = s.createChild(ApplicationRef.class);

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>7.2025.1.Beta2-SNAPSHOT</version>
+        <version>7.2025.2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-appclient-l10n</artifactId>
     <name>Glassfish Application Client l10n Package</name>
