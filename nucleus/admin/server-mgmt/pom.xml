@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>server-mgmt</artifactId>
@@ -79,7 +79,7 @@
                 root to the build ourselves... -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>com.sun.xml.bind</groupId>

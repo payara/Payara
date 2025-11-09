@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
@@ -57,9 +57,9 @@
         <docker.noCache>true</docker.noCache>
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
-        <docker.jdk11.tag>11.0.28-jdk</docker.jdk11.tag>
-        <docker.jdk17.tag>17.0.16-jdk</docker.jdk17.tag>
-        <docker.jdk21.tag>21.0.8-jdk</docker.jdk21.tag>
+        <docker.jdk11.tag>11.0.29-jdk</docker.jdk11.tag>
+        <docker.jdk17.tag>17.0.17-jdk</docker.jdk17.tag>
+        <docker.jdk21.tag>21.0.9-jdk</docker.jdk21.tag>
 
         <!-- List of platform architectures which we wish to build Docker images for -
                 shouldn't have anything not provided as an option by ${docker.java.repository}.

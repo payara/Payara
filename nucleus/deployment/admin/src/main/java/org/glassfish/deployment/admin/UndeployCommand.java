@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -74,6 +74,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
@@ -425,7 +426,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                  * event here.
                  */
                 if (env.isDas() && (DeploymentUtils.isDASTarget(target))) {
-                    events.send(new EventListener.Event<>(Deployment.DISABLE_START, info), true);
+                    if (Objects.equals(versioningService.getEnabledVersion(appName, target), appName)) {
+                        events.send(new EventListener.Event<>(Deployment.DISABLE_START, info), true);
+                    }
                 }
 
                 deployment.undeploy(appName, deploymentContext);

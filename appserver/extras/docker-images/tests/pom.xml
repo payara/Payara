@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>docker-images</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images-tests</artifactId>
     <packaging>jar</packaging>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

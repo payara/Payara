@@ -36,11 +36,11 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
 
     <properties>
-      <playwright.version>1.55.0</playwright.version>
+      <playwright.version>1.56.0</playwright.version>
     </properties>
 
 
@@ -79,7 +79,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.6.1</version>
+                        <version>3.6.2</version>
                         <executions>
                           <execution>
                             <id>install-playwright-dependencies</id>

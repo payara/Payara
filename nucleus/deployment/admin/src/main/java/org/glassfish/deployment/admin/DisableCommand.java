@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -78,6 +78,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
 
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
@@ -390,7 +391,9 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 // wait until all applications are loaded. Otherwise we get "Application not registered"
                 startupProvider.get();
                 ApplicationInfo appInfo = deployment.get(appName);
-                events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
+                if (Objects.equals(versioningService.getEnabledVersion(appName, target), appName)) {
+                    events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
+                }
                 final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
                 suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
             } else if (env.isDas() && DeploymentUtils.isDomainTarget(target)
@@ -398,7 +401,9 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 // We still want to send the Disable_Start event for the DAS, even if the target is "domain"
                 startupProvider.get();
                 ApplicationInfo appInfo = deployment.get(appName);
-                events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
+                if (Objects.equals(versioningService.getEnabledVersion(appName, target), appName)) {
+                    events.send(new EventListener.Event<>(Deployment.DISABLE_START, appInfo), true);
+                }
             }
 
 

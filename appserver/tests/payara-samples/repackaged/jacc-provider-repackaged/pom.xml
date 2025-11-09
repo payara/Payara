@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>repackaged</artifactId>
-        <version>6.2025.11-SNAPSHOT</version>
+        <version>6.2025.12-SNAPSHOT</version>
     </parent>
     <artifactId>jacc-provider-repackaged</artifactId>
     <name>Payara Samples - Payara - jacc-provider repackaged as a module</name>
