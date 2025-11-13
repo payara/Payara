@@ -73,11 +73,14 @@ import static fish.payara.samples.SecurityUtils.getCertificateChainFromServer;
 import static fish.payara.samples.SecurityUtils.getHostFromCertificate;
 import static fish.payara.samples.ServerOperations.RuntimeType.CLIENT;
 import static fish.payara.samples.ServerOperations.ServerType.MICRO;
-
 import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+
 
 /**
  * Various high level Java EE 7 samples specific operations to execute against
@@ -87,10 +90,9 @@ import java.net.URISyntaxException;
  */
 public class ServerOperations {
     private static final Logger logger = Logger.getLogger(ServerOperations.class.getName());
-    private static String domain;
 
     private static final String ERR_MESSAGE_UNSUPPORTED
-            = "Check 'payara.containerType' system property configuration";
+        = "Check 'payara.containerType' system property configuration";
     private static final String CLIENT_CERTIFICATE_FILE = "payara-test-client.crt";
     private static final String CLIENT_CERTIFICATE_PATH = "certificates";
     private static final String DEFAULT_ALIAS = "arquillianClientTestCert";
@@ -103,27 +105,37 @@ public class ServerOperations {
         SERVER, CLIENT
     }
 
+    private static final ServerEnvironment serverEnvironment;
     private static final ServerType serverType;
     private static final RuntimeType runtimeType;
 
     static {
-        // Try to detect if we're running in a server environment by checking the classloader
-        String packageName = ServerOperations.class.getClassLoader().getClass().getPackage().getName();
-        if (packageName.startsWith("org.glassfish") || packageName.startsWith("com.sun.enterprise")) {
+        String packageName = ServerOperations.class.getClassLoader().getClass()
+                .getPackage().getName();
+        if (packageName.startsWith("org.glassfish") ||
+                packageName.startsWith("com.sun.enterprise")) {
             runtimeType = RuntimeType.SERVER;
         } else {
             runtimeType = RuntimeType.CLIENT;
         }
 
-        // Handle server type configuration
         String serverTypeStr = System.getProperty("payara.containerType");
         if (serverTypeStr != null) {
-            // Use explicitly specified server type
             serverType = ServerType.valueOf(serverTypeStr);
+            serverEnvironment = null;
         } else {
-            // Default to SERVER if not specified, which is the most common case
-            serverType = ServerType.SERVER;
-            logger.info("No payara.containerType specified, defaulting to SERVER");
+            ServiceLocator svcLocator = Globals.getDefaultHabitat();
+            if (svcLocator != null) {
+                serverEnvironment = svcLocator.getService(ServerEnvironment.class);
+                if (serverEnvironment != null) {
+                    serverType = serverEnvironment.isMicro() ? MICRO : ServerType.SERVER;
+                } else {
+                    throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+
+                }
+            } else {
+                throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+            }
         }
     }
 
@@ -170,9 +182,11 @@ public class ServerOperations {
     }
 
     public static void addUsersToContainerIdentityStore(String username, String group, String fileAuthRealmName) {
+        if (runtimeType == RuntimeType.SERVER) {
+            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+        }
         List<String> cmd = new ArrayList<>();
 
-        logger.info("Adding user to container identity store");
         cmd.add("create-file-user");
         cmd.add("--groups");
         cmd.add(group);
@@ -247,7 +261,7 @@ public class ServerOperations {
      *
      * @param url the url to transform
      * @return the transformed URL, or null if the running server isn't using an
-     * admin listener.
+     *         admin listener.
      */
     public static URL toAdminPort(URL url) {
         try {
@@ -263,7 +277,7 @@ public class ServerOperations {
      *
      * @param url the url to transform
      * @return the transformed URL, or null if the running server isn't using a
-     * secure listener.
+     *         secure listener.
      */
     public static URL toContainerHttps(URL url) {
         if ("https".equals(url.getProtocol())) {
@@ -428,8 +442,8 @@ public class ServerOperations {
     /**
      *
      * @param addToContainer Adds the client certificate to the truststore
-     * @param expired        if true will create an expired SSL certificate
-     * @param alias          the alias of the keystore, useful to not cause conflict with the cert of another payara-sample
+     * @param expired if true will create an expired SSL certificate
+     * @param alias the alias of the keystore, useful to not cause conflict with the cert of another payara-sample
      * @return path to the new keystore created
      * @throws IOException
      */
@@ -440,9 +454,10 @@ public class ServerOperations {
 
         // Create a certificate containing the client public key and signed with the private key
         X509Certificate clientCertificate;
-        if (expired) {
+        if(expired) {
             clientCertificate = SecurityUtils.createExpiredSelfSignedCertificate(clientKeyPair);
-        } else {
+        }
+        else {
             clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
         }
 
@@ -475,15 +490,15 @@ public class ServerOperations {
 
     public static String addClientCertificateFromServer(URL base) throws IOException {
         if (runtimeType != CLIENT) {
-            throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
+           throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);
         }
 
         try (InputStream istr = base.toURI().resolve("..")
                 .resolve(String.format("%s/%s", CLIENT_CERTIFICATE_PATH, CLIENT_CERTIFICATE_FILE))
                 .toURL().openStream()) {
             ObjectInputStream ois = new ObjectInputStream(istr);
-            X509Certificate clientCertificate = (X509Certificate) ois.readObject();
-            KeyPair clientKeyPair = (KeyPair) ois.readObject();
+            X509Certificate clientCertificate = (X509Certificate)ois.readObject();
+            KeyPair clientKeyPair = (KeyPair)ois.readObject();
             String clientKeyStorePath = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
             System.setProperty("javax.net.ssl.keystore", clientKeyStorePath);
             setSSLSystemProperties();
@@ -561,8 +576,10 @@ public class ServerOperations {
             throw new IllegalStateException("Could not obtain certificates from server.");
         }
         logger.info("Obtained certificate from server. Storing it in client trust store");
+
         String trustStorePath = SecurityUtils.createTempJKSTrustStore(serverCertificateChain);
         System.setProperty("javax.net.ssl.truststore", trustStorePath);
+
         logger.info("Reading trust store from: " + trustStorePath);
         return new File(trustStorePath).toURI().toURL();
     }
@@ -586,13 +603,6 @@ public class ServerOperations {
         }
     }
 
-    /**
-     * Enables Data Grid encryption if running in a server environment.
-     * In test environments, logs the operation but doesn't actually modify any configuration.
-     *
-     * @return true if encryption was enabled or if running in a test environment, false if already enabled
-     * @throws IOException if there's an error writing configuration
-     */
     public static boolean enableDataGridEncryption() throws IOException {
         if (!isServer() || runtimeType != RuntimeType.SERVER) {
             throw new IllegalStateException(ERR_MESSAGE_UNSUPPORTED);

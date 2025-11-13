@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-  
-  Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
+
+  Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -37,23 +37,42 @@
   and therefore, elected the GPL Version 2 license, then the option applies
   only if the new code is made subject to such option by the copyright
   holder.
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> <modelVersion>4.0.0</modelVersion>
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples-profiled-tests</artifactId>
+        <artifactId>payara-samples</artifactId>
         <version>7.2025.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>rolesPermitted</artifactId>
-    <packaging>war</packaging>
-    <name>Payara Samples - Payara - Roles Permitted</name>
+    <artifactId>asadmin</artifactId>
+    <name>Payara Samples - Payara - AsAdmin</name>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>cdi-auth-roles</artifactId>
+            <groupId>fish.payara.server.internal.admin</groupId>
+            <artifactId>config-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>simple-glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -63,48 +82,30 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>fish.payara.api</groupId>
-            <artifactId>payara-api</artifactId>
-            <scope>provided</scope>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>healthcheck-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>jakarta.enterprise</groupId>
-            <artifactId>jakarta.enterprise.cdi-api</artifactId>
-            <scope>provided</scope>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>notification-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.security.enterprise</groupId>
-            <artifactId>jakarta.security.enterprise-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.json</groupId>
-            <artifactId>jakarta.json-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>healthcheck-stuck</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sourceforge.htmlunit</groupId>
-            <artifactId>htmlunit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.parsson</groupId>
-            <artifactId>jakarta.json</artifactId>
-            <scope>test</scope>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>test-domain-setup</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
         </dependency>
     </dependencies>
-
 </project>
