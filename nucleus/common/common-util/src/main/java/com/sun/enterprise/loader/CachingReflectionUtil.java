@@ -56,18 +56,20 @@ public class CachingReflectionUtil {
     private static final Map<String, Field> fieldCache = new ConcurrentHashMap<>();
 
     public static Class<?> getClassFromCache(String className, ClassLoader classLoader) {
-        var cls = classCache.computeIfAbsent(className, k -> {
-            try {
-                return classLoader.loadClass(className);
-            } catch (ClassNotFoundException e) {
-                logger.log(Level.FINE, "Class not found: " + className, e);
-                return null;
-            }
-        });
+        var cls = classCache.computeIfAbsent(className, k -> getClass(className, classLoader));
         if (cls != null && cls.getClassLoader() == classLoader) {
             classCache.remove(cls.getName());
         }
         return cls;
+    }
+
+    public static Class<?> getClass(String className, ClassLoader classLoader) {
+        try {
+            return classLoader.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            logger.log(Level.FINE, "Class not found: " + className, e);
+            return null;
+        }
     }
 
     public static Method getMethodFromCache(Class<?> cls, String methodName, boolean isPrivate, Class<?>... parameterTypes) {

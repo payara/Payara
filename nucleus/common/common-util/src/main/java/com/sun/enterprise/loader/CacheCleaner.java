@@ -89,7 +89,7 @@ public class CacheCleaner {
     private static void clearJNACache(ClassLoader classLoader) {
         try {
             Class<?> cleanerClass = CachingReflectionUtil
-                    .getClassFromCache("com.sun.jna.internal.Cleaner", classLoader);
+                    .getClass("com.sun.jna.internal.Cleaner", classLoader);
             if (cleanerClass != null && cleanerClass.getClassLoader() instanceof CurrentBeforeParentClassLoader) {
                 Field instanceField = CachingReflectionUtil.getField(cleanerClass, "INSTANCE", true);
                 Object instance = instanceField.get(null);
