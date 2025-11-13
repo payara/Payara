@@ -569,30 +569,6 @@ pipeline {
                         }
                     }
                 }
-                stage('Payara Functional Asadmin Tests') {
-                     agent {
-                         label('general-purpose')
-                     }
-                     options {
-                         retry(3)
-                     }
-                     steps {
-                         setupDomain()
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         sh """
-                         export PAYARA_HOME=${pwd()}/appserver/distributions/payara/target/stage/payara6
-                         cd appserver/tests/functional/asadmin && python3 run_all_tests.py"""
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                     post {
-                         always {
-                             stopDomain()
-                         }
-                         cleanup {
-                             saveLogsAndCleanup 'asadmin-log.zip'
-                         }
-                     }
-                 }
                 stage('Payara Functional Tests') {
                     agent {
                         label 'general-purpose'
@@ -632,11 +608,20 @@ pipeline {
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/embeddedtest """
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        setupDomain()
+                        sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
+                        --asadmin ${pwd()}/appserver/distributions/payara/target/stage/payara6"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
+                        always {
+                            stopDomain()
+                        }
                         cleanup {
                             processReport()
+                            saveLogsAndCleanup 'asadmin-log.zip'
                         }
                     }
                 }
