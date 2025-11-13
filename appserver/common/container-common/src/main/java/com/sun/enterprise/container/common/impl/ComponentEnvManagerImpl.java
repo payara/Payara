@@ -467,15 +467,14 @@ public class ComponentEnvManagerImpl
             }
         }
 
+        String compEnvId = getComponentEnvId(env);
         if( env instanceof Application) {
             namingManager.unbindAppObjects(DOLUtils.getApplicationName(env));
         } else {
             // Unbind anything in the component namespace
-            String compEnvId = getComponentEnvId(env);
             namingManager.unbindComponentObjects(compEnvId);
-            this.unregister(compEnvId);
         }
-
+        this.unregister(compEnvId);
     }
 
     private void undeployAllDescriptors(JndiNameEnvironment env) {
