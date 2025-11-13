@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2024-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,19 +88,21 @@ public class CachingReflectionUtil {
     }
 
     public static Field getFieldFromCache(Class<?> cls, String fieldName, boolean isPrivate) {
-        return fieldCache.computeIfAbsent(fieldName, k -> {
-            try {
-                if (isPrivate) {
-                    Field field = cls.getDeclaredField(fieldName);
-                    field.setAccessible(true);
-                    return field;
-                } else {
-                    return cls.getField(fieldName);
-                }
-            } catch (NoSuchFieldException e) {
-                logger.log(Level.FINE, "Field not found: " + fieldName, e);
-                return null;
+        return fieldCache.computeIfAbsent(fieldName, k -> getField(cls, fieldName, isPrivate));
+    }
+
+    public static Field getField(Class<?> cls, String fieldName, boolean isPrivate) {
+        try {
+            if (isPrivate) {
+                Field field = cls.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return field;
+            } else {
+                return cls.getField(fieldName);
             }
-        });
+        } catch (NoSuchFieldException e) {
+            logger.log(Level.FINE, "Field not found: " + fieldName, e);
+            return null;
+        }
     }
 }
