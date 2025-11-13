@@ -455,7 +455,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
                     if (index > -1 && index != 0 && index < property.length() - 1) {
                         String name = property.substring(0, index);
                         String value = property.substring(index + 1);
-                        properties.put(name, TranslatedConfigView.expandValue(value));
+                        properties.put(name.trim(), TranslatedConfigView.expandValue(value.trim()));
                     }
                 }
             }
