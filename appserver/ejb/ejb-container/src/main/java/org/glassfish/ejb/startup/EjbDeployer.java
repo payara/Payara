@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -294,6 +294,11 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
 
         try {
             compEnvManager.unbindFromComponentNamespace(ejbBundle);
+            Object rootDesc = ejbBundle.getModuleDescriptor().getDescriptor();
+            if ((rootDesc != ejbBundle) && (rootDesc instanceof WebBundleDescriptor)) {
+                WebBundleDescriptor webBundle = (WebBundleDescriptor) rootDesc;
+                compEnvManager.unbindFromComponentNamespace(webBundle);
+            }
         } catch (Exception e) {
             _logger.log(Level.WARNING, "Error unbinding ejb bundle " + ejbBundle.getModuleName() + " dependency namespace", e);
         }
