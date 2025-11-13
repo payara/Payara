@@ -110,13 +110,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <profiles>
         <profile>
             <id>playwright</id>
             <modules>
                 <module>cleanboot</module>
-            </modules>        
+            </modules>
         </profile>
     </profiles>
 </project>
