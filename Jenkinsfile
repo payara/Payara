@@ -612,7 +612,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         setupDomain()
                         sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
-                        --asadmin ./appserver/distributions/payara/target/stage/payara6"""
+                        --asadmin ${pwd()}/appserver/distributions/payara/target/stage/payara6"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
