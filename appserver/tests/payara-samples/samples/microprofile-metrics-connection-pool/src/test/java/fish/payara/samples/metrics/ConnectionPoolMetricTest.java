@@ -42,6 +42,7 @@ package fish.payara.samples.metrics;
 import com.gargoylesoftware.htmlunit.TextPage;
 import com.gargoylesoftware.htmlunit.WebClient;
 import fish.payara.samples.CliCommands;
+import fish.payara.samples.ServerOperations;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -77,7 +78,7 @@ public class ConnectionPoolMetricTest {
         // Health Check and Connection Pool must be enabled for connection pool metrics
         CliCommands.payaraGlassFish("healthcheck-configure", "--enabled=true", "--target=server-config");
         CliCommands.payaraGlassFish("set-healthcheck-service-configuration", "--serviceName=connection-pool", "--enabled=true", "--unit=SECONDS", "--time=1", "--target=server-config");
-        CliCommands.payaraGlassFish("restart-domain");
+        CliCommands.payaraGlassFish("restart-domain", ServerOperations.getDomainName());
         Thread.sleep(2000);
     }
 
