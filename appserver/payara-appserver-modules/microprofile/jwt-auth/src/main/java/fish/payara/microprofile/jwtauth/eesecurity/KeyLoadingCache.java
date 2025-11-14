@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,9 @@ public class KeyLoadingCache {
 
     private final Supplier<CacheableString> keySupplier;
     private Duration ttl;
+    private Duration retainOnErrorDuration;
     private long lastUpdated;
+    private long lastError;
     private Optional<String> key;
 
 
@@ -69,10 +71,28 @@ public class KeyLoadingCache {
     private synchronized void refresh() {
         long now = System.currentTimeMillis();
         if (now - lastUpdated > ttl.toMillis()) {
-            CacheableString result = keySupplier.get();
-            key = result.getValue();
-            ttl = result.getCacheTTL();
-            lastUpdated = now;
+            try {
+                CacheableString result = keySupplier.get();
+                key = result.getValue();
+                ttl = result.getCacheTTL();
+                retainOnErrorDuration = result.getRetainOnErrorDuration();
+                lastUpdated = now;
+                lastError = 0L;
+            } catch (Exception exception) {
+                if (lastError == 0L) {
+                    lastError = now;
+                }
+                if (key.isPresent() && retainOnErrorDuration != null && !retainOnErrorDuration.isZero()) {
+                    long elapsedSinceLastError = now - lastError;
+                    if (elapsedSinceLastError < retainOnErrorDuration.toMillis()) {
+                        // No exception is thrown so get() will return the key.
+                        return;
+                    }
+                    throw new RuntimeException("An error occurred while fetching the key and the retention period has expired: " + exception.getMessage());
+                }
+                throw new RuntimeException(exception.getMessage());
+            }
+
         }
     }
 
