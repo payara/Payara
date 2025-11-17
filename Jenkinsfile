@@ -104,7 +104,6 @@ pipeline {
                          -Djavax.xml.accessExternalSchema=all \
                          -Dsurefire.rerunFailingTestsCount=2 \
                          -Dfailsafe.rerunFailingTestsCount=2 \
-                         -Dpayara.domain.name=${DOMAIN_NAME} \
                          -f appserver/tests/payara-samples """
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                      }
