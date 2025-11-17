@@ -611,7 +611,7 @@ pipeline {
                         }
                         cleanup {
                             processReport()
-                            aveLogsAndCleanup 'asadmin-log.zip'
+                            saveLogsAndCleanup 'asadmin-log.zip'
                         }
                     }
                 }
