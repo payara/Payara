@@ -72,6 +72,7 @@
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>payara-micro</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -85,7 +86,7 @@
             <id>payara-micro-managed</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-            </activation> 
+            </activation>
         </profile>
         <profile>
             <id>payara-server-remote</id>
@@ -117,12 +118,12 @@
                 </pluginManagement>
             </build>
         </profile>
-        
+
         <profile>
             <id>install-deps</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-            </activation>  
+            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -150,7 +151,7 @@
                         </configuration>
                     </plugin>
                 </plugins>
-            </build>         
+            </build>
         </profile>
     </profiles>
 </project>
