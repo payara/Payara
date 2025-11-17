@@ -78,6 +78,7 @@
         <dependency>
             <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>payara-micro-boot</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
