@@ -49,6 +49,8 @@ import java.util.function.Consumer;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
+
+import com.sun.enterprise.util.OS;
 import jakarta.validation.Payload;
 
 import org.glassfish.api.jdbc.SQLTraceListener;
@@ -130,8 +132,13 @@ public class JdbcConnectionPoolValidatorTest {
         updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=steadypoolsizeproperty}"));
         assertTrue("undefined variable in steady pool size", this.validator.isValid(pool, null));
 
-        updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=USER}"));
-        assertFalse("env.USER variable in steady pool size is not a number", this.validator.isValid(pool, null));
+        if (OS.isWindows()) {
+            updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=USERNAME}"));
+            assertFalse("env.USERNAME variable in steady pool size is not a number", this.validator.isValid(pool, null));
+        } else {
+            updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${ENV=USER}"));
+            assertFalse("env.USER variable in steady pool size is not a number", this.validator.isValid(pool, null));
+        }
 
         updateMock(pool, p -> expect(p.getSteadyPoolSize()).andStubReturn("${MPCONFIG=USER}"));
         try {
