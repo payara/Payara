@@ -307,7 +307,6 @@
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.4</jaxb-api.version>
         <jackson.version>2.20.0</jackson.version>
-        <!-- Pending port of FISH-11911 -->
         <jersey.version>4.0.0.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
