@@ -88,4 +88,95 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <!-- Create system property -->
+                    <execution>
+                        <id>create-system-property</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <arguments>
+                                <argument>create-system-properties</argument>
+                                <argument>fish.payara.test.create-insecure-endpoint=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Configure HealthCheck -->
+                    <execution>
+                        <id>configure-healthcheck</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <arguments>
+                                <argument>set-microprofile-healthcheck-configuration</argument>
+                                <argument>--securityenabled=true</argument>
+                                <argument>--endpoint=mphealth</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Configure OpenAPI -->
+                    <execution>
+                        <id>configure-openapi</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <arguments>
+                                <argument>set-openapi-configuration</argument>
+                                <argument>--securityenabled=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Configure Metrics -->
+                    <execution>
+                        <id>configure-metrics</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <arguments>
+                                <argument>set-metrics-configuration</argument>
+                                <argument>--securityenabled=true</argument>
+                                <argument>--endpoint=mpmetrics</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- restart reserver after applied config-->
+                    <execution>
+                        <id>restart-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <arguments>
+                                <argument>restart-domain</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

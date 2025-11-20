@@ -78,7 +78,6 @@
 
     <modules>
         <module>test-utils</module>
-        <module>test-domain-setup</module>
         <!--
         can only be serially executed - they change configuration
         that other modules depend on
