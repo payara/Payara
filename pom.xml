@@ -573,7 +573,7 @@
                     <configuration>
                         <instructions>
                             <!--
-                                Read all the configuration from osgi.bundle file, if it exists.
+                                Read all the configuration from osgi.bundle file, if it exists
                             -->
                             <_include>-osgi.bundle</_include>
                         </instructions>
