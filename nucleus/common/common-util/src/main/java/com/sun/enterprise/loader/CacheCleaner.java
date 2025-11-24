@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2024-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,8 +49,8 @@ public class CacheCleaner {
 
     public static void clearCaches(ClassLoader classLoader) {
         clearOmniFacesCache(classLoader);
-        clearJNACache(classLoader);
         while (classLoader != null) {
+            clearJNACache(classLoader);
             clearJaxRSCache(classLoader);
             classLoader = classLoader.getParent();
         }
@@ -78,7 +78,7 @@ public class CacheCleaner {
             Class<?> eagerBeans = CachingReflectionUtil
                     .getClassFromCache("org.omnifaces.cdi.eager.EagerBeansRepository", classLoader);
             if (eagerBeans != null && eagerBeans.getClassLoader() instanceof CurrentBeforeParentClassLoader) {
-                Field instance = CachingReflectionUtil.getFieldFromCache(eagerBeans, "instance", true);
+                Field instance = CachingReflectionUtil.getField(eagerBeans, "instance", true);
                 instance.set(null, null);
             }
         } catch (Exception e) {
@@ -89,11 +89,11 @@ public class CacheCleaner {
     private static void clearJNACache(ClassLoader classLoader) {
         try {
             Class<?> cleanerClass = CachingReflectionUtil
-                    .getClassFromCache("com.sun.jna.internal.Cleaner", classLoader);
-            if (cleanerClass != null && cleanerClass.getClassLoader() instanceof CurrentBeforeParentClassLoader) {
-                Field instanceField = CachingReflectionUtil.getFieldFromCache(cleanerClass, "INSTANCE", true);
+                    .getClass("com.sun.jna.internal.Cleaner", classLoader);
+            if (cleanerClass != null) {
+                Field instanceField = CachingReflectionUtil.getField(cleanerClass, "INSTANCE", true);
                 Object instance = instanceField.get(null);
-                CachingReflectionUtil.getFieldFromCache(instance.getClass(), "cleanerThread", true)
+                CachingReflectionUtil.getField(instance.getClass(), "cleanerThread", true)
                         .set(instance, null);
             }
         } catch (Exception e) {
