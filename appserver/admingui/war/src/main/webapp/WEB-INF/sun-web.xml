@@ -60,6 +60,6 @@
         <parameter-encoding default-charset="UTF-8" />
     </locale-charset-info>
     <class-loader delegate="true"
-        extra-class-path="WEB-INF/extra/woodstock-webui-jsf-suntheme-${woodstock-jsf-suntheme.version}${enterprise.theme.classifier}.jar:WEB-INF/extra/dojo-ajax-nodemo-${woodstock-dojo-ajax-nodemo.version}.jar:WEB-INF/extra/woodstock-webui-jsf-${woodstock-jsf.version}.jar:WEB-INF/extra/commons-io-${commons-io.version}.jar:WEB-INF/extra/json-${woodstock-json.version}.jar:WEB-INF/extra/prototype-${woodstock-prototype.version}.jar"/>
+        extra-class-path="WEB-INF/extra/woodstock-webui-jsf-suntheme-${woodstock-jsf-suntheme.version}${enterprise.theme.classifier}.jar:WEB-INF/extra/dojo-${woodstock-external.dojo.version}.jar:WEB-INF/extra/woodstock-webui-jsf-${woodstock-jsf.version}.jar:WEB-INF/extra/commons-io-${commons-io.version}.jar:WEB-INF/extra/json-${woodstock-json.version}.jar:WEB-INF/extra/prototype-${woodstock-prototype.version}.jar"/>
     <property name="useBundledJsf" value="true"/>
 </sun-web-app>
