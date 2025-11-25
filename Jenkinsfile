@@ -590,7 +590,7 @@ pipeline {
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
                         -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
-                        -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
+                        -pl fish.payara.samples:samples-test-utils \
                         -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
