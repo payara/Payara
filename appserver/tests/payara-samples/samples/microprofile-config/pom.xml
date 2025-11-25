@@ -171,6 +171,7 @@
                             <executable>${payara.home}/bin/asadmin</executable>
                             <arguments>
                                 <argument>restart-domain</argument>
+                                <argument>test-domain</argument>
                             </arguments>
                         </configuration>
                     </execution>
