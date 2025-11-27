@@ -54,6 +54,7 @@
     <name>Payara Samples - Parallel Tests Root</name>
 
     <modules>
+        <module>ejb-invoker-secure-endpoint</module>
         <module>payara-expression-config-properties</module>
         <module>clustered-singleton</module>
         <module>custom-loginmodule-realm</module>
@@ -110,13 +111,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <profiles>
         <profile>
             <id>playwright</id>
             <modules>
                 <module>cleanboot</module>
-            </modules>        
+            </modules>
         </profile>
     </profiles>
 </project>
