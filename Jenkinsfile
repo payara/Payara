@@ -101,6 +101,7 @@ pipeline {
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
                          -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                          -Djavax.xml.accessExternalSchema=all \
+                         -Dpayara.home=${pwd()}/appserver/distributions/payara/target/stage/payara7 \
                          -Dsurefire.rerunFailingTestsCount=2 \
                          -Dfailsafe.rerunFailingTestsCount=2 \
                          -f appserver/tests/payara-samples """
