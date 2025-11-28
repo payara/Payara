@@ -63,7 +63,7 @@
             <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>jaxb2-maven-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>4.0.0</version>
             <executions>
                 <execution>
                     <id>schemagen</id>
