@@ -812,6 +812,7 @@ class PartItem
     }
     
     private static class Cleaner implements Runnable {
+        private final static Logger logger = LogFacade.getLogger();
         private DeferredFileOutputStream fileStream;
 
         private void setFileStream(DeferredFileOutputStream fileStream) {
@@ -826,10 +827,11 @@ class PartItem
             
             File file = fileStream.getFile();
             if (file != null && file.exists()) {
-                if (!file.delete() && log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "Cannot delete file: " + fileStream);
+                if (!file.delete() && logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Cannot delete file: " + fileStream);
                 }
             }
+            fileStream = null;
         }
     }
 }
