@@ -101,6 +101,54 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>payara-server-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${maven.exec.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>start-payara</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerStartStop}</skip>
+                                    <executable>${payara.home}/bin/asadmin</executable>
+                                    <arguments>
+                                        <argument>start-domain</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>stop-payara</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerStartStop}</skip>
+                                    <executable>${payara.home}/bin/asadmin</executable>
+                                    <arguments>
+                                        <argument>stop-domain</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -116,6 +164,7 @@
                         </goals>
                         <configuration>
                             <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>create-system-properties</argument>
                                 <argument>fish.payara.test.create-insecure-endpoint=true</argument>
@@ -132,6 +181,7 @@
                         </goals>
                         <configuration>
                             <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-microprofile-healthcheck-configuration</argument>
                                 <argument>--securityenabled=true</argument>
@@ -149,6 +199,7 @@
                         </goals>
                         <configuration>
                             <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-openapi-configuration</argument>
                                 <argument>--securityenabled=true</argument>
@@ -165,6 +216,7 @@
                         </goals>
                         <configuration>
                             <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-metrics-configuration</argument>
                                 <argument>--securityenabled=true</argument>
@@ -182,9 +234,10 @@
                         </goals>
                         <configuration>
                             <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipServerStartStop}</skip>
                             <arguments>
                                 <argument>restart-domain</argument>
-                                <argument>test-domain</argument>
+                                <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>

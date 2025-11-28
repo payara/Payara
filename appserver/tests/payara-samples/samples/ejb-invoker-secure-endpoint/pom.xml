@@ -14,10 +14,7 @@
     <name>Payara Samples - Payara - ejb-invoker Secure Endpoint</name>
 
     <properties>
-        <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
-        <payara.asadmin>
-            ${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}
-        </payara.asadmin>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
     </properties>
 
     <dependencies>
@@ -39,6 +36,54 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>payara-server-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${maven.exec.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>start-payara</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerStartStop}</skip>
+                                    <executable>${payara.home}/bin/asadmin</executable>
+                                    <arguments>
+                                        <argument>start-domain</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>stop-payara</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerStartStop}</skip>
+                                    <executable>${payara.home}/bin/asadmin</executable>
+                                    <arguments>
+                                        <argument>stop-domain</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -53,6 +98,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipConfig}</skip>
                             <executable>${payara.asadmin}</executable>
                             <arguments>
                                 <argument>set-ejb-invoker-configuration</argument>

@@ -98,18 +98,6 @@ public class SecureCustomHttpListenerTest {
             logger.info("- Using NEW_LISTENER_URL: " + NEW_LISTENER_URL);
             logger.info("- Using HTTP_LISTENER_TWO_URL: " + HTTP_LISTENER_TWO_URL);
 
-            // Execute asadmin commands to set up the HTTP listener
-            CliCommands.payaraGlassFish("create-protocol", "--securityenabled=true", "--target=server-config", "wibbles-protocol");
-            CliCommands.payaraGlassFish("create-http", "--defaultVirtualServer=server", "--target=server-config", "wibbles-protocol");
-            CliCommands.payaraGlassFish("create-network-listener", "--address=0.0.0.0", "--listenerport=8282", "--protocol=wibbles-protocol", "wibbles");
-            CliCommands.payaraGlassFish("set", "configs.config.server-config.network-config.protocols.protocol.wibbles-protocol.ssl.cert-nickname=omnikey");
-
-            // Restart the domain to apply changes
-            CliCommands.payaraGlassFish("restart-domain");
-
-            // Wait for the server to be ready
-            waitForServer(8282);
-
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to set up test environment: " + e.getMessage(), e);
             throw new RuntimeException("Test setup failed", e);

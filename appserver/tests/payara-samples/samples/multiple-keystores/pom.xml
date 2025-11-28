@@ -57,4 +57,101 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-protocol</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-protocol</argument>
+                                <argument>--securityenabled=true</argument>
+                                <argument>--target=server-config</argument>
+                                <argument>wibbles-protocol</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-http</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-http</argument>
+                                <argument>--defaultVirtualServer=server</argument>
+                                <argument>--target=server-config</argument>
+                                <argument>wibbles-protocol</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-network-listener</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-network-listener</argument>
+                                <argument>--address=0.0.0.0</argument>
+                                <argument>--listenerport=8282</argument>
+                                <argument>--protocol=wibbles-protocol</argument>
+                                <argument>wibbles</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>set</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>set</argument>
+                                <argument>configs.config.server-config.network-config.protocols.protocol.wibbles-protocol.ssl.cert-nickname=omnikey</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>restart-domain</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>restart-domain</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -53,33 +53,9 @@
     </parent>
 
     <properties>
-        <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <payara.asadmin>
-            ${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}
-        </payara.asadmin>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
     </properties>
-
-    <profiles>
-        <profile>
-            <id>windows</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <properties>
-                <script.extension>.bat</script.extension>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>payara-server-remote</id>
-            <properties>
-                <skipServerStartStop>true</skipServerStartStop>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
@@ -155,21 +131,6 @@
                     </execution>
 
                     <execution>
-                        <id>stop-payara-server-after-config</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipServerStartStop}</skip>
-                            <executable>${payara.asadmin}</executable>
-                            <arguments>
-                                <argument>stop-domain</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-
-                    <execution>
                         <id>setup-ejb-invoker</id>
                         <phase>pre-integration-test</phase>
                         <goals>
@@ -205,6 +166,22 @@
                             <skip>${skipConfig}</skip>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>stop-payara-server-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerStartStop}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>stop-domain</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>
