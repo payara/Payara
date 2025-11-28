@@ -234,7 +234,7 @@
                         </goals>
                         <configuration>
                             <executable>${payara.home}/bin/asadmin</executable>
-                            <skip>${skipServerStartStop}</skip>
+                            <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>restart-domain</argument>
                                 <argument>${payara.domain.name}</argument>
