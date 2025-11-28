@@ -253,6 +253,7 @@
             <id>payara-server-remote</id>
             <properties>
                 <skipServerStartStop>true</skipServerStartStop>
+                <payara.domain.name>domain1</payara.domain.name>
             </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
