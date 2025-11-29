@@ -70,8 +70,6 @@
         <!-- either SERVER or MICRO -->
         <payara.containerType>SERVER</payara.containerType>
 
-        <payara.home>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara7</payara.home>
-
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
         <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
