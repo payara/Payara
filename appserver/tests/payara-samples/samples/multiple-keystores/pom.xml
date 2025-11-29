@@ -146,7 +146,7 @@
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>restart-domain</argument>
-                                <argument>test-domain</argument>
+                                <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
