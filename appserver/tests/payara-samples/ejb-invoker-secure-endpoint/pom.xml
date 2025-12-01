@@ -50,7 +50,7 @@
                         </goals>
                         <configuration>
                             <skip>${skipServerStartStop}</skip>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <arguments>
                                 <argument>start-domain</argument>
                                 <argument>${payara.domain.name}</argument>
@@ -81,7 +81,7 @@
                         </goals>
                         <configuration>
                             <skip>${skipServerStartStop}</skip>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <arguments>
                                 <argument>stop-domain</argument>
                                 <argument>${payara.domain.name}</argument>
