@@ -92,6 +92,7 @@
         <module>mvc</module>
         <module>data</module>
         <module>versioned-deployment</module>
+        <module>microprofile-jwt-error-cache</module>
     </modules>
 
     <dependencyManagement>

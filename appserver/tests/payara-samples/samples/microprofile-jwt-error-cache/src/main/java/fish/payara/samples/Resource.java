@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,43 +37,31 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples;
 
-package fish.payara.microprofile.jwtauth.eesecurity;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
 
-import java.time.Duration;
-import java.util.Optional;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
 
-public class CacheableString {
+@ApplicationScoped
+@Path("/resource")
+@Produces(TEXT_PLAIN)
+public class Resource {
 
-    private String value;
-    private Duration cacheTTL;
-    private Duration retainOnErrorDuration;
-
-    public static CacheableString empty(Duration cacheTTL) {
-        return from(null, cacheTTL, Duration.ZERO);
+    @GET
+    @Path("/protected")
+    @RolesAllowed("architect")
+    public String protectedResource() {
+        return "This is a protected resource";
     }
-
-    public static CacheableString from(String value, Duration cacheTTL, Duration retainOnErrorDuration) {
-        CacheableString instance = new CacheableString();
-        instance.cacheTTL = cacheTTL;
-        instance.retainOnErrorDuration = retainOnErrorDuration;
-        instance.value = value;
-        return instance;
-    }
-
-    public Optional<String> getValue() {
-        return Optional.ofNullable(value);
-    }
-
-    public Duration getCacheTTL() {
-        return cacheTTL;
-    }
-
-    public boolean isPresent() {
-        return value != null;
-    }
-
-    public Duration getRetainOnErrorDuration() {
-        return retainOnErrorDuration;
+    
+    @GET
+    @Path("/public")
+    public String publicResource() {
+        return "This is a public resource";
     }
 }
