@@ -57,4 +57,169 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- create test resources folder -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.antrun.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>create-keystore-dir</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.build.testOutputDirectory}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+
+                <executions>
+
+                    <execution>
+                        <id>create-protocol</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-protocol</argument>
+                                <argument>--securityenabled=true</argument>
+                                <argument>--target=server-config</argument>
+                                <argument>wibbles-protocol</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-http</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-http</argument>
+                                <argument>--defaultVirtualServer=server</argument>
+                                <argument>--target=server-config</argument>
+                                <argument>wibbles-protocol</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-network-listener</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-network-listener</argument>
+                                <argument>--address=0.0.0.0</argument>
+                                <argument>--listenerport=8282</argument>
+                                <argument>--protocol=wibbles-protocol</argument>
+                                <argument>wibbles</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>set</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>set</argument>
+                                <argument>configs.config.server-config.network-config.protocols.protocol.wibbles-protocol.ssl.cert-nickname=omnikey</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- generate self-signed certificate -->
+                    <execution>
+                        <id>generate-certificate</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>keytool</executable>
+                            <arguments>
+                                <argument>-genkeypair</argument>
+                                <argument>-alias</argument><argument>omnikey</argument>
+                                <argument>-keyalg</argument><argument>RSA</argument>
+                                <argument>-keysize</argument><argument>2048</argument>
+                                <argument>-sigalg</argument><argument>SHA256withRSA</argument>
+                                <argument>-dname</argument><argument>CN=PrintCertificateCommandTest, OU=Test Test\, Test, O=Payara Foundation, L=Pilsen, C=CZ, EMAILADDRESS=nobody@nowhere.space, UID=LDAP-Test</argument>
+                                <argument>-validity</argument><argument>1</argument>
+                                <argument>-keystore</argument><argument>${project.build.testOutputDirectory}/keystore.jks</argument>
+                                <argument>-storepass</argument><argument>changeit</argument>
+                                <argument>-keypass</argument><argument>changeit</argument>
+                                <argument>-startdate</argument><argument>2019/08/01</argument>
+                                <argument>-ext</argument><argument>SAN=email:nobody@nowhere.space</argument>
+                                <argument>-noprompt</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>add-additional-keystore</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-jvm-options</argument>
+                                <argument>-Dfish.payara.ssl.additionalKeyStores=${project.build.testOutputDirectory}/keystore.jks</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>restart-domain</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>restart-domain</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

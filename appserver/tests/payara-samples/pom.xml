@@ -59,6 +59,10 @@
         <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
+        <skipTests>false</skipTests>
+        <skipConfig>${skipTests}</skipConfig>
+        <skipServerStartStop>${skipTests}</skipServerStartStop>
+
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
         <!-- remote host for payara to connect to -->
@@ -68,6 +72,7 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+        <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
@@ -81,12 +86,10 @@
 
     <modules>
         <module>test-utils</module>
-        <module>test-domain-setup</module>
         <!--
         can only be serially executed - they change configuration
         that other modules depend on
         -->
-        <module>ejb-invoker-secure-endpoint</module>
         <!-- Can be executed in parallel -->
         <module>samples</module>
         <module>repackaged</module>
@@ -180,8 +183,17 @@
                 </plugins>
             </build>
         </profile>
-
-
+        <profile>
+                <id>windows</id>
+                <activation>
+                    <os>
+                        <family>Windows</family>
+                    </os>
+                </activation>
+                <properties>
+                    <script.extension>.bat</script.extension>
+                </properties>
+            </profile>
         <profile>
             <id>payara-micro-managed</id>
             <!--
@@ -237,6 +249,10 @@
 
         <profile>
             <id>payara-server-remote</id>
+            <properties>
+                <skipServerStartStop>true</skipServerStartStop>
+                <payara.domain.name>test-domain</payara.domain.name>
+            </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
             Each sample will then reuse this instance to run the tests.

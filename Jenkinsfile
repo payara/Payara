@@ -101,7 +101,9 @@ pipeline {
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
                          -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                          -Djavax.xml.accessExternalSchema=all \
+                         -Dpayara.home=${pwd()}/appserver/distributions/payara/target/stage/payara7 \
                          -Dsurefire.rerunFailingTestsCount=2 \
+                         -Dpayara.domain.name=${DOMAIN_NAME} \
                          -Dfailsafe.rerunFailingTestsCount=2 \
                          -f appserver/tests/payara-samples """
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -577,7 +579,7 @@ pipeline {
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
                         -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
-                        -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
+                        -pl fish.payara.samples:samples-test-utils \
                         -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'

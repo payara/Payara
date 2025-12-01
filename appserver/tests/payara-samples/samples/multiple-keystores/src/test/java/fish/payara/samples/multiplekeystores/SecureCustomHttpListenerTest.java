@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package fish.payara.samples.multiplekeystores;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -49,42 +48,86 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import fish.payara.samples.CliCommands;
+import fish.payara.samples.SecurityUtils;
+import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-/**
- *
- * @author James Hillyard
- */
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+
+import static org.junit.Assert.*;
 
 @RunWith(PayaraArquillianTestRunner.class)
 @NotMicroCompatible
 public class SecureCustomHttpListenerTest {
-    private WebResponse webResponse;
+
+    private static final Logger logger = Logger.getLogger(SecureCustomHttpListenerTest.class.getName());
+    private static final int MAX_RETRIES = 30;
+    private static final int RETRY_DELAY_MS = 1000;
+
     private static WebClient WEB_CLIENT;
     private static final String NEW_LISTENER_URL = "https://localhost:8282";
     private static final String HTTP_LISTENER_TWO_URL = "https://localhost:8181";
 
-
     @BeforeClass
     public static void setUp() {
-        WEB_CLIENT = new WebClient();
-        WEB_CLIENT.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        WEB_CLIENT.getOptions().setUseInsecureSSL(true);
+        try {
+            // Set up the HTTP client
+            WEB_CLIENT = new WebClient();
+            WEB_CLIENT.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            WEB_CLIENT.getOptions().setUseInsecureSSL(true);
+
+            // Log the test configuration
+            logger.info("Test configuration:");
+            logger.info("- Using NEW_LISTENER_URL: " + NEW_LISTENER_URL);
+            logger.info("- Using HTTP_LISTENER_TWO_URL: " + HTTP_LISTENER_TWO_URL);
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to set up test environment: " + e.getMessage(), e);
+            throw new RuntimeException("Test setup failed", e);
+        }
     }
 
     @Test
-    public void secureHttpListenerTwoWithDefaultCert() throws IOException {
-        webResponse = WEB_CLIENT.getPage(HTTP_LISTENER_TWO_URL).getWebResponse();
+    public void secureHttpListenerTwoWithDefaultCert() throws IOException,InterruptedException {
+        waitForServer(8181);
+        WebResponse webResponse = WEB_CLIENT.getPage(HTTP_LISTENER_TWO_URL).getWebResponse();
         assertNotNull(webResponse);
         assertEquals("Status code should be 200", 200, webResponse.getStatusCode());
     }
 
     @Test
-    public void secureNewHttpListenerWithAdditionalCert() throws IOException {
-        webResponse = WEB_CLIENT.getPage(NEW_LISTENER_URL).getWebResponse();
+    public void secureNewHttpListenerWithAdditionalCert() throws IOException,InterruptedException {
+        waitForServer(8282);
+        WebResponse webResponse = WEB_CLIENT.getPage(NEW_LISTENER_URL).getWebResponse();
         assertNotNull(webResponse);
         assertEquals("Status code should be 200", 200, webResponse.getStatusCode());
+    }
+
+    private static void waitForServer(int port) throws InterruptedException {
+        logger.info("Waiting for server to be ready on port " + port + "...");
+        int retries = 0;
+        while (retries < MAX_RETRIES) {
+            try {
+                java.net.Socket socket = new java.net.Socket("localhost", port);
+                socket.close();
+                logger.info("Server is ready on port " + port);
+                return;
+            } catch (IOException e) {
+                retries++;
+                if (retries >= MAX_RETRIES) {
+                    throw new RuntimeException("Server did not start within the expected time");
+                }
+                logger.info("Waiting for server to start... (" + retries + "/" + MAX_RETRIES + ")");
+                Thread.sleep(RETRY_DELAY_MS);
+            }
+        }
     }
 }
