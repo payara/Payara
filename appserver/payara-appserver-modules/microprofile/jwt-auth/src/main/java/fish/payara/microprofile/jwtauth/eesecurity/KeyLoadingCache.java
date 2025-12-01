@@ -82,7 +82,7 @@ public class KeyLoadingCache {
                 if (lastError == 0L) {
                     lastError = now;
                 }
-                if (key.isPresent() && retainOnErrorDuration != null && !retainOnErrorDuration.isZero()) {
+                if (key != null && key.isPresent() && retainOnErrorDuration != null && !retainOnErrorDuration.isZero()) {
                     long elapsedSinceLastError = now - lastError;
                     if (elapsedSinceLastError < retainOnErrorDuration.toMillis()) {
                         // No exception is thrown so get() will return the key.
