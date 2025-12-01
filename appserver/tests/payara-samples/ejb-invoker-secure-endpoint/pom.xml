@@ -36,11 +36,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>start-payara-for-config</id>
-                        <phase>initialize</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -69,39 +68,23 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <!-- Stop or restart server after applying config -->
                     <execution>
-                        <id>stop-payara-after-config</id>
+                        <id>stop-or-restart-payara-after-config</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <skip>${skipServerStartStop}</skip>
+                            <skip>${skipServerRestart}</skip>
                             <executable>${payara.asadmin}</executable>
                             <arguments>
-                                <argument>stop-domain</argument>
+                                <argument>${serverRestartCommand}</argument>
                                 <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- Use failsafe rather than surefire -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <includes>*Test.java</includes>
-                </configuration>
             </plugin>
         </plugins>
     </build>

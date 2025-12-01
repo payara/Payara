@@ -112,7 +112,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>start-payara-server-for-config</id>

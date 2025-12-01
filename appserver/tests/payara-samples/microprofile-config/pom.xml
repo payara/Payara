@@ -101,60 +101,28 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>payara-server-managed</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven.exec.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>start-payara</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipServerStartStop}</skip>
-                                    <executable>${payara.home}/bin/asadmin</executable>
-                                    <arguments>
-                                        <argument>start-domain</argument>
-                                        <argument>${payara.domain.name}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>stop-payara</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipServerStartStop}</skip>
-                                    <executable>${payara.home}/bin/asadmin</executable>
-                                    <arguments>
-                                        <argument>stop-domain</argument>
-                                        <argument>${payara.domain.name}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>start-payara-for-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerStartStop}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>start-domain</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
                     <!-- Create system property -->
                     <execution>
                         <id>create-system-property</id>
@@ -163,7 +131,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>create-system-properties</argument>
@@ -180,7 +148,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-microprofile-healthcheck-configuration</argument>
@@ -198,7 +166,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-openapi-configuration</argument>
@@ -215,7 +183,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-metrics-configuration</argument>
@@ -225,18 +193,18 @@
                         </configuration>
                     </execution>
 
-                    <!-- restart reserver after applied config-->
+                    <!-- Stop or restart server after applying config -->
                     <execution>
-                        <id>restart-server</id>
+                        <id>stop-or-restart-payara-after-config</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
-                            <skip>${skipConfig}</skip>
+                            <skip>${skipServerRestart}</skip>
+                            <executable>${payara.asadmin}</executable>
                             <arguments>
-                                <argument>restart-domain</argument>
+                                <argument>${serverRestartCommand}</argument>
                                 <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>

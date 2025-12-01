@@ -60,8 +60,10 @@
         <maven.min.version>3.5</maven.min.version>
 
         <skipTests>false</skipTests>
-        <skipConfig>${skipTests}</skipConfig>
-        <skipServerStartStop>${skipTests}</skipServerStartStop>
+        <skipConfig>${skipTests}</skipConfig> <!-- Whether to skip applying server config during pre-integration-test phase -->
+        <skipServerStart>${skipTests}</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
+        <skipServerRestart>${skipTests}</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
+        <serverRestartCommand>stop-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
 
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
@@ -270,7 +272,9 @@
         <profile>
             <id>payara-server-remote</id>
             <properties>
-                <skipServerStartStop>true</skipServerStartStop>
+                <skipServerStart>true</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
+                <skipServerRestart>false</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
+                <serverRestartCommand>restart-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
             </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
@@ -568,6 +572,26 @@
                             </goals>
                         </execution>
                     </executions>
+                    <configuration>
+                        <includes>*Test.java</includes>
+                        <systemPropertyVariables>
+                            <payara.home>${payara.home}</payara.home>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <!-- Use failsafe rather than surefire -->
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${maven.exec.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

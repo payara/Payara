@@ -83,18 +83,31 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>${maven.exec.plugin.version}</version>
-
                 <executions>
-
                     <execution>
-                        <id>create-protocol</id>
-                        <phase>generate-test-resources</phase>
+                        <id>start-payara-for-config</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipServerStartStop}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>start-domain</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-protocol</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>create-protocol</argument>
@@ -107,12 +120,12 @@
 
                     <execution>
                         <id>create-http</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>create-http</argument>
@@ -125,12 +138,12 @@
 
                     <execution>
                         <id>create-network-listener</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>create-network-listener</argument>
@@ -144,12 +157,12 @@
 
                     <execution>
                         <id>set</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set</argument>
@@ -161,7 +174,7 @@
                     <!-- generate self-signed certificate -->
                     <execution>
                         <id>generate-certificate</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -187,12 +200,12 @@
 
                     <execution>
                         <id>add-additional-keystore</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
+                            <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>create-jvm-options</argument>
@@ -201,22 +214,22 @@
                         </configuration>
                     </execution>
 
+                    <!-- Stop or restart server after applying config -->
                     <execution>
-                        <id>restart-domain</id>
-                        <phase>process-test-resources</phase>
+                        <id>stop-or-restart-payara-after-config</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
-                            <skip>${skipConfig}</skip>
+                            <skip>${skipServerRestart}</skip>
+                            <executable>${payara.asadmin}</executable>
                             <arguments>
-                                <argument>restart-domain</argument>
+                                <argument>${serverRestartCommand}</argument>
                                 <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
-
                 </executions>
             </plugin>
         </plugins>
