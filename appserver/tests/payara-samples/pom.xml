@@ -74,9 +74,11 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+
         <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
         <payara.home>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara7</payara.home>
         <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
+        <payara.domain.name>domain1</payara.domain.name>
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
@@ -147,7 +149,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <payara.domain.name>domain1</payara.domain.name>
                 <payara.directory.name>payara7</payara.directory.name>
             </properties>
 
@@ -270,7 +271,6 @@
             <id>payara-server-remote</id>
             <properties>
                 <skipServerStartStop>true</skipServerStartStop>
-                <payara.domain.name>test-domain</payara.domain.name>
             </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
