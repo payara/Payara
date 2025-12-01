@@ -87,6 +87,7 @@
                 <version>${maven.exec.plugin.version}</version>
 
                 <executions>
+
                     <execution>
                         <id>create-protocol</id>
                         <phase>generate-test-resources</phase>
@@ -158,26 +159,10 @@
                         </configuration>
                     </execution>
 
-                    <execution>
-                        <id>restart-domain</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${payara.home}/bin/asadmin</executable>
-                            <skip>${skipConfig}</skip>
-                            <arguments>
-                                <argument>restart-domain</argument>
-                                <argument>${payara.domain.name}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-
                     <!-- generate self-signed certificate -->
                     <execution>
                         <id>generate-certificate</id>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -185,7 +170,7 @@
                             <executable>keytool</executable>
                             <arguments>
                                 <argument>-genkeypair</argument>
-                                <argument>-alias</argument><argument>testcert</argument>
+                                <argument>-alias</argument><argument>omnikey</argument>
                                 <argument>-keyalg</argument><argument>RSA</argument>
                                 <argument>-keysize</argument><argument>2048</argument>
                                 <argument>-sigalg</argument><argument>SHA256withRSA</argument>
@@ -203,6 +188,7 @@
 
                     <execution>
                         <id>add-additional-keystore</id>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
@@ -212,6 +198,22 @@
                             <arguments>
                                 <argument>create-jvm-options</argument>
                                 <argument>-Dfish.payara.ssl.additionalKeyStores=${project.build.testOutputDirectory}/keystore.jks</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>restart-domain</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.home}/bin/asadmin</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>restart-domain</argument>
+                                <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
