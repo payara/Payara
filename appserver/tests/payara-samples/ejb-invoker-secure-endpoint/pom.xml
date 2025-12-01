@@ -13,10 +13,6 @@
     <packaging>war</packaging>
     <name>Payara Samples - Payara - ejb-invoker Secure Endpoint</name>
 
-    <properties>
-        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>fish.payara.extras</groupId>
@@ -89,6 +85,23 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Use failsafe rather than surefire -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>*Test.java</includes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

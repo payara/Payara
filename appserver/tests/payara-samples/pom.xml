@@ -69,10 +69,14 @@
         <payara.adminHost>localhost</payara.adminHost>
         <!-- either SERVER or MICRO -->
         <payara.containerType>SERVER</payara.containerType>
+        <!-- Either payara or payara-web -->
+        <payara.server.artifact>payara</payara.server.artifact>
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
         <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
+        <payara.home>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara7</payara.home>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
@@ -169,45 +173,26 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>delete-server</id>
-                                <inherited>false</inherited>
-                                <goals>
-                                    <goal>clean</goal>
-                                </goals>
-                                <phase>clean</phase>
-                                <configuration>
-                                    <filesets>
-                                        <fileset>
-                                            <directory>${session.executionRootDirectory}/target</directory>
-                                        </fileset>
-                                    </filesets>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>unpack</id>
-                                <phase>process-test-classes</phase>
+                                <id>unpack-server</id>
                                 <goals>
                                     <goal>unpack</goal>
                                 </goals>
+                                <phase>pre-integration-test</phase>
+                                <inherited>false</inherited>
                                 <configuration>
-                                    <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
-                                    <markersDirectory>${session.executionRootDirectory}/target/dependency-maven-plugin-markers</markersDirectory>
+                                    <skip>${skipConfig}</skip>
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>fish.payara.distributions</groupId>
-                                            <artifactId>payara</artifactId>
+                                            <artifactId>${payara.server.artifact}</artifactId>
                                             <version>${payara.version}</version>
                                             <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${maven.multiModuleProjectDirectory}${file.separator}target</outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
                                 </configuration>
@@ -336,6 +321,13 @@
             <modules>
                 <module>cleanboot</module>
             </modules>
+        </profile>
+
+        <profile>
+            <id>web</id>
+            <properties>
+                <payara.server.artifact>payara-web</payara.server.artifact>
+            </properties>
         </profile>
     </profiles>
 
