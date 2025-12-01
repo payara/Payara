@@ -48,6 +48,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,16 +79,6 @@ public class SecureCustomHttpListenerTest {
     @BeforeClass
     public static void setUp() {
         try {
-            KeyPair clientKeyPair = SecurityUtils.generateRandomRSAKeys();
-            X509Certificate clientCertificate = SecurityUtils.createSelfSignedCertificate(clientKeyPair);
-            String path = SecurityUtils.createTempJKSKeyStore(clientKeyPair.getPrivate(), clientCertificate);
-
-            //Used so the path is correct when run in the cli command
-            path = path.replace("\\", "\\\\");
-            path = path.replace(":", "\\:");
-
-            CliCommands.payaraGlassFish("create-jvm-options", "\"-Dfish.payara.ssl.additionalKeyStores=" + path + "\"");
-
             // Set up the HTTP client
             WEB_CLIENT = new WebClient();
             WEB_CLIENT.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -105,14 +96,16 @@ public class SecureCustomHttpListenerTest {
     }
 
     @Test
-    public void secureHttpListenerTwoWithDefaultCert() throws IOException {
+    public void secureHttpListenerTwoWithDefaultCert() throws IOException,InterruptedException {
+        waitForServer(8181);
         WebResponse webResponse = WEB_CLIENT.getPage(HTTP_LISTENER_TWO_URL).getWebResponse();
         assertNotNull(webResponse);
         assertEquals("Status code should be 200", 200, webResponse.getStatusCode());
     }
 
     @Test
-    public void secureNewHttpListenerWithAdditionalCert() throws IOException {
+    public void secureNewHttpListenerWithAdditionalCert() throws IOException,InterruptedException {
+        waitForServer(8282);
         WebResponse webResponse = WEB_CLIENT.getPage(NEW_LISTENER_URL).getWebResponse();
         assertNotNull(webResponse);
         assertEquals("Status code should be 200", 200, webResponse.getStatusCode());
