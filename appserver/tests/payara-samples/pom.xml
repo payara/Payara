@@ -516,7 +516,7 @@
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
                         <!-- affects managed only -->
-                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
                         <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
@@ -533,7 +533,7 @@
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
                         <!-- affects managed only -->
-                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
                         <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
