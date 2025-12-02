@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.web</groupId>
         <artifactId>web</artifactId>
-        <version>7.2025.2</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>cdi-api-fragment</artifactId>
