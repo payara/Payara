@@ -131,16 +131,7 @@
         <finalName>concurrencyApp</finalName>
         <plugins>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
-            </plugin>
-            <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.5.0</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                 </configuration>
@@ -154,13 +145,6 @@
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>payara-client-ee11</artifactId>
-                    <version>${arquillian-payara.version}</version>
-                    <scope>test</scope>
-                </dependency>
-                <dependency>
-                    <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>arquillian-payara-server-remote</artifactId>
-                    <version>${arquillian-payara.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
