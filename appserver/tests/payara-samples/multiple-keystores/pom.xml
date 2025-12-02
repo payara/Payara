@@ -67,7 +67,7 @@
                 <executions>
                     <execution>
                         <id>create-keystore-dir</id>
-                        <phase>generate-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -214,9 +214,16 @@
                         </configuration>
                     </execution>
 
-                    <!-- Stop or restart server after applying config -->
+                    <!--
+                        Restart server after applying config.
+
+                        This test is special in that because it's not doing any deployments it won't start a payara-server-managed container,
+                        so we explicitly call restart-domain rather than stop-domain.
+
+                        We must also then shut down the server ourselves in the post-integration-test phase
+                    -->
                     <execution>
-                        <id>stop-or-restart-payara-after-config</id>
+                        <id>restart-payara-after-config</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -225,7 +232,7 @@
                             <skip>${skipServerRestart}</skip>
                             <executable>${payara.asadmin}</executable>
                             <arguments>
-                                <argument>${serverRestartCommand}</argument>
+                                <argument>restart-domain</argument>
                                 <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
@@ -234,4 +241,35 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>payara-server-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>stop-managed-payara-server-after-test</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerRestart}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>stop-domain</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
