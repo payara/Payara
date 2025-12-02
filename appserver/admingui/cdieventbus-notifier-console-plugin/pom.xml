@@ -43,7 +43,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2025.2</version>
     </parent>
     <artifactId>cdieventbus-notifier-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
