@@ -573,7 +573,10 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <includes>*Test.java</includes>
+                        <includes>
+                            <include>*Test.java</include>
+                            <include>*IT.java</include>
+                        </includes>
                         <systemPropertyVariables>
                             <payara.home>${payara.home}</payara.home>
                         </systemPropertyVariables>
