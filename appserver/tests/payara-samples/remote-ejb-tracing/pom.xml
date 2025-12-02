@@ -136,7 +136,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <skip>${skipServerStartStop}</skip>
+                            <skip>${skipServerStart}</skip>
                             <executable>${payara.asadmin}</executable>
                             <arguments>
                                 <argument>start-domain</argument>
