@@ -208,8 +208,8 @@
                             <executable>${payara.asadmin}</executable>
                             <skip>${skipConfig}</skip>
                             <arguments>
-                                <argument>create-jvm-options</argument>
-                                <argument>-Dfish.payara.ssl.additionalKeyStores=${project.build.testOutputDirectory}/keystore.jks</argument>
+                                <argument>create-jvm-option</argument>
+                                <argument>-Dfish.payara.ssl.additionalKeyStores=${project.build.testOutputDirectory}${file.separator}keystore.jks</argument>
                             </arguments>
                         </configuration>
                     </execution>
