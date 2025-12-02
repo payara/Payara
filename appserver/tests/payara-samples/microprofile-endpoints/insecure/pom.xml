@@ -66,7 +66,7 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <environmentVariables>
                                 <EXTRA_MICRO_OPTIONS>--postbootcommandfile ${project.build.testOutputDirectory}/post-boot-commands.txt --sslPort 8181 --autoBindSsl</EXTRA_MICRO_OPTIONS>

@@ -111,7 +111,8 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>
                         <argLine>-DpomPath=${basedir}/pom.xml</argLine>
                     </configuration>

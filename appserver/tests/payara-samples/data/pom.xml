@@ -138,7 +138,7 @@
     <plugins>
       <!-- Surefire configured for JUnit 4 + Arquillian -->
       <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
           <useModulePath>false</useModulePath>
           <includes>
