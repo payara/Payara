@@ -152,6 +152,7 @@
             </activation>
             <properties>
                 <payara.directory.name>payara7</payara.directory.name>
+                <payara.containerType>SERVER</payara.containerType>
             </properties>
 
             <dependencies>
@@ -275,6 +276,7 @@
                 <skipServerStart>true</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
                 <skipServerRestart>false</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
                 <serverRestartCommand>restart-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
+                <payara.containerType>SERVER</payara.containerType>
             </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
