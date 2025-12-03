@@ -589,7 +589,7 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <!-- Use failsafe rather than surefire -->
-                        <skip>true</skip>
+                        <skipTests>true</skipTests>
                     </configuration>
                 </plugin>
                 <plugin>
