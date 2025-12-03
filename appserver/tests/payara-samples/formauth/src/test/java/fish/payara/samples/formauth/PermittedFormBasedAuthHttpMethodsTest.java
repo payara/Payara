@@ -79,12 +79,16 @@ public class PermittedFormBasedAuthHttpMethodsTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        addContainerSystemProperty("fish.payara.permittedFormBasedAuthHttpMethods", "POST");
+        if (!Boolean.parseBoolean(System.getProperty("skipConfig", "false"))) {
+            addContainerSystemProperty("fish.payara.permittedFormBasedAuthHttpMethods", "POST");
+        }
     }
 
     @AfterClass
     public static void cleanUp() throws Exception {
-        clearContainerSystemProperty("fish.payara.permittedFormBasedAuthHttpMethods", "POST");
+        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
+            clearContainerSystemProperty("fish.payara.permittedFormBasedAuthHttpMethods", "POST");
+        }
     }
 
     @Test

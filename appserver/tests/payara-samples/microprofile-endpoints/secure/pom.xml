@@ -70,7 +70,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <environmentVariables>
-                                <EXTRA_MICRO_OPTIONS>--postbootcommandfile ${project.build.testOutputDirectory}/post-boot-commands.txt --sslPort 8181 --autoBindSsl</EXTRA_MICRO_OPTIONS>
+                                <EXTRA_MICRO_OPTIONS>--postbootcommandfile ${ld.testOutputDirectory}/post-boot-commands.txt --sslPort 8181 --autoBindSsl</EXTRA_MICRO_OPTIONS>
                             </environmentVariables>
                         </configuration>
                     </plugin>

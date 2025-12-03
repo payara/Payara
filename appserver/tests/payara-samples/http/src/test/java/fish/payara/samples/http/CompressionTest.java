@@ -85,20 +85,25 @@ public class CompressionTest {
         uncompressedSize = WEB_CLIENT.getPage(URL).getWebResponse().getContentLength();
         log.log(Level.FINE, "********* uncompressedSize = {0}", uncompressedSize);
 
-        CliCommands.payaraGlassFish("set",
-                "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=false");
-        CliCommands.payaraGlassFish("set",
-                "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression=on");
+        if (!Boolean.parseBoolean(System.getProperty("skipConfig", "false"))) {
+            CliCommands.payaraGlassFish("set",
+                    "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=false");
+            CliCommands.payaraGlassFish("set",
+                    "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression=on");
+        }
+
         WEB_CLIENT.addRequestHeader("Accept-Encoding", "gzip,deflate");
     }
 
     //Resets http-listener-1 back to its original state
     @AfterClass
     public static void afterClass() {
-        CliCommands.payaraGlassFish("set",
-                "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=true");
-        CliCommands.payaraGlassFish("set",
-                "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression=off");
+        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
+            CliCommands.payaraGlassFish("set",
+                    "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=true");
+            CliCommands.payaraGlassFish("set",
+                    "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression=off");
+        }
     }
 
     @Test

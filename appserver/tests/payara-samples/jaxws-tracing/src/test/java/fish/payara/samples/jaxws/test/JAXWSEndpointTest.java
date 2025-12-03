@@ -87,22 +87,24 @@ public abstract class JAXWSEndpointTest {
 
     @BeforeClass
     public static void enableRequesttracing() throws Exception {
-        payaraGlassFish(
-            "set-requesttracing-configuration",
-            "--thresholdValue=25",
-            "--enabled=true",
-            "--target=server-config",
-            "--thresholdUnit=MICROSECONDS",
-            "--dynamic=true"
-        );
+        if (!Boolean.parseBoolean(System.getProperty("skipConfig", "false"))) {
+            payaraGlassFish(
+                    "set-requesttracing-configuration",
+                    "--thresholdValue=25",
+                    "--enabled=true",
+                    "--target=server-config",
+                    "--thresholdUnit=MICROSECONDS",
+                    "--dynamic=true"
+            );
 
-        payaraGlassFish(
-            "notification-cdieventbus-configure",
-            "--loopBack=true",
-            "--dynamic=true",
-            "--enabled=true",
-            "--hazelcastEnabled=true"
-        );
+            payaraGlassFish(
+                    "notification-cdieventbus-configure",
+                    "--loopBack=true",
+                    "--dynamic=true",
+                    "--enabled=true",
+                    "--hazelcastEnabled=true"
+            );
+        }
     }
 
     @Before
@@ -117,17 +119,19 @@ public abstract class JAXWSEndpointTest {
 
     @AfterClass
     public static void disableRequestTracing() {
-        payaraGlassFish(
-            "set-requesttracing-configuration",
-            "--enabled=false",
-            "--dynamic=true"
-        );
+        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
+            payaraGlassFish(
+                    "set-requesttracing-configuration",
+                    "--enabled=false",
+                    "--dynamic=true"
+            );
 
-        payaraGlassFish(
-            "notification-cdieventbus-configure",
-            "--enabled=false",
-            "--dynamic=true"
-        );
+            payaraGlassFish(
+                    "notification-cdieventbus-configure",
+                    "--enabled=false",
+                    "--dynamic=true"
+            );
+        }
     }
 
 }

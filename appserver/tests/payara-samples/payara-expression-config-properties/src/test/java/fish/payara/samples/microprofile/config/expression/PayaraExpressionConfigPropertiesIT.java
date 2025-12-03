@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,7 +49,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -76,20 +75,11 @@ public class PayaraExpressionConfigPropertiesIT {
                 "payara-expression-config.properties");
     }
 
-    @BeforeClass
-    public static void createPasswordAlias() {
-        CliCommands.payaraGlassFish("create-password-alias", "-W",
-            PayaraExpressionConfigPropertiesIT.class.getResource("/passwordfile.txt").getFile(), "wibbles");
-
-        // Deployment actually happens before @BeforeClass, and the PasswordAlias config source requires an application
-        // refresh to update, so disable and enable it
-        CliCommands.payaraGlassFish("set", "servers.server.server.application-ref.microprofile-config-expression.enabled=false");
-        CliCommands.payaraGlassFish("set", "servers.server.server.application-ref.microprofile-config-expression.enabled=true");
-    }
-
     @AfterClass
     public static void deletePasswordAlias() {
-        CliCommands.payaraGlassFish("delete-password-alias", "wibbles");
+        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
+            CliCommands.payaraGlassFish("delete-password-alias", "wibbles");
+        }
     }
 
     @Test

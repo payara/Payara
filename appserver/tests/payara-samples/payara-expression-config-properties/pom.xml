@@ -73,6 +73,67 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-payara-for-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerStart}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>start-domain</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>create-password-alias</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>create-password-alias</argument>
+                                <argument>-W</argument>
+                                <argument>${project.build.testOutputDirectory}${file.separator}passwordfile.txt</argument>
+                                <argument>wibbles</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Stop or restart server after applying config -->
+                    <execution>
+                        <id>stop-or-restart-payara-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerRestart}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>${serverRestartCommand}</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>Windows</id>
