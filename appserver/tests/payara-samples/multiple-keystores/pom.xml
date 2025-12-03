@@ -179,6 +179,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipConfig}</skip>
                             <executable>keytool</executable>
                             <arguments>
                                 <argument>-genkeypair</argument>
