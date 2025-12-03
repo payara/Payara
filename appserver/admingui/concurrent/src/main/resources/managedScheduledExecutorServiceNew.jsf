@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- concurent/managedScheduledExecutorServiceNew.jsf -->
 
@@ -55,7 +56,7 @@
         setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/concurrent/managedScheduledExecutorServices.jsf");
         setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
         setPageSessionAttribute(key="isConcurrent" value="true");
-        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "longRunningTasks" });
+        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "longRunningTasks", "useVirtualThreads" });
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.valueMap}");
         setPageSessionAttribute(key="edit" value="#{false}" );
@@ -66,6 +67,7 @@
         setPageSessionAttribute(key="showMaxPoolSize" value="#{false}");
         setPageSessionAttribute(key="showTaskQueue" value="#{false}");
         setPageSessionAttribute(key="showForkJoin" value="#{false}");
+        setPageSessionAttribute(key="showVirtualThreads" value="#{true}");
     />
     </event>
     "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:concurrent:managedScheduledExecutorServices");</script>

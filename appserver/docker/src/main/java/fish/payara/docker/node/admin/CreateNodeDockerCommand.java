@@ -91,7 +91,7 @@ public class CreateNodeDockerCommand implements AdminCommand {
     @Param(name = NodeUtils.PARAM_NODEDIR, optional = true)
     String nodedir;
 
-    @Param(name = NodeUtils.PARAM_INSTALLDIR, optional = true, defaultValue = "/opt/payara/payara6")
+    @Param(name = NodeUtils.PARAM_INSTALLDIR, optional = true, defaultValue = "/opt/payara/payara7")
     String installdir;
 
     @Param(name = "dockerPasswordFile", alias = "dockerpasswordfile")

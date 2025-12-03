@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-web</artifactId>
@@ -171,10 +171,6 @@
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.web</groupId>
-            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-        </dependency>
 
         <!-- Java EE Security -->
         <dependency>
@@ -183,12 +179,12 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
-            <artifactId>jakarta.security.enterprise</artifactId>
+            <artifactId>soteria</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>soteria.spi.bean.decorator.weld</artifactId>
-            <version>${jakarta.security.enterprise.version}</version>
+            <version>${soteria.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.el</groupId>
@@ -260,6 +256,10 @@
             <groupId>fish.payara.server.internal.security</groupId>
             <artifactId>realm-stores</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.epicyro</groupId>
+            <artifactId>epicyro</artifactId>
         </dependency>
     </dependencies>
 </project>

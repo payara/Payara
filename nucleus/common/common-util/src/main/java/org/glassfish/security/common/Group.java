@@ -37,8 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
+
 package org.glassfish.security.common;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Objects;
 
 /**
  * This class implements the EJB concept of a Group. A Group is a privilege attribute that several
@@ -48,15 +55,16 @@ package org.glassfish.security.common;
  *
  * @author Harish Prabandham
  */
-public class Group extends PrincipalImpl {
+public class Group implements Principal, Serializable {
 
     private static final long serialVersionUID = -3087471149205106412L;
+    private final String name;
 
     /**
      * @param name - a name of the group
      */
     public Group(String name) {
-        super(name);
+        this.name = Objects.requireNonNull(name);
     }
 
     @Override
@@ -76,5 +84,10 @@ public class Group extends PrincipalImpl {
     @Override
     public int hashCode() {
         return getName().hashCode();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

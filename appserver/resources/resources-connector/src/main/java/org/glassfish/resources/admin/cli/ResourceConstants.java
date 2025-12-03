@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2025 [Payara Foundation and/or its affiliates]
 
 package org.glassfish.resources.admin.cli;
 
@@ -254,6 +254,7 @@ public final class ResourceConstants {
     public static final String THREAD_PRIORITY = "thread-priority";
     public static final String LONG_RUNNING_TASKS = "long-runnings-tasks";
     public static final String USE_FORK_JOIN_POOL = "use-fork-join-pool";
+    public static final String USE_VIRTUAL_THREADS = "use-virtual-threads";
     public static final String HUNG_AFTER_SECONDS = "hung-after-seconds";
     public static final String CORE_POOL_SIZE = "core-pool-size";
     public static final String MAXIMUM_POOL_SIZE = "maximum-pool-size";

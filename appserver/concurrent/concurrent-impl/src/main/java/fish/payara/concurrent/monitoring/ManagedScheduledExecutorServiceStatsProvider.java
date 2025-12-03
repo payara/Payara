@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 Payara Foundation and/or its affiliates.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates.
  * All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
@@ -20,7 +20,7 @@ package fish.payara.concurrent.monitoring;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.AbstractManagedExecutorService;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
@@ -41,9 +41,8 @@ public class ManagedScheduledExecutorServiceStatsProvider
 {
     private final String name;
     private boolean registered = false;
-    private final ManagedScheduledExecutorServiceImpl 
-            managedScheduledExecutorServiceImpl;
-    
+    private final AbstractManagedExecutorService managedScheduledExecutorServiceImpl;
+
     private CountStatisticImpl completedTaskCount = new CountStatisticImpl(
             "CompletedTaskCount", "count", 
             "Number of tasks completed");

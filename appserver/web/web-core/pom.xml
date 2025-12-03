@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.web</groupId>
         <artifactId>web</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>web-core</artifactId>
@@ -151,7 +151,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet-core</artifactId>
+            <artifactId>jersey-container-servlet</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>

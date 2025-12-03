@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node;
 
@@ -446,45 +446,45 @@ public abstract class DeploymentDescriptorNode<T> implements XMLNode<T> {
         // DOLUtils.getDefaultLogger().finer("SETELEMENTVALUE : " + "in " + getXMLRootTag() + " Node, startElement " +
         // element.getQName());
         Map<String, String> dispatchTable = getDispatchTable();
+        String elementName = element.getQName();
 
         if (dispatchTable != null) {
-            if (dispatchTable.containsKey(element.getQName())) {
-                if (dispatchTable.get(element.getQName()) == null) {
-                    // we just ignore these values from the DDs
-                    if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
-                        DOLUtils.getDefaultLogger().finer("Deprecated element " + element.getQName() + " with value " + value + " is ignored");
-                    }
-                    return;
+            String dispatchMethodName = dispatchTable.get(elementName);
+            if (dispatchMethodName == null) {
+                // we just ignore these values from the DDs
+                if (DOLUtils.getDefaultLogger().isLoggable(Level.FINER)) {
+                    DOLUtils.getDefaultLogger().finer(() -> "Deprecated element " + elementName + " with value '" + value + "' is ignored");
                 }
-                try {
-                    Object descriptor = getDescriptor();
-                    if (descriptor != null) {
-                        setDescriptorInfo(descriptor, dispatchTable.get(element.getQName()), value);
-                    } else {
-                        DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), value });
-                    }
+                return;
+            }
+            try {
+                Object descriptor = getDescriptor();
+                if (descriptor != null) {
+                    setDescriptorInfo(descriptor, dispatchMethodName, value);
+                } else {
+                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[]{elementName, value});
+                }
 
-                    return;
-                } catch (InvocationTargetException e) {
-                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
-                            new Object[] { dispatchTable.get(element.getQName()), getDescriptor().getClass() });
-                    Throwable t = e.getTargetException();
-                    if (t instanceof IllegalArgumentException) {
-                        // We report the error but we continue loading, this will allow the verifier to catch these errors or to register
-                        // an error handler for notification
-                        DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element, value });
-                    } else {
-                        DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { t.toString(), null });
-                        DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", t);
-                    }
-                } catch (Throwable t) {
-                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { t.toString(), null });
+                return;
+            } catch (InvocationTargetException e) {
+                DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING,
+                        new Object[]{dispatchMethodName, getDescriptor().getClass()});
+                Throwable t = e.getTargetException();
+                if (t instanceof IllegalArgumentException) {
+                    // We report the error but we continue loading, this will allow the verifier to catch these errors or to register
+                    // an error handler for notification
+                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[]{element, value});
+                } else {
+                    DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[]{t.toString(), null});
                     DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", t);
                 }
+            } catch (Throwable t) {
+                DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[]{t.toString(), null});
+                DOLUtils.getDefaultLogger().log(Level.WARNING, "Error occurred", t);
             }
         }
         if (value.trim().length() != 0) {
-            DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[] { element.getQName(), value });
+            DOLUtils.getDefaultLogger().log(Level.WARNING, DOLUtils.INVALID_DESC_MAPPING, new Object[]{elementName, value});
         }
     }
 

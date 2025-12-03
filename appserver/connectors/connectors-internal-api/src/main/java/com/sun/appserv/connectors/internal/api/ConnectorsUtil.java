@@ -539,7 +539,7 @@ public class ConnectorsUtil {
 
         switch (tranIsolation) {
             case Connection.TRANSACTION_READ_UNCOMMITTED:
-                return "read-uncommitted";
+                return "read-uncommited";
             case Connection.TRANSACTION_READ_COMMITTED:
                 return "read-committed";
             case Connection.TRANSACTION_REPEATABLE_READ:

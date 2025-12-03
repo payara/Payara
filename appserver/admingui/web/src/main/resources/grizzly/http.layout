@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/http.jsf -->
 
@@ -81,7 +81,7 @@
         setPageSessionAttribute(key="valueMap" value="#{pageSession.httpMap}");
         setPageSessionAttribute(key="convertToFalseList" 
             value={"uploadTimeoutEnabled", "cometSupportEnabled", "dnsLookupEnabled", "rcmSupportEnabled", "traceEnabled", "authPassThroughEnabled", 
-            "chunkingEnabled", "encodedSlashEnabled", "websocketsSupportEnabled", "xpoweredBy", "serverHeader", "xframeOptions", "cookieSameSiteEnabled", "http2Enabled", "http2DisableCipherCheck", "http2PushEnabled" });
+            "chunkingEnabled", "encodedSlashEnabled", "websocketsSupportEnabled", "serverHeader", "xframeOptions", "cookieSameSiteEnabled", "http2Enabled", "http2DisableCipherCheck", "http2PushEnabled" });
 
         //set the following for including buttons.inc
         

@@ -2,7 +2,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) [2017-2025] Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -236,9 +236,6 @@
   <!--                       compiling JSP pages?  [default work directory  -->
   <!--                       for the current web application]               -->
   <!--                                                                      -->
-  <!--   xpoweredBy          Determines whether X-Powered-By response       -->
-  <!--                       header is added by generated servlet  [true]   -->
-  <!--                                                                      -->
   <!--   usePrecompiled      If true, it is assumed that JSPs have been     -->
   <!--                       precompiled, and their corresponding servlet   -->
   <!--                       classes have been bundled in the web           -->
@@ -289,10 +286,6 @@
   <servlet>
     <servlet-name>jsp</servlet-name>
     <servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>
-    <init-param>
-      <param-name>xpoweredBy</param-name>
-      <param-value>false</param-value>
-    </init-param>
     <init-param>
       <param-name>httpMethods</param-name>
       <param-value>GET,POST,HEAD</param-value>

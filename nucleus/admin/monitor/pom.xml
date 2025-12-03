@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -113,10 +113,6 @@
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>amx-core</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-api</artifactId>
         </dependency>
     </dependencies>
 </project>

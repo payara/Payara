@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>http</artifactId>
@@ -62,6 +62,7 @@
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>

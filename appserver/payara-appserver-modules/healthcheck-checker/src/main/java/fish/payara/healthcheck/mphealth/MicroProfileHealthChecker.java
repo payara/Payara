@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) [2018-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2018-2025 Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ package fish.payara.healthcheck.mphealth;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 
-import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
@@ -63,11 +62,6 @@ import fish.payara.micro.ClusterCommandResult;
 import fish.payara.micro.data.InstanceDescriptor;
 import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.MicroProfileHealthCheckerConfiguration;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
@@ -75,7 +69,6 @@ import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import java.net.URL;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -102,8 +95,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "healthcheck-mp")
 @RunLevel(10)
 public class MicroProfileHealthChecker
-extends BaseHealthCheck<HealthCheckTimeoutExecutionOptions, MicroProfileHealthCheckerConfiguration>
-implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
+extends BaseHealthCheck<HealthCheckTimeoutExecutionOptions, MicroProfileHealthCheckerConfiguration> implements PostConstruct {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileHealthChecker.class.getPackage().getName());
 
@@ -124,8 +116,6 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
 
     @Inject
     private PayaraInstanceImpl payaraMicro;
-
-    private volatile Map<String, Future<Integer>> priorCollectionTasks;
 
     @Override
     public void postConstruct() {
@@ -180,49 +170,6 @@ implements PostConstruct, MonitoringDataSource, MonitoringWatchSource {
             return EventLevel.INFO;
         }
         return EventLevel.WARNING;
-    }
-
-    @Override
-    public void collect(MonitoringWatchCollector collector) {
-        if (!envrionment.isDas() || options == null || !options.isEnabled()) {
-            return;
-        }
-        collector.watch("ns:health LivelinessUp", "Liveliness UP", "percent")
-            .red(-60, null, false, null, null, false)
-            .amber(-100, null, false, null, null, false)
-            .green(100, null, false, null, null, false);
-    }
-
-    /**
-     * The idea is that every 12 seconds this data is collected. 
-     * This triggers the tasks.
-     * If there are tasks from 12 seconds ago these should be done otherwise they are causing a "immediate" timeout
-     * as next collection is 12 seconds later.
-     * So from the point of view of the collector results are available "immediately" while the asynchronous tasks
-     * had 12 seconds to finish.
-     */
-    @Override
-    @MonitoringData(ns = "health", intervalSeconds = 12)
-    public void collect(MonitoringDataCollector collector) {
-        if (!envrionment.isDas() || options == null || !options.isEnabled()) {
-            return;
-        }
-        Map<String, Future<Integer>> instances = priorCollectionTasks;
-        if (instances != null) {
-            int upCount = 0;
-            for (Entry<String, Future<Integer>> instance : instances.entrySet()) {
-                try {
-                    int statusCode = instance.getValue().get(10, MILLISECONDS);
-                    if (statusCode == HTTP_OK) {
-                        upCount++;
-                    }
-                } catch (Exception ex) {
-                    LOGGER.log(Level.FINE, "Failed to ping " + instance.getKey(), ex);
-                }
-            }
-            collector.collect("LivelinessUp",100 * upCount / instances.size());
-        }
-        priorCollectionTasks = pingAllInstances(10000L);
     }
 
     /**

@@ -37,7 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
-# Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
+# Portions Copyright 2016-2024 Payara Foundation and/or its affiliates
 
 -exportcontents: \
                         com.sun.enterprise.security.acl; \
@@ -45,15 +45,14 @@
                         com.sun.enterprise.security.ee.audit; \
                         com.sun.enterprise.security.ee.auth.login; \
                         com.sun.enterprise.security.auth.realm.jdbc; \
-                        com.sun.enterprise.security.ee.authorize; \
+                        com.sun.enterprise.security.ee.authorization; \
+                        com.sun.enterprise.security.ee.authorization.cache; \
+                        com.sun.enterprise.security.ee.authentication.jakarta; \
+                        com.sun.enterprise.security.ee.authentication.jakarta.callback; \
+                        com.sun.enterprise.security.ee.web; \
+                        com.sun.enterprise.security.ee.web.integration; \
                         com.sun.enterprise.security.jauth; \
-                        com.sun.enterprise.security.jaspic; \
-                        com.sun.enterprise.security.jaspic.callback; \
-                        com.sun.enterprise.security.jaspic.config; \
                         com.sun.enterprise.security.auth.realm.pam; \
-                        com.sun.enterprise.security.jacc; \
-                        com.sun.enterprise.security.jacc.cache; \
-                        com.sun.enterprise.security.jacc.context; \
                         com.sun.enterprise.security.auth.digest.impl; \
                         com.sun.enterprise.security.permissionsxml; \
                         com.sun.enterprise.security.web.integration; version=${project.osgi.version}

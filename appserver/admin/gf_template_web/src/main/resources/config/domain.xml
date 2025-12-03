@@ -4,7 +4,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2013-2015 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2020-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2017-2025 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <hazelcast-runtime-configuration start-port="%%%HAZELCAST_START_PORT%%%" das-port="%%%HAZELCAST_DAS_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
@@ -145,7 +145,7 @@
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
           <property value="true" name="certificate-validation"/>
         </auth-realm>
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
+        <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -212,14 +212,14 @@
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
-        <jvm-options>[21|]--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
         <jvm-options>[24|]--sun-misc-unsafe-memory-access=allow</jvm-options>
         <jvm-options>[24|]--enable-native-access=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
@@ -229,6 +229,7 @@
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
+        <jvm-options>-Djakarta.security.jacc.PolicyFactory.provider=org.glassfish.exousia.modules.def.DefaultPolicyFactory</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
@@ -278,6 +279,7 @@
         <!-- Hotswap Agent -->
         <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
         <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
+        <jvm-options>-Djakarta.security.jacc.policy.provider=org.glassfish.exousia.modules.def.DefaultPolicy</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />
@@ -372,7 +374,7 @@
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
           <property value="true" name="certificate-validation"/>
         </auth-realm>
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
+        <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property value="false" name="auditOn" />
         </audit-module>
@@ -449,13 +451,13 @@
         <jvm-options>--add-opens=java.logging/java.util.logging=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.management/javax.management.openmbean=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
-        <jvm-options>[17|]--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
-        <jvm-options>[21|]--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.net.www=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.base/sun.security.util=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.lang.invoke=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.desktop/java.beans=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
+        <jvm-options>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
         <jvm-options>[24|]--sun-misc-unsafe-memory-access=allow</jvm-options>
         <jvm-options>[24|]--enable-native-access=ALL-UNNAMED</jvm-options>
         <jvm-options>-Xmx512m</jvm-options>
@@ -465,6 +467,7 @@
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
+        <jvm-options>-Djakarta.security.jacc.PolicyFactory.provider=org.glassfish.exousia.modules.def.DefaultPolicyFactory</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
         <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.p12</jvm-options>
@@ -511,6 +514,7 @@
         <!-- Hotswap Agent -->
         <jvm-options>[Dynamic Code Evolution-11.0.10|]-XX:HotswapAgent=core</jvm-options>
         <jvm-options>[Dynamic Code Evolution-11.0.10|]-Xlog:redefine+class*=info</jvm-options>
+        <jvm-options>-Djakarta.security.jacc.policy.provider=org.glassfish.exousia.modules.def.DefaultPolicy</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability />

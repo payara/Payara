@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,8 +43,8 @@ import com.sun.enterprise.deployment.ManagedExecutorDefinitionDescriptor;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.ResourceDescriptor;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
-import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
 import jakarta.enterprise.concurrent.ManagedExecutorDefinition;
+import java.util.Arrays;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -53,14 +53,14 @@ import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
 @AnnotationHandlerFor(ManagedExecutorDefinition.class)
-public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
+public class ManagedExecutorDefinitionHandler extends AbstractConcurrencyHandler {
 
     private static final Logger logger = Logger.getLogger(ManagedExecutorDefinitionHandler.class.getName());
 
@@ -74,11 +74,13 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
     }
 
     protected HandlerProcessingResult processAnnotation(ManagedExecutorDefinition managedExecutorDefinition,
-                                                        ResourceContainerContext[] contexts) {
+            ResourceContainerContext[] resourceContainerContexts) {
         logger.log(Level.INFO, "Registering ManagedExecutorService from annotation config");
-        for (ResourceContainerContext context : contexts) {
+        ManagedExecutorDefinitionDescriptor medes = createDescriptor(managedExecutorDefinition);
+
+        // add to resource contexts
+        for (ResourceContainerContext context : resourceContainerContexts) {
             Set<ResourceDescriptor> resourceDescriptors = context.getResourceDescriptors(JavaEEResourceType.MEDD);
-            ManagedExecutorDefinitionDescriptor medes = createDescriptor(managedExecutorDefinition);
             if (descriptorAlreadyPresent(resourceDescriptors, medes)) {
                 merge(resourceDescriptors, managedExecutorDefinition);
             } else {
@@ -105,14 +107,10 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
             medd.setMaximumPoolSize(managedExecutorDefinition.maxAsync());
         }
 
+        medd.setVirtual(managedExecutorDefinition.virtual());
         medd.setMetadataSource(MetadataSource.ANNOTATION);
+        medd.setQualifiers(Arrays.asList(managedExecutorDefinition.qualifiers()).stream().map(c -> c.getName()).collect(Collectors.toSet()));
         return medd;
-    }
-
-    private boolean descriptorAlreadyPresent(final Set<ResourceDescriptor> resourceDescriptors,
-                                             final ManagedExecutorDefinitionDescriptor medd) {
-        Optional<ResourceDescriptor> optResourceDescriptor = resourceDescriptors.stream().filter(d -> d.equals(medd)).findAny();
-        return optResourceDescriptor.isPresent();
     }
 
     private void merge(Set<ResourceDescriptor> resourceDescriptors, ManagedExecutorDefinition med) {
@@ -130,6 +128,10 @@ public class ManagedExecutorDefinitionHandler extends AbstractResourceHandler {
 
                 if (descriptor.getContext() == null && med.context() != null && !med.context().isBlank()) {
                     descriptor.setContext(TranslatedConfigView.expandValue(med.context()));
+                }
+
+                if (descriptor.getQualifiers() == null && med.qualifiers() != null) {
+                    descriptor.setQualifiers(mapToSetOfStrings(med.qualifiers()));
                 }
             }
         }

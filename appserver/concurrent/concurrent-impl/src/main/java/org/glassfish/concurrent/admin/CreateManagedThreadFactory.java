@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -92,7 +92,10 @@ public class CreateManagedThreadFactory implements AdminCommand {
     @Param(name="threadpriority", alias="threadPriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
     private Integer threadpriority;
 
-    @Param(optional=true)
+    @Param(name = "usevirtualthreads", alias = "useVirtualThreads", defaultValue = "false", optional = true)
+    protected Boolean usevirtualthreads;
+
+    @Param(optional = true)
     private String description;
 
     @Param(name="property", optional=true, separator=':')
@@ -122,6 +125,8 @@ public class CreateManagedThreadFactory implements AdminCommand {
         attrList.put(ResourceConstants.CONTEXT_INFO, contextinfo);
         attrList.put(ResourceConstants.THREAD_PRIORITY, 
             threadpriority.toString());
+        attrList.put(ResourceConstants.USE_VIRTUAL_THREADS,
+                usevirtualthreads.toString());
         attrList.put(ServerTags.DESCRIPTION, description);
         attrList.put(ResourceConstants.ENABLED, enabled.toString());
         ResourceStatus rs;

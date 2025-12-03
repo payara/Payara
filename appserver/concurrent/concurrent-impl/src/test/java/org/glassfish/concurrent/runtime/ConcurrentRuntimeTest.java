@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.runtime;
 
 import org.glassfish.concurrent.config.ContextService;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
+import org.glassfish.concurro.ContextServiceImpl;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.junit.Before;
 import org.junit.Test;

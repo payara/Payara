@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -85,6 +85,8 @@ public abstract class GenericSniffer implements Sniffer {
     final private static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
     private HK2Module[] modules;
 
+    private String[] annotationNamesCached = null;
+
     public GenericSniffer(String containerName, String appStigma, String urlPattern) {
         this.containerName = containerName;
         this.appStigma = appStigma;
@@ -121,11 +123,14 @@ public abstract class GenericSniffer implements Sniffer {
      */
     @Override
     public String[] getAnnotationNames(DeploymentContext context) {
-        List<String> annotationNames = new ArrayList<String>();
-        for (Class<? extends Annotation> annotationType : getAnnotationTypes())  {
-            annotationNames.add(annotationType.getName());
+        if (annotationNamesCached == null) {
+            List<String> annotationNames = new ArrayList<>();
+            for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
+                annotationNames.add(annotationType.getName());
+            }
+            annotationNamesCached = annotationNames.toArray(new String[annotationNames.size()]);
         }
-        return annotationNames.toArray(new String[annotationNames.size()]);
+        return annotationNamesCached;
     }
 
     /**

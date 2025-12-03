@@ -208,7 +208,7 @@ public class GenerateBashAutoCompletionCommand implements AdminCommand {
             //write function to tell bash what function the autocompletion is for
             writer.write(COMPLETE_CALL);
             writer.newLine();
-            //Add directory of payara6/glassfish/bin to the path
+            //Add directory of payara7/glassfish/bin to the path
             writer.write(ADD_PATH);
             writer.write(serverContext.getInstallRoot().getPath() + File.separator + "bin");
             //flush the buffer

@@ -44,7 +44,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <artifactId>healthcheck-core</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -98,10 +98,6 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <artifactId>payara-executor-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.monitoring-console</groupId>
-            <artifactId>monitoring-console-api</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -3161,7 +3161,6 @@ public class Request implements HttpRequest, HttpServletRequest {
     }
     // END GlassFish 898
 
-
     // START SJSAS 6346738
     /**
      * Gets the POST body of this request.

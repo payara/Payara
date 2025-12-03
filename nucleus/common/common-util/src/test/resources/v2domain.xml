@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2025] [Payara Foundation and/or its affiliates] -->
 
 <!-- Generated from default-domain.xml.template -->
 <!-- Avoid manual edits of this file. Run "asadmin verify-domain-xml" otherwise.-->
@@ -101,13 +101,13 @@
     <config dynamic-reconfiguration-enabled="true" name="server-config">
       <http-service>
         <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-enabled="true" rotation-interval-in-minutes="15" rotation-policy="time" rotation-suffix="yyyy-MM-dd"/>
-        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-1" port="8080" security-enabled="false" server-name="" xpowered-by="true">
+        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-1" port="8080" security-enabled="false" server-name="">
           <property name="proxiedProtocols" value="ws/tcp"/>
         </http-listener>
-        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-2" port="8181" security-enabled="true" server-name="" xpowered-by="true">
+        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="server" enabled="true" family="inet" id="http-listener-2" port="8181" security-enabled="true" server-name="">
           <ssl cert-nickname="s1as" client-auth-enabled="false" tls-enabled="true" tls-rollback-enabled="true"/>
         </http-listener>
-        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="__asadmin" enabled="true" family="inet" id="admin-listener" port="4848" security-enabled="false" server-name="" xpowered-by="true"/>
+        <http-listener acceptor-threads="1" address="0.0.0.0" blocking-enabled="false" default-virtual-server="__asadmin" enabled="true" family="inet" id="admin-listener" port="4848" security-enabled="false" server-name=""/>
         <virtual-server hosts="${com.sun.aas.hostName}" http-listeners="http-listener-1,http-listener-2" id="server" log-file="${com.sun.aas.instanceRoot}/logs/server.log" state="on">
           <property name="docroot" value="${com.sun.aas.instanceRoot}/docroot"/>
           <property name="accesslog" value="${com.sun.aas.instanceRoot}/logs/access"/>
@@ -172,7 +172,7 @@
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate">
     </auth-realm>
-        <jacc-provider name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl"></jacc-provider>
+        <jacc-provider name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory" policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy"></jacc-provider>
         <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
           <property name="auditOn" value="false"/>
         </audit-module>

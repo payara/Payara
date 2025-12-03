@@ -40,13 +40,13 @@
     holder.
 -->
 
-<!-- Portions Copyright [2016-2020] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">  <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>payara-web-featureset</artifactId>
@@ -241,6 +241,12 @@
             <type>zip</type>
         </dependency>
 
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>data</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-mvc</artifactId>

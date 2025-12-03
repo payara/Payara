@@ -5,14 +5,14 @@ This directory contains functional tests for Payara Server's asadmin commands. T
 ## Prerequisites
 
 - Python 3.6 or higher
-- Payara Server 6 or later
+- Payara Server 7 or later
 - Access to a running Payara Server instance
 
 ## Setup
 The script expects a defined PAYARA_HOME environment variable to point to the Payara Server installation directory.
 e.g.:
 ```bash
-    export PAYARA_HOME=/path/to/payara6
+    export PAYARA_HOME=/path/to/payara7
 ```
 
 Navigate to the tests directory:

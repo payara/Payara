@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb-http-remoting</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>ejb-http-admin</artifactId>
@@ -76,6 +76,10 @@
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.deployment</groupId>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Math.round;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -60,15 +59,9 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ResourcePool;
 
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
-
 @Service
 @Singleton
-public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, MonitoringWatchSource {
+public class SQLTraceStoreImpl implements SQLTraceStore {
 
     private static final class SQLTraceEntry {
         final long thresholdMillis;
@@ -101,55 +94,6 @@ public class SQLTraceStoreImpl implements SQLTraceStore, MonitoringDataSource, M
             queue.poll(); // avoid queue creating a memory leak by accumulating entries in case no consumer polls them
         }
         queue.add(new SQLTraceEntry(threshold, record, sql));
-    }
-
-    @Override
-    public void collect(MonitoringWatchCollector collector) {
-        for (Entry<String, JdbcConnectionPool> poolEntry : connectionPoolByName.entrySet()) {
-            JdbcConnectionPool pool = poolEntry.getValue();
-            if (pool != null) {
-                String poolName = poolEntry.getKey();
-                long thresholdInMillis = thresholdInMillis(pool);
-                if (thresholdInMillis > 0) {
-                    collector.watch("ns:sql @:"+poolName+" MaxExecutionTime", poolName + " Slow Query", "ms")
-                        .red(thresholdInMillis, 0, false, null, null, false);
-                }
-            }
-        }
-    }
-
-    @Override
-    @MonitoringData(ns = "sql")
-    public void collect(MonitoringDataCollector collector) {
-        long now = System.currentTimeMillis();
-        for (Entry<String, Queue<SQLTraceEntry>> poolEntry : uncollectedTracesByPoolName.entrySet()) {
-            MonitoringDataCollector poolCollector = collector.group(poolEntry.getKey());
-            int count = 0;
-            long maxExecutionTime = 0L;
-            long sumExecutionTime = 0L;
-            Queue<SQLTraceEntry> entries = poolEntry.getValue();
-            SQLTraceEntry entry = entries.poll();
-            while (entry != null) {
-                if (now - entry.trace.getTimeStamp() < 5000) { // only add trace in case it was from last 5 seconds
-                    count++;
-                    long executionTime = entry.trace.getExecutionTime();
-                    maxExecutionTime = Math.max(maxExecutionTime, executionTime);
-                    sumExecutionTime += executionTime;
-                    if (executionTime > entry.thresholdMillis) {
-                        poolCollector.annotate( //
-                                "MaxExecutionTime", executionTime, //
-                                "Threshold", "" + entry.thresholdMillis, //
-                                "Timestamp", "" + entry.trace.getTimeStamp(), //
-                                "SQL", entry.sql);
-                    }
-                }
-                entry = entries.poll();
-            }
-            poolCollector
-                .collect("MaxExecutionTime", maxExecutionTime)
-                .collect("AvgExecutionTime", count == 0L ? 0L : sumExecutionTime / count)
-            ;
-        }
     }
 
     private static long thresholdInMillis(JdbcConnectionPool pool) {

@@ -37,14 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
 
-import jakarta.persistence.*;
-import java.util.List;
-import java.util.Date;
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.Parameter;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Wrapper class for jakarta.persistence.TypedQuery objects returned from
@@ -172,6 +181,30 @@ public class TypedQueryWrapper<X> extends QueryWrapper<TypedQuery <X> > implemen
     @Override
     public TypedQuery<X> setLockMode(LockModeType lockModeType) {
         super.setLockMode(lockModeType);
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public X getSingleResultOrNull() {
+        return (X) super.getSingleResultOrNull();
+    }
+
+    @Override
+    public TypedQuery<X> setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        super.setCacheRetrieveMode(cacheRetrieveMode);
+        return this;
+    }
+
+    @Override
+    public TypedQuery<X> setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        super.setCacheStoreMode(cacheStoreMode);
+        return this;
+    }
+
+    @Override
+    public TypedQuery<X> setTimeout(Integer integer) {
+        super.setTimeout(integer);
         return this;
     }
 }

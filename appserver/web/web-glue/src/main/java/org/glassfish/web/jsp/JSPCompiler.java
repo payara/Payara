@@ -54,7 +54,7 @@
  * @author byron.nevins@sun.com
  */
 
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.jsp;
 
@@ -275,9 +275,7 @@ public final class JSPCompiler {
                     "Null property name or value");
             }
 
-            if ("xpoweredBy".equals(pName)) {
-                jspc.setXpoweredBy(Boolean.valueOf(pValue));
-            } else if ("classdebuginfo".equals(pName)) {
+            if ("classdebuginfo".equals(pName)) {
                 jspc.setClassDebugInfo(Boolean.valueOf(pValue));
             } else if ("enablePooling".equals(pName)) {
                 jspc.setPoolingEnabled(Boolean.valueOf(pValue));

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,8 +38,6 @@
  * holder.
  */
 package fish.payara.jacc;
-
-import java.security.Policy;
 
 import jakarta.security.jacc.PolicyConfiguration;
 import jakarta.security.jacc.PolicyConfigurationFactory;
@@ -132,8 +130,7 @@ public interface JaccConfigurationFactory {
      * Registers a context (local) Jacc provider, consisting of its two elements.
      * 
      * <p>
-     * See the JACC spec for the requirements and behavior of the {@link PolicyConfigurationFactory} 
-     * and the {@link Policy}.
+     * See the JACC spec for the requirements and behavior of the {@link PolicyConfigurationFactory}.
      * </p>
      * 
      * <p>
@@ -150,10 +147,9 @@ public interface JaccConfigurationFactory {
      * 
      * @param applicationContextId an ID identifying the application for which the Jacc provider is installed
      * @param factory the PolicyConfigurationFactory element of the Jacc Provider
-     * @param policy the Policy element of the Jacc Provider
      * @throws SecurityException when the calling code has not been granted the "setPolicy" SecurityPermission.
      */
-    void registerContextProvider(String applicationContextId, PolicyConfigurationFactory factory, Policy policy);
+    void registerContextProvider(String applicationContextId, PolicyConfigurationFactory factory);
     
     /**
      * Gets the context JACC provider that was set by registerContextProvider.

@@ -336,8 +336,8 @@
     <target name="create-glassfish-domain" depends="init-glassfish-home, create-glassfish-domain-on-windows, create-glassfish-domain-on-unix"/>
 
     <target name="set-distribution">
-        <echo message="Setting distribution in ${basedir}/target/stage/payara6/glassfish/config/branding/glassfish-version.properties"/>
-        <replace file="${basedir}/target/stage/payara6/glassfish/config/branding/glassfish-version.properties" token="@@@DISTRIBUTION@@@" value="${distribution}"/>
+        <echo message="Setting distribution in ${basedir}/target/stage/payara7/glassfish/config/branding/glassfish-version.properties"/>
+        <replace file="${basedir}/target/stage/payara7/glassfish/config/branding/glassfish-version.properties" token="@@@DISTRIBUTION@@@" value="${distribution}"/>
     </target>
 
     <!--<target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>-->

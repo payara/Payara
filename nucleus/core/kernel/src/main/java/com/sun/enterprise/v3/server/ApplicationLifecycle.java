@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
@@ -790,7 +790,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     private void transformApplication(ExtendedDeploymentContext context, Types types,
             StructuredDeploymentTracing tracing, SpanSequence span) throws IOException {
-        String transformNS = System.getProperty("fish.payara.deployment.transform.namespace");
+        String transformNS = System.getProperty(JakartaNamespaceDeploymentTransformer.TRANSFORM_NAMESPACE);
 
         if (Boolean.parseBoolean(transformNS) || transformNS == null) {
             span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);

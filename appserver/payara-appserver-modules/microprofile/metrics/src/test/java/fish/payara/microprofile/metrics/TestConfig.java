@@ -31,7 +31,7 @@ import org.eclipse.microprofile.config.ConfigValue;
  * <p>
  * After the unit test has run, one should remove the configuration parameters with the method {@link TestConfig#resetConfig()}.
  * 
- * @author Rudy De Busscher (original version https://github.com/atbashEE/atbash-config/blob/master/test/src/main/java/be/atbash/config/test/TestConfig.java)
+ * @author Rudy De Busscher (original version https://github.com/atbashEE/atbash-config/blob/main/test/src/main/java/be/atbash/config/test/TestConfig.java)
  * @author Jan Bernitt (stripped converters/hard coded converters only)
  */
 public class TestConfig implements Config {

@@ -37,17 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.common;
 
 import java.security.Principal;
 
 import javax.security.auth.Subject;
 
-import org.glassfish.security.common.PrincipalImpl;
 
 import com.sun.enterprise.security.UsernamePasswordStore;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
+import org.glassfish.security.common.UserNameAndPassword;
 
 /**
  * This class represents the security context on the client side. For usage of the
@@ -78,7 +78,7 @@ public final class ClientSecurityContext extends AbstractSecurityContext {
      * @param subject Credentials of the user.
      */
     public ClientSecurityContext(String username, Subject subject) {
-        this.callerPrincipal = new PrincipalImpl(username);
+        this.callerPrincipal = new UserNameAndPassword(username);
         this.subject = subject;
     }
 

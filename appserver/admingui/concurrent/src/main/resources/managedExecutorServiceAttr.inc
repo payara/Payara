@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2022-2025 Payara Foundation and/or its affiliates -->
 
 <!-- concurrent/managedExecutorService.inc -->
 
@@ -83,6 +84,10 @@
        
        <sun:property id="longrunningtasks"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.longRunningTasks}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['longRunningTasks']}" selectedValue="true"  />
+       </sun:property>
+
+       <sun:property id="usevirtualthreads" rendered="#{pageSession.showVirtualThreads}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.usevirtualthreads}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['useVirtualThreads']}" selectedValue="true"  />
        </sun:property>
 
        <sun:property id="useforkjoinpool" rendered="#{pageSession.showForkJoin}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.useforkjoinpool}">

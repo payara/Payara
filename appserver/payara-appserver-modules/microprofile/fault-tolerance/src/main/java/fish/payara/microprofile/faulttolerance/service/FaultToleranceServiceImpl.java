@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,10 @@ package fish.payara.microprofile.faulttolerance.service;
 
 import fish.payara.microprofile.faulttolerance.*;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
-import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -77,8 +72,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,7 +85,7 @@ import java.util.logging.Logger;
 @Service(name = "microprofile-fault-tolerance-service")
 @RunLevel(StartupRunLevel.VAL)
 public class FaultToleranceServiceImpl
-        implements EventListener, FaultToleranceService, MonitoringDataSource, FaultToleranceRequestTracing {
+        implements EventListener, FaultToleranceService, FaultToleranceRequestTracing {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
 
@@ -138,44 +131,6 @@ public class FaultToleranceServiceImpl
             deregisterApplication(info);
             FaultTolerancePolicy.clean(info.getAppClassLoader());
         }
-    }
-
-    @Override
-    @MonitoringData(ns = "ft")
-    public void collect(MonitoringDataCollector collector) {
-        for (Entry<MethodKey, FaultToleranceMethodContextImpl> methodEntry : contextByMethod.entrySet()) {
-            MonitoringDataCollector methodCollector = collector.group(methodEntry.getKey().getMethodId())
-                    .tag("app", methodEntry.getValue().getAppName());
-            FaultToleranceMethodContext context = methodEntry.getValue();
-            BlockingQueue<Thread> concurrentExecutions = context.getConcurrentExecutions();
-            if (concurrentExecutions != null) {
-                collectBulkheadSemaphores(methodCollector, concurrentExecutions);
-                collectBulkheadSemaphores(methodCollector, concurrentExecutions, context.getQueuingOrRunningPopulation());
-            }
-            collectCircuitBreakerState(methodCollector, context.getState());
-        }
-    }
-
-    private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
-            BlockingQueue<Thread> concurrentExecutions) {
-        collector
-                .collect("RemainingConcurrentExecutionsCapacity", concurrentExecutions.remainingCapacity())
-                .collect("ConcurrentExecutions", concurrentExecutions.size());
-    }
-
-    private static void collectBulkheadSemaphores(MonitoringDataCollector collector,
-            BlockingQueue<Thread> concurrentExecutions, AtomicInteger queuingOrRunningPopulation) {
-        collector
-                .collect("WaitingQueuePopulation", queuingOrRunningPopulation.get() - concurrentExecutions.size());
-    }
-
-    private static void collectCircuitBreakerState(MonitoringDataCollector collector, CircuitBreakerState state) {
-        if (state == null) {
-            return;
-        }
-        collector
-                .collect("circuitBreakerHalfOpenSuccessful", state.getHalfOpenSuccessfulResultCounter())
-                .collect("circuitBreakerState", state.getCircuitState().name().charAt(0));
     }
 
     @Override

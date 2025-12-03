@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,8 @@
 package fish.payara.nucleus.requesttracing;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -83,11 +80,6 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 import fish.payara.internal.notification.PayaraNotification;
 import fish.payara.internal.notification.PayaraNotificationFactory;
 import fish.payara.internal.notification.TimeUtil;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTrace;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
@@ -106,7 +98,6 @@ import fish.payara.nucleus.requesttracing.sampling.AdaptiveSampleFilter;
 import fish.payara.nucleus.requesttracing.sampling.SampleFilter;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreFactory;
 import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
-import io.opentracing.tag.Tag;
 
 /**
  * Main service class that provides methods used by interceptors for tracing
@@ -117,12 +108,11 @@ import io.opentracing.tag.Tag;
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
-public class RequestTracingService implements EventListener, ConfigListener, MonitoringDataSource, MonitoringWatchSource {
+public class RequestTracingService implements EventListener, ConfigListener {
 
 
     private static final Logger logger = Logger.getLogger(RequestTracingService.class.getCanonicalName());
 
-    private static final String DURATION = "Duration";
     public static final String EVENT_BUS_LISTENER_NAME = "RequestTracingEvents";
 
     private static final int SECOND = 1;
@@ -614,86 +604,4 @@ public class RequestTracingService implements EventListener, ConfigListener, Mon
         return requestTraceStore;
     }
 
-    @Override
-    public void collect(MonitoringWatchCollector collector) {
-        if ("true".equals(configuration.getEnabled())) {
-            long thresholdMillis = getConfigurationThresholdInMillis();
-            collector.watch("ns:trace @:* Duration", "Request Trace Duration", "ms")
-                .amber(thresholdMillis, -30, false, null, null, false)
-                .red(thresholdMillis, 10, true, null, null, false)
-                .green(-(thresholdMillis/2), 1, false, null, null, false);
-        }
-    }
-
-    private long getConfigurationThresholdInMillis() {
-        return TimeUnit.MILLISECONDS.convert(Long.parseLong(configuration.getThresholdValue()), 
-                TimeUnit.valueOf(configuration.getThresholdUnit()));
-    }
-
-    @Override
-    @MonitoringData(ns = "trace")
-    public void collect(MonitoringDataCollector collector) {
-        for (String group : activeCollectionGroups.keySet()) {
-            collector.group(group).collect(DURATION, 0);
-            activeCollectionGroups.compute(group, (key, value) -> value <= 1 ? null : value - 1);
-        }
-        long thresholdInMillis = getConfigurationThresholdInMillis();
-        RequestTrace trace = uncollectedTraces.poll();
-        while (trace != null) {
-            String group = collectTrace(collector, trace, thresholdInMillis);
-            if (group != null) {
-                activeCollectionGroups.compute(group, (key, value) -> 35);
-            }
-            trace = uncollectedTraces.poll();
-        }
-    }
-
-
-    private static String collectTrace(MonitoringDataCollector tracingCollector, RequestTrace trace, long threshold) {
-        try {
-            UUID traceId = trace.getTraceId();
-            if (traceId != null) {
-                String group = metricGroupName(trace);
-                long durationMillis = trace.getTraceSpans().getFirst().getSpanDuration() / 1000000;
-                RequestTraceSpan annotationSpan = trace.getTraceSpans().getLast();
-                List<String> attrs = new ArrayList<>();
-                attrs.add("Threshold");
-                attrs.add(String.valueOf(threshold));
-                attrs.add("Operation");
-                attrs.add(annotationSpan.getEventName());
-                attrs.add("Start");
-                attrs.add(String.valueOf(annotationSpan.getStartInstant().toEpochMilli()));
-                attrs.add("End");
-                attrs.add(String.valueOf(annotationSpan.getTraceEndTime().toEpochMilli()));
-                for (Entry<Object, String> tag : annotationSpan.getSpanTags().entrySet()) {
-                    if (tag.getKey() instanceof Tag) {
-                        attrs.add(((Tag) tag.getKey()).getKey());
-                    } else {
-                        attrs.add(tag.getKey().toString());
-                    }
-                    attrs.add(tag.getValue());
-                }
-                tracingCollector.group(group)
-                    .collect(DURATION, durationMillis)
-                    .annotate(DURATION, durationMillis, attrs.toArray(new String[0]));
-                return group;
-            }
-        } catch (Exception ex) {
-            logger.log(Level.FINE, "Failed to collect trace", ex);
-        }
-        return null;
-    }
-
-    public static String metricGroupName(RequestTrace trace) {
-        return stripPackageName(trace.getTraceSpans().getLast().getEventName());
-    }
-
-    public static String stripPackageName(String eventName) {
-        int javaMethodDot = eventName.lastIndexOf('.');
-        int httpMethodDivider = eventName.indexOf(':');
-        return javaMethodDot < 0 || httpMethodDivider < 0
-                ? eventName
-                : eventName.substring(0, httpMethodDivider) + "_"
-                        + eventName.substring(eventName.lastIndexOf('.', javaMethodDot - 1) + 1);
-    }
 }

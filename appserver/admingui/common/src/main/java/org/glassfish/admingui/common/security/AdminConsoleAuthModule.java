@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admingui.common.security;
 
@@ -244,9 +244,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     
     private AuthStatus doNothing(Subject clientSubject) throws AuthException {
         try {
-            // The JASPIC protocol for "do nothing"
             handler.handle(new Callback[] { new CallerPrincipalCallback(clientSubject, (Principal) null) });
-            
             return SUCCESS;
         } catch (IOException | UnsupportedCallbackException e) {
             throw (AuthException) new AuthException().initCause(e);

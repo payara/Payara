@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>6.2025.12-SNAPSHOT</version>
+    <version>7.2026.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -111,6 +111,16 @@
                 <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>jakarta-releases</id>
+            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <releases>
+                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -165,6 +175,16 @@
             </releases>
             <snapshots>
                 <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>jakarta-releases</id>
+            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
+            <releases>
+                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
+            </releases>
+            <snapshots>
+                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
@@ -231,75 +251,81 @@
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jdk.version>11</jdk.version>
+        <jdk.version>21</jdk.version>
         <javase.version>${jdk.version}</javase.version>
         <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
+        <jakarta-staging.repo.releases.enabled>false</jakarta-staging.repo.releases.enabled>
+        <jakarta-staging.repo.snapshots.enabled>false</jakarta-staging.repo.snapshots.enabled>
         <payara-nexus-staging.repo.releases.enabled>false</payara-nexus-staging.repo.releases.enabled>
         <payara-nexus-staging.repo.snapshots.enabled>false</payara-nexus-staging.repo.snapshots.enabled>
 
         <!-- BOM-referenced versions -->
-        <osgi-resource-locator.version>1.0.3</osgi-resource-locator.version>
+        <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
         <snakeyaml.version>2.5</snakeyaml.version>
-        <jakarta.servlet.jsp.jstl.version>3.0.1</jakarta.servlet.jsp.jstl.version>
-        <mojarra.version>4.0.11.payara-p2</mojarra.version>
+        <mojarra.version>4.1.4.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
-        <jakarta.mvc.version>2.1.0</jakarta.mvc.version>
-        <krazo.version>3.0.1</krazo.version>
+        <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
+        <krazo.version>4.0.0</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>4.0.7.payara-p1</eclipselink.version>
+        <eclipselink.version>5.0.0-B08.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
-        <openmq.version>6.5.1.payara-p1</openmq.version>
+        <openmq.version>6.7.0.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
-        <webservices.version>4.0.3.payara-p1</webservices.version>
+        <webservices.version>4.0.4.payara-p1</webservices.version>
         <santuario.version>4.0.4</santuario.version>
-        <woodstox.version>6.6.2</woodstox.version>
-        <woodstock-jsf.version>5.0.0</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>5.0.0.payara-p1</woodstock-jsf-suntheme.version>
-        <angus-activation.version>1.1.0</angus-activation.version>
+        <woodstox.version>7.1.1</woodstox.version>
+        <woodstock-jsf.version>6.0.1.payara-p1</woodstock-jsf.version>
+        <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
+        <woodstock-external.dojo.version>6.0.2</woodstock-external.dojo.version>
+        <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <jline.version>3.30.6</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
-        <payara-arquillian-container.version>3.1</payara-arquillian-container.version>
+        <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
-        <concurro.version>3.0.2.payara-p1</concurro.version>
+        <concurro.version>3.1.0</concurro.version>
+        <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.security-connectors.version>3.1.2</payara.security-connectors.version>
-        <hk2.version>3.1.1.payara-p1</hk2.version>
+        <payara.security-connectors.version>4.0.0.Alpha3</payara.security-connectors.version>
+        <hk2.version>4.0.0-M3.payara-p2</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <jakarta.security.enterprise.version>3.0.3.payara-p2</jakarta.security.enterprise.version>
-        <cdi-api.version>4.0.1</cdi-api.version>
-        <grizzly.version>4.0.2.payara-p2</grizzly.version>
-        <servlet-api.version>6.0.0</servlet-api.version>
-        <jakarta.el-api.version>5.0.1</jakarta.el-api.version>
-        <expressly.version>5.0.0</expressly.version>
+        <soteria.version>4.0.1.payara-p1</soteria.version>
+        <cdi-api.version>4.1.0</cdi-api.version>
+        <grizzly.version>4.1.0-M1.payara-p2</grizzly.version>
+        <servlet-api.version>6.1.0</servlet-api.version>
+        <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
+        <expressly.version>6.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.4</jaxb-api.version>
         <jackson.version>2.20.1</jackson.version>
-        <jersey.version>3.1.11.payara-p2</jersey.version>
-        <jakarta.validation.version>3.0.2</jakarta.validation.version>
-        <hibernate.validator.version>8.0.1.Final.payara-p1</hibernate.validator.version>
-        <hibernate.validator.osgi.version>8.0.1.Final</hibernate.validator.osgi.version>
+        <jersey.version>4.0.0.payara-p1</jersey.version>
+        <jakarta.validation.version>3.1.1</jakarta.validation.version>
+        <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
+        <jakarta.validation.osgi.version.upperbound>4</jakarta.validation.osgi.version.upperbound>
+        <hibernate.validator.version>9.0.1.Final.payara-p1</hibernate.validator.version>
+        <hibernate.validator.osgi.version>9.0</hibernate.validator.osgi.version>
+        <hibernate.validator.osgi.version.upperbound>10.0</hibernate.validator.osgi.version.upperbound>
         <jaxb-impl.version>4.0.6</jaxb-impl.version>
         <jsonp-api.version>2.1.3</jsonp-api.version>
-        <jakarta.security.auth.message-api.version>3.0.0</jakarta.security.auth.message-api.version>
-        <jakarta.security.jacc-api.version>2.1.0</jakarta.security.jacc-api.version>
-        <jakarta.security.enterprise-api.version>3.0.0</jakarta.security.enterprise-api.version>
+        <jakarta.authentication-api.version>3.1.0</jakarta.authentication-api.version>
+        <jakarta.authorization-api.version>3.0.0</jakarta.authorization-api.version>
+        <jakarta.security.enterprise-api.version>4.0.0</jakarta.security.enterprise-api.version>
         <jakarta.ejb-api.version>4.0.1</jakarta.ejb-api.version>
         <jakarta.transaction-api.version>2.0.1</jakarta.transaction-api.version>
-        <jakarta.interceptor-api.version>2.1.0</jakarta.interceptor-api.version>
+        <jakarta.interceptor-api.version>2.2.0</jakarta.interceptor-api.version>
         <jakarta.inject.version>2.0.1</jakarta.inject.version>
         <json.bind-api.version>3.0.1</json.bind-api.version>
-        <jakarta-persistence-api.version>3.1.0</jakarta-persistence-api.version>
+        <jakarta-persistence-api.version>3.2.0</jakarta-persistence-api.version>
         <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
         <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
         <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
@@ -310,35 +336,37 @@
         <microprofile-openapi.version>3.1.2</microprofile-openapi.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
-        <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
-        <exousia.version>2.1.3</exousia.version>
+        <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
+        <exousia.version>3.0.0-M3</exousia.version>
         <opentracing.version>0.33.0</opentracing.version>
-        <jsp-api.version>3.1.1</jsp-api.version>
+        <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.8-payara-1</hazelcast.version>
-        <jakartaee.api.version>10.0.0</jakartaee.api.version>
-        <weld-api.version>5.0.SP3</weld-api.version>
-        <weld.version>5.1.6.Final</weld.version>
-        <tyrus.version>2.1.5.payara-p2</tyrus.version>
-        <jsp-impl.version>3.2.2</jsp-impl.version>
+        <jakartaee.api.version>11.0.0</jakartaee.api.version>
+        <weld-api.version>6.0.Final</weld-api.version>
+        <weld.version>6.0.3.Final</weld.version>
+        <tyrus.version>2.2.0</tyrus.version>
+        <jsp-impl.version>4.0.0</jsp-impl.version>
         <asm.version>9.9</asm.version>
-        <monitoring-console-api.version>2.0.2</monitoring-console-api.version>
-        <websocket-api.version>2.1.1</websocket-api.version>
-        <jax-rs-api.impl.version>3.1.0</jax-rs-api.impl.version>
+        <websocket-api.version>2.2.0</websocket-api.version>
+        <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
-        <concurrent-api.version>3.0.4</concurrent-api.version>
+        <concurrent-api.version>3.1.1</concurrent-api.version>
         <jaxws-api.version>4.0.2</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <stax2-api.version>4.2.2</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
+        <epicyro.version>3.1.0</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
-        <jakarta.faces-api.version>4.0.1</jakarta.faces-api.version>
+        <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <payara.transformer.version>0.2.14</payara.transformer.version>
+        <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
+        <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
     </properties>
 
     <profiles>
@@ -475,6 +503,14 @@
             <properties>
                 <payara-nexus-staging.repo.releases.enabled>true</payara-nexus-staging.repo.releases.enabled>
                 <payara-nexus-staging.repo.snapshots.enabled>true</payara-nexus-staging.repo.snapshots.enabled>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>jakarta-staging</id>
+            <properties>
+                <jakarta-staging.repo.releases.enabled>true</jakarta-staging.repo.releases.enabled>
+                <jakarta-staging.repo.snapshots.enabled>true</jakarta-staging.repo.snapshots.enabled>
             </properties>
         </profile>
 
@@ -669,7 +705,7 @@
                                             <!-- these files contain templates with placeholders -->
                                             <exclude>**/glassfish/lib/install/templates/resources/custom/**</exclude>
                                             <!-- no xml in file yet -->
-                                            <exclude>**/payara6/mq/etc/registry/servicetag.xml</exclude>
+                                            <exclude>**/payara7/mq/etc/registry/servicetag.xml</exclude>
                                         </excludes>
                                     </validationSet>
                                 </validationSets>

@@ -2,7 +2,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-     Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+     Copyright (c) [2023-2024] Payara Foundation and/or its affiliates. All rights reserved.
 
      The contents of this file are subject to the terms of either the GNU
      General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>use-bundled-jsf-primefaces</artifactId>
@@ -58,7 +58,19 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- End of temporary dependencies -->
+        
         <!-- Different version of EE10 Mojarra - should be different to that used by the server. -->
         <!-- Also please update the JSF_VERSION variable in the tests when you update this -->
         <dependency>

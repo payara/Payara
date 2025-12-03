@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
+import org.glassfish.security.common.UserPrincipal;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
 import org.jvnet.hk2.annotations.Contract;
 
 /**
@@ -50,7 +50,7 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface PrincipalGroupFactory {
 
-    PrincipalImpl getPrincipalInstance(String name, String realm);
+    UserPrincipal getPrincipalInstance(String name, String realm);
 
     Group getGroupInstance(String name, String realm);
 }

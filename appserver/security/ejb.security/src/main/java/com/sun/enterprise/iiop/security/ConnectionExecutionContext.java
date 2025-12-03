@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
 /**
@@ -60,13 +58,7 @@ public class ConnectionExecutionContext {
 
     public static final String IIOP_CLIENT_PER_THREAD_FLAG = "com.sun.appserv.iiopclient.perthreadauth";
 
-    private static final boolean isPerThreadAuth = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-        @Override
-        public Boolean run() {
-            return Boolean.valueOf(Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG));
-        }
-
-    });
+    private static final boolean isPerThreadAuth = Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG);
 
     private static final ThreadLocal<Hashtable<String, Object>> currentContext = isPerThreadAuth ? new ThreadLocal<>()
             : new InheritableThreadLocal<>();

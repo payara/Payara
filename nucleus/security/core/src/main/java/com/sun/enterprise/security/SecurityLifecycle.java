@@ -77,9 +77,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     @Inject
     private ServerContext sc;
     
-    @Inject 
-    private PolicyLoader policyLoader;
-    
     @Inject
     private SecurityServicesUtil secServUtil;
     
@@ -148,8 +145,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
                 System.setProperty("simple.jacc.provider.JACCRoleMapper.class",
                         "com.sun.enterprise.security.web.integration.GlassfishRoleMapper");
             }
-
-            policyLoader.loadPolicy();
 
             realmsManager.createRealms();
             // start the audit mechanism

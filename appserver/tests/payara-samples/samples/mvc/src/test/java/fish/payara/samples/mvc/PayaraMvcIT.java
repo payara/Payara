@@ -71,9 +71,8 @@ public class PayaraMvcIT {
                 .addPackage(PayaraMvcIT.class.getPackage())
                 .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/web.xml")), "web.xml")
                 .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/beans.xml")), "beans.xml")
-                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/faces-config.xml")), "faces-config.xml")
-                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/greet.xhtml")), "views/greet.xhtml")
-                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/salute.xhtml")), "views/salute.xhtml");
+                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/greet.jsp")), "views/greet.jsp")
+                .addAsWebInfResource(new FileAsset(new File("src/main/webapp/WEB-INF/views/salute.jsp")), "views/salute.jsp");
 
         System.out.println(webapp.toString(true));
 

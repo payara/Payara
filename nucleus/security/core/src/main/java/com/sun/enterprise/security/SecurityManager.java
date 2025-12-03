@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import java.lang.reflect.Method;
@@ -80,6 +80,8 @@ public interface SecurityManager {
      */
     void preInvoke(ComponentInvocation inv);
 
+    Object invoke(Object bean, Method beanClassMethod, Object[] methodParameters) throws Throwable;
+
     /**
      * This method is used by the Invocation Manager to remove the run-as identity information that was set up using the
      * preInvoke
@@ -106,13 +108,5 @@ public interface SecurityManager {
      * Purge ThreadLocals held by jakarta.security.jacc.PolicyContext
      */
     void resetPolicyContext();
-
-    /**
-     * This method is used by SecurityUtil runMethod to run the action as the subject encapsulated in the cuurent
-     * SecurityContext.
-     */
-    public Object doAsPrivileged(PrivilegedExceptionAction pea) throws Throwable;
-
-    public Object invoke(Method beanClassMethod, boolean isLocal, Object o, Object[] oa) throws Throwable;
 
 }

@@ -38,8 +38,7 @@
  *    only if the new code is made subject to such option by the copyright
  *    holder.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ejb-http-remoting</artifactId>
     <packaging>war</packaging>
@@ -49,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -62,6 +61,12 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
+        <dependency>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>ejb-http-client</artifactId>
@@ -69,7 +74,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.mq</groupId>
-            <artifactId>imq</artifactId>
+            <artifactId>mq-client</artifactId>
             <scope>provided</scope>
         </dependency>
 

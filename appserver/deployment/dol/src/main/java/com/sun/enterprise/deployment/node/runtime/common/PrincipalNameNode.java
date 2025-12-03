@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.deployment.node.runtime.common;
 
 import com.sun.enterprise.deployment.node.XMLElement;
@@ -57,7 +59,7 @@ public class PrincipalNameNode  extends RuntimeDescriptorNode {
 
     @Override
     protected PrincipalNameDescriptor createDescriptor() {
-        return new PrincipalNameDescriptor();
+        return new PrincipalNameDescriptor(null);
     }
 
     

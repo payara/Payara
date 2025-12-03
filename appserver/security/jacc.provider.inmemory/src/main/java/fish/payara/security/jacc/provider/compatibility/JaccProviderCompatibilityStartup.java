@@ -44,10 +44,10 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl;
-import fish.payara.security.jacc.provider.PolicyProviderImpl;
 import jakarta.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.exousia.modules.def.DefaultPolicy;
+import org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -97,11 +97,11 @@ public class JaccProviderCompatibilityStartup implements PostConstruct {
                 String newPolicyConfigurationFactoryProvider = policyConfigurationFactoryProvider;
                 if (policyProvider.equals(OLD_POLICY_WRAPPER) ||
                         policyProvider.equals(OLD_SIMPLE_POLICY_WRAPPER)) {
-                    newPolicyProvider = PolicyProviderImpl.class.getCanonicalName();
+                    newPolicyProvider = DefaultPolicy.class.getCanonicalName();
                 }
                 if (policyConfigurationFactoryProvider.equals(OLD_POLICY_CONFIGURATION_FACTORY_IMPL) ||
                         policyConfigurationFactoryProvider.equals(OLD_SIMPLE_POLICY_CONFIGURATION_FACTORY_IMPL)) {
-                    newPolicyConfigurationFactoryProvider = PolicyConfigurationFactoryImpl.class.getCanonicalName();
+                    newPolicyConfigurationFactoryProvider = DefaultPolicyConfigurationFactory.class.getCanonicalName();                     
                 }
 
                 if (!newPolicyProvider.equals(policyProvider) ||

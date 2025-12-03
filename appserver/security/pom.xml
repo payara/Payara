@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.security</groupId>
@@ -64,7 +64,6 @@
         <module>core-ee</module>
         <module>security-all</module>
         <module>jacc.provider.inmemory</module>
-        <module>jaspic-provider-framework</module>
         <module>webservices.security</module>
         <module>ejb.security</module>
         <module>appclient.security</module>

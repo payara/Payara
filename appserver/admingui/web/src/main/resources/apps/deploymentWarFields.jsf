@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2025] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2024] [Payara Foundation] -->
 <!-- deploymentWarFields.jsf -->
 
 <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
@@ -77,7 +77,7 @@
 
 <sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
     <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
-</sun:property>       
+</sun:property>
 
 <sun:property id="availability" rendered="#{!pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
     <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['availabilityEnabled']}" selectedValue="true" />

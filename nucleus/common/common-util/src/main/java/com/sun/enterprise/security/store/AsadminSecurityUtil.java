@@ -83,10 +83,10 @@ public class AsadminSecurityUtil {
 
 		/** Patch to make dir $HOME/.gfclient configurable.
 		 *
-		 * To set a different gfclient directory, add in /payara6/glassfish/config/[asenv.bat/asenv.conf]
+		 * To set a different gfclient directory, add in /payara7/glassfish/config/[asenv.bat/asenv.conf]
 		 * the  AS_GFCLIENT variable.
 		 * Example:
-		 * export AS_GFCLIENT="/var/www/html/payara6/.gfclient"
+		 * export AS_GFCLIENT="/var/www/html/payara7/.gfclient"
 		 */
 		String AS_GFCLIENT = System.getenv("AS_GFCLIENT");
 		logger.log(Level.FINER, "AS_GFCLIENT: {0}", AS_GFCLIENT);

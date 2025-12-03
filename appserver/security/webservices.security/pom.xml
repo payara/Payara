@@ -47,12 +47,12 @@
      <parent>
         <groupId>fish.payara.server.internal.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <artifactId>webservices.security</artifactId>
     <packaging>glassfish-jar</packaging>
 
-    <name>WebServices Security and JSR 196 implementation</name>
+    <name>WebServices Security and Jakarta Authentication implementation</name>
 
     <developers>
         <developer>
@@ -151,6 +151,16 @@
         <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.epicyro</groupId>
+            <artifactId>epicyro</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.security</groupId>
+            <artifactId>appclient.security</artifactId>
+            <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
     </dependencies>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee.auth.login;
 
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
@@ -56,9 +56,9 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
+import org.glassfish.security.common.UserPrincipal;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
 
 import com.sun.enterprise.security.PrincipalGroupFactory;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
@@ -76,7 +76,7 @@ public abstract class DigestLoginModule implements LoginModule {
     
     protected boolean _succeeded;
     protected boolean _commitSucceeded;
-    protected PrincipalImpl _userPrincipal;
+    protected UserPrincipal _userPrincipal;
     
     private DigestCredentials digestCredentials;
     private Subject subject;

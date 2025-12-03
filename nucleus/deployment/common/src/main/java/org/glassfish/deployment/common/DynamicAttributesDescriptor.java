@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -88,11 +88,11 @@ public class DynamicAttributesDescriptor extends Observable implements Serializa
      * @param name the attribute name
      * @return the attribute value of null of non existent
      */
-    public Object getExtraAttribute(String name) {
+    public <T> T getExtraAttribute(String name) {
         if (dynamicAttributes == null) {
             return null;
         }
-        return dynamicAttributes.get(name);
+        return (T) dynamicAttributes.get(name);
     }
 
     /**

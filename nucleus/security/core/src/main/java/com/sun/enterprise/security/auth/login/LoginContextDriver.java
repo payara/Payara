@@ -37,22 +37,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.auth.login;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
-import static com.sun.enterprise.security.SecurityLoggerInfo.securityAccessControllerActionError;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
 import static com.sun.enterprise.security.common.SecurityConstants.ALL;
 import static com.sun.enterprise.security.common.SecurityConstants.CERTIFICATE;
 import static com.sun.enterprise.security.common.SecurityConstants.CLIENT_JAAS_CERTIFICATE;
 import static com.sun.enterprise.security.common.SecurityConstants.CLIENT_JAAS_PASSWORD;
 import static com.sun.enterprise.security.common.SecurityConstants.USERNAME_PASSWORD;
-import static java.util.logging.Level.FINEST;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
+import static com.sun.enterprise.util.Utility.isEmpty;
+import static java.util.logging.Level.*;
 
+import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import java.security.Principal;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -61,6 +63,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 
+import javax.security.auth.x500.X500Principal;
 import org.glassfish.internal.api.Globals;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
@@ -73,6 +76,7 @@ import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.common.ClientSecurityContext;
+import org.glassfish.security.common.Group;
 
 /**
  *
@@ -271,14 +275,7 @@ public class LoginContextDriver {
         Iterator<?> credentialsIterator = privileged(() -> subject.getPrivateCredentials(clazz)).iterator();
 
         while (credentialsIterator.hasNext()) {
-            Object credential = null;
-
-            try {
-                credential = privileged(() -> credentialsIterator.next());
-            } catch (Exception e) {
-                // Should never come here
-                LOGGER.log(SEVERE, securityAccessControllerActionError, e);
-            }
+            Object credential = credentialsIterator.next();
 
             if (credential instanceof PasswordCredential) {
                 PasswordCredential passwordCredential = (PasswordCredential) credential;
@@ -342,6 +339,145 @@ public class LoginContextDriver {
     public static void auditAuthenticate(String username, String realm, boolean success) {
         if (getAuditManager().isAuditOn()) {
             getAuditManager().authentication(username, realm, success);
+        }
+    }
+
+    public static void jmacLogin(Subject subject, Principal callerPrincipal, String realmName) throws LoginException {
+        if (CertificateRealm.AUTH_TYPE.equals(realmName)) {
+            if (callerPrincipal instanceof X500Principal) {
+                LoginContextDriver.jmacLogin(subject, (X500Principal) callerPrincipal);
+            }
+        } else if (!callerPrincipal.equals(SecurityContext.getDefaultCallerPrincipal())) {
+            LoginContextDriver.jmacLogin(subject, callerPrincipal.getName(), realmName);
+        }
+    }
+
+    public static Subject jmacLogin(Subject subject, X500Principal x500Principal) throws LoginException {
+        if (subject == null) {
+            subject = new Subject();
+        }
+
+        String userName = "";
+        try {
+            userName = x500Principal.getName();
+            subject.getPublicCredentials().add(x500Principal);
+
+            CertificateRealm certRealm = (CertificateRealm) Realm.getInstance(CertificateRealm.AUTH_TYPE);
+            String jaasCtx = certRealm.getJAASContext();
+            if (jaasCtx != null) {
+                // The subject has the Certificate Credential.
+                new LoginContext(jaasCtx, subject, dummyCallback).login();
+            }
+            certRealm.authenticate(subject, x500Principal);
+        } catch (Exception ex) {
+            LOGGER.log(INFO, auditAtnRefusedError, userName);
+            if (getAuditManager().isAuditOn()) {
+                getAuditManager().authentication(userName, CertificateRealm.AUTH_TYPE, false);
+            }
+
+            if (ex instanceof LoginException) {
+                throw (LoginException) ex;
+            }
+            throw new LoginException("Authentication failed.", ex);
+        }
+
+        LOGGER.log(FINE, "JMAC cert login succeeded for {0}", userName);
+
+        if (getAuditManager().isAuditOn()) {
+            getAuditManager().authentication(userName, CertificateRealm.AUTH_TYPE, true);
+        }
+        // do not set the security Context
+
+        return subject;
+    }
+
+    public static Subject jmacLogin(Subject subject, String userName, String realm) throws LoginException {
+        if (subject == null) {
+            subject = new Subject();
+        }
+
+        try {
+            if (isEmpty(realm)) {
+                realm = Realm.getDefaultRealm();
+            }
+
+            Enumeration<String> groups = Realm.getInstance(realm).getGroupNames(userName);
+            if (groups != null) {
+                while (groups.hasMoreElements()) {
+                    subject.getPrincipals().add(new Group(groups.nextElement()));
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.log(FINE, "Exception when trying to populate groups for CallerPrincipal " + userName, ex);
+        }
+
+        return subject;
+    }
+
+    /**
+     * Performs login for JMAC security. The difference between this method and others is that it just verifies whether the login
+     * will succeed in the given realm. It does not set the result of the authentication in the appserver runtime environment A
+     * silent return from this method means that the given user succeeding in authenticating with the given password in the given
+     * realm
+     *
+     * @param subject
+     * @param username
+     * @param password
+     * @param realmName the realm to authenticate under
+     * @returns Subject on successful authentication
+     * @throws LoginException
+     */
+    public static Subject jmacLogin(Subject subject, String username, char[] password, String realmName) throws LoginException {
+        if (realmName == null || !Realm.isValidRealm(realmName)) {
+            realmName = Realm.getDefaultRealm();
+        }
+
+        if (subject == null) {
+            subject = new Subject();
+        }
+
+        final PasswordCredential passwordCredential = new PasswordCredential(username, password, realmName);
+        subject.getPrivateCredentials().add(passwordCredential);
+
+        String jaasCtx = getJaasCtx(realmName);
+
+        LOGGER.log(FINE, "JMAC login user {0} into realm {1} using JAAS module {2}",
+                new Object[] {username, realmName, jaasCtx});
+
+        try {
+            // A dummyCallback is used to satisfy JAAS but it is never used.
+            // name/pwd info is already contained in Subject's Credential
+            new LoginContext(jaasCtx, subject, dummyCallback).login();
+
+        } catch (Exception e) {
+            LOGGER.log(INFO, SecurityLoggerInfo.auditAtnRefusedError, username);
+            if (getAuditManager().isAuditOn()) {
+                getAuditManager().authentication(username, realmName, false);
+            }
+
+            if (e instanceof LoginException) {
+                throw (LoginException) e;
+            }
+            throw new LoginException("Login failed: " + e.getMessage(), e);
+        }
+        if (getAuditManager().isAuditOn()) {
+            getAuditManager().authentication(username, realmName, true);
+        }
+        LOGGER.log(FINE, "jmac Password login succeeded for {0}", username);
+
+        return subject;
+        // do not set the security Context
+    }
+
+    private static String getJaasCtx(String realm) {
+        try {
+            return Realm.getInstance(realm).getJAASContext();
+        } catch (Exception ex) {
+            if (ex instanceof LoginException) {
+                throw (LoginException) ex;
+            }
+
+            throw (LoginException) new LoginException(ex.toString()).initCause(ex);
         }
     }
 

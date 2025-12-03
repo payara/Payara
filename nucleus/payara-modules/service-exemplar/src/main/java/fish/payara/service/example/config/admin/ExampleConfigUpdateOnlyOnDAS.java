@@ -72,7 +72,7 @@ public class ExampleConfigUpdateOnlyOnDAS implements AdminCommand {
         if (serviceConfig != null) {
             try {
                 // to perform a transaction on the domain.xml you need to use this construct
-                // see https://github.com/hk2-project/hk2/blob/master/hk2-configuration/persistence/hk2-xml-dom/hk2-config/src/main/java/org/jvnet/hk2/config/ConfigSupport.java
+                // see https://github.com/hk2-project/hk2/blob/main/hk2-configuration/persistence/hk2-xml-dom/hk2-config/src/main/java/org/jvnet/hk2/config/ConfigSupport.java
                 ConfigSupport.apply(new SingleConfigCode<ExampleServiceConfiguration>(){
                     @Override
                     public Object run(ExampleServiceConfiguration config) {

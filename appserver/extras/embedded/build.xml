@@ -130,6 +130,7 @@
             <manifest>
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
                 <attribute name="Main-Class" value="com.sun.enterprise.glassfish.bootstrap.UberMain"/>
+                <attribute name="Multi-Release" value="true"/>
             </manifest>    
             <zipgroupfileset dir="${jardir}" includes="**/*.jar"/>
             <fileset dir="${rootdir}/temp" includes="*.rar, *.war"/>
