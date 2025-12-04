@@ -59,6 +59,7 @@ import javax.naming.NamingException;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -162,6 +163,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
     }
 
     @Test
+    @InSequence(1)
     public void uploadClientCertificate() throws IOException {
         if (ServerOperations.isServer()) {
             ServerOperations.generateClientKeyStore(true);
@@ -170,6 +172,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
+    @InSequence(2)
     public void callRemoteBeanWithCorrectCredentials() throws NamingException, IOException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
@@ -180,6 +183,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
+    @InSequence(3)
     public void callRemoteBeanWithIncorrectCredentials() throws NamingException, IOException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");
