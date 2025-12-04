@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2022-2025 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -53,24 +53,11 @@
     <packaging>war</packaging>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <failOnMissingWebXml>false</failOnMissingWebXml>
         <junit-jupiter.version>5.14.1</junit-jupiter.version>
-        <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
-        <jakarta-concurrent.version>3.0.4</jakarta-concurrent.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>${arquillian.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
@@ -109,23 +96,6 @@
             <version>${shrinkwrap.resolver.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.enterprise.concurrent</groupId>
-            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- End of temporary dependencies -->
     </dependencies>
     <build>
         <finalName>concurrencyApp</finalName>
@@ -141,6 +111,16 @@
     <profiles>
         <profile>
             <id>payara-server-remote</id>
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>payara-client-ee11</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>payara-server-managed</id>
             <dependencies>
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
