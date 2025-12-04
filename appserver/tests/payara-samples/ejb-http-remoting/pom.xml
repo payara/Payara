@@ -148,25 +148,6 @@
                     </execution>
 
                     <execution>
-                        <id>setup-ejb-request-tracing</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${payara.asadmin}</executable>
-                            <arguments>
-                                <argument>set-requesttracing-configuration</argument>
-                                <argument>--enabled</argument>
-                                <argument>true</argument>
-                                <argument>--dynamic</argument>
-                                <argument>true</argument>
-                            </arguments>
-                            <skip>${skipConfig}</skip>
-                        </configuration>
-                    </execution>
-
-                    <execution>
                         <id>stop-payara-server-after-config</id>
                         <phase>pre-integration-test</phase>
                         <goals>
