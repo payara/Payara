@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import com.sun.ejb.Container;
 import com.sun.ejb.ContainerFactory;
-import com.sun.enterprise.security.SecurityManager;
 import jakarta.inject.Singleton;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -57,9 +57,7 @@ public class StatelessContainerFactory extends BaseContainerFactory implements
                                      ClassLoader loader,
                                      DeploymentContext deployContext)
             throws Exception {
-        SecurityManager sm = getSecurityManager(ejbDescriptor);
-        StatelessSessionContainer slsbContainer = new StatelessSessionContainer(ejbDescriptor,
-                loader, sm);
+        StatelessSessionContainer slsbContainer = new StatelessSessionContainer(ejbDescriptor, loader, getSecurityManager(ejbDescriptor));
         slsbContainer.initializeHome();
         return slsbContainer;
     }

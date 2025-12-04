@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- concurrent/managedScheduledExecutorServiceEdit.jsf -->
 <!initPage
@@ -63,7 +64,7 @@
 
     gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "longRunningTasks" });
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "longRunningTasks", "useVirtualThreads" });
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
     
     gf.restRequest(endpoint="#{pageSession.selfUrl}/property" method="GET" result="#{requestScope.propTable}");
@@ -74,6 +75,7 @@
     setPageSessionAttribute(key="showMaxPoolSize" value="#{false}");
     setPageSessionAttribute(key="showTaskQueue" value="#{false}");
     setPageSessionAttribute(key="showForkJoin" value="#{false}");
+    setPageSessionAttribute(key="showVirtualThreads" value="#{true}");
     setPageSessionAttribute(key="listCommand" value="list-managed-scheduled-executor-services");
     setPageSessionAttribute(key="logicalJndiMapKey" value="managedScheduledExecutorServices");
 

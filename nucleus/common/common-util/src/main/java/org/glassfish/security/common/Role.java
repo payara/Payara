@@ -37,9 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.security.common;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Objects;
 
 /**
  * In EJBs, ACL checking is done using the Roles. Roles are an abstraction of an application specific Logical
@@ -48,15 +54,16 @@ package org.glassfish.security.common;
  * 
  * @author Harish Prabandham
  */
-public class Role extends PrincipalImpl {
+public class Role implements Principal, Serializable {
 
     private static final long serialVersionUID = -7801565721107580516L;
     
     private String description;
+    private final String name;
 
     /** Creates a new Role with a given name */
     public Role(String name) {
-        super(name);
+        this.name = Objects.requireNonNull(name);
     }
 
     @Override
@@ -76,6 +83,11 @@ public class Role extends PrincipalImpl {
     @Override
     public int hashCode() {
         return getName().hashCode();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     public String getDescription() {

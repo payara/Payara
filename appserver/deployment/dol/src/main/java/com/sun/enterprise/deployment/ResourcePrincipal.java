@@ -37,10 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.deployment;
 
-import org.glassfish.security.common.PrincipalImpl;
+import com.sun.enterprise.deployment.runtime.common.PrincipalNameDescriptor;
+import org.glassfish.security.common.UserNameAndPassword;
+
 
 /**
  * This class encapsulates the Resource Principal information needed
@@ -48,7 +52,7 @@ import org.glassfish.security.common.PrincipalImpl;
  *
  * @author Tony Ng
  */
-public class ResourcePrincipal extends  PrincipalImpl {
+public class ResourcePrincipal extends PrincipalNameDescriptor {
     private String password;
 
     static private final int NULL_HASH_CODE = Integer.valueOf(1).hashCode();
@@ -91,6 +95,10 @@ public class ResourcePrincipal extends  PrincipalImpl {
         } else {
             return (a.equals(b));
         }
+    }
+
+    public UserNameAndPassword toPrincipalNameAndPassword() {
+        return new UserNameAndPassword(getName(), password);
     }
 
 }

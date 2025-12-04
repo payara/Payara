@@ -99,6 +99,11 @@ public class RequestFacade implements HttpServletRequest {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
+    /**
+     * The wrapped request.
+     */
+    protected Request catalinaConnectorRequest;
+
     // ----------------------------------------------------------- DoPrivileged
 
     private final class GetAttributePrivilegedAction implements PrivilegedAction<Enumeration<String>> {
@@ -253,6 +258,7 @@ public class RequestFacade implements HttpServletRequest {
      * default-web-module will be masked, false otherwise
      */
     public RequestFacade(Request request, boolean maskDefaultContextMapping) {
+        this.catalinaConnectorRequest = request;
         this.request = request;
         this.maskDefaultContextMapping = maskDefaultContextMapping;
         this.reqFacHelper = new RequestFacadeHelper(request);
@@ -294,6 +300,7 @@ public class RequestFacade implements HttpServletRequest {
      * Clear facade.
      */
     public void clear() {
+        catalinaConnectorRequest = null;
         request = null;
         if (reqFacHelper != null) {
             reqFacHelper.clear();
@@ -831,6 +838,19 @@ public class RequestFacade implements HttpServletRequest {
         }
 
         return p;
+    }
+
+    // returns the original, unwrapped principal from the underlying request
+    public Principal getRequestPrincipal() {
+        checkRequestNull();
+
+        return catalinaConnectorRequest.getUserPrincipal();
+    }
+
+    private void checkRequestNull() {
+        if (catalinaConnectorRequest == null) {
+            throw new IllegalStateException(rb.getString(LogFacade.CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+        }
     }
 
     @Override

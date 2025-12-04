@@ -5,10 +5,11 @@ Test for auto-naming Payara instances with conflict resolution.
 """
 
 import os
+import subprocess
 import sys
 import logging
 import argparse
-import subprocess
+import socket
 from typing import Tuple
 
 # Configure logging
@@ -77,6 +78,16 @@ class AutoNameInstancesTest:
             logger.error(error_msg)
             return False, "", error_msg
 
+    def _get_available_nodes(self) -> list:
+        """Get list of available nodes."""
+        success, output, _ = self._run_asadmin('list-nodes')
+        if not success:
+            return []
+
+        # Skip header line and empty lines
+        return [line.split()[0] for line in output.splitlines()
+                if line.strip() and not line.startswith(('Node', 'Command'))]
+
     def _get_domain_name(self) -> str:
         """Get the current domain name."""
         success, output, _ = self._run_asadmin('list-domains')
@@ -99,12 +110,30 @@ class AutoNameInstancesTest:
             return False
 
         instances = [line.split()[0] for line in output.splitlines()
-                    if line.strip() and not line.startswith('Command')]
+                     if line.strip() and not line.startswith('Command')]
         return instance_name in instances
 
     def setup(self):
         """Set up the test environment."""
         logger.info("Setting up test environment...")
+
+        # Get available nodes
+        available_nodes = self._get_available_nodes()
+        logger.debug(f"Available nodes: {available_nodes}")
+
+        # If no nodes available, create a local node
+        if not available_nodes:
+            logger.info("No nodes found, creating a local node")
+            hostname = socket.gethostname()
+            node_name = f'localhost-{hostname}-local'
+            success, _, error = self._run_asadmin('create-local-instance', '--node', node_name)
+            if not success:
+                raise AsadminCommandError(f"Failed to create local node: {error}")
+            self.node_name = node_name
+        else:
+            # Use the first available node
+            self.node_name = available_nodes[0]
+            logger.info(f"Using existing node: {self.node_name}")
 
         # Check if conflict instance exists, create if not
         if not self._instance_exists(self.conflict_instance):
@@ -171,15 +200,15 @@ def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Test auto-naming of Payara instances')
     parser.add_argument('--asadmin', default=os.environ.get('PAYARA_HOME', '') + '/bin/asadmin' if os.environ.get('PAYARA_HOME') else 'asadmin',
-                       help='Path to asadmin script (default: $PAYARA_HOME/bin/asadmin or asadmin in PATH)')
+                        help='Path to asadmin script (default: $PAYARA_HOME/bin/asadmin or asadmin in PATH)')
     parser.add_argument('--host', default='localhost',
-                       help='DAS host (default: localhost)')
+                        help='DAS host (default: localhost)')
     parser.add_argument('--port', type=int, default=4848,
-                       help='DAS port (default: 4848)')
+                        help='DAS port (default: 4848)')
     parser.add_argument('--user', help='Admin user (if authentication is required)')
     parser.add_argument('--password', help='Admin password (if authentication is required)')
     parser.add_argument('--debug', action='store_true',
-                       help='Enable debug logging')
+                        help='Enable debug logging')
     return parser.parse_args()
 
 def main():

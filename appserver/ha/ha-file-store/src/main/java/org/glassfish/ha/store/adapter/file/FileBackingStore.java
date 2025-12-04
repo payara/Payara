@@ -37,18 +37,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package org.glassfish.ha.store.adapter.file;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreConfiguration;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.BackingStoreFactory;
-
-import java.io.*;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * An implementation of BackingStore that uses file system to
@@ -310,20 +319,7 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     }
 
     private boolean removeFile(final File file) {
-        boolean success = false;
-        if (System.getSecurityManager() == null) {
-            success = file.delete();
-        } else {
-            success = (Boolean) java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedAction() {
-                        public java.lang.Object run() {
-                            return Boolean.valueOf(file.delete());
-                        }
-                    }
-            );
-        }
-
-        return success;
+        return file.delete();
     }
 
     private byte[] getSerializedState(V value)

@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -278,7 +278,7 @@
             <!-- These are hopefully no longer needed with this BOM, but just to be sure -->
             <dependency>
                 <groupId>fish.payara.arquillian</groupId>
-                <artifactId>payara-client-ee9</artifactId>
+                <artifactId>payara-client-ee11</artifactId>
                 <version>${payara-arquillian-container.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -355,6 +355,11 @@
                 <version>${cdi-api.version}</version>
             </dependency>
             <dependency>
+                <groupId>jakarta.enterprise</groupId>
+                <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
+                <version>${cdi-api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.inject</groupId>
                 <artifactId>jakarta.inject-api</artifactId>
                 <version>${jakarta.inject.version}</version>
@@ -383,7 +388,7 @@
             <dependency>
                 <groupId>jakarta.authorization</groupId>
                 <artifactId>jakarta.authorization-api</artifactId>
-                <version>${jakarta.security.jacc-api.version}</version>
+                <version>${jakarta.authorization-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.exousia</groupId>
@@ -393,17 +398,12 @@
             <dependency>
                 <groupId>jakarta.authentication</groupId>
                 <artifactId>jakarta.authentication-api</artifactId>
-                <version>${jakarta.security.auth.message-api.version}</version>
+                <version>${jakarta.authentication-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.persistence</groupId>
                 <artifactId>jakarta.persistence-api</artifactId>
                 <version>${jakarta-persistence-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.security.auth.message</groupId>
-                <artifactId>jakarta.security.auth.message-api</artifactId>
-                <version>${jakarta.security.auth.message-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
@@ -449,6 +449,11 @@
                 <groupId>jakarta.enterprise.concurrent</groupId>
                 <artifactId>jakarta.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.data</groupId>
+                <artifactId>jakarta.data-api</artifactId>
+                <version>${jakarta.data-api.version}</version>
             </dependency>
 
             <dependency>
@@ -698,13 +703,18 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
-                <artifactId>jakarta.security.enterprise</artifactId>
-                <version>${jakarta.security.enterprise.version}</version>
+                <artifactId>soteria</artifactId>
+                <version>${soteria.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>soteria.spi.bean.decorator.weld</artifactId>
-                <version>${jakarta.security.enterprise.version}</version>
+                <version>${soteria.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.epicyro</groupId>
+                <artifactId>epicyro</artifactId>
+                <version>${epicyro.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
@@ -837,24 +847,15 @@
 
             <dependency>
                 <groupId>org.glassfish.mq</groupId>
-                <artifactId>imq</artifactId>
-                <version>${openmq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.mq</groupId>
-                <artifactId>imqjmx</artifactId>
-                <version>${openmq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.mq</groupId>
                 <artifactId>mq-distribution</artifactId>
                 <version>${openmq.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.web</groupId>
-                <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-                <version>${jakarta.servlet.jsp.jstl.version}</version>
+                <groupId>org.glassfish.mq</groupId>
+                <artifactId>mq-client</artifactId>
+                <version>${openmq.version}</version>
             </dependency>
+
             <dependency>
                 <groupId>org.eclipse</groupId>
                 <artifactId>yasson</artifactId>
@@ -889,12 +890,6 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>jakarta.enterprise.concurrent</artifactId>
-                <version>${concurro.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>com.sun.istack</groupId>
                 <artifactId>istack-commons-runtime</artifactId>
                 <version>${istack-commons-runtime.version}</version>
@@ -914,6 +909,12 @@
                 <groupId>org.eclipse.krazo</groupId>
                 <artifactId>krazo-jersey</artifactId>
                 <version>${krazo.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.concurro</groupId>
+                <artifactId>concurro</artifactId>
+                <version>${concurro.version}</version>
             </dependency>
 
             <!-- Other libraries -->

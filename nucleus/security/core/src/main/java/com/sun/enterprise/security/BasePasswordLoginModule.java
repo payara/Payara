@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noPwdCredentialProvidedError;
@@ -59,9 +59,11 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 
 import com.sun.enterprise.security.auth.login.LoginCallbackHandler;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
@@ -98,7 +100,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     // the authentication status
     protected boolean _succeeded;
     protected boolean _commitSucceeded;
-    protected PrincipalImpl _userPrincipal;
+    protected UserPrincipal _userPrincipal;
     protected String[] _groupsList;
 
     /**
@@ -163,13 +165,13 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         }
 
         // Add a Principal (authenticated identity) to the Subject
-        // Assume the user we authenticated is the PrincipalImpl [RI]
+        // Assume the user we authenticated is the UserPrincipal [RI]
         String realmName = _currentRealm.getName();
         PrincipalGroupFactory factory = Globals.getDefaultHabitat().getService(PrincipalGroupFactory.class);
         if (factory != null) {
             _userPrincipal = factory.getPrincipalInstance(getUsername(), realmName);
         } else {
-            _userPrincipal = new PrincipalImpl(getUsername());
+            _userPrincipal = new UserNameAndPassword(getUsername());
         }
 
         Set<Principal> principals = _subject.getPrincipals();
@@ -444,7 +446,7 @@ public abstract class BasePasswordLoginModule implements LoginModule {
     /**
      * @return the UserPrincipal - for backward compatibility
      */
-    public PrincipalImpl getUserPrincipal() {
+    public UserPrincipal getUserPrincipal() {
         return _userPrincipal;
     }
 

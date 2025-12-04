@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -77,6 +77,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.UndoableCommand;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.glassfish.kernel.KernelLoggerInfo;
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.MultiMap;
 import org.jvnet.hk2.config.InjectionManager;
@@ -483,9 +484,10 @@ public class CommandRunnerImpl implements CommandRunner {
             Configuration<?> configuration = Validation.byDefaultProvider().providerResolver(
                     new HibernateValidationProviderResolver()
             ).configure();
-            ValidatorFactory validatorFactory = configuration.buildValidatorFactory();
+
+            ValidatorFactory validatorFactory = configuration.messageInterpolator(new ParameterMessageInterpolator())
+                    .buildValidatorFactory();
             ValidatorContext validatorContext = validatorFactory.usingContext();
-            validatorContext.messageInterpolator(new MessageInterpolatorImpl());
             beanValidator = validatorContext.getValidator();
         } finally {
             Thread.currentThread().setContextClassLoader(cl);

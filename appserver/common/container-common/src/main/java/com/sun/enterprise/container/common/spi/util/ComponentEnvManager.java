@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2024] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.container.common.spi.util;
@@ -47,7 +47,6 @@ import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 
 import org.glassfish.api.invocation.ApplicationEnvironment;
-import org.glassfish.api.naming.JNDIBinding;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.naming.NamingException;

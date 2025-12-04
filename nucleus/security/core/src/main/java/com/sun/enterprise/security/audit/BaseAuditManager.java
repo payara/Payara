@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] Payara Services Ltd.
+// Portions Copyright [2021-2024] Payara Services Ltd.
 
 package com.sun.enterprise.security.audit;
 

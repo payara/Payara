@@ -55,10 +55,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package org.apache.catalina.loader;
 
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyFactory;
 import org.apache.catalina.LogFacade;
 import org.apache.naming.JndiPermission;
 import org.glassfish.web.loader.Reloader;
@@ -888,7 +890,7 @@ public class StandardClassLoader extends URLClassLoader implements Reloader {
     protected final PermissionCollection getPermissions(CodeSource codeSource) {
         if (!policy_refresh) {
             // Refresh the security policies
-            Policy policy = Policy.getPolicy();
+            Policy policy = PolicyFactory.getPolicyFactory().getPolicy();
             policy.refresh();
             policy_refresh = true;
         }

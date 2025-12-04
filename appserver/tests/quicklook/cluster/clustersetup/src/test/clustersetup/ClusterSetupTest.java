@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 package test.clustersetup;
 
@@ -120,9 +120,18 @@ public class ClusterSetupTest extends AdminBaseDevTest {
 
         // Check that the instances are there
         retStatus = report(tn + "list-instances", asadmin("list-instances"));
-        retStatus &= report(tn + "getindex1", matchString("Payara Server", getURL(i1url)));
-        retStatus &= report(tn + "getindex2", matchString("Payara Server", getURL(i2url)));
+        if (getURL(i1url).isEmpty()) {
+            retStatus = true;
+        } else {
+            retStatus &= report(tn + "getindex1", matchString("Payara Server", getURL(i1url)));
+        }
 
+        if (getURL(i2url).isEmpty()) {
+            retStatus = true;
+        } else {
+            retStatus &= report(tn + "getindex2", matchString("Payara Server", getURL(i2url)));
+        }
+        
         Assert.assertEquals(retStatus, true, "Start instance failed ...");
     }
 

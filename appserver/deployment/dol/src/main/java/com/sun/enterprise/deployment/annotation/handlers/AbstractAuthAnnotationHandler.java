@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.annotation.handlers;
 
@@ -167,9 +168,7 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
         EjbDescriptor ejbDesc = ejbContext.getDescriptor();
         Annotation authAnnotation = ainfo.getAnnotation();
 
-        if (!ejbContext.isInherited() &&
-                (ejbDesc.getMethodPermissionsFromDD() == null ||
-                ejbDesc.getMethodPermissionsFromDD().size() == 0)) {
+        if (!ejbContext.isInherited() && ejbDesc.getMethodPermissionsFromDD().size() == 0) {
             for (MethodDescriptor md : getMethodAllDescriptors(ejbDesc)) {
                 processEjbMethodSecurity(authAnnotation, md, ejbDesc);
             }
@@ -256,18 +255,15 @@ abstract class AbstractAuthAnnotationHandler extends AbstractCommonAttributeHand
     private boolean hasMethodPermissionsFromDD(MethodDescriptor methodDesc,
             EjbDescriptor ejbDesc) {
         Map methodPermissionsFromDD = ejbDesc.getMethodPermissionsFromDD();
-        if (methodPermissionsFromDD != null) {
-            Set allMethods = ejbDesc.getMethodDescriptors();
-            for (Object mdObjsObj : methodPermissionsFromDD.values()) {
-                List mdObjs = (List)mdObjsObj;
-                for (Object mdObj : mdObjs) {
-                    MethodDescriptor md = (MethodDescriptor)mdObj;
-                    for (Object style3MdObj :
-                            md.doStyleConversion(ejbDesc, allMethods)) {
-                        MethodDescriptor style3Md = (MethodDescriptor)style3MdObj;
-                        if (methodDesc.equals(style3Md)) {
-                            return true;
-                        }
+        Set allMethods = ejbDesc.getMethodDescriptors();
+        for (Object mdObjsObj : methodPermissionsFromDD.values()) {
+            List mdObjs = (List) mdObjsObj;
+            for (Object mdObj : mdObjs) {
+                MethodDescriptor md = (MethodDescriptor) mdObj;
+                for (Object style3MdObj : md.doStyleConversion(ejbDesc, allMethods)) {
+                    MethodDescriptor style3Md = (MethodDescriptor) style3MdObj;
+                    if (methodDesc.equals(style3Md)) {
+                        return true;
                     }
                 }
             }

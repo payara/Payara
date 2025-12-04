@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security;
 
 import java.util.logging.Logger;
@@ -272,14 +273,6 @@ public class SecurityLoggerInfo {
             action = "An exception occurred while processing username and password for security.",
             level = "SEVERE")
     public static final String usernamePasswordEnteringSecurityError = LOGMSG_PREFIX + "-05039";
-    
-    @LogMessageInfo(
-            message = "Exception in security accesscontroller action.",
-            cause = "Running a privileged action",
-            action = "Check the server logs and contact Payara Support",
-            level = "SEVERE")
-    public static final String securityAccessControllerActionError = LOGMSG_PREFIX + "-05043";
-   
     
     @LogMessageInfo(
             message = "Audit: Authentication refused for [{0}].",

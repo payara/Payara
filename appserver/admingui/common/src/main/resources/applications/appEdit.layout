@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates] -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -165,6 +165,7 @@
                     mapPut(map="#{requestScope.cdimap}" key="value" value="#{pageSession.implicitCdiEnabled}")
                     listAdd(list="#{pageSession.tableList}" value="#{requestScope.cdimap}");
                 }
+
 
                 javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
                 gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");

@@ -209,7 +209,7 @@ if [ -z "${PAYARA_INSTANCE_NAME}" ]; then
     createNewInstance
 else
     # Check if instance already created before running create command
-    if [ ! -d "payara6/glassfish/nodes/${PAYARA_NODE_NAME}/${PAYARA_INSTANCE_NAME}" ]; then
+    if [ ! -d "payara7/glassfish/nodes/${PAYARA_NODE_NAME}/${PAYARA_INSTANCE_NAME}" ]; then
         echo "Instance name provided, but local file system for instance missing, checking if file system or new instance needs to be created."
 
         # Check if an instance with this name is actually registered

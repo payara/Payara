@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2025] Payara Foundation and/or affiliates
 
 package org.glassfish.concurrent.runtime.deployer;
 
@@ -49,16 +49,22 @@ import org.glassfish.concurrent.config.ManagedThreadFactory;
 public class ManagedThreadFactoryConfig extends BaseConfig {
 
     private int threadPriority;
+    private boolean useVirtualThread;
     private String context;
 
     public ManagedThreadFactoryConfig(ManagedThreadFactory config) {
         super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
+        useVirtualThread = Boolean.valueOf(config.getUseVirtualThreads());
         context = config.getContext();
     }
 
     public int getThreadPriority() {
         return threadPriority;
+    }
+
+    public boolean getUseVirtualThread() {
+        return useVirtualThread;
     }
 
     public String getContext() {

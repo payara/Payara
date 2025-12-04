@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     
     <groupId>fish.payara.server.internal.packager</groupId>
@@ -163,6 +163,7 @@
         <module>docker</module>
         <module>microprofile-package</module>
         <module>opentracing-jaxws-package</module>
+        <module>data</module>
         <module>payara-mvc</module>
     </modules>
     
@@ -218,7 +219,7 @@
             
                 <!-- 
                     4. The heart of the packager, in each packager module, copy the listed jar dependencies and unpack any of the listed .zip dependencies 
-                    of that module to e.g. target/stage/payara6/glassfish/modules/ 
+                    of that module to e.g. target/stage/payara7/glassfish/modules/
                  -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

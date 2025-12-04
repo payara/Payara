@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2022-2025] [Payara Foundation and/or its affiliates] -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
@@ -196,11 +196,11 @@
         <class name="test.clustersetup.ClusterSetupTest"/>
     </classes>
   </test>
-  <!--<test name="cluster_helloworld">
+  <!--test name="cluster_helloworld">
     <classes>
         <class name="test.hellocluster.ClusterHelloworldTest"/>
     </classes>
-  </test>-->
+  </test-->
   <test name="cluster_teardown">
     <classes>
         <class name="test.clusterteardown.ClusterTeardownTest"/>

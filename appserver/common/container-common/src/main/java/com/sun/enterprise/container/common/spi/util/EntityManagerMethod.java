@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 /*
  * EntityManagerMethod.java
@@ -352,6 +353,84 @@ public enum EntityManagerMethod {
     GET_ENTITY_GRAPHS  {
         public String toString() {
             return "getEntityGraphs(Class<T> entityClass)";
+        }
+    },
+
+    FIND_CLASS_OBJECT_FINDOPTION {
+        public String toString() {
+            return "find(Class<T> aClass, Object o, FindOption... findOptions)";
+        }
+    },
+
+    FIND_ENTITYGRAPH_OBJECT_FINDOPTION {
+        public String toString() {
+            return "find(EntityGraph<T> entityGraph, Object o, FindOption... findOptions)";
+        }
+    },
+
+    GET_REFERENCE_T {
+        public String toString() {
+            return "getReference(T t)";
+        }
+    },
+
+    LOCK_OBJECT_LOCKMODETYPE_LOCKOPTION {
+        public String toString() {
+            return "lock(Object o, LockModeType lockModeType, LockOption... lockOptions)";
+        }
+    },
+
+    REFRESH_OBJECT_REFRESHOPTION {
+        public String toString() {
+            return "refresh(Object o, RefreshOption... refreshOptions)";
+        }
+    },
+
+    SET_CACHE_RETRIEVE_MODE {
+        public String toString() {
+            return "setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode)";
+        }
+    },
+
+    SET_CACHE_STORE_MODE {
+        public String toString() {
+            return "setCacheStoreMode(CacheStoreMode cacheStoreMode)";
+        }
+    },
+
+    GET_CACHE_RETRIEVE_MODE {
+        public String toString() {
+            return "getCacheRetrieveMode()";
+        }
+    },
+
+    GET_CACHE_STORE_MODE {
+        public String toString() {
+            return "getCacheStoreMode()";
+        }
+    },
+
+    CREATE_QUERY_CRITERIASELECT {
+        public String toString() {
+            return "createQuery(CriteriaSelect<T> criteriaSelect)";
+        }
+    },
+
+    CREATE_QUERY_TYPEDQUERYREFERENCE {
+        public String toString() {
+            return "createQuery(TypedQueryReference<T> typedQueryReference)";
+        }
+    },
+
+    RUN_WITH_CONNECTION {
+        public String toString() {
+            return "runWithConnection(ConnectionConsumer<C> connectionConsumer)";
+        }
+    },
+
+    CALL_WITH_CONNECTION {
+        public String toString() {
+            return "callWithConnection(ConnectionFunction<C, T> connectionFunction)";
         }
     }
 }

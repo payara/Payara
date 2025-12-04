@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.runtime;
 
@@ -121,7 +121,7 @@ public abstract class RuntimeDescriptor extends Descriptor {
     /**
      * @return a property value
      */
-    public Object getValue(String name) {
+    public <T> T getValue(String name) {
         return getExtraAttribute(name);
     }
 

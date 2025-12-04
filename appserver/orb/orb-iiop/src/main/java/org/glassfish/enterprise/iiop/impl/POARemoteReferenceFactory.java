@@ -37,72 +37,55 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.enterprise.iiop.impl;
 
 
-import jakarta.ejb.NoSuchObjectLocalException;
-
-import java.lang.ref.WeakReference;
-import java.rmi.Remote;
-
-import java.security.AccessController ;
-import java.security.PrivilegedAction ;
-
-import org.omg.CORBA.portable.Delegate;
-
-import org.glassfish.enterprise.iiop.api.RemoteReferenceFactory;
-
-import org.glassfish.enterprise.iiop.spi.EjbContainerFacade;
-import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
-
-import org.omg.PortableServer.POA ;
-import org.omg.PortableServer.Servant ;
-import org.omg.PortableServer.ServantLocator ;
-import org.omg.PortableServer.ServantLocatorPackage.CookieHolder ;
-
-import com.sun.logging.LogDomains;
-
-import com.sun.enterprise.deployment.EjbDescriptor;
-
-// TODO Only needed for checkpointing
-// import com.sun.ejb.base.sfsb.util.EJBServerConfigLookup;
-
-import com.sun.corba.ee.spi.extension.ServantCachingPolicy;
+import com.sun.corba.ee.org.omg.CORBA.SUNVMCID;
 import com.sun.corba.ee.spi.extension.CopyObjectPolicy;
 import com.sun.corba.ee.spi.extension.RequestPartitioningPolicy;
-import com.sun.corba.ee.spi.threadpool.ThreadPoolManager;
-
-import com.sun.corba.ee.spi.presentation.rmi.PresentationManager ;
-
-import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
-import com.sun.corba.ee.spi.oa.rfm.ReferenceFactory ;
-import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager ;
-
-import com.sun.corba.ee.spi.misc.ORBConstants;
-import com.sun.corba.ee.org.omg.CORBA.SUNVMCID;
+import com.sun.corba.ee.spi.extension.ServantCachingPolicy;
 import com.sun.corba.ee.spi.extension.ZeroPortPolicy;
 import com.sun.corba.ee.spi.ior.IOR;
 import com.sun.corba.ee.spi.ior.ObjectKey;
 import com.sun.corba.ee.spi.ior.TaggedProfile;
+import com.sun.corba.ee.spi.misc.ORBConstants;
+import com.sun.corba.ee.spi.oa.rfm.ReferenceFactory;
+import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager;
 import com.sun.corba.ee.spi.orb.ORB;
-
+import com.sun.corba.ee.spi.presentation.rmi.PresentationManager;
+import com.sun.corba.ee.spi.presentation.rmi.StubAdapter;
+import com.sun.corba.ee.spi.threadpool.ThreadPoolManager;
+import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.util.Utility;
-
-import org.glassfish.pfl.dynamic.codegen.spi.Wrapper ;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import com.sun.logging.LogDomains;
+import jakarta.ejb.NoSuchObjectLocalException;
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.ref.WeakReference;
+import java.rmi.Remote;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import javax.rmi.CORBA.Tie;
 import javax.rmi.CORBA.Util;
+import org.glassfish.enterprise.iiop.api.RemoteReferenceFactory;
+import org.glassfish.enterprise.iiop.spi.EjbContainerFacade;
+import org.glassfish.enterprise.iiop.util.S1ASThreadPoolManager;
+import org.glassfish.pfl.dynamic.codegen.spi.Wrapper;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
 import org.omg.CORBA.Policy;
+import org.omg.CORBA.portable.Delegate;
+import org.omg.PortableServer.POA;
+import org.omg.PortableServer.Servant;
+import org.omg.PortableServer.ServantLocator;
+import org.omg.PortableServer.ServantLocatorPackage.CookieHolder;
 
 /**
  * This class implements the RemoteReferenceFactory interface for the
@@ -381,22 +364,7 @@ public final class POARemoteReferenceFactory extends org.omg.CORBA.LocalObject
     }
 
     private void setClassLoader() {
-        ClassLoader cl ;
-        SecurityManager sman = System.getSecurityManager() ;
-        if (sman == null) {
-            cl = this.getClass().getClassLoader() ;
-        } else {
-            cl = AccessController.doPrivileged( 
-                new PrivilegedAction<ClassLoader>() {
-                    @Override
-                    public ClassLoader run() {
-                        return this.getClass().getClassLoader() ;
-                    }
-                }
-            ) ;
-        }
-
-        Wrapper._setClassLoader( cl ) ;
+        Wrapper._setClassLoader(this.getClass().getClassLoader());
     }
 
     private Remote createRef(byte[] instanceKey, ReferenceFactory rf, 

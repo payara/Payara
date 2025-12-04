@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.cluster</groupId>
         <artifactId>cluster</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <artifactId>cluster-admin</artifactId>
     <packaging>glassfish-jar</packaging>

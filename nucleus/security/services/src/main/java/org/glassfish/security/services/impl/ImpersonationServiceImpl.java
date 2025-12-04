@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.security.services.impl;
 
 import java.security.Principal;
@@ -48,7 +49,8 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
+import org.glassfish.security.common.UserNameAndPassword;
 import org.glassfish.security.services.api.authentication.ImpersonationService;
 import org.glassfish.security.services.common.Secure;
 import org.jvnet.hk2.annotations.Service;
@@ -86,7 +88,7 @@ public class ImpersonationServiceImpl implements ImpersonationService {
     } else {
       // Build the Subject
       Set<Principal> principals = _subject.getPrincipals();
-      principals.add(new PrincipalImpl(user));
+      principals.add(new UserNameAndPassword(user));
       if (groups != null) {
         for (String group: groups) {
           principals.add(new Group(group));

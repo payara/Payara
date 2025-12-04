@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.connectors.util;
 
@@ -333,7 +333,7 @@ public final class ConnectionPoolObjectsUtils {
                                 password.toCharArray());
                 pc.setManagedConnectionFactory(mcf);
                 PrivilegedAction<Void> action = () -> {
-                    tempSubject.getPrincipals().add(prin);
+                    tempSubject.getPrincipals().add(prin.toPrincipalNameAndPassword());
                     tempSubject.getPrivateCredentials().add(pc);
                     return null;
                 };

@@ -544,6 +544,10 @@ public class DeploymentImpl implements CDI11Deployment, Serializable {
                 BeanDeploymentArchive bda = lIter.next();
                 bda.getBeanDeploymentArchives().add(newBda);
             }
+            
+            //adding available archive to the new to solve dependencies on injection time for cdi 4.1 tck
+            newBda.getBeanDeploymentArchives().addAll(beanDeploymentArchives);
+            
             if ( logger.isLoggable( FINE ) ) {
                 logger.log(FINE,
                            CDILoggerInfo.LOAD_BEAN_DEPLOYMENT_ARCHIVE_RETURNING_NEWLY_CREATED_BDA,

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
@@ -71,13 +72,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
-import org.glassfish.enterprise.concurrent.AbstractManagedExecutorService;
-import org.glassfish.enterprise.concurrent.AbstractManagedThread;
-import org.glassfish.enterprise.concurrent.ContextServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedExecutorServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
-import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.concurro.AbstractManagedExecutorService;
+import org.glassfish.concurro.AbstractManagedThread;
+import org.glassfish.concurro.ContextServiceImpl;
+import org.glassfish.concurro.ForkJoinManagedExecutorService;
+import org.glassfish.concurro.ManagedExecutorServiceImpl;
+import org.glassfish.concurro.ManagedScheduledExecutorServiceImpl;
+import org.glassfish.concurro.ManagedThreadFactoryImpl;
+import org.glassfish.concurro.virtualthreads.VirtualThreadsManagedExecutorService;
+import org.glassfish.concurro.virtualthreads.VirtualThreadsManagedScheduledExecutorService;
+import org.glassfish.concurro.virtualthreads.VirtualThreadsManagedThreadFactory;
+import org.glassfish.concurro.spi.ContextHandle;
 import org.glassfish.resourcebase.resources.naming.ResourceNamingService;
 
 /**
@@ -89,8 +94,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     private static ConcurrentRuntime _runtime;
 
-    private Map<String, ManagedExecutorServiceImpl> managedExecutorServiceMap;
-    private Map<String, ManagedScheduledExecutorServiceImpl> managedScheduledExecutorServiceMap;
+    private Map<String, AbstractManagedExecutorService> managedExecutorServiceMap = new HashMap();
+    private Map<String, AbstractManagedExecutorService> managedScheduledExecutorServiceMap = new HashMap();
     private Map<String, ContextServiceImpl> contextServiceMap = new HashMap();
     private Map<String, ManagedThreadFactoryImpl> managedThreadFactoryMap;
 
@@ -102,7 +107,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     public static final String CONTEXT_INFO_ALL = CONTEXT_INFO_CLASSLOADER + "," + CONTEXT_INFO_JNDI + "," + CONTEXT_INFO_SECURITY + "," + CONTEXT_INFO_WORKAREA;
 
     private ScheduledExecutorService internalScheduler;
-    private static final Logger logger  = LogFacade.getLogger();
+    private static final Logger logger = LogFacade.getLogger();
 
     @Inject
     InvocationManager invocationManager;
@@ -203,10 +208,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
+    public synchronized AbstractManagedExecutorService getManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
 
-        if (managedExecutorServiceMap != null && managedExecutorServiceMap.containsKey(jndiName)) {
+        if (managedExecutorServiceMap.containsKey(jndiName)) {
             return managedExecutorServiceMap.get(jndiName);
         }
 
@@ -215,33 +220,65 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getContextInfo(),
                 config.isContextInfoEnabledBoolean(), true);
 
-        ManagedExecutorServiceImpl mes = createManagedExecutorService(resourceInfo, config, contextService);
-        if (managedExecutorServiceMap == null) {
-            managedExecutorServiceMap = new HashMap();
-        }
-
+        AbstractManagedExecutorService mes = createManagedExecutorService(resourceInfo, config, contextService);
         managedExecutorServiceMap.put(jndiName, mes);
         return mes;
     }
 
-    public synchronized ManagedExecutorServiceImpl createManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config, ContextServiceImpl contextService) {
+    public synchronized AbstractManagedExecutorService createManagedExecutorService(ResourceInfo resourceInfo, ManagedExecutorServiceConfig config, ContextServiceImpl contextService) {
         ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
-        ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
-                managedThreadFactory,
-                config.getHungAfterSeconds() * 1_000L, // in milliseconds
-                config.isLongRunningTasks(),
-                config.getUseForkJoinPool(),
-                config.getCorePoolSize(),
-                config.getMaximumPoolSize(),
-                config.getKeepAliveSeconds(), TimeUnit.SECONDS,
-                config.getThreadLifeTimeSeconds(),
-                config.getTaskQueueCapacity(),
-                contextService,
-                AbstractManagedExecutorService.RejectPolicy.ABORT);
+        AbstractManagedExecutorService mes = null;
+        boolean useVirtualThread = config.getUseVirtualThread();
+        boolean useForkJoinPool = config.getUseForkJoinPool();
+        if (useVirtualThread) {
+            try {
+                mes = new VirtualThreadsManagedExecutorService(config.getJndiName(),
+                        null,
+                        config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                        config.isLongRunningTasks(),
+                        config.getMaximumPoolSize(),
+                        config.getTaskQueueCapacity(),
+                        contextService,
+                        AbstractManagedExecutorService.RejectPolicy.ABORT);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to start virtual threads managed executor service, JNDI '" + config.getJndiName() + "', fallback to " + (useVirtualThread ? "virtual threads" : "platform threads"), e);
+            }
+        }
+        if (mes == null && useForkJoinPool) {
+            try {
+                if (config.getMaximumPoolSize() > 0x7fff /*ForkJoinPool.MAX_CAP*/) {
+                    throw new IllegalArgumentException("Maximum size for ForkJoinPool managed executor service is too high, " + config.getMaximumPoolSize() + " > " + 0x7fff);
+                }
+                mes = new ForkJoinManagedExecutorService(config.getJndiName(),
+                        managedThreadFactory,
+                        config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                        config.isLongRunningTasks(),
+                        config.getMaximumPoolSize(),
+                        config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                        config.getThreadLifeTimeSeconds(),
+                        contextService,
+                        AbstractManagedExecutorService.RejectPolicy.ABORT);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to start ForkJoinPool managed executor service, JNDI '" + config.getJndiName() + "', fallback to platform threads", e);
+            }
+        }
+        if (mes == null) {
+            mes = new ManagedExecutorServiceImpl(config.getJndiName(),
+                    managedThreadFactory,
+                    config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                    config.isLongRunningTasks(),
+                    config.getCorePoolSize(),
+                    config.getMaximumPoolSize(),
+                    config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                    config.getThreadLifeTimeSeconds(),
+                    config.getTaskQueueCapacity(),
+                    contextService,
+                    AbstractManagedExecutorService.RejectPolicy.ABORT);
 
+        }
         if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
             scheduleInternalTimer();
         }
@@ -250,58 +287,71 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     }
 
     public void shutdownManagedExecutorService(String jndiName) {
-        ManagedExecutorServiceImpl mes = null;
+        AbstractManagedExecutorService mes = null;
         synchronized(this) {
-            if (managedExecutorServiceMap != null) {
-                mes = managedExecutorServiceMap.remove(jndiName);
-            }
+            mes = managedExecutorServiceMap.remove(jndiName);
         }
         if (mes != null) {
             mes.shutdownNow();
         }
     }
 
-    public synchronized ManagedScheduledExecutorServiceImpl getManagedScheduledExecutorService(ResourceInfo resource,
-                                                                                               ManagedScheduledExecutorServiceConfig config) {
+    public synchronized AbstractManagedExecutorService getManagedScheduledExecutorService(ResourceInfo resource,
+            ManagedScheduledExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
-        if (managedScheduledExecutorServiceMap != null && managedScheduledExecutorServiceMap.containsKey(jndiName)) {
-            return managedScheduledExecutorServiceMap.get(jndiName);
-        }
-        ContextServiceImpl contextService = prepareContextService(createContextServiceName(config.getContext(), config.getJndiName()),
-                config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
+        AbstractManagedExecutorService mes = managedScheduledExecutorServiceMap.get(jndiName);
+        if (mes == null) {
+            ContextServiceImpl contextService = prepareContextService(createContextServiceName(config.getContext(), config.getJndiName()),
+                    config.getContextInfo(), config.isContextInfoEnabledBoolean(), true);
 
-        ManagedScheduledExecutorServiceImpl mes = createManagedScheduledExecutorService(resource, config, contextService);
+            mes = createManagedScheduledExecutorService(resource, config, contextService);
 
-        if (managedScheduledExecutorServiceMap == null) {
-            managedScheduledExecutorServiceMap = new HashMap();
-        }
-        managedScheduledExecutorServiceMap.put(jndiName, mes);
-        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
-            scheduleInternalTimer();
+            managedScheduledExecutorServiceMap.put(jndiName, mes);
+            if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
+                scheduleInternalTimer();
+            }
         }
         return mes;
     }
 
-    public ManagedScheduledExecutorServiceImpl createManagedScheduledExecutorService(ResourceInfo resource,
-                                                                                     ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(
+    public AbstractManagedExecutorService createManagedScheduledExecutorService(ResourceInfo resource,
+            ManagedScheduledExecutorServiceConfig config, ContextServiceImpl contextService) {
+        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper( // FIXME: move to the next if
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
-        ManagedScheduledExecutorServiceImpl mes = new ManagedScheduledExecutorServiceImpl(config.getJndiName(),
-                managedThreadFactory,
-                config.getHungAfterSeconds() * 1000L, // in millseconds
-                config.isLongRunningTasks(),
-                config.getCorePoolSize(),
-                config.getKeepAliveSeconds(), TimeUnit.SECONDS,
-                config.getThreadLifeTimeSeconds(),
-                contextService,
-                AbstractManagedExecutorService.RejectPolicy.ABORT);
+        AbstractManagedExecutorService mes = null;
+        boolean useVirtualThread = config.getUseVirtualThread();
+        if (useVirtualThread) {
+            try {
+                mes = new VirtualThreadsManagedScheduledExecutorService(config.getJndiName(),
+                        null,
+                        config.getHungAfterSeconds() * 1_000L, // in milliseconds
+                        config.isLongRunningTasks(),
+                        Integer.MAX_VALUE,
+                        Integer.MAX_VALUE,
+                        contextService,
+                        AbstractManagedExecutorService.RejectPolicy.ABORT);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Unable to start virtual threads managed executor service, JNDI '" + config.getJndiName() + "', fallback to " + (useVirtualThread ? "virtual threads" : "platform threads"), e);
+            }
+        }
+        if (mes == null) {
+            mes = new ManagedScheduledExecutorServiceImpl(config.getJndiName(),
+                    managedThreadFactory,
+                    config.getHungAfterSeconds() * 1000L, // in millseconds
+                    config.isLongRunningTasks(),
+                    config.getCorePoolSize(),
+                    config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                    config.getThreadLifeTimeSeconds(),
+                    contextService,
+                    AbstractManagedExecutorService.RejectPolicy.ABORT);
+        }
         return mes;
     }
 
     public void shutdownScheduledManagedExecutorService(String jndiName) {
-        ManagedScheduledExecutorServiceImpl mses = null;
+        AbstractManagedExecutorService mses = null;
         synchronized(this) {
             if (managedScheduledExecutorServiceMap != null) {
                 mses = managedScheduledExecutorServiceMap.remove(jndiName);
@@ -312,7 +362,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    public synchronized ManagedThreadFactoryImpl getManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config) {
+    public synchronized ManagedThreadFactory getManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config) {
         String jndiName = config.getJndiName();
         if (managedThreadFactoryMap != null && managedThreadFactoryMap.containsKey(jndiName)) {
             return managedThreadFactoryMap.get(jndiName);
@@ -331,9 +381,14 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     }
 
     public ManagedThreadFactoryImpl createManagedThreadFactory(ResourceInfo resource, ManagedThreadFactoryConfig config, ContextServiceImpl contextService) {
-        ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
-                config.getThreadPriority());
-        return managedThreadFactory;
+        if (config.getUseVirtualThread()) {
+            ManagedThreadFactoryImpl virtFactory = new VirtualThreadsManagedThreadFactory(config.getJndiName(), contextService);
+            return virtFactory;
+        } else {
+            ManagedThreadFactoryImpl managedThreadFactory = new ThreadFactoryWrapper(config.getJndiName(), contextService,
+                    config.getThreadPriority());
+            return managedThreadFactory;
+        }
     }
 
     public void shutdownManagedThreadFactory(String jndiName) {
@@ -452,7 +507,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
 
         @Override
-        protected AbstractManagedThread createThread(Runnable r, ContextHandle contextHandleForSetup) {
+        protected Thread createThread(Runnable r, ContextHandle contextHandleForSetup) {
             ClassLoader appClassLoader = Utility.getClassLoader();
             Utility.setContextClassLoader(null);
             try {
@@ -475,38 +530,34 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     class HungTasksLogger implements Runnable {
 
         public void run() {
-            ArrayList<ManagedExecutorServiceImpl> executorServices = new ArrayList();
-            ArrayList<ManagedScheduledExecutorServiceImpl> scheduledExecutorServices = new ArrayList();
+            ArrayList<AbstractManagedExecutorService> executorServices = new ArrayList();
             synchronized (ConcurrentRuntime.this) {
-                if (managedExecutorServiceMap != null) {
-                    Collection<ManagedExecutorServiceImpl> mesColl = managedExecutorServiceMap.values();
-                    executorServices.addAll(mesColl);
-                }
+                Collection<AbstractManagedExecutorService> mesColl = managedExecutorServiceMap.values();
+                executorServices.addAll(mesColl);
+                Collection<AbstractManagedExecutorService> msesColl = managedScheduledExecutorServiceMap.values();
+                executorServices.addAll(msesColl);
             }
-            synchronized (ConcurrentRuntime.this) {
-                if (managedScheduledExecutorServiceMap != null) {
-                    Collection<ManagedScheduledExecutorServiceImpl> msesColl = managedScheduledExecutorServiceMap.values();
-                    scheduledExecutorServices.addAll(msesColl);
-                }
-            }
-            for (ManagedExecutorServiceImpl mes: executorServices) {
-                Collection<AbstractManagedThread> hungThreads = mes.getHungThreads();
+            for (AbstractManagedExecutorService mes : executorServices) {
+                Collection<Thread> hungThreads = mes.getHungThreads();
                 logHungThreads(hungThreads, mes.getManagedThreadFactory(), mes.getName());
-            }
-            for (ManagedScheduledExecutorServiceImpl mses: scheduledExecutorServices) {
-                Collection<AbstractManagedThread> hungThreads = mses.getHungThreads();
-                logHungThreads(hungThreads, mses.getManagedThreadFactory(), mses.getName());
             }
         }
 
-        private void logHungThreads(Collection<AbstractManagedThread> hungThreads, ManagedThreadFactoryImpl mtf, String mesName) {
+        private void logHungThreads(Collection<Thread> hungThreads, ManagedThreadFactoryImpl mtf, String mesName) {
             if (hungThreads != null) {
-                for (AbstractManagedThread hungThread: hungThreads) {
-                    Object[] params = {hungThread.getTaskIdentityName(),
-                            hungThread.getName(),
-                            hungThread.getTaskRunTime(System.currentTimeMillis()) / 1000,
-                            mtf.getHungTaskThreshold() / 1000,
-                            mesName};
+                long now = System.currentTimeMillis();
+                for (Thread hungThread : hungThreads) {
+                    String taskIdentityName = "!!!!!!!";
+                    String name = hungThread.getName();
+                    long taskRunTime = -1;
+                    if (hungThread instanceof AbstractManagedThread managedThread) {
+                        taskIdentityName = managedThread.getTaskIdentityName();
+                        taskRunTime = managedThread.getTaskRunTime(now);
+                    }
+                    Object[] params = {taskIdentityName, name,
+                        taskRunTime / 1000,
+                        mtf.getHungTaskThreshold() / 1000,
+                        mesName};
                     logger.log(Level.WARNING, LogFacade.UNRESPONSIVE_TASK, params);
                 }
             }

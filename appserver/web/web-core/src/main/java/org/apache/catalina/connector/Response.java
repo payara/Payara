@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2024 Payara Foundation and/or affiliates
 
 package org.apache.catalina.connector;
 
@@ -95,8 +95,6 @@ import org.apache.catalina.util.CharsetMapper;
 import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.CookieHeaderGenerator;
-import org.glassfish.grizzly.http.util.CookieSerializerUtils;
-import org.glassfish.grizzly.http.util.CookieUtils;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.grizzly.http.util.MimeHeaders;
 import org.glassfish.grizzly.http.util.UEncoder;
@@ -1437,34 +1435,22 @@ public class Response
      */
     @Override
     public void sendRedirect(String location) throws IOException {
-        sendRedirect(location, true);
+        sendRedirect(location, SC_MOVED_TEMPORARILY, true);
     }
 
-
-    /**
-     * Sends a temporary or permanent redirect to the specified redirect
-     * location URL.
-     *
-     * @param location Location URL to redirect to
-     * @param isTemporary true if the redirect is supposed to be temporary,
-     * false if permanent
-     *
-     * @throws IllegalStateException if this response has
-     *  already been committed
-     * @throws IOException if an input/output error occurs
-     */    
-    public void sendRedirect(String location, boolean isTemporary)
-            throws IOException {
-
+    @Override
+    public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {
         if (isCommitted())
             throw new IllegalStateException(rb.getString(LogFacade.CANNOT_CALL_SEND_REDIRECT_EXCEPTION));
 
         // Ignore any call from an included servlet
         if (included)
-            return; 
+            return;
 
         // Clear any data content that has been buffered
-        resetBuffer();
+        if (clearBuffer) {
+            resetBuffer();
+        }
 
         // Generate a temporary redirect to the specified location
         try {
@@ -1473,16 +1459,14 @@ public class Response
             */
             // START RIMOD 4642650
             String absolute;
-            if (getContext().getAllowRelativeRedirect())
+            if (getContext().getAllowRelativeRedirect()) {
                 absolute = location;
-            else
-                absolute = toAbsolute(location);
-            // END RIMOD 4642650
-            if (isTemporary) {
-                setStatus(SC_MOVED_TEMPORARILY);
             } else {
-                setStatus(SC_MOVED_PERMANENTLY);
+                absolute = toAbsolute(location);
             }
+
+            setStatus(sc);
+
             setHeader("Location", absolute);
 
             // According to RFC2616 section 10.3.3 302 Found,
@@ -1519,7 +1503,6 @@ public class Response
 
         // Cause the response to be finished (from the application perspective)
         setSuspended(true);
-
     }
 
 

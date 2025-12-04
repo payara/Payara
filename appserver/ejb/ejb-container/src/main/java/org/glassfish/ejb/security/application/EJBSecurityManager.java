@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
+
 package org.glassfish.ejb.security.application;
 
 import com.sun.ejb.EjbInvocation;
@@ -49,13 +51,31 @@ import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
-import com.sun.enterprise.security.jacc.JaccEJBConstraintsTranslator;
-import com.sun.enterprise.security.jacc.cache.CachedPermission;
-import com.sun.enterprise.security.jacc.cache.CachedPermissionImpl;
-import com.sun.enterprise.security.jacc.cache.PermissionCache;
-import com.sun.enterprise.security.jacc.cache.PermissionCacheFactory;
-import com.sun.enterprise.security.jacc.context.PolicyContextHandlerImpl;
+import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
+import com.sun.enterprise.security.ee.authorization.cache.PermissionCache;
+import com.sun.enterprise.security.ee.authorization.cache.PermissionCacheFactory;
+import com.sun.enterprise.security.web.integration.GlassFishPrincipalMapper;
 import com.sun.logging.LogDomains;
+import jakarta.security.jacc.EJBMethodPermission;
+import jakarta.security.jacc.PolicyConfigurationFactory;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyContextException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.AccessControlException;
+import java.security.CodeSource;
+import java.security.Principal;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import javax.security.auth.Subject;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
 import org.glassfish.api.invocation.InvocationManager;
@@ -63,30 +83,18 @@ import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
 import org.glassfish.exousia.AuthorizationService;
+import org.glassfish.exousia.permissions.RolesToPermissionsTransformer;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.security.common.Role;
 
-import javax.security.auth.Subject;
-import javax.security.auth.SubjectDomainCombiner;
-import jakarta.security.jacc.*;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.*;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static com.sun.enterprise.security.common.AppservAccessController.doPrivileged;
 import static com.sun.enterprise.security.common.AppservAccessController.privileged;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.*;
 
 /**
  * This class is used by the EJB server to manage security. All the container object only call into this object for
  * managing security. This class cannot be subclassed.
- * <p/>
+ * <p>
  * An instance of this class should be created per deployment unit.
  *
  * @author Harpreet Singh, monzillo
@@ -96,9 +104,7 @@ public final class EJBSecurityManager implements SecurityManager {
     private static final Logger _logger = LogDomains.getLogger(EJBSecurityManager.class, LogDomains.EJB_LOGGER);
 
     private AppServerAuditManager auditManager;
-
-    private static final PolicyContextHandlerImpl pcHandlerImpl = (PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance();
-
+    
     private final SecurityRoleMapperFactory roleMapperFactory;
 
     private final EjbDescriptor deploymentDescriptor;
@@ -113,7 +119,6 @@ public final class EJBSecurityManager implements SecurityManager {
     // contextId id is the same as an appname. This will be used to get
     // a PolicyConfiguration object per application.
     private String contextId;
-    private CodeSource codesource;
     private String realmName;
 
     // We use two protection domain caches until we decide how to
@@ -128,9 +133,7 @@ public final class EJBSecurityManager implements SecurityManager {
     private final Map accessControlContextCache = Collections.synchronizedMap(new WeakHashMap());
 
     private PermissionCache uncheckedMethodPermissionCache;
-
-    private final Policy policy;
-
+    
     private static final CodeSource managerCodeSource = EJBSecurityManager.class.getProtectionDomain().getCodeSource();
 
     private final InvocationManager invocationManager;
@@ -138,36 +141,102 @@ public final class EJBSecurityManager implements SecurityManager {
     private final EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
     private static volatile EjbSecurityStatsProvider ejbStatsProvider;
 
+    private final AuthorizationService authorizationService;
+
     public EJBSecurityManager(EjbDescriptor ejbDescriptor, InvocationManager invocationManager, EJBSecurityManagerFactory fact) throws Exception {
 
         this.deploymentDescriptor = ejbDescriptor;
         this.invocationManager = invocationManager;
         roleMapperFactory = SecurityUtil.getRoleMapperFactory();
-        // get the default policy
-        policy = AuthorizationService.getPolicy();
         securityManagerFactory = fact;
 
-        boolean runas = !(deploymentDescriptor.getUsesCallerIdentity());
-        if (runas) {
-            runAs = deploymentDescriptor.getRunAsIdentity();
+        runAs = getRunAs(deploymentDescriptor);
 
-            // Note: runAs may be null even when runas==true if this EJB
-            // is an MDB.
-            if (runAs != null) {
-                if (_logger.isLoggable(FINE)) {
-                    _logger.fine(deploymentDescriptor.getEjbClassName() + " will run-as: " + runAs.getPrincipal() + " ("
-                            + runAs.getRoleName() + ")");
-                }
+        setEnterpriseBeansStatsProvider();
+        contextId = getContextID(deploymentDescriptor);
+        String appName = deploymentDescriptor.getApplication().getRegistrationName();
+        roleMapperFactory.setAppNameForContext(appName, contextId);
+        ejbName = deploymentDescriptor.getName();
+
+        realmName = getRealmName(deploymentDescriptor);
+        
+
+        _logger.fine(() -> "JACC: EJB name = '" + ejbName
+                + "'. Context id (id under which all EJB's in application will be created) = '" + contextId + "'");
+
+        // create and initialize the unchecked permission cache.
+        uncheckedMethodPermissionCache = PermissionCacheFactory.createPermissionCache(this.contextId,
+                EJBMethodPermission.class, this.ejbName);
+
+        auditManager = this.securityManagerFactory.getAuditManager();
+
+        authorizationService = new AuthorizationService(
+                getContextID(ejbDescriptor),
+                () -> SecurityContext.getCurrent().getSubject(),
+                () -> new GlassFishPrincipalMapper(contextId));
+
+        authorizationService.setRequestSupplier(contextId, WebAuthorizationManagerService::getCurrentRequest);
+        authorizationService.addPermissionsToPolicy(
+                PayaraToExousiaConverter.convertEJBMethodPermissions(ejbDescriptor));
+
+        authorizationService.addPermissionsToPolicy(RolesToPermissionsTransformer.createEnterpriseBeansRoleRefPermission(
+                ejbDescriptor.getEjbBundleDescriptor()
+                        .getRoles()
+                        .stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toSet()),
+
+                PayaraToExousiaConverter.getSecurityRoleRefsFromBundle(ejbDescriptor)));
+    }
+
+    private String getRealmName(EjbDescriptor deploymentDescriptor) {
+        String realmName = deploymentDescriptor.getApplication().getRealm();
+
+        if (realmName == null) {
+            for (EjbIORConfigurationDescriptor iorConfig : deploymentDescriptor.getIORConfigurationDescriptors()) {
+                // There should be at most one element in the loop from
+                // definition of dtd
+                realmName = iorConfig.getRealmName();
             }
-        } else {
-            runAs = null;
         }
 
-        initialize();
+        return realmName;
     }
 
     public static String getContextID(EjbDescriptor ejbDescriptor) {
         return SecurityUtil.getContextID(ejbDescriptor.getEjbBundleDescriptor());
+    }
+
+    private void setEnterpriseBeansStatsProvider() {
+        if (ejbStatsProvider == null) {
+            synchronized (EjbSecurityStatsProvider.class) {
+                if (ejbStatsProvider == null) {
+                    ejbStatsProvider = new EjbSecurityStatsProvider();
+                    StatsProviderManager.register("security", PluginPoint.SERVER, "security/ejb", ejbStatsProvider);
+                }
+            }
+        }
+    }
+
+    private RunAsIdentityDescriptor getRunAs(EjbDescriptor deploymentDescriptor) {
+        if (deploymentDescriptor.getUsesCallerIdentity()) {
+            return null;
+        }
+
+        RunAsIdentityDescriptor runAs = deploymentDescriptor.getRunAsIdentity();
+
+        // Note: runAs may be null even when runas==true if this Enterprise Bean
+        // is an MDB.
+        if (runAs != null) {
+            if (_logger.isLoggable(FINE)) {
+                _logger.log(FINE,
+                        deploymentDescriptor.getEjbClassName() + " will run-as: " + runAs.getPrincipal() +
+                                " (" + runAs.getRoleName() + ")");
+            }
+        }
+
+        return runAs;
+
     }
 
     /**
@@ -198,6 +267,11 @@ public final class EJBSecurityManager implements SecurityManager {
         }
     }
 
+    @Override
+    public Object invoke(Object bean, Method beanClassMethod, Object[] methodParameters) throws Throwable {
+        return authorizationService.invokeBeanMethod(bean, beanClassMethod, methodParameters);
+    }
+
     /**
      * This method is used by Message Driven Bean Container to remove the run-as identity information that was set up using
      * the preSetRunAsIdentity method
@@ -212,31 +286,7 @@ public final class EJBSecurityManager implements SecurityManager {
     public boolean getUsesCallerIdentity() {
         return runAs == null;
     }
-
-    public void loadPolicyConfiguration(EjbDescriptor ejbDescriptor) throws Exception {
-        PolicyConfigurationFactory factory = getPolicyFactory();
-
-        boolean inService = factory.inService(contextId);
-
-        // Only load the policy configuration if it isn't already in service.
-        //
-        // Consequently, all things that deploy modules (as apposed to/ loading already
-        // deployed modules) must make sure a pre-existing PolicyConfiguration
-        // is either in deleted or open state before this method is called.
-        //
-        // Note that policy statements are not removed to allow multiple EJBs to be
-        // represented by same PolicyConfiguration.
-
-        if (!inService) {
-            // Translate the deployment descriptor to configure the policy rules
-            JaccEJBConstraintsTranslator.translateConstraintsToPermissions(ejbDescriptor, factory.getPolicyConfiguration(contextId, false));
-
-            if (_logger.isLoggable(FINE)) {
-                _logger.fine("JACC: policy translated for policy context:" + contextId);
-            }
-        }
-    }
-
+    
     /**
      * This method is called by the EJB container to decide whether or not a method specified in the Invocation should be
      * allowed.
@@ -255,79 +305,44 @@ public final class EJBSecurityManager implements SecurityManager {
             return ejbInvocation.getAuth().booleanValue();
         }
 
-        boolean isAuthorized = false;
+        SecurityContext securityContext = SecurityContext.getCurrent();
 
-        CachedPermission cachedPermission = null;
-        Permission permission = null;
-
-        if (ejbInvocation.invocationInfo == null || ejbInvocation.invocationInfo.cachedPermission == null) {
-            permission = new EJBMethodPermission(ejbName, ejbInvocation.getMethodInterface(), ejbInvocation.method);
-            cachedPermission = new CachedPermissionImpl(uncheckedMethodPermissionCache, permission);
-
-            if (ejbInvocation.invocationInfo != null) {
-                ejbInvocation.invocationInfo.cachedPermission = cachedPermission;
-                if (_logger.isLoggable(FINE)) {
-                    _logger.fine("JACC: permission initialized in InvocationInfo: EJBMethodPermission (Name) = " + permission.getName()
-                            + " (Action) = " + permission.getActions());
-                }
-            }
-        } else {
-            cachedPermission = ejbInvocation.invocationInfo.cachedPermission;
-            permission = cachedPermission.getPermission();
+        boolean authorized = false;
+        try {
+            authorized = authorizationService.checkBeanMethodPermission(
+                    ejbName,
+                    ejbInvocation.getMethodInterface(),
+                    ejbInvocation.method,
+                    securityContext.getPrincipalSet());
+        } catch (Throwable t) {
+            _logger.log(SEVERE, "Unexpected exception manipulating policy context", t);
+            authorized = false;
         }
 
-        String caller = null;
-        SecurityContext securityContext = null;
+        ejbInvocation.setAuth(authorized);
 
-        pcHandlerImpl.getHandlerData().setInvocation(ejbInvocation);
+        doAuditAuthorize(securityContext, ejbInvocation, authorized);
 
-        isAuthorized = cachedPermission.checkPermission();
-
-        if (!isAuthorized) {
-
-            securityContext = SecurityContext.getCurrent();
-
-            try {
-                // Set the policy context in the TLS.
-                String oldContextId = setPolicyContext(contextId);
-
-                try {
-                    isAuthorized = policy.implies(getCachedProtectionDomain(securityContext.getPrincipalSet(), true), permission);
-                } catch (Throwable t) {
-                    _logger.log(SEVERE, "jacc_access_exception", t);
-                    isAuthorized = false;
-                } finally {
-                    resetPolicyContext(oldContextId, contextId);
-                }
-            } catch (Throwable t) {
-                _logger.log(SEVERE, "jacc_policy_context_exception", t);
-                isAuthorized = false;
-            }
-        }
-
-        ejbInvocation.setAuth(isAuthorized);
-
-        if (auditManager.isAuditOn()) {
-            if (securityContext == null) {
-                securityContext = SecurityContext.getCurrent();
-            }
-            caller = securityContext.getCallerPrincipal().getName();
-            auditManager.ejbInvocation(caller, ejbName, ejbInvocation.method.toString(), isAuthorized);
-        }
-
-        if (isAuthorized && ejbInvocation.isWebService && !ejbInvocation.isPreInvokeDone()) {
+        if (authorized && ejbInvocation.isWebService && !ejbInvocation.isPreInvokeDone()) {
             preInvoke(ejbInvocation);
         }
+        
 
         if (_logger.isLoggable(FINE)) {
             _logger.fine(
-                "JACC: Access Control Decision Result: " + isAuthorized +
-                " EJBMethodPermission (Name) = " + permission.getName() +
-                " (Action) = " + permission.getActions() +
-                " (Caller) = " + caller);
+                "JACC: Access Control Decision Result: " + authorized);
         }
 
-        return isAuthorized;
+        return authorized;
+    }
+
+    private void doAuditAuthorize(SecurityContext securityContext, EjbInvocation ejbInvocation, boolean authorized) {
+        if (auditManager.isAuditOn()) {
+            String caller = securityContext.getCallerPrincipal().getName();
+            auditManager.ejbInvocation(caller, ejbName, ejbInvocation.method.toString(), authorized);
+
+            _logger.fine(() -> " (Caller) = " + caller);
+        }
     }
 
     /**
@@ -338,104 +353,34 @@ public final class EJBSecurityManager implements SecurityManager {
      */
     @Override
     public boolean isCallerInRole(String role) {
-        /*
-         * In case of Run As - Should check isCallerInRole with respect to the old security context.
-         */
-        boolean isCallerInRole = false;
-
         if (_logger.isLoggable(FINE)) {
             _logger.entering("EJBSecurityManager", "isCallerInRole", role);
-
-        }
-        EJBRoleRefPermission ejbRoleRefPermission = new EJBRoleRefPermission(ejbName, role);
-
-        SecurityContext securityContext;
-        if (runAs != null) {
-            securityContext = (SecurityContext) invocationManager.getCurrentInvocation().getOldSecurityContext();
-        } else {
-            securityContext = SecurityContext.getCurrent();
         }
 
+        SecurityContext securityContext = getSecurityContext();
         Set<Principal> principalSet = securityContext != null ? securityContext.getPrincipalSet() : null;
-        ProtectionDomain prdm = getCachedProtectionDomain(principalSet, true);
 
-        String oldContextId = null;
-        try {
-            // set the policy context in the TLS.
-            oldContextId = setPolicyContext(this.contextId);
-            isCallerInRole = policy.implies(prdm, ejbRoleRefPermission);
-        } catch (Throwable t) {
-            _logger.log(Level.SEVERE, "jacc_is_caller_in_role_exception", t);
-            isCallerInRole = false;
-        } finally {
-            try {
-                resetPolicyContext(oldContextId, contextId);
-            } catch (Throwable ex) {
-                _logger.log(Level.SEVERE, "jacc_policy_context_exception", ex);
-                isCallerInRole = false;
-            }
-        }
-
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("JACC: isCallerInRole Result: " + isCallerInRole + " EJBRoleRefPermission (Name) = " + ejbRoleRefPermission.getName() + " (Action) = "
-                    + ejbRoleRefPermission.getActions() + " (Codesource) = " + prdm.getCodeSource());
-        }
-
-        return isCallerInRole;
+        return authorizationService.checkBeanRoleRefPermission(ejbName, role, principalSet);
     }
 
-    /**
-     * This method is similiar to the runMethod, except it keeps the semantics same as the one in reflection. On failure, if
-     * the exception is caused due to reflection, it returns the InvocationTargetException. This method is called from the
-     * containers for ejbTimeout, WebService and MDBs.
-     *
-     * @param beanClassMethod, the bean class method to be invoked
-     * @param isLocal, true if this invocation is through the local EJB view
-     * @param beanObject the object on which this method is to be invoked in this case the ejb,
-     * @param parameters the parameters for the method,
-     * @param c, the container instance can be a null value, where in the container will be queried to find its security
-     * manager.
-     * @return Object, the result of the execution of the method.
-     */
-    @Override
-    public Object invoke(Method beanClassMethod, boolean isLocal, Object beanObject, Object[] parameters) throws Throwable {
-
-        // Optimization. Skip doAsPrivileged call if this is a local invocation and the target EJB
-        // uses caller identity or the System Security Manager is disabled.
-        //
-        // Still need to execute it within the target bean's policy context.
-        // see CR 6331550
-        if ((isLocal && getUsesCallerIdentity()) || System.getSecurityManager() == null) {
-            return runMethod(beanClassMethod, beanObject, parameters);
+    private SecurityContext getSecurityContext() {
+        if (runAs == null) {
+            return SecurityContext.getCurrent();
         }
 
-        try {
-            return doAsPrivileged(()-> beanClassMethod.invoke(beanObject, parameters));
-        } catch (PrivilegedActionException pae) {
-            throw pae.getCause();
+        // Return the principal associated with the old security context
+        ComponentInvocation componentInvocation = invocationManager.getCurrentInvocation();
+
+        if (componentInvocation == null) {
+            throw new InvocationException();
         }
+
+        return (SecurityContext) componentInvocation.getOldSecurityContext();
     }
-
+    
     @Override
     public void resetPolicyContext() {
-        try {
-            doPrivileged(new PrivilegedExceptionAction<Object>() {
-                @Override
-                public Object run() throws Exception {
-                    ((PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance()).reset();
-                    PolicyContext.setContextID(null);
-                    return null;
-                }
-            });
-        } catch (PrivilegedActionException pae) {
-            Throwable cause = pae.getCause();
-            if (cause instanceof java.security.AccessControlException) {
-                _logger.log(Level.SEVERE, "jacc_policy_context_security_exception", cause);
-            } else {
-                _logger.log(Level.SEVERE, "jacc_policy_context_exception", cause);
-            }
-            throw new RuntimeException(cause);
-        }
+        PolicyContext.setContextID(null);
     }
 
 
@@ -447,49 +392,32 @@ public final class EJBSecurityManager implements SecurityManager {
      */
     @Override
     public Principal getCallerPrincipal() {
-        SecurityContext securityContext = null;
 
-        if (runAs != null) { // Run As
-            // return the principal associated with the old security context
-            ComponentInvocation componentInvocation = invocationManager.getCurrentInvocation();
-
-            if (componentInvocation == null) {
-                throw new InvocationException(); // 4646060
-            }
-            securityContext = (SecurityContext) componentInvocation.getOldSecurityContext();
-
-        } else {
-            // Lets optimize a little. No need to look up oldsecctx
-            // its the same as the new one
-            securityContext = SecurityContext.getCurrent();
+        SecurityContext securityContext = getSecurityContext();
+        if (securityContext == null) {
+            return SecurityContext.getDefaultCallerPrincipal();
         }
 
-        if (securityContext != null) {
-            return securityContext.getCallerPrincipal();
-        }
-
-        return SecurityContext.getDefaultCallerPrincipal();
+        return securityContext.getCallerPrincipal();
     }
 
     @Override
     public void destroy() {
         try {
+            authorizationService.refresh();
+            authorizationService.destroy();
 
-            boolean wasInService = getPolicyFactory().inService(this.contextId);
-            if (wasInService) {
-                policy.refresh();
-            }
             /*
-             * all ejbs of module share same policy context, but each has its own permission cache, which must be unregistered from
-             * factory to avoid leak.
+             * All enterprise beans of module share same policy context, but each has its
+             * own permission cache, which must be unregistered from factory to
+             * avoid leaks.
              */
             PermissionCacheFactory.removePermissionCache(uncheckedMethodPermissionCache);
             uncheckedMethodPermissionCache = null;
-            roleMapperFactory.removeAppNameForContext(this.contextId);
+            roleMapperFactory.removeAppNameForContext(contextId);
 
-        } catch (PolicyContextException pce) {
-            // Just log it.
-            _logger.log(Level.WARNING, "ejbsm.could_not_delete", pce);
+        } catch (IllegalStateException e) {
+            _logger.log(WARNING, "ejbsm.could_not_delete", e);
         }
 
         probeProvider.securityManagerDestructionStartedEvent(ejbName);
@@ -514,64 +442,6 @@ public final class EJBSecurityManager implements SecurityManager {
         return SecurityContext.getCurrent().getSubject();
     }
 
-    /*
-     * This method is used by SecurityUtil runMethod to run the action as the subject encapsulated in the current
-     * SecurityContext.
-     */
-    @Override
-    public Object doAsPrivileged(PrivilegedExceptionAction pea) throws Throwable {
-
-        SecurityContext sc = SecurityContext.getCurrent();
-        Set principalSet = sc.getPrincipalSet();
-        AccessControlContext acc = (AccessControlContext) accessControlContextCache.get(principalSet);
-
-        if (acc == null) {
-            final ProtectionDomain[] pdArray = new ProtectionDomain[1];
-            pdArray[0] = getCachedProtectionDomain(principalSet, false);
-            try {
-                if (principalSet != null) {
-
-                    final Subject s = sc.getSubject();
-
-                    acc = (AccessControlContext) AccessController.doPrivileged(new PrivilegedExceptionAction() {
-                        @Override
-                        public Object run() throws Exception {
-                            return new AccessControlContext(new AccessControlContext(pdArray), new SubjectDomainCombiner(s));
-                        }
-                    });
-                } else {
-                    acc = new AccessControlContext(pdArray);
-                }
-
-                // form a new key set so that it does not share with
-                // cacheProtectionDomain and protectionDomainCache
-                if (principalSet != null) {
-                    accessControlContextCache.put(new HashSet(principalSet), acc);
-                }
-
-                _logger.fine("JACC: new AccessControlContext added to cache");
-
-            } catch (Exception e) {
-                _logger.log(Level.SEVERE, "java_security.security_context_exception", e);
-                acc = null;
-                throw e;
-            }
-        }
-
-        Object rvalue = null;
-        String oldContextId = setPolicyContext(this.contextId);
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.fine("JACC: doAsPrivileged contextId(" + this.contextId + ")");
-        }
-
-        try {
-            rvalue = AccessController.doPrivileged(pea, acc);
-        } finally {
-            resetPolicyContext(oldContextId, this.contextId);
-        }
-        return rvalue;
-    }
-
     /**
      * Runs a business method of an EJB within the bean's policy context. The original policy context is restored after
      * method execution. This method should only be used by com.sun.enterprise.security.SecurityUtil.
@@ -590,117 +460,6 @@ public final class EJBSecurityManager implements SecurityManager {
         } finally {
             resetPolicyContext(oldContextId, contextId);
         }
-    }
-
-
-    // ### Private methods
-
-
-    private void initialize() throws Exception {
-        if (ejbStatsProvider == null) {
-            synchronized (EjbSecurityStatsProvider.class) {
-                if (ejbStatsProvider == null) {
-                    ejbStatsProvider = new EjbSecurityStatsProvider();
-                    StatsProviderManager.register("security", PluginPoint.SERVER, "security/ejb", ejbStatsProvider);
-                }
-            }
-        }
-
-        contextId = getContextID(deploymentDescriptor);
-        String appName = deploymentDescriptor.getApplication().getRegistrationName();
-        roleMapperFactory.setAppNameForContext(appName, contextId);
-        codesource = getApplicationCodeSource(contextId);
-        ejbName = deploymentDescriptor.getName();
-
-        realmName = deploymentDescriptor.getApplication().getRealm();
-
-        if (realmName == null) {
-            Set<EjbIORConfigurationDescriptor> iorConfigs = deploymentDescriptor.getIORConfigurationDescriptors();
-            // iorConfigs is not null from implementation of EjbDescriptor
-            Iterator<EjbIORConfigurationDescriptor> iter = iorConfigs.iterator();
-            if (iter != null) {
-                // there should be at most one element in the loop from
-                // definition of dtd
-                while (iter.hasNext()) {
-                    realmName = iter.next().getRealmName();
-                }
-            }
-        }
-
-        _logger.fine(() -> "JACC: EJB name = '" + ejbName
-            + "'. Context id (id under which all EJB's in application will be created) = '" + contextId + "'");
-        loadPolicyConfiguration(deploymentDescriptor);
-        // translate the deployment descriptor to populate the role-ref permission cache
-        // addEJBRoleReferenceToCache(deploymentDescriptor);
-
-        // create and initialize the unchecked permission cache.
-        uncheckedMethodPermissionCache = PermissionCacheFactory.createPermissionCache(this.contextId, this.codesource,
-                EJBMethodPermission.class, this.ejbName);
-
-        auditManager = this.securityManagerFactory.getAuditManager();
-
-    }
-
-    private ProtectionDomain getCachedProtectionDomain(Set principalSet, boolean applicationCodeSource) {
-        ProtectionDomain prdm = null;
-        Principal[] principals = null;
-
-        /*
-         * Need to use the application codeSource for permission evaluations as the manager codesource is granted all
-         * permissions in server.policy. The manager codesource needs to be used for doPrivileged to allow system apps to have
-         * all permissions, but we either need to revert to real doAsPrivileged, or find a way to distinguish system apps.
-         */
-
-        CodeSource cs = null;
-
-        if (applicationCodeSource) {
-            prdm = (ProtectionDomain) cacheProtectionDomain.get(principalSet);
-            cs = codesource;
-        } else {
-            prdm = (ProtectionDomain) protectionDomainCache.get(principalSet);
-            cs = managerCodeSource;
-        }
-
-        if (prdm == null) {
-
-            principals = (principalSet == null ? null : (Principal[]) principalSet.toArray(new Principal[principalSet.size()]));
-
-            prdm = new ProtectionDomain(cs, null, null, principals);
-
-            // form a new key set so that it does not share with others
-            Set newKeySet = ((principalSet != null) ? new HashSet(principalSet) : new HashSet());
-
-            if (applicationCodeSource) {
-                cacheProtectionDomain.put(newKeySet, prdm);
-            } else {
-                // form a new key set so that it does not share with others
-                protectionDomainCache.put(newKeySet, prdm);
-            }
-
-            if (_logger.isLoggable(FINE)) {
-                _logger.fine("JACC: new ProtectionDomain added to cache");
-            }
-
-        }
-
-        if (_logger.isLoggable(FINE)) {
-            if (principalSet == null) {
-                _logger.fine("JACC: returning cached ProtectionDomain PrincipalSet: null");
-            } else {
-                StringBuilder pBuf = null;
-                principals = (Principal[]) principalSet.toArray(new Principal[principalSet.size()]);
-                for (int i = 0; i < principals.length; i++) {
-                    if (i == 0) {
-                        pBuf = new StringBuilder(principals[i].toString());
-                    } else {
-                        pBuf.append(" " + principals[i].toString());
-                    }
-                }
-                _logger.fine("JACC: returning cached ProtectionDomain - CodeSource: (" + cs + ") PrincipalSet: " + pBuf);
-            }
-        }
-
-        return prdm;
     }
 
     /**

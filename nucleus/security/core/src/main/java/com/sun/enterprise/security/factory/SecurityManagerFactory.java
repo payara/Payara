@@ -128,7 +128,7 @@ public class SecurityManagerFactory {
      * aiD2sMmap.
      * @return a non-empty ArrayList containing the selected managers, or null.
      */
-    public <T> List<T> getManagersForApp(Map<String, Map<String, T>> iD2sMmap, Map<String, List<String>> app2iDmap, String appName, boolean remove) {
+    public <T> ArrayList<T> getManagersForApp(Map<String, Map<String, T>> iD2sMmap, Map<String, List<String>> app2iDmap, String appName, boolean remove) {
 
         ArrayList<T> managerList = null;
         String[] ctxIds = getContextsForApp(app2iDmap, appName, remove);

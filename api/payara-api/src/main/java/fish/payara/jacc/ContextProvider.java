@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,11 @@
  */
 package fish.payara.jacc;
 
-import java.security.Policy;
-
 import jakarta.security.jacc.PolicyConfigurationFactory;
 
 /**
  * This interface is used to bundle the two elements that make up a full JACC Provider
- * (authorization module), the {@link PolicyConfigurationFactory} and the {@link Policy}.
+ * (authorization module), the {@link PolicyConfigurationFactory}.
  * 
  * @author Arjan Tijms
  */
@@ -57,9 +55,4 @@ public interface ContextProvider {
      */
     PolicyConfigurationFactory getPolicyConfigurationFactory(); 
     
-    /**
-     * Returns the Policy element of the JACC Provider
-     * @return the Policy
-     */
-    Policy getPolicy();
 }

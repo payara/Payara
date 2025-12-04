@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.admin.rest.composite.resource;
 
 import java.lang.reflect.Method;
@@ -132,6 +133,11 @@ public class DummyUriInfo implements UriInfo {
 
     @Override
     public List<String> getMatchedURIs() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getMatchedResourceTemplate() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

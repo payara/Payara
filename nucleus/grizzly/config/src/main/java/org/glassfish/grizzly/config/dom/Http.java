@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
  */
 
 
@@ -72,7 +72,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean TRACE_ENABLED = false;
     boolean UPLOAD_TIMEOUT_ENABLED = true;
     boolean WEBSOCKET_SUPPORT_ENABLED = true;
-    boolean XPOWERED_BY = true;
     boolean SERVER_HEADER = true;
     boolean XFRAME_OPTIONS = true;
     boolean COOKIE_SAME_SITE_ENABLED = false;
@@ -442,18 +441,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getMaxResponseHeaders();
 
     void setMaxResponseHeaders(String maxRequestHeaders);
-
-    /**
-     * The Servlet 2.4 spec defines a special X-Powered-By: Servlet/2.4 header, which containers may add to
-     * servlet-generated responses. This is complemented by the JSP 2.0 spec, which defines a X-Powered-By: JSP/2.0
-     * header to be added (on an optional basis) to responses utilizing JSP technology. The goal of these headers is to
-     * aid in gathering statistical data about the use of Servlet and JSP technology. If true, these headers will be
-     * added.
-     */
-    @Attribute(defaultValue = "" + XPOWERED_BY, dataType = Boolean.class)
-    String getXpoweredBy();
-
-    void setXpoweredBy(String xpoweredBy);
 
     @Attribute(defaultValue = "" + SERVER_HEADER, dataType = Boolean.class)
     String getServerHeader();

@@ -37,15 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024-2025 Payara Foundation and/or affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.connectors.work.context;
 
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.connectors.work.LogFacade;
 
+import org.glassfish.epicyro.config.helper.Caller;
+import org.glassfish.epicyro.config.helper.CallerPrincipal;
+import org.glassfish.security.common.UserNameAndPassword;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserPrincipal;
+
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -192,24 +198,63 @@ public class ConnectorCallbackHandler implements CallbackHandler {
             //TODO V3 what happens for Public/Private Credentials of Mapped case (Case II) 
             for (Callback callback : mappedCallbacks) {
                 if (callback instanceof CallerPrincipalCallback) {
-                    CallerPrincipalCallback cpc = (CallerPrincipalCallback) callback;
-                    s.getPrincipals().addAll(cpc.getSubject().getPrincipals());
-                    s.getPublicCredentials().addAll(cpc.getSubject().getPublicCredentials());
-                    s.getPrivateCredentials().addAll(cpc.getSubject().getPrivateCredentials());
+                    CallerPrincipalCallback callerPrincipalCallback = (CallerPrincipalCallback) callback;
+
+                    Caller caller = getCaller(callerPrincipalCallback.getSubject());
+                    if (caller != null) {
+                        Principal glassFishCallerPrincipal = getGlassFishCallerPrincipal(caller);
+
+                        s.getPrincipals().add(glassFishCallerPrincipal);
+
+                        for (String group : caller.getGroups()) {
+                            s.getPrincipals().add(new Group(group));
+                        }
+                    }
+
+                    copySubject(s, callerPrincipalCallback.getSubject());
                 } else if (callback instanceof GroupPrincipalCallback) {
-                    GroupPrincipalCallback gpc = (GroupPrincipalCallback) callback;
-                    s.getPrincipals().addAll(gpc.getSubject().getPrincipals());
-                    s.getPublicCredentials().addAll(gpc.getSubject().getPublicCredentials());
-                    s.getPrivateCredentials().addAll(gpc.getSubject().getPrivateCredentials());
+                    GroupPrincipalCallback groupPrincipalCallback = (GroupPrincipalCallback) callback;
+
+                    copySubject(s, groupPrincipalCallback.getSubject());
                 } else if (callback instanceof PasswordValidationCallback) {
-                    PasswordValidationCallback pvc = (PasswordValidationCallback) callback;
-                    s.getPrincipals().addAll(pvc.getSubject().getPrincipals());
-                    s.getPublicCredentials().addAll(pvc.getSubject().getPublicCredentials());
-                    s.getPrivateCredentials().addAll(pvc.getSubject().getPrivateCredentials());
+                    PasswordValidationCallback passwordValidationCallback = (PasswordValidationCallback) callback;
+
+                    copySubject(s, passwordValidationCallback.getSubject());
                 }
             }
             SecurityContext.setCurrent(new SecurityContext(s));
         }
+    }
+
+    private Caller getCaller(Subject subject) {
+        Set<Caller> callers = subject.getPrincipals(Caller.class);
+        if (callers.isEmpty()) {
+            return null;
+        }
+
+        return callers.iterator().next();
+    }
+
+    private void copySubject(Subject target, Subject source) {
+        target.getPrincipals().addAll(source.getPrincipals());
+        target.getPublicCredentials().addAll(source.getPublicCredentials());
+        target.getPrivateCredentials().addAll(source.getPrivateCredentials());
+    }
+
+    private Principal getGlassFishCallerPrincipal(Caller caller) {
+        Principal callerPrincipal = caller.getCallerPrincipal();
+
+        // Check custom principal
+        if (!(callerPrincipal instanceof CallerPrincipal)) {
+            return callerPrincipal;
+        }
+
+        // Check anonymous principal
+        if (callerPrincipal.getName() == null) {
+            return SecurityContext.getDefaultCallerPrincipal();
+        }
+
+        return new UserNameAndPassword(callerPrincipal.getName());
     }
 
     private Callback handleSupportedCallback(Callback callback) throws UnsupportedCallbackException {
@@ -276,12 +321,12 @@ public class ConnectorCallbackHandler implements CallbackHandler {
     private Principal getMappedPrincipal(Principal eisPrincipal, String eisName) {
         Principal asPrincipal = null;
         if (eisPrincipal != null) {
-            asPrincipal = (PrincipalImpl) securityMap.get(eisPrincipal);
+            asPrincipal = (UserPrincipal) securityMap.get(eisPrincipal);
             if(logger.isLoggable(Level.FINEST)){
                 logger.finest("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisPrincipal.getName() + "]");
             }
         } else if (eisName != null) {
-            asPrincipal = ((PrincipalImpl) securityMap.get(new PrincipalImpl(eisName)));
+            asPrincipal = ((UserPrincipal) securityMap.get(new UserNameAndPassword(eisName)));
             if(logger.isLoggable(Level.FINEST)){
                 logger.finest("got mapped principal as [" + asPrincipal + "] for eis-group [" + eisName + "]");
             }

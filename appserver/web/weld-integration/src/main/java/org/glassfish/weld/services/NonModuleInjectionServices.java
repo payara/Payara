@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2025] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.weld.services;
@@ -91,7 +91,10 @@ public class NonModuleInjectionServices implements InjectionServices {
                 return;
             }
 
-            injectionManager.injectInstance(target, componentEnv, false);
+            // do not invoke injection for EAR-root deployment since it's not a real component
+            if (!Application.class.isAssignableFrom(componentEnv.getClass())) {
+                injectionManager.injectInstance(target, componentEnv, false);
+            }
             injectionContext.proceed();
 
         } catch(InjectionException ie) {

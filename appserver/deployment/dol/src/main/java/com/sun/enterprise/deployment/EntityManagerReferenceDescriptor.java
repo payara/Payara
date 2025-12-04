@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Copyright [2020] Payara Foundation and/or affiliates
+// Copyright 2020-2025 Payara Foundation and/or affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.deployment;
 
@@ -73,6 +74,10 @@ public class EntityManagerReferenceDescriptor extends EnvironmentProperty implem
     }
 
     public EntityManagerReferenceDescriptor() {}
+
+    public EntityManagerReferenceDescriptor(String unitName) {
+        this.unitName = unitName;
+    }
 
     @Override
     public void setUnitName(String unitName) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.appclient;
 
 import com.sun.enterprise.security.SecurityServicesUtil;
@@ -48,25 +48,27 @@ import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.common.SecurityConstants;
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.ee.J2EESecurityManager;
 import com.sun.enterprise.security.integration.AppClientSSL;
-import com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.logging.LogDomains;
 import jakarta.inject.Inject;
-import jakarta.security.auth.message.config.AuthConfigFactory;
 import org.glassfish.appclient.client.acc.config.MessageSecurityConfig;
 import org.glassfish.appclient.client.acc.config.Security;
 import org.glassfish.appclient.client.acc.config.Ssl;
 import org.glassfish.appclient.client.acc.config.TargetServer;
 import org.glassfish.enterprise.iiop.api.IIOPSSLUtil;
+import org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import java.util.List;
-import java.util.logging.Level;
+
 import java.util.logging.Logger;
+
+import static jakarta.security.auth.message.config.AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY;
+import static java.util.logging.Level.WARNING;
+import static java.util.logging.Level.FINE;
 
 /**
  *
@@ -76,16 +78,16 @@ import java.util.logging.Logger;
 @Service
 public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
 
-    private static Logger _logger=null;
+    private static Logger logger = null;
+
     static {
-        _logger=LogDomains.getLogger(AppClientSecurityInfoImpl.class, LogDomains.SECURITY_LOGGER);
+        logger = LogDomains.getLogger(AppClientSecurityInfoImpl.class, LogDomains.SECURITY_LOGGER);
     }
     
      private static final String DEFAULT_PARSER_CLASS =
         "com.sun.enterprise.security.appclient.ConfigXMLParser";
      
     private CallbackHandler callbackHandler;
-    private CredentialType  appclientCredentialType;
     boolean isJWS;
     boolean useGUIAuth;
     private List<TargetServer> targetServers;
@@ -101,16 +103,13 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
     @Inject
     private IIOPSSLUtil appClientSSLUtil;
 
-    public void initializeSecurity(
-            List<TargetServer> tServers,
-            List<MessageSecurityConfig> configs, CallbackHandler handler, 
-            CredentialType credType, String username, 
-            char[] password, boolean isJWS, boolean useGUIAuth) {
+    public void initializeSecurity(List<TargetServer> tServers, List<MessageSecurityConfig> configs, 
+                                   CallbackHandler handler, String username, char[] password, 
+                                   boolean isJWS, boolean useGUIAuth) {
        
            /* security init */
         this.isJWS = isJWS;
         this.useGUIAuth = useGUIAuth;
-        this.appclientCredentialType = credType;
         if (handler != null) {
             this.callbackHandler = handler;
         } else {
@@ -119,49 +118,21 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
         this.targetServers = tServers;
         this.msgSecConfigs = configs;
         
-        SecurityManager secMgr = System.getSecurityManager();
-        if (!isJWS && secMgr != null &&
-                !(J2EESecurityManager.class.equals(secMgr.getClass()))) {
-            J2EESecurityManager mgr = new J2EESecurityManager();
-            System.setSecurityManager(mgr);
-        }
-        if (_logger.isLoggable(Level.FINE)) {
-            if (secMgr != null) {
-                _logger.fine("acc.secmgron");
-            } else {
-                _logger.fine("acc.secmgroff");
-            }
-        }
-
         //set the parser to ConfigXMLParser
         System.setProperty("config.parser", DEFAULT_PARSER_CLASS);
         util.setAppClientMsgSecConfigs(msgSecConfigs);
-	try {
-	    /* setup jsr 196 factory
-	     * define default factory if it is not already defined
-	     */
-	    String defaultFactory = java.security.Security.getProperty
-		(AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY);
-            _logger.fine("AuthConfigFactory obtained from java.security.Security.getProperty(\"authconfigprovider.factory\") :"
-                    + ((defaultFactory != null) ? defaultFactory : "NULL"));
-	    if (defaultFactory == null) {
-		java.security.Security.setProperty
-		    (AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY,
-		     GFAuthConfigFactory.class.getName());
-	    }
-
-	} catch (Exception e) {
-	    _logger.log(Level.WARNING, "main.jaspic_default_factory");
-	}
-
-        //TODO:V3 LoginContextDriver has a static variable dependency on AuditManager
-        //And since LoginContextDriver has too many static methods that use AuditManager
-        //we have to make this workaround here.
-        //Handles in LoginContextDriver
-        //LoginContextDriver.AUDIT_MANAGER = secServUtil.getAuditManager();
-
-        //secServUtil.initSecureSeed();
-
+        try {
+            // Setup Jakarta Authentication factory define default factory if it is not already defined
+            String defaultFactory = java.security.Security.getProperty(DEFAULT_FACTORY_SECURITY_PROPERTY);
+            logger.log(FINE, "AuthConfigFactory obtained from java.security.Security.getProperty(\"authconfigprovider.factory\"): {0}",
+                    defaultFactory);
+            if (defaultFactory == null) {
+                java.security.Security.setProperty(DEFAULT_FACTORY_SECURITY_PROPERTY, AuthConfigFileFactory.class.getName());
+            }
+        } catch (Exception e) {
+            logger.log(WARNING, "SEC9001: ACC: Error in initializing Jakarta Authentication Default Factory", e);
+        }
+        
         setSSLData(this.getTargetServers());
         if (username != null || password != null) {
             UsernamePasswordStore.set(username, password);
@@ -209,13 +180,13 @@ public class AppClientSecurityInfoImpl implements AppClientSecurityInfo {
 	    // first one will be used.
 	    Security security = tServer.getSecurity();
 	    if (security == null) {
-		_logger.fine("No Security input set in ClientContainer.xml");
+		logger.log(FINE,"No Security input set in ClientContainer.xml");
 		// do nothing
 		return;
 	    }
 	    Ssl ssl = security.getSsl();
 	    if (ssl == null) {
-		_logger.fine("No SSL input set in ClientContainer.xml");
+		logger.log(FINE,"No SSL input set in ClientContainer.xml");
 		// do nothing
 		return;
 		

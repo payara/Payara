@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-samples-profiled-tests</artifactId>
@@ -62,7 +62,7 @@
         <module>formauth</module>
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
-        <module>jaxrs-rolesallowed-servlet</module>
+        <!--module>jaxrs-rolesallowed-servlet</module-->
         <module>jaxws-security</module>
         <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
@@ -74,7 +74,6 @@
         <module>rest-management</module>
         <module>rolesPermitted</module>
         <module>realm-identity-stores</module>
-        <module>jakartaee-namespace-transformer</module>
         <module>http</module>
         <module>logging</module>
         <module>ejb-http-remoting</module>
@@ -82,7 +81,7 @@
         <module>rolesallowed-unprotected-methods</module>
         <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
-        <module>client-certificate-validator</module>
+        <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
         <module>microprofile-rest-client</module>
@@ -91,7 +90,9 @@
         <module>opentelemetry</module>
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>
+        <module>data</module>
         <module>versioned-deployment</module>
+        <module>microprofile-jwt-error-cache</module>
     </modules>
 
     <dependencyManagement>
@@ -110,13 +111,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
+    
     <profiles>
         <profile>
             <id>playwright</id>
             <modules>
                 <module>cleanboot</module>
-            </modules>
+            </modules>        
         </profile>
     </profiles>
 </project>

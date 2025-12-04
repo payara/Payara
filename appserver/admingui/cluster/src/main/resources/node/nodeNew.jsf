@@ -66,7 +66,7 @@
         mapPut(map="#{pageSession.valueMap}", key="validateDcom" value="true");
         mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
         mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
-        mapPut(map="#{pageSession.valueMap}", key="installdirDocker" value="/opt/payara/payara6");
+        mapPut(map="#{pageSession.valueMap}", key="installdirDocker" value="/opt/payara/payara7");
         mapPut(map="#{pageSession.valueMap}", key="dockerimage" value="payara/server-node");
         mapPut(map="#{pageSession.valueMap}", key="setupSsh" value="false");
 

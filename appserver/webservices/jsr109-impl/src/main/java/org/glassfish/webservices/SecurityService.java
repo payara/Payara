@@ -37,17 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.web.WebModule;
 import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
 import jakarta.servlet.http.HttpServletRequest;
-import org.jvnet.hk2.annotations.Contract;
-
 import java.security.Principal;
+import org.jvnet.hk2.annotations.Contract;
 
 /**
  *
@@ -55,9 +53,7 @@ import java.security.Principal;
  */
 @Contract
 public interface SecurityService {
-
-    Object mergeSOAPMessageSecurityPolicies(MessageSecurityBindingDescriptor desc);
-
+    
     boolean doSecurity(HttpServletRequest hreq, EjbRuntimeEndpointInfo ejbEndpoint, String realmName, WebServiceContextImpl context);
 
     Principal getUserPrincipal(boolean isWeb);

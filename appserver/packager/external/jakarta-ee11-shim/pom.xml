@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~
+  ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+  ~
+  ~  Copyright (c) 2024 Payara Foundation and/or its affiliates. All rights reserved.
+  ~
+  ~  The contents of this file are subject to the terms of either the GNU
+  ~  General Public License Version 2 only ("GPL") or the Common Development
+  ~  and Distribution License("CDDL") (collectively, the "License").  You
+  ~  may not use this file except in compliance with the License.  You can
+  ~  obtain a copy of the License at
+  ~  https://github.com/payara/Payara/blob/main/LICENSE.txt
+  ~  See the License for the specific
+  ~  language governing permissions and limitations under the License.
+  ~
+  ~  When distributing the software, include this License Header Notice in each
+  ~  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+  ~
+  ~  GPL Classpath Exception:
+  ~  The Payara Foundation designates this particular file as subject to the "Classpath"
+  ~  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+  ~  file that accompanied this code.
+  ~
+  ~  Modifications:
+  ~  If applicable, add the following below the License Header, with the fields
+  ~  enclosed by brackets [] replaced by your own identifying information:
+  ~  "Portions Copyright [year] [name of copyright owner]"
+  ~
+  ~  Contributor(s):
+  ~  If you wish your version of this file to be governed by only the CDDL or
+  ~  only the GPL Version 2, indicate your decision by adding "[Contributor]
+  ~  elects to include this software in this distribution under the [CDDL or GPL
+  ~  Version 2] license."  If you don't indicate a single choice of license, a
+  ~  recipient has the option to distribute your version of this file under
+  ~  either the CDDL, the GPL Version 2 or to extend the choice of license to
+  ~  its licensees as provided above.  However, if you add GPL Version 2 code
+  ~  and therefore, elected the GPL Version 2 license, then the option applies
+  ~  only if the new code is made subject to such option by the copyright
+  ~  holder.
+  ~
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>external</artifactId>
+        <groupId>fish.payara.server.internal.packager</groupId>
+        <version>7.2026.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>jakarta-ee11-shim</artifactId>
+    <description>
+        Reexport some EE10 packages in versions compatible with EE11 so that some APIs and components continue
+        to work.
+    </description>
+
+    <dependencies>
+        <!-- Downgrade shim for Annotations 2.1 (currently 3.0) required by MicroProfile Rest Client.
+        Remove or update this comment once MicroProfile Rest Client has been upgraded. -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-transition-exports</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <instructions>
+                                <!-- ignore warnings -->
+                                <_fixupmessages>set to different values in the source,JAR is empty</_fixupmessages>
+                                <!-- Add symbolic bundle names of API bundles here -->
+                                <Require-Bundle>
+                                    <!-- Downgrade shim for Annotations 2.1 (currently 3.0), required by MicroProfile Rest Client -->
+                                    jakarta.annotation-api,
+                                    <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
+                                    jakarta.ws.rs-api
+                                </Require-Bundle>
+                                <!-- Manually specify the shim versions of packages to be exported via this bundle -->
+                                <!-- Note the "shortened" syntax here: For every API the packages are delimited with
+                                semicolon, then followed with version attribute and shim attribute (this one is
+                                informational though). Spares from repeating the version for every package of the api.
+                                 We drop uses attributes as well. -->
+                                <Export-Package>
+                                    <!-- Downgrade shim for Annotations 2.1 (now 3.0), required by MicroProfile Rest Client -->
+                                    jakarta.annotation;
+                                    jakarta.annotation.security;
+                                    jakarta.annotation.sql;version="2.1.99";shim=true,
+                                    <!-- Downgrade shim for JAX-RS, required by MicroProfile Rest Client. Remove once MicroProfile Rest Client upgraded -->
+                                    jakarta.ws.rs;
+                                    jakarta.ws.rs.client;
+                                    jakarta.ws.rs.container;
+                                    jakarta.ws.rs.core;
+                                    jakarta.ws.rs.ext;
+                                    jakarta.ws.rs.sse;version="3.1.99";shim=true
+                                </Export-Package>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

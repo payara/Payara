@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,13 +43,12 @@ import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.concurrent.Trigger;
 import jakarta.enterprise.concurrent.CronTrigger;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,8 +67,8 @@ public class ManagedScheduledExecutorEJB {
         ZoneId mexico = ZoneId.of("America/Mexico_City");
         Trigger trigger = new CronTrigger("* * * * * *", mexico);
         ScheduledFuture feature = customManagedScheduleExecutorD.schedule(() -> {
-            numberExecution.getAndIncrement();
-            System.out.println("Cron Trigger running");
+            int current = numberExecution.getAndIncrement();
+            System.out.printf("Cron Trigger running, #%d at %s%n", current, LocalTime.now().toString());
         }, trigger);
         Thread.sleep(1500);
         feature.cancel(true);

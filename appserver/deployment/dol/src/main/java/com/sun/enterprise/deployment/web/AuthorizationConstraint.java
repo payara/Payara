@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.deployment.web;
 
 import java.util.Enumeration;
@@ -58,7 +58,7 @@ public interface AuthorizationConstraint extends WebDescriptor {
      * 
      * @return the enumeration of security roles.
      */
-    Enumeration getSecurityRoles();
+    Enumeration<SecurityRole> getSecurityRoles();
 
     /**
      * Add a security role to the constraint.

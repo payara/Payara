@@ -89,7 +89,7 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.security.PolicyLoader;
+import com.sun.enterprise.security.ee.authorization.PolicyLoader;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -269,7 +269,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             compEnvManager.bindToComponentNamespace(ejbBundle);
 
             // If within .war, also bind dependencies declared by web application. There is
-            // a single naming environment for the entire .war module. Yhis is necessary
+            // a single naming environment for the entire .war module. This is necessary
             // in order for eagerly initialized ejb components to have visibility to all the
             // dependencies b/c the web container does not bind to the component namespace until
             // its start phase, which comes after the ejb start phase.

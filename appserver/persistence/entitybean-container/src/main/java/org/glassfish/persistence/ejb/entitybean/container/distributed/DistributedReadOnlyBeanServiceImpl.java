@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or its affiliates
 
 package org.glassfish.persistence.ejb.entitybean.container.distributed;
 
@@ -152,17 +153,7 @@ class DistributedReadOnlyBeanServiceImpl
         final ClassLoader prevClassLoader = currentThread.getContextClassLoader();
         
         try {
-            if(System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(info.loader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(info.loader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(info.loader);
             
             if (! refreshAll) {
                 ByteArrayInputStream bis = null;
@@ -204,24 +195,14 @@ class DistributedReadOnlyBeanServiceImpl
         } catch (Exception ex) {
             _logger.log(Level.WARNING, "Error during refresh", ex);
         } finally {
-            if(System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(prevClassLoader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(prevClassLoader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(prevClassLoader);
         }        
     }
-    
+
     private static class ReadOnlyBeanRefreshHandlerInfo {
-        public  ClassLoader                     loader;
-        public  ReadOnlyBeanRefreshEventHandler handler;
-        
+        public ClassLoader loader;
+        public ReadOnlyBeanRefreshEventHandler handler;
+
         public ReadOnlyBeanRefreshHandlerInfo(
                 ClassLoader loader, ReadOnlyBeanRefreshEventHandler handler) {
             this.loader = loader;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.lang.reflect.InvocationHandler;
@@ -347,7 +347,7 @@ public class EJBHomeInvocationHandler
             Method beanClassMethod, EjbInvocation inv, Object target, Object[] params)
             throws Throwable {
 
-        return container.invokeTargetBeanMethod(beanClassMethod, inv, target, params, null);
+        return container.invokeTargetBeanMethod(beanClassMethod, inv, target, params);
     }
 
     private Object invokeEJBHomeMethod(String methodName, Object[] args)

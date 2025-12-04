@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -47,6 +47,33 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.EntityManagerMethod;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.logging.LogDomains;
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.ConnectionConsumer;
+import jakarta.persistence.ConnectionFunction;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.FindOption;
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.LockOption;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.persistence.Query;
+import jakarta.persistence.RefreshOption;
+import jakarta.persistence.StoredProcedureQuery;
+import jakarta.persistence.SynchronizationType;
+import jakarta.persistence.TransactionRequiredException;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.TypedQueryReference;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaSelect;
+import jakarta.persistence.criteria.CriteriaUpdate;
+import jakarta.persistence.metamodel.Metamodel;
+import jakarta.transaction.TransactionManager;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ComponentInvocationHandler;
 import org.glassfish.api.invocation.InvocationException;
@@ -54,13 +81,6 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
-
-import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
-import static jakarta.persistence.SynchronizationType.UNSYNCHRONIZED;
-import jakarta.persistence.criteria.*;
-import jakarta.persistence.*;
-import jakarta.persistence.metamodel.Metamodel;
-import jakarta.transaction.TransactionManager;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -70,6 +90,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
+import static jakarta.persistence.SynchronizationType.UNSYNCHRONIZED;
 
 /**
  * Implementation of a container-managed entity manager.
@@ -1247,4 +1270,185 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         public void afterPostInvoke(ComponentInvocation.ComponentInvocationType invType, ComponentInvocation prevInv, ComponentInvocation curInv) throws InvocationException { }
     }
 
+    @Override
+    public <T> T find(Class<T> aClass, Object o, FindOption... findOptions) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND_CLASS_OBJECT_FINDOPTION);
+            }
+            return _getDelegate().find(aClass, o, findOptions);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public <T> T find(EntityGraph<T> entityGraph, Object o, FindOption... findOptions) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.FIND_ENTITYGRAPH_OBJECT_FINDOPTION);
+            }
+            return _getDelegate().find(entityGraph, o, findOptions);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public <T> T getReference(T t) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_REFERENCE_T);
+            }
+            return _getDelegate().getReference(t);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public void lock(Object o, LockModeType lockModeType, LockOption... lockOptions) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.LOCK_OBJECT_LOCKMODETYPE_LOCKOPTION);
+            }
+            _getDelegate().lock(o, lockModeType, lockOptions);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public void refresh(Object o, RefreshOption... refreshOptions) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.REFRESH_OBJECT_REFRESHOPTION);
+            }
+            _getDelegate().refresh(o, refreshOptions);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public void setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.SET_CACHE_RETRIEVE_MODE);
+            }
+            _getDelegate().setCacheRetrieveMode(cacheRetrieveMode);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public void setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.SET_CACHE_STORE_MODE);
+            }
+            _getDelegate().setCacheStoreMode(cacheStoreMode);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_CACHE_RETRIEVE_MODE);
+            }
+            return _getDelegate().getCacheRetrieveMode();
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public CacheStoreMode getCacheStoreMode() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_CACHE_STORE_MODE);
+            }
+            return _getDelegate().getCacheStoreMode();
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public <T> TypedQuery<T> createQuery(CriteriaSelect<T> criteriaSelect) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_QUERY_CRITERIASELECT);
+            }
+            return _getDelegate().createQuery(criteriaSelect);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public <T> TypedQuery<T> createQuery(TypedQueryReference<T> typedQueryReference) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CREATE_QUERY_TYPEDQUERYREFERENCE);
+            }
+            return _getDelegate().createQuery(typedQueryReference);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public <C> void runWithConnection(ConnectionConsumer<C> connectionConsumer) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.RUN_WITH_CONNECTION);
+            }
+            _getDelegate().runWithConnection(connectionConsumer);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
+
+    @Override
+    public <C, T> T callWithConnection(ConnectionFunction<C, T> connectionFunction) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodStart(EntityManagerMethod.CALL_WITH_CONNECTION);
+            }
+            return _getDelegate().callWithConnection(connectionFunction);
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerMethodEnd();
+            }
+        }
+    }
 }

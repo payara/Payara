@@ -37,26 +37,28 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.security.auth.login;
 
+import org.glassfish.security.common.UserPrincipal;
+
+import java.io.Serializable;
 import java.security.Principal;
 
-public class DistinguishedPrincipalCredential {
-
-    private final Principal principal;
-
-    public DistinguishedPrincipalCredential(Principal principal) {
-        this.principal = principal;
-    }
-
-    public Principal getPrincipal() {
-        return principal;
-    }
+public record DistinguishedPrincipalCredential(Principal principal) implements UserPrincipal, Serializable {
 
     @Override
     public String toString() {
         return "DistingushedPrincipal: " + principal;
+    }
+
+    @Override
+    public String getName() {
+        if (principal == null) {
+            return null;
+        }
+
+        return principal.getName();
     }
 }

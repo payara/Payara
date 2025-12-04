@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,7 +82,7 @@ public class JwtKeyStoreUtils {
     }
 
     static CacheableString readMPKeyFromLocation(Config config, String mpConfigProperty,
-            Duration defaultCacheTTL) {
+            Duration defaultCacheTTL, Duration retainOnErrorDuration) {
         Optional<String> locationOpt = config.getOptionalValue(mpConfigProperty, String.class);
 
         if (!locationOpt.isPresent()) {
@@ -91,10 +91,10 @@ public class JwtKeyStoreUtils {
 
         String publicKeyLocation = locationOpt.get();
 
-        return readKeyFromLocation(publicKeyLocation, defaultCacheTTL);
+        return readKeyFromLocation(publicKeyLocation, defaultCacheTTL, retainOnErrorDuration);
     }
 
-    static CacheableString readKeyFromLocation(String keyLocation, Duration defaultCacheTTL) {
+    static CacheableString readKeyFromLocation(String keyLocation, Duration defaultCacheTTL, Duration retainOnErrorDuration) {
         URL keyURL = currentThread().getContextClassLoader().getResource(keyLocation);
 
         if (keyURL == null) {
@@ -109,13 +109,13 @@ public class JwtKeyStoreUtils {
         }
 
         try {
-            return readKeyFromURL(keyURL, defaultCacheTTL);
+            return readKeyFromURL(keyURL, defaultCacheTTL, retainOnErrorDuration);
         } catch (IOException ex) {
             throw new IllegalStateException("Failed to read key.", ex);
         }
     }
 
-    private static CacheableString readKeyFromURL(URL keyURL, Duration defaultCacheTTL) throws IOException {
+    private static CacheableString readKeyFromURL(URL keyURL, Duration defaultCacheTTL, Duration retainOnErrorDuration) throws IOException {
         URLConnection urlConnection = keyURL.openConnection();
         Charset charset = Charset.defaultCharset();
         ContentType contentType = ContentType.newContentType(urlConnection.getContentType());
@@ -160,7 +160,7 @@ public class JwtKeyStoreUtils {
         try (InputStream inputStream = urlConnection.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, charset))) {
             String keyContents = reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            return CacheableString.from(keyContents, cacheTTL);
+            return CacheableString.from(keyContents, cacheTTL, retainOnErrorDuration);
         }
     }
 

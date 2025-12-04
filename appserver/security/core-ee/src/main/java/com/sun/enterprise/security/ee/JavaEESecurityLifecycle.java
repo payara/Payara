@@ -37,26 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.ee;
 
 import com.sun.enterprise.security.ContainerSecurityLifecycle;
-import com.sun.enterprise.security.jaspic.config.GFAuthConfigFactory;
+import com.sun.enterprise.security.ee.authorization.PolicyLoader;
+import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
+import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
+import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
 import com.sun.logging.LogDomains;
-
-import java.security.Security;
-import java.util.logging.Logger;
-
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-
+import jakarta.security.auth.message.MessageInfo;
+import jakarta.security.auth.message.MessagePolicy;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.logging.Logger;
 import org.glassfish.common.util.Constants;
+import org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory;
+import org.glassfish.epicyro.config.module.configprovider.GFServerConfigProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import static java.util.logging.Level.WARNING;
 import static jakarta.security.auth.message.config.AuthConfigFactory.DEFAULT_FACTORY_SECURITY_PROPERTY;
+import static org.glassfish.epicyro.config.factory.file.AuthConfigFileFactory.DEFAULT_FACTORY_DEFAULT_PROVIDERS;
 
 
 /**
@@ -69,44 +79,63 @@ import static jakarta.security.auth.message.config.AuthConfigFactory.DEFAULT_FAC
 @Singleton
 public class JavaEESecurityLifecycle implements ContainerSecurityLifecycle, PostConstruct {
 
-    private static final Logger LOG = LogDomains.getLogger(JavaEESecurityLifecycle.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger LOG = LogDomains.getLogger(JavaEESecurityLifecycle.class, LogDomains.SECURITY_LOGGER, false);
+
+    @Inject
+    PolicyLoader policyLoader;
 
     @Override
     public void postConstruct() {
         onInitialization();
     }
 
-
     @Override
     public void onInitialization() {
-        LOG.finest(() -> "Initializing " + getClass());
-
-        // TODO: Need some way to not override the security manager if the EmbeddedServer was
-        // run with a different non-default security manager.
-        //
-        // Right now there seems no way to find out if the security manager is the VM's default security manager.
-        final SecurityManager systemSecurityManager = System.getSecurityManager();
-        if (systemSecurityManager != null && !(J2EESecurityManager.class.equals(systemSecurityManager.getClass()))) {
-            J2EESecurityManager eeSecurityManager = new J2EESecurityManager();
-            try {
-                System.setSecurityManager(eeSecurityManager);
-                LOG.config(() -> "System security manager has been set to " + eeSecurityManager);
-            } catch (SecurityException ex) {
-                LOG.log(WARNING, "security.secmgr.could.not.override", ex);
-            }
-        }
-        initializeJASPIC();
+        initializeJakartaAuthentication();
+        initializeJakartaAuthorization();
     }
 
-    private void initializeJASPIC() {
+    private void initializeJakartaAuthentication() {
         // Define default factory if it is not already defined.
-        // The factory will be constructed on the first getFactory call.
-        final String defaultFactory = Security.getProperty(DEFAULT_FACTORY_SECURITY_PROPERTY);
+        // The factory will be constructed on first getFactory call.
+
+        String defaultFactory = Security.getProperty(DEFAULT_FACTORY_SECURITY_PROPERTY);
         if (defaultFactory == null) {
-            final String defaultAuthConfigProvideFactoryClassName = GFAuthConfigFactory.class.getName();
-            Security.setProperty(DEFAULT_FACTORY_SECURITY_PROPERTY, defaultAuthConfigProvideFactoryClassName);
-            LOG.config(() -> String.format("System JVM option '%s' has been set to '%s'",
-                DEFAULT_FACTORY_SECURITY_PROPERTY, defaultAuthConfigProvideFactoryClassName));
+            Security.setProperty(DEFAULT_FACTORY_SECURITY_PROPERTY, AuthConfigFileFactory.class.getName());
         }
+
+        String defaultProvidersString = null;
+        WebServicesDelegate delegate = Globals.get(WebServicesDelegate.class);
+        if (delegate == null) {
+            defaultProvidersString = GFServerConfigProvider.class.getName();
+        } else {
+            // NOTE: Order matters here. Providers for the same auth layer (HttpServlet or SOAP) will be overwritten
+            //       by ones that appear later in this string without warning.
+            defaultProvidersString = delegate.getDefaultWebServicesProvider() + " " + GFServerConfigProvider.class.getName();
+        }
+
+        Security.setProperty(DEFAULT_FACTORY_DEFAULT_PROVIDERS, defaultProvidersString);
+
+        Function<MessageInfo, String> authContextIdGenerator =
+                e -> Globals.get(WebServicesDelegate.class).getAuthContextID(e);
+
+        BiFunction<String, Map<String, Object>, MessagePolicy[]> soapPolicyGenerator =
+                (authContextId, properties) -> AuthMessagePolicy.getSOAPPolicies(
+                        AuthMessagePolicy.getMessageSecurityBinding("SOAP", properties),
+                        authContextId, true);
+
+        Provider provider = new Provider("EleosProvider", "1.0", "") {
+            private static final long serialVersionUID = 1L;
+        };
+        provider.put("authContextIdGenerator", authContextIdGenerator);
+        provider.put("soapPolicyGenerator", soapPolicyGenerator);
+
+        Security.addProvider(provider);
+
+        System.setProperty("config.parser", ConfigDomainParser.class.getName());
+    }
+
+    private void initializeJakartaAuthorization() {
+        policyLoader.loadPolicy();
     }
 }

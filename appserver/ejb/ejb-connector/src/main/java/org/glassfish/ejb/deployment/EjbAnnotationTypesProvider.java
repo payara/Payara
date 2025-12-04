@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates 
 
 package org.glassfish.ejb.deployment;
 
@@ -58,7 +59,8 @@ import java.lang.annotation.Annotation;
 public class EjbAnnotationTypesProvider implements AnnotationTypesProvider {
     public Class<? extends Annotation>[] getAnnotationTypes() {
         return new Class[] {
-                MessageDriven.class, Stateful.class, Stateless.class, Singleton.class };    }
+            MessageDriven.class, Stateful.class, Stateless.class, Singleton.class};
+    }
 
     public Class getType(String typename) throws ClassNotFoundException {
         return getClass().getClassLoader().loadClass(typename);

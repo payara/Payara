@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.grizzly</groupId>
         <artifactId>nucleus-grizzly</artifactId>
-        <version>6.2025.12-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>nucleus-grizzly-all</artifactId>
@@ -68,7 +68,6 @@
     </developers>
 
     <properties>
-        <gmbal.grizzly.version>4.0.3</gmbal.grizzly.version>
         <jar.manifest></jar.manifest>
     </properties>    
 
@@ -145,7 +144,7 @@
         <dependency>
             <groupId>org.glassfish.gmbal</groupId>
             <artifactId>gmbal-api-only</artifactId>
-            <version>${gmbal.grizzly.version}</version>
+            <version>${gmbal.version}</version>
             <scope>provided</scope>
         </dependency>        
     </dependencies>

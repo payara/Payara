@@ -90,7 +90,7 @@ public class ServerOperations {
     private static String domain;
 
     private static final String ERR_MESSAGE_UNSUPPORTED
-        = "Check 'payara.containerType' system property configuration";
+            = "Check 'payara.containerType' system property configuration";
     private static final String CLIENT_CERTIFICATE_FILE = "payara-test-client.crt";
     private static final String CLIENT_CERTIFICATE_PATH = "certificates";
     private static final String DEFAULT_ALIAS = "arquillianClientTestCert";

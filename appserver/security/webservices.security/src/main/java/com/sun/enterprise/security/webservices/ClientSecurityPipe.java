@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import static com.sun.enterprise.security.webservices.PipeConstants.SECURITY_PIPE;
@@ -58,7 +58,7 @@ import jakarta.xml.ws.WebServiceException;
 
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jauth.jaspic.provider.config.PipeHelper;
+import com.sun.enterprise.security.jauth.jaspic.provider.config.SoapAuthenticationService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
@@ -74,7 +74,7 @@ import com.sun.xml.ws.security.secconv.WSSecureConversationException;
  */
 public class ClientSecurityPipe extends AbstractFilterPipeImpl implements SecureConversationInitiator {
 
-    protected PipeHelper helper;
+    protected SoapAuthenticationService helper;
 
     protected static final Logger _logger = LogUtils.getLogger();
 
@@ -93,7 +93,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl implements Secure
             props.put(WSDL_SERVICE, wsdlModel.getOwner().getName());
         }
         
-        helper = new PipeHelper(SOAP_LAYER, props, null);
+        helper = new SoapAuthenticationService(SOAP_LAYER, props, null);
     }
 
     protected ClientSecurityPipe(ClientSecurityPipe that, PipeCloner cloner) {
@@ -125,7 +125,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl implements Secure
         return new ClientSecurityPipe(this, cloner);
     }
 
-    public PipeHelper getPipeHelper() {
+    public SoapAuthenticationService getPipeHelper() {
         return helper;
     }
 
@@ -226,7 +226,7 @@ public class ClientSecurityPipe extends AbstractFilterPipeImpl implements Secure
 
         if (s == null) {
 
-            s = PipeHelper.getClientSubject();
+            s = SoapAuthenticationService.getClientSubject();
 
             if (p != null) {
                 p.invocationProperties.put(PipeConstants.CLIENT_SUBJECT, s);

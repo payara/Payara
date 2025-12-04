@@ -118,7 +118,8 @@ grant {
     // Following needed for CTS to pass with SM on, bug 16344201 
     permission java.lang.RuntimePermission "closeClassLoader";                
     permission java.io.SerializablePermission "enableSubstitution";            
-    permission java.security.SecurityPermission "getProperty.package.definition"; 
+    permission java.security.SecurityPermission "getProperty.package.definition";
+    permission java.security.SecurityPermission "getProperty.authconfigprovider.factory.providers"; 
 };
 
 // Following grant block is only required by Connectors. If Connectors

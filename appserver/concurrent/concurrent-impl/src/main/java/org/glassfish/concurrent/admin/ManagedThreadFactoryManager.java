@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2025 Payara Foundation and/or its affiliates 
 
 package org.glassfish.concurrent.admin;
 
@@ -87,6 +88,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
     private String threadPriority = ""+Thread.NORM_PRIORITY;
     private String contextInfoEnabled = Boolean.TRUE.toString();
     private String contextInfo = CONTEXT_INFO_DEFAULT_VALUE;
+    private String useVirtualThreads = Boolean.FALSE.toString();
     private String enabled = Boolean.TRUE.toString();
     private String enabledValueForTarget = Boolean.TRUE.toString();
 
@@ -152,6 +154,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         contextInfoEnabled = (String) attributes.get(CONTEXT_INFO_ENABLED);
         contextInfo = (String) attributes.get(CONTEXT_INFO);
         threadPriority = (String) attributes.get(THREAD_PRIORITY);
+        useVirtualThreads = (String) attributes.getOrDefault(USE_VIRTUAL_THREADS, Boolean.FALSE.toString());
         if(target != null){
             enabled = resourceUtil.computeEnabledValueForResourceBasedOnTarget((String)attributes.get(ENABLED), target);
         }else{
@@ -177,6 +180,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         managedThreadFactory.setContextInfoEnabled(contextInfoEnabled);
         managedThreadFactory.setContextInfo(contextInfo);
         managedThreadFactory.setThreadPriority(threadPriority);
+        managedThreadFactory.setUseVirtualThreads(useVirtualThreads);
         managedThreadFactory.setEnabled(enabled);
         if (properties != null) {
             for ( Map.Entry e : properties.entrySet()) {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -235,6 +235,9 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject
     private Deployment deployment;
 
+    @Inject
+    private SecurityDeployer securityDeployer;
+
     private final Map<String, WebConnector> connectorMap = new HashMap<>();
 
     private EmbeddedWebContainer _embedded;
@@ -316,9 +319,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     @Inject
     ServerConfigLookup serverConfigLookup;
-
-    @Inject
-    private SecurityDeployer securityDeployer;
 
     protected JspProbeProvider jspProbeProvider;
     protected RequestProbeProvider requestProbeProvider;
@@ -1483,7 +1483,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     protected void loadStandaloneWebModule(VirtualServer virtualServer, WebModuleConfig webModuleConfig) {
         try {
             loadWebModule(virtualServer, webModuleConfig, "null", null);
-            securityDeployer.loadPolicy(webModuleConfig.getDescriptor(), false);
+            securityDeployer.loadWebPolicy(webModuleConfig.getDescriptor(), false);
         } catch (Throwable t) {
             logger.log(SEVERE, format(rb.getString(LOAD_WEB_MODULE_ERROR), webModuleConfig.getName()), t);
         }

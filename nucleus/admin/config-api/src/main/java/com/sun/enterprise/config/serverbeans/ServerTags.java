@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2024 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -504,7 +504,6 @@ public class ServerTags  {
     public static final String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     public static final String SERVER_NAME = "server-name";
     public static final String REDIRECT_PORT = "redirect-port";
-    public static final String XPOWERED_BY = "xpowered-by";
     //public static final String ENABLED = "enabled";
     /** Tags for Element virtual-server */
     public static final String VIRTUAL_SERVER = "virtual-server";
