@@ -213,7 +213,7 @@
                             <!-- Try to ensure there's no zombie server, useful if using -fae -->
                             <execution>
                                 <id>kill-zombies</id>
-                                <phase>pre-integration-test</phase>
+                                <phase>pre-clean</phase>
                                 <goals>
                                     <goal>exec</goal>
                                 </goals>
