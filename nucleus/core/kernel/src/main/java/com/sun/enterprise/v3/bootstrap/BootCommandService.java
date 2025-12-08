@@ -42,6 +42,9 @@ package com.sun.enterprise.v3.bootstrap;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import fish.payara.internal.api.PostBootRunLevel;
 import fish.payara.boot.runtime.BootCommands;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -56,7 +59,7 @@ import static java.util.logging.Level.SEVERE;
 
 @Service
 @RunLevel(value = PostBootRunLevel.VAL)
-public class BootCommandService implements PostConstruct {
+public class BootCommandService implements PostConstruct, EventListener {
 
     private static final Logger LOGGER = Logger.getLogger(BootCommandService.class.getName());
 
@@ -65,6 +68,9 @@ public class BootCommandService implements PostConstruct {
 
     @Inject
     CommandRunner commandRunner;
+
+    @Inject
+    private Events events;
 
     /**
      * Runs a series of commands from a file
@@ -87,7 +93,14 @@ public class BootCommandService implements PostConstruct {
     }
 
     @Override
+    public void event(Event<?> event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"), true);
+        }
+    }
+
+    @Override
     public void postConstruct() {
-        doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"), true);
+        events.register(this);
     }
 }
