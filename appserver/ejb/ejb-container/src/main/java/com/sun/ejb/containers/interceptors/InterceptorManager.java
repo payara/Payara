@@ -36,27 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+ * Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
  */
 
 package com.sun.ejb.containers.interceptors;
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJBException;
-import jakarta.interceptor.InvocationContext;
 
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.BaseContainer;
@@ -67,6 +50,23 @@ import com.sun.enterprise.deployment.InterceptorDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.MethodDescriptor;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJBException;
+import jakarta.interceptor.InvocationContext;
+import java.io.Serializable;
+import java.lang.reflect.InaccessibleObjectException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.security.PrivilegedActionException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 
@@ -511,9 +511,7 @@ public class InterceptorManager {
             if (!Serializable.class.isAssignableFrom(interClass)) {
 
                 serializableInterceptorClasses[index] = 
-                    EJBUtils.loadGeneratedSerializableClass(interClass.getClassLoader(),
-                            interClass.getName());
-
+                    EJBUtils.loadGeneratedSerializableClass(interClass.getClassLoader(), interClass);
             }
             index++;
         }
@@ -856,20 +854,10 @@ class AroundInvokeInterceptor {
 
         try {
             final Method finalM = method;
-            if(System.getSecurityManager() == null) {
-                if (!finalM.isAccessible()) {
-                    finalM.setAccessible(true);
-                }
-            } else {
-                PrivilegedExceptionAction<Void> action = () -> {
-                    if (!finalM.isAccessible()) {
-                        finalM.setAccessible(true);
-                    }
-                    return null;
-                };
-                AccessController.doPrivileged(action);
+            if (!finalM.trySetAccessible()) {
+                throw new InaccessibleObjectException("Unable to make accessible: "+ finalM);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new EJBException(e);
         }
 
@@ -877,23 +865,9 @@ class AroundInvokeInterceptor {
 
     Object intercept(final InterceptorManager.AroundInvokeContext invCtx) throws Throwable {
         try {
-            final Object[] interceptors = invCtx.getInterceptorInstances();
-
-            if( System.getSecurityManager() != null ) {
-            // Wrap actual value insertion in doPrivileged to
-            // allow for private/protected field access.
-                PrivilegedExceptionAction<Object> action = () -> method.invoke(interceptors[index], invCtx);
-                return AccessController.doPrivileged(action);
-            }
-            return method.invoke(interceptors[index], invCtx);
-        } catch (java.lang.reflect.InvocationTargetException invEx) {
+            return method.invoke(invCtx.getInterceptorInstances()[index], invCtx);
+        } catch (InvocationTargetException invEx) {
             throw invEx.getCause();
-        } catch (java.security.PrivilegedActionException paEx) {
-            Throwable th = paEx.getCause();
-            if (th.getCause() != null) {
-                throw th.getCause();
-            }
-            throw th;
         }
     }
 
@@ -904,8 +878,7 @@ class AroundInvokeInterceptor {
 
 }
 
-class BeanAroundInvokeInterceptor
-        extends AroundInvokeInterceptor {
+class BeanAroundInvokeInterceptor extends AroundInvokeInterceptor {
 
     BeanAroundInvokeInterceptor(Method method) {
         super(-1, method);
@@ -914,21 +887,9 @@ class BeanAroundInvokeInterceptor
     @Override
     Object intercept(final InterceptorManager.AroundInvokeContext invCtx) throws Throwable {
         try {
-            if( System.getSecurityManager() != null ) {
-                // Wrap actual value insertion in doPrivileged to
-                // allow for private/protected field access.
-                PrivilegedExceptionAction<Object> action = () -> method.invoke(invCtx.getTarget(), invCtx);
-                return AccessController.doPrivileged(action);
-            }
             return method.invoke(invCtx.getTarget(), invCtx);
-        } catch (java.lang.reflect.InvocationTargetException invEx) {
+        } catch (InvocationTargetException invEx) {
             throw invEx.getCause();
-        } catch (java.security.PrivilegedActionException paEx) {
-            Throwable th = paEx.getCause();
-            if (th.getCause() != null) {
-                throw th.getCause();
-            }
-            throw th;
         }
     }
 }
@@ -942,48 +903,20 @@ class CallbackInterceptor {
         this.method = method;
 
         try {
-            final Method finalM = method;
-            if(System.getSecurityManager() == null) {
-                if (!finalM.isAccessible()) {
-                    finalM.setAccessible(true);
-                }
-            } else {
-                PrivilegedExceptionAction<Void> action = () -> {
-                    if (!finalM.isAccessible()) {
-                        finalM.setAccessible(true);
-                    }
-                    return null;
-                };
-                AccessController.doPrivileged(action);
+            if (!method.trySetAccessible()) {
+                throw new InaccessibleObjectException("Unable to make accessible: " + method);
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new EJBException(e);
         }
 
     }
 
-    Object intercept(final CallbackInvocationContext invContext) 
-        throws Throwable {
+    Object intercept(final CallbackInvocationContext invContext) throws Throwable {
         try {
-
-            final Object[] interceptors = invContext
-                    .getInterceptorInstances();
-
-            if( System.getSecurityManager() != null ) {
-                // Wrap actual value insertion in doPrivileged to
-                // allow for private/protected field access.
-                PrivilegedExceptionAction<Object> action = () -> method.invoke(interceptors[index], invContext);
-                return AccessController.doPrivileged(action);
-            }
-            return method.invoke(interceptors[index], invContext);
+            return method.invoke(invContext.getInterceptorInstances()[index], invContext);
         } catch (java.lang.reflect.InvocationTargetException invEx) {
             throw invEx.getCause();
-        } catch (java.security.PrivilegedActionException paEx) {
-            Throwable th = paEx.getCause();
-            if (th.getCause() != null) {
-                throw th.getCause();
-            }
-            throw th;
         }
     }
 
@@ -997,8 +930,7 @@ class CallbackInterceptor {
     }
 }
 
-class BeanCallbackInterceptor
-        extends CallbackInterceptor {
+class BeanCallbackInterceptor extends CallbackInterceptor {
     private static final Object[] NULL_ARGS = null;
 
     BeanCallbackInterceptor(Method method) {
@@ -1006,26 +938,13 @@ class BeanCallbackInterceptor
     }
 
     @Override
-    Object intercept(final CallbackInvocationContext invContext) 
-        throws Throwable {
+    Object intercept(final CallbackInvocationContext invContext) throws Throwable {
         try {
-
-            if( System.getSecurityManager() != null ) {
-            // Wrap actual value insertion in doPrivileged to
-            // allow for private/protected field access.
-                PrivilegedExceptionAction<Void> action = () -> {
-                    method.invoke(invContext.getTarget(), NULL_ARGS);
-                    return null;
-                };
-                AccessController.doPrivileged(action);
-            } else {
-                method.invoke(invContext.getTarget(), NULL_ARGS);
-            }
+            method.invoke(invContext.getTarget(), NULL_ARGS);
             return invContext.proceed();
-
-        } catch (java.lang.reflect.InvocationTargetException invEx) {
+        } catch (InvocationTargetException invEx) {
             throw invEx.getCause();
-        } catch (java.security.PrivilegedActionException paEx) {
+        } catch (PrivilegedActionException paEx) {
             Throwable th = paEx.getCause();
             if (th.getCause() != null) {
                 throw th.getCause();

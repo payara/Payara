@@ -81,7 +81,7 @@
         <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
+        <glassfish-corba.version>5.0.0</glassfish-corba.version>
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
 
         <junit.version>4.13.2</junit.version>
@@ -99,9 +99,9 @@
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.1.2</pfl.version>
+        <pfl.version>5.1.0</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.0.3</gmbal.version>
+        <gmbal.version>4.1.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.20.0</commons-io.version>
@@ -631,6 +631,11 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.gmbal</groupId>
                 <artifactId>gmbal</artifactId>
+                <version>${gmbal.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.gmbal</groupId>
+                <artifactId>gmbal-api-only</artifactId>
                 <version>${gmbal.version}</version>
             </dependency>
             <dependency>
