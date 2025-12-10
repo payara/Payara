@@ -58,20 +58,20 @@ To get the latest updates from upstream and merge them into your local repo, ent
 git fetch upstream
 ```
 
-Then ensure that you are on your local /blob/main branch (as opposed to any issue branches you may have):
+Then ensure that you are on your local main branch (as opposed to any issue branches you may have):
 
 ```
-git checkout /blob/main
+git checkout main
 ```
 
-Finally, pull in the changes from upstream to your /blob/main and update your remote repository:
+Finally, pull in the changes from upstream to your main and update your remote repository:
 
 ```
-git pull upstream /blob/main
+git pull upstream main
 ```
 
 ```
-git push origin /blob/main
+git push origin main
 ```
 
 ## Working on an issue
@@ -117,18 +117,18 @@ git add  . [or specify specific files
 git commit -m "fixes #<GithubNumber>"
 ```
 
-Before you merge the branch, ensure that you have updated your /blob/main to match the upstream payara. This can be accomplished by using the following:
+Before you merge the branch, ensure that you have updated your main to match the upstream payara. This can be accomplished by using the following:
 
-First, switch to the /blob/main branch:
-
-```
-git checkout /blob/main
-```
-
-Then synchronise your branch with the changes from /blob/main:
+First, switch to the main branch:
 
 ```
-git pull upstream /blob/main
+git checkout main
+```
+
+Then synchronise your branch with the changes from main:
+
+```
+git pull upstream main
 ```
 
 Flip back to your own branch, with your changes:
@@ -137,10 +137,10 @@ Flip back to your own branch, with your changes:
 git checkout <YourBranchName>
 ```
 
-Merge said changes with the /blob/main branch by rebasing your code (effectively a neater marge for private repos):
+Merge said changes with the main branch by rebasing your code (effectively a neater marge for private repos):
 
 ```
-git rebase /blob/main
+git rebase main
 ```
 
 Finally, push the changes from your branch to a new branch on the main repo (origin), with the same name (so as to preserve the issue numbers and history):

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-external</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -126,18 +126,17 @@
       		</exclusions>
         </dependency>
         <!-- Import seperately to avoid http block in Maven 3.8.1 -->
-		<dependency>
-		    <groupId>org.connectbot</groupId>
-		    <artifactId>jbcrypt</artifactId>
-		    <version>1.0.2</version>
-		</dependency>
-
         <dependency>
-            <groupId>net.i2p.crypto</groupId>
-            <artifactId>eddsa</artifactId>
-            <version>0.3.0</version>
+            <groupId>org.connectbot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bloxbean.cardano</groupId>
+            <artifactId>net-i2p-crypto-eddsa</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
+            <version>0.3.1</version>
         </dependency>
     </dependencies>
 

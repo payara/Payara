@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -77,7 +77,7 @@
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
         <smallrye-config.version>3.10.2</smallrye-config.version>
-        <smallrye-common.version>2.8.0</smallrye-common.version>
+        <smallrye-common.version>2.14.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>

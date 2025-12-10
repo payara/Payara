@@ -405,6 +405,7 @@ public final class EJBSecurityManager implements SecurityManager {
     public void destroy() {
         try {
             authorizationService.refresh();
+            authorizationService.destroy();
 
             /*
              * All enterprise beans of module share same policy context, but each has its

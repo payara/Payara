@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2022 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Private License Version 2 only ("GPL") or the Common Development
@@ -60,14 +60,16 @@ public class JwtPrivateKeyStore {
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
+    private final Duration retainOnErrorDuration;
     private String keyLocation = "/privateKey.pem";
 
     /**
      * @param defaultCacheTTL Private key cache TTL
      */
-    public JwtPrivateKeyStore(Duration defaultCacheTTL) {
+    public JwtPrivateKeyStore(Duration defaultCacheTTL, Duration retainOnErrorDuration) {
         this.config = ConfigProvider.getConfig();
         this.defaultCacheTTL = defaultCacheTTL;
+        this.retainOnErrorDuration = retainOnErrorDuration;
         this.cacheSupplier = new KeyLoadingCache(this::readRawPrivateKey)::get;
     }
 
@@ -75,16 +77,16 @@ public class JwtPrivateKeyStore {
      * @param defaultCacheTTL Private key cache TTL
      * @param keyLocation location of the private key
      */
-    public JwtPrivateKeyStore(Duration defaultCacheTTL, Optional<String> keyLocation) {
-        this(defaultCacheTTL);
+    public JwtPrivateKeyStore(Duration defaultCacheTTL, Duration retainOnErrorDuration, Optional<String> keyLocation) {
+        this(defaultCacheTTL, retainOnErrorDuration);
         this.keyLocation = keyLocation.orElse(this.keyLocation);
     }
 
     private CacheableString readRawPrivateKey() {
-        CacheableString privateKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL);
+        CacheableString privateKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL, retainOnErrorDuration);
 
         if (!privateKey.isPresent()) {
-            privateKey = JwtKeyStoreUtils.readMPKeyFromLocation(config, DECRYPTOR_KEY_LOCATION, defaultCacheTTL);
+            privateKey = JwtKeyStoreUtils.readMPKeyFromLocation(config, DECRYPTOR_KEY_LOCATION, defaultCacheTTL, retainOnErrorDuration);
         }
 
         return privateKey;

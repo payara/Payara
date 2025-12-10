@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <artifactId>config-generator</artifactId>
     <packaging>maven-plugin</packaging>
@@ -66,7 +66,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>2.9</version>
+                <version>3.15.2</version>
+                <configuration>
+                    <!-- https://issues.apache.org/jira/browse/MPLUGIN-504 -->
+                    <goalPrefix>config-generator</goalPrefix>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -88,13 +92,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
-            <artifactId>maven-project</artifactId>
-            <version>3.0-alpha-2</version>
+            <artifactId>maven-core</artifactId>
+            <version>${maven.plugin.api.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.codemodel</groupId>
+            <groupId>org.glassfish.jaxb</groupId>
             <artifactId>codemodel</artifactId>
-            <version>2.6</version>
+            <version>4.0.6</version>
         </dependency>
         <dependency>
             <groupId>jakarta.annotation</groupId>

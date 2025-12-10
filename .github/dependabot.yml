@@ -1,0 +1,155 @@
+version: 2
+updates:
+  # Configuration for Maven
+  - package-ecosystem: "maven"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    ignore:
+      # Ignore major and minor version updates for dependencies with group IDs starting with jakarta
+      - dependency-name: "jakarta.*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+      # Ignore major and minor version updates for dependencies with group IDs starting with org.eclipse.microprofile
+      - dependency-name: "org.eclipse.microprofile.*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+      # Ignore major version updates for dependencies with group ID starting with fish.payara
+      - dependency-name: "fish.payara.*"
+        update-types: ["version-update:semver-major"]
+
+      # Ignore major version updates for individual dependencies within the org.eclipse.persistence group
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.core"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.jpa"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.jpa.jpql"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.moxy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.dbws"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.oracle"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.antlr"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.asm"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.jpa.modelgen.processor"
+        update-types: ["version-update:semver-major"]
+
+      # Ignore major version updates for org.glassfish and related dependencies
+      - dependency-name: "org.glassfish.concurro:concurro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.mq:mq-distribution"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.mq:mq-client"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.glassfish:jakarta.faces"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.soteria:soteria"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.soteria:soteria.spi.bean.decorator.weld"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.metro:webservices-osgi"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.metro:webservices-extra-jdk-packages"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.metro:webservices-api-osgi"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.expressly:expressly"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.wasp:wasp"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.hk2:hk2-bom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.grizzly:grizzly-bom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.jersey:jersey-bom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.tyrus:tyrus-bom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.exousia:exousia"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.woodstock:woodstock-webui-jsf"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.woodstock:woodstock-webui-jsf-suntheme"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.woodstock.external:dojo"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.glassfish.jsftemplating:jsftemplating"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.jsftemplating:jsftemplating-dt"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.glassfish.annotations:logging-annotation-processor"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.pfl:pfl-tf-tools"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.pfl:pfl-basic-tools"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.pfl:pfl-dynamic"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.pfl:pfl-basic"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.pfl:pfl-tf"
+        update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.glassfish.corba:glassfish-corba-omgapi"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.corba:glassfish-corba-internal-api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.corba:rmic"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.corba:glassfish-corba-orb"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.corba:glassfish-corba-csiv2-idl"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.ha:ha-api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish.epicyro:epicyro"
+        update-types: [ "version-update:semver-major" ]
+      
+      # Ignore major version updates for org.eclipse and related dependencies
+      - dependency-name: "org.eclipse:yasson"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.parsson:jakarta.json"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.parsson:parsson-media"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.angus:angus-activation"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.angus:angus-mail"
+        update-types: ["version-update:semver-major"]
+
+      # Ignore major version updates for com.ibm.jbatch and related dependencies
+      - dependency-name: "com.ibm.jbatch:com.ibm.jbatch.container"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "com.ibm.jbatch:com.ibm.jbatch.spi"
+        update-types: ["version-update:semver-major"]
+
+      # Ignore major version updates for com.sun.xml.bind
+      - dependency-name: "com.sun.xml.bind:jaxb-osgi"
+        update-types: ["version-update:semver-major"]
+
+      # Ignore major version updates for org.hibernate.validator and related dependencies
+      - dependency-name: "org.hibernate.validator:hibernate-validator"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.hibernate.validator:hibernate-validator-cdi"
+        update-types: ["version-update:semver-major"]
+
+      # Ignore major version updates for org.jboss.weld and related dependencies
+      - dependency-name: "org.jboss.weld:weld-osgi-bundle"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jboss.weld:weld-api"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jboss.weld:weld-lite-extension-translator"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jboss.weld:weld-core-impl"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jboss.weld:weld-spi"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jboss.weld.se:weld-se-shaded"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jboss.weld.environment:weld-environment-common"
+        update-types: ["version-update:semver-major"]
