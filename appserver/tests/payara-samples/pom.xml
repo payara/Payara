@@ -86,13 +86,47 @@
 
     <modules>
         <module>test-utils</module>
-        <!--
-        can only be serially executed - they change configuration
-        that other modules depend on
-        -->
-        <!-- Can be executed in parallel -->
-        <module>samples</module>
         <module>repackaged</module>
+        <module>ejb-invoker-secure-endpoint</module>
+        <module>payara-expression-config-properties</module>
+        <module>clustered-singleton</module>
+        <module>custom-loginmodule-realm</module>
+        <module>sfsb-passivation</module>
+        <module>dynamic-roles</module>
+        <module>formauth</module>
+        <module>jacc-per-app</module>
+        <module>jaxrs-rolesallowed</module>
+        <!--module>jaxrs-rolesallowed-servlet</module-->
+        <module>jaxws-security</module>
+        <module>jaxws-tracing</module>
+        <module>legacy-mode-empty-beans-xml</module>
+        <module>microprofile-config</module>
+        <module>microprofile-endpoints</module>
+        <module>microprofile-healthcheck</module>
+        <module>oauth2</module>
+        <module>openid</module>
+        <module>rest-management</module>
+        <module>rolesPermitted</module>
+        <module>realm-identity-stores</module>
+        <module>http</module>
+        <module>logging</module>
+        <module>ejb-http-remoting</module>
+        <module>remote-ejb-tracing</module>
+        <module>rolesallowed-unprotected-methods</module>
+        <module>microprofile-rc-ft</module>
+        <module>multiple-keystores</module>
+        <!--module>client-certificate-validator</module-->
+        <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
+        <!--<module>corba-read-timeout</module>-->
+        <module>microprofile-rest-client</module>
+        <module>concurrency</module>
+        <module>reproducers</module>
+        <module>opentelemetry</module>
+        <module>use-bundled-jsf-primefaces</module>
+        <module>mvc</module>
+        <module>data</module>
+        <module>versioned-deployment</module>
+        <module>microprofile-jwt-error-cache</module>
     </modules>
 
     <profiles>
@@ -296,6 +330,13 @@
                 <excludedGroups></excludedGroups>
             </properties>
         </profile>
+
+        <profile>
+            <id>playwright</id>
+            <modules>
+                <module>cleanboot</module>
+            </modules>
+        </profile>
     </profiles>
 
     <dependencyManagement>
@@ -409,6 +450,13 @@
                 <artifactId>http-matchers-repackaged</artifactId>
                 <version>${project.version}</version>
                 <classifier>jakartaee9</classifier>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>fish.payara.samples</groupId>
+                <artifactId>samples-test-utils</artifactId>
+                <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
