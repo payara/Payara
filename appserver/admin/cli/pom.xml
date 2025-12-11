@@ -80,6 +80,7 @@
                         </manifest>
                         <manifestEntries>
                             <Class-Path>jna.jar jline-terminal-jna.jar</Class-Path>
+                            <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
                         </manifestEntries>
                     </archive>
                 </configuration>
