@@ -52,7 +52,14 @@ import jakarta.interceptor.InvocationContext;
 @Interceptor
 @InjectInterceptedBean
 public class CustomInterceptorWithConstructorInjection {
+    
+    @Inject
+    @Intercepted
     Bean<?> bean;
+    
+    public CustomInterceptorWithConstructorInjection() {
+        
+    }
 
     // FISH-6467: non-public constructor injection is not supported by EJB container
     @Inject
