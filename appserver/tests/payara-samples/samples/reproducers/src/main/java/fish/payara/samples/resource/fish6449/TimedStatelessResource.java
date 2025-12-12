@@ -45,14 +45,14 @@ package fish.payara.samples.resource.fish6449;
 import jakarta.ejb.Stateless;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-//import org.eclipse.microprofile.metrics.annotation.Timed;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 
 @Stateless
 @Path("/stateless")
 public class TimedStatelessResource {
 
     @GET
-    //@Timed
+    @Timed
     public String test() {
         return "works";
     }
