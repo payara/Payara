@@ -78,7 +78,7 @@
 
         <!-- Other -->
 
-        <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
+        <hk2.plugin.version>4.0.0-M3</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
         <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
