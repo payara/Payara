@@ -267,7 +267,7 @@
         <mojarra.version>4.1.4.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
-        <krazo.version>4.0.0</krazo.version>
+        <krazo.version>4.0.1.payara-p1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>5.0.0-B08.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
@@ -285,7 +285,7 @@
         <jline.version>3.30.6</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
-        <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
+        <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.1.0</concurro.version>
         <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
