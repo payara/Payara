@@ -98,6 +98,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>fish.payara.server.internal.ejb</groupId>
+            <artifactId>ejb-container</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
             <scope>provided</scope>

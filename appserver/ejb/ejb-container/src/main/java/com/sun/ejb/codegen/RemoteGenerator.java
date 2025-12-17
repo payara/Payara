@@ -37,141 +37,128 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.codegen;
 
-import java.lang.reflect.Method;
-import java.io.*;
-import java.util.*;
-import com.sun.ejb.EJBUtils;
-
-import static java.lang.reflect.Modifier.*;
-
-import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.*;
-import org.glassfish.pfl.dynamic.codegen.spi.Type ;
-
+import com.sun.ejb.containers.InternalEJBContainerException;
+import com.sun.ejb.containers.RemoteBusinessObject;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.lang.reflect.Method;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.LinkedList;
+import java.util.List;
+import org.glassfish.pfl.dynamic.codegen.spi.Type;
+
+import static java.lang.reflect.Modifier.ABSTRACT;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._arg;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._classGenerator;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._end;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._interface;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._method;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._t;
 
 /**
  * This class is used to generate the RMI-IIOP version of a 
  * remote business interface.
  */
 
-public class RemoteGenerator extends Generator 
-    implements ClassGeneratorFactory {
+public final class RemoteGenerator extends Generator {
 
-    private static LocalStringManagerImpl localStrings =
-	new LocalStringManagerImpl(RemoteGenerator.class);
-
-
-    private Class businessInterface;
-    private Method[] bizMethods;
-    private String remoteInterfacePackageName;
-    private String remoteInterfaceSimpleName;
-    private String remoteInterfaceName;
-
-    /**
-     * Get the fully qualified name of the generated class.
-     * Note: the remote/local implementation class is in the same package 
-     * as the bean class, NOT the remote/local interface.
-     * @return the name of the generated class.
-     */
-    public String getGeneratedClass() {
-        return remoteInterfaceName;
-    }
-
-    // For corba codegen infrastructure
-    public String className() {
-        return getGeneratedClass();
-    }
+    private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(RemoteGenerator.class);
     
+    private Class<?> businessInterface;
+    private final Method[] methodsToGenerate;
+    private final String remoteInterfacePackageName;
+    private final String remoteInterfaceSimpleName;
+    private final String remoteInterfaceName;
+
+
+    public static String getGeneratedRemoteIntfName(String businessIntf) {
+        String packageName = getPackageName(businessIntf);
+        String simpleName = getBaseName(businessIntf);
+        String generatedSimpleName = "_" + simpleName + "_Remote";
+        return packageName == null ? generatedSimpleName : packageName + "." + generatedSimpleName;
+    }
+
     /**
      * Construct the Wrapper generator with the specified deployment
      * descriptor and class loader.
-     * @exception GeneratorException.
+     *
+     * @throws GeneratorException
      */
-    public RemoteGenerator(ClassLoader cl, String businessIntf) 
-	throws GeneratorException 
-    {
-	super();
+    public RemoteGenerator(ClassLoader classLoader, String businessIntf) throws GeneratorException {
+        super(classLoader);
+        try {
+            businessInterface = classLoader.loadClass(businessIntf);
+        } catch (ClassNotFoundException ex) {
+            throw new GeneratorException(
+                    localStrings.getLocalString("generator.remote_interface_not_found",
+                            "Remote interface not found "));
+        }
 
-	try {
-	    businessInterface = cl.loadClass(businessIntf);
-	} catch (ClassNotFoundException ex) {
-	    throw new InvalidBean(
-		localStrings.getLocalString(
-		"generator.remote_interface_not_found",
-		"Remote interface not found "));
-	}
-
-        remoteInterfaceName = EJBUtils.getGeneratedRemoteIntfName
-            (businessInterface.getName());
-
-	    remoteInterfacePackageName = getPackageName(remoteInterfaceName);
+        remoteInterfaceName = getGeneratedRemoteIntfName(businessInterface.getName());
+        remoteInterfacePackageName = getPackageName(remoteInterfaceName);
         remoteInterfaceSimpleName = getBaseName(remoteInterfaceName);
-	
-	    bizMethods = removeDups(businessInterface.getMethods());
-        
+
+        methodsToGenerate = removeRedundantMethods(businessInterface.getMethods());
+
         // NOTE : no need to remove ejb object methods because EJBObject
         // is only visible through the RemoteHome view.
     }
 
-
-    public void evaluate() {
-
-        _clear();
-
-	    if (remoteInterfacePackageName != null) {
-	        _package(remoteInterfacePackageName);
-        } else {
-            // no-arg _package() call is required for default package
-            _package();
-        } 
-
-        _interface(PUBLIC, remoteInterfaceSimpleName,
-                   _t("java.rmi.Remote"), 
-                   _t("com.sun.ejb.containers.RemoteBusinessObject"));
-
-        for(int i = 0; i < bizMethods.length; i++) {
-	        printMethod(bizMethods[i]);
-	    }
-
-        _end();
-
-        _classGenerator() ;
-
-        return;
-
+    @Override
+    protected String getPackageName() {
+        return this.remoteInterfacePackageName;
     }
 
+    @Override
+    public String getGeneratedClassName() {
+        return remoteInterfaceName;
+    }
 
-    private void printMethod(Method m)
-    {
+    @Override
+    public Class<?> getAnchorClass() {
+        return businessInterface;
+    }
 
-        boolean throwsRemoteException = false;
-        List<Type> exceptionList = new LinkedList<Type>();
-	    for(Class exception : m.getExceptionTypes()) {
-            exceptionList.add(Type.type(exception));
-            if( exception.getName().equals("java.rmi.RemoteException") ) {
-                throwsRemoteException = true;
-            }
-	}
-        if( !throwsRemoteException ) {
-            exceptionList.add(_t("java.rmi.RemoteException"));
+    @Override
+    protected void defineClassBody() {
+        _interface(PUBLIC, remoteInterfaceSimpleName,
+                _t(java.rmi.Remote.class.getName()),
+                _t(RemoteBusinessObject.class.getName())
+        );
+
+        for (Method method : methodsToGenerate) {
+            printMethod(method);
         }
 
-        exceptionList.add(_t("com.sun.ejb.containers.InternalEJBContainerException"));
-        _method( PUBLIC | ABSTRACT, Type.type(m.getReturnType()),
-                 m.getName(), exceptionList);
-
-        int i = 0;
-        for(Class param : m.getParameterTypes()) {
-            _arg(Type.type(param), "param" + i);
-            i++;
-	}
-
         _end();
     }
 
+    private void printMethod(Method m) {
+        boolean throwsRemoteException = false;
+        List<Type> exceptionList = new LinkedList<>();
+        for (Class<?> exception : m.getExceptionTypes()) {
+            exceptionList.add(Type.type(exception));
+            if (exception.getName().equals(RemoteException.class.getName())) {
+                throwsRemoteException = true;
+            }
+        }
+        if (!throwsRemoteException) {
+            exceptionList.add(_t(RemoteException.class.getName()));
+        }
 
+        exceptionList.add(_t(InternalEJBContainerException.class.getName()));
+        _method(PUBLIC | ABSTRACT, Type.type(m.getReturnType()),
+                m.getName(), exceptionList);
+        int i = 0;
+        for (Class<?> param : m.getParameterTypes()) {
+            _arg(Type.type(param), "param" + i);
+            i++;
+        }
+        _end();
+    }
 }
