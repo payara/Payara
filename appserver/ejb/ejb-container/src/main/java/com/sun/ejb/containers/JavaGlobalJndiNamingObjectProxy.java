@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
 import org.glassfish.api.naming.NamingObjectProxy;
 
 import javax.naming.Context;
+import java.lang.ref.WeakReference;
 
 /**
  * Used to register portable global JNDI names for LOCAL EJB 2.x / 3.x references.
@@ -50,18 +52,18 @@ import javax.naming.Context;
  */
 public class JavaGlobalJndiNamingObjectProxy
     implements NamingObjectProxy {
-    private BaseContainer container;
+    private WeakReference<BaseContainer> container;
 
     private String intfName;
 
     public JavaGlobalJndiNamingObjectProxy(BaseContainer container, String intfName) {
-        this.container = container;
+        this.container = new WeakReference<>(container);
         this.intfName = intfName;
     }
 
     public Object create(Context ic) {
         GenericEJBLocalHome genericLocalHome =
-                container.getEJBLocalBusinessHome(intfName);
+                container.get().getEJBLocalBusinessHome(intfName);
         return genericLocalHome.create(intfName);
     }
 }
