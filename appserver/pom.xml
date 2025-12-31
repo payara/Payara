@@ -93,7 +93,7 @@
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
 
         <!-- classgraph dependency used to solve issue when creating proxy implementations for jakarta data-->
-        <classgraph.version>4.8.179</classgraph.version>
+        <classgraph.version>4.8.184</classgraph.version>
     </properties>
 
 
