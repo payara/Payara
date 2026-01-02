@@ -37,10 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
+import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -171,7 +173,7 @@ public class EjbApplication implements ApplicationContainer<Collection<EjbDescri
             singletonLCM.doStartup(this);
 
         } catch(Exception e) {
-            abortInitializationAfterException();
+            abortInitializationAfterException(null);
             throw e;
         }
 
@@ -207,9 +209,10 @@ public class EjbApplication implements ApplicationContainer<Collection<EjbDescri
             ejbAppList.add(this);
         }
 
+        EjbDescriptor lastDesc = null;
         try {
             for (EjbDescriptor desc : ejbs) {
-
+                lastDesc = desc;
                 // Initialize each ejb container (setup component environment, register JNDI objects, etc.)
                 // Any instance instantiation , timer creation/restoration, message inflow is delayed until
                 // start phase.
@@ -233,7 +236,7 @@ public class EjbApplication implements ApplicationContainer<Collection<EjbDescri
             }
 
         } catch(Throwable t) {
-            abortInitializationAfterException();
+            abortInitializationAfterException(lastDesc);
             throw new RuntimeException("EJB Container initialization error", t);
         } finally {
             // clean up the thread local current classloader after codegen to ensure it isn't
@@ -376,12 +379,24 @@ public class EjbApplication implements ApplicationContainer<Collection<EjbDescri
      * themselves must be prepared to gracefully handle any case where undeploy/shutdown
      * is called multiple times.
      */
-    private void abortInitializationAfterException() {
+    private void abortInitializationAfterException(EjbDescriptor desc) {
 
         for (Container container : containers) {
             container.undeploy();
         }
 
+        if (desc != null) {
+            try {
+                services.getService(ComponentEnvManager.class).unbindFromComponentNamespace(desc);
+                services.getService(EjbContainerUtilImpl.class)
+                        // AbstractSingletonContainer is used here as a dummy placeholder,
+                        // only descriptor name is used during unregistration.
+                        .unregisterContainer(new AbstractSingletonContainer(desc, desc.getApplication().getClassLoader(), null) { });
+            } catch (Exception ex) {
+                _logger.log(Level.WARNING, "Exception during cleanup of component environment for " +
+                        desc.getName(), ex);
+            }
+        }
     }
 
     /**

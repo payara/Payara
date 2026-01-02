@@ -283,7 +283,12 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             throw new RuntimeException("Exception registering ejb bundle level resources", e);
         }
 
-        ejbApp.loadContainers(dc);
+        try {
+            ejbApp.loadContainers(dc);
+        } catch (Exception e) {
+            unload(ejbApp, dc);
+            throw e;
+        }
 
         return ejbApp;
     }
