@@ -824,19 +824,25 @@ class PartItem
             if (fileStream == null) {
                 return;
             }
-            
-            File file = fileStream.getFile();
-            if (file != null && file.exists()) {
-                if (!file.delete() && logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, "Cannot delete file: " + fileStream);
+
+            try {
+                File file = fileStream.getFile();
+                if (file != null && file.exists()) {
+                    if (!file.delete() && logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Cannot delete file: " + fileStream);
+                    }
                 }
             }
-            try {
-                fileStream.close();
-            } catch (IOException e) {
-                logger.log(Level.FINE, "Error closing stream", e);
+            finally {
+                try {
+                    fileStream.close();
+                } catch (IOException e) {
+                    logger.log(Level.FINE, "Error closing stream", e);
+                }
+                finally {
+                    fileStream = null;
+                }
             }
-            fileStream = null;
         }
     }
 }
