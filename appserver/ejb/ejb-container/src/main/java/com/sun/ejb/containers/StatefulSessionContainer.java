@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -101,8 +101,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.security.AccessController;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -126,10 +124,16 @@ import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
-import static com.sun.ejb.containers.EJBContextImpl.BeanState.*;
+import static com.sun.ejb.codegen.AsmSerializableBeanGenerator.getGeneratedSerializableClassName;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.DESTROYED;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.INVOKING;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.PASSIVATED;
+import static com.sun.ejb.containers.EJBContextImpl.BeanState.READY;
 import static com.sun.ejb.spi.sfsb.util.SFSBVersionManager.NO_VERSION;
 import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINEST;
+import static java.util.logging.Level.WARNING;
 
 /**
  * This class provides container functionality specific to stateful
@@ -432,19 +436,12 @@ public final class StatefulSessionContainer
     }
 
     private void processSessionSynchMethod(Method sessionSynchMethod) throws Exception {
-
-        final Method methodAccessible = sessionSynchMethod;
-
         // SessionSynch method defined through annotation or ejb-jar.xml
         // can have any access modifier so make sure we have permission
         // to invoke it.
-        final PrivilegedExceptionAction<Void> action = () -> {
-            if (!methodAccessible.isAccessible()) {
-                methodAccessible.setAccessible(true);
-            }
-            return null;
-        };
-        AccessController.doPrivileged(action);
+        if (!sessionSynchMethod.isAccessible()) {
+            sessionSynchMethod.setAccessible(true);
+        }
     }
 
     // Called before invoking a bean with no Tx or with a new Tx.
@@ -2443,7 +2440,7 @@ public final class StatefulSessionContainer
     private byte[] serializeContext(SessionContextImpl ctx) throws IOException {
         final Object ejb = ctx.getEJB();
         if (!(ejb instanceof Serializable
-            || ejb.getClass().getName().equals(EJBUtils.getGeneratedSerializableClassName(ejbName)))) {
+            || ejb.getClass().getName().equals(getGeneratedSerializableClassName(ejbName)))) {
             ctx.setEJB(null);
             ctx.setEJB(new SerializableEJB(ejb));
         }
