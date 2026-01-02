@@ -35,16 +35,16 @@ git remote add origin https://github.com/<YourUsername>/Payara
 You are now free to start working on Payara issues, adding new features, or tinkering with the codebase.
 
 ## Building Payara
-Payara uses maven to build the server, you can use JDK 11 to build Payara Server, we distribute Payara built with JDK 11.
-To build Payara from the root of the cloned source code tree execute;
+Payara uses Maven to build the server. You can use JDK 21 to build Payara Server.
+To build Payara from the root of the cloned source code tree, execute:
 ```
-mvn -DskipTests clean package
+mvn -DskipTests clean package -Pjakarta-staging
 ```
-When finished the Payara distribution zip file will be available in the directory;
+When finished, the Payara distribution zip file will be available in the directory:
 ```
 appserver/distributions/payara/target/payara.zip
 ```
-Payara Micro will be available in the path
+Payara Micro will be available in the path:
 ```
 appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar
 ```
