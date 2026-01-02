@@ -831,6 +831,11 @@ class PartItem
                     logger.log(Level.FINE, "Cannot delete file: " + fileStream);
                 }
             }
+            try {
+                fileStream.close();
+            } catch (IOException e) {
+                logger.log(Level.FINE, "Error closing stream", e);
+            }
             fileStream = null;
         }
     }
