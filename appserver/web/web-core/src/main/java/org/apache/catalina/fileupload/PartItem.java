@@ -829,7 +829,7 @@ class PartItem
                 File file = fileStream.getFile();
                 if (file != null && file.exists()) {
                     if (!file.delete() && logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, "Cannot delete file: " + fileStream);
+                        logger.log(Level.FINE, "Cannot delete file: " + file);
                     }
                 }
             }
