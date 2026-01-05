@@ -337,7 +337,7 @@
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
-        <exousia.version>3.0.0-M3</exousia.version>
+        <exousia.version>3.0.1</exousia.version>
         <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
