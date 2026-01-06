@@ -580,7 +580,7 @@ pipeline {
                         -DskipTests \
                         -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
                         -pl fish.payara.samples:samples-test-utils \
-                        -pl fish.payara.samples:payara-samples-profiled-tests"""
+                        -pl fish.payara.samples:payara-samples"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
