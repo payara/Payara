@@ -72,7 +72,7 @@
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
         <smallrye-config.version>3.15.0</smallrye-config.version>
-        <smallrye-common.version>2.14.0</smallrye-common.version>
+        <smallrye-common.version>2.15.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
