@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples</artifactId>
+        <version>7.2026.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ejb-invoker-secure-endpoint</artifactId>
+    <packaging>war</packaging>
+    <name>Payara Samples - Payara - ejb-invoker Secure Endpoint</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>ejb-http-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.ejb</groupId>
+            <artifactId>jakarta.ejb-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>

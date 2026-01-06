@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples</artifactId>
+        <version>7.2026.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jaxws-security</artifactId>
+    <packaging>jar</packaging>
+    <name>Payara Samples - JAX-WS - Security</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    
+</project>

@@ -39,14 +39,14 @@
  *    holder.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -60,8 +60,11 @@
         <maven.min.version>3.5</maven.min.version>
 
         <skipTests>false</skipTests>
-        <skipConfig>${skipTests}</skipConfig>
-        <skipServerStartStop>${skipTests}</skipServerStartStop>
+        <skipConfig>${skipTests}</skipConfig> <!-- Whether to skip applying server config during pre-integration-test phase -->
+        <skipServerStart>${skipTests}</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
+        <skipServerRestart>${skipTests}</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
+        <serverRestartCommand>stop-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
+        <skipTestConfigCleanup>${skipTests}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
 
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
@@ -69,15 +72,21 @@
         <payara.adminHost>localhost</payara.adminHost>
         <!-- either SERVER or MICRO -->
         <payara.containerType>SERVER</payara.containerType>
+        <!-- Either payara or payara-web -->
+        <payara.server.artifact>payara</payara.server.artifact>
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+
         <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
+        <payara.home>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara7</payara.home>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
+        <payara.domain.name>domain1</payara.domain.name>
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
         <smallrye-config.version>3.10.2</smallrye-config.version>
-        <smallrye-common.version>2.8.0</smallrye-common.version>
+        <smallrye-common.version>2.14.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
@@ -86,13 +95,47 @@
 
     <modules>
         <module>test-utils</module>
-        <!--
-        can only be serially executed - they change configuration
-        that other modules depend on
-        -->
-        <!-- Can be executed in parallel -->
-        <module>samples</module>
         <module>repackaged</module>
+        <module>ejb-invoker-secure-endpoint</module>
+        <module>payara-expression-config-properties</module>
+        <module>clustered-singleton</module>
+        <module>custom-loginmodule-realm</module>
+        <module>sfsb-passivation</module>
+        <module>dynamic-roles</module>
+        <module>formauth</module>
+        <module>jacc-per-app</module>
+        <module>jaxrs-rolesallowed</module>
+        <!--module>jaxrs-rolesallowed-servlet</module-->
+        <module>jaxws-security</module>
+        <module>jaxws-tracing</module>
+        <module>legacy-mode-empty-beans-xml</module>
+        <module>microprofile-config</module>
+        <module>microprofile-endpoints</module>
+        <module>microprofile-healthcheck</module>
+        <module>oauth2</module>
+        <module>openid</module>
+        <module>rest-management</module>
+        <module>rolesPermitted</module>
+        <module>realm-identity-stores</module>
+        <module>http</module>
+        <module>logging</module>
+        <module>ejb-http-remoting</module>
+        <module>remote-ejb-tracing</module>
+        <module>rolesallowed-unprotected-methods</module>
+        <module>microprofile-rc-ft</module>
+        <module>multiple-keystores</module>
+        <!--module>client-certificate-validator</module-->
+        <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
+        <!--<module>corba-read-timeout</module>-->
+        <module>microprofile-rest-client</module>
+        <module>concurrency</module>
+        <module>reproducers</module>
+        <module>opentelemetry</module>
+        <module>use-bundled-jsf-primefaces</module>
+        <module>mvc</module>
+        <module>data</module>
+        <module>versioned-deployment</module>
+        <module>microprofile-jwt-error-cache</module>
     </modules>
 
     <profiles>
@@ -109,8 +152,9 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <payara.domain.name>domain1</payara.domain.name>
                 <payara.directory.name>payara7</payara.directory.name>
+                <payara.containerType>SERVER</payara.containerType>
+                <skipZombieKill>${skipServerRestart}</skipZombieKill> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
             </properties>
 
             <dependencies>
@@ -135,47 +179,54 @@
             <build>
                 <plugins>
                     <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>delete-server</id>
-                                <inherited>false</inherited>
+                                <id>unpack-server</id>
                                 <goals>
-                                    <goal>clean</goal>
+                                    <goal>unpack</goal>
                                 </goals>
-                                <phase>clean</phase>
+                                <phase>pre-integration-test</phase>
+                                <inherited>false</inherited>
                                 <configuration>
-                                    <filesets>
-                                        <fileset>
-                                            <directory>${session.executionRootDirectory}/target</directory>
-                                        </fileset>
-                                    </filesets>
+                                    <skip>${skipConfig}</skip>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>fish.payara.distributions</groupId>
+                                            <artifactId>${payara.server.artifact}</artifactId>
+                                            <version>${payara.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>true</overWrite>
+                                            <outputDirectory>${maven.multiModuleProjectDirectory}${file.separator}target</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
                         <executions>
+                            <!-- Try to ensure there's no zombie server, useful if using -fae -->
                             <execution>
-                                <id>unpack</id>
-                                <phase>process-test-classes</phase>
+                                <id>kill-zombies</id>
+                                <phase>pre-clean</phase>
                                 <goals>
-                                    <goal>unpack</goal>
+                                    <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
-                                    <markersDirectory>${session.executionRootDirectory}/target/dependency-maven-plugin-markers</markersDirectory>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>fish.payara.distributions</groupId>
-                                            <artifactId>payara</artifactId>
-                                            <version>${payara.version}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${session.executionRootDirectory}/target</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
+                                    <skip>${skipZombieKill}</skip>
+                                    <!-- Don't fail the build if this step fails -->
+                                    <successCodes>0,1</successCodes>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>stop-domain</argument>
+                                        <argument>--kill=true</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>
@@ -184,16 +235,16 @@
             </build>
         </profile>
         <profile>
-                <id>windows</id>
-                <activation>
-                    <os>
-                        <family>Windows</family>
-                    </os>
-                </activation>
-                <properties>
-                    <script.extension>.bat</script.extension>
-                </properties>
-            </profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <script.extension>.bat</script.extension>
+            </properties>
+        </profile>
         <profile>
             <id>payara-micro-managed</id>
             <!--
@@ -235,7 +286,7 @@
                                             <artifactId>payara-micro</artifactId>
                                             <version>${payara.version}</version>
                                             <overWrite>false</overWrite>
-                                            <outputDirectory>${session.executionRootDirectory}/target/</outputDirectory>
+                                            <outputDirectory>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}</outputDirectory>
                                             <destFileName>payara-micro-${payara.version}.jar</destFileName>
                                         </artifactItem>
                                     </artifactItems>
@@ -250,8 +301,10 @@
         <profile>
             <id>payara-server-remote</id>
             <properties>
-                <skipServerStartStop>true</skipServerStartStop>
-                <payara.domain.name>test-domain</payara.domain.name>
+                <skipServerStart>true</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
+                <skipServerRestart>false</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
+                <serverRestartCommand>restart-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
+                <payara.containerType>SERVER</payara.containerType>
             </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
@@ -294,6 +347,20 @@
             <properties>
                 <!-- Include all test, including unstable -->
                 <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>playwright</id>
+            <modules>
+                <module>cleanboot</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>web</id>
+            <properties>
+                <payara.server.artifact>payara-web</payara.server.artifact>
             </properties>
         </profile>
     </profiles>
@@ -411,6 +478,13 @@
                 <classifier>jakartaee9</classifier>
                 <scope>test</scope>
             </dependency>
+
+            <dependency>
+                <groupId>fish.payara.samples</groupId>
+                <artifactId>samples-test-utils</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -472,13 +546,17 @@
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
                         <!-- affects managed only -->
-                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
-                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
+                        <payara.microJar>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
                         <payara.version>${payara.version}</payara.version>
+                        <skipConfig>${skipConfig}</skipConfig>
+                        <skipServerStart>${skipServerStart}</skipServerStart>
+                        <skipServerRestart>${skipServerRestart}</skipServerRestart>
+                        <skipTestConfigCleanup>${skipTestConfigCleanup}</skipTestConfigCleanup>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -489,13 +567,17 @@
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
                         <!-- affects managed only -->
-                        <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                        <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
                         <!-- affects micro only -->
-                        <payara.microJar>${session.executionRootDirectory}/target/payara-micro-${payara.version}.jar</payara.microJar>
+                        <payara.microJar>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
                         <payara.version>${payara.version}</payara.version>
+                        <skipConfig>${skipConfig}</skipConfig>
+                        <skipServerStart>${skipServerStart}</skipServerStart>
+                        <skipServerRestart>${skipServerRestart}</skipServerRestart>
+                        <skipTestConfigCleanup>${skipTestConfigCleanup}</skipTestConfigCleanup>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -511,6 +593,7 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
                         <source>${java.min.version}</source>
@@ -528,6 +611,29 @@
                             </goals>
                         </execution>
                     </executions>
+                    <configuration>
+                        <includes>
+                            <include>*Test.java</include>
+                            <include>*IT.java</include>
+                        </includes>
+                        <systemPropertyVariables>
+                            <payara.home>${payara.home}</payara.home>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <!-- Use failsafe rather than surefire -->
+                        <skipTests>true</skipTests>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${maven.exec.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

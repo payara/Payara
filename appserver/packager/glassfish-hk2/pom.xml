@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-hk2</artifactId>
     <name>GlassFish HK2 Package</name>

@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2025.2-SNAPSHOT</version>
+    <version>7.2026.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -231,7 +231,7 @@
         <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
-        <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
+        <maven.release.plugin.version>3.3.0</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.9.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
@@ -280,6 +280,7 @@
         <woodstox.version>7.1.1</woodstox.version>
         <woodstock-jsf.version>6.0.1.payara-p1</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
+        <woodstock-external.dojo.version>6.0.2</woodstock-external.dojo.version>
         <angus-activation.version>2.0.2</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <jline.version>3.30.6</jline.version>
@@ -307,7 +308,7 @@
         <parsson.version>1.1.5.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.4</jaxb-api.version>
-        <jackson.version>2.20.0</jackson.version>
+        <jackson.version>2.20.1</jackson.version>
         <jersey.version>4.0.0.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>

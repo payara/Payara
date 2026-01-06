@@ -7,7 +7,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2025.2-SNAPSHOT</version>
+        <version>7.2026.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>samples-micro-programmatic</artifactId>
@@ -67,7 +67,7 @@
                 <pluginManagement>
                     <plugins>
                         <plugin>
-                            <artifactId>maven-surefire-plugin</artifactId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
                             <configuration>
                                 <skip>true</skip>
                             </configuration>
