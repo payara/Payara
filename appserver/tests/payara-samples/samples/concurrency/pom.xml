@@ -57,7 +57,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <junit-jupiter.version>5.14.1</junit-jupiter.version>
+        <junit-jupiter.version>5.14.2</junit-jupiter.version>
         <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.4</jakarta-concurrent.version>
     </properties>
