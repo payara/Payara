@@ -86,10 +86,6 @@ public final class ClassGenerator {
      */
     public static Class<?> defineClass(final ClassLoader loader, final Class<?> anchorClass,
         final String targetPackageName, final String className,  final byte[] classData) {
-        if (useMethodHandles(loader, anchorClass, targetPackageName)) {
-            return defineClass(anchorClass, className, classData);
-        }
-
         return defineClass(loader, className, classData, anchorClass.getProtectionDomain());
     }
 
@@ -227,26 +223,7 @@ public final class ClassGenerator {
         if (anchorClass == null || loader.getParent() == null || loader.getClass() == ASURLClassLoader.class) {
             return false;
         }
-        // Use MethodHandles.Lookup only if the anchor class has the same package
-        // and anchor class is visible to the application classloader.
-        return Objects.equals(anchorClass.getPackageName(), targetPackageName) && isVisible(anchorClass, loader);
-    }
-
-    /**
-     * Checks that the anchor class {@code anchorClass} is visible to the application
-     * classloader {@code loader}.
-     *
-     * @param anchorClass the anchor class
-     * @param loader the application classloader
-     */
-    private static boolean isVisible(Class<?> anchorClass, ClassLoader loader) {
-        ClassLoader anchorLoader = anchorClass.getClassLoader();
-        while (loader != null) {
-            if (loader.equals(anchorLoader)) {
-                return true;
-            }
-            loader = loader.getParent();
-        }
-        return false;
+        // Use MethodHandles.Lookup only if the anchor class has the same package.
+        return Objects.equals(anchorClass.getPackageName(), targetPackageName);
     }
 }
