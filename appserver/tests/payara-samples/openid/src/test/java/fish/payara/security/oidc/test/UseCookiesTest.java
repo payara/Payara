@@ -45,6 +45,7 @@ import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.ServerOperations;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 
@@ -54,6 +55,9 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,9 +74,24 @@ public class UseCookiesTest {
     @OperateOnDeployment("openid-client")
     @ArquillianResource
     private URL base;
+    private String serverBase;
+
+    private WebClient webClient;
+    private static String clientKeyStorePath;
+
+    @Before
+    public void setup() throws FileNotFoundException, IOException {
+        webClient = new WebClient();
+    }
+
+    @After
+    public void cleanup() {
+        webClient.close();
+    }
 
     @Deployment(name = "openid-server")
-    public static WebArchive createServerDeployment() {
+    public static WebArchive createServerDeployment() throws IOException {
+        clientKeyStorePath = ServerOperations.createClientKeyStore();
         return OpenIdTestUtil.createServerDeployment();
     }
 
@@ -87,9 +106,7 @@ public class UseCookiesTest {
     @Test
     @RunAsClient
     public void testOpenIdConnect() throws IOException {
-        WebClient webClient = new WebClient();
-        URL baseHttps = ServerOperations.createClientTrustStore(webClient, base,
-                ServerOperations.addClientCertificateFromServer(base));
+        URL baseHttps = ServerOperations.createClientTrustStore(webClient, base, clientKeyStorePath);
         OpenIdTestUtil.testOpenIdConnect(webClient, baseHttps);
     }
 }
