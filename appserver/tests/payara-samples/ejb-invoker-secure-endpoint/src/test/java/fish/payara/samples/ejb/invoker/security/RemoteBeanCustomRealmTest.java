@@ -66,38 +66,42 @@ public class RemoteBeanCustomRealmTest extends AbstractRemoteBeanSecurityTest {
 
     @BeforeClass
     public static void enableSecurity() {
-        // create the new auth realm
-        CliCommands.payaraGlassFish(asList("create-auth-realm",
-                "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
-                "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
-                "--property", "jaas-context=fileRealm:file=" + REALM, REALM));
+        if (!Boolean.parseBoolean(System.getProperty("skipConfig", "false"))) {
+            // create the new auth realm
+            CliCommands.payaraGlassFish(asList("create-auth-realm",
+                    "--classname", "com.sun.enterprise.security.auth.realm.file.FileRealm",
+                    "--login-module", "com.sun.enterprise.security.auth.login.FileLoginModule",
+                    "--property", "jaas-context=fileRealm:file=" + REALM, REALM));
 
-        // undeploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "false"));
-        // enable the security and deploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "true",
-                "--securityenabled", "true",
-                "--realmName", REALM));
+            // undeploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "false"));
+            // enable the security and deploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "true",
+                    "--securityenabled", "true",
+                    "--realmName", REALM));
 
-        // Add user with password and group to the container's native identity store
-        addUsersToContainerIdentityStore(USERNAME, ROLE, REALM);
+            // Add user with password and group to the container's native identity store
+            addUsersToContainerIdentityStore(USERNAME, ROLE, REALM);
+        }
     }
 
     @AfterClass
     public static void resetSecurity() {
-        // delete the auth realm
-        CliCommands.payaraGlassFish(asList("delete-auth-realm", REALM));
+        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
+            // delete the auth realm
+            CliCommands.payaraGlassFish(asList("delete-auth-realm", REALM));
 
-        // undeploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "false"));
-        // disable the security and deploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "true",
-                "--securityenabled", "false",
-                "--realmName", "file"));
+            // undeploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "false"));
+            // disable the security and deploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "true",
+                    "--securityenabled", "false",
+                    "--realmName", "file"));
+        }
     }
 
     @Override

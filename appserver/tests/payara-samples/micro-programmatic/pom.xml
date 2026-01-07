@@ -67,7 +67,7 @@
                 <pluginManagement>
                     <plugins>
                         <plugin>
-                            <artifactId>maven-surefire-plugin</artifactId>
+                            <artifactId>maven-failsafe-plugin</artifactId>
                             <configuration>
                                 <skip>true</skip>
                             </configuration>
