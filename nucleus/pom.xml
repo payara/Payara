@@ -104,7 +104,7 @@
         <gmbal.version>4.0.3</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
-        <commons-io.version>2.20.0</commons-io.version>
+        <commons-io.version>2.21.0</commons-io.version>
 
         <mimepull.version>1.10.0</mimepull.version>
 
