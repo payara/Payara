@@ -39,7 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2025 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -304,7 +304,7 @@
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
-        <parsson.version>1.1.5.payara-p1</parsson.version>
+        <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.4</jaxb-api.version>
         <jackson.version>2.20.1</jackson.version>
