@@ -141,8 +141,9 @@
             <artifactId>json</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.sun.woodstock.dependlibs</groupId>
+            <groupId>org.glassfish.woodstock.external</groupId>
             <artifactId>prototype</artifactId>
+            <version>${woodstock-external.prototype.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.woodstock</groupId>
