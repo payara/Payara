@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging;
 
@@ -153,6 +153,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String rotationInTimeLimitInBytesDetail = "";
     String useSystemLoggingDetail = "";
     String systemLoggingHostDetail = "";
+    String systemLoggingFacilityDetail = "";
     String fileHandlerCountDetail = "";
     String retainErrorsStaticticsDetail = "";
     String log4jVersionDetail = "";
@@ -190,6 +191,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String ROTATIONLIMITINBYTES_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes";
     private static final String USESYSTEMLOGGING_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging";
     private static final String SYSTEMLOGGINGHOST_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.host";
+    private static final String SYSTEMLOGGINGFACILITY_PROPERTY = "com.sun.enterprise.server.logging.SyslogHandler.facility";
     private static final String FILEHANDLER_COUNT_PROPERTY = "java.util.logging.FileHandler.count";
     private static final String RETAINERRORSSTATICTICS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.retainErrorsStasticsForHours";
     private static final String LOG4J_VERSION_PROPERTY = "log4j.logger.org.hibernate.validator.util.Version";
@@ -326,6 +328,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                 throw new ValidationException(String.format("'%s' value must be greater than %d, but was %d.",
                         PAYARA_NOTIFICATION_LOG_ROTATIONTIMELIMITINMINUTES_PROPERTY, 0,
                         PayaraNotificationRotationTimeLimit));
+            }
+        } else if (key.equals(SYSTEMLOGGINGFACILITY_PROPERTY)) {
+            try {
+                Facility.fromString(value);
+            } catch (IllegalArgumentException ex) {
+                throw new ValidationException(String.format("'%s' facility not recognised",
+                        value));
             }
         }
     }
@@ -668,6 +677,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                             }
                                         }
                                     }
+                                } else if (a.equals(SYSTEMLOGGINGFACILITY_PROPERTY)) {
+                                    if (!val.equals(systemLoggingFacilityDetail)) {
+                                        generateAttributeChangeEvent(SYSTEMLOGGINGFACILITY_PROPERTY, systemLoggingFacilityDetail, props);
+                                    }
                                 } else if (a.equals(FILEHANDLER_COUNT_PROPERTY)) {
                                     if (!val.equals(fileHandlerCountDetail)) {
                                         generateAttributeChangeEvent(FILEHANDLER_COUNT_PROPERTY, fileHandlerCountDetail, props);
@@ -998,6 +1011,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         rotationInTimeLimitInBytesDetail = props.get(ROTATIONLIMITINBYTES_PROPERTY);
         useSystemLoggingDetail = props.get(USESYSTEMLOGGING_PROPERTY);
         systemLoggingHostDetail = props.get(SYSTEMLOGGINGHOST_PROPERTY);
+        systemLoggingFacilityDetail = props.get(SYSTEMLOGGINGFACILITY_PROPERTY);
         fileHandlerCountDetail = props.get(FILEHANDLER_COUNT_PROPERTY);
         retainErrorsStaticticsDetail = props.get(RETAINERRORSSTATICTICS_PROPERTY);
         log4jVersionDetail = props.get(LOG4J_VERSION_PROPERTY);
