@@ -59,7 +59,7 @@
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
 
-        <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
+        <maven.assembly.plugin.version>3.8.0</maven.assembly.plugin.version>
         <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
         <maven.invoker.plugin.version>3.9.1</maven.invoker.plugin.version>
