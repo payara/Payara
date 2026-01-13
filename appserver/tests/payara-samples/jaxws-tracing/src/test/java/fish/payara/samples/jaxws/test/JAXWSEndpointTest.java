@@ -116,22 +116,4 @@ public abstract class JAXWSEndpointTest {
     public void logEnd() {
         LOG.log(Level.INFO, "Test method {0} finished.", name.getMethodName());
     }
-
-    @AfterClass
-    public static void disableRequestTracing() {
-        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
-            payaraGlassFish(
-                    "set-requesttracing-configuration",
-                    "--enabled=false",
-                    "--dynamic=true"
-            );
-
-            payaraGlassFish(
-                    "notification-cdieventbus-configure",
-                    "--enabled=false",
-                    "--dynamic=true"
-            );
-        }
-    }
-
 }

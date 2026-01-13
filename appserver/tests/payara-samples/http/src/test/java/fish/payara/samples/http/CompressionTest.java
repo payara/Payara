@@ -95,17 +95,6 @@ public class CompressionTest {
         WEB_CLIENT.addRequestHeader("Accept-Encoding", "gzip,deflate");
     }
 
-    //Resets http-listener-1 back to its original state
-    @AfterClass
-    public static void afterClass() {
-        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
-            CliCommands.payaraGlassFish("set",
-                    "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=true");
-            CliCommands.payaraGlassFish("set",
-                    "configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression=off");
-        }
-    }
-
     @Test
     public void defaultCompressionStrategyLevelsTest() throws IOException {
         CliCommands.payaraGlassFish("set", "'" + CONFIG_COMPRESSION_STRATEGY + "Default'");

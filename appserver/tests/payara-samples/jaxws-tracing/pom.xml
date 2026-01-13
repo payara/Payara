@@ -81,4 +81,53 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>set-requesttracing-configuration</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTestConfigCleanup}</skip>
+                            <successCodes>0,1</successCodes>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>set-requesttracing-configuration</argument>
+                                <argument>--enabled=false</argument>
+                                <argument>--dynamic=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>notification-cdieventbus-configure</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTestConfigCleanup}</skip>
+                            <successCodes>0,1</successCodes>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>notification-cdieventbus-configure</argument>
+                                <argument>--enabled=false</argument>
+                                <argument>--dynamic=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

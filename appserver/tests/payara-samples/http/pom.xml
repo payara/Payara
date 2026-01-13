@@ -69,4 +69,50 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <id>set-http2-enabled</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTestConfigCleanup}</skip>
+                            <successCodes>0,1</successCodes>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>set</argument>
+                                <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.http2-enabled=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>set-http2-compression</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTestConfigCleanup}</skip>
+                            <successCodes>0,1</successCodes>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>set</argument>
+                                <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-1.http.compression=off</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

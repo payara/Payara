@@ -84,13 +84,6 @@ public class PermittedFormBasedAuthHttpMethodsTest {
         }
     }
 
-    @AfterClass
-    public static void cleanUp() throws Exception {
-        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
-            clearContainerSystemProperty("fish.payara.permittedFormBasedAuthHttpMethods", "POST");
-        }
-    }
-
     @Test
     public void formAuthIsForbiddenForMethodsNotPermitted() throws Exception {
         assertFormAuthResponse(HttpURLConnection.HTTP_FORBIDDEN, "GET");

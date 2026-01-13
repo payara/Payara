@@ -45,4 +45,33 @@
             <artifactId>samples-test-utils</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                    <id>delete-jvm-option-post</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>exec</goal>
+                    </goals>
+                    <configuration>
+                        <skip>${skipTestConfigCleanup}</skip>
+                        <successCodes>0,1</successCodes>
+                        <executable>${payara.asadmin}</executable>
+                        <arguments>
+                            <argument>delete-jvm-options</argument>
+                            <argument>-Dfish.payara.permittedFormBasedAuthHttpMethods=POST</argument>
+                        </arguments>
+                    </configuration>
+                </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
