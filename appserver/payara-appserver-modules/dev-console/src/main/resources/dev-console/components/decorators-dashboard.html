@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Decorators Dashboard — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Shared Payara UI (theme + Chart defaults) -->
+        <script src="../assets/js/payara-ui.js"></script>
+
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+
+
+        <style>
+            #decoratorsTable th {
+                cursor: pointer;
+                user-select: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Decorators</h2>
+
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by class or type" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button" class="toggle-btn" aria-pressed="false"></button>
+                    </div>
+
+                    <select id="scopeFilter">
+                        <option value="">All scopes</option>
+                    </select>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="small">Invoked Count — Top Decorators</div>
+                    <canvas id="invokedBar" height="220"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Created vs Invoked Summary</div>
+                    <canvas id="createdVsInvoked" height="260"></canvas>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <div class="small">All Decorators</div>
+
+                <div class="console-wrapper">
+                    <table id="decoratorsTable">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Decorated Types</th>
+                                <th>Delegate Type</th>
+                                <th>Scope</th>
+                                <th>Created</th>
+                                <th>Invoked</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.className;
+                    case 1:
+                        return it.decoratedTypes.join(",");
+                    case 2:
+                        return it.delegateType || "";
+                    case 3:
+                        return it.scope || "";
+                    case 4:
+                        return it.createdCount || 0;
+                    case 5:
+                        return it.invokedCount || 0;
+                    default:
+                        return "";
+                }
+            }
+
+            /* ================= FETCH ================= */
+
+            async function fetchAndRender() {
+                const res = await fetch(DevConsoleApp.api("../cdi/decorators"));
+                window._decoratorRaw = await res.json();
+                renderAll(window._decoratorRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+                const scope = scopeFilter.value;
+
+                let filtered = items.filter(it =>
+                    (!scope || it.scope === scope) &&
+                            (!q ||
+                                    it.className.toLowerCase().includes(q) ||
+                                    it.decoratedTypes.join(",").toLowerCase().includes(q) ||
+                                    (it.delegateType || "").toLowerCase().includes(q) ||
+                                    (it.scope || "").toLowerCase().includes(q))
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+                renderInvokedChart(filtered);
+                renderCreatedVsInvoked(items);
+                populateScopeFilter(items);
+                renderTable(filtered);
+            }
+
+            /* ================= SUMMARY ================= */
+
+            function renderSummary(items) {
+                const cards = [
+                    {label: "Decorators", value: items.length},
+                    {label: "Total Created", value: items.reduce((s, i) => s + (i.createdCount || 0), 0)},
+                    {label: "Total Invoked", value: items.reduce((s, i) => s + (i.invokedCount || 0), 0)}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(c =>
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                    <div class="stat" style="background:${PayaraUI.colors.accent}">
+                        <div class="label">${c.label}</div>
+                        <div class="value">${c.value}</div>
+                    </div>
+                `)
+                );
+            }
+
+            /* ================= CHARTS ================= */
+
+            function renderInvokedChart(items) {
+                const top = items.slice()
+                        .sort((a, b) => (b.invokedCount || 0) - (a.invokedCount || 0))
+                        .slice(0, 10);
+
+                window._invokedBar?.destroy();
+                window._invokedBar = new Chart(invokedBar, {
+                    type: "bar",
+                    data: {
+                        labels: top.map(x => FQCN.chartName(x.className, toggleBtn)),
+                        datasets: [{
+                                label: "Invoked",
+                                data: top.map(x => x.invokedCount || 0),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderCreatedVsInvoked(items) {
+                window._cvi?.destroy();
+                window._cvi = new Chart(createdVsInvoked, {
+                    type: "bar",
+                    data: {
+                        labels: items.map(i => FQCN.chartName(i.className, toggleBtn)),
+                        datasets: [
+                            {
+                                label: "Created",
+                                data: items.map(i => i.createdCount || 0),
+                                backgroundColor: PayaraUI.colors.accent,
+                                borderRadius: 4
+                            },
+                            {
+                                label: "Invoked",
+                                data: items.map(i => i.invokedCount || 0),
+                                backgroundColor: "#f27128",
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            /* ================= TABLE ================= */
+
+            function populateScopeFilter(items) {
+                const scopes = [...new Set(items.map(i => i.scope).filter(Boolean))];
+                scopeFilter.innerHTML =
+                        '<option value="">All scopes</option>' +
+                        scopes.map(s =>
+                                `<option value="${s}">${FQCN.display(s, toggleBtn)}</option>`
+                        ).join("");
+            }
+
+            function renderTable(items) {
+                const tbody = decoratorsTable.tBodies[0];
+                tbody.innerHTML = "";
+
+                items.forEach(it => {
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+            <td title="${it.className}">
+                ${FQCN.display(it.className, toggleBtn)}
+            </td>
+            <td>
+                ${FQCN.displayList(it.decoratedTypes, toggleBtn)}
+            </td>
+            <td title="${it.delegateType || ""}">
+                ${FQCN.display(it.delegateType || "", toggleBtn)}
+            </td>
+            <td title="${it.scope || ""}">
+                ${FQCN.display(it.scope || "", toggleBtn)}
+            </td>
+            <td>${it.createdCount || 0}</td>
+            <td>${it.invokedCount || 0}</td>
+        `;
+
+                    /* UX hints */
+                    tr.style.cursor = "pointer";
+                    tr.title = "Click to view decorator details";
+
+                    /* Navigation */
+                    tr.addEventListener("click", () => {
+                        const enc = encodeURIComponent(it.className);
+                        window.location.href = `decorator-dashboard.html?class=${enc}`;
+                    });
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            /* ================= EVENTS ================= */
+
+            const qInput = document.getElementById("q");
+            const scopeFilter = document.getElementById("scopeFilter");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = scopeFilter.onchange =
+                    () => renderAll(window._decoratorRaw || []);
+
+            refresh.onclick = fetchAndRender;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._decoratorRaw || []);
+            };
+
+            TableSort.bind("#decoratorsTable", sortState, () =>
+                renderAll(window._decoratorRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+
+    </body>
+</html>

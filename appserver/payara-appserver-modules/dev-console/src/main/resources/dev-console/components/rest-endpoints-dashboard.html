@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>REST Endpoints Dashboard — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Shared Payara UI (theme + Chart defaults) -->
+        <script src="../assets/js/payara-ui.js"></script>
+
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">REST Endpoints</h2>
+
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by path or method or class" />
+
+                    <select id="verbFilter">
+                        <option value="">All HTTP methods</option>
+                    </select>
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button" class="toggle-btn" aria-pressed="false"></button>
+                    </div>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+
+                <!--                <div class="card">
+                                    <div class="small">Invocations by Path (top 20)</div>
+                                    <canvas id="invokedByPath" height="220"></canvas>
+                                </div>-->
+
+                <div class="card">
+                    <div class="small">HTTP Methods Distribution</div>
+                    <canvas id="methodPie" height="220"></canvas>
+                </div>
+
+                <!--                <div class="card">
+                                    <div class="small">Top Invoked Methods</div>
+                                    <canvas id="topInvoked" height="320"></canvas>
+                                </div>-->
+
+                <div class="card">
+                    <div class="small">Produces / Content-type</div>
+                    <canvas id="producesPie" height="220"></canvas>
+                </div>
+
+                <div class="card full-width">
+                    <div class="small">All Endpoints</div>
+                    <div class="console-wrapper">
+                        <table id="consoleTable">
+                            <thead>
+                                <tr>
+                                    <th>Verb</th>
+                                    <th>Path</th>
+                                    <th>Invoked</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.verb || "";
+                    case 1:
+                        return it.path || "";
+                    case 2:
+                        return it.invoked || 0;
+                    case 3:
+                        return it.methodSignature || "";
+                    default:
+                        return "";
+                }
+            }
+
+            /* ================= PARSING ================= */
+
+            function parseVerbAndProduces(raw) {
+                if (!raw)
+                    return {verb: "", produces: ""};
+                const m = raw.match(/^([^\(]+)\s*(?:\(produces:\s*([^\)]+)\))?/i);
+                return {
+                    verb: (m?.[1] || raw).trim(),
+                    produces: (m?.[2] || "").trim()
+                };
+            }
+
+            /* ================= FETCH ================= */
+
+            async function fetchAndRender() {
+                const res = await fetch(DevConsoleApp.api("../rest/methods"));
+                const data = await res.json();
+
+                window._restMethodsRaw = data.map(it => {
+                    const parsed = parseVerbAndProduces(it.httpMethodAndProduces);
+                    return {...it, verb: parsed.verb, produces: parsed.produces};
+                });
+
+                renderAll(window._restMethodsRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+                const verb = verbFilter.value;
+
+                let filtered = items.filter(it =>
+                    (!verb || it.verb === verb) &&
+                            (
+                                    !q ||
+                                    (it.path || "").toLowerCase().includes(q) ||
+                                    (it.verb || "").toLowerCase().includes(q) ||
+                                    (it.methodSignature || "").toLowerCase().includes(q)
+                                    )
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+                renderMethodPie(items);
+                renderProducesPie(items);
+                renderTable(filtered);
+                populateVerbFilter(items);
+            }
+
+            /* ================= SUMMARY ================= */
+
+            function renderSummary(items) {
+                const cards = [
+                    {label: "Endpoints", value: items.length},
+                    {label: "Distinct Produces", value: new Set(items.map(i => i.produces).filter(Boolean)).size}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(c =>
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                    <div class="stat" style="background:${PayaraUI.colors.accent}">
+                        <div class="label">${c.label}</div>
+                        <div class="value">${c.value}</div>
+                    </div>
+                `)
+                );
+            }
+
+            /* ================= CHARTS ================= */
+
+            function renderMethodPie(items) {
+                const map = {};
+                items.forEach(i => map[i.verb] = (map[i.verb] || 0) + 1);
+
+                methodPie._c?.destroy();
+                methodPie._c = new Chart(methodPie.getContext("2d"), {
+                    type: "doughnut",
+                    data: {
+                        labels: Object.keys(map),
+                        datasets: [{
+                                data: Object.values(map),
+                                backgroundColor: Object.keys(map).map(payaraAccentShade)
+                            }]
+                    },
+                    options: {responsive: true, plugins: {legend: {position: "right"}}}
+                });
+            }
+
+            function renderProducesPie(items) {
+                const map = {};
+                items.forEach(i => {
+                    const k = i.produces || "unspecified";
+                    map[k] = (map[k] || 0) + 1;
+                });
+
+                producesPie._c?.destroy();
+                producesPie._c = new Chart(producesPie.getContext("2d"), {
+                    type: "doughnut",
+                    data: {
+                        labels: Object.keys(map),
+                        datasets: [{
+                                data: Object.values(map),
+                                backgroundColor: Object.keys(map).map(payaraAccentShade)
+                            }]
+                    },
+                    options: {responsive: true, plugins: {legend: {position: "right"}}}
+                });
+            }
+
+            /* ================= TABLE ================= */
+
+            function renderTable(items) {
+                const tbody = document.querySelector('#consoleTable tbody');
+                tbody.innerHTML = '';
+                items.forEach(it => {
+                    const tr = document.createElement('tr');
+
+                    tr.innerHTML = `
+                <td style="white-space:nowrap">${it.verb || ''}</td>
+                <td><code>${it.path || ''}</code></td>
+                <td>${it.invoked || 0}</td>
+                <td>
+                    ${FQCN.display(it.methodSignature, toggleBtn)}
+                </td>
+              `;
+//                    tr.style.cursor = "pointer";
+//                    tr.addEventListener("click", () => {
+//                        const encoded = encodeURIComponent(it.methodSignature);
+//                        window.location.href = `rest-endpoint-dashboard.html?rest=${encoded}`;
+//                    });
+                    tbody.appendChild(tr);
+                });
+            }
+            function populateVerbFilter(items) {
+                verbFilter.innerHTML =
+                        '<option value="">All HTTP methods</option>' +
+                        [...new Set(items.map(i => i.verb))]
+                        .map(v => `<option value="${v}">${v}</option>`)
+                        .join("");
+            }
+
+            /* ================= EVENTS ================= */
+
+            const qInput = document.getElementById("q");
+            const verbFilter = document.getElementById("verbFilter");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = verbFilter.onchange =
+                    () => renderAll(window._restMethodsRaw || []);
+
+            refresh.onclick = fetchAndRender;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._restMethodsRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._restMethodsRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Events Dashboard — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="../assets/js/app-selector.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Events</h2>
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by event type or observer" />
+                    <select id="eventTypeFilter"><option value="">All event types</option></select>
+                    <button id="refresh">Refresh</button>
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+
+                <div class="card">
+                    <div class="small">Top Event Types — By Count</div>
+                    <canvas id="eventTypeChart" height="220"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Live Events</div>
+                    <canvas id="eventsLineChart" height="260"></canvas>
+
+                </div>
+
+            </div>
+
+            <div class="card full-width">
+                <div class="small">All Events</div>
+                <div class="events-wrapper">
+                    <table id="eventsTable">
+                        <thead>
+                            <tr>
+                                <th>Event Type</th>
+                                <th>Fired By</th>
+                                <th>Observer Count</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+
+            function shorten(n) {
+                return n.split(".").slice(-1)[0];
+            }
+
+            async function fetchAndRender() {
+                try {
+                    const res = await fetch(DevConsoleApp.api("../cdi/events"));
+                    const data = await res.json();
+                    window._eventsRaw = data;
+                    renderAll(data);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            function renderAll(items) {
+                const q = document.getElementById("q").value.toLowerCase().trim();
+                const typeFilter = document.getElementById("eventTypeFilter").value;
+
+                const filtered = items.filter(it => {
+                    if (typeFilter && it.eventType !== typeFilter)
+                        return false;
+                    if (!q)
+                        return true;
+
+                    return it.eventType.toLowerCase().includes(q)
+                            || it.notifiedObservers.join(",").toLowerCase().includes(q)
+                            || (it.firedBy || "").toLowerCase().includes(q);
+                });
+
+                populateEventTypeFilter(items);
+                renderSummary(items);
+                renderEventTimeSeries(filtered);
+                renderEventTypeChart(filtered);
+                renderTable(filtered);
+            }
+
+            function populateEventTypeFilter(items) {
+                const sel = document.getElementById("eventTypeFilter");
+                const types = Array.from(new Set(items.map(i => i.eventType)));
+
+                sel.innerHTML = '<option value="">All event types</option>' +
+                        types.map(t => `<option value="${t}">${t}</option>`).join('');
+            }
+
+            function renderSummary(items) {
+                const totalEvents = items.length;
+                const uniqueTypes = new Set(items.map(i => i.eventType)).size;
+                const totalObservers = items.reduce((s, i) => s + (i.notifiedObservers?.length || 0), 0);
+
+                const cards = [
+                    {label: "Events", value: totalEvents},
+                    {label: "Unique Types", value: uniqueTypes},
+                    {label: "Total Observer Invocations", value: totalObservers}
+                ];
+
+                const colors = [
+                    'linear-gradient(135deg,#6366f1,#3b82f6)',
+                    'linear-gradient(135deg,#06b6d4,#0ea5e9)',
+                    'linear-gradient(135deg,#34d399,#10b981)'
+                ];
+
+                const c = document.getElementById("summaryCards");
+                c.innerHTML = "";
+
+                cards.forEach((card, i) => {
+                    const d = document.createElement("div");
+                    d.className = "stat";
+                    d.style.background = colors[i];
+                    d.innerHTML = `<div class="label">${card.label}</div><div class="value">${card.value}</div>`;
+                    c.appendChild(d);
+                });
+            }
+
+            function renderEventTypeChart(items) {
+                const typeMap = {};
+                items.forEach(it => typeMap[it.eventType] = (typeMap[it.eventType] || 0) + 1);
+
+                const labels = Object.keys(typeMap).map(shorten);
+                const data = Object.values(typeMap);
+
+                const ctx = document.getElementById("eventTypeChart").getContext("2d");
+                if (window._evTypeChart)
+                    window._evTypeChart.destroy();
+                window._evTypeChart = new Chart(ctx, {
+                    type: "bar",
+                    data: {labels, datasets: [{label: "Count", data}]},
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderEventTimeSeries(items) {
+                // Group events by seconds
+                const bucket = {};
+                items.forEach(ev => {
+                    const t = ev.timestamp.substring(11, 19); // <-- HH:mm:ss only
+                    if (!bucket[t])
+                        bucket[t] = {};
+                    bucket[t][ev.eventType] = (bucket[t][ev.eventType] || 0) + 1;
+                });
+
+                // Sort time keys (HH:mm:ss)
+                const timestamps = Object.keys(bucket).sort();
+
+                const eventTypes = Array.from(new Set(items.map(e => e.eventType)));
+
+                const datasets = eventTypes.map(type => {
+                    const data = timestamps.map(ts => bucket[ts][type] || 0);
+
+                    return {
+                        label: type,
+                        data,
+                        tension: 0.3,
+                        fill: false,
+                        borderWidth: 2
+                    };
+                });
+
+                const ctx = document.getElementById("eventsLineChart").getContext("2d");
+                if (window._lineChart)
+                    window._lineChart.destroy();
+
+                window._lineChart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: timestamps, // now only time
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {beginAtZero: true}
+                        }
+                    }
+                });
+            }
+
+            function renderTable(items) {
+                const tb = document.querySelector("#eventsTable tbody");
+                tb.innerHTML = "";
+
+                items.forEach(it => {
+                    const timeOnly = it.timestamp.substring(11, 19); // HH:mm:ss
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>${shorten(it.eventType)}</td>
+                    <td>${it.firedBy && it.firedBy !== "Unknown" ? it.firedBy : "—"}</td>
+                    <td>${it.notifiedObservers.length}</td>
+                    <td>${timeOnly}</td>
+                `;
+
+                    tr.style.cursor = "pointer";
+                    tr.addEventListener("click", () => {
+                        const enc = encodeURIComponent(it.eventType);
+                        window.location.href = "event-type-dashboard.html?type=" + enc;
+                    });
+
+                    tb.appendChild(tr);
+                });
+            }
+
+            document.getElementById("q").addEventListener("input", () => renderAll(window._eventsRaw || []));
+            document.getElementById("eventTypeFilter").addEventListener("change", () => renderAll(window._eventsRaw || []));
+            document.getElementById("refresh").addEventListener("click", fetchAndRender);
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+
+    </body>
+</html>

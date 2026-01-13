@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <title>Metrics Dashboard</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-funnel@4"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0"></script>
+
+        <script src="../assets/js/payara-ui.js"></script>
+        <style>
+            .cards-row {
+                display: grid;
+                grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+                gap: 18px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="page">
+            <div class="topbar">
+                <h2 style="margin:0">Metrics Dashboard</h2>
+                <div class="controls">
+                    <label class="small">Auto-refresh:</label>
+                    <select id="autoRefresh" class="chip">
+                        <option value="0">Off</option>
+                        <option value="5000">5s</option>
+                        <option value="10000">10s</option>
+                        <option value="30000">30s</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div id="summaryCards" class="cards-row"></div>
+
+            <!-- Charts Grid -->
+            <div class="grid" id="chartsGrid"></div>
+
+            <!-- Last Updated -->
+            <div style="margin-top:12px;font-size:0.85rem;color:#555;display:flex;justify-content:space-between;align-items:center;">
+                <div>Last Updated: <span id="lastUpdated"></span></div>
+                <div id="dataNote" class="small"></div>
+            </div>
+        </div>
+
+        <script>
+            async function fetchMetrics() {
+                try {
+                    const res = await fetch("/metrics");
+                    const text = await res.text();
+                    return parsePrometheus(text);
+                } catch (e) {
+                    console.error('Failed to fetch metrics', e);
+                    return {};
+                }
+            }
+
+            function parsePrometheus(text) {
+                const lines = (text || "").split("\n");
+                const metrics = {};
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (!line || line.startsWith("#"))
+                        return;
+
+                    // name{label="v"} 123.45
+                    const match = line.match(/^([a-zA-Z0-9_:.-]+)(\{[^}]*\})?\s+([0-9.eE+-]+)$/);
+                    if (!match)
+                        return;
+
+                    const [, name, labels, value] = match;
+                    if (!metrics[name])
+                        metrics[name] = [];
+                    metrics[name].push({value: Number(value), labels: parseLabels(labels)});
+                });
+                return metrics;
+            }
+
+            function parseLabels(labelString) {
+                const obj = {};
+                if (!labelString)
+                    return obj;
+                labelString.replace(/[{}]/g, "").split(",").forEach(pair => {
+                    if (!pair)
+                        return;
+                    const idx = pair.indexOf('=');
+                    if (idx < 0)
+                        return;
+                    const k = pair.slice(0, idx).trim();
+                    const v = pair.slice(idx + 1).trim().replace(/^\"|\"$/g, '');
+                    obj[k] = v;
+                });
+                return obj;
+            }
+
+            function safe(val, fmt) {
+                if (val === undefined || val === null || Number.isNaN(val))
+                    return 'N/A';
+                if (!fmt)
+                    return val;
+                if (fmt === 'bytes')
+                    return bytesToHuman(val);
+                if (fmt === 'count')
+                    return Math.round(val);
+                return val;
+            }
+            function bytesToHuman(bytes) {
+                if (bytes === -1)
+                    return 'unbounded';
+                if (bytes < 1024)
+                    return bytes + ' B';
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+                return (bytes / Math.pow(1024, i)).toFixed(i ? 1 : 0) + ' ' + units[i];
+            }
+
+            // Card Definitions (expand with relevant metrics)
+            const cardDefs = [
+                //    ["cpu_systemLoadAverage", "CPU Load Avg"],
+                ["cpu_availableProcessors", "Available CPUs"],
+                ["classloader_loadedClasses_count", "Loaded Classes"],
+                ["classloader_loadedClasses_total", "Loaded Classes (total)"],
+                ["classloader_unloadedClasses_total", "Unloaded Classes"],
+                ["thread_count", "Live Threads"],
+                ["thread_daemon_count", "Daemon Threads"],
+                ["thread_max_count", "Max Threads"],
+                ["memory_usedHeap_bytes", "Used Heap"],
+                ["memory_committedHeap_bytes", "Committed Heap"],
+                ["memory_maxHeap_bytes", "Max Heap"],
+                ["memory_usedNonHeap_bytes", "Used Non-Heap"],
+                ["memory_committedNonHeap_bytes", "Committed Non-Heap"]
+            ];
+
+            // Full list of charts to render (attempts to cover the complete list, will gracefully show "No data")
+            const chartsList = [
+                // CPU & System
+                {id: "cpuTimeline", title: "System CPU Load Timeline", type: "line", metric: "system_cpu_load"},
+                {id: "cpuFunnel", title: "CPU Load Funnel", type: "funnel-cpu"},
+
+                // Memory / JVM
+                {id: "heapDoughnut", title: "JVM Heap Usage", type: "doughnut-heap"},
+                {id: "nonHeapDoughnut", title: "JVM Non-Heap Usage", type: "doughnut-nonheap"},
+                {id: "heapTimeline", title: "Heap Usage Timeline", type: "line-multi", metrics: ["memory_usedHeap_bytes", "memory_committedHeap_bytes", "memory_maxHeap_bytes"]},
+                {id: "nonheapTimeline", title: "Non Heap Usage Timeline", type: "line-multi", metrics: ["memory_usedNonHeap_bytes", "memory_committedNonHeap_bytes", "memory_maxNonHeap_bytes"]},
+
+                // Garbage Collection
+                {id: "gcTime", title: "GC Time (seconds) — Timeline", type: "line-gc-time"},
+                {id: "gcCount", title: "GC Count Timeline", type: "line-gc-count"},
+                {id: "gcTypeBreakdown", title: "GC Type Breakdown", type: "pie-gc-type"},
+
+                // Connection Pools (JDBC)
+                {id: "connGrouped", title: "Connection Pools — Free/Used/Total", type: "bar-conn-pools"},
+
+                // Classloader
+                {id: "classLoadTimeline", title: "Class Loading Timeline (current loaded)", type: "line", metric: "classloader_loadedClasses_count"},
+                // Detailed classloader chart: shows current loaded, cumulative loaded (total) and cumulative unloaded
+                {id: "classLoadDetailed", title: "Classloader — Loaded / Unloaded / Total", type: "line-multi", metrics: ["classloader_loadedClasses_count", "classloader_unloadedClasses_total", "classloader_loadedClasses_total"]},
+
+                // Threads
+                {id: "threadsTimeline", title: "Thread Count Timeline", type: "line", metric: "thread_count"},
+                {id: "threadsDaemonTimeline", title: "Daemon Thread Count Timeline", type: "line", metric: "thread_daemon_count"},
+            ];
+
+            // Store time-series buffers
+            function getBuffer(key) {
+                if (!window._buffers)
+                    window._buffers = {};
+                if (!window._buffers[key])
+                    window._buffers[key] = {labels: [], series: {}};
+                return window._buffers[key];
+            }
+
+            // Utilities to detect presence of data
+            function hasMetric(metrics, name) {
+                return !!(metrics[name] && metrics[name].length > 0);
+            }
+
+            // Rendering Cards
+            function renderCards(metrics) {
+                const container = document.getElementById("summaryCards");
+                container.innerHTML = "";
+                cardDefs.forEach(([key, title], idx) => {
+                    const raw = metrics[key]?.[0]?.value;
+                    let display = raw;
+                    if (key.endsWith("bytes"))
+                        display = safe(raw, 'bytes');
+                    else if (key.includes("count") || key.includes("thread") || key.includes("Classes"))
+                        display = safe(raw, 'count');
+                    else
+                        display = safe(raw);
+
+                    const card = document.createElement("div");
+                    card.className = "stat";
+                    card.style.background = "#f59e0b";
+                    card.innerHTML = `<div class="label">${title}</div><div class="value">${display}</div>`;
+                    container.appendChild(card);
+                });
+            }
+
+            function drawNoData(ctx, box) {
+                const c = document.createElement('div');
+                c.className = 'no-data';
+                c.innerText = 'No data available for this chart.';
+                box.appendChild(c);
+            }
+
+            // Rendering Charts
+            function renderCharts(metrics) {
+                const grid = document.getElementById('chartsGrid');
+                grid.innerHTML = '';
+
+                chartsList.forEach(ch => {
+                    const box = document.createElement('div');
+                    box.className = 'chart-box';
+                    box.innerHTML = `<div class="card"><div class="small">${ch.title}</div><canvas id="${ch.id}" height="220"></canvas>`;
+                    grid.appendChild(box);
+                    const ctx = document.getElementById(ch.id).getContext('2d');
+
+                    // Helpers
+                    const sum = arr => arr.reduce((a, b) => a + (b || 0), 0);
+
+                    if (ch.type === 'card') {
+                        const v = metrics[ch.metric]?.[0]?.value;
+                        const val = v === undefined ? 'N/A' : (ch.metric.includes('bytes') ? bytesToHuman(v) : (Number.isFinite(v) ? (Math.round(v * 100) / 100) : v));
+                        // draw a simple big-value chart using chart.js plugin is overkill; just overlay text
+                        ctx.canvas.parentElement.querySelector('canvas').style.display = 'none';
+                        const dv = document.createElement('div');
+                        dv.className = 'card';
+                        dv.style.marginTop = '8px';
+                        dv.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+                        dv.style.color = 'white';
+                        dv.style.padding = '10px';
+                        dv.innerHTML = `<div class="card-title">${ch.title}</div><div class="card-value">${val}</div>`;
+                        box.appendChild(dv);
+                        return;
+                    }
+
+                    if (ch.type === 'line') {
+                        const buf = getBuffer(ch.id);
+                        const v = metrics[ch.metric]?.[0]?.value ?? null;
+                        buf.labels.push(new Date().toLocaleTimeString());
+                        if (!buf.series.single)
+                            buf.series.single = [];
+                        buf.series.single.push(v);
+                        if (buf.labels.length > 60) {
+                            buf.labels.shift();
+                            buf.series.single.shift();
+                        }
+                        if (window[ch.id + "_chart"])
+                            window[ch.id + "_chart"].destroy();
+                        window[ch.id + "_chart"] = new Chart(ctx, {type: 'line',
+                            data: {labels: buf.labels, datasets: [{
+                                        label: ch.title,
+                                        data: buf.series.single.map(x => x === null ? NaN : x),
+                                        fill: true,
+                                        borderColor: '#f0981b',
+                                        backgroundColor: 'rgba(240,152,27,0.18)',
+                                        pointBorderColor: '#f7b955',
+                                        pointBackgroundColor: '#f0981b',
+                                        pointRadius: 4,
+                                        pointHoverRadius: 6
+                                    }]}, options: {responsive: true, plugins: {legend: {display: false}, tooltip: {callbacks: {label: function (context) {
+                                                const v = context.raw;
+                                                return (typeof v === 'number') ? bytesToHuman(v) : (v === null ? 'N/A' : String(v));
+                                            }}}}, spanGaps: true}});
+                        return;
+                    }
+
+                    if (ch.type === 'line-multi') {
+                        const buf = getBuffer(ch.id);
+                        buf.labels.push(new Date().toLocaleTimeString());
+                        if (buf.labels.length > 60)
+                            buf.labels.shift();
+                        const datasets = [];
+                        (ch.metrics || []).forEach((m, idx) => {
+                            if (!buf.series[m])
+                                buf.series[m] = [];
+                            const v = metrics[m]?.[0]?.value ?? null;
+                            buf.series[m].push(v);
+                            if (buf.series[m].length > 60)
+                                buf.series[m].shift();
+                            datasets.push({label: m, data: buf.series[m].map(x => x === null ? NaN : x), borderColor: ['#3b82f6', '#16a34a', '#f97316', '#8b5cf6'][idx % 4], fill: false});
+                        });
+                        if (window[ch.id + "_chart"])
+                            window[ch.id + "_chart"].destroy();
+                        window[ch.id + "_chart"] = new Chart(ctx, {
+                            type: 'line',
+                            data: {labels: buf.labels, datasets: datasets},
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {display: true},
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function (context) {
+                                                const v = context.raw;
+                                                const label = context.dataset && context.dataset.label ? context.dataset.label : '';
+                                                if (typeof v === 'number' && (label.includes('memory') || label.endsWith('_bytes') || label.includes('bytes')))
+                                                    return bytesToHuman(v);
+                                                return (v === null || v === undefined || Number.isNaN(v)) ? 'N/A' : String(v);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        return;
+                    }
+
+                    if (ch.type === 'bar') {
+                        const data = (ch.metrics || []).map(k => metrics[k]?.[0]?.value ?? 0);
+                        new Chart(ctx, {type: 'bar', data: {labels: (ch.metrics || []), datasets: [{data: data, backgroundColor: data.map((v, i) => ['rgba(59,130,246,0.85)', 'rgba(34,197,94,0.85)', 'rgba(234,88,12,0.85)'][i % 3])}]}, options: {responsive: true, plugins: {legend: {display: false}}}});
+                        return;
+                    }
+
+                    if (ch.type === 'bar-pools' || ch.type === 'bar-conn-pools') {
+                        // build per-pool grouped values
+                        const pools = {};
+                        Object.keys(metrics).forEach(k => {
+                            if (!k.startsWith('connection_pool'))
+                                return;
+                            const match = k.match(/^connection_pool_(.+)_(freeConnection_total|usedConnection_total|totalConnection)$/);
+                            if (!match)
+                                return;
+                            const [, name, metric] = match;
+                            if (!pools[name])
+                                pools[name] = {free: 0, used: 0, total: 0};
+                            const v = metrics[k]?.[0]?.value ?? 0;
+                            if (metric.includes('free'))
+                                pools[name].free = v;
+                            if (metric.includes('used'))
+                                pools[name].used = v;
+                            if (metric.includes('total'))
+                                pools[name].total = v;
+                        });
+                        const labels = Object.keys(pools);
+                        if (labels.length === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        const free = labels.map(l => pools[l].free);
+                        const used = labels.map(l => pools[l].used);
+                        const total = labels.map(l => pools[l].total);
+                        if (window[ch.id + "_chart"])
+                            window[ch.id + "_chart"].destroy();
+                        window[ch.id + "_chart"] = new Chart(ctx, {type: 'bar', data: {labels: labels, datasets: [{label: 'Free', data: free, backgroundColor: 'rgba(34,197,94,0.85)'}, {label: 'Used', data: used, backgroundColor: 'rgba(234,88,12,0.85)'}, {label: 'Total', data: total, backgroundColor: 'rgba(59,130,246,0.85)'}]}, options: {responsive: true, plugins: {legend: {position: 'top'}}}});
+                        return;
+                    }
+
+                    if (ch.type === 'funnel') {
+                        // reuse earlier funnel for all pools
+                        const pools = {};
+                        Object.keys(metrics).forEach(k => {
+                            if (!k.startsWith('connection_pool'))
+                                return;
+                            const match = k.match(/^connection_pool_(.+)_(freeConnection_total|usedConnection_total|totalConnection)$/);
+                            if (!match)
+                                return;
+                            const [, name, metric] = match;
+                            if (!pools[name])
+                                pools[name] = {free: 0, used: 0, total: 0};
+                            const v = metrics[k]?.[0]?.value ?? 0;
+                            if (metric.includes('free'))
+                                pools[name].free = v;
+                            if (metric.includes('used'))
+                                pools[name].used = v;
+                            if (metric.includes('total'))
+                                pools[name].total = v;
+                        });
+                        const free = Object.values(pools).reduce((a, b) => a + b.free, 0);
+                        const used = Object.values(pools).reduce((a, b) => a + b.used, 0);
+                        const total = Object.values(pools).reduce((a, b) => a + b.total, 0);
+                        if (total === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        new Chart(ctx, {type: 'funnel', data: {labels: ['Total', 'Used', 'Free'], datasets: [{data: [total, used, free], backgroundColor: ['rgba(59,130,246,0.9)', 'rgba(234,88,12,0.9)', 'rgba(34,197,94,0.9)']}]}, options: {responsive: true, funnel: {dynamicSlope: true}}});
+                        return;
+                    }
+
+                    if (ch.type === 'funnel-cpu') {
+                        const sys = metrics['system_cpu_load']?.[0]?.value ?? null;
+                        const proc = metrics['process_cpu_load']?.[0]?.value ?? null;
+                        const idle = sys ? Math.max(0, 1 - sys) : null;
+                        if (sys === null && proc === null) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        new Chart(ctx, {type: 'funnel', data: {labels: ['Idle', 'Process', 'System'], datasets: [{data: [idle || 0, proc || 0, sys || 0], backgroundColor: ['#10b981', '#f59e0b', '#3b82f6']}]}, options: {responsive: true, funnel: {dynamicSlope: true}}});
+                        return;
+                    }
+
+                    if (ch.type === 'doughnut-heap') {
+                        const used = metrics['memory_usedHeap_bytes']?.[0]?.value ?? 0;
+                        const committed = metrics['memory_committedHeap_bytes']?.[0]?.value ?? 0;
+                        const max = metrics['memory_maxHeap_bytes']?.[0]?.value ?? 0;
+                        if (used === 0 && committed === 0 && max === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        const free = (max > 0 ? Math.max(0, max - used) : Math.max(0, committed - used));
+                        new Chart(ctx, {type: 'doughnut', data: {labels: ['Used', 'Free'], datasets: [{data: [used, free], backgroundColor: [PayaraUI.colors.accent, '#f27128']}]}, options: {responsive: true, plugins: {legend: {position: 'bottom'}}}});
+                        return;
+                    }
+
+                    if (ch.type === 'doughnut-nonheap') {
+                        const used = metrics['memory_usedNonHeap_bytes']?.[0]?.value ?? 0;
+                        const committed = metrics['memory_committedNonHeap_bytes']?.[0]?.value ?? 0;
+                        if (used === 0 && committed === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        const free = Math.max(0, committed - used);
+                        new Chart(ctx, {type: 'doughnut', data: {labels: ['Used', 'Free'], datasets: [{data: [used, free], backgroundColor: [PayaraUI.colors.accent, '#f27128']}]}, options: {responsive: true, plugins: {legend: {position: 'bottom'}}}});
+                        return;
+                    }
+
+                    if (ch.type === 'bar-pools' || ch.type === 'bar') {
+                        // generic bar handled above
+                        drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                        return;
+                    }
+
+                    if (ch.type === 'line-gc-time' || ch.type === 'line-gc-count' || ch.type === 'pie-gc-type') {
+                        // collect per-collector metrics
+                        const timeMetrics = {};
+                        Object.keys(metrics).forEach(k => {
+                            const m = k.match(/^gc_time_seconds_total$|^gc_total$/) ? k : null;
+                        });
+                        // gather by label name
+                        const collectors = {};
+                        Object.entries(metrics).forEach(([k, arr]) => {
+                            if (k !== 'gc_time_seconds_total' && k !== 'gc_total')
+                                return;
+                            arr.forEach(it => {
+                                const name = it.labels && it.labels.name ? it.labels.name : 'unknown';
+                                if (!collectors[name])
+                                    collectors[name] = {time: 0, count: 0};
+                                if (k === 'gc_time_seconds_total')
+                                    collectors[name].time = it.value;
+                                if (k === 'gc_total')
+                                    collectors[name].count = it.value;
+                            });
+                        });
+                        const names = Object.keys(collectors);
+                        if (names.length === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        if (ch.type === 'pie-gc-type') {
+                            const minor = names.reduce((a, n) => a + (collectors[n].count || 0), 0);
+                            const data = names.map(n => collectors[n].count || 0);
+                            new Chart(ctx, {type: 'pie', data: {labels: names, datasets: [{data: data, backgroundColor: names.map((_, i) => ['#f0981b', '#60a5fa', '#10b981', '#f59e0b'][i % 4])}]}, options: {responsive: true}});
+                            return;
+                        }
+                        // for timelines, build small snapshot charts showing current per-collector values
+                        const data = ch.type === 'line-gc-time' ? names.map(n => collectors[n].time) : names.map(n => collectors[n].count);
+                        new Chart(ctx, {type: 'bar', data: {labels: names, datasets: [{data: data, backgroundColor: ['#3b82f6', '#f97316', '#10b981']}]}, options: {responsive: true, plugins: {legend: {display: false}}}});
+                        return;
+                    }
+
+                    if (ch.type === 'pie-threads') {
+                        // try several known thread state metrics
+                        const states = ['thread_state_runnable_count', 'thread_state_blocked_count', 'thread_state_waiting_count', 'thread_state_timed_waiting_count'];
+                        const data = states.map(s => metrics[s]?.[0]?.value ?? 0);
+                        const has = data.some(v => v > 0);
+                        if (!has) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        new Chart(ctx, {type: 'pie', data: {labels: ['RUNNABLE', 'BLOCKED', 'WAITING', 'TIMED_WAITING'], datasets: [{data: data, backgroundColor: ['#3b82f6', '#f0981b', '#f59e0b', '#10b981']}]}, options: {responsive: true}});
+                        return;
+                    }
+
+                    if (ch.type === 'bar-cores') {
+                        // gather metrics named like cpu_core_0, cpu_core_1, etc. or cpu_core_usage
+                        const cores = {};
+                        Object.keys(metrics).forEach(k => {
+                            const m = k.match(/^cpu_core_(\d+)_usage$|^cpu_core_(\d+)$/);
+                            if (m) {
+                                const idx = m[1] || m[2];
+                                cores[idx] = metrics[k][0].value;
+                            }
+                        });
+                        const names = Object.keys(cores).sort((a, b) => a - b);
+                        if (names.length === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        const data = names.map(n => cores[n]);
+                        new Chart(ctx, {type: 'horizontalBar' in Chart.helpers ? 'horizontalBar' : 'bar', data: {labels: names.map(n => 'core ' + n), datasets: [{data: data, backgroundColor: '#3b82f6'}]}, options: {indexAxis: 'y', responsive: true}});
+                        return;
+                    }
+
+                    if (ch.type === 'donut-disk') {
+                        const used = metrics['disk_used_bytes']?.[0]?.value ?? 0;
+                        const total = metrics['disk_total_bytes']?.[0]?.value ?? 0;
+                        if (total === 0) {
+                            drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                            return;
+                        }
+                        new Chart(ctx, {type: 'doughnut', data: {labels: ['Used', 'Free'], datasets: [{data: [used, total - used], backgroundColor: ['#f0981b', '#60a5fa']}]}, options: {responsive: true}});
+                        return;
+                    }
+
+                    // Fallback: no implementation
+                    drawNoData(ctx.canvas.parentElement, ctx.canvas.parentElement);
+                });
+            }
+
+            // Main render
+            let refreshTimer = null;
+            async function renderAll() {
+                const metrics = await fetchMetrics();
+                renderCards(metrics);
+                renderCharts(metrics);
+                document.getElementById('lastUpdated').innerText = new Date().toLocaleTimeString();
+                const hasAny = Object.keys(metrics).length > 0;
+                document.getElementById('dataNote').innerText = hasAny ? '' : 'No metrics found at /metrics (server must expose Prometheus metrics)';
+            }
+
+            // Auto-refresh control
+            const autoRefreshEl = document.getElementById('autoRefresh');
+            autoRefreshEl.addEventListener('change', () => {
+                const v = Number(autoRefreshEl.value);
+                if (refreshTimer)
+                    clearInterval(refreshTimer);
+                if (v > 0)
+                    refreshTimer = setInterval(renderAll, v);
+            });
+
+            // Initial setup
+            (function () {
+                // default auto-refresh 5s
+                autoRefreshEl.value = '5000';
+                autoRefreshEl.dispatchEvent(new Event('change'));
+                renderAll();
+            })();
+
+        </script>
+    </body>
+</html>

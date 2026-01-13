@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>REST Method Detail — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-funnel@4"></script>
+    </head>
+    <body>
+
+        <a href="rest-endpoints-dashboard.html" class="back">← Back</a>
+
+        <div class="page">
+            <h2>REST Method Details</h2>
+            <div id="meta"></div>
+
+            <h3>Summary</h3>
+            <div class="cards-row" id="summary"></div>
+
+            <div class="grid">
+                <div class="card">
+                    <canvas id="durationStatusChart" height="220"></canvas>
+                </div>
+                <div class="card">
+                    <canvas id="sizeOverTimeChart" height="220"></canvas>
+                </div>
+                <div class="card">
+                    <canvas id="funnelChart" height="220"></canvas>
+                </div>
+                <div class="card">
+                    <canvas id="avgDurationChart" height="220"></canvas>
+                </div>
+                <div class="card">
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="card">
+                    <h3>Recent Calls</h3>
+                    <div class="console-wrapper">
+                        <table class="console-table" id="consoleTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Duration (ms)</th>
+                                    <th>Status</th>
+                                    <th>Req Size</th>
+                                    <th>Res Size</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script>
+            function getRestKeyFromURL() {
+                const p = new URLSearchParams(window.location.search);
+                return p.get("rest");
+            }
+
+            async function loadRestDetails() {
+                const key = getRestKeyFromURL();
+                const url = `../rest/methods/${encodeURIComponent(key)}`;
+                const res = await fetch(DevConsoleApp.api(url));
+                const data = await res.json();
+
+                // 💡 Null-safe fallback
+                const records = Array.isArray(data.records) ? data.records : [];
+
+                renderMeta(data);
+                renderSummary(records);
+                renderRecordsTable(records);
+                renderDurationStatusChart(records);
+                renderSizeOverTimeChart(records);
+                renderFunnel(records);
+                renderStatusChart(records);
+                renderAvgDurationPerStatus(records);
+            }
+
+            function formatTimestampHHMMSS(ts) {
+                if (!ts)
+                    return "-";
+                const d = new Date(ts);
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                const seconds = String(d.getSeconds()).padStart(2, '0');
+                return `${hours}:${minutes}:${seconds}`;
+            }
+
+            document.addEventListener("DOMContentLoaded", loadRestDetails);
+
+            // ---------------- META ----------------
+            function renderMeta(data) {
+                document.getElementById("meta").innerHTML = `
+                    <p><b>HTTP:</b> ${data.httpMethodAndProduces || '-'}</p>
+                    <p><b>Path:</b> ${data.path || '-'}</p>
+                    <p><b>Method:</b> ${data.methodSignature || '-'}</p>`;
+            }
+
+            // ---------------- SUMMARY ----------------
+            function renderSummary(records) {
+                const box = document.getElementById("summary");
+                box.innerHTML = "";
+
+                if (!records.length) {
+                    box.innerHTML = `<div class="card" style="background:#bbb;color:#000">No Data Available</div>`;
+                    return;
+                }
+
+                const durations = records.map(r => r.durationMs);
+                const min = Math.min(...durations);
+                const max = Math.max(...durations);
+                const avg = (durations.reduce((a, b) => a + b) / durations.length).toFixed(2);
+                const lastCall = records[records.length - 1].timestamp;
+
+                const cardValues = [
+                    {label: "Min", value: `${min} ms`},
+                    {label: "Avg", value: `${avg} ms`},
+                    {label: "Max", value: `${max} ms`},
+                    {label: "Total Calls", value: records.length},
+                    {label: "Last Call", value: formatTimestampHHMMSS(lastCall)},
+                    {label: "99th Percentile", value: `${percentile(durations, 0.99)} ms`}
+                ];
+
+                const gradients = [
+                    "linear-gradient(135deg,#6a11cb,#2575fc)",
+                    "linear-gradient(135deg,#00c6ff,#0072ff)",
+                    "linear-gradient(135deg,#43e97b,#38f9d7)",
+                    "linear-gradient(135deg,#fa709a,#fee140)",
+                    "linear-gradient(135deg,#7F00FF,#E100FF)",
+                    "linear-gradient(135deg,#11998e,#38ef7d)"
+                ];
+
+                cardValues.forEach((card, index) => {
+                    const div = document.createElement("div");
+                    div.className = "card";
+                    div.style.background = gradients[index % gradients.length];
+                    div.style.color = "#fff";
+                    div.innerHTML = `<b>${card.label}</b><br>${card.value}`;
+                    box.appendChild(div);
+                });
+            }
+
+            function percentile(arr, p) {
+                if (!arr.length)
+                    return 0;
+                const sorted = [...arr].sort((a, b) => a - b);
+                const idx = Math.floor(p * sorted.length);
+                return sorted[Math.min(idx, sorted.length - 1)];
+            }
+
+            // ---------------- CHART: Duration vs Status ----------------
+            let durationStatusChart;
+            function renderDurationStatusChart(records) {
+                const ctx = document.getElementById("durationStatusChart");
+
+                if (!records.length) {
+                    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+                    return;
+                }
+
+                const labels = records.map(r => formatTimestampHHMMSS(r.timestamp));
+                const data = records.map(r => r.durationMs);
+                const pointColors = records.map(r => {
+                    if (r.status >= 500)
+                        return '#e53935';
+                    if (r.status >= 400)
+                        return '#fdd835';
+                    return '#43a047';
+                });
+
+                if (durationStatusChart)
+                    durationStatusChart.destroy();
+
+                durationStatusChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                                label: 'Duration (ms)',
+                                data,
+                                borderColor: '#42a5f5',
+                                backgroundColor: '#42a5f5',
+                                pointRadius: 5,
+                                pointBackgroundColor: pointColors,
+                                fill: false
+                            }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {display: true, text: 'Duration over Time'},
+                            legend: {display: false}
+                        }
+                    }
+                });
+            }
+
+            // ---------------- CHART: Request / Response Size ----------------
+            let sizeOverTimeChart;
+            function renderSizeOverTimeChart(records) {
+                const ctx = document.getElementById("sizeOverTimeChart");
+
+                if (!records.length) {
+                    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+                    return;
+                }
+
+                const labels = records.map(r => formatTimestampHHMMSS(r.timestamp));
+                const req = records.map(r => r.requestSize);
+                const res = records.map(r => r.responseSize);
+
+                if (sizeOverTimeChart)
+                    sizeOverTimeChart.destroy();
+
+                sizeOverTimeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {labels, datasets: [
+                            {label: 'Request Size', data: req, backgroundColor: '#42a5f5'},
+                            {label: 'Response Size', data: res, backgroundColor: '#66bb6a'}
+                        ]},
+                    options: {responsive: true}
+                });
+            }
+
+            // ---------------- CHART: Funnel ----------------
+            let funnelChart;
+            function renderFunnel(records) {
+                const ctx = document.getElementById("funnelChart");
+
+                if (!records.length) {
+                    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+                    return;
+                }
+
+                const durations = records.map(r => r.durationMs);
+                const labels = ["Max", "P99", "P95", "Median", "Min"];
+                const values = [
+                    Math.max(...durations),
+                    percentile(durations, 0.99),
+                    percentile(durations, 0.95),
+                    percentile(durations, 0.5),
+                    Math.min(...durations)
+                ];
+
+                if (funnelChart)
+                    funnelChart.destroy();
+
+                funnelChart = new Chart(ctx, {
+                    type: 'funnel',
+                    data: {labels, datasets: [{data: values}]},
+                    options: {responsive: true}
+                });
+            }
+
+            // ---------------- CHART: Status ----------------
+            let statusChart;
+            function renderStatusChart(records) {
+                const ctx = document.getElementById("statusChart");
+
+                if (!records.length) {
+                    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+                    return;
+                }
+
+                const counts = {};
+                records.forEach(r => counts[r.status] = (counts[r.status] || 0) + 1);
+
+                const labels = Object.keys(counts);
+                const values = Object.values(counts);
+
+                if (statusChart)
+                    statusChart.destroy();
+
+                statusChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {labels, datasets: [{data: values}]},
+                    options: {responsive: true}
+                });
+            }
+
+            // ---------------- CHART: Avg Duration per Status ----------------
+            let avgDurationChart;
+            function renderAvgDurationPerStatus(records) {
+                const ctx = document.getElementById("avgDurationChart");
+
+                if (!records.length) {
+                    ctx.getContext("2d").clearRect(0, 0, ctx.width, ctx.height);
+                    return;
+                }
+
+                const groups = {};
+                records.forEach(r => {
+                    if (!groups[r.status])
+                        groups[r.status] = [];
+                    groups[r.status].push(r.durationMs);
+                });
+
+                const labels = Object.keys(groups);
+                const values = labels.map(s => {
+                    const arr = groups[s];
+                    return arr.reduce((a, b) => a + b, 0) / arr.length;
+                });
+
+                if (avgDurationChart)
+                    avgDurationChart.destroy();
+
+                avgDurationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {labels, datasets: [{label: 'Avg Duration (ms)', data: values}]},
+                    options: {responsive: true}
+                });
+            }
+
+            // ---------------- TABLE ----------------
+            function renderRecordsTable(records) {
+                const tbody = document.querySelector("#consoleTable tbody");
+                tbody.innerHTML = "";
+
+                if (!records.length) {
+                    tbody.innerHTML = `<tr><td colspan="5">No records available</td></tr>`;
+                    return;
+                }
+
+                records.forEach(r => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${r.timestamp || '-'}</td>
+                        <td>${r.durationMs ?? '-'}</td>
+                        <td>${r.status ?? '-'}</td>
+                        <td>${r.requestSize ?? '-'}</td>
+                        <td>${r.responseSize ?? '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        </script>
+    </body>
+</html>

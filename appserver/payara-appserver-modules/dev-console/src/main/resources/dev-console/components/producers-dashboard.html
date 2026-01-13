@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Producers Dashboard — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Shared Payara UI defaults -->
+        <script src="../assets/js/payara-ui.js"></script>
+
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+
+        <style>
+            td.kind {
+                font-weight: 700;
+                text-align: center;
+                border-radius: 8px;
+                padding: 4px 12px;
+                display: inline-block;
+                min-width: 80px;
+            }
+            td.kind-METHOD {
+                background: rgba(56,189,248,.18);
+                color: #bae6fd;
+            }
+            td.kind-FIELD {
+                background: rgba(34,197,94,.18);
+                color: #bbf7d0;
+            }
+
+            tr.kind-METHOD:hover {
+                background: rgba(56,189,248,.12);
+            }
+            tr.kind-FIELD:hover {
+                background: rgba(34,197,94,.12);
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="page">
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Producers</h2>
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by class, type or signature" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button" class="toggle-btn" aria-pressed="false"></button>
+                    </div>
+
+                    <select id="kindFilter">
+                        <option value="">All kinds</option>
+                        <option value="METHOD">METHOD</option>
+                        <option value="FIELD">FIELD</option>
+                    </select>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔹 ALREADY PRESENT, NOW USED -->
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="small">Produced vs Disposed</div>
+                    <canvas id="lifecycleChart" height="220"></canvas>
+                </div>
+                <div class="card">
+                    <div class="small">Produced Types Distribution</div>
+                    <canvas id="typesChart" height="260"></canvas>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <div class="small">All Producers</div>
+                <div class="console-wrapper">
+                    <table id="consoleTable">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Kind</th>
+                                <th>Member</th>
+                                <th>Produced Type</th>
+                                <th>Produced</th>
+                                <th>Last Produced</th>
+                                <th>Disposed</th>
+                                <th>Last Disposed</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const sortState = TableSort.createState();
+
+            /* ------------------------- SORT ------------------------- */
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.className;
+                    case 1:
+                        return it.kind;
+                    case 2:
+                        return it.memberSignature;
+                    case 3:
+                        return it.producedType;
+                    case 4:
+                        return it.producedCount || 0;
+                    case 5:
+                        return it.lastProduced || "";
+                    case 6:
+                        return it.disposedCount || 0;
+                    case 7:
+                        return it.lastDisposed || "";
+                    default:
+                        return "";
+                }
+            }
+
+            /* ------------------------- DATA ------------------------- */
+
+            async function fetchAndRender() {
+                const res = await fetch(DevConsoleApp.api("../cdi/producers"));
+                window._producerRaw = await res.json();
+                renderAll(window._producerRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+                const kind = kindFilter.value;
+
+                let filtered = items.filter(it =>
+                    (!kind || it.kind === kind) &&
+                            (!q ||
+                                    it.className.toLowerCase().includes(q) ||
+                                    it.memberSignature.toLowerCase().includes(q) ||
+                                    it.producedType.toLowerCase().includes(q))
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+
+                renderLifecycleChart(filtered);
+                renderTypesChart(filtered);
+                renderTable(filtered);
+            }
+
+            /* ------------------------- SUMMARY CARDS ------------------------- */
+
+            function renderSummary(items) {
+                const total = items.length;
+                const produced = items.reduce((s, i) => s + (i.producedCount || 0), 0);
+                const disposed = items.reduce((s, i) => s + (i.disposedCount || 0), 0);
+
+                const cards = [
+                    {label: "Producers", value: total},
+                    {label: "Total Produced", value: produced},
+                    {label: "Total Disposed", value: disposed}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(c => {
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                        <div class="stat" style="background:${PayaraUI.colors.accent}">
+                            <div class="label">${c.label}</div>
+                            <div class="value">${c.value}</div>
+                        </div>
+                    `);
+                });
+            }
+
+            /* ------------------------- CHARTS ------------------------- */
+
+            function renderLifecycleChart(items) {
+                const top = items.slice()
+                        .sort((a, b) => b.producedCount - a.producedCount)
+                        .slice(0, 10);
+
+                window._lifeChart?.destroy();
+                window._lifeChart = new Chart(lifecycleChart, {
+                    type: "bar",
+                    data: {
+                        labels: top.map(x => FQCN.chartName(x.className, toggleBtn)),
+                        datasets: [
+                            {
+                                label: "Produced",
+                                data: top.map(x => x.producedCount || 0),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            },
+                            {
+                                label: "Disposed",
+                                data: top.map(x => x.disposedCount || 0),
+                                backgroundColor: "#f27128",
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {responsive: true}
+                });
+            }
+
+            function renderTypesChart(items) {
+                const map = {};
+                items.forEach(i => map[i.producedType] = (map[i.producedType] || 0) + 1);
+
+                window._typesChart?.destroy();
+                window._typesChart = new Chart(typesChart, {
+                    type: "bar",
+                    data: {
+                        labels: Object.keys(map).map(t => FQCN.chartName(t, toggleBtn)),
+                        datasets: [{
+                                label: "Occurrences",
+                                data: Object.values(map),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true}
+                });
+            }
+
+            /* ------------------------- TABLE ------------------------- */
+
+            function renderTable(items) {
+                consoleTable.tBodies[0].innerHTML = items.map(it => `
+                    <tr class="kind-${it.kind}">
+                        <td>${FQCN.display(it.className, toggleBtn)}</td>
+                        <td class="kind kind-${it.kind}">${it.kind}</td>
+                        <td>${it.memberSignature}</td>
+                        <td>${FQCN.display(it.producedType, toggleBtn)}</td>
+                        <td>${it.producedCount || 0}</td>
+                        <td>${it.lastProduced || ""}</td>
+                        <td>${it.disposedCount || 0}</td>
+                        <td>${it.lastDisposed || ""}</td>
+                    </tr>
+                `).join("");
+            }
+
+            /* ------------------------- EVENTS ------------------------- */
+
+            const qInput = document.getElementById("q");
+            const kindFilter = document.getElementById("kindFilter");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._producerRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._producerRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+
+    </body>
+</html>

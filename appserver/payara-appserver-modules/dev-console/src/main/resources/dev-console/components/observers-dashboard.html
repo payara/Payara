@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Observers Dashboard — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Shared Payara UI (theme + Chart defaults) -->
+        <script src="../assets/js/payara-ui.js"></script>
+
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Observers</h2>
+
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter observers..." />
+
+                    <select id="eventTypeFilter">
+                        <option value="">All event types</option>
+                    </select>
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button" class="toggle-btn" aria-pressed="false"></button>
+                    </div>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="small">Observers by Event Type</div>
+                    <canvas id="eventTypeChart" height="220"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Observers by Bean Class</div>
+                    <canvas id="beanClassChart" height="220"></canvas>
+                </div>
+            </div>
+
+            <div class="card full-width">
+                <div class="small">All Observers</div>
+                <div class="console-wrapper">
+                    <table id="consoleTable">
+                        <thead>
+                            <tr>
+                                <th>Bean Class</th>
+                                <th>Event Type</th>
+                                <th>Qualifiers</th>
+                                <th>Reception</th>
+                                <th>Transaction Phase</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.beanClass || "";
+                    case 1:
+                        return it.eventTypeName || "";
+                    case 2:
+                        return it.qualifiers.join(",");
+                    case 3:
+                        return it.reception || "";
+                    case 4:
+                        return it.transactionPhase || "";
+                    default:
+                        return "";
+                }
+            }
+
+            /* ================= FETCH ================= */
+
+            async function fetchAndRender() {
+                const res = await fetch(DevConsoleApp.api("../cdi/observers"));
+                window._observersRaw = await res.json();
+                renderAll(window._observersRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+                const typeFilter = eventTypeFilter.value;
+
+                let filtered = items.filter(it =>
+                    (!typeFilter || it.eventTypeName === typeFilter) &&
+                            (
+                                    !q ||
+                                    it.beanClass.toLowerCase().includes(q) ||
+                                    it.eventTypeName.toLowerCase().includes(q) ||
+                                    it.qualifiers.join(",").toLowerCase().includes(q) ||
+                                    it.reception.toLowerCase().includes(q) ||
+                                    it.transactionPhase.toLowerCase().includes(q)
+                                    )
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                populateEventTypeFilter(items);
+                renderSummary(items);
+                renderEventTypeChart(filtered);
+                renderBeanClassChart(filtered);
+                renderTable(filtered);
+            }
+
+            /* ================= FILTER ================= */
+
+            function populateEventTypeFilter(items) {
+                const types = [...new Set(items.map(i => i.eventTypeName))];
+                eventTypeFilter.innerHTML =
+                        '<option value="">All event types</option>' +
+                        types.map(t =>
+                                `<option value="${t}">${FQCN.display(t, toggleBtn)}</option>`
+                        ).join("");
+            }
+
+            /* ================= SUMMARY ================= */
+
+            function renderSummary(items) {
+                const cards = [
+                    {label: "Observers", value: items.length},
+                    {label: "Event Types", value: new Set(items.map(i => i.eventTypeName)).size},
+                    {label: "Qualifier Count", value: items.reduce((s, i) => s + i.qualifiers.length, 0)}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(c =>
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                    <div class="stat" style="background:${PayaraUI.colors.accent}">
+                        <div class="label">${c.label}</div>
+                        <div class="value">${c.value}</div>
+                    </div>
+                `)
+                );
+            }
+
+            /* ================= CHARTS ================= */
+
+            function renderEventTypeChart(items) {
+                const map = {};
+                items.forEach(it =>
+                    map[it.eventTypeName] = (map[it.eventTypeName] || 0) + 1
+                );
+
+                window._eventTypeChart?.destroy();
+                window._eventTypeChart = new Chart(eventTypeChart, {
+                    type: "bar",
+                    data: {
+                        labels: Object.keys(map).map(k => FQCN.chartName(k, toggleBtn)),
+                        datasets: [{
+                                label: "Observers",
+                                data: Object.values(map),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderBeanClassChart(items) {
+                const map = {};
+                items.forEach(it =>
+                    map[it.beanClass] = (map[it.beanClass] || 0) + 1
+                );
+
+                window._beanClassChart?.destroy();
+                window._beanClassChart = new Chart(beanClassChart, {
+                    type: "bar",
+                    data: {
+                        labels: Object.keys(map).map(k => FQCN.chartName(k, toggleBtn)),
+                        datasets: [{
+                                label: "Observers",
+                                data: Object.values(map),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            /* ================= TABLE ================= */
+
+            function renderTable(items) {
+                consoleTable.tBodies[0].innerHTML = items.map(it => `
+                <tr>
+                    <td title="${it.beanClass}">
+                        ${FQCN.display(it.beanClass, toggleBtn)}
+                    </td>
+                    <td title="${it.eventTypeName}">
+                        ${FQCN.display(it.eventTypeName, toggleBtn)}
+                    </td>
+                    <td>
+                        ${it.qualifiers.length
+                            ? FQCN.displayList(it.qualifiers, toggleBtn)
+                            : "—"}
+                    </td>
+                    <td>${it.reception}</td>
+                    <td>${it.transactionPhase}</td>
+                </tr>
+            `).join("");
+            }
+
+            /* ================= EVENTS ================= */
+
+            const qInput = document.getElementById("q");
+            const eventTypeFilter = document.getElementById("eventTypeFilter");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = eventTypeFilter.onchange =
+                    () => renderAll(window._observersRaw || []);
+
+            refresh.onclick = fetchAndRender;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._observersRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._observersRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+
+    </body>
+</html>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Scoped Beans — CDI Dev Mode</title>
+
+        <script src="../assets/js/payara-ui.js"></script>
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Scoped Beans</h2>
+
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by class, scope or qualifier" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button"
+                                class="toggle-btn"
+                                aria-pressed="false"></button>
+                    </div>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+                <div class="card full-width">
+                    <div class="small">All Scoped Beans</div>
+                    <div class="console-wrapper">
+                        <table id="consoleTable">
+                            <thead>
+                                <tr>
+                                    <th>Scope</th>
+                                    <th>Class</th>
+                                    <th>Qualifiers</th>
+                                    <th>Created</th>
+                                    <th>Current</th>
+                                    <th>Destroyed</th>
+                                    <th>Max</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.scope || "";
+                    case 1:
+                        return it.className || "";
+                    case 2:
+                        return (it.qualifiers || []).join(",");
+                    case 3:
+                        return it.createdCount || 0;
+                    case 4:
+                        return it.currentCount || 0;
+                    case 5:
+                        return it.destroyedCount || 0;
+                    case 6:
+                        return it.maxCount || 0;
+                    default:
+                        return "";
+                }
+            }
+
+            /* ================= FETCH ================= */
+            async function fetchData() {
+                const r = await fetch(DevConsoleApp.api("../cdi/scoped-beans"));
+                window._beansRaw = await r.json();
+                renderAll(window._beansRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+
+                let filtered = items.filter(it =>
+                    !q ||
+                            it.className.toLowerCase().includes(q) ||
+                            it.scope.toLowerCase().includes(q) ||
+                            it.qualifiers.join(",").toLowerCase().includes(q)
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+                renderTable(filtered);
+            }
+
+            /* ================= SUMMARY ================= */
+            function renderSummary(items) {
+                const totalBeans = items.length;
+                const uniqueScopes = new Set(items.map(i => i.scope)).size;
+                const totalCreated = items.reduce((s, i) => s + (i.createdCount || 0), 0);
+
+                const cards = [
+                    {l: "Scoped Beans", v: totalBeans, c: "#f59e0b"},
+                    {l: "Unique Scopes", v: uniqueScopes, c: "#f59e0b"},
+                    {l: "Total Created Instances", v: totalCreated, c: "#f59e0b"}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(s =>
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                        <div class="stat" style="background:${s.c}">
+                            <div class="label">${s.l}</div>
+                            <div class="value">${s.v}</div>
+                        </div>
+                    `)
+                );
+            }
+
+            /* ================= TABLE ================= */
+            function renderTable(items) {
+                const tbody = document.querySelector("#consoleTable tbody");
+                tbody.innerHTML = "";
+
+                items.forEach(it => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                    <td>${FQCN.display(it.scope, toggleBtn)}</td>
+                            <td>${FQCN.display(it.className, toggleBtn)}</td>
+                            <td>${FQCN.displayList(it.qualifiers, toggleBtn)}</td>
+                            <td>${it.createdCount || 0}</td>
+                            <td>${it.currentCount || 0}</td>
+                            <td>${it.destroyedCount || 0}</td>
+                            <td>${it.maxCount || 0}</td>
+                `;
+
+                    tr.style.cursor = "pointer";
+                    tr.addEventListener("click", () => {
+                        const enc = encodeURIComponent(it.className);
+                        window.location.href = `bean-dashboard.html?bean=${enc}`;
+                    });
+
+                    tbody.appendChild(tr);
+                });
+            }
+            /* ================= EVENTS ================= */
+            const qInput = document.getElementById("q");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = () => renderAll(window._beansRaw || []);
+            refresh.onclick = fetchData;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._beansRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._beansRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");DevConsoleApp.loadApplications("appSelect", fetchData)
+                    .then(fetchData);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <title>CDI Dashboard</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-funnel@4"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0"></script>
+        <script src="../assets/js/app-selector.js"></script>
+    </head>
+    <body>
+        <div class="page">
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">CDI Dashboard</h2>
+
+                <div class="devconsole-controls">
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="summaryCards" class="cards-row" aria-live="polite"></div>
+
+            <div class="grid">
+                <div class="card"><div class="small">Beans per Scope</div><canvas id="beansPerScope" height="220"></canvas></div>
+                <div class="card"><div class="small">Lifecycle Flow Funnel</div><canvas id="lifecycleFunnel" height="260"></canvas></div>
+                <div class="card"><div class="small">Bean Lifecycle Summary — Stacked</div><canvas id="beanLifecycle" height="220"></canvas></div>
+                <div class="card"><div class="small">Top Beans by maxCount</div><canvas id="topMax" height="320"></canvas></div>
+                <div class="card"><div class="small">Last Created Timeline (by minute)</div><canvas id="createdTimeline" height="220"></canvas></div>
+                <div class="card"><div class="small">Scope Activity Heatmap</div><canvas id="scopeHeatmap" height="320"></canvas></div>
+                <div class="card"><div class="small">Scope Distribution (Pie)</div><canvas id="scopePie" height="220"></canvas></div>
+                <div class="card"><div class="small">Qualifiers Distribution</div><canvas id="qualifierDoughnut" height="220"></canvas></div>
+<!--                <div class="card"><div class="small">Events Over Time (Stacked by Type)</div><canvas id="eventsTimeline" height="220"></canvas></div>
+                <div class="card"><div class="small">Events by Type</div><canvas id="eventsByType" height="220"></canvas></div>
+                <div class="card"><div class="small">Top Observers by Notifications</div><canvas id="topObservers" height="320"></canvas></div>-->
+            </div>
+        </div>
+
+        <script>
+            function shortenClassName(full) {
+                if (!full)
+                    return '';
+                const s = full.replace(/^class\s+|^interface\s+/, "");
+                const parts = s.split(".");
+                return parts.length > 2 ? parts.slice(-2).join(".") : s;
+            }
+
+            async function renderAll() {
+                const detailResp = await fetch(DevConsoleApp.api("../cdi/scoped-beans/detail"));
+                const detail = await detailResp.json().catch(() => ({}));
+
+                const beansResp = await fetch(DevConsoleApp.api("../cdi/scoped-beans"));
+                const beans = await beansResp.json();
+
+                renderCards(detail);
+                const agg = aggregateByScope(beans);
+                renderBeansPerScope(agg);
+                renderLifecycleStacked(agg);
+                renderLifecycleFunnel(beans);
+                renderScopeHeatmap(beans);
+                renderScopePie(agg);
+                renderTopMax(beans);
+                renderCreatedTimeline(beans);
+                renderQualifierDoughnut(beans);
+
+//                const eventsResp = await fetch(DevConsoleApp.api("../cdi/events"));
+//                const events = await eventsResp.json();
+//                renderEventsTimeline(events);
+//                renderEventsByType(events);
+//                renderTopObservers(events);
+            }
+
+            // --- Card Rendering ---
+            function renderCards(detail) {
+                const container = document.getElementById("summaryCards");
+                container.innerHTML = "";
+                let i = 0;
+                for (const [scope, info] of Object.entries(detail)) {
+                    const card = document.createElement("div");
+                    card.className = "stat";
+                    card.style.background = "#f59e0b";
+                    i++;
+                    card.innerHTML = `
+              <div class="label">${scope}</div>
+              <div class="value">${info.beanCount}</div>
+              <div class="scope-instances">Instances: ${info.instances || 0}</div>
+            `;
+                    container.appendChild(card);
+                }
+            }
+
+            // --- Bean Charts ---
+            function aggregateByScope(beans) {
+                const agg = {};
+                beans.forEach(b => {
+                    const s = b.scope || "Unknown";
+                    if (!agg[s])
+                        agg[s] = {scope: s, beanCount: 0, created: 0, current: 0, destroyed: 0, maxSum: 0};
+                    agg[s].beanCount++;
+                    agg[s].created += b.createdCount || 0;
+                    agg[s].current += b.currentCount || 0;
+                    agg[s].destroyed += b.destroyedCount || 0;
+                    agg[s].maxSum += b.maxCount || 0;
+                });
+                return Object.values(agg).sort((a, b) => b.beanCount - a.beanCount);
+            }
+
+            function renderBeansPerScope(agg) {
+                const ctx = document.getElementById("beansPerScope").getContext("2d");
+                if (window._beansPerScopeChart)
+                    window._beansPerScopeChart.destroy();
+                window._beansPerScopeChart = new Chart(ctx, {
+                    type: "bar",
+                    data: {labels: agg.map(x => x.scope), datasets: [{label: "Bean Count", data: agg.map(x => x.beanCount), backgroundColor: agg.map((_, i) => `rgba(247, 185, 85, ${0.9 - i * 0.06})`)}]},
+                    options: {responsive: true, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderLifecycleStacked(agg) {
+                const ctx = document.getElementById("beanLifecycle").getContext("2d");
+                if (window._beanLifecycle)
+                    window._beanLifecycle.destroy();
+                window._beanLifecycle = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: agg.map(x => x.scope),
+                        datasets: [
+                            {label: "Created", data: agg.map(x => x.created), backgroundColor: "rgba(247, 185, 85, 0.85)"},
+                            {label: "Current", data: agg.map(x => x.current), backgroundColor: "rgba(245, 158, 11, 0.85)"},
+                            {label: "Destroyed", data: agg.map(x => x.destroyed), backgroundColor: "rgba(234, 88, 12, 0.85)"}
+                        ]
+                    },
+                    options: {responsive: true, plugins: {tooltip: {mode: "index", intersect: false}}, scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true}}}
+                });
+            }
+
+
+            function renderLifecycleFunnel(beans) {
+                let created = 0, active = 0, destroyed = 0;
+
+                beans.forEach(b => {
+                    created += b.createdCount || 0;
+                    active += b.currentCount || 0;
+                    destroyed += b.destroyedCount || 0;
+                });
+
+                const ctx = document.getElementById("lifecycleFunnel").getContext("2d");
+                if (window._lifecycleFunnel)
+                    window._lifecycleFunnel.destroy();
+
+                window._lifecycleFunnel = new Chart(ctx, {
+                    type: "funnel",
+                    data: {
+                        labels: ["Created", "Active", "Destroyed"],
+                        datasets: [{
+                                data: [created, active, destroyed],
+                                backgroundColor: [
+                                    "rgba(247, 185, 85, 0.85)",
+                                    "rgba(245, 158, 11, 0.85)",
+                                    "rgba(234, 88, 12, 0.85)"
+                                ]
+                            }]
+                    },
+                    options: {
+                        responsive: true,
+                        sort: "none",
+                        funnel: {dynamicHeight: true, dynamicSlope: true}
+                    }
+                });
+            }
+
+            function renderScopeHeatmap(beans) {
+                const hours = [...Array(24).keys()];
+                const scopes = [...new Set(beans.map(b => b.scope || "Unknown"))];
+
+                // Build empty matrix
+                const matrix = {};
+                scopes.forEach(s => {
+                    matrix[s] = {};
+                    hours.forEach(h => matrix[s][h] = 0);
+                });
+
+                // Fill creation counts
+                beans.forEach(b => {
+                    if (!b.lastCreated)
+                        return;
+                    const d = new Date(b.lastCreated);
+                    if (isNaN(d))
+                        return;
+                    const hour = d.getHours();
+                    const scope = b.scope || "Unknown";
+                    matrix[scope][hour] = (matrix[scope][hour] || 0) + 1;
+                });
+
+                // Flatten for Chart.js matrix format
+                const data = [];
+                scopes.forEach((scope, row) => {
+                    hours.forEach((h, col) => {
+                        data.push({
+                            x: h,
+                            y: row,
+                            v: matrix[scope][h]
+                        });
+                    });
+                });
+
+                const maxV = Math.max(...data.map(d => d.v));
+
+                const ctx = document.getElementById("scopeHeatmap").getContext("2d");
+                if (window._scopeHeatmap)
+                    window._scopeHeatmap.destroy();
+
+                window._scopeHeatmap = new Chart(ctx, {
+                    type: "matrix",
+                    data: {
+                        datasets: [{
+                                label: "Scope Heatmap",
+                                data,
+                                width: () => 18,
+                                height: () => 18,
+                                backgroundColor: d => {
+                                    const v = d.raw.v;
+                                    const alpha = v === 0 ? 0.05 : (0.15 + 0.85 * (v / maxV));
+                                    return `rgba(247, 185, 85, ${alpha})`;
+                                },
+                                borderWidth: 1,
+                                borderColor: "rgba(247, 185, 85, 0.25)"
+                            }]
+                    },
+                    options: {
+                        responsive: true,
+                        aspectRatio: 2.4,
+                        scales: {
+                            x: {
+                                type: "linear",
+                                offset: true,
+                                position: "top",
+                                ticks: {
+                                    callback: v => v + ":00",
+                                    maxRotation: 0,
+                                    autoSkip: true
+                                },
+                                grid: {display: false}
+                            },
+                            y: {
+                                type: "linear",
+                                offset: true,
+                                ticks: {
+                                    callback: v => scopes[v] || ""
+                                },
+                                grid: {display: false}
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: () => "",
+                                    label: ctx => {
+                                        const h = ctx.raw.x;
+                                        const s = scopes[ctx.raw.y];
+                                        const v = ctx.raw.v;
+                                        return `${s} — ${h}:00 → ${v} created`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            function renderScopePie(agg) {
+                const ctx = document.getElementById("scopePie").getContext("2d");
+                if (window._scopePie)
+                    window._scopePie.destroy();
+                window._scopePie = new Chart(ctx, {
+                    type: "pie",
+                    data: {labels: agg.map(x => x.scope), datasets: [{data: agg.map(x => x.beanCount), backgroundColor: agg.map((_, i) => `hsl(${i * 60 % 360} 80% 60%)`)}]},
+                    options: {responsive: true, plugins: {legend: {position: "right"}}}
+                });
+            }
+
+            function renderTopMax(beans) {
+                const topN = 10;
+                const clones = beans.slice().filter(b => b.maxCount && b.maxCount > 0);
+                clones.sort((a, b) => (b.maxCount || 0) - (a.maxCount || 0));
+                const top = clones.slice(0, topN);
+                const labels = top.map(b => shortenClassName(b.className));
+                const data = top.map(b => b.maxCount || 0);
+                const ctx = document.getElementById("topMax").getContext("2d");
+                if (window._topMax)
+                    window._topMax.destroy();
+                window._topMax = new Chart(ctx, {
+                    type: "bar",
+                    data: {labels, datasets: [{label: "maxCount", data, backgroundColor: data.map((_, i) => `rgba(247, 185, 85, ${0.95 - i * 0.06})`)}]},
+                    options: {indexAxis: 'y', responsive: true, plugins: {legend: {display: false}, tooltip: {callbacks: {title: (items) => top[items[0].dataIndex].className}}}, scales: {x: {beginAtZero: true}}}
+                });
+            }
+
+            function renderCreatedTimeline(beans) {
+                const counts = {};
+                beans.forEach(b => {
+                    if (!b.lastCreated)
+                        return;
+                    const d = new Date(b.lastCreated);
+                    if (isNaN(d))
+                        return;
+                    const minute = d.toISOString().slice(0, 16);
+                    counts[minute] = (counts[minute] || 0) + 1;
+                });
+                const minutes = [];
+                for (let i = 59; i >= 0; i--) {
+                    const dt = new Date();
+                    dt.setMinutes(dt.getMinutes() - i);
+                    minutes.push(dt.toISOString().slice(0, 16));
+                }
+                const data = minutes.map(m => counts[m] || 0);
+                const ctx = document.getElementById("createdTimeline").getContext("2d");
+                if (window._createdTimeline)
+                    window._createdTimeline.destroy();
+                window._createdTimeline = new Chart(ctx, {type: "line", data: {labels: minutes, datasets: [{label: "Created events/min", data, fill: true, tension: 0.25, backgroundColor: "rgba(247, 185, 85, 0.12)", borderColor: "rgba(247, 185, 85,0.9)", pointRadius: 2}]}, options: {responsive: true, scales: {y: {beginAtZero: true}}}});
+            }
+
+            function renderQualifierDoughnut(beans) {
+                const counts = {};
+                beans.forEach(b => {
+                    (b.qualifiers || []).forEach(q => {
+                        if (q !== "@Any" && q !== "@Default")
+                            counts[q] = (counts[q] || 0) + 1;
+                    })
+                });
+                const labels = Object.keys(counts), data = Object.values(counts);
+                const ctx = document.getElementById("qualifierDoughnut").getContext("2d");
+                if (window._qualifierDoughnut)
+                    window._qualifierDoughnut.destroy();
+                window._qualifierDoughnut = new Chart(ctx, {type: "doughnut", data: {labels, datasets: [{data, backgroundColor: labels.map((_, i) => `hsl(${i * 50 % 360} 75% 55%)`)}]}, options: {responsive: true, plugins: {legend: {position: "right"}}}});
+            }
+
+            // --- Event Charts ---
+            function renderEventsTimeline(events) {
+                const counts = {};
+                events.forEach(e => {
+                    if (!e.timestamp)
+                        return;
+                    const minute = new Date(e.timestamp).toISOString().slice(0, 16);
+                    if (!counts[minute])
+                        counts[minute] = {};
+                    counts[minute][e.eventType] = (counts[minute][e.eventType] || 0) + 1;
+                });
+                const minutes = [];
+                const datasetsMap = {};
+                for (let i = 59; i >= 0; i--) {
+                    const dt = new Date();
+                    dt.setMinutes(dt.getMinutes() - i);
+                    const m = dt.toISOString().slice(0, 16);
+                    minutes.push(m);
+                    const row = counts[m] || {};
+                    Object.keys(row).forEach(t => {
+                        if (!datasetsMap[t])
+                            datasetsMap[t] = {label: t, data: []};
+                        datasetsMap[t].data.push(row[t]);
+                    });
+                }
+                const datasets = Object.values(datasetsMap).map((ds, i) => ({...ds, backgroundColor: `hsl(${i * 60 % 360} 70% 60%)`, borderColor: `hsl(${i * 60 % 360} 70% 40%)`, fill: true, tension: 0.2}));
+                const ctx = document.getElementById("eventsTimeline").getContext("2d");
+                if (window._eventsTimeline)
+                    window._eventsTimeline.destroy();
+                window._eventsTimeline = new Chart(ctx, {type: "line", data: {labels: minutes, datasets}, options: {responsive: true, plugins: {tooltip: {mode: 'index', intersect: false}}, scales: {y: {beginAtZero: true}}}});
+            }
+
+            function renderEventsByType(events) {
+                const counts = {};
+                events.forEach(e => {
+                    counts[e.eventType] = (counts[e.eventType] || 0) + 1;
+                });
+                const labels = Object.keys(counts), data = Object.values(counts);
+                const ctx = document.getElementById("eventsByType").getContext("2d");
+                if (window._eventsByType)
+                    window._eventsByType.destroy();
+                window._eventsByType = new Chart(ctx, {type: "bar", data: {labels, datasets: [{label: "Count", data, backgroundColor: labels.map((_, i) => `hsl(${i * 50 % 360} 70% 60%)`)}]}, options: {responsive: true, plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true}}}});
+            }
+
+            function renderTopObservers(events) {
+                const counts = {};
+                events.forEach(e => {
+                    (e.notifiedObservers || []).forEach(o => {
+                        counts[o] = (counts[o] || 0) + 1;
+                    });
+                });
+                const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+                const labels = sorted.map(x => x[0]), data = sorted.map(x => x[1]);
+                const ctx = document.getElementById("topObservers").getContext("2d");
+                if (window._topObservers)
+                    window._topObservers.destroy();
+                window._topObservers = new Chart(ctx, {type: "bar", data: {labels, datasets: [{label: "Notifications", data, backgroundColor: data.map((_, i) => `rgba(99,102,241,${0.95 - i * 0.06})`)}]}, options: {indexAxis: 'y', responsive: true, plugins: {legend: {display: false}}, scales: {x: {beginAtZero: true}}}});
+            }
+
+            // --- Initial Render ---
+            DevConsoleApp.loadApplications("appSelect", renderAll)
+                    .then(renderAll)
+                    .catch(err => {
+                        console.error("Failed to render dashboard", err);
+                        document.getElementById("summaryCards").innerHTML =
+                                "<div style='color:red'>Failed to load dashboard</div>";
+                    });
+        </script>
+    </body>
+</html>

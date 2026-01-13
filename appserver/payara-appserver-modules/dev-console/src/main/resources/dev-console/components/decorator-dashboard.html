@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Decorator Details — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+        <!-- Payara UI defaults -->
+        <script src="../assets/js/payara-ui.js"></script>
+        <script src="../assets/js/app-selector.js"></script>
+
+        <!-- OPTIONAL: ensure 3 cards per row -->
+        <style>
+            .cards-row {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 16px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <!-- HEADER -->
+            <div class="devconsole-header">
+                <h2 class="devconsole-title" id="title">Decorator</h2>
+                <div class="devconsole-controls">
+                    <a href="decorators-dashboard.html" class="back">← Back to Dashboard</a>
+                </div>
+            </div>
+
+            <!-- SUMMARY (ORANGE CARDS) -->
+            <div class="cards-row" id="summaryCards"></div>
+
+            <!-- INVOCATION TIMELINE -->
+            <div class="card" id="timelineCard">
+                <div class="small">Invocation Timeline</div>
+                <canvas id="invocationTimeline" height="120"></canvas>
+            </div>
+
+            <!-- INVOCATION RECORDS -->
+            <div class="card">
+                <div class="small">Invocation Records</div>
+                <div class="console-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Duration (ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            /* ================= LOAD ================= */
+
+            async function loadDecorator() {
+                const params = new URLSearchParams(window.location.search);
+                const className = params.get("class");
+                if (!className)
+                    return;
+
+                const res = await fetch(
+                        DevConsoleApp.api("../cdi/decorators/" + className)
+                        );
+                const data = await res.json();
+                renderPage(data);
+            }
+
+            /* ================= PAGE ================= */
+
+            function renderPage(d) {
+                document.getElementById("title").innerText = shorten(d.className);
+                renderSummary(d);
+                renderInvocationTimeline(d);
+                renderRecordsTable(d);
+            }
+
+            /* ================= HELPERS ================= */
+
+            function shorten(name) {
+                return name ? name.split(".").pop() : "-";
+            }
+
+            function shortTs(ts) {
+                return ts ? ts.replace("T", " ").replace("Z", "") : "-";
+            }
+
+            /* ================= SUMMARY (NO TEMPLATE LITERALS) ================= */
+
+            function renderSummary(d) {
+                const decorated =
+                        d.decoratedTypes && d.decoratedTypes.length
+                        ? d.decoratedTypes.map(shorten).join("<br>")
+                        : "-";
+
+                summaryCards.innerHTML =
+                        '<div class="stat" style="background:' + PayaraUI.colors.accent + '">' +
+                        '<div class="label">Created</div>' +
+                        '<div class="value">' + d.createdCount + '</div>' +
+                        '</div>' +
+                        '<div class="stat" style="background:' + PayaraUI.colors.accent + '">' +
+                        '<div class="label">Invoked</div>' +
+                        '<div class="value">' + d.invokedCount + '</div>' +
+                        '</div>' +
+                        '<div class="stat" style="background:' + PayaraUI.colors.accent + '">' +
+                        '<div class="label">Class</div>' +
+                        '<div class="value">' + shorten(d.className) + '</div>' +
+                        '</div>' +
+                        '<div class="stat" style="background:' + PayaraUI.colors.accent + '">' +
+                        '<div class="label">Scope</div>' +
+                        '<div class="value">' + shorten(d.scope) + '</div>' +
+                        '</div>' +
+                        '<div class="stat" style="background:' + PayaraUI.colors.accent + '">' +
+                        '<div class="label">Delegate Type</div>' +
+                        '<div class="value">' + shorten(d.delegateType) + '</div>' +
+                        '</div>' +
+                        '<div class="stat" style="background:' + PayaraUI.colors.accent + '">' +
+                        '<div class="label">Decorated Types</div>' +
+                        '<div class="value">' + decorated + '</div>' +
+                        '</div>';
+            }
+
+            /* ================= CHART ================= */
+
+            function renderInvocationTimeline(d) {
+                if (!d.invocationRecords || d.invocationRecords.length === 0) {
+                    document.getElementById("timelineCard").innerHTML =
+                            '<div class="small">No invocation data available</div>';
+                    return;
+                }
+
+                const points = d.invocationRecords.map(function (r) {
+                    return {
+                        x: new Date(r.timestamp),
+                        y: r.durationMs
+                    };
+                });
+
+                new Chart(
+                        document.getElementById("invocationTimeline").getContext("2d"),
+                        {
+                            type: "line",
+                            data: {
+                                datasets: [{
+                                        label: "Invocation Duration (ms)",
+                                        data: points,
+                                        borderColor: PayaraUI.colors.accent,
+                                        backgroundColor: PayaraUI.colors.accentSoft,
+                                        borderWidth: 2,
+                                        tension: 0.25,
+                                        pointRadius: 4,
+                                        pointBackgroundColor: PayaraUI.colors.accent,
+                                        fill: false
+                                    }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    x: {type: "time", time: {unit: "second"}},
+                                    y: {beginAtZero: true}
+                                }
+                            }
+                        }
+                );
+            }
+
+            /* ================= TABLE ================= */
+
+            function renderRecordsTable(d) {
+                const tbody = document.getElementById("recordsBody");
+
+                if (!d.invocationRecords || d.invocationRecords.length === 0) {
+                    tbody.innerHTML =
+                            '<tr><td colspan="3">No invocation records available</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = d.invocationRecords.map(function (r, i) {
+                    return (
+                            '<tr>' +
+                            '<td>' + (i + 1) + '</td>' +
+                            '<td>' + shortTs(r.timestamp) + '</td>' +
+                            '<td>' + r.durationMs + '</td>' +
+                            '</tr>'
+                            );
+                }).join("");
+            }
+
+            /* ================= INIT ================= */
+
+            loadDecorator();
+        </script>
+
+    </body>
+</html>

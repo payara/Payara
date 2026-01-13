@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Interceptors Dashboard — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <!-- Shared Payara UI (theme + Chart defaults) -->
+        <script src="../assets/js/payara-ui.js"></script>
+
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Interceptors</h2>
+
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by class or binding" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button" class="toggle-btn" aria-pressed="false"></button>
+                    </div>
+
+                    <select id="scopeFilter">
+                        <option value="">All scopes</option>
+                    </select>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="small">Invoked Count — Top Interceptors</div>
+                    <canvas id="invokedBar" height="220"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Binding Usage</div>
+                    <canvas id="bindingUsage" height="220"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Priority Distribution</div>
+                    <canvas id="priorityBar" height="260"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Created vs Invoked Summary</div>
+                    <canvas id="createdVsInvoked" height="260"></canvas>
+                </div>
+
+                <div class="card full-width">
+                    <div class="small">All Interceptors</div>
+
+                    <div class="console-wrapper">
+                        <table id="consoleTable">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Bindings</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                    <th>Invoked</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.className;
+                    case 1:
+                        return it.interceptorBindings.join(",");
+                    case 2:
+                        return it.priority || 0;
+                    case 3:
+                        return it.createdCount || 0;
+                    case 4:
+                        return it.invokedCount || 0;
+                    default:
+                        return "";
+                }
+            }
+
+            /* ================= FETCH ================= */
+
+            async function fetchAndRender() {
+                const res = await fetch(DevConsoleApp.api("../cdi/interceptors"));
+                window._interceptorRaw = await res.json();
+                renderAll(window._interceptorRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+                const scope = scopeFilter.value;
+
+                let filtered = items.filter(it =>
+                    (!scope || it.scope === scope) &&
+                            (!q ||
+                                    it.className.toLowerCase().includes(q) ||
+                                    it.interceptorBindings.join(",").toLowerCase().includes(q))
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+                renderInvokedChart(filtered);
+                renderBindingUsage(items);
+                renderPriorityChart(items);
+                renderCreatedVsInvoked(items);
+                populateScopeFilter(items);
+                renderTable(filtered);
+            }
+
+            /* ================= SUMMARY ================= */
+
+            function renderSummary(items) {
+                const total = items.length;
+                const totalCreated = items.reduce((s, i) => s + (i.createdCount || 0), 0);
+                const totalInvoked = items.reduce((s, i) => s + (i.invokedCount || 0), 0);
+
+                const cards = [
+                    {label: "Interceptors", value: total},
+                    {label: "Total Created", value: totalCreated},
+                    {label: "Total Invoked", value: totalInvoked}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(c => {
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                    <div class="stat" style="background:${PayaraUI.colors.accent}">
+                        <div class="label">${c.label}</div>
+                        <div class="value">${c.value}</div>
+                    </div>
+                `);
+                });
+            }
+
+            /* ================= CHARTS ================= */
+
+            function renderInvokedChart(items) {
+                const top = items.slice()
+                        .sort((a, b) => b.invokedCount - a.invokedCount)
+                        .slice(0, 10);
+
+                window._invokedBar?.destroy();
+                window._invokedBar = new Chart(invokedBar, {
+                    type: "bar",
+                    data: {
+                        labels: top.map(x => FQCN.chartName(x.className, toggleBtn)),
+                        datasets: [{
+                                label: "Invoked",
+                                data: top.map(x => x.invokedCount || 0),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderBindingUsage(items) {
+                const map = {};
+                items.forEach(i =>
+                    i.interceptorBindings.forEach(b =>
+                        map[b] = (map[b] || 0) + 1
+                    )
+                );
+
+                window._bindingUsage?.destroy();
+                window._bindingUsage = new Chart(bindingUsage, {
+                    type: "bar",
+                    data: {
+                        labels: Object.keys(map).map(b => FQCN.chartName(b, toggleBtn)),
+                        datasets: [{
+                                label: "Usage",
+                                data: Object.values(map),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderPriorityChart(items) {
+                window._priorityBar?.destroy();
+                window._priorityBar = new Chart(priorityBar, {
+                    type: "bar",
+                    data: {
+                        labels: items.map(i => FQCN.chartName(i.className, toggleBtn)),
+                        datasets: [{
+                                label: "Priority",
+                                data: items.map(i => i.priority || 0),
+                                backgroundColor: PayaraUI.colors.accent,
+                                hoverBackgroundColor: PayaraUI.colors.accentSoft,
+                                borderRadius: 4
+                            }]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            function renderCreatedVsInvoked(items) {
+                window._cvi?.destroy();
+                window._cvi = new Chart(createdVsInvoked, {
+                    type: "bar",
+                    data: {
+                        labels: items.map(i => FQCN.chartName(i.className, toggleBtn)),
+                        datasets: [
+                            {
+                                label: "Created",
+                                data: items.map(i => i.createdCount || 0),
+                                backgroundColor: PayaraUI.colors.accent,
+                                borderRadius: 4
+                            },
+                            {
+                                label: "Invoked",
+                                data: items.map(i => i.invokedCount || 0),
+                                backgroundColor: "#f27128",
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {responsive: true, scales: {y: {beginAtZero: true}}}
+                });
+            }
+
+            /* ================= TABLE ================= */
+
+            function populateScopeFilter(items) {
+                const scopes = [...new Set(items.map(i => i.scope).filter(Boolean))];
+                scopeFilter.innerHTML =
+                        '<option value="">All scopes</option>' +
+                        scopes.map(s => `<option value="${s}">${FQCN.display(s, toggleBtn)}</option>`).join("");
+            }
+
+            function renderTable(items) {
+                const tbody = consoleTable.tBodies[0];
+                tbody.innerHTML = "";
+
+                items.forEach(it => {
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+            <td>${FQCN.display(it.className, toggleBtn)}</td>
+            <td>${FQCN.displayList(it.interceptorBindings, toggleBtn)}</td>
+            <td>${it.priority || ""}</td>
+            <td>${it.createdCount || 0}</td>
+            <td>${it.invokedCount || 0}</td>
+        `;
+
+                    tr.style.cursor = "pointer";
+                    tr.title = "Click to view interceptor details";
+
+                    tr.addEventListener("click", () => {
+                        const enc = encodeURIComponent(it.className);
+                        window.location.href = `interceptor-dashboard.html?class=${enc}`;
+                    });
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+
+            /* ================= EVENTS ================= */
+
+            const qInput = document.getElementById("q");
+            const scopeFilter = document.getElementById("scopeFilter");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = scopeFilter.onchange =
+                    () => renderAll(window._interceptorRaw || []);
+
+            document.getElementById("refresh").onclick = fetchAndRender;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._interceptorRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._interceptorRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+
+    </body>
+</html>

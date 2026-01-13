@@ -51,6 +51,7 @@
     <description>Payara Appserver modules</description>
     <packaging>pom</packaging>
     <modules>
+        <module>dev-console</module>
         <module>payara-jsr107</module>
         <module>hazelcast-ejb-timer</module>
         <module>hazelcast-eclipselink-coordination</module>

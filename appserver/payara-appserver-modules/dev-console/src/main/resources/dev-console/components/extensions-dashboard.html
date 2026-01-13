@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>CDI Extensions — CDI Dev Mode</title>
+
+        <script src="../assets/js/payara-ui.js"></script>
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Extensions</h2>
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Search extensions…" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button"
+                                class="toggle-btn"
+                                aria-pressed="false"></button>
+                    </div>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="card full-width">
+                <div class="small">CDI Extensions</div>
+
+                <div class="console-wrapper">
+                    <table id="consoleTable">
+                        <thead>
+                            <tr>
+                                <th>Extension Class</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                return it || "";
+            }
+
+            /* ================= FETCH ================= */
+            async function fetchAndRender() {
+                const res = await fetch(DevConsoleApp.api("../cdi/extensions"));
+                window._extRaw = await res.json();
+                renderAll(window._extRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+
+                let filtered = items.filter(ext =>
+                    !q || ext.toLowerCase().includes(q)
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+                renderTable(filtered);
+            }
+
+            /* ================= SUMMARY ================= */
+            function renderSummary(items) {
+                summaryCards.innerHTML = `
+                    <div class="stat" style="background:#f59e0b">
+                        <div class="label">Total Extensions</div>
+                        <div class="value">${items.length}</div>
+                    </div>
+                `;
+            }
+
+            /* ================= TABLE ================= */
+            function renderTable(items) {
+                consoleTable.tBodies[0].innerHTML = "";
+
+                items.forEach(ext => {
+                    consoleTable.tBodies[0].insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td title="${ext}">
+                                ${FQCN.display(ext, toggleBtn)}
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            /* ================= EVENTS ================= */
+            const qInput = document.getElementById("q");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = () => renderAll(window._extRaw || []);
+            refresh.onclick = fetchAndRender;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._extRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._extRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp.loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+    </body>
+</html>

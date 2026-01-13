@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Interceptor Details — CDI Dev Mode</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+        <script src="../assets/js/payara-ui.js"></script>
+        <script src="../assets/js/app-selector.js"></script>
+        <style>
+            .cards-row {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 16px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <!-- HEADER -->
+            <div class="devconsole-header">
+                <h2 class="devconsole-title" id="title">Interceptor</h2>
+                <div class="devconsole-controls">
+                    <a href="interceptors-dashboard.html" class="back">← Back</a>
+                </div>
+            </div>
+
+            <!-- ALL SUMMARY (ORANGE, MOVED TO TOP) -->
+            <div class="cards-row" id="summaryCards"></div>
+
+            <!-- INVOCATION TIMELINE -->
+            <div class="card" id="timelineCard">
+                <div class="small">Invocation Timeline</div>
+                <canvas id="invocationTimeline" height="120"></canvas>
+            </div>
+
+            <!-- RECORDS -->
+            <div class="card">
+                <div class="small">Invocation Records</div>
+                <div class="console-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Duration (ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+            /* ================= LOAD ================= */
+
+            async function loadInterceptor() {
+                const params = new URLSearchParams(window.location.search);
+                const className = params.get("class");
+                if (!className)
+                    return;
+
+                const res = await fetch(DevConsoleApp.api(`../cdi/interceptors/${className}`));
+                const data = await res.json();
+                renderPage(data);
+            }
+
+            /* ================= PAGE ================= */
+
+            function renderPage(d) {
+                title.innerText = shorten(d.className);
+                renderSummary(d);
+                renderInvocationTimeline(d);
+                renderRecordsTable(d);
+            }
+
+            /* ================= HELPERS ================= */
+
+            function shorten(name) {
+                return name.split(".").pop();
+            }
+
+            function shortTs(ts) {
+                return ts.replace("T", " ").replace("Z", "");
+            }
+
+            /* ================= SUMMARY (ALL ORANGE) ================= */
+
+            function renderSummary(d) {
+                summaryCards.innerHTML = `
+                <div class="stat" style="background:${PayaraUI.colors.accent}">
+                    <div class="label">Created</div>
+                    <div class="value">${d.createdCount}</div>
+                </div>
+
+                <div class="stat" style="background:${PayaraUI.colors.accent}">
+                    <div class="label">Invoked</div>
+                    <div class="value">${d.invokedCount}</div>
+                </div>
+
+                <div class="stat" style="background:${PayaraUI.colors.accent}">
+                    <div class="label">Priority</div>
+                    <div class="value">${d.priority}</div>
+                </div>
+
+                <div class="stat" style="background:${PayaraUI.colors.accent}">
+                    <div class="label">Class</div>
+                    <div class="value">${shorten(d.className)}</div>
+                </div>
+
+                <div class="stat" style="background:${PayaraUI.colors.accent}">
+                    <div class="label">Scope</div>
+                    <div class="value">${shorten(d.scope)}</div>
+                </div>
+
+                <div class="stat" style="background:${PayaraUI.colors.accent}">
+                    <div class="label">Bindings</div>
+                    <div class="value">
+                        ${d.interceptorBindings.map(shorten).join("<br>")}
+                    </div>
+                </div>
+            `;
+            }
+
+            /* ================= CHART ================= */
+
+            function renderInvocationTimeline(d) {
+                if (!d.invocationRecords || d.invocationRecords.length === 0) {
+                    timelineCard.innerHTML =
+                            `<div class="small">No invocation data available</div>`;
+                    return;
+                }
+
+                const points = d.invocationRecords.map(r => ({
+                        x: new Date(r.timestamp),
+                        y: r.durationMs
+                    }));
+
+                new Chart(invocationTimeline.getContext("2d"), {
+                    type: "line",
+                    data: {
+                        datasets: [{
+                                label: "Invocation Duration (ms)",
+                                data: points,
+                                borderColor: PayaraUI.colors.accent,
+                                backgroundColor: PayaraUI.colors.accentSoft,
+                                borderWidth: 2,
+                                tension: 0.25,
+                                pointRadius: 4,
+                                pointBackgroundColor: PayaraUI.colors.accent
+                            }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {type: "time", time: {unit: "second"}},
+                            y: {beginAtZero: true}
+                        }
+                    }
+                });
+            }
+
+            /* ================= TABLE ================= */
+
+            function renderRecordsTable(d) {
+                if (!d.invocationRecords || d.invocationRecords.length === 0) {
+                    recordsBody.innerHTML =
+                            `<tr><td colspan="3">No invocation records available</td></tr>`;
+                    return;
+                }
+
+                recordsBody.innerHTML = d.invocationRecords.map((r, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${shortTs(r.timestamp)}</td>
+                    <td>${r.durationMs}</td>
+                </tr>
+            `).join("");
+            }
+
+            /* ================= INIT ================= */
+
+            loadInterceptor();
+        </script>
+
+    </body>
+</html>

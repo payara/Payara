@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Payara Dev Console</title>
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="assets/css/payara-theme.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+        <script src="assets/js/app-selector.js"></script>
+    </head>
+    <body>
+        <div id="sidePane" role="navigation" aria-label="Dev Console">
+
+            <h2 class="side-header">
+                <span class="title">
+                    <img src="assets/images/payara-fish-logo.svg"
+                         alt="Payara" width="60" height="20">
+                    Dev Console
+                </span>
+
+                <button id="collapseBtn"
+                        class="collapse-icon"
+                        aria-label="Toggle sidebar"
+                        onclick="toggleSidebar()">
+                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                </button>
+            </h2>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="CDIDevConsole" id="side-CDIDevConsole" tabindex="0"
+                    onclick="openPane(event, 'CDIDevConsole')">
+                CDI Dev Console
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="MetricsDashboard" id="side-MetricsDashboard" tabindex="0"
+                    onclick="openPane(event, 'MetricsDashboard')">
+                Metrics Console
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="ScopedBeans" id="side-ScopedBeans" tabindex="0"
+                    onclick="openPane(event, 'ScopedBeans')">
+                Scoped Beans 
+                <span id="count-ScopedBeans" class="count-badge" aria-label="Scoped Beans count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="Producers" id="side-Producers" tabindex="0"
+                    onclick="openPane(event, 'Producers')">
+                Producers 
+                <span id="count-Producers" class="count-badge" aria-label="Producers count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="Interceptors" id="side-Interceptors" tabindex="0"
+                    onclick="openPane(event, 'Interceptors')">
+                Interceptors 
+                <span id="count-Interceptors" class="count-badge" aria-label="Interceptors count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="InterceptedClasses" id="side-InterceptedClasses" tabindex="0"
+                    onclick="openPane(event, 'InterceptedClasses')">
+                Intercepted Classes 
+                <span id="count-InterceptedClasses" class="count-badge" aria-label="InterceptedClasses count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="Decorators" id="side-Decorators" tabindex="0"
+                    onclick="openPane(event, 'Decorators')">
+                Decorators 
+                <span id="count-Decorators" class="count-badge" aria-label="Decorators count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="DecoratedClasses" id="side-DecoratedClasses" tabindex="0"
+                    onclick="openPane(event, 'DecoratedClasses')">
+                Decorated Classes 
+                <span id="count-DecoratedClasses" class="count-badge" aria-label="DecoratedClasses count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="InjectionPoints" id="side-InjectionPoints" tabindex="0"
+                    onclick="openPane(event, 'InjectionPoints')">
+                Injections
+                <span id="count-InjectionPoints"
+                      class="count-badge"
+                      aria-label="Injection Points count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="Extensions" id="side-Extensions" tabindex="0"
+                    onclick="openPane(event, 'Extensions')">
+                Extensions 
+                <span id="count-Extensions" class="count-badge" aria-label="Extensions count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="Observers" id="side-Observers" tabindex="0"
+                    onclick="openPane(event, 'Observers')">
+                Observer Events 
+                <span id="count-Observers" class="count-badge" aria-label="Observer Events count"></span>
+            </button>
+
+            <!--            <button class="sideButton" aria-selected="false"
+                                aria-controls="Events" id="side-Events" tabindex="0"
+                                onclick="openPane(event, 'Events')">
+                            Live Events 
+                            <span id="count-Events" class="count-badge" aria-label="Events count"></span>
+                        </button>-->
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="RestMethods" id="side-RestMethods" tabindex="0"
+                    onclick="openPane(event, 'RestMethods')">
+                REST Methods 
+                <span id="count-RestMethods" class="count-badge" aria-label="REST methods count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="RestExceptionMappers" id="side-RestExceptionMappers" tabindex="0"
+                    onclick="openPane(event, 'RestExceptionMappers')">
+                REST Exception Mappers 
+                <span id="count-RestExceptionMappers" class="count-badge" aria-label="REST exception mappers count"></span>
+            </button>
+
+            <button class="sideButton" aria-selected="false"
+                    aria-controls="SecurityAnnotations" id="side-SecurityAnnotations" tabindex="0"
+                    onclick="openPane(event, 'SecurityAnnotations')">
+                Security Annotations 
+                <span id="count-SecurityAnnotations" class="count-badge" aria-label="Security annotations count"></span>
+            </button>
+
+        </div>
+
+        <iframe id="dashboardIframe" title="Dashboard"></iframe>
+        <script src="assets/js/tabs.js"></script>
+        <script src="assets/js/main.js"></script>
+    </body>
+</html>

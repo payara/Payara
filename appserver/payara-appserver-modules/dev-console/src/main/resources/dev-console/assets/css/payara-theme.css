@@ -1,0 +1,288 @@
+/* =========================================================
+   Payara Dev Console
+   ========================================================= */
+
+/* ================= Root Theme Variables ================= */
+
+:root {
+    --payara-dark: #0b2c3f;
+    --payara-dark-2: #083047;
+    --payara-accent: #f0981b;
+    --payara-accent-soft: #f7b955;
+    --payara-bg: #071f2d;
+    --payara-card: #0f3a52;
+    --payara-border: #174a66;
+    --payara-text: #e5e7eb;
+    --payara-muted: #94a3b8;
+    --payara-blue: #38bdf8;
+}
+
+/* ================= Global ================= */
+
+html, body {
+    background: linear-gradient(180deg, #0b2c3f 0%, #071f2d 100%);
+    color: var(--payara-text);
+    overflow-x: hidden;
+}
+
+/* ================= Sidebar ================= */
+
+#sidePane {
+    background: var(--payara-dark);
+    border-right: 1px solid #0e3a55;
+}
+
+#sidePane h2 {
+    color: #fff;
+}
+
+.sideButton {
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+.sideButton:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+
+.sideButton.active {
+    background: var(--payara-accent);
+    color: #1f2937;
+}
+
+/* ================= Header ================= */
+
+.devconsole-header {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 8px;
+}
+
+.devconsole-header > div {
+    max-width: 100% !important;
+}
+
+.devconsole-header,
+.devconsole-header * {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.devconsole-title {
+    color: #fff;
+    font-weight: 700;
+}
+
+/* ================= Bean Meta ================= */
+
+.bean-meta .meta-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+    flex-wrap: wrap;
+    color: white;
+}
+
+.bean-meta strong {
+    min-width: 90px;
+}
+
+/* ================= Toolbar ================= */
+
+.graph-toolbar {
+    display: flex;
+    align-items: center;
+    margin: 12px 0 10px;
+}
+
+.graph-hint {
+    margin-right: auto;
+    color: var(--payara-muted);
+    font-style: italic;
+}
+
+.graph-controls {
+    display: flex;
+    gap: 8px;
+}
+
+/* ================= Buttons ================= */
+
+button {
+    border-radius: 6px;
+}
+
+.devconsole-controls button,
+.graph-controls button {
+    background: var(--payara-accent);
+    color: #1f2937;
+    font-weight: 700;
+}
+
+.devconsole-controls button:hover,
+.graph-controls button:hover {
+    background: var(--payara-accent-soft);
+}
+
+/* ================= Toggles ================= */
+
+.toggle-switch {
+    background: #0f3a52;
+    border: 1px solid var(--payara-border);
+    border-radius: 12px;
+    padding: 0 12px;
+}
+
+.toggle-label {
+    color: var(--payara-text);
+    font-weight: 600;
+}
+
+.toggle-btn {
+    background: #1e4f6b;
+}
+
+.toggle-btn::after {
+    background: #e5e7eb;
+}
+
+.toggle-btn[aria-pressed="true"] {
+    background: var(--payara-accent);
+}
+
+/* ================= Cards / Tables ================= */
+
+.card,
+.console-wrapper {
+    background: var(--payara-card);
+    border: 1px solid var(--payara-border);
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
+table {
+    color: var(--payara-text);
+}
+
+th {
+    background: #0f3a52;
+    color: #fff;
+    border-bottom: 1px solid var(--payara-border);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: .8rem;
+}
+
+td {
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 14px 16px;
+}
+
+/* ================= Graph Container ================= */
+
+.page > .container {
+    max-width: none !important;
+    width: 100vw !important;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+    padding: 0 !important;
+}
+
+.container {
+    position: relative;
+    background: transparent;
+    padding-right: 96px; /* space for floating controls */
+}
+
+/* ================= Graph Canvas ================= */
+
+.graph-canvas {
+    width: 100%;
+    height: calc(100vh - 220px);
+    position: relative;
+    overflow: hidden;
+}
+
+#svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ================= Graph Styling ================= */
+
+.link {
+    stroke: rgba(147,197,253,0.45);
+    stroke-width: 1.5;
+}
+
+.node text {
+    fill: var(--payara-text);
+    font-size: 12px;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.node .dep {
+    fill: #0f3a52;
+    stroke: var(--payara-blue);
+    stroke-width: 1.5;
+}
+
+.node .bean {
+    fill: var(--payara-accent);
+    stroke: var(--payara-accent-soft);
+    stroke-width: 2;
+}
+
+.node .circular {
+    fill: #7f1d1d;
+    stroke: #dc2626;
+    stroke-width: 2;
+}
+
+.node.selected rect {
+    stroke: var(--payara-blue);
+    stroke-width: 3;
+}
+
+/* ================= Floating Controls ================= */
+
+.right {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: auto;
+    pointer-events: none;
+}
+
+.controls,
+.panel {
+    pointer-events: auto;
+}
+
+.panel {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-top: 12px;
+}
+
+.left,
+.right,
+.container,
+.page {
+    background: transparent;
+    border: none !important;
+}
+
+.left::before,
+.left::after,
+.right::before,
+.right::after,
+.container::before,
+.container::after {
+    content: none !important;
+}
+.back {
+    color: #f0981b;
+}

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Injection Point Details — CDI Dev Mode</title>
+        <script src="../assets/js/app-selector.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <a href="injection-points-dashboard.html" class="back">← Back</a>
+
+            <h1 id="title">Injection Point Details</h1>
+
+            <!-- Metadata -->
+            <div class="card">
+                <div class="small">Injection Point Metadata</div>
+                <div class="meta-grid" id="metaGrid"></div>
+            </div>
+
+            <!-- Resolution -->
+            <div class="card">
+                <div class="small">Resolution Details</div>
+                <div class="meta-grid" id="resolutionGrid"></div>
+            </div>
+
+        </div>
+
+        <script>
+
+            /* --------------------------- LOAD DATA --------------------------- */
+
+            function loadInjectionPoint() {
+                const params = new URLSearchParams(window.location.search);
+
+                const declaringBean = params.get("declaringBean");
+                const member = params.get("member");
+                const requiredType = params.get("requiredType");
+                const qualifiers = params.get("qualifiers");
+                const status = params.get("status");
+                const candidateBeans = params.get("candidateBeans");
+                const failureReason = params.get("failureReason");
+
+                if (!declaringBean || !member) {
+                    alert("Invalid injection point reference");
+                    return;
+                }
+
+                renderPage({
+                    declaringBean,
+                    member,
+                    requiredType,
+                    qualifiers: qualifiers ? qualifiers.split(",") : [],
+                    status,
+                    candidateBeans: candidateBeans ? candidateBeans.split(",") : [],
+                    failureReason
+                });
+            }
+
+            function renderPage(d) {
+                document.getElementById("title").innerText =
+                        shorten(d.declaringBean) + " → " + shortenMember(d.member);
+
+                renderMeta(d);
+                renderResolution(d);
+            }
+
+            /* --------------------------- HELPERS --------------------------- */
+
+            function shorten(name) {
+                return name ? name.split(".").pop() : "-";
+            }
+
+            function shortenMember(m) {
+                return m.includes("#") ? m.split("#")[1] : m;
+            }
+
+            function statusColor(s) {
+                return {
+                    RESOLVED: "#22c55e",
+                    AMBIGUOUS: "#f59e0b",
+                    UNSATISFIED: "#ef4444"
+                }[s] || "#9ca3af";
+            }
+
+            /* --------------------------- META GRID --------------------------- */
+
+            function renderMeta(d) {
+                const grid = document.getElementById("metaGrid");
+
+                grid.innerHTML = `
+                <div class="meta-box">
+                    <div class="meta-label">Declaring Bean</div>
+                    <div class="meta-value">${shorten(d.declaringBean)}</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">Member</div>
+                    <div class="meta-value">${d.member}</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">Required Type</div>
+                    <div class="meta-value">${shorten(d.requiredType)}</div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">Qualifiers</div>
+                    <div class="meta-value">${d.qualifiers.map(shorten).join("<br>") || "-"}</div>
+                </div>
+            `;
+            }
+
+            /* --------------------------- RESOLUTION --------------------------- */
+
+            function renderResolution(d) {
+                const grid = document.getElementById("resolutionGrid");
+
+                let details = "-";
+
+                if (d.status === "RESOLVED") {
+                    details = d.candidateBeans.map(shorten).join("<br>");
+                } else if (d.status === "AMBIGUOUS") {
+                    details = d.candidateBeans.map(shorten).join("<br>");
+                } else if (d.status === "UNSATISFIED") {
+                    details = d.failureReason || "No matching beans found";
+                }
+
+                grid.innerHTML = `
+                <div class="meta-box">
+                    <div class="meta-label">Resolution Status</div>
+                    <div class="meta-value" style="color:${statusColor(d.status)};font-weight:600">
+                        ${d.status}
+                    </div>
+                </div>
+
+                <div class="meta-box">
+                    <div class="meta-label">Details</div>
+                    <div class="meta-value">${details}</div>
+                </div>
+            `;
+            }
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp.loadApplications("appSelect", loadInjectionPoint)
+                    .then(loadInjectionPoint);
+        </script>
+
+    </body>
+</html>

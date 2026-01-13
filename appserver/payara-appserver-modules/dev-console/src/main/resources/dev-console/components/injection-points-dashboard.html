@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Injections</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="../assets/js/payara-ui.js"></script>
+
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <!-- ================= HEADER ================= -->
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Injections</h2>
+
+                <div class="devconsole-controls">
+                    <input id="q" type="search"
+                           placeholder="Filter by bean, type or member" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button"
+                                class="toggle-btn"
+                                aria-pressed="false"></button>
+                    </div>
+
+                    <select id="viewMode">
+                        <option value="all">All injection points</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="ambiguous">Ambiguous</option>
+                        <option value="unsatisfied">Unsatisfied</option>
+                        <option value="problems">All problems</option>
+                    </select>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SUMMARY ================= -->
+            <div class="cards-row" id="summaryCards"></div>
+
+            <!-- ================= CHARTS ================= -->
+            <div class="grid">
+                <div class="card">
+                    <div class="small">Injection Points by Status</div>
+                    <canvas id="statusPie" height="240"></canvas>
+                </div>
+
+                <div class="card">
+                    <div class="small">Top Beans with Problems</div>
+                    <canvas id="problemBar" height="240"></canvas>
+                </div>
+            </div>
+
+            <!-- ================= TABLE ================= -->
+            <div class="card full-width">
+                <div class="small">Injection Points</div>
+
+                <div class="console-wrapper">
+                    <table id="consoleTable">
+                        <thead>
+                            <tr>
+                                <th>Declaring Bean</th>
+                                <th>Member</th>
+                                <th>Required Type</th>
+                                <th>Qualifiers</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            /* ================= STATE ================= */
+
+            const toggleBtn =
+                    document.querySelector("#classNameToggle .toggle-btn");
+
+            /* ================= UTIL ================= */
+
+            function statusColor(s) {
+                return {
+                    RESOLVED: "#f59e0b",
+                    AMBIGUOUS: "#f27128",
+                    UNSATISFIED: "#ef4444"
+                }[s] || "#9ca3af";
+            }
+
+            /* ================= ENDPOINT ================= */
+
+            function resolveEndpoint() {
+                switch (viewMode.value) {
+                    case "resolved":
+                        return "../cdi/injection-points/status/RESOLVED";
+                    case "ambiguous":
+                        return "../cdi/injection-points/ambiguous";
+                    case "unsatisfied":
+                        return "../cdi/injection-points/unsatisfied";
+                    case "problems":
+                        return "../cdi/injection-points/problems";
+                    default:
+                        return "../cdi/injection-points";
+                }
+            }
+
+            /* ================= FETCH ================= */
+
+            async function fetchAndRender() {
+                const res =
+                        await fetch(DevConsoleApp.api(resolveEndpoint()));
+                window._ipRaw = await res.json();
+                renderAll(window._ipRaw);
+            }
+
+            /* ================= RENDER ================= */
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+
+                const filtered = items.filter(it =>
+                    !q ||
+                            it.declaringBean?.toLowerCase().includes(q) ||
+                            it.member?.toLowerCase().includes(q) ||
+                            it.requiredType?.toLowerCase().includes(q)
+                );
+
+                renderSummary(items);
+                renderStatusPie(items);
+                renderProblemBar(items);
+                renderTable(filtered);
+            }
+
+            /* ================= SUMMARY ================= */
+
+            function renderSummary(items) {
+                const counts = {RESOLVED: 0, AMBIGUOUS: 0, UNSATISFIED: 0};
+                items.forEach(i => counts[i.status]++);
+
+                const cards = [
+                    {label: "Total", value: items.length},
+                    {label: "Resolved", value: counts.RESOLVED},
+                    {label: "Ambiguous", value: counts.AMBIGUOUS},
+                    {label: "Unsatisfied", value: counts.UNSATISFIED}
+                ];
+
+                summaryCards.innerHTML = "";
+                cards.forEach(c =>
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                        <div class="stat"
+                             style="background:${PayaraUI.colors.accent}">
+                            <div class="label">${c.label}</div>
+                            <div class="value">${c.value}</div>
+                        </div>
+                    `)
+                );
+            }
+
+            /* ================= CHARTS ================= */
+
+            function renderStatusPie(items) {
+                const counts = {RESOLVED: 0, AMBIGUOUS: 0, UNSATISFIED: 0};
+                items.forEach(i => counts[i.status]++);
+
+                window._statusPie?.destroy();
+                window._statusPie = new Chart(statusPie, {
+                    type: "doughnut",
+                    data: {
+                        labels: Object.keys(counts),
+                        datasets: [{
+                                data: Object.values(counts),
+                                backgroundColor:
+                                        Object.keys(counts).map(statusColor),
+                                hoverBackgroundColor:
+                                        PayaraUI.colors.accentSoft
+                            }]
+                    },
+                    options: {responsive: true}
+                });
+            }
+
+            function renderProblemBar(items) {
+                const map = {};
+
+                // collect only problems
+                items.filter(i => i.status !== "RESOLVED")
+                        .forEach(i => {
+                            const bean = i.declaringBean;
+                            map[bean] ||= {AMBIGUOUS: 0, UNSATISFIED: 0};
+                            map[bean][i.status]++;
+                        });
+
+                const top =
+                        Object.entries(map)
+                        .sort((a, b) =>
+                            (b[1].AMBIGUOUS + b[1].UNSATISFIED) -
+                                    (a[1].AMBIGUOUS + a[1].UNSATISFIED)
+                        )
+                        .slice(0, 10);
+
+                const labels = top.map(x =>
+                    FQCN.chartName(x[0], toggleBtn)
+                );
+
+                window._problemBar?.destroy();
+                window._problemBar = new Chart(problemBar, {
+                    type: "bar",
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: "Unsatisfied",
+                                data: top.map(x => x[1].UNSATISFIED),
+                                backgroundColor: statusColor("UNSATISFIED")
+                            },
+                            {
+                                label: "Ambiguous",
+                                data: top.map(x => x[1].AMBIGUOUS),
+                                backgroundColor: statusColor("AMBIGUOUS")
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {stacked: true},
+                            y: {stacked: true, beginAtZero: true}
+                        }
+                    }
+                });
+            }
+
+            /* ================= TABLE ================= */
+
+            function renderTable(items) {
+                const tbody = consoleTable.tBodies[0];
+                tbody.innerHTML = "";
+
+                items.forEach(it => {
+                    const tr = document.createElement("tr");
+
+                    const details =
+                            it.failureReason ||
+                            (it.candidateBeans || [])
+                            .map(b => FQCN.display(b, toggleBtn))
+                            .join("<br>");
+
+                    tr.innerHTML = `
+                        <td>${FQCN.display(it.declaringBean, toggleBtn)}</td>
+                        <td>${FQCN.display(it.member, toggleBtn)}</td>
+                        <td>${FQCN.display(it.requiredType, toggleBtn)}</td>
+                        <td>${FQCN.displayList(it.qualifiers || [], toggleBtn)}</td>
+                        <td>
+                            <span style="
+                                color:${statusColor(it.status)};
+                                font-weight:600">
+                                ${it.status}
+                            </span>
+                        </td>
+                        <td>${details || ""}</td>
+                    `;
+
+                    tr.style.cursor = "pointer";
+//                    tr.onclick = () => {
+//                        const p = new URLSearchParams(it);
+//                        location.href =
+//                                "injection-point-details.html?" + p;
+//                    };
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            /* ================= EVENTS ================= */
+
+            const qInput = document.getElementById("q");
+
+            qInput.oninput = () =>
+                renderAll(window._ipRaw || []);
+
+            viewMode.onchange = refresh.onclick = fetchAndRender;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._ipRaw || []);
+            };
+
+            /* ================= INIT ================= */
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp
+                    .loadApplications("appSelect", fetchAndRender)
+                    .then(fetchAndRender);
+        </script>
+    </body>
+</html>

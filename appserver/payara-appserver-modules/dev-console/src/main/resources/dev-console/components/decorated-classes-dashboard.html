@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" type="text/css" href="../assets/css/common-dashboard.css">
+        <link rel="stylesheet" href="../assets/css/payara-theme.css" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Decorated Classes — CDI Dev Mode</title>
+
+        <script src="../assets/js/payara-ui.js"></script>
+        <script src="../assets/js/app-selector.js"></script>
+        <script src="../assets/js/fqcn-utils.js"></script>
+    </head>
+
+    <body>
+        <div class="page">
+
+            <div class="devconsole-header">
+                <h2 class="devconsole-title">Decorated Classes</h2>
+                <div class="devconsole-controls">
+                    <input id="q" type="search" placeholder="Filter by class or decorator" />
+
+                    <div class="toggle-switch" id="classNameToggle" aria-on="false">
+                        <span class="toggle-label">Full class name</span>
+                        <button type="button"
+                                class="toggle-btn"
+                                aria-pressed="false"></button>
+                    </div>
+
+                    <button id="refresh">Refresh</button>
+
+                    <div class="app-group">
+                        <span class="small">Application:</span>
+                        <select id="appSelect"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cards-row" id="summaryCards"></div>
+
+            <div class="grid">
+                <div class="card full-width">
+                    <div class="small">All Decorated Classes</div>
+                    <div class="console-wrapper">
+                        <table id="consoleTable">
+                            <thead>
+                                <tr>
+                                    <th>Class</th>
+                                    <th>Decorators</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            /* ================= SORT ================= */
+            const sortState = TableSort.createState();
+
+            function getColumnValue(it, index) {
+                switch (index) {
+                    case 0:
+                        return it.className || "";
+                    case 1:
+                        return it.decoratorBindings.join(",");
+                    case 2:
+                        return it.decoratorBindings.length || 0;
+                    default:
+                        return "";
+                }
+            }
+
+            /* ================= FETCH ================= */
+            async function fetchData() {
+                const r = await fetch(DevConsoleApp.api("../cdi/decorated-classes"));
+                window._decoratedRaw = await r.json();
+                renderAll(window._decoratedRaw);
+            }
+
+            function renderAll(items) {
+                const q = qInput.value.toLowerCase().trim();
+
+                let filtered = items.filter(it =>
+                    !q ||
+                            it.className.toLowerCase().includes(q) ||
+                            it.decoratorBindings.join(",").toLowerCase().includes(q)
+                );
+
+                filtered = TableSort.sort(filtered, sortState, getColumnValue);
+
+                renderSummary(items);
+                renderTable(filtered);
+            }
+
+            /* ================= SUMMARY ================= */
+            function renderSummary(items) {
+                const totalClasses = items.length;
+                const uniqueDecorators =
+                        new Set(items.flatMap(i => i.decoratorBindings)).size;
+
+                summaryCards.innerHTML = "";
+                [
+                    {l: "Decorated Classes", v: totalClasses, c: "#f59e0b"},
+                    {l: "Unique Decorators", v: uniqueDecorators, c: "#f59e0b"}
+                ].forEach(s =>
+                    summaryCards.insertAdjacentHTML("beforeend", `
+                        <div class="stat" style="background:#f59e0b">
+                            <div class="label">${s.l}</div>
+                            <div class="value">${s.v}</div>
+                        </div>
+                    `)
+                );
+            }
+
+            /* ================= TABLE ================= */
+            function renderTable(items) {
+                consoleTable.tBodies[0].innerHTML = "";
+
+                items.forEach(it => {
+                    consoleTable.tBodies[0].insertAdjacentHTML("beforeend", `
+                        <tr>
+                            <td title="${it.className}">
+                                ${FQCN.display(it.className, toggleBtn)}
+                            </td>
+                            <td>
+                                ${FQCN.displayList(it.decoratorBindings, toggleBtn)}
+                            </td>
+                            <td>${it.decoratorBindings.length}</td>
+                        </tr>
+                    `);
+                });
+            }
+
+            /* ================= EVENTS ================= */
+            const qInput = document.getElementById("q");
+            const toggleBtn = document.querySelector("#classNameToggle .toggle-btn");
+
+            qInput.oninput = () => renderAll(window._decoratedRaw || []);
+            refresh.onclick = fetchData;
+
+            toggleBtn.onclick = () => {
+                toggleBtn.setAttribute(
+                        "aria-pressed",
+                        toggleBtn.getAttribute("aria-pressed") !== "true"
+                        );
+                renderAll(window._decoratedRaw || []);
+            };
+
+            TableSort.bind("#consoleTable", sortState, () =>
+                renderAll(window._decoratedRaw || [])
+            );
+
+            persistSearchInput("q", "searchInput");
+            DevConsoleApp.loadApplications("appSelect", fetchData)
+                    .then(fetchData);
+        </script>
+    </body>
+</html>
