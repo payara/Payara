@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.1</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-invoker-secure-endpoint</artifactId>

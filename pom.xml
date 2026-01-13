@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.1</version>
+    <version>7.2026.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>

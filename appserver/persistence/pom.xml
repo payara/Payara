@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>7.2026.1</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.persistence</groupId>
     <artifactId>persistence</artifactId>

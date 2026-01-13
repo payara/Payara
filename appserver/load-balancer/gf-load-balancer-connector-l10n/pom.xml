@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.load-balancer</groupId>
         <artifactId>load-balancer</artifactId>
-        <version>7.2026.1</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>gf-load-balancer-connector-l10n</artifactId>
