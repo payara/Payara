@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>javaee-pom</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.1</version>
     </parent>
     <name>GlassFish javaee.jar distribution fragment</name>
     <artifactId>javaee-frag</artifactId>

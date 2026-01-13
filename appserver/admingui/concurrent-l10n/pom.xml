@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.1</version>
     </parent>
     <artifactId>console-concurrent-plugin-l10n</artifactId>
 

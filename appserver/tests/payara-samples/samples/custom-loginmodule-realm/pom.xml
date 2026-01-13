@@ -7,7 +7,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.1</version>
     </parent>
 
     <artifactId>custom-loginmodule-realm</artifactId>
