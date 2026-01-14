@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.data.core.cdi.extension;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
 import jakarta.data.repository.Repository;
 import jakarta.data.spi.EntityDefining;
 import jakarta.enterprise.event.Observes;
@@ -49,6 +47,7 @@ import jakarta.enterprise.inject.spi.Bean;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.persistence.Entity;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -56,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -73,15 +73,17 @@ public class JakartaDataExtension implements Extension {
 
     private String applicationName;
 
+    private Set<String> annotatedClassNames;
+
     public JakartaDataExtension() {
     }
 
-    public JakartaDataExtension(String appName) {
+    public JakartaDataExtension(String appName, Set<String> annotatedClassNames) {
         this.applicationName = appName;
+        this.annotatedClassNames = annotatedClassNames;
     }
 
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager manager) {
-        logger.info("Finishing scanning process");
         Set<Class<?>> repositoryTypes = getRepositoryClasses();
         repositoryTypes.forEach(t -> {
             DynamicInterfaceDataProducer<Object> producer = new DynamicInterfaceDataProducer<>(t, manager, this);
@@ -93,17 +95,16 @@ public class JakartaDataExtension implements Extension {
 
     public Set<Class<?>> getRepositoryClasses() {
         Set<Class<?>> repositories = new HashSet<>();
-        //here is the place to start to use the classgraph api to get information from the classes that are 
-        //annotated by the jakarta data annotation 
-        try (ScanResult result = new ClassGraph().enableAnnotationInfo().scan()) {
-            repositories.addAll(locateAndGetRepositories(result));
-        }
-        return repositories.stream().collect(Collectors.toUnmodifiableSet());
-    }
 
-    private List<Class<?>> locateAndGetRepositories(ScanResult scan) {
-        List<Class<?>> classList = scan.getClassesWithAnnotation(Repository.class).loadClasses();
-        List<Class<?>> classListResult = new ArrayList<>();
+        List<Class<?>> classList = new ArrayList<>();
+        for (String annotatedClassName : annotatedClassNames) {
+            try {
+                classList.add(Thread.currentThread().getContextClassLoader().loadClass(annotatedClassName));
+            } catch (ClassNotFoundException ex) {
+                logger.log(Level.WARNING, "Could not find class " + annotatedClassName, ex);
+            }
+        }
+
         root:
         for (Class<?> clazz : classList) {
             Repository repository = clazz.getAnnotation(Repository.class);
@@ -111,7 +112,7 @@ public class JakartaDataExtension implements Extension {
                 String dataProvider = repository.provider();
                 boolean provide = Repository.ANY_PROVIDER.equals(dataProvider) || PROVIDER_NAME.equalsIgnoreCase(dataProvider);
                 if (!provide) {
-                    continue root;
+                    continue;
                 }
             }
             Type[] types = clazz.getGenericInterfaces();
@@ -124,7 +125,7 @@ public class JakartaDataExtension implements Extension {
                         for (Annotation annotation : annotations) {
                             Class<? extends Annotation> annotationType = annotation.annotationType();
                             if (annotationType.equals(Entity.class)) {
-                                classListResult.add(clazz);
+                                repositories.add(clazz);
                                 continue root;
                             } else if (annotationType.isAnnotationPresent(EntityDefining.class)) {
                                 continue root;
@@ -135,9 +136,10 @@ public class JakartaDataExtension implements Extension {
                     }
                 }
             }
-            classListResult.add(clazz);
+            repositories.add(clazz);
         }
-        return classListResult;
+
+        return repositories.stream().collect(Collectors.toUnmodifiableSet());
     }
 
     public String getApplicationName() {
