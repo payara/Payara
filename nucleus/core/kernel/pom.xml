@@ -260,10 +260,6 @@
             <artifactId>tiger-types</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.transformer</groupId>
-            <artifactId>fish.payara.transformer.payara</artifactId>
-        </dependency>
     </dependencies>
 </project>
 
