@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>nucleus-common</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>scattered-archive-api</artifactId>
     <packaging>glassfish-jar</packaging>

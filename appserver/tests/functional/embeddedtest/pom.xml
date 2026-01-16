@@ -47,7 +47,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>payara-embedded-test</artifactId>
     <packaging>jar</packaging>
-    <version>7.2026.2-SNAPSHOT</version>
+    <version>${revision}</version>
 
     <properties>
         <!-- https://maven.apache.org/general.html#encoding-warning -->

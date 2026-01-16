@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp-l10n</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>cmp-model-l10n</artifactId>
     

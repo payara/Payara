@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>

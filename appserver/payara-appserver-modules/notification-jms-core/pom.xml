@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>notification-jms-core</artifactId>
     <packaging>glassfish-jar</packaging>
