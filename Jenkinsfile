@@ -531,8 +531,8 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                            branches: [[name: "*/Simplify-Project-Versions"]],
+                            userRemoteConfigs: [[url: "https://github.com/Pandrex247/patched-src-javaee7-samples.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
