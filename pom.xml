@@ -345,7 +345,7 @@
         <hazelcast.version>5.3.8-payara-1</hazelcast.version>
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
-        <weld.version>6.0.3.Final</weld.version>
+        <weld.version>6.0.4.Final</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
         <asm.version>9.9.1</asm.version>
