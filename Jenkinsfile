@@ -673,5 +673,5 @@ void saveLogsAndCleanup(String logArchiveName) {
 
 void updatePomPayaraVersion(String payaraVersion) {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Updating pom.xml payara.version property for Shrinkwrap resolver  *#*#*#*#*#*#*#*#*#*#*#*#'
-    sh script: "mvn versions:set-property -DnewVersion=${payaraVersion} -DgenerateBackupPoms=false -Dproperty=payara.version -pl .", label: "Update pom.xml payara.version property"
+    sh script: "mvn versions:set-property -DnewVersion=${payaraVersion} -DgenerateBackupPoms=false -Dproperty=payara.version -N", label: "Update pom.xml payara.version property"
 }
