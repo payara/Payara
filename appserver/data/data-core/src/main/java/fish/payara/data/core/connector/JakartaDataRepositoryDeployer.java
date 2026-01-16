@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,13 +39,19 @@
  */
 package fish.payara.data.core.connector;
 
+import jakarta.data.repository.Repository;
 import jakarta.enterprise.inject.spi.Extension;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.glassfish.api.deployment.Deployer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.classmodel.reflect.AnnotatedElement;
+import org.glassfish.hk2.classmodel.reflect.AnnotationType;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 import fish.payara.data.core.cdi.extension.JakartaDataExtension;
@@ -82,7 +88,16 @@ public class JakartaDataRepositoryDeployer implements Deployer<JakartaDataContai
         Collection<Supplier<Extension>> snifferExtensions =
                 context.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
         if (snifferExtensions != null) {
-            snifferExtensions.add(() -> new JakartaDataExtension(context.getArchiveHandler().getDefaultApplicationName(context.getSource(), context)));
+            Set<String> annotatedClassNames = new HashSet<>();
+            context.getTransientAppMetaData(Types.class.getName(), Types.class).getAllTypes().stream()
+                    .filter(type -> type instanceof AnnotationType && type.getName().equals(Repository.class.getName()))
+                    .findFirst().ifPresent(type -> {
+                        Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
+                        for (AnnotatedElement element : elements) {
+                            annotatedClassNames.add(element.getName());
+                        }
+                    });
+            snifferExtensions.add(() -> new JakartaDataExtension(context.getArchiveHandler().getDefaultApplicationName(context.getSource(), context), annotatedClassNames));
         }
         return new JakartaDataApplicationContainer(context);
     }
