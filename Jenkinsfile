@@ -576,6 +576,7 @@ pipeline {
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
                         -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
                         -pl fish.payara.samples:payara-samples-profiled-tests"""
