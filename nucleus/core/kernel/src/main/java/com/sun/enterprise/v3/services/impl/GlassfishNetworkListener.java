@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -274,7 +274,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
         final org.glassfish.grizzly.http.HttpServerFilter httpCodecFilter =
                 new GlassfishHttpCodecFilter(
-                http == null || Boolean.parseBoolean(http.getXpoweredBy()),
                 http == null || Boolean.parseBoolean(http.getServerHeader()),
                 http == null || Boolean.parseBoolean(http.getXframeOptions()),
                 isChunkedEnabled,
@@ -381,12 +380,10 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
      */
     private static class GlassfishHttpCodecFilter extends org.glassfish.grizzly.http.HttpServerFilter {
         private final String serverVersion;
-        private final String xPoweredBy;
         private final String xFrameOptions;
         private final String cookieSameSiteValue;
 
         public GlassfishHttpCodecFilter(
-                final boolean isXPoweredByEnabled,
                 final boolean isServerInfoEnabled,
                 final boolean isXFrameOptionsEnabled,
                 final boolean chunkingEnabled,
@@ -422,16 +419,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 serverVersion = null;
             }
 
-            if (isXPoweredByEnabled) {
-                xPoweredBy = "Servlet/6.0 JSP/3.1 "
-                        + "(" + ((serverInfo != null && !serverInfo.isEmpty()) ? serverInfo : Version.getVersion())
-                        + " Java/"
-                        + System.getProperty("java.vm.vendor") + "/"
-                        + System.getProperty("java.specification.version") + ")";
-            } else {
-                xPoweredBy = null;
-            }
-
             if (isXFrameOptionsEnabled) {
                 xFrameOptions = "SAMEORIGIN";
             } else {
@@ -461,22 +448,11 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 response.addHeader(Header.Server, serverVersion);
             }
 
-            // Set response "X-Powered-By" header
-            if (xPoweredBy != null) {
-                response.addHeader(Header.XPoweredBy, xPoweredBy);
-            }
-
             return result;
         }
-
-        // Override to check whether x-Powered By has been added by something else
+        
         @Override
         protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
-
-            if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
-                httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
-            }
-
             // Set response "X-Frame-Options" header
             if (!httpHeader.containsHeader(xFrameOptionsHeader) && xFrameOptions != null) {
                 httpHeader.addHeader(xFrameOptionsHeader, xFrameOptions);

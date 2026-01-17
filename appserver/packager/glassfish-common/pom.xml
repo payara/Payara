@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common</artifactId>
     <name>Glassfish Commons Package</name>
@@ -57,7 +57,7 @@
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -83,7 +83,6 @@
             </plugin>
         </plugins>
     </build>
-    
     <dependencies>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
@@ -91,7 +90,7 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-naming</artifactId>
@@ -119,37 +118,35 @@
             <artifactId>jakarta.enterprise.deploy-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>fish.payara.server.internal.admingui</groupId>
-	   <artifactId>console-concurrent-plugin</artifactId>
-           <version>${project.version}</version>
-       </dependency> 
-       <dependency>
-           <groupId>fish.payara.server.internal.concurrent</groupId>
-           <artifactId>concurrent-connector</artifactId>
-           <version>${project.version}</version>
-       </dependency>
-       <dependency>
-           <groupId>fish.payara.server.internal.concurrent</groupId>
-	   <artifactId>concurrent-impl</artifactId>
-           <version>${project.version}</version>
-       </dependency> 
-       <dependency>
+            <groupId>fish.payara.server.internal.admingui</groupId>
+            <artifactId>console-concurrent-plugin</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.concurrent</groupId>
+            <artifactId>concurrent-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.concurrent</groupId>
+            <artifactId>concurrent-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>jakarta.enterprise.concurrent</groupId>
             <artifactId>jakarta.enterprise.concurrent-api</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish</groupId>
-           <artifactId>jakarta.enterprise.concurrent</artifactId>
-       </dependency> 
-       <dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.concurro</groupId>
+            <artifactId>concurro</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
-       </dependency>
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
-       </dependency>
-       
-       
+        </dependency>
     </dependencies>
 </project>

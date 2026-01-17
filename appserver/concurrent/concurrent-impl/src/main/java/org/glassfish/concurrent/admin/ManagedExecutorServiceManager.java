@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright 2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.concurrent.admin;
 
@@ -59,9 +59,8 @@ import java.util.Properties;
 import java.beans.PropertyVetoException;
 
 /**
- *
- * The managed executor service manager allows you to create and delete
- * the managed-executor-service config element
+ * The managed executor service manager allows you to create and delete the
+ * managed-executor-service configuration element.
  */
 @Service (name=ServerTags.MANAGED_EXECUTOR_SERVICE)
 @I18n("managed.executor.service.manager")
@@ -77,37 +76,45 @@ public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseMan
         super.setAttributes(attributes, target);
         maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);
         taskQueueCapacity = (String) attributes.get(TASK_QUEUE_CAPACITY);
-        useForkJoinPool = (String) attributes.get(USE_FORK_JOIN_POOL);
+        useForkJoinPool = (String) attributes.getOrDefault(USE_FORK_JOIN_POOL, Boolean.FALSE.toString());
     }
 
     @Override
-    protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
-        if ("false".equals(useForkJoinPool)) {
-            if (Integer.parseInt(corePoolSize) == 0 &&
-                    Integer.parseInt(maximumPoolSize) == 0) {
-                String msg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
-                return new ResourceStatus(ResourceStatus.FAILURE, msg);
+    protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target) {
+        String errorMsg = null;
+        boolean doUseForkJoinPool = Boolean.parseBoolean(useForkJoinPool);
+        int intCorePoolSize = Integer.parseInt(corePoolSize);
+        int intMaximumPoolSize = Integer.parseInt(maximumPoolSize);
+        if (doUseForkJoinPool == false && Boolean.parseBoolean(useVirtualThreads) == false) {
+            if (intCorePoolSize == 0 && intMaximumPoolSize == 0) {
+                errorMsg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
             }
         }
-
-        if (Integer.parseInt(corePoolSize) >
-                Integer.parseInt(maximumPoolSize)) {
-            String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
-            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        if (intCorePoolSize > intMaximumPoolSize) {
+            errorMsg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
+        }
+        if (doUseForkJoinPool && intMaximumPoolSize > 0x7fff /*ForkJoinPool.MAX_CAP*/) {
+            errorMsg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
+        }
+        if (errorMsg != null) {
+            return new ResourceStatus(ResourceStatus.FAILURE, errorMsg);
         }
 
         return super.isValid(resources, validateResourceRef, target);
     }
 
+    @Override
     protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
         ManagedExecutorService managedExecutorService = param.createChild(ManagedExecutorService.class);
         setAttributesOnConfigBean(managedExecutorService, properties);
         managedExecutorService.setMaximumPoolSize(maximumPoolSize);
         managedExecutorService.setTaskQueueCapacity(taskQueueCapacity);
+        managedExecutorService.setUseVirtualThreads(useVirtualThreads);
         managedExecutorService.setUseForkJoinPool(useForkJoinPool);
         return managedExecutorService;
     }
 
+    @Override
     public String getResourceType () {
         return ServerTags.MANAGED_EXECUTOR_SERVICE;
     }

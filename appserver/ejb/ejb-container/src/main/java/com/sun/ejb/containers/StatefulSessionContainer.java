@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -74,31 +74,6 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.util.Utility;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.rmi.RemoteException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import jakarta.ejb.ConcurrentAccessException;
 import jakarta.ejb.ConcurrentAccessTimeoutException;
 import jakarta.ejb.CreateException;
@@ -116,7 +91,26 @@ import jakarta.persistence.SynchronizationType;
 import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.Transaction;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -130,15 +124,16 @@ import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.util.SimpleMetadata;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
+import static com.sun.ejb.codegen.AsmSerializableBeanGenerator.getGeneratedSerializableClassName;
 import static com.sun.ejb.containers.EJBContextImpl.BeanState.DESTROYED;
 import static com.sun.ejb.containers.EJBContextImpl.BeanState.INVOKING;
 import static com.sun.ejb.containers.EJBContextImpl.BeanState.PASSIVATED;
 import static com.sun.ejb.containers.EJBContextImpl.BeanState.READY;
 import static com.sun.ejb.spi.sfsb.util.SFSBVersionManager.NO_VERSION;
+import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.WARNING;
-import static jakarta.persistence.SynchronizationType.SYNCHRONIZED;
 
 /**
  * This class provides container functionality specific to stateful
@@ -441,19 +436,12 @@ public final class StatefulSessionContainer
     }
 
     private void processSessionSynchMethod(Method sessionSynchMethod) throws Exception {
-
-        final Method methodAccessible = sessionSynchMethod;
-
         // SessionSynch method defined through annotation or ejb-jar.xml
         // can have any access modifier so make sure we have permission
         // to invoke it.
-        final PrivilegedExceptionAction<Void> action = () -> {
-            if (!methodAccessible.isAccessible()) {
-                methodAccessible.setAccessible(true);
-            }
-            return null;
-        };
-        AccessController.doPrivileged(action);
+        if (!sessionSynchMethod.isAccessible()) {
+            sessionSynchMethod.setAccessible(true);
+        }
     }
 
     // Called before invoking a bean with no Tx or with a new Tx.
@@ -2452,7 +2440,7 @@ public final class StatefulSessionContainer
     private byte[] serializeContext(SessionContextImpl ctx) throws IOException {
         final Object ejb = ctx.getEJB();
         if (!(ejb instanceof Serializable
-            || ejb.getClass().getName().equals(EJBUtils.getGeneratedSerializableClassName(ejbName)))) {
+            || ejb.getClass().getName().equals(getGeneratedSerializableClassName(ejbName)))) {
             ctx.setEJB(null);
             ctx.setEJB(new SerializableEJB(ejb));
         }
@@ -2905,15 +2893,7 @@ public final class StatefulSessionContainer
             try {
                 // We need to set the context class loader for
                 // this (deamon) thread!!
-                if (System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(myClassLoader);
-                } else {
-                    PrivilegedAction<Void> action = () -> {
-                        currentThread.setContextClassLoader(myClassLoader);
-                        return null;
-                    };
-                    AccessController.doPrivileged(action);
-                }
+                currentThread.setContextClassLoader(myClassLoader);
                 ComponentContext ctx = null;
 
                 do {
@@ -2937,15 +2917,8 @@ public final class StatefulSessionContainer
                         asyncTaskCount--;
                     }
                 }
-                if (System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(previousClassLoader);
-                } else {
-                    PrivilegedAction<Void> action = () -> {
-                        currentThread.setContextClassLoader(previousClassLoader);
-                        return null;
-                    };
-                    AccessController.doPrivileged(action);
-                }
+                
+                currentThread.setContextClassLoader(previousClassLoader);
             }
         }
     }

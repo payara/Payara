@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import static com.sun.enterprise.security.auth.login.LoginContextDriver.CERT_REALMNAME;
@@ -63,7 +63,9 @@ import javax.security.auth.x500.X500Principal;
 import com.sun.enterprise.security.auth.realm.certificate.OID;
 
 import org.glassfish.internal.api.Globals;
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
+
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
@@ -76,7 +78,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
  * This LoginModule authenticates users with X509 certificates.
  *
  * <p>
- * If testUser successfully authenticates itself, a <code>PrincipalImpl</code> with the testUser's
+ * If testUser successfully authenticates itself, a <code>UserPrincipal</code> with the testUser's
  * username is added to the Subject.
  *
  * <p>
@@ -106,7 +108,7 @@ public class ClientCertificateLoginModule implements LoginModule {
     private String alias;
     private X509Certificate certificate;
 
-    private PrincipalImpl userPrincipal;
+    private UserPrincipal userPrincipal;
 
     private AppClientSSL ssl;
     private SSLUtils sslUtils;
@@ -213,7 +215,7 @@ public class ClientCertificateLoginModule implements LoginModule {
      * <p>
      * If this LoginModule's own authentication attempt succeeded (checked by retrieving the private
      * state saved by the <code>login</code> method), then this method associates a
-     * <code>PrincipalImpl</code> with the <code>Subject</code> located in the <code>LoginModule</code>.
+     * <code>UserPrincipal</code> with the <code>Subject</code> located in the <code>LoginModule</code>.
      * If this LoginModule's own authentication attempted failed, then this method removes any state
      * that was originally saved.
      *
@@ -230,15 +232,15 @@ public class ClientCertificateLoginModule implements LoginModule {
         }
 
         // Add a Principal (authenticated identity) to the Subject
-        // Assume the user we authenticated is the PrincipalImpl
-        userPrincipal = new PrincipalImpl(alias);
+        // Assume the user we authenticated is the UserPrincipal
+        userPrincipal = new UserNameAndPassword(alias);
         if (!subject.getPrincipals().contains(userPrincipal)) {
             subject.getPrincipals().add(userPrincipal);
         }
 
         if (debug) {
             if (_logger.isLoggable(FINE)) {
-                _logger.log(FINE, "\t\t[ClientCertificateLoginModule] " + "added PrincipalImpl to Subject");
+                _logger.log(FINE, "\t\t[ClientCertificateLoginModule] " + "added UserPrincipal to Subject");
             }
         }
 
@@ -297,7 +299,7 @@ public class ClientCertificateLoginModule implements LoginModule {
      * Logout the user.
      *
      * <p>
-     * This method removes the <code>PrincipalImpl</code> that was added by the <code>commit</code>
+     * This method removes the <code>UserPrincipal</code> that was added by the <code>commit</code>
      * method.
      *
      * <p>

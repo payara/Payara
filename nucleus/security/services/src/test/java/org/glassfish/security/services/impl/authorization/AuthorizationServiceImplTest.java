@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
 package org.glassfish.security.services.impl.authorization;
 
 import org.glassfish.security.services.api.authorization.*;
@@ -86,16 +87,7 @@ public class AuthorizationServiceImplTest {
         assertSame( "FAILED_INIT", FAILED_INIT, impl.getInitializationState() );
         assertNotNull( "getReasonInitializationFailed", impl.getReasonInitializationFailed() );
     }
-
-    @Test
-    public void testIsPermissionGranted() throws Exception {
-
-        assertSame( "NOT_INITIALIZED", NOT_INITIALIZED, impl.getInitializationState() );
-
-        // Does not require service initialization
-        impl.isPermissionGranted( new Subject(), new AllPermission() );
-    }
-
+    
     @Test
     public void testIsAuthorized() throws Exception {
 

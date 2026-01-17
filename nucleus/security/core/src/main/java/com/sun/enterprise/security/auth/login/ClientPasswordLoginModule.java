@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.auth.login;
 
 import static java.util.logging.Level.FINE;
@@ -57,7 +57,9 @@ import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
+
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.UsernamePasswordStore;
@@ -99,7 +101,7 @@ public class ClientPasswordLoginModule implements LoginModule {
     private boolean commitSucceeded;
 
     // The principal set when authentication succeeds. We don't really know why this is an instance variable.
-    private PrincipalImpl userPrincipal;
+    private UserPrincipal userPrincipal;
 
 
     /**
@@ -221,7 +223,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      * <p>
      * If this LoginModule's own authentication attempt succeeded (checked by retrieving the private
      * state saved by the <code>login</code> method), then this method associates a
-     * <code>PrincipalImpl</code> with the <code>Subject</code> located in the <code>LoginModule</code>.
+     * <code>UserPrincipal</code> with the <code>Subject</code> located in the <code>LoginModule</code>.
      * If this LoginModule's own authentication attempted failed, then this method removes any state
      * that was originally saved.
      *
@@ -239,13 +241,13 @@ public class ClientPasswordLoginModule implements LoginModule {
 
         // 1. Add a Principal (authenticated identity) to the Subject
 
-        // Assume the user we authenticated is the PrincipalImpl
-        userPrincipal = new PrincipalImpl(username);
+        // Assume the user we authenticated is the UserPrincipal
+        userPrincipal = new UserNameAndPassword(username);
         if (!subject.getPrincipals().contains(userPrincipal)) {
             subject.getPrincipals().add(userPrincipal);
         }
 
-        _logger.log(FINE, "\t\t[ClientPasswordLoginModule] " + "added PrincipalImpl to Subject");
+        _logger.log(FINE, "\t\t[ClientPasswordLoginModule] " + "added UserPrincipal to Subject");
 
         String realm = DEFAULT_REALMNAME;
 
@@ -313,7 +315,7 @@ public class ClientPasswordLoginModule implements LoginModule {
      * Logout the user.
      *
      * <p>
-     * This method removes the <code>PrincipalImpl</code> that was added by the <code>commit</code>
+     * This method removes the <code>UserPrincipal</code> that was added by the <code>commit</code>
      * method.
      *
      * <p>

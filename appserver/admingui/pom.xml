@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-parent</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.admingui</groupId>
     <artifactId>admingui</artifactId>
@@ -154,9 +154,7 @@
     </modules>
 
     <properties>
-        <woodstock-dojo-ajax-nodemo.version>1.12.4</woodstock-dojo-ajax-nodemo.version>
         <woodstock-json.version>2.0</woodstock-json.version>
-        <woodstock-prototype.version>1.7.3</woodstock-prototype.version>
     </properties>
 
     <build>
@@ -238,15 +236,15 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.sun.woodstock.dependlibs</groupId>
-                <artifactId>dojo-ajax-nodemo</artifactId>
-                <version>${woodstock-dojo-ajax-nodemo.version}</version>
+                <groupId>org.glassfish.woodstock.external</groupId>
+                <artifactId>dojo</artifactId>
+                <version>${woodstock-external.dojo.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>com.sun.woodstock.dependlibs</groupId>
+                <groupId>org.glassfish.woodstock.external</groupId>
                 <artifactId>prototype</artifactId>
-                <version>${woodstock-prototype.version}</version>
+                <version>${woodstock-external.prototype.version}</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>

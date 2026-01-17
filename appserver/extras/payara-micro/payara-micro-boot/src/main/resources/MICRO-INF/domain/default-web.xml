@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -38,7 +38,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016] [Payara Foundation]
+Portions Copyright [2016-2025] [Payara Foundation]
 -->
 
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.1" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
@@ -237,9 +237,6 @@ Portions Copyright [2016] [Payara Foundation]
   <!--                       compiling JSP pages?  [default work directory  -->
   <!--                       for the current web application]               -->
   <!--                                                                      -->
-  <!--   xpoweredBy          Determines whether X-Powered-By response       -->
-  <!--                       header is added by generated servlet  [true]   -->
-  <!--                                                                      -->
   <!--   usePrecompiled      If true, it is assumed that JSPs have been     -->
   <!--                       precompiled, and their corresponding servlet   -->
   <!--                       classes have been bundled in the web           -->
@@ -284,10 +281,6 @@ Portions Copyright [2016] [Payara Foundation]
   <servlet>
     <servlet-name>jsp</servlet-name>
     <servlet-class>org.glassfish.wasp.servlet.JspServlet</servlet-class>
-    <init-param>
-      <param-name>xpoweredBy</param-name>
-      <param-value>false</param-value>
-    </init-param>
     <init-param>
       <param-name>development</param-name>
       <param-value>false</param-value>

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,9 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2019-2025] Payara Foundation and/or affiliates
 package org.apache.catalina.core;
 
+import org.apache.catalina.Container;
 import org.apache.catalina.LogFacade;
 import static org.apache.catalina.core.Constants.COOKIE_DOMAIN_ATTR;
 import static org.apache.catalina.core.Constants.COOKIE_HTTP_ONLY_ATTR;
@@ -67,10 +68,10 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
-    private static final boolean DEFAULT_HTTP_ONLY = false;
+    private final boolean DEFAULT_HTTP_ONLY;
     private static final int DEFAULT_MAX_AGE = -1;
     private static final String DEFAULT_NAME = "JSESSIONID";
-    private static final boolean DEFAULT_SECURE = false;
+    private final String DEFAULT_SECURE;
     private static final String RESERVED_CHAR = ";, ";
 
     /**
@@ -78,6 +79,15 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
      */
     public SessionCookieConfigImpl(StandardContext ctx) {
         this.ctx = ctx;
+        Container parent = ctx.getParent();
+        if (parent instanceof SessionCookieConfigSource) {
+            SessionCookieConfigSource source = (SessionCookieConfigSource) parent;
+            DEFAULT_HTTP_ONLY = source.isSessionCookieHttpOnly();
+            DEFAULT_SECURE = source.getSessionCookieSecure();
+        } else {
+            DEFAULT_HTTP_ONLY = true;
+            DEFAULT_SECURE = "dynamic";
+        }
     }
 
     /**
@@ -233,7 +243,15 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     @Override
     public boolean isSecure() {
         String value = getAttribute(COOKIE_SECURE_ATTR);
-        return value == null ? DEFAULT_SECURE : Boolean.parseBoolean(value);
+        if (value != null) {
+            return Boolean.parseBoolean(value);
+        }
+        if (DEFAULT_SECURE.equals("DYNAMIC")) {
+            // Return false as Request.configureSessionCookie() already checks if
+            // the request is secure.
+            return false;
+        }
+        return Boolean.parseBoolean(DEFAULT_SECURE);
     }
 
     @Override
@@ -343,4 +361,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
         return false;
     }
 
+    public String getDefaultSecure() {
+        return DEFAULT_SECURE;
+    }
 }

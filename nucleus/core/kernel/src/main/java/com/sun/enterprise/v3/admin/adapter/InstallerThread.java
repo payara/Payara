@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin.adapter;
 
@@ -153,8 +153,11 @@ final class InstallerThread extends Thread {
                 webe.setSniffer("web");
                 Engine sece = singleModule.createChild(Engine.class);
                 sece.setSniffer("security");
+                Engine cdie = singleModule.createChild(Engine.class);
+                cdie.setSniffer("cdi");
                 singleModule.getEngines().add(webe);
                 singleModule.getEngines().add(sece);
+                singleModule.getEngines().add(cdie);
                 Server s = (Server) proxies[1];
                 List<ApplicationRef> arefs = s.getApplicationRef();
                 ApplicationRef aref = s.createChild(ApplicationRef.class);

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -15,7 +15,7 @@
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
@@ -56,7 +56,7 @@
 
     <!-- Don't inherit SCM from parent since flatten resolves it incorrectly in a similar manner to the URL -->
     <scm>
-        <url>https://github.com/payara/Payara/tree/main</url>
+        <url>https://github.com/payara/Payara/tree//blob/main</url>
         <connection>scm:git:git://github.com/payara/payara.git</connection>
         <developerConnection>scm:git:ssh://github.com:payara/payara.git</developerConnection>
     </scm>
@@ -494,7 +494,22 @@
 
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>data</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-mvc</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>legal-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

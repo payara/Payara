@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright [2016-2025] [Payara Foundation]
 package org.glassfish.concurrent.admin;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -87,6 +87,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected String corePoolSize = "0";
     protected String keepAliveSeconds = "60";
     protected String threadLifetimeSeconds = "0";
+    protected String useVirtualThreads = Boolean.FALSE.toString();
     protected String enabled = Boolean.TRUE.toString();
     protected String enabledValueForTarget = Boolean.TRUE.toString();
 
@@ -173,6 +174,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         corePoolSize = (String) attributes.get(CORE_POOL_SIZE);
         keepAliveSeconds = (String) attributes.get(KEEP_ALIVE_SECONDS);
         threadLifetimeSeconds = (String) attributes.get(THREAD_LIFETIME_SECONDS);
+        useVirtualThreads = (String) attributes.getOrDefault(USE_VIRTUAL_THREADS, Boolean.FALSE.toString());
         if(target != null){
             enabled = resourceUtil.computeEnabledValueForResourceBasedOnTarget((String)attributes.get(ENABLED), target);
         }else{

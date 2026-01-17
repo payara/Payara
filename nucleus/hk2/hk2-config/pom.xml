@@ -47,18 +47,13 @@
     <parent>
         <groupId>fish.payara.server.internal.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     <artifactId>hk2-config</artifactId>
     
     <name>HK2 configuration module</name>
     <description>${project.name}</description>
     <packaging>glassfish-jar</packaging>
-
-    <properties>
-        <jakarta.validation.version.upperbound>4</jakarta.validation.version.upperbound>
-        <hibernate.validator.version.upperbound>9</hibernate.validator.version.upperbound>
-    </properties>
     
     <build>
         <plugins>
@@ -127,10 +122,15 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
-                            jakarta.validation.*;resolution:=optional;version="${range;[==,${jakarta.validation.version.upperbound});${jakarta.validation.version}}",
-                            org.hibernate.validator.*;resolution:=optional;version="${range;[==,${hibernate.validator.version.upperbound});${hibernate.validator.osgi.version}}",
+                            jakarta.validation.*;resolution:=optional;version="[${jakarta.validation.osgi.version},${jakarta.validation.osgi.version.upperbound})",
+                            org.hibernate.validator.*;resolution:=optional;version="[${hibernate.validator.osgi.version},${hibernate.validator.osgi.version.upperbound})",
                             *
                         </Import-Package>
+                        <DynamicImport-Package>*</DynamicImport-Package>
+                        <Export-Package>
+                            org.jvnet.hk2.config;
+                            org.jvnet.hk2.config.provider;
+                            org.jvnet.hk2.config.provider.annotations;version=${project.osgi.version}</Export-Package>
                     </instructions>
                     <unpackBundle>true</unpackBundle>
                 </configuration>

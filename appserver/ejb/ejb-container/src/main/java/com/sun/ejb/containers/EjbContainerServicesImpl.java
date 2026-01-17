@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,40 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
-import java.io.Serializable;
+import com.sun.ejb.Container;
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.NoSuchEJBException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import jakarta.ejb.EJBException;
-import jakarta.ejb.NoSuchEJBException;
-
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.ejb.Container;
-import com.sun.ejb.EJBUtils;
-import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
-import com.sun.enterprise.deployment.EjbInterceptor;
-import com.sun.logging.LogDomains;
+import static com.sun.ejb.codegen.AsmSerializableBeanGenerator.getGeneratedSerializableClassName;
 
 /**
  *
  */
 @Service
 public class EjbContainerServicesImpl implements EjbContainerServices {
-
-
-
+    
     public <S> S  getBusinessObject(Object ejbRef, java.lang.Class<S> businessInterface) {
 
         EJBLocalObjectImpl localObjectImpl = getEJBLocalObject(ejbRef);
@@ -271,7 +265,7 @@ public class EjbContainerServicesImpl implements EjbContainerServices {
 
         for(String next : ejbManagedObjectClassNames) {
             // Add the serializable sub-class version of each name as well
-            serializableClassNames.add(EJBUtils.getGeneratedSerializableClassName(next));
+            serializableClassNames.add(getGeneratedSerializableClassName(next));
         }
 
         boolean isEjbManagedObject = ejbManagedObjectClassNames.contains(className) ||

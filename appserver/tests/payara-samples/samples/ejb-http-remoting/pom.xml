@@ -14,7 +14,7 @@
  *    language governing permissions and limitations under the License.
  *
  *    When distributing the software, include this License Header Notice in each
- *    file and include the License file at glassfish/legal/LICENSE.txt.
+ *    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *    GPL Classpath Exception:
  *    The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -61,6 +61,12 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
+        <dependency>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>fish.payara.extras</groupId>
             <artifactId>ejb-http-client</artifactId>
@@ -68,37 +74,14 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.mq</groupId>
-            <artifactId>imq</artifactId>
+            <artifactId>mq-client</artifactId>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
-            <groupId>fish.payara.server.appclient</groupId>
-            <artifactId>gf-client</artifactId>
-            <version>${project.version}</version>
+            <groupId>fish.payara.extras</groupId>
+            <artifactId>payara-embedded-all</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>ldapbp-repackaged</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId> fish.payara.server.internal.packager</groupId>
-                    <artifactId>libpam4j-repackaged</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>tiger-types</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>jmxremote_optional-repackaged</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>fish.payara.server.internal.packager</groupId>
-                    <artifactId>opentracing-repackaged</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

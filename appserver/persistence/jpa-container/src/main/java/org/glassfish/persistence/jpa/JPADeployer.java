@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,55 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package org.glassfish.persistence.jpa;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.enterprise.admin.cli.Environment;
-import com.sun.enterprise.admin.cli.ProgramOptions;
-import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import com.sun.enterprise.admin.report.PlainTextActionReporter;
-import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
-import com.sun.enterprise.deployment.*;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.PersistenceUnitDescriptor;
+import com.sun.enterprise.deployment.PersistenceUnitsDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.ExceptionUtil;
 import com.sun.logging.LogDomains;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceException;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.MetaData;
+import org.glassfish.api.deployment.OpsParams;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.deployment.common.SimpleDeployer;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.MetaData;
-import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.deployment.common.SimpleDeployer;
-import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.persistence.common.Java2DBProcessorHelper;
-import jakarta.inject.Inject;
+import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.PersistenceException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.CommandException;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.api.InternalSystemAdministrator;
+
+import static java.util.Collections.emptyList;
 
 
 /**
@@ -102,7 +106,7 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
     private ServerEnvironmentImpl serverEnvironment;
 
     @Inject
-    private volatile StartupContext sc = null;
+    private volatile StartupContext sc;
 
     @Inject
     private Events events;
@@ -192,110 +196,144 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
      */
     private void createEMFs(DeploymentContext context) {
         Application application = context.getModuleMetaData(Application.class);
-        Set<BundleDescriptor> bundles = application.getBundleDescriptors();
 
         // Iterate through all the bundles for the app and collect pu references in referencedPus
-        boolean hasScopedResource = false;
-        final List<PersistenceUnitDescriptor> referencedPus = new ArrayList<PersistenceUnitDescriptor>();
-        for (BundleDescriptor bundle : bundles) {
-            Collection<? extends PersistenceUnitDescriptor> pusReferencedFromBundle = bundle.findReferencedPUs();
-            for(PersistenceUnitDescriptor pud : pusReferencedFromBundle) {
-                referencedPus.add(pud);
-                if( hasScopedResource(pud) ) {
-                    hasScopedResource = true;
-                }
-            }
-        }
-        if (hasScopedResource) {
-            // Scoped resources are registered by connector runtime after prepare(). That is too late for JPA
-            // This is a hack to initialize connectorRuntime for scoped resources
+        if (hasScopedResource(application)) {
             connectorRuntime.registerDataSourceDefinitions(application);
         }
+        for (var persistenceUnitDescriptor : getPersistenceUnitDescriptors(context)) {
+            loadPersistenceUnit(persistenceUnitDescriptor, context);
+        }
+    }
 
-        //Iterate through all the PUDs for this bundle and if it is referenced, load the corresponding pu
-        PersistenceUnitDescriptorIterator pudIterator = new PersistenceUnitDescriptorIterator() {
-            @Override void visitPUD(PersistenceUnitDescriptor pud, DeploymentContext context) {
-                if(referencedPus.contains(pud)) {
-                    boolean isDas = isDas();
-                    if (isDas && !isTargetDas(context.getCommandParameters(DeployCommandParameters.class))) {
+    private void loadPersistenceUnit(PersistenceUnitDescriptor persistenceUnitDescriptor, DeploymentContext deploymentContext) {
+        boolean isDas = isDas();
 
-                        DeployCommandParameters deployParams = context.getCommandParameters(DeployCommandParameters.class);
+        if (isDas && !isTargetDas(deploymentContext.getCommandParameters(DeployCommandParameters.class))) {
 
-                        //If on DAS and not generating schema for remotes then return here
-                        String jpaScemaGeneration = pud.getProperties().getProperty("jakarta.persistence.schema-generation.database.action", "none").toLowerCase();
-                        String eclipselinkSchemaGeneration = pud.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
-                        if ("none".equals(jpaScemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
-                            return;
-                        } else {
-                            InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
-                            CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
-                            CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
-                            ParameterMap params = new ParameterMap();
-                            params.add("propertyName", pud.getJtaDataSource());
-                            params.add("target", deployParams.target);
-                            getTranslatedValueCommand.parameters(params);
-                            getTranslatedValueCommand.execute();
-                            ActionReport report = getTranslatedValueCommand.report();
-                            if (report.hasSuccesses() && report.getSubActionsReport().size() == 1) {
-                                ActionReport subReport = report.getSubActionsReport().get(0);
-                                String value = subReport.getMessage().replace(deployParams.target + ":", "");
-                                pud.setJtaDataSource(value.trim());
-                            } else {
-                                logger.log(Level.SEVERE, report.getMessage(), report.getFailureCause());
-                            }
+            DeployCommandParameters deployParams = deploymentContext.getCommandParameters(DeployCommandParameters.class);
 
-                        }
-                    }
-
-                    // While running in embedded mode, it is not possible to guarantee that entity classes are not loaded by the app classloader before transformers are installed
-                    // If that happens, weaving will not take place and EclipseLink will throw up. Provide users an option to disable weaving by passing the flag.
-                    // Note that we enable weaving if not explicitly disabled by user
-                    boolean weavingEnabled = Boolean.valueOf(sc.getArguments().getProperty("org.glassfish.persistence.embedded.weaving.enabled", "true"));
-
-                    ProviderContainerContractInfo providerContainerContractInfo = weavingEnabled ?
-                            new ServerProviderContainerContractInfo(context, connectorRuntime, isDas) :
-                            new EmbeddedProviderContainerContractInfo(context, connectorRuntime, isDas);
-
-                    try {
-                        ((ExtendedDeploymentContext) context).prepareScratchDirs();
-                    } catch (IOException e) {
-                        // There is no way to recover if we are not able to create the scratch dirs. Just rethrow the exception.
-                        throw new RuntimeException(e);
-                    }
-
-                    try {
-                        PersistenceUnitLoader puLoader = new PersistenceUnitLoader(pud, providerContainerContractInfo);
-                        // Store the puLoader in context. It is retrieved to execute java2db and to
-                        // store the loaded emfs in a JPAApplicationContainer object for cleanup
-                        context.addTransientAppMetaData(getUniquePuIdentifier(pud), puLoader);
-                    } catch (Exception e) {
-                        DeployCommandParameters dcp = context.getCommandParameters(DeployCommandParameters.class);
-                        if (dcp.isSkipDSFailure() && ExceptionUtil.isDSFailure(e)) {
-                            logger.log(Level.WARNING, "Resource communication failure exception skipped while loading the pu " + pud.getName(), e);
-                        } else {
-                            if (e.getCause() instanceof ConnectorRuntimeException) {
-                               logger.log(Level.SEVERE, "{0} is not a valid data source. If you are using variable replacement then"
-                                       + "ensure that is available on the DAS.");
-                            }
-                            throw e;
-                        }
-                    }
+            //If on DAS and not generating schema for remotes then return here
+            String jpaSchemaGeneration = persistenceUnitDescriptor.getProperties().getProperty("javax.persistence.schema-generation.database.action", "none").toLowerCase();
+            String eclipselinkSchemaGeneration = persistenceUnitDescriptor.getProperties().getProperty("eclipselink.ddl-generation", "none").toLowerCase();
+            if ("none".equals(jpaSchemaGeneration) && "none".equals(eclipselinkSchemaGeneration)) {
+                return;
+            } else {
+                InternalSystemAdministrator kernelIdentity = Globals.getDefaultHabitat().getService(InternalSystemAdministrator.class);
+                CommandRunner commandRunner = Globals.getDefaultHabitat().getService(CommandRunner.class);
+                CommandRunner.CommandInvocation getTranslatedValueCommand = commandRunner.getCommandInvocation("_get-translated-config-value", new PlainTextActionReporter(), kernelIdentity.getSubject());
+                ParameterMap params = new ParameterMap();
+                params.add("propertyName", persistenceUnitDescriptor.getJtaDataSource());
+                params.add("target", deployParams.target);
+                getTranslatedValueCommand.parameters(params);
+                getTranslatedValueCommand.execute();
+                ActionReport report = getTranslatedValueCommand.report();
+                if (report.hasSuccesses() && report.getSubActionsReport().size() == 1) {
+                    ActionReport subReport = report.getSubActionsReport().get(0);
+                    String value = subReport.getMessage().replace(deployParams.target + ":", "");
+                    persistenceUnitDescriptor.setJtaDataSource(value.trim());
+                } else {
+                    logger.log(Level.SEVERE, report.getMessage(), report.getFailureCause());
                 }
+
             }
-        };
-        pudIterator.iteratePUDs(context);
+        }
+
+        // While running in embedded mode, it is not possible to guarantee that entity
+        // classes are not loaded by the app classloader before transformers are
+        // installed.
+        //
+        // If that happens, weaving will not take place and EclipseLink will throw up.
+        // Provide users an option to disable weaving by passing the flag.
+        // Note that we enable weaving if not explicitly disabled by user
+        boolean weavingEnabled = Boolean
+                .parseBoolean(sc.getArguments().getProperty("org.glassfish.persistence.embedded.weaving.enabled", "true"));
+
+        ProviderContainerContractInfo providerContainerContractInfo = weavingEnabled
+                ? new ServerProviderContainerContractInfo(deploymentContext, connectorRuntime, isDas)
+                : new EmbeddedProviderContainerContractInfo(deploymentContext, connectorRuntime, isDas);
+
+        try {
+            ((ExtendedDeploymentContext) deploymentContext).prepareScratchDirs();
+        } catch (IOException e) {
+            // There is no way to recover if we are not able to create the scratch dirs.
+            // Just rethrow the exception.
+            throw new RuntimeException(e);
+        }
+
+        // Instantiating the PersistenceUnitLoader instance has the side-effect of actually loading the persistence unit
+        PersistenceUnitLoader persistenceUnitLoader = new PersistenceUnitLoader(persistenceUnitDescriptor, providerContainerContractInfo);
+
+        // Store the persistenceUnitLoader in context.
+        //
+        // It is retrieved to execute java2db and to store the loaded entity manager factories in a
+        // JPAApplicationContainer object for cleanup
+        deploymentContext.addTransientAppMetaData(
+                getUniquePuIdentifier(persistenceUnitDescriptor),
+                persistenceUnitLoader);
     }
 
     /**
      * @return true if given <code>pud</code> is using scoped resource
      */
-    private boolean hasScopedResource(PersistenceUnitDescriptor pud) {
-        boolean hasScopedResource = false;
-        String jtaDataSource = pud.getJtaDataSource();
-        if(jtaDataSource != null && jtaDataSource.startsWith("java:")){
-            hasScopedResource = true;
+    private boolean hasScopedResource(PersistenceUnitDescriptor persistenceUnitDescriptor) {
+        String jtaDataSource = persistenceUnitDescriptor.getJtaDataSource();
+
+        return (jtaDataSource != null && jtaDataSource.startsWith("java:"));
+    }
+
+    private boolean hasScopedResource(Application application) {
+        for (var bundleDescriptor : application.getBundleDescriptors()) {
+
+            Set<PersistenceUnitDescriptor> allPersistenceUnitDescriptors = new HashSet<>();
+
+            // Add persistenceUnitDescriptors from the current bundle
+            allPersistenceUnitDescriptors.addAll(getPersistenceUnitDescriptors(bundleDescriptor));
+
+            // Find (obscure) persistence units referenced by @PersistenceContext annotations that reside
+            // in places like ear/lib.
+            //
+            // E.g.
+            // @PersistenceContext(
+            //     unitName="lib/ejb-ejb30-persistence-tx_propagation-par1.jar#em",
+            //     type=EXTENDED);
+            // EntityManager extendedEM;
+            //
+            // The above calls to getPersistenceUnitDescriptors() won't find these.
+            //
+            // Alternatively we can use:
+            //
+            // application.getExtensionsDescriptors(PersistenceUnitsDescriptor.class)
+            allPersistenceUnitDescriptors.addAll(bundleDescriptor.findReferencedPUs());
+
+            for (var persistenceUnitDescriptor : allPersistenceUnitDescriptors) {
+                if (hasScopedResource(persistenceUnitDescriptor)) {
+                    return true;
+                }
+            }
         }
-        return hasScopedResource;
+
+        return false;
+    }
+
+    private static List<PersistenceUnitDescriptor> getPersistenceUnitDescriptors(DeploymentContext context) {
+        BundleDescriptor bundle = DOLUtils.getCurrentBundleForContext(context);
+        if (bundle == null) {
+            // It can be null for non-Jakarta EE type of application deployment. e.g., issue 15869
+            return emptyList();
+        }
+
+        return getPersistenceUnitDescriptors(bundle);
+    }
+
+    private static List<PersistenceUnitDescriptor> getPersistenceUnitDescriptors(BundleDescriptor bundle) {
+        List<PersistenceUnitDescriptor> persistenceUnitDescriptors = new ArrayList<>();
+
+        for (PersistenceUnitsDescriptor persistenceUnitsDescriptor : bundle.getExtensionsDescriptors(PersistenceUnitsDescriptor.class)) {
+            persistenceUnitDescriptors.addAll(persistenceUnitsDescriptor.getPersistenceUnitDescriptors());
+        }
+
+        return persistenceUnitDescriptors;
     }
 
     /**
@@ -482,7 +520,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
      * @param context
      */
     private void iterateInitializedPUsAtApplicationPrepare(final DeploymentContext context) {
-
         final DeployCommandParameters deployCommandParameters = context.getCommandParameters(DeployCommandParameters.class);
         String appName = deployCommandParameters.name;
         final ApplicationInfo appInfo = applicationRegistry.get(appName);

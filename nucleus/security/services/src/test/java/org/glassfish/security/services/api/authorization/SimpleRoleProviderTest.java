@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or its affiliates
 package org.glassfish.security.services.api.authorization;
 
 import java.net.URI;
 import javax.security.auth.Subject;
 
+import org.glassfish.security.common.UserNameAndPassword;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,7 +51,7 @@ import org.junit.Test;
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.services.impl.authorization.AuthorizationServiceImpl;
 import org.glassfish.security.services.spi.authorization.RoleMappingProvider;
 
@@ -78,7 +80,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 
 	private Subject adminSubject() {
 		Subject result = new Subject();
-		result.getPrincipals().add(new PrincipalImpl("admin"));
+		result.getPrincipals().add(new UserNameAndPassword("admin"));
 		result.getPrincipals().add(new Group("asadmin"));
 		return result;
 	}
@@ -95,7 +97,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 
 	private Subject nonAdminSubject() {
 		Subject result = new Subject();
-		result.getPrincipals().add(new PrincipalImpl("joe"));
+		result.getPrincipals().add(new UserNameAndPassword("joe"));
 		result.getPrincipals().add(new Group("myGroup"));
 		return result;
 	}

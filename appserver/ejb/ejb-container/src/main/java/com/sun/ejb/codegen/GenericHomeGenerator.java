@@ -1,116 +1,86 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * Copyright (c) 1997, 2020 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2022 Contributors to the Eclipse Foundation
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0, which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
- * language governing permissions and limitations under the License.
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the
+ * Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+ * version 2 with the GNU Classpath Exception, which is available at
+ * https://www.gnu.org/software/classpath/license.html.
  *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.ejb.codegen;
 
+import com.sun.ejb.containers.GenericEJBHome;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
-import java.io.*;
-import com.sun.ejb.EJBUtils;
-
-import com.sun.enterprise.util.LocalStringManagerImpl;
-
-import static java.lang.reflect.Modifier.*;
-
-import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.*;
+import static java.lang.reflect.Modifier.ABSTRACT;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._String;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._arg;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._end;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._interface;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._method;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._t;
 
 /**
  * This class is used to generate a sub-interface of the
  * GenericEJBHome interface that will be loaded within each
  * application.
  */
+public class GenericHomeGenerator extends Generator {
 
-public class GenericHomeGenerator extends Generator 
-    implements ClassGeneratorFactory {
+    public static final String GENERIC_HOME_CLASSNAME = "GenericEJBHome_Generated";
+    private final Class<?> anchorClass;
+    private final String packageName;
 
-    private static LocalStringManagerImpl localStrings =
-	new LocalStringManagerImpl(GenericHomeGenerator.class);
-    
-    private String genericEJBHomeClassName;
-    private ClassLoader loader;
+    /**
+     * @param loader {@link ClassLoader} owning generated classes
+     * @param anchorClass
+     */
+    public GenericHomeGenerator(final ClassLoader loader, final Class<?> anchorClass) {
+        super(loader);
+        this.anchorClass = anchorClass;
+        this.packageName = getClass().getPackageName();
+    }
+
+
+    @Override
+    public String getPackageName() {
+        return this.packageName;
+    }
+
 
     /**
      * Get the fully qualified name of the generated class.
      * @return the name of the generated class.
      */
-    public String getGeneratedClass() {
-        return genericEJBHomeClassName;
-    }
-
-    // For corba codegen infrastructure
-    public String className() {
-        return getGeneratedClass();
-    }
-
-    public GenericHomeGenerator(ClassLoader cl)
-	    throws GeneratorException
-    {
-	    super();
-
-        genericEJBHomeClassName = EJBUtils.getGenericEJBHomeClassName();
-        loader = cl;
+    @Override
+    public final String getGeneratedClassName() {
+        return packageName + "." + GENERIC_HOME_CLASSNAME;
     }
 
 
-    public void evaluate() {
+    @Override
+    public Class<?> getAnchorClass() {
+        return this.anchorClass;
+    }
 
-        _clear();
 
-        String packageName = getPackageName(genericEJBHomeClassName);
-        String simpleName = getBaseName (genericEJBHomeClassName);
-
-        _package(packageName);
-
-        _interface(PUBLIC, simpleName, 
-                   _t("com.sun.ejb.containers.GenericEJBHome"));
-
-        // Create method
-        _method(PUBLIC | ABSTRACT, _t("java.rmi.Remote"),
-                "create", _t("java.rmi.RemoteException"));
-
+    @Override
+    public void defineClassBody() {
+        _interface(PUBLIC, GENERIC_HOME_CLASSNAME, _t(GenericEJBHome.class.getName()));
+        _method(PUBLIC | ABSTRACT, _t(Remote.class.getName()), "create", _t(RemoteException.class.getName()));
         _arg(_String(), "generatedBusinessIntf");
-
         _end();
-
-        _classGenerator() ;
-
-        return;
     }
-    
 }

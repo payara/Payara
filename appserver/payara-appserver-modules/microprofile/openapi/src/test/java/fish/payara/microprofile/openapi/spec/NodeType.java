@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -47,7 +47,7 @@ import java.util.stream.Stream;
 
 /**
  * Node types and their structure as described by Open API Specification
- * {@link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.1.0.md}.
+ * {@link https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md}.
  */
 public enum NodeType implements Iterable<Field> {
 

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2019-2024] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -16,7 +16,7 @@
  *  file and include the License.
  * 
  *  When distributing the software, include this License Header Notice in each
- *  file and include the License file at glassfish/legal/LICENSE.txt.
+ *  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  * 
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -76,6 +76,7 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.ProgressStatus;
+import org.glassfish.security.common.UserNameAndPassword;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.glassfish.hk2.api.DynamicConfiguration;
@@ -89,7 +90,7 @@ import org.glassfish.hk2.runlevel.internal.RunLevelControllerImpl;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.Target;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,7 +137,7 @@ public class RunCommandTest {
     @Test
     public void testAdminAudit() {
         Subject testSubject = new Subject();
-        testSubject.getPrincipals().add(new PrincipalImpl("testuser"));
+        testSubject.getPrincipals().add(new UserNameAndPassword("testuser"));
         RestActionReporter commandResult = ResourceUtil.runCommand("get-admin-audit-configuration", new ParameterMap(), testSubject);
         Assert.assertTrue(commandResult.isSuccess());
         

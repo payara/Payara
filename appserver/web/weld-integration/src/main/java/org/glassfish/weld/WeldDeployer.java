@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.weld;
 
@@ -66,10 +66,8 @@ import static org.jboss.weld.bootstrap.api.Environments.SERVLET;
 import static org.jboss.weld.bootstrap.spi.BeanDiscoveryMode.NONE;
 import static org.jboss.weld.manager.BeanManagerLookupService.lookupBeanManager;
 
-import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -123,11 +121,8 @@ import org.jboss.weld.bootstrap.spi.helpers.EEModuleDescriptorImpl;
 import org.jboss.weld.bootstrap.spi.helpers.MetadataImpl;
 import org.jboss.weld.configuration.spi.ExternalConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
-import org.jboss.weld.exceptions.WeldException;
 import org.jboss.weld.injection.spi.InjectionServices;
-import org.jboss.weld.probe.ProbeExtension;
 import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.security.NewInstanceAction;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
@@ -144,7 +139,6 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
-import com.sun.enterprise.deployment.web.ContextParameter;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import javax.naming.NamingException;
 import org.jboss.weld.manager.api.ExecutorServices;
@@ -165,7 +159,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // change there as well. The reason it is duplicated is so that a dependency from web-core to
     // gf-weld-connector
     // is not necessary.
-    private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldListener";
+    private static final String WELD_LISTENER = "org.jboss.weld.module.web.servlet.WeldInitialListener";
     static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.module.web.servlet.WeldTerminalListener";
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 
@@ -175,18 +169,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
     private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.module.web.servlet.ConversationFilter";
     private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
-
-    public static final String DEV_MODE_PROPERTY = "org.jboss.weld.development";
-
-    private static final String PROBE_FILTER_NAME = "weld-probe-filter";
-    private static final String PROBE_FILTER_CLASS_NAME = "org.jboss.weld.probe.ProbeFilter";
-    private static final boolean PROBE_FILTER_ASYNC_SUPPORT = true;
-    private static final String PROBE_FILTER_URL_PATTERN = "/*";
-    private static final String PROBE_FILTER_DISPATCHER_TYPE = "REQUEST";
-    private static final String PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE = ".*payara.*|.*glassfish.*";
-    private static final String PROBE_EVENT_MONITOR_EXCLUDE_TYPE = "jakarta.servlet.http.*";
-    private static final String PROBE_ALLOW_REMOTE_ADDRESS = "";
-
     private static final String JERSEY_PROCESS_ALL_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessAllAnnotatedTypes";
     private static final String JERSEY_HK2_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.spi.Hk2CustomBoundTypesProvider";
     private static final String JERSEY_PROCESS_JAXRS_CLASS_NAME = "org.glassfish.jersey.ext.cdi1x.internal.ProcessJAXRSAnnotatedTypes";
@@ -336,7 +318,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         if (beanDeploymentArchive != null && !beanDeploymentArchive.getBeansXml().getBeanDiscoveryMode().equals(NONE)
                 || forceInitialisation(context)) {
             WebBundleDescriptor webBundleDescriptor = context.getModuleMetaData(WebBundleDescriptor.class);
-            boolean developmentMode = isDevelopmentMode(context);
             if (webBundleDescriptor != null) {
                 webBundleDescriptor.setExtensionProperty(WELD_EXTENSION, "true");
 
@@ -358,16 +339,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 // Doing this here to make sure that its done only for CDI enabled web applications
                 registerWeldConversationFilter(webBundleDescriptor);
 
-                // If development mode enabled then for WAR register ProbeFilter and register ProbeExtension for
-                // every deployment
-                if (developmentMode) {
-                    registerProbeFilter(webBundleDescriptor);
-                }
             }
 
-            if (developmentMode) {
-                registerProbeExtension(externalConfiguration, deploymentImpl);
-            }
 
             BundleDescriptor bundle = (webBundleDescriptor != null) ? webBundleDescriptor : ejbBundle;
             if (bundle != null && (!beanDeploymentArchive.getBeansXml().getBeanDiscoveryMode().equals(NONE)
@@ -971,23 +944,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         return eeModuleDescriptor;
     }
 
-    private boolean isDevelopmentMode(DeploymentContext context) {
-        boolean devMode = WeldUtils.isCDIDevModeEnabled(context) || Boolean.getBoolean(DEV_MODE_PROPERTY);
-        WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
-        if (!devMode && wDesc != null) {
-            Enumeration<ContextParameter> cpEnumeration = wDesc.getContextParameters();
-            while (cpEnumeration.hasMoreElements()) {
-                ContextParameter param = cpEnumeration.nextElement();
-                if (DEV_MODE_PROPERTY.equals(param.getName()) && Boolean.valueOf(param.getValue())) {
-                    devMode = true;
-                    WeldUtils.setCDIDevMode(context, devMode);
-                    break;
-                }
-            }
-        }
-        return devMode;
-    }
-
     private void registerWeldConversationFilter(WebBundleDescriptor webBundleDescriptor) {
         for (ServletFilterMapping filterMapping : webBundleDescriptor.getServletFilterMappings()) {
             if (WELD_CONVERSATION_FILTER_NAME.equals(((ServletFilterMappingDescriptor) filterMapping).getDisplayName())) {
@@ -1002,48 +958,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
     }
 
-    private void registerProbeFilter(WebBundleDescriptor webBundleDescriptor) {
-        ServletFilterDescriptor servletFilter = new ServletFilterDescriptor();
-        servletFilter.setClassName(PROBE_FILTER_CLASS_NAME);
-        servletFilter.setName(PROBE_FILTER_NAME);
-        servletFilter.setAsyncSupported(PROBE_FILTER_ASYNC_SUPPORT);
-        webBundleDescriptor.addServletFilter(servletFilter);
-
-        ServletFilterMappingDescriptor servletFilterMapping = new ServletFilterMappingDescriptor();
-        servletFilterMapping.setName(PROBE_FILTER_NAME);
-        servletFilterMapping.addURLPattern(PROBE_FILTER_URL_PATTERN);
-        servletFilterMapping.addDispatcher(PROBE_FILTER_DISPATCHER_TYPE);
-        webBundleDescriptor.addServletFilterMapping(servletFilterMapping);
-    }
-
-    private void registerProbeExtension(ExternalConfigurationImpl externalConfiguration, DeploymentImpl deploymentImpl) {
-        externalConfiguration.setProbeEventMonitorExcludeType(PROBE_EVENT_MONITOR_EXCLUDE_TYPE);
-        externalConfiguration.setProbeInvocationMonitorExcludeType(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE);
-        externalConfiguration.setProbeAllowRemoteAddress(PROBE_ALLOW_REMOTE_ADDRESS);
-        deploymentImpl.addDynamicExtension(createProbeExtension());
-    }
-
     private void configureConcurrentDeployment(DeploymentContext context, ExternalConfigurationImpl configuration) {
         configuration.setConcurrentDeployment(WeldUtils.isConcurrentDeploymentEnabled());
         configuration.setPreLoaderThreadPoolSize(WeldUtils.getPreLoaderThreads());
     }
 
-    private Metadata<Extension> createProbeExtension() {
-        ProbeExtension probeExtension;
-        Class<ProbeExtension> probeExtensionClass = ProbeExtension.class;
-        try {
-            if (System.getSecurityManager() != null) {
-                probeExtension = AccessController.doPrivileged(NewInstanceAction.of(probeExtensionClass));
-            } else {
-                probeExtension = probeExtensionClass.newInstance();
-            }
-        } catch (Exception e) {
-            throw new WeldException(e.getCause());
-        }
-
-        return new MetadataImpl<Extension>(probeExtension, "N/A");
-    }
-    
     private void addWeldListenerToAllWars(DeploymentContext context) {
         // if there's at least 1 ejb jar then add the listener to all wars
         ApplicationHolder applicationHolder = context.getModuleMetaData(ApplicationHolder.class);

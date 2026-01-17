@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2022-2025 Payara Foundation and/or its affiliates -->
 
 <!-- concurrent/managedExecutorService.inc -->
 
@@ -83,6 +84,10 @@
        
        <sun:property id="longrunningtasks"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.longRunningTasks}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['longRunningTasks']}" selectedValue="true"  />
+       </sun:property>
+
+       <sun:property id="usevirtualthreads" rendered="#{pageSession.showVirtualThreads}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.usevirtualthreads}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['useVirtualThreads']}" selectedValue="true"  />
        </sun:property>
 
        <sun:property id="useforkjoinpool" rendered="#{pageSession.showForkJoin}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.useforkjoinpool}">

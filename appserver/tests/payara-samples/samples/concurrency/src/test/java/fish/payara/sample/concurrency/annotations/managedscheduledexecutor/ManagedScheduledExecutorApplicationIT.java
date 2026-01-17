@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -122,7 +122,7 @@ public class ManagedScheduledExecutorApplicationIT {
         String[] data = message.split(":");
         if(data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions > 0 && numberOfExecutions <= 3);
+            assertTrue(numberOfExecutions > 0 && numberOfExecutions <= 3, "Expected number of executions for 1.5 second is 1-3, was " + numberOfExecutions);
         }
         assertTrue(message.contains("CronTrigger Submitted"));
     }
@@ -139,7 +139,7 @@ public class ManagedScheduledExecutorApplicationIT {
         String[] data = message.split(":");
         if(data[1] != null) {
             int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue( numberOfExecutions > 0 && numberOfExecutions <= 3);
+            assertTrue(numberOfExecutions > 0 && numberOfExecutions <= 3, "Expected number of executions for 1.5 second is 1-3, was " + numberOfExecutions);
         }
         assertTrue(message.contains("CronTrigger Submitted"));
     }

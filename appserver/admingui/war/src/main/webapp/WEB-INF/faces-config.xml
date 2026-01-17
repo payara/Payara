@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <faces-config xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -65,31 +66,6 @@
 	<el-resolver>com.sun.webui.jsf.faces.UIComponentELResolver</el-resolver>
     </application>
 
-<!--
-<component>
-    <component-type>com.sun.enterprise.tools.admingui.Tail</component-type>
-    <component-class>com.sun.enterprise.tools.admingui.jsf.component.Tail</component-class>
-</component>
--->
-
-<!--
-    <render-kit>
-	<renderer>
-	    <component-family>com.sun.enterprise.tools.admingui.Tail</component-family>
-	    <renderer-type>com.sun.enterprise.tools.admingui.Tail</renderer-type>
-	    <renderer-class>com.sun.jsftemplating.renderer.TemplateRenderer</renderer-class>
-	</renderer>
-    </render-kit>
--->
-
-<!--
-    <managed-bean>
-        <description></description>
-    	<managed-bean-name>DropDown</managed-bean-name>
-    	<managed-bean-class>com.sun.enterprise.tools.admingui.jsf.backingbean.DropDown</managed-bean-class>
-    	<managed-bean-scope>session</managed-bean-scope>
-    </managed-bean> 
--->
     <managed-bean>
         <description></description>
     	<managed-bean-name>JavaHelpBean</managed-bean-name>
@@ -97,64 +73,5 @@
     	<managed-bean-scope>request</managed-bean-scope>
     </managed-bean> 
 
-    <render-kit>
-        <!--
-        <renderer>
-            <component-family>com.sun.webui.jsf.ImageHyperlink</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.ImageHyperlink</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.ImageHyperlinkRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Hyperlink</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Hyperlink</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.HyperlinkRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Button</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Button</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.ButtonRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.TextField</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.TextField</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.TextFieldRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Image</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Image</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.ImageRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Checkbox</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Checkbox</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.CheckboxRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Listbox</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Listbox</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.ListboxRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.RadioButton</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.RadioButton</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.RadioButtonRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Label</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Label</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.LabelRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.Anchor</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.Anchor</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.AnchorRenderer</renderer-class>
-        </renderer>
-        <renderer>
-            <component-family>com.sun.webui.jsf.DropDown</component-family>
-            <renderer-type>com.sun.webui.jsf.widget.DropDown</renderer-type>
-            <renderer-class>com.sun.webui.jsf.renderkit.html.DropDownRenderer</renderer-class>
-        </renderer>
-        -->
-    </render-kit>
 
 </faces-config>

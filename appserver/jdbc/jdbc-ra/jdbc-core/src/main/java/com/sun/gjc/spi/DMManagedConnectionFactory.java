@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
 
 package com.sun.gjc.spi;
 
@@ -134,12 +134,14 @@ public class DMManagedConnectionFactory extends ManagedConnectionFactoryImpl {
                 logFine("More than one value for key : " + key);
             }
             String prop = getParsedKey(key);
-            driverProps.put(prop, value);
+
             if(prop.equalsIgnoreCase("URL")) {
                 if(spec.getDetail(DataSourceSpec.URL) == null) {
                     setConnectionURL(value);
                 }
+                continue;
             }
+            driverProps.put(prop, value);
         }
         try {
             if (cxRequestInfo != null) {

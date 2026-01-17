@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -86,7 +86,21 @@ public interface ApiVisitor {
     void visitHeaderParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
 
     void visitCookieParam(AnnotationModel param, AnnotatedElement element, ApiContext context);
-    
+
+    // Bean Validation annotations
+
+    void visitNotEmpty(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitNotBlank(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitSize(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitDecimalMax(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitDecimalMin(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitMax(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitMin(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitNegative(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitNegativeOrZero(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitPositive(AnnotationModel param, AnnotatedElement element, ApiContext context);
+    void visitPositiveOrZero(AnnotationModel param, AnnotatedElement element, ApiContext context);
+
     // OpenAPI annotations
 
     void visitOpenAPI(AnnotationModel definition, AnnotatedElement element, ApiContext context);

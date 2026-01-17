@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates] 
  */
 package org.glassfish.web.admin.cli;
 
@@ -103,8 +103,6 @@ public class CreateHttpListener implements AdminCommand {
     String defaultVirtualServer;
     @Param(name = "servername", optional = true)
     String serverName;
-    @Param(name = "xpowered", optional = true, defaultValue = "true")
-    Boolean xPoweredBy;
     @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
     Boolean serverHeader;
     @Param(name = "xframe", optional = true, defaultValue = "true")
@@ -379,7 +377,6 @@ public class CreateHttpListener implements AdminCommand {
             .getCommand("create-http", context.getActionReport(), context.getLogger());
         command.protocolName = listenerId;
         command.defaultVirtualServer = defaultVirtualServer;
-        command.xPoweredBy = xPoweredBy;
         command.serverHeader = serverHeader;
         command.xFrameOptions = xFrameOptions; 
         command.serverName = serverName;

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021-2022] Payara Foudation and/or affiliates
+// Portions Copyright [2021-2024] Payara Foudation and/or affiliates
 
 package com.sun.enterprise.security;
 
@@ -179,7 +179,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
         try {
             List<JaccProvider> jaccProviders = securityService.getJaccProvider();
             for (JaccProvider jacc : jaccProviders) {
-                if ("fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl".equals(jacc.getPolicyConfigurationFactoryProvider())) {
+                if ("org.glassfish.exousia.modules.locked.SimplePolicyConfigurationFactory".equals(jacc.getPolicyConfigurationFactoryProvider())) {
                     //simple policy provider already present
                     return;
                 }
@@ -188,8 +188,8 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                 JaccProvider jacc = secServ.createChild(JaccProvider.class);
                 //add the simple provider to the domain's security service
                 jacc.setName("simple");
-                jacc.setPolicyConfigurationFactoryProvider("fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl");
-                jacc.setPolicyProvider("fish.payara.security.jacc.provider.PolicyProviderImpl");
+                jacc.setPolicyConfigurationFactoryProvider("org.glassfish.exousia.modules.locked.SimplePolicyConfigurationFactory");
+                jacc.setPolicyProvider("org.glassfish.exousia.modules.locked.SimplePolicyProvider");
                 secServ.getJaccProvider().add(jacc);
                 return secServ;
             }, securityService);

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -55,6 +55,11 @@ import jakarta.enterprise.inject.spi.AnnotatedType;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.DefinitionException;
 import jakarta.enterprise.inject.spi.InjectionTarget;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,6 +92,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.glassfish.api.invocation.ComponentInvocation;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * Class to provide actual injection of an annotation and related services
@@ -162,11 +170,11 @@ public class InjectionServicesImpl implements InjectionServices {
 
             if ( isInterceptor( targetClass ) && isValidBundleContext()
                     && (componentEnv != null && !componentEnv.equals(injectionEnv)) ) {
-              // Resources injected into interceptors must come from the environment in which the interceptor is
-              // intercepting, not the environment in which the interceptor resides (for everything else!)
-              // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.
-              // must use the current jndi component env to lookup the objects to inject
-              injectionManager.inject( targetClass, target, injectionEnv, null, false );
+                // Resources injected into interceptors must come from the environment in which the interceptor is
+                // intercepting, not the environment in which the interceptor resides (for everything else!)
+                // Must use the injectionEnv to get the injection info to determine where in jndi to look for the objects to inject.
+                // must use the current jndi component env to lookup the objects to inject
+                injectionManager.inject( targetClass, target, injectionEnv, null, false );
             } else {
                 if (annotatedType instanceof BackedAnnotatedType) {
                     BackedAnnotatedType backedAnnotatedType = ((BackedAnnotatedType) annotatedType);
@@ -183,51 +191,55 @@ public class InjectionServicesImpl implements InjectionServices {
                     logger.log(Level.FINE,
                             "No valid EE environment for injection of {0}. The methods that is missing the context is {1}",
                             new Object[] {targetClass, injectionContext.getAnnotatedType().getMethods()});
+
+                    processResourceAnnotations(injectionContext, target, targetClass);
+                    injectionContext.proceed();
                     return;
                 }
 
-              // Perform EE-style injection on the target.  Skip PostConstruct since
-              // in this case 299 impl is responsible for calling it.
+                // Perform EE-style injection on the target.  Skip PostConstruct since
+                // in this case 299 impl is responsible for calling it.
 
-              if( componentEnv instanceof EjbDescriptor ) {
+                if( componentEnv instanceof EjbDescriptor ) {
 
-                EjbDescriptor ejbDesc = (EjbDescriptor) componentEnv;
+                    EjbDescriptor ejbDesc = (EjbDescriptor) componentEnv;
 
-                if( containerServices.isEjbManagedObject(ejbDesc, targetClass)) {
-                  injectionEnv = componentEnv;
+                    if( containerServices.isEjbManagedObject(ejbDesc, targetClass)) {
+                        injectionEnv = componentEnv;
+                    } else {
+
+                        if( bundleContext instanceof EjbBundleDescriptor ) {
+
+                            // Check if it's a @ManagedBean class within an ejb-jar.  In that case,
+                            // special handling is needed to locate the EE env dependencies
+                            mbDesc = bundleContext.getManagedBeanByBeanClass(targetClassName);
+                        }
+                    }
+                }
+
+                if( mbDesc != null ) {
+                    injectionManager.injectInstance(target, mbDesc.getGlobalJndiName(), false);
                 } else {
+                    if( injectionEnv instanceof EjbBundleDescriptor ) {
 
-                  if( bundleContext instanceof EjbBundleDescriptor ) {
-
-                    // Check if it's a @ManagedBean class within an ejb-jar.  In that case,
-                    // special handling is needed to locate the EE env dependencies
-                    mbDesc = bundleContext.getManagedBeanByBeanClass(targetClassName);
-                  }
+                        // CDI-style managed bean that doesn't have @ManagedBean annotation but
+                        // is injected within the context of an ejb.  Need to explicitly
+                        // set the environment of the ejb bundle.
+                        if ( target == null ) {
+                            injectionManager.injectClass(targetClass, compEnvManager.getComponentEnvId(injectionEnv),false);
+                        } else {
+                            injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
+                        }
+                    } else if (isValidBundleContext()) {
+                        if ( target == null ) {
+                            injectionManager.injectClass(targetClass, injectionEnv, false);
+                        } else {
+                            injectionManager.injectInstance(target, injectionEnv, false);
+                        }
+                    }
                 }
-              }
 
-              if( mbDesc != null ) {
-                injectionManager.injectInstance(target, mbDesc.getGlobalJndiName(), false);
-              } else {
-                if( injectionEnv instanceof EjbBundleDescriptor ) {
-
-                  // CDI-style managed bean that doesn't have @ManagedBean annotation but
-                  // is injected within the context of an ejb.  Need to explicitly
-                  // set the environment of the ejb bundle.
-                  if ( target == null ) {
-                    injectionManager.injectClass(targetClass, compEnvManager.getComponentEnvId(injectionEnv),false);
-                  } else {
-                    injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
-                  }
-                } else if (isValidBundleContext()) {
-                  if ( target == null ) {
-                    injectionManager.injectClass(targetClass, injectionEnv, false);
-                  } else {
-                    injectionManager.injectInstance(target, injectionEnv, false);
-                  }
-                }
-              }
-
+                processResourceAnnotations(injectionContext, target, targetClass);
             }
 
             injectionContext.proceed();
@@ -235,6 +247,128 @@ public class InjectionServicesImpl implements InjectionServices {
         } catch(InjectionException ie) {
             throw new IllegalStateException(ie.getMessage(), ie);
         }
+    }
+
+    /**
+     * Process @Resource annotation directly, similar to old ResourceInjectionServices.
+     */
+    private <T> void processResourceAnnotations(InjectionContext<T> injectionContext, Object target, Class targetClass) {
+        if (target == null) {
+            return;
+        }
+
+        for (Field field : targetClass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(Resource.class)) {
+                Resource resource = field.getAnnotation(Resource.class);
+                injectResourceField(target, field, resource);
+            }
+        }
+
+        for (Method method : targetClass.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(Resource.class) && isSetterMethod(method)) {
+                Resource resource = method.getAnnotation(Resource.class);
+                injectResourceMethod(target, method, resource);
+            }
+        }
+    }
+
+    private void injectResourceField(Object target, Field field, Resource resource) {
+        String lookupName = determineResourceName(resource, field);
+
+        if (lookupName != null && !lookupName.isEmpty()) {
+            try {
+                InitialContext ctx = new InitialContext();
+                Object value = ctx.lookup(lookupName);
+
+                if (value != null) {
+                    field.setAccessible(true);
+                    field.set(target, value);
+
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Successfully injected resource {0} into field {1}",
+                                new Object[]{lookupName, field.getName()});
+                    }
+                }
+            } catch (NamingException e) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Failed to find " + lookupName + " in JNDI", e);
+                }
+            } catch (IllegalAccessException e) {
+                logger.log(Level.WARNING, "Failed to inject resource into field " + field.getName(), e);
+            }
+        }
+    }
+
+    private void injectResourceMethod(Object target, Method method, Resource resource) {
+        String lookupName = determineResourceName(resource, method);
+
+        if (lookupName != null && !lookupName.isEmpty()) {
+            try {
+                InitialContext ctx = new InitialContext();
+                Object value = ctx.lookup(lookupName);
+
+                if (value != null) {
+                    method.setAccessible(true);
+                    method.invoke(target, value);
+
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Successfully injected resource {0} into method {1}",
+                                new Object[]{lookupName, method.getName()});
+                    }
+                }
+            } catch (NamingException e) {
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "Failed to find " + lookupName + " in JNDI", e);
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                logger.log(Level.WARNING, "Failed to inject resource into method " + method.getName(), e);
+            }
+        }
+    }
+
+    private String determineResourceName(Resource resource, Member member) {
+        // Priority: lookup > mappedName > name
+        String lookupName = resource.lookup();
+        if (!lookupName.isEmpty()) {
+            return lookupName;
+        }
+
+        String mappedName = resource.mappedName();
+        if (!mappedName.isEmpty()) {
+            return mappedName;
+        }
+
+        String name = resource.name();
+        if (!name.isEmpty()) {
+            return "java:comp/env/" + name;
+        }
+
+        String propertyName;
+        if (member instanceof Field) {
+            propertyName = member.getName();
+        } else if (member instanceof Method) {
+            Method method = (Method) member;
+            propertyName = getPropertyNameFromSetter(method);
+        } else {
+            return null;
+        }
+
+        String className = member.getDeclaringClass().getName();
+        return "java:comp/env/" + className + "/" + propertyName;
+    }
+
+    private boolean isSetterMethod(Method method) {
+        return method.getName().startsWith("set")
+                && method.getParameterCount() == 1
+                && method.getReturnType() == void.class;
+    }
+
+    private String getPropertyNameFromSetter(Method method) {
+        String methodName = method.getName();
+        if (methodName.startsWith("set") && methodName.length() > 3) {
+            return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+        }
+        return methodName;
     }
 
     @Override

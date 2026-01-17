@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
 import java.security.PrivilegedActionException;
@@ -54,7 +54,7 @@ import jakarta.xml.ws.WebServiceException;
 
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jauth.jaspic.provider.config.PipeHelper;
+import com.sun.enterprise.security.jauth.jaspic.provider.config.SoapAuthenticationService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.pipe.NextAction;
@@ -72,7 +72,7 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
 
     protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CommonServerSecurityTube.class);
     private final boolean isHttpBinding;
-    private PipeHelper helper;
+    private SoapAuthenticationService helper;
 
     // Introduced during Pipe to Tube conversion
     private ServerAuthContext sAC = null;
@@ -82,7 +82,7 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
     public CommonServerSecurityTube(Map props, final Tube next, boolean isHttpBinding) {
         super(next);
         props.put(PipeConstants.SECURITY_PIPE, this);
-        this.helper = new PipeHelper(PipeConstants.SOAP_LAYER, props, null);
+        this.helper = new SoapAuthenticationService(PipeConstants.SOAP_LAYER, props, null);
         this.isHttpBinding = isHttpBinding;
 
     }
@@ -270,7 +270,7 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
             s = (Subject) p.invocationProperties.get(PipeConstants.CLIENT_SUBJECT);
         }
         if (s == null) {
-            s = PipeHelper.getClientSubject();
+            s = SoapAuthenticationService.getClientSubject();
             if (p != null) {
                 p.invocationProperties.put(PipeConstants.CLIENT_SUBJECT, s);
             }

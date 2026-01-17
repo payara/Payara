@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -92,7 +92,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
 
         if (proxy.isError()) {
             result.append("<h2>").append(ar.getActionDescription()).append(" Error:</h2>")
-                    .append(proxy.getErrorMessage());
+                    .append(ResourceUtil.encodeString(proxy.getErrorMessage()));
         } else {
             final Map<String, String> childResources = (Map<String, String>) ar.getExtraProperties().get("childResources");
             final List<Map<String, String>> commands = (List<Map<String, String>>) ar.getExtraProperties().get("commands");
@@ -187,7 +187,8 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
 
                             }
                         } else {
-                            result.append("<li>").append(entry.getKey()).append(" : ").append(object.toString()).append(LIST_ITEM_END);
+                            result.append("<li>").append(entry.getKey()).append(" : ")
+                                    .append(ResourceUtil.encodeString(object.toString())).append(LIST_ITEM_END);
                         }
                     }
                     result.append(LIST_END);

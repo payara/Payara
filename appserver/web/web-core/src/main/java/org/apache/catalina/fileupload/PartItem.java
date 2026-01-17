@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;
@@ -67,7 +67,6 @@ import jakarta.servlet.http.Part;
 import java.io.*;
 import org.glassfish.hk2.utilities.CleanerFactory;
 import java.nio.charset.Charset;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -196,6 +195,8 @@ class PartItem
      * The request character encoding;
      */
     private String requestCharEncoding;
+    
+    private final transient Cleaner cleaner;
 
     // ----------------------------------------------------------- Constructors
 
@@ -229,6 +230,7 @@ class PartItem
         this.requestCharEncoding = requestCharEncoding;
         this.sizeThreshold = multipart.getFileSizeThreshold();
         this.repository = multipart.getRepository();
+        this.cleaner = new Cleaner();
         registerCleanupEvent();
     }
 
@@ -589,6 +591,7 @@ class PartItem
         if (dfos == null) {
             File outputFile = getTempFile();
             dfos = new DeferredFileOutputStream(sizeThreshold, outputFile);
+            cleaner.setFileStream(dfos);
         }
         return dfos;
     }
@@ -622,13 +625,7 @@ class PartItem
      * Removes the file contents from the temporary storage.
      */
     public final void registerCleanupEvent() {
-        CleanerFactory.create().register(this, () -> {
-            File outputFile = dfos.getFile();
-
-            if (outputFile != null && outputFile.exists()) {
-                deleteFile(outputFile);
-            }
-        });
+        CleanerFactory.create().register(this, cleaner);
     }
 
     /**
@@ -811,6 +808,41 @@ class PartItem
     private void deleteFile(File file) {
         if (!file.delete() && log.isLoggable(Level.FINE)) {
             log.log(Level.FINE, "Cannot delete file: " + file);
+        }
+    }
+    
+    private static class Cleaner implements Runnable {
+        private final static Logger logger = LogFacade.getLogger();
+        private DeferredFileOutputStream fileStream;
+
+        private void setFileStream(DeferredFileOutputStream fileStream) {
+            this.fileStream = fileStream;
+        }
+
+        @Override
+        public void run() {
+            if (fileStream == null) {
+                return;
+            }
+
+            try {
+                File file = fileStream.getFile();
+                if (file != null && file.exists()) {
+                    if (!file.delete() && logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Cannot delete file: " + file);
+                    }
+                }
+            }
+            finally {
+                try {
+                    fileStream.close();
+                } catch (IOException e) {
+                    logger.log(Level.FINE, "Error closing stream", e);
+                }
+                finally {
+                    fileStream = null;
+                }
+            }
         }
     }
 }

@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [Payara Foundation] -->
+<!-- Portions Copyright [2016-2024] [Payara Foundation] -->
 <!-- deploymentWarFields.jsf -->
 
 <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
@@ -78,10 +78,6 @@
 <sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
     <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
 </sun:property>
-        
-<sun:property id="cdiDevModeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.cdiDevMode}" helpText="$resource{i18n.deploy.cdiDevModeHelp}">
-    <sun:checkbox id="cdiDevMode" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['PROPERTY-cdiDevModeEnabled']}" selectedValue="true" />
-</sun:property>        
 
 <sun:property id="availability" rendered="#{!pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
     <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['availabilityEnabled']}" selectedValue="true" />
@@ -98,6 +94,10 @@
 
 <sun:property id="force" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceRedeploy}" helpText="$resource{i18n.deploy.forceRedeployHelp}">
         <sun:checkbox id="force"  label=" " selected="#{pageSession.war['force']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="warLibraries" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.warlibs}" helpText="$resource{i18n.deploy.warlibsHelp}">
+    <sun:checkbox id="warLibraries" label=" " selected="#{pageSession.war['warlibs']}" selectedValue="true"/>
 </sun:property>
 
 <sun:property id="keepState" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}">

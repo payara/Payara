@@ -77,58 +77,9 @@ jobs:
             }
       - name: Notify MS Teams channel Metrics Report
         id: notify-report-ms-teams
-        uses: simbo/msteams-message-card-action@latest
+        uses: tlolkema/simple-teams-message@main
         with:
           webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
-          title: Payara Community Repository Metrics - ${{ env.last_month }}
-          message: |
-            <table>
-              <tr>
-                <th>Metric Average</th>
-                <th>Raised Issues</th>
-                <th>Closed Issues</th></tr>
-              <tr>
-                <td>Time to first response</td>
-                <td> ${{ env.time_to_first_response_1 }} </td>
-                <td> ${{ env.time_to_first_response_2 }} </td>
-              </tr>
-              <tr>
-                <td>Time to close</td>
-                <td> ${{ env.time_to_close_1 }} </td>
-                <td> ${{ env.time_to_close_2 }} </td>
-              </tr>
-              <tr>
-                <td>Time spent in <code>Open</code> status</td>
-                <td> ${{ env.time_in_open_status_1 }} </td>
-                <td> ${{ env.time_in_open_status_2 }} </td>
-              </tr>              
-              <tr>
-                <td>Time spent in <code>Pending</code> status</td>
-                <td> ${{ env.time_in_pending_status_1 }} </td>
-                <td> ${{ env.time_in_pending_status_2 }} </td>
-              </tr>
-              <tr>
-                <td>Time spent in <code>Accepted</code> status</td>
-                <td> ${{ env.time_in_accepted_status_1 }} </td>
-                <td> ${{ env.time_in_accepted_status_2 }} </td>
-              </tr>
-            </table>
-            <br>
-            <table>
-              <tr>
-                <th>Metric Value</th>
-                <th>Total</th>
-              </tr>
-              <tr>
-                <td>Open Issues </td>
-                <td>${{ env.num_items_opened }}</td>
-              </tr>
-              <tr>
-                <td>Closed Issues</td>
-                <td>${{ env.num_items_closed }}</td>
-              </tr>            
-              <tr>
-                <td>Escalated Issues</td>
-                <td>${{fromJSON(steps.count-accepted-issues.outputs.result) }}</td>
-              </tr>
-            </table>
+          message_title: Payara Community Repository Metrics - ${{ env.last_month }}
+          message_description: "The following are metrics for the Payara Community GitHub repository. 'R' is for Raised Issues, 'C' is for Closed Issues"
+          extra_text_blocks: "Avg time to first response: R=${{ env.time_to_first_response_1 }}, C=${{ env.time_to_first_response_2 }}|||Avg time to close: R=${{ env.time_to_close_1 }}, C=${{ env.time_to_close_2 }}|||Avg time spent in Open status: R=${{ env.time_in_open_status_1 }}, C=${{ env.time_in_open_status_2 }}|||Avg time spent in Pending status: R=${{ env.time_in_pending_status_1 }}, C=${{ env.time_in_pending_status_2 }}|||Avg time spent in Accepted status: R=${{ env.time_in_accepted_status_1 }}, C=${{ env.time_in_accepted_status_2 }}|||Open Issues: ${{ env.num_items_opened }}|||Closed Issues: ${{ env.num_items_closed }}|||Escalated Issues: ${{ fromJSON(steps.count-accepted-issues.outputs.result) }}"

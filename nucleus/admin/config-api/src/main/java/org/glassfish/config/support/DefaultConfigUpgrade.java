@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -507,10 +507,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      *      <property name="jaas-context" value="fileRealm"/>
      *  </auth-realm>
      *  <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate"/>
-     *  <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+     *  <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory">
      *      <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      *  </jacc-provider>
-     *  <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="simple" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"/>
+     *  <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="simple" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"/>
      *  <audit-module classname="com.sun.enterprise.security.Audit" name="default">
      *      <property name="auditOn" value="false"/>
      *  </audit-module>
@@ -625,10 +625,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     /* Loop through all jacc-provider elements in the template and create JaccProvider config objects.
      * Cursor should already be at first jacc-provider START_ELEMENT.
      * from template:
-     * <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl">
+     * <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory">
      *  <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
      * </jacc-provider>
-     * <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="simple" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"/>
+     * <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="simple" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"/>
      */
     private void createJaccProvider(SecurityService ss) throws PropertyVetoException {
         while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("audit-module"))) {

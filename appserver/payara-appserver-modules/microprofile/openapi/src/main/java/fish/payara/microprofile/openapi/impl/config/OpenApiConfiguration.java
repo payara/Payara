@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -67,6 +67,7 @@ public class OpenApiConfiguration {
 
     private static final String MODEL_READER_KEY = "mp.openapi.model.reader";
     private static final String FILTER_KEY = "mp.openapi.filter";
+    private static final String SCAN_BEAN_VALIDATION_KEY = "mp.openapi.scan.beanvalidation";
     private static final String SCAN_LIB_KEY = "mp.openapi.extensions.scan.lib";
     private static final String SCAN_DISABLE_KEY = "mp.openapi.scan.disable";
     private static final String SCAN_PACKAGES_KEY = "mp.openapi.scan.packages";
@@ -82,6 +83,7 @@ public class OpenApiConfiguration {
     private Class<? extends OASFilter> filter;
     private boolean scanDisable = false;
     private boolean scanLib = false;
+    private boolean scanBeanValidation = true;
     private List<String> scanPackages = new ArrayList<>();
     private List<String> scanClasses = new ArrayList<>();
     private List<String> scanExcludePackages = new ArrayList<>();
@@ -102,6 +104,7 @@ public class OpenApiConfiguration {
         for (String propertyName : config.getPropertyNames()) {
             parseModelReader(propertyName, config);
             parseFilter(propertyName, config);
+            parseScanBeanValidation(propertyName, config);
             parseScanDisable(propertyName, config);
             parseScanLib(propertyName, config);
             parseScanPackages(propertyName, config);
@@ -144,6 +147,13 @@ public class OpenApiConfiguration {
     }
 
     /**
+     * @return whether to disable bean validation scanning.
+     */
+    public boolean getScanBeanValidation() {
+        return scanBeanValidation;
+    }
+
+    /**
      * @return a list of servers to add to the root document.
      */
     public List<String> getServers() {
@@ -174,6 +184,12 @@ public class OpenApiConfiguration {
     private void parseModelReader(String propertyName, Config config) {
         if (propertyName.equals(MODEL_READER_KEY)) {
             this.modelReader = parseClass(propertyName, config, "Model Reader", OASModelReader.class);
+        }
+    }
+
+    private void parseScanBeanValidation(String propertyName, Config config) {
+        if (propertyName.equals(SCAN_BEAN_VALIDATION_KEY)) {
+            this.scanBeanValidation = config.getValue(propertyName, Boolean.class);
         }
     }
 

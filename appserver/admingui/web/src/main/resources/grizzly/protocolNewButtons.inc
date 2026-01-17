@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -39,7 +39,7 @@
     holder.
     
 -->
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/protocolNewButtons.jsf -->
 
@@ -79,7 +79,7 @@
                 gf.createEntity(endpoint="${newProxy}/#{pageSession.valueMap['Name']}/http"
                         attrs="#{pageSession.httpMap}"
                         convertToFalse={"uploadTimeoutEnabled", "cometSupportEnabled", "dnsLookupEnabled", "rcmSupportEnabled", "traceEnabled", "authPassThroughEnabled", 
-                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "xpoweredBy", "serverHeader", "XframeOptions" },
+                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "serverHeader", "XframeOptions" },
                         skipAttrs="#{pageSession.skipAttrsList}"
                         result => $attribute{newHttp});
 

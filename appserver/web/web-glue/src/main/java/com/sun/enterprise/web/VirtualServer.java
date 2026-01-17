@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -96,6 +96,7 @@ import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.apache.catalina.core.SessionCookieConfigSource;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.ErrorPage;
@@ -177,7 +178,7 @@ import com.sun.web.security.RealmAdapter;
 /**
  * Standard implementation of a virtual server (aka virtual host) in the Payara Server.
  */
-public class VirtualServer extends StandardHost implements org.glassfish.embeddable.web.VirtualServer {
+public class VirtualServer extends StandardHost implements org.glassfish.embeddable.web.VirtualServer, SessionCookieConfigSource {
 
     private static final String SSO_MAX_IDLE = "sso-max-inactive-seconds";
     private static final String SSO_REAP_INTERVAL = "sso-reap-interval-seconds";
@@ -428,6 +429,16 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     @Override
+    public String getSessionCookieSecure() {
+        return vsBean.getSessionCookieSecure();
+    }
+
+    @Override
+    public boolean isSessionCookieHttpOnly() {
+        return Boolean.parseBoolean(vsBean.getSessionCookieHttpOnly());
+    }
+
+    @Override
     public Container findChild(String contextRoot) {
         if (defaultContextPath != null && "/".equals(contextRoot)) {
             return super.findChild(defaultContextPath);
@@ -569,10 +580,27 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
                 String contextRoot = null;
                 String location = null;
 
-                ConfigBeansUtilities configBeansUtilities = getConfigBeansUtilities();
-                if (configBeansUtilities != null) {
-                    contextRoot = configBeansUtilities.getContextRoot(defaultWebModuleId);
-                    location = configBeansUtilities.getLocation(defaultWebModuleId);
+                // First try to get the location from ApplicationRegistry (works for all scenarios including deployment groups)
+                ApplicationInfo appInfo = appRegistry.get(defaultWebModuleId);
+                if (appInfo != null && appInfo.getSource() != null) {
+                    location = appInfo.getSource().getURI().getPath();
+                    // Get context root from the application metadata
+                    Application app = appInfo.getMetaData(Application.class);
+                    if (app != null && app.isVirtual()) {
+                        com.sun.enterprise.deployment.BundleDescriptor bd = app.getStandaloneBundleDescriptor();
+                        if (bd instanceof com.sun.enterprise.deployment.WebBundleDescriptor) {
+                            contextRoot = ((com.sun.enterprise.deployment.WebBundleDescriptor) bd).getContextRoot();
+                        }
+                    }
+                }
+
+                // Fallback to ConfigBeansUtilities if ApplicationRegistry doesn't have the info
+                if (location == null) {
+                    ConfigBeansUtilities configBeansUtilities = getConfigBeansUtilities();
+                    if (configBeansUtilities != null) {
+                        contextRoot = configBeansUtilities.getContextRoot(defaultWebModuleId);
+                        location = configBeansUtilities.getLocation(defaultWebModuleId);
+                    }
                 }
 
                 if (contextRoot != null && location != null) {

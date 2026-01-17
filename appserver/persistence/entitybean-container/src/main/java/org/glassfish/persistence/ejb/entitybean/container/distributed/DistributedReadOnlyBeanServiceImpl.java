@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or its affiliates
 
 package org.glassfish.persistence.ejb.entitybean.container.distributed;
 
@@ -152,17 +153,7 @@ class DistributedReadOnlyBeanServiceImpl
         final ClassLoader prevClassLoader = currentThread.getContextClassLoader();
         
         try {
-            if(System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(info.loader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(info.loader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(info.loader);
             
             if (! refreshAll) {
                 ByteArrayInputStream bis = null;
@@ -204,24 +195,14 @@ class DistributedReadOnlyBeanServiceImpl
         } catch (Exception ex) {
             _logger.log(Level.WARNING, "Error during refresh", ex);
         } finally {
-            if(System.getSecurityManager() == null) {
-                currentThread.setContextClassLoader(prevClassLoader);
-            } else {
-                java.security.AccessController.doPrivileged(
-                        new java.security.PrivilegedAction() {
-                    public java.lang.Object run() {
-                        currentThread.setContextClassLoader(prevClassLoader);
-                        return null;
-                    }
-                });
-            }
+            currentThread.setContextClassLoader(prevClassLoader);
         }        
     }
-    
+
     private static class ReadOnlyBeanRefreshHandlerInfo {
-        public  ClassLoader                     loader;
-        public  ReadOnlyBeanRefreshEventHandler handler;
-        
+        public ClassLoader loader;
+        public ReadOnlyBeanRefreshEventHandler handler;
+
         public ReadOnlyBeanRefreshHandlerInfo(
                 ClassLoader loader, ReadOnlyBeanRefreshEventHandler handler) {
             this.loader = loader;

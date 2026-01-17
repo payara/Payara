@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package org.apache.naming.resources;
 
@@ -931,7 +931,7 @@ public class FileDirContext extends BaseDirContext {
                 canPath = normalize(file.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS).toString());
             } catch (IOException e) {
             }
-            if (canPath == null || (!canPath.startsWith(canonicalBase) && !allowLinking)) {
+            if (canPath == null || canonicalBase == null || (!canPath.startsWith(canonicalBase) && !allowLinking)) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_CANONICAL_PATH);
                 }
@@ -939,7 +939,7 @@ public class FileDirContext extends BaseDirContext {
             }
 
             // Check to see if going outside of the web application root
-            if ((!allowLinking) && (!canPath.startsWith(absoluteBase))) {
+            if ((!allowLinking) && (absoluteBase == null || !canPath.startsWith(absoluteBase))) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NOT_ALLOWED, new Object[]{allowLinking,canPath,absoluteBase});
                 }

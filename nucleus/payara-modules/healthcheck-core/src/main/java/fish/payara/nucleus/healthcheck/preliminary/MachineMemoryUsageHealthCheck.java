@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -40,11 +40,6 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.notification.healthcheck.HealthCheckResultEntry;
 import fish.payara.notification.healthcheck.HealthCheckResultStatus;
 import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
@@ -70,8 +65,7 @@ import java.util.List;
 @Service(name = "healthcheck-machinemem")
 @RunLevel(StartupRunLevel.VAL)
 public class MachineMemoryUsageHealthCheck
-extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker>
-implements MonitoringDataSource, MonitoringWatchSource {
+extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, MachineMemoryUsageChecker> {
 
     private static final String MEMTOTAL = "MemTotal:";
     private static final String MEMFREE = "MemFree:";
@@ -123,25 +117,6 @@ implements MonitoringDataSource, MonitoringWatchSource {
                     exception));
         }
         return result;
-    }
-
-    @Override
-    public void collect(MonitoringWatchCollector collector) {
-        collectUsage(collector, "ns:health PhysicalMemoryUsage", "Physical Memory Usage", 5, false);
-    }
-
-    @Override
-    @MonitoringData(ns = "health", intervalSeconds = 12)
-    public void collect(MonitoringDataCollector collector) {
-        if (options != null && options.isEnabled()) {
-            try {
-                collector.collect("PhysicalMemoryUsage", (long) stats.usedPercentage());
-            } catch (RuntimeException ex) {
-                throw ex;
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
     }
 
     private static final class PysicalMemoryUsage {

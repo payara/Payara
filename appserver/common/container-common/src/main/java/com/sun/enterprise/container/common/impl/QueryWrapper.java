@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.container.common.impl;
 
@@ -599,5 +600,118 @@ public class QueryWrapper <T extends Query> implements Query {
         }
     }
 
+    @Override
+    public Object getSingleResultOrNull() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_SINGLE_RESULT_OR_NULL);
+            }
+            Object retVal = queryDelegate.getSingleResultOrNull();
+            entityManagerDelegate.clear();
+            return retVal;
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
 
+    @Override
+    public Query setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.SET_CACHE_RETRIEVE_MODE);
+            }
+            queryDelegate.setCacheRetrieveMode(cacheRetrieveMode);
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public Query setCacheStoreMode(CacheStoreMode cacheStoreMode) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.SET_CACHE_STORE_MODE);
+            }
+            queryDelegate.setCacheStoreMode(cacheStoreMode);
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public CacheRetrieveMode getCacheRetrieveMode() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_CACHE_RETRIEVE_MODE);
+            }
+
+            return queryDelegate.getCacheRetrieveMode();
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
+
+    @Override
+    public CacheStoreMode getCacheStoreMode() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_CACHE_STORE_MODE);
+            }
+
+            return queryDelegate.getCacheStoreMode();
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
+
+    @Override
+    public Query setTimeout(Integer integer) {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.SET_TIMEOUT);
+            }
+            queryDelegate.setTimeout(integer);
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+
+        return this;
+    }
+
+    @Override
+    public Integer getTimeout() {
+        try {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryStart(EntityManagerQueryMethod.GET_TIMEOUT);
+            }
+
+            return queryDelegate.getTimeout();
+
+        } finally {
+            if (callFlowAgent.isEnabled()) {
+                callFlowAgent.entityManagerQueryEnd();
+            }
+        }
+    }
 }

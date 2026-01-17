@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+//Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.internal.deployment;
 
@@ -85,6 +85,8 @@ public abstract class GenericSniffer implements Sniffer {
     final private static XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
     private HK2Module[] modules;
 
+    private String[] annotationNamesCached = null;
+
     public GenericSniffer(String containerName, String appStigma, String urlPattern) {
         this.containerName = containerName;
         this.appStigma = appStigma;
@@ -121,11 +123,14 @@ public abstract class GenericSniffer implements Sniffer {
      */
     @Override
     public String[] getAnnotationNames(DeploymentContext context) {
-        List<String> annotationNames = new ArrayList<String>();
-        for (Class<? extends Annotation> annotationType : getAnnotationTypes())  {
-            annotationNames.add(annotationType.getName());
+        if (annotationNamesCached == null) {
+            List<String> annotationNames = new ArrayList<>();
+            for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
+                annotationNames.add(annotationType.getName());
+            }
+            annotationNamesCached = annotationNames.toArray(new String[annotationNames.size()]);
         }
-        return annotationNames.toArray(new String[annotationNames.size()]);
+        return annotationNamesCached;
     }
 
     /**

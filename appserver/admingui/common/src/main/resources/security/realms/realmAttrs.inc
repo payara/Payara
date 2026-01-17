@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -84,7 +84,7 @@
         </sun:propertySheetSection>
     </sun:propertySheet>
 "<br><br>
-    <sun:propertySheetSection id="fileSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}" >
+    <sun:propertySheetSection id="fileSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.file.FileRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{fileSectionId});
         />
@@ -99,7 +99,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="certSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="certSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.certificate.CertificateRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{certSectionId});
         />  
@@ -108,7 +108,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="ldapSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="ldapSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.ldap.LDAPRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{ldapSectionId});
         />
@@ -126,7 +126,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="solarisSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="solarisSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.solaris.SolarisRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{solarisSectionId});
         />  
@@ -138,7 +138,7 @@
         </sun:property> 
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="pamSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="pamSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.pam.PAMRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{pamSectionId});
         />
@@ -147,7 +147,7 @@
         </sun:property>
     </sun:propertySheetSection>
 
-    <sun:propertySheetSection id="jdbcSection" visible="#{false}" label="$resource{i18nc.realm.specificProps}">
+    <sun:propertySheetSection id="jdbcSection" visible="#{attrMap.classname eq 'com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm'}" label="$resource{i18nc.realm.specificProps}">
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{jdbcSectionId});
         />  
