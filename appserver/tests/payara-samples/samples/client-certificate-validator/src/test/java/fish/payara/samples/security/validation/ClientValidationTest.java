@@ -50,52 +50,39 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.omnifaces.utils.security.Certificates;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.*;
-import java.security.cert.Certificate;
+import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.junit.Assert.*;
-
-/**
- *
- * @author James Hillyard
- */
+import static org.junit.Assert.fail;
 
 @RunWith(PayaraArquillianTestRunner.class)
 @SincePayara("5.2021.8")
 public class ClientValidationTest {
 
     private static String certPath;
-
     private static final String CERTIFICATE_ALIAS = "omnikey";
     private static final String KEYSTORE_PASSWORD = "changeit";
     private static final String KEYSTORE_TYPE = "PKCS12";
@@ -103,7 +90,7 @@ public class ClientValidationTest {
     private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
     private static final Logger logger = Logger.getLogger(ClientValidationTest.class.getName());
 
-   @Deployment
+    @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class, "security.war")
                 .addPackage(ClientValidationTest.class.getPackage())
@@ -112,7 +99,7 @@ public class ClientValidationTest {
                 .addPackages(true, "net.sourceforge.htmlunit")
                 .addPackages(true, "org.eclipse")
                 .addPackages(true, PayaraArquillianTestRunner.class.getPackage())
-                .addClasses(ServerOperations.class, SecurityUtils.class, Certificates.class)
+                .addClasses(ServerOperations.class, SecurityUtils.class)
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/beans.xml"));
     }
@@ -134,40 +121,38 @@ public class ClientValidationTest {
             try (FileInputStream fis = new FileInputStream(certPath)) {
                 keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
             }
-            
+
             logger.info("Successfully generated and loaded keystore at: " + certPath);
 
-                // Set up key manager factory with PKCS12
-                KeyManagerFactory kmf = KeyManagerFactory.getInstance(
-                        KeyManagerFactory.getDefaultAlgorithm());
-                kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
+            // Set up key manager factory with PKCS12
+            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
 
-                // Set up trust manager that trusts all certificates (for testing only)
-                TrustManager[] trustAllCerts = new TrustManager[]{
-                        new X509TrustManager() {
-                            public X509Certificate[] getAcceptedIssuers() {
-                                return null;
-                            }
-                            public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-                            public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+            // Set up trust manager that trusts all certificates (for testing only)
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return null;
                         }
-                };
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                    }
+            };
 
-                // Initialize SSL context
-                SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-                sslContext.init(kmf.getKeyManagers(), trustAllCerts, new java.security.SecureRandom());
+            // Initialize SSL context
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
 
-                // Set as default
-                SSLContext.setDefault(sslContext);
-                HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            // Set as default
+            SSLContext.setDefault(sslContext);
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
 
-                // For testing, accept all hostnames
-                HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+            // For testing, accept all hostnames
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
 
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "Failed to configure SSL context: " + e.getMessage(), e);
-                throw e;
-            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to configure SSL context: " + e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -192,9 +177,9 @@ public class ClientValidationTest {
 
         // Verify certPath is not null and keystore exists and is readable
         if (certPath == null) {
-            fail("certPath is null. Make sure generateCertsInTrustStore() runs first and successfully generates the keystore.");
+            fail("Unable to find certificate path. Aborting...");
         }
-        
+
         File keystoreFile = new File(certPath);
         if (!keystoreFile.exists()) {
             fail("Keystore file does not exist: " + certPath);
@@ -218,18 +203,14 @@ public class ClientValidationTest {
                     public X509Certificate[] getAcceptedIssuers() {
                         return new X509Certificate[0];
                     }
-
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                    }
-
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
                 }
         };
 
         // Initialize SSL context with the trust managers using TLSv1.2
         SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        sslContext.init(kmf.getKeyManagers(), trustAllCerts, new java.security.SecureRandom());
+        sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
 
         // Get the socket factory and make the call
         SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
@@ -245,9 +226,9 @@ public class ClientValidationTest {
         if (!validationFailed) {
             fail("Expected certificate validation failure in server logs but none found");
         }
-    };
+    }
 
-    private static int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
+    private int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
         HttpsURLConnection connection = null;
         int responseCode = 500; // Default error code
 
@@ -324,7 +305,6 @@ public class ClientValidationTest {
             } else {
                 throw e;
             }
-
         } finally {
             // Ensure the connection is closed
             if (connection != null) {
@@ -334,8 +314,6 @@ public class ClientValidationTest {
                     logger.log(Level.WARNING, "Error disconnecting: {0}", e.getMessage());
                 }
             }
-
-            return responseCode;
         }
     }
 
