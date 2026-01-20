@@ -76,6 +76,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.omnifaces.utils.security.Certificates;
+
+
 import static org.junit.Assert.fail;
 
 @RunWith(PayaraArquillianTestRunner.class)
@@ -99,7 +102,7 @@ public class ClientValidationTest {
                 .addPackages(true, "net.sourceforge.htmlunit")
                 .addPackages(true, "org.eclipse")
                 .addPackages(true, PayaraArquillianTestRunner.class.getPackage())
-                .addClasses(ServerOperations.class, SecurityUtils.class)
+                .addClasses(ServerOperations.class, SecurityUtils.class, Certificates.class)
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/beans.xml"));
     }
