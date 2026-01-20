@@ -39,14 +39,14 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2025 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.1-SNAPSHOT</version>
+    <version>7.2026.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -228,14 +228,14 @@
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.jar.plugin.version>3.5.0</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
-        <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
-        <maven.release.plugin.version>3.1.1</maven.release.plugin.version>
+        <maven.resources.plugin.version>3.4.0</maven.resources.plugin.version>
+        <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.9.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
-        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
         <!-- Be careful updating to a higher version - an issue affecting 3.10.0-3.11.2 causes the aggregate jar to be empty -->
         <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
@@ -246,7 +246,7 @@
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.7.3</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
-        <license-maven-plugin.version>2.7.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -264,10 +264,10 @@
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
         <snakeyaml.version>2.5</snakeyaml.version>
-        <mojarra.version>4.1.4.payara-p1</mojarra.version>
+        <mojarra.version>4.1.6.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
-        <krazo.version>4.0.0</krazo.version>
+        <krazo.version>4.0.1.payara-p1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>5.0.0-B08.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
@@ -279,13 +279,14 @@
         <woodstox.version>7.1.1</woodstox.version>
         <woodstock-jsf.version>6.0.1.payara-p1</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
-        <woodstock-external.dojo.version>6.0.2</woodstock-external.dojo.version>
-        <angus-activation.version>2.0.2</angus-activation.version>
+        <woodstock-external.dojo.version>6.0.3</woodstock-external.dojo.version>
+        <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
+        <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
         <jline.version>3.30.6</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
-        <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
+        <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.1.0</concurro.version>
         <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
@@ -304,7 +305,7 @@
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
-        <parsson.version>1.1.5.payara-p1</parsson.version>
+        <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.4</jaxb-api.version>
         <jackson.version>2.20.1</jackson.version>
@@ -337,17 +338,17 @@
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
-        <exousia.version>3.0.0-M3</exousia.version>
+        <exousia.version>3.0.1</exousia.version>
         <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.8-payara-1</hazelcast.version>
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
-        <weld.version>6.0.3.Final</weld.version>
+        <weld.version>6.0.4.Final</weld.version>
         <tyrus.version>2.2.0</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
-        <asm.version>9.9</asm.version>
+        <asm.version>9.9.1</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
@@ -358,7 +359,7 @@
         <stax2-api.version>4.2.2</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
-        <epicyro.version>3.1.0</epicyro.version>
+        <epicyro.version>3.1.1</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>

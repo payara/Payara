@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers.interceptors;
 
@@ -74,11 +74,8 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
         String subClassIntfName = EJBUtils.getGeneratedOptionalInterfaceName(targetObjectClassName);
 
         EjbOptionalIntfGenerator gen = new EjbOptionalIntfGenerator(targetObjectClass.getClassLoader());
-        Class subClassIntf = gen.loadClass(
-                targetObjectClassName,
-                subClassIntfName,
-                () -> gen.generateOptionalLocalInterface(targetObjectClass, subClassIntfName)
-        );
+        gen.generateOptionalLocalInterface(targetObjectClass, subClassIntfName);
+        Class<?> subClassInterface = gen.loadClass(subClassIntfName);
 
         String beanSubClassName = subClassIntfName + "__Bean__";
 
@@ -86,20 +83,17 @@ public class JavaEEInterceptorBuilderFactoryImpl implements JavaEEInterceptorBui
         // as the actual object passed back to the application.  The sub-class instance
         // delegates all public methods to the dyanamic proxy, which calls the
         // InvocationHandler.
-        Class subClass = gen.loadClass(
-                targetObjectClassName,
-                beanSubClassName,
-                () -> gen.generateOptionalLocalInterfaceSubClass(targetObjectClass, beanSubClassName, subClassIntf)
-        );
+        gen.generateOptionalLocalInterfaceSubClass(targetObjectClass, beanSubClassName, subClassInterface);
+
+        Class<?> subClass = gen.loadClass(beanSubClassName);
 
         // TODO do interceptor builder once per managed bean
         InterceptorManager interceptorManager = new InterceptorManager(_logger,
                 targetObjectClass.getClassLoader(), targetObjectClass.getName(),
                 info);
 
-        JavaEEInterceptorBuilderImpl builderImpl =
-                new JavaEEInterceptorBuilderImpl(info, interceptorManager,
-                        gen, subClassIntf, subClass);
+        JavaEEInterceptorBuilderImpl builderImpl = new JavaEEInterceptorBuilderImpl(info, interceptorManager,
+                        gen, subClassInterface, subClass);
 
         return builderImpl;
 

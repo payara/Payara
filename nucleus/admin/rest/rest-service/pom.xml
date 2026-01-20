@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admin</groupId>
         <artifactId>rest-service-parent</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     
     <artifactId>rest-service</artifactId>
@@ -94,6 +94,12 @@
         <dependency>
             <groupId>fish.payara.server.internal.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.ejb</groupId>
+            <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>

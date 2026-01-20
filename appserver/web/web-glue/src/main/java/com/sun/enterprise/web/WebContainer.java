@@ -571,21 +571,22 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             loadDefaultWebModulesAfterAllAppsProcessed();
         } else if (event.is(PREPARE_SHUTDOWN)) {
             isShutdown = true;
-        } else if (event.is(Deployment.DEPLOYMENT_COMMAND_FINISH)) {
-            // If this application is the default web module of a virtual server, reload the virtual server
+        } else if (event.is(APPLICATION_STARTED)) {
+            // FISH-10833: When an application is started (including during redeploy), check if it is
+            // the default web module of any virtual server and update the mapper accordingly.
+            // This event is fired locally on each instance after the context is registered,
+            // unlike DEPLOYMENT_COMMAND_FINISH which only fires on the DAS.
+            // Note: APPLICATION_LOADED fires before context registration, so we use APPLICATION_STARTED.
             ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-            if (applicationInfo.getSource().getArchiveMetaData("commandparams", DeployCommandParameters.class).isRedeploy()) {
-                for (VirtualServer vs : getVirtualServers()) {
-                    if (ADMIN_VS.equals(vs.getName())) {
-                        continue;
-                    }
-
-                    if (Objects.equals(vs.getDefaultWebModuleID(), applicationInfo.getName())) {
-                        try {
-                            updateHost(vs.getBean());
-                        } catch (LifecycleException e) {
-                            logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, e);
-                        }
+            for (VirtualServer vs : getVirtualServers()) {
+                if (ADMIN_VS.equals(vs.getName())) {
+                    continue;
+                }
+                if (Objects.equals(vs.getDefaultWebModuleID(), applicationInfo.getName())) {
+                    try {
+                        updateHost(vs.getBean());
+                    } catch (LifecycleException e) {
+                        logger.log(Level.SEVERE, LogFacade.EXCEPTION_WEB_CONFIG, e);
                     }
                 }
             }
@@ -2639,10 +2640,16 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
          * module has already been deployed at the root context, we don't have to do anything.
          */
         WebModuleConfig webModuleConfig = virtualServer.getDefaultWebModule(domain, serviceLocator.getService(WebArchivist.class), appRegistry);
-        if ((webModuleConfig != null) && (webModuleConfig.getContextPath() != null) && !"".equals(webModuleConfig.getContextPath()) && !"/".equals(webModuleConfig.getContextPath())) {
-            // Remove dummy context that was created off of docroot, if such
-            // a context exists
-            removeDummyModule(virtualServer);
+        if (webModuleConfig != null && webModuleConfig.getContextPath() != null) {
+            String contextPath = webModuleConfig.getContextPath();
+            // FISH-10833: For applications deployed at root context ("" or "/"), we still need to
+            // update the default web module to configure the mapper with the correct default context
+            // path for all virtual server aliases (hostname, etc.)
+            if (!"".equals(contextPath) && !"/".equals(contextPath)) {
+                // Remove dummy context that was created off of docroot, if such
+                // a context exists
+                removeDummyModule(virtualServer);
+            }
             updateDefaultWebModule(virtualServer, virtualServer.getNetworkListenerNames(), webModuleConfig);
         } else {
             WebModuleConfig wmc = virtualServer.createSystemDefaultWebModuleIfNecessary(serviceLocator.<WebArchivist>getService(WebArchivist.class));
@@ -2847,6 +2854,11 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     if (defaultWebModulePath != null) {
                         try {
                             mapper.setDefaultContextPath(vs.getName(), defaultWebModulePath);
+                            // FISH-10833: Also configure default context path for all virtual server aliases
+                            // This ensures that requests using hostname aliases are correctly routed
+                            for (String alias : vs.findAliases()) {
+                                mapper.setDefaultContextPath(alias, defaultWebModulePath);
+                            }
                             vs.setDefaultContextPath(defaultWebModulePath);
                         } catch (Exception e) {
                             throw new LifecycleException(e);

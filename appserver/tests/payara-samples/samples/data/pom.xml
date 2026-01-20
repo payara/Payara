@@ -7,7 +7,7 @@
   <parent>
     <groupId>fish.payara.samples</groupId>
     <artifactId>payara-samples-profiled-tests</artifactId>
-    <version>7.2026.1-SNAPSHOT</version>
+    <version>7.2026.2-SNAPSHOT</version>
   </parent>
 
   <artifactId>data</artifactId>
@@ -17,7 +17,7 @@
   <properties>
     <maven.compiler.source>${jdk.version}</maven.compiler.source>
     <maven.compiler.target>${jdk.version}</maven.compiler.target>
-    <junit.jupiter.version>5.10.2</junit.jupiter.version>
+    <junit.jupiter.version>6.0.2</junit.jupiter.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
   </properties>
 
@@ -150,7 +150,7 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-junit4</artifactId>
-            <version>3.2.5</version>
+            <version>3.5.4</version>
           </dependency>
         </dependencies>
       </plugin>

@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -49,7 +49,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>
 
@@ -81,19 +81,16 @@
         <!-- Java API for XML Registries Resource Adapter -->
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
 
-        <nimbus-jose-jwt.version>10.5</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>10.7</nimbus-jose-jwt.version>
         <accessors-smart.version>2.6.0</accessors-smart.version>
         <json-smart.version>2.6.0</json-smart.version>
-        <reactor-core.version>3.7.12</reactor-core.version>
+        <reactor-core.version>3.8.2</reactor-core.version>
         <reactive-streams.version>1.0.4</reactive-streams.version>
         <jcip-annotations.version>1.0-1</jcip-annotations.version>
         
         <!-- Yubico client validation version property -->
         <yubico-validation-client2.version>3.0.2.payara-p1</yubico-validation-client2.version>
         <dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
-
-        <!-- classgraph dependency used to solve issue when creating proxy implementations for jakarta data-->
-        <classgraph.version>4.8.179</classgraph.version>
     </properties>
 
 
@@ -591,12 +588,6 @@
                 <groupId>fish.payara.security.connectors</groupId>
                 <artifactId>security-connector-oauth2-client</artifactId>
                 <version>${payara.security-connectors.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.github.classgraph</groupId>
-                <artifactId>classgraph</artifactId>
-                <version>${classgraph.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

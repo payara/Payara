@@ -37,15 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.codegen;
 
 public class MethodNotFound extends GeneratorException {
+
+    private static final long serialVersionUID = -5823170654151164530L;
+    
     /**
      * Constructs the MethodNotFound exception with the specified string.
      */
-
-    public MethodNotFound(String s) {
-	super(s);
+    public MethodNotFound(String message) {
+        super(message);
     }
 }
