@@ -120,20 +120,22 @@ public class ClientValidationTest {
     @Test
     @InSequence(1)
     public void generateCertsInTrustStore() throws Exception {
-        if (ServerOperations.isServer()) {
-            certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
+        // Always generate the keystore regardless of isServer() to ensure certPath is set
+        certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
 
-            // Verify keystore was created
-            if (certPath == null || !new File(certPath).exists()) {
-                throw new IOException("Failed to generate client keystore at: " + certPath);
+        // Verify keystore was created
+        if (certPath == null || !new File(certPath).exists()) {
+            throw new IOException("Failed to generate client keystore at: " + certPath);
+        }
+
+        try {
+            // Load the keystore
+            KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+            try (FileInputStream fis = new FileInputStream(certPath)) {
+                keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
             }
-
-            try {
-                // Load the keystore
-                KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-                try (FileInputStream fis = new FileInputStream(certPath)) {
-                    keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
-                }
+            
+            logger.info("Successfully generated and loaded keystore at: " + certPath);
 
                 // Set up key manager factory with PKCS12
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(
@@ -188,7 +190,11 @@ public class ClientValidationTest {
         System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
         System.setProperty("https.protocols", "TLSv1.2");
 
-        // Verify keystore exists and is readable
+        // Verify certPath is not null and keystore exists and is readable
+        if (certPath == null) {
+            fail("certPath is null. Make sure generateCertsInTrustStore() runs first and successfully generates the keystore.");
+        }
+        
         File keystoreFile = new File(certPath);
         if (!keystoreFile.exists()) {
             fail("Keystore file does not exist: " + certPath);
