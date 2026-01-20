@@ -89,10 +89,10 @@ public class WrappingInjectionTarget<T> implements InjectionTarget<T> {
         T instance = delegate.produce(ctx);
 
         if (beanClass.isAnnotationPresent(jakarta.interceptor.Interceptor.class)) {
-            return wrapInterceptor(instance);
+//            return wrapInterceptor(instance);
         } else if (beanClass.isAnnotationPresent(jakarta.decorator.Decorator.class)) {
             recordCreation();
-            return wrapDecorator(instance);
+//            return wrapDecorator(instance);
         }
 
         return instance;
