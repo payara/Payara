@@ -92,7 +92,7 @@ public class SetDevConsoleConfigurationCommand extends SetSecureConsoleConfigura
     @Inject
     private Target targetUtil;
 
-    @Param(name = "enabled", optional = true)
+    @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
     @Param(name = "dynamic", optional = true)
