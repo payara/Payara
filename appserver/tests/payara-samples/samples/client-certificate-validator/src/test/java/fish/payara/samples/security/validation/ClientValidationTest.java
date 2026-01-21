@@ -109,8 +109,7 @@ public class ClientValidationTest {
     @Test
     @InSequence(1)
     public void generateCertsInTrustStore() throws Exception {
-        // Always generate the keystore regardless of isServer() to ensure certPath is
-        // set
+        // Generate the keystore to ensure certPath is set
         certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
 
         // Verify keystore was created
@@ -183,6 +182,13 @@ public class ClientValidationTest {
         System.setProperty("https.protocols", "TLSv1.2");
 
         // Verify certPath is not null and keystore exists and is readable
+        if (certPath == null) {
+            certPath = System.getProperty("fish.payara.samples.certPath");
+            if (certPath != null) {
+                logger.info("Recovered certPath from system property: " + certPath);
+            }
+        }
+
         if (certPath == null) {
             fail("Unable to find certificate path. Aborting...");
         }
@@ -262,9 +268,7 @@ public class ClientValidationTest {
 
             // Make the request and read the response
             int responseCode = connection.getResponseCode();
-
             logger.log(Level.FINE, "Response Code: {0}", responseCode);
-
             return responseCode;
 
         } catch (SSLException e) {
