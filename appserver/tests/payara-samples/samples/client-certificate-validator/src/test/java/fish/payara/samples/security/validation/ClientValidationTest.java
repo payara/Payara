@@ -78,7 +78,6 @@ import java.util.logging.Logger;
 
 import org.omnifaces.utils.security.Certificates;
 
-
 import static org.junit.Assert.fail;
 
 @RunWith(PayaraArquillianTestRunner.class)
@@ -110,7 +109,8 @@ public class ClientValidationTest {
     @Test
     @InSequence(1)
     public void generateCertsInTrustStore() throws Exception {
-        // Always generate the keystore regardless of isServer() to ensure certPath is set
+        // Always generate the keystore regardless of isServer() to ensure certPath is
+        // set
         certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
 
         // Verify keystore was created
@@ -132,13 +132,17 @@ public class ClientValidationTest {
             kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
 
             // Set up trust manager that trusts all certificates (for testing only)
-            TrustManager[] trustAllCerts = new TrustManager[]{
+            TrustManager[] trustAllCerts = new TrustManager[] {
                     new X509TrustManager() {
                         public X509Certificate[] getAcceptedIssuers() {
                             return null;
                         }
-                        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-                        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
                     }
             };
 
@@ -184,6 +188,7 @@ public class ClientValidationTest {
         }
 
         File keystoreFile = new File(certPath);
+
         if (!keystoreFile.exists()) {
             fail("Keystore file does not exist: " + certPath);
         }
@@ -201,13 +206,17 @@ public class ClientValidationTest {
         kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
 
         // Create a trust manager that trusts all certificates (for testing only)
-        TrustManager[] trustAllCerts = new TrustManager[]{
+        TrustManager[] trustAllCerts = new TrustManager[] {
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {
                         return new X509Certificate[0];
                     }
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
                 }
         };
 
@@ -233,7 +242,6 @@ public class ClientValidationTest {
 
     private int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
         HttpsURLConnection connection = null;
-        int responseCode = 500; // Default error code
 
         try {
             try {
@@ -253,21 +261,12 @@ public class ClientValidationTest {
             connection.setDoOutput(true);
 
             // Make the request and read the response
-            responseCode = connection.getResponseCode();
+            int responseCode = connection.getResponseCode();
 
-            // Read the response
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
+            logger.log(Level.FINE, "Response Code: {0}", responseCode);
 
-                String responseBody = response.toString();
-                logger.log(Level.FINER, "Response: {0}", responseBody);
+            return responseCode;
 
-                return responseCode;
-            }
         } catch (SSLException e) {
             // Log SSL errors
             if (e instanceof SSLHandshakeException) {
