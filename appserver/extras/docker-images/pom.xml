@@ -58,7 +58,7 @@
 
         <docker.java.repository>azul/zulu-openjdk</docker.java.repository>
         <docker.jdk21.tag>21.0.10-jdk</docker.jdk21.tag>
-        <docker.jdk25.tag>25.0.1-jdk</docker.jdk25.tag>
+        <docker.jdk25.tag>25.0.2-jdk</docker.jdk25.tag>
 
         <!-- List of platform architectures which we wish to build Docker images for -
                 shouldn't have anything not provided as an option by ${docker.java.repository}.
