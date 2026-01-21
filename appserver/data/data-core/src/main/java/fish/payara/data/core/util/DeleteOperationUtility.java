@@ -3,7 +3,9 @@ package fish.payara.data.core.util;
 import fish.payara.data.core.cdi.extension.EntityMetadata;
 import fish.payara.data.core.cdi.extension.QueryData;
 import jakarta.data.repository.By;
+import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
 import jakarta.persistence.RollbackException;
 import jakarta.transaction.HeuristicMixedException;
@@ -72,6 +74,9 @@ public class DeleteOperationUtility {
         int rowsAffected = q.executeUpdate();
         endTransaction(tm, em, dataForQuery);
 
+        // Clear cache for the affected entity after DELETE
+        clearCaches(em, declaredEntityClass);
+
         logger.info("Rows affected from delete operation: " + rowsAffected);
         return rowsAffected;
     }
@@ -85,6 +90,18 @@ public class DeleteOperationUtility {
         }
         throw new IllegalArgumentException("The attribute " + attributeName +
                 " is not mapped on the entity " + entityMetadata.getEntityName());
+    }
+
+    private static void clearCaches(EntityManager entityManager, Class<?> entityClass) {
+        EntityManagerFactory factory = entityManager.getEntityManagerFactory();
+        if (factory != null) {
+            Cache cache = factory.getCache();
+            if (cache != null) {
+                // Only evict the affected entity type, not all entities
+                cache.evict(entityClass);
+            }
+        }
+        entityManager.clear();
     }
 
 }

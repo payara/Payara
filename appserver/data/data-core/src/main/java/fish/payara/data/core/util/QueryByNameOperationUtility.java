@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2025-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -126,7 +126,7 @@ public class QueryByNameOperationUtility {
 
             endTransaction(transactionManager, entityManager, dataForQuery);
 
-            clearCaches(entityManager);
+            clearCaches(entityManager, dataForQuery.getDeclaredEntityClass());
             return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
 
         } catch (OptimisticLockException ole) {
@@ -152,12 +152,13 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static void clearCaches(EntityManager entityManager) {
+    private static void clearCaches(EntityManager entityManager, Class<?> entityClass) {
         EntityManagerFactory factory = entityManager.getEntityManagerFactory();
         if (factory != null) {
             Cache cache = factory.getCache();
             if (cache != null) {
-                cache.evictAll();
+                // Only evict the affected entity type, not all entities
+                cache.evict(entityClass);
             }
         }
         entityManager.clear();
