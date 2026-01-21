@@ -109,8 +109,15 @@ public class ClientValidationTest {
     @Test
     @InSequence(1)
     public void generateCertsInTrustStore() throws Exception {
+        logger.info("Entering generateCertsInTrustStore");
         // Generate the keystore to ensure certPath is set
         certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
+
+        // Persist to system property for Jenkins/Remote reloads
+        if (certPath != null) {
+            System.setProperty("fish.payara.samples.certPath", certPath);
+            logger.info("Generated certPath and stored in system property: " + certPath);
+        }
 
         // Verify keystore was created
         if (certPath == null || !new File(certPath).exists()) {
@@ -145,8 +152,8 @@ public class ClientValidationTest {
                     }
             };
 
-            // Initialize SSL context
-            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+            // Initialize SSL context - use default (supports TLS 1.2 and 1.3)
+            SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
 
             // Set as default
@@ -165,6 +172,14 @@ public class ClientValidationTest {
     @Test
     @InSequence(2)
     public void validationFailTest() throws Exception {
+        logger.info("Entering validationFailTest. Static certPath: " + certPath);
+
+        // Recover from system property if static field was lost
+        if (certPath == null) {
+            certPath = System.getProperty("fish.payara.samples.certPath");
+            logger.info("Recovered certPath from system property: " + certPath);
+        }
+
         // Configure SSL system properties
         String domainDir = System.getProperty("com.sun.aas.instanceRoot");
         String keystorePath = domainDir + "/config/keystore.p12";
@@ -182,13 +197,6 @@ public class ClientValidationTest {
         System.setProperty("https.protocols", "TLSv1.2");
 
         // Verify certPath is not null and keystore exists and is readable
-        if (certPath == null) {
-            certPath = System.getProperty("fish.payara.samples.certPath");
-            if (certPath != null) {
-                logger.info("Recovered certPath from system property: " + certPath);
-            }
-        }
-
         if (certPath == null) {
             fail("Unable to find certificate path. Aborting...");
         }
