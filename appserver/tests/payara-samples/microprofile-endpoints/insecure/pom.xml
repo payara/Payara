@@ -92,7 +92,7 @@
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-metrics-configuration</argument>
-                                <argument>--endpoint=mpmetrics</argument>
+                                <argument>--endpoint=mpmetrics-insecure</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -109,7 +109,7 @@
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set-microprofile-healthcheck-configuration</argument>
-                                <argument>--endpoint=mphealth</argument>
+                                <argument>--endpoint=mphealth-insecure</argument>
                             </arguments>
                         </configuration>
                     </execution>
