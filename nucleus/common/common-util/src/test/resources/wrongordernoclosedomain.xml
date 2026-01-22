@@ -55,12 +55,6 @@
   <!-- System Web Module - DO NOT DELETE! -->
   </web-module>
   <web-module name="WSTXServices" context-root="/__wstx-services" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" object-type="system-all" enabled="true" directory-deployed="true" availability-enabled="false"/>
-  <lifecycle-module class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar" enabled="true" is-failure-fatal="false" name="JBIFramework" object-type="system-all">       
-      <description>"JBI Framework LifecycleModule"</description>
-      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi"/>
-      <property name="com.sun.jbi.defaultLogLevel" value="INFO"/>
-  </lifecycle-module> 
-  <lifecycle-module class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" enabled="true" is-failure-fatal="false" object-type="system-all" name="WSTCPConnectorLCModule"/>
  </applications>
  <resources>
      <jdbc-resource jndi-name="jdbc/__TimerPool" pool-name="__TimerPool" object-type="system-admin" enabled="true"/>

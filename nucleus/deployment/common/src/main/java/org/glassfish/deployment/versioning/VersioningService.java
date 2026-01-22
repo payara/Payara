@@ -309,9 +309,6 @@ public class VersioningService {
             // check if directory deployment exist
             while ( it.hasNext() ) {
                 app = (Application) it.next();
-                /*
-                 * A lifecycle module appears as an application but has a null location.
-                 */
                 if (dir.toURI().toString().equals(app.getLocation())) {
                     if(!VersioningUtils.getUntaggedName(app.getName()).equals(app.getName())){
                         return app.getName();

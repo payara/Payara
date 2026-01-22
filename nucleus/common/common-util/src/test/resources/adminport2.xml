@@ -47,12 +47,6 @@
     <web-module context-root="/web1" location="${com.sun.aas.installRoot}/lib/install/applications/adminapp/adminapp_war" directory-deployed="true" name="adminapp" object-type="system-admin" />
     <web-module context-root="" location="${com.sun.aas.installRoot}/lib/install/applications/admingui/adminGUI_war" directory-deployed="true" name="admingui" object-type="system-admin" />
     <web-module context-root="/__wstx-services" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" directory-deployed="true" name="WSTXServices" object-type="system-all" />
-    <lifecycle-module name="JBIFramework" object-type="system-all" class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar">
-      <description>"JBI Framework LifecycleModule"</description>
-      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi" />
-      <property name="com.sun.jbi.defaultLogLevel" value="INFO" />
-    </lifecycle-module>
-    <lifecycle-module name="WSTCPConnectorLCModule" object-type="system-all" class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" />
   </applications>
   <servers>
     <server name="server" config-ref="server-config">

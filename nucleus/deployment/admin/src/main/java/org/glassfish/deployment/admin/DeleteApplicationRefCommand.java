@@ -221,15 +221,6 @@ public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSe
                 return;
             }
 
-            if (application.isLifecycleModule()) {
-                try  {
-                    deployment.unregisterAppFromDomainXML(appName, target, true);
-                } catch(Exception e) {
-                    report.failure(logger, e.getMessage());
-                }
-                return;
-            }
-
             try {
                 ReadableArchive source = null;
                 ApplicationInfo appInfo = deployment.get(appName);

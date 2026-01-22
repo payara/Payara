@@ -217,14 +217,6 @@
   <indexitem text="LDAP realm">
     <indexitem text="properties" target="ref-ldaprealmprop"></indexitem>
   </indexitem>
-  <indexitem text="lifecycle modules">
-    <indexitem text="creating (reference)" target="ref-lifecyclemodulenew"></indexitem>
-    <indexitem text="creating (task)" target="task-lifecyclemodulenew"></indexitem>
-    <indexitem text="deleting" target="task-lifecyclemoduledelete"></indexitem>
-    <indexitem text="editing (reference)" target="ref-lifecyclemoduleedit"></indexitem>
-    <indexitem text="editing (task)" target="task-lifecyclemoduleedit"></indexitem>
-    <indexitem text="viewing and configuring" target="ref-lifecyclemodules"></indexitem>
-  </indexitem>
   <indexitem text="log levels">
     <indexitem text="configuring (reference)" target="ref-eelogginglevels"></indexitem>
     <indexitem text="configuring (task)" target="task-eelogginglevels"></indexitem>

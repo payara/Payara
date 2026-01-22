@@ -141,10 +141,6 @@ public class DynamicReloader implements Runnable {
          for (ApplicationName m : applications.getModules()) {
              if (m instanceof Application) {
                  Application app = (Application) m;
-                 if (Boolean.parseBoolean(app.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE))) {
-                     // skip lifecycle modules
-                     continue;
-                 }
                  AppReloadInfo info = new AppReloadInfo(app);
                  appReloadInfo.put(app.getName(), info);
                  logger.log(Level.FINE, "[Reloader] Monitoring {0} at {1}", new Object[]{app.getName(), app.getLocation()});
@@ -199,10 +195,8 @@ public class DynamicReloader implements Runnable {
             if (m instanceof Application) {
                 Application app = (Application) m;
                 
-                if (app.getLocation() == null || Boolean.parseBoolean(app.getDeployProperties().getProperty
-                    (ServerTags.IS_LIFECYCLE))) {
+                if (app.getLocation() == null) {
                     // skip apps without a location
-                    // skip lifecycle modules
                     continue;
                 }
                 AppReloadInfo reloadInfo = findOrCreateAppReloadInfo(app);

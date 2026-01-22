@@ -58,11 +58,7 @@
       <tocitem target="task-appscopedresourcesview" text="To View Application Scoped Resources" expand="false"></tocitem>
       <tocitem target="task-appscopedresourcesedit" text="To Modify Application Scoped Resources" expand="false"></tocitem>
     </tocitem>
-    <tocitem target="task-group-lifecyclemodules" text="Configuring Lifecycle Modules" expand="false">
-      <tocitem target="task-lifecyclemodulenew" text="To Create a Lifecycle Module" expand="false"></tocitem>
-      <tocitem target="task-lifecyclemoduleedit" text="To Edit a Lifecycle Module" expand="false"></tocitem>
-      <tocitem target="task-lifecyclemoduledelete" text="To Delete a Lifecycle Module" expand="false"></tocitem>
-    </tocitem>
+
     <tocitem target="task-group-configjvm" text="Configuring the Java Virtual Machine (JVM)" expand="false">
       <tocitem target="task-jvmsettings" text="To Configure the JVM General Settings" expand="false"></tocitem>
       <tocitem target="task-jvmpathsettings" text="To Configure the JVM Path Settings" expand="false"></tocitem>
@@ -172,13 +168,6 @@
       <tocitem target="ref-uploaddev" text="Deploy Applications or Modules" expand="false"></tocitem>
       <tocitem target="ref-redeploy" text="Redeploy Applications or Modules" expand="false"></tocitem>
       <tocitem target="ref-appscopedresources" text="Application Scoped Resources" expand="false"></tocitem>
-    </tocitem>
-    <tocitem target="ref-group-lifecyclemodules" text="Lifecycle Modules" expand="false">
-      <tocitem target="ref-lifecyclemodules" text="Lifecycle Modules" expand="false"></tocitem>
-      <tocitem target="ref-lifecyclemodulenew" text="New Lifecycle Module" expand="false"></tocitem>
-      <tocitem target="ref-lifecyclemoduleedit" text="Edit Lifecycle Module" expand="false"></tocitem>
-      <tocitem target="ref-lifecycletargets" text="Lifecycle Module Targets" expand="false"></tocitem>
-      <tocitem target="ref-lifecyclemanagetargets" text="Manage Targets" expand="false"></tocitem>
     </tocitem>
     <tocitem target="ref-group-monitoring" text="Monitoring Data" expand="false">
       <tocitem target="ref-monitoring" text="Monitoring" expand="false"></tocitem>

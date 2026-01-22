@@ -205,12 +205,6 @@ public class PEFileLayout
         return new File(getApplicationsRootDir(), J2EE_MODULES_DIR);
     }
 
-    public static final String LIFECYCLE_MODULES_DIR = "lifecycle-modules";
-    public File getLifecycleModulesDir()
-    {
-        return new File(getApplicationsRootDir(), LIFECYCLE_MODULES_DIR);
-    }
-
     public static final String MBEAN_FOLDER_NAME = "mbeans";
     public File getMbeansDir()
     {

@@ -89,7 +89,6 @@
     <tocitem target="reference/create-jms-resource" text="create-jms-resource" expand="false"></tocitem>
     <tocitem target="reference/create-jndi-resource" text="create-jndi-resource" expand="false"></tocitem>
     <tocitem target="reference/create-jvm-options" text="create-jvm-options" expand="false"></tocitem>
-    <tocitem target="reference/create-lifecycle-module" text="create-lifecycle-module" expand="false"></tocitem>
     <tocitem target="reference/create-local-instance" text="create-local-instance" expand="false"></tocitem>
     <tocitem target="reference/create-managed-executor-service" text="create-managed-executor-service" expand="false"></tocitem>
     <tocitem target="reference/create-managed-scheduled-executor-service" text="create-managed-scheduled-executor-service" expand="false"></tocitem>
@@ -145,7 +144,6 @@
     <tocitem target="reference/delete-jms-resource" text="delete-jms-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-jndi-resource" text="delete-jndi-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-jvm-options" text="delete-jvm-options" expand="false"></tocitem>
-    <tocitem target="reference/delete-lifecycle-module" text="delete-lifecycle-module" expand="false"></tocitem>
     <tocitem target="reference/delete-local-instance" text="delete-local-instance" expand="false"></tocitem>
     <tocitem target="reference/delete-managed-executor-service" text="delete-managed-executor-service" expand="false"></tocitem>
     <tocitem target="reference/delete-managed-scheduled-executor-service" text="delete-managed-scheduled-executor-service" expand="false"></tocitem>
@@ -245,7 +243,6 @@
     <tocitem target="reference/list-jobs" text="list-jobs" expand="false"></tocitem>
     <tocitem target="reference/list-jvm-options" text="list-jvm-options" expand="false"></tocitem>
     <tocitem target="reference/list-libraries" text="list-libraries" expand="false"></tocitem>
-    <tocitem target="reference/list-lifecycle-modules" text="list-lifecycle-modules" expand="false"></tocitem>
     <tocitem target="reference/list-log-attributes" text="list-log-attributes" expand="false"></tocitem>
     <tocitem target="reference/list-loggers" text="list-loggers" expand="false"></tocitem>
     <tocitem target="reference/list-log-levels" text="list-log-levels" expand="false"></tocitem>

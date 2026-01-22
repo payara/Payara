@@ -46,7 +46,6 @@
 <sc:menuItem value="Enterprise Application" url="#{request.contextPath}/layouttest.jsf?page=Enterprise+Application" />
 <sc:menuItem value="EJB Module" url="#{request.contextPath}/layouttest.jsf?page=EJB+Module" />
 <sc:menuItem value="Connector Module" url="#{request.contextPath}/layouttest.jsf?page=Connector+Module" />
-<sc:menuItem value="Lifecycle Module" url="#{request.contextPath}/layouttest.jsf?page=Lifecycle+Module" />
 <sc:menuItem value="App Client Module" url="#{request.contextPath}/layouttest.jsf?page=App+Client+Module" />
 <sc:menuItem value="Custom MBean" url="#{request.contextPath}/layouttest.jsf?page=Custom+MBean" />
 <!--
@@ -63,7 +62,6 @@
     <sc:menuItem value="Web Applications" url="#{request.contextPath}/common/applications/applications.jsf" />
 	<sc:menuItem value="Enterprise Applications" url="#{request.contextPath}/layouttest.jsf?page=Enterprise+Applications" />
 	<sc:menuItem value="EJB Modules" url="#{request.contextPath}/layouttest.jsf?page=EJB+Modules" />
-	<sc:menuItem value="Lifecycle Modules" url="#{request.contextPath}/layouttest.jsf?page=Lifecycle+Modules" />
 	<sc:menuItem value="Application Client Modules" url="#{request.contextPath}/layouttest.jsf?page=Application+Client+Modules" />
     </sc:subMenu>
     <sc:subMenu value="Application Server">

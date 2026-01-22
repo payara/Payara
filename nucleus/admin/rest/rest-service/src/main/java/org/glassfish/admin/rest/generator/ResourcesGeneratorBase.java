@@ -468,7 +468,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
      * delete-custom-resource delete-http-listener delete-iiop-listener delete-javamail-resource delete-jdbc-connection-pool
      * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-profiler delete-resource-adapter-config
      * delete-resource-ref delete-system-property delete-virtual-server What is missing is: delete-jms-resource delete-jmsdest
-     * delete-jndi-resource delete-lifecycle-module delete-message-security-provider delete-connector-security-map
+     * delete-jndi-resource delete-message-security-provider delete-connector-security-map
      * delete-connector-work-security-map delete-node-config delete-node-ssh delete-file-user delete-password-alias
      * delete-http-health-checker delete-http-lb-ref delete-http-redirect delete-instance
      */

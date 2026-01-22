@@ -748,10 +748,6 @@ public class VersioningUtilsTest {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
-        public boolean isLifecycleModule() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
 
         @Override
         public boolean containsSnifferType(String snifferType) {

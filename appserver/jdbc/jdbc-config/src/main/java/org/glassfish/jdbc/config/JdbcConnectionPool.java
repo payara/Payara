@@ -466,7 +466,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * (i.e components other than EJBs or Servlets). The returned connection is
      * enlisted automatically with the transaction context obtained from the
      * transaction manager. This property is to enable the pool to be used by
-     * non-component callers such as ServletFilters, Lifecycle modules, and
+     * non-component callers such as ServletFilters, and
      * 3rd party persistence managers. Standard J2EE components can continue to
      * use such pools. Connections obtained by non-component callers are not
      * automatically cleaned at the end of a transaction by the container. They

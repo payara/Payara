@@ -56,9 +56,8 @@ import java.util.List;
 public interface SystemApplications extends Applications  {
 
     /**
-     * Gets the value of the lifecycleModuleOrJ2EeApplicationOrEjbModuleOrWebModuleOrConnectorModuleOrAppclientModuleOrMbeanOrExtensionModuleorApplication property.
+     * Gets the value of the J2EeApplicationOrEjbModuleOrWebModuleOrConnectorModuleOrAppclientModuleOrMbeanOrExtensionModuleorApplication property.
      * Objects of the following type(s) are allowed in the list
-     * {@link LifecycleModule }
      * {@link J2eeApplication }
      * {@link EjbModule }
      * {@link WebModule }

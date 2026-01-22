@@ -260,10 +260,6 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
                 } else {
 
                     Transaction t = new Transaction();
-                    if (applicationInfo.isLifecycleModule()) {
-                        handleLifecycleModule(context, t);
-                        return;
-                    }
 
                     ReadableArchive archive;
                     File file = null;
@@ -433,46 +429,5 @@ public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSe
             }
         }
         return isDeploymentGroup;
-    }
-    
-    private void handleLifecycleModule(AdminCommandContext context, Transaction t) {
-        final ActionReport report = context.getActionReport();
-        final Logger logger = context.getLogger();
-
-        Application app = applications.getApplication(name);
-
-        // create a dummy context to hold params and props
-        DeployCommandParameters commandParams = new DeployCommandParameters();
-        commandParams.name = name;
-        commandParams.target = target;
-        commandParams.virtualservers = virtualservers;
-        commandParams.enabled = enabled;
-
-        ExtendedDeploymentContext lifecycleContext = new DeploymentContextImpl(report, null, commandParams, null);
-        try  {
-            deployment.registerAppInDomainXML(null, lifecycleContext, t, true);
-        } catch(Exception e) {
-            report.failure(logger, e.getMessage());
-        }
-
-        if (!DeploymentUtils.isDASTarget(target)) {
-            final ParameterMap paramMap = new ParameterMap();
-            paramMap.add("DEFAULT", name);
-            paramMap.add(DeploymentProperties.TARGET, target);
-            paramMap.add(DeploymentProperties.ENABLED, enabled.toString());
-            if (virtualservers != null) {
-                paramMap.add(DeploymentProperties.VIRTUAL_SERVERS, 
-                    virtualservers);
-            }
-            // pass the applicationInfo props so we have the information to persist in the
-            // domain.xml
-            Properties appProps = app.getDeployProperties();
-            paramMap.set(DeploymentProperties.APP_PROPS, DeploymentUtils.propertiesValue(appProps, ':'));
-
-            final List<String> targets = new ArrayList<String>();
-            targets.add(target);
-            ClusterOperationUtil.replicateCommand("_lifecycle", FailurePolicy.Error, FailurePolicy.Warn, 
-                    FailurePolicy.Ignore, targets, context, paramMap, habitat);
-        }
     }
 }

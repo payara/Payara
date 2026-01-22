@@ -135,11 +135,9 @@ public class ListComponentsCommand implements AdminCommand, AdminCommandSecurity
          * apps, require read access to each app to be displayed.
          */
         for (Application app : domain.getApplicationsInTarget(target)) {
-            if (!app.isLifecycleModule()) {
-                if (type == null || isApplicationOfThisType(app, type)) {
-                    apps.add(app);
-                    accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(app), "read"));
-                }
+            if (type == null || isApplicationOfThisType(app, type)) {
+                apps.add(app);
+                accessChecks.add(new AccessCheck(AccessRequired.Util.resourceNameFromConfigBeanProxy(app), "read"));
             }
         }
         return accessChecks;

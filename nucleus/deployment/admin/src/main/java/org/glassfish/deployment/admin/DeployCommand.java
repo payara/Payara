@@ -789,9 +789,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         if (isredeploy) {
             //preserve settings first before undeploy
             Application app = apps.getModule(Application.class, name);
-            if (app.isLifecycleModule()) {
-                throw new IllegalArgumentException(localStrings.getLocalString("lifecyclemodule_withsamename_exists", "Lifecycle module with same name {0} already exists, please pick a different name for the application. ", name));
-            }
 
             // we save some of the old registration information in our deployment parameters
             settingsFromDomainXML(app);

@@ -384,11 +384,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         String source = app.getLocation();
         final String appName = app.getName();
 
-        // lifecycle modules are loaded separately
-        if (Boolean.valueOf(app.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE))) {
-            return Collections.emptyList();
-        }
-
         URI uri;
         try {
             uri = new URI(source);

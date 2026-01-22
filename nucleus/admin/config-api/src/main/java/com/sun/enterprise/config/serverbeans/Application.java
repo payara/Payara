@@ -318,9 +318,6 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
     boolean containsSnifferType(String snifferType);
 
     @DuckTyped
-    boolean isLifecycleModule();
-
-    @DuckTyped
     void recordFileLocations(File app, File plan);
 
     @DuckTyped
@@ -450,10 +447,6 @@ public interface Application extends ApplicationName, ApplicationDeploymentTime,
 
         public static boolean isStandaloneModule(Application me) {
             return !(Boolean.valueOf(me.getDeployProperties().getProperty(ServerTags.IS_COMPOSITE)));
-        }
-
-        public static boolean isLifecycleModule(Application me) {
-            return Boolean.valueOf(me.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE));
         }
 
         public static boolean containsSnifferType(Application app,
