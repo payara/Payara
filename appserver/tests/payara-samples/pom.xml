@@ -188,7 +188,6 @@
                                     <goal>unpack</goal>
                                 </goals>
                                 <phase>pre-integration-test</phase>
-                                <inherited>false</inherited>
                                 <configuration>
                                     <skip>${skipConfig}</skip>
                                     <artifactItems>
@@ -197,7 +196,7 @@
                                             <artifactId>${payara.server.artifact}</artifactId>
                                             <version>${payara.version}</version>
                                             <type>zip</type>
-                                            <overWrite>true</overWrite>
+                                            <overWrite>false</overWrite>
                                             <outputDirectory>${maven.multiModuleProjectDirectory}${file.separator}target</outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
@@ -227,6 +226,54 @@
                                         <argument>--kill=true</argument>
                                         <argument>${payara.domain.name}</argument>
                                     </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-payara-install</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTestConfigCleanup}</skip>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${payara.home}</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Stash the server logs for each test, as we delete the domain each time -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>stash-server-test-logs</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <outputDirectory>${project.build.directory}${file.separator}server-logs</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${payara.home}${file.separator}glassfish${file.separator}domains${file.separator}${payara.domain.name}${file.separator}logs</directory>
+                                            <includes>*.log</includes>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
