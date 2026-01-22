@@ -80,6 +80,22 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>start-payara-server-for-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerStart}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>start-domain</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
                     <!-- Configure Metrics -->
                     <execution>
                         <id>configure-metrics</id>
@@ -110,6 +126,23 @@
                             <arguments>
                                 <argument>set-microprofile-healthcheck-configuration</argument>
                                 <argument>--endpoint=mphealth-insecure</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Stop or restart server after applying config -->
+                    <execution>
+                        <id>stop-or-restart-payara-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerRestart}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>${serverRestartCommand}</argument>
+                                <argument>${payara.domain.name}</argument>
                             </arguments>
                         </configuration>
                     </execution>
