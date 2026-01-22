@@ -36,9 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2016-2020s] [Payara Foundation and/or its affiliates]
  */
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.kernel;
 

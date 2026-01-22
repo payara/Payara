@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or affiliates -->
 
 <sc:subMenu value="Deploy" id="deployMenu">
 <sc:menuItem value="Web Application" url="#{request.contextPath}/web/webApp/upload.jsf?appType=webApp" />
