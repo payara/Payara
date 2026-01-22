@@ -39,8 +39,7 @@
     holder.
 
 -->
-
-<!--Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]-->
+<!-- Portions Copyright 2018-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>

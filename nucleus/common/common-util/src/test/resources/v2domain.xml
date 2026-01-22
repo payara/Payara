@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2025] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <!-- Generated from default-domain.xml.template -->
 <!-- Avoid manual edits of this file. Run "asadmin verify-domain-xml" otherwise.-->
