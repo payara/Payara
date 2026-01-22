@@ -126,7 +126,8 @@ public class QueryByNameOperationUtility {
 
             endTransaction(transactionManager, entityManager, dataForQuery);
 
-            clearCaches(entityManager, dataForQuery.getDeclaredEntityClass());
+            // Evict specific instances from cache instead of all instances of the entity type
+            clearCachesForInstances(entityManager, dataForQuery.getDeclaredEntityClass(), entitiesToDelete);
             return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
 
         } catch (OptimisticLockException ole) {
@@ -150,6 +151,56 @@ public class QueryByNameOperationUtility {
             } catch (Exception ignore) {
             }
         }
+    }
+
+    /**
+     * Clears cache for specific entity instances instead of all instances of the type.
+     * More efficient for large datasets as it only evicts the entities that were actually modified.
+     * Falls back to type-level eviction if IDs cannot be extracted.
+     */
+    private static void clearCachesForInstances(EntityManager entityManager, Class<?> entityClass, List<?> entities) {
+        EntityManagerFactory factory = entityManager.getEntityManagerFactory();
+        if (factory != null) {
+            Cache cache = factory.getCache();
+            if (cache != null) {
+                int evicted = 0;
+                // Try to evict only the specific instances that were modified
+                for (Object entity : entities) {
+                    Object id = getEntityId(entity, entityClass);
+                    if (id != null) {
+                        cache.evict(entityClass, id);
+                        evicted++;
+                    }
+                }
+                // Fallback: if we couldn't extract any IDs, evict the entire type
+                if (evicted == 0 && !entities.isEmpty()) {
+                    cache.evict(entityClass);
+                }
+            }
+        }
+        entityManager.clear();
+    }
+
+    /**
+     * Extracts the ID value from an entity instance using reflection.
+     * Returns null if the ID cannot be extracted.
+     */
+    private static Object getEntityId(Object entity, Class<?> entityClass) {
+        try {
+            java.lang.reflect.Member idAccessor = EntityIntrospectionUtil.findIdAccessor(entityClass);
+            if (idAccessor instanceof java.lang.reflect.Field) {
+                java.lang.reflect.Field field = (java.lang.reflect.Field) idAccessor;
+                field.setAccessible(true);
+                return field.get(entity);
+            } else if (idAccessor instanceof Method) {
+                Method method = (Method) idAccessor;
+                return method.invoke(entity);
+            }
+        } catch (Exception e) {
+            // Log but don't throw - we'll handle this in the caller
+            // by falling back to type-level eviction if needed
+        }
+        return null;
     }
 
     private static void clearCaches(EntityManager entityManager, Class<?> entityClass) {

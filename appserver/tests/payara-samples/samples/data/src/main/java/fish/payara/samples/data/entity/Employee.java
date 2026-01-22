@@ -3,12 +3,14 @@ package fish.payara.samples.data.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "Employee")
+@Cacheable  // Enable L2 cache for cache eviction testing
 public class Employee {
     @Id
     public UUID id;
