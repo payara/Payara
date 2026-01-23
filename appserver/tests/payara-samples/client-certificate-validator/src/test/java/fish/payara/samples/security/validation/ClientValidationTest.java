@@ -45,7 +45,7 @@ import fish.payara.samples.SecurityUtils;
 import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -69,6 +69,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -85,7 +86,6 @@ import static org.junit.Assert.fail;
 public class ClientValidationTest {
 
     private static String certPath;
-    private static final String CERTIFICATE_ALIAS = "client-certificate-validator";
     private static final String KEYSTORE_PASSWORD = "changeit";
     private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
@@ -107,83 +107,17 @@ public class ClientValidationTest {
     }
 
     @Test
-    @InSequence(1)
-    public void generateCertsInTrustStore() throws Exception {
-        logger.info("Entering generateCertsInTrustStore");
-        // Generate the keystore to ensure certPath is set
-        certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
-
-        // Persist to system property for Jenkins/Remote reloads
-        if (certPath != null) {
-            System.setProperty("fish.payara.samples.certPath", certPath);
-            logger.info("Generated certPath and stored in system property: " + certPath);
-        }
-
-        // Verify keystore was created
-        if (certPath == null || !new File(certPath).exists()) {
-            throw new IOException("Failed to generate client keystore at: " + certPath);
-        }
-
-        try {
-            // Load the keystore
-            KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-            try (FileInputStream fis = new FileInputStream(certPath)) {
-                keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
-            }
-
-            logger.info("Successfully generated and loaded keystore at: " + certPath);
-
-            // Set up key manager factory with PKCS12
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
-
-            // Set up trust manager that trusts all certificates (for testing only)
-            TrustManager[] trustAllCerts = new TrustManager[] {
-                    new X509TrustManager() {
-                        public X509Certificate[] getAcceptedIssuers() {
-                            return null;
-                        }
-
-                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                        }
-
-                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                        }
-                    }
-            };
-
-            // Initialize SSL context - use default (supports TLS 1.2 and 1.3)
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
-
-            // Set as default
-            SSLContext.setDefault(sslContext);
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-
-            // For testing, accept all hostnames
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to configure SSL context: " + e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    @Test
-    @InSequence(2)
+    @RunAsClient
     public void validationFailTest() throws Exception {
-        logger.info("Entering validationFailTest. Static certPath: " + certPath);
-
-        // Recover from system property if static field was lost
-        if (certPath == null) {
-            certPath = System.getProperty("fish.payara.samples.certPath");
-            logger.info("Recovered certPath from system property: " + certPath);
-        }
+        certPath = new File("target", "expired-keystore.jks").getAbsolutePath();
+        System.out.println("Key Store Path: " + certPath);
 
         // Configure SSL system properties
-        String domainDir = System.getProperty("com.sun.aas.instanceRoot");
+        String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains", System.getProperty("payara.domain.name")).toString();
         String keystorePath = domainDir + "/config/keystore.p12";
         String truststorePath = domainDir + "/config/cacerts.p12";
+
+        System.out.println("DEBUGGING Keystore Path: " + keystorePath);
 
         // Set all system properties for SSL at once
         System.setProperty("javax.net.ssl.keyStore", keystorePath);
@@ -248,7 +182,7 @@ public class ClientValidationTest {
         }
 
         // Verify the certificate validation failure was logged by the API
-        boolean validationFailed = checkForAPIValidationFailure();
+        boolean validationFailed = checkForAPIValidationFailure(domainDir);
         if (!validationFailed) {
             fail("Expected certificate validation failure in server logs but none found");
         }
@@ -335,8 +269,8 @@ public class ClientValidationTest {
      * @return true if the correct warning is found in the logs
      * @throws IOException
      */
-    public boolean checkForAPIValidationFailure() throws IOException {
-        List<String> log = viewLog();
+    public boolean checkForAPIValidationFailure(String domainDir) throws IOException {
+        List<String> log = viewLog(domainDir);
         for (String line : log) {
             if (line.contains(EXPECTED_VALIDATION_ERROR)) {
                 return true;
@@ -348,8 +282,8 @@ public class ClientValidationTest {
     /**
      * @return the contents of the server log
      */
-    private List<String> viewLog() throws IOException {
-        Path serverLog = ServerOperations.getDomainPath("logs/server.log");
+    private List<String> viewLog(String domainDir) throws IOException {
+        Path serverLog = Paths.get(domainDir, "logs", "server.log");
         return Files.readAllLines(serverLog);
     }
 }
