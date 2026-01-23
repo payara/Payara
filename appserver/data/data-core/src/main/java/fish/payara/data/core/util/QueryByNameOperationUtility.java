@@ -160,23 +160,25 @@ public class QueryByNameOperationUtility {
      */
     private static void clearCachesForInstances(EntityManager entityManager, Class<?> entityClass, List<?> entities) {
         EntityManagerFactory factory = entityManager.getEntityManagerFactory();
-        if (factory != null) {
-            Cache cache = factory.getCache();
-            if (cache != null) {
-                int evicted = 0;
-                // Try to evict only the specific instances that were modified
-                for (Object entity : entities) {
-                    Object id = getEntityId(entity, entityClass);
-                    if (id != null) {
-                        cache.evict(entityClass, id);
-                        evicted++;
-                    }
-                }
-                // Fallback: if we couldn't extract any IDs, evict the entire type
-                if (evicted == 0 && !entities.isEmpty()) {
-                    cache.evict(entityClass);
-                }
+
+        Cache cache;
+        if (factory == null || (cache = factory.getCache()) == null) {
+            entityManager.clear();
+            return;
+        }
+
+        int evicted = 0;
+        // Try to evict only the specific instances that were modified
+        for (Object entity : entities) {
+            Object id = getEntityId(entity, entityClass);
+            if (id != null) {
+                cache.evict(entityClass, id);
+                evicted++;
             }
+        }
+        // Fallback: if we couldn't extract any IDs, evict the entire type
+        if (evicted == 0 && !entities.isEmpty()) {
+            cache.evict(entityClass);
         }
         entityManager.clear();
     }
