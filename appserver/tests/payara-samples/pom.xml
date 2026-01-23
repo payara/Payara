@@ -154,7 +154,7 @@
             <properties>
                 <payara.directory.name>payara7</payara.directory.name>
                 <payara.containerType>SERVER</payara.containerType>
-                <skipZombieKill>${skipServerRestart}</skipZombieKill> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
+                <skipZombieKill>true</skipZombieKill> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
             </properties>
 
             <dependencies>
