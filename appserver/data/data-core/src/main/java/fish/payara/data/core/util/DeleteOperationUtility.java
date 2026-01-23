@@ -114,7 +114,7 @@ public class DeleteOperationUtility {
         endTransaction(tm, em, dataForQuery);
 
         // Clear cache for the affected entity after DELETE
-        clearCaches(em, declaredEntityClass);
+        clearCache(em, declaredEntityClass);
 
         logger.info("Rows affected from delete operation: " + rowsAffected);
         return rowsAffected;
@@ -131,7 +131,7 @@ public class DeleteOperationUtility {
                 " is not mapped on the entity " + entityMetadata.getEntityName());
     }
 
-    private static void clearCaches(EntityManager entityManager, Class<?> entityClass) {
+    private static void clearCache(EntityManager entityManager, Class<?> entityClass) {
         EntityManagerFactory factory = entityManager.getEntityManagerFactory();
         if (factory != null) {
             Cache cache = factory.getCache();
