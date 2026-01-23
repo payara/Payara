@@ -222,7 +222,6 @@
                                     <successCodes>
                                         <successCode>0</successCode>
                                         <successCode>1</successCode>
-                                        <successCode>2</successCode>
                                     </successCodes>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
