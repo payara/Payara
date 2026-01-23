@@ -585,6 +585,7 @@ pipeline {
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/functional/payara-micro """
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -592,12 +593,14 @@ pipeline {
                         -Dversion=${pom.properties['revision']} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/functional/embeddedtest """
 
                         sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
                         -Dversion=${pom.properties['revision']} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/functional/embeddedtest """
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
