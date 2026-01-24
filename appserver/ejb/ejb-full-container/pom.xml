@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>ejb-full-container</artifactId>

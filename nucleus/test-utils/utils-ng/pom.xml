@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.test-utils</groupId>
         <artifactId>test-utils</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>utils-ng</artifactId>

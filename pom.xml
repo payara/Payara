@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.2-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -225,6 +225,7 @@
 
     <properties>
         <!-- build versions -->
+        <revision>7.2026.2-SNAPSHOT</revision>
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>

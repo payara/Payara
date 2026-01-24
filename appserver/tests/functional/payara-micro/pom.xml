@@ -2,7 +2,7 @@
 <!--
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2024-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2024-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -46,8 +46,8 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
-        <relativePath>../payara-samples/samples</relativePath>
+        <version>${revision}</version>
+        <relativePath>../../payara-samples/samples</relativePath>
     </parent>
 
     <artifactId>payara-micro</artifactId>
@@ -73,11 +73,6 @@
             <groupId>fish.payara.extras</groupId>
             <artifactId>payara-micro</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.extras</groupId>
-            <artifactId>payara-micro-boot</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

@@ -23,7 +23,7 @@ pipeline {
                     pom = readMavenPom file: 'pom.xml'
                     payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
                     DOMAIN_NAME = "test-domain"
-                    echo "Payara pom version is ${pom.version}"
+                    echo "Payara pom version is ${pom.properties['revision']}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
               }
@@ -130,7 +130,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -167,7 +167,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -204,7 +204,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -241,7 +241,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -278,7 +278,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -315,7 +315,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -352,7 +352,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -389,7 +389,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -426,7 +426,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
@@ -463,7 +463,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
@@ -498,7 +498,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh "rm -rf /tmp/cargo*"
@@ -531,12 +531,12 @@ pipeline {
                     steps{
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
+                            branches: [[name: "*/Simplify-Project-Versions"]],
+                            userRemoteConfigs: [[url: "https://github.com/Pandrex247/patched-src-javaee7-samples.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
+                        updatePomPayaraVersion("${pom.properties['revision']}")
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -B -V -ff -e clean install --strict-checksums \
@@ -576,6 +576,7 @@ pipeline {
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -DskipTests \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
                         -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
                         -pl fish.payara.samples:payara-samples-profiled-tests"""
@@ -584,19 +585,22 @@ pipeline {
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/functional/payara-micro """
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
-                        -Dversion=${pom.version} \
+                        -Dversion=${pom.properties['revision']} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/functional/embeddedtest """
 
                         sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
-                        -Dversion=${pom.version} \
+                        -Dversion=${pom.properties['revision']} \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drevision=${pom.properties['revision']} \
                         -f appserver/tests/functional/embeddedtest """
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -672,5 +676,5 @@ void saveLogsAndCleanup(String logArchiveName) {
 
 void updatePomPayaraVersion(String payaraVersion) {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Updating pom.xml payara.version property for Shrinkwrap resolver  *#*#*#*#*#*#*#*#*#*#*#*#'
-    sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
+    sh script: "mvn versions:set-property -DnewVersion=${payaraVersion} -DgenerateBackupPoms=false -Dproperty=payara.version -N", label: "Update pom.xml payara.version property"
 }
