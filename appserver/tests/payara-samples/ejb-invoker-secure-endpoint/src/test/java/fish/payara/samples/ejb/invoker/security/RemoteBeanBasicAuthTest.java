@@ -66,28 +66,32 @@ public class RemoteBeanBasicAuthTest extends AbstractRemoteBeanSecurityTest {
 
     @BeforeClass
     public static void enableSecurity() {
-        // undeploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "false"));
-        // enable the security and deploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "true",
-                "--securityenabled", "true",
-                "--authType", BASIC_AUTH));
+        if (!Boolean.parseBoolean(System.getProperty("skipConfig", "false"))) {
+            // undeploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "false"));
+            // enable the security and deploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "true",
+                    "--securityenabled", "true",
+                    "--authType", BASIC_AUTH));
 
-        // Add user with password and group to the container's native identity store
-        addUsersToContainerIdentityStore(USERNAME, ROLE, "file");
+            // Add user with password and group to the container's native identity store
+            addUsersToContainerIdentityStore(USERNAME, ROLE, "file");
+        }
     }
 
     @AfterClass
     public static void resetSecurity() {
-        // undeploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "false"));
-        // disable the security and deploy the ejb-invoker app
-        CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
-                "--enabled", "true",
-                "--securityenabled", "false"));
+        if (!Boolean.parseBoolean(System.getProperty("skipTestConfigCleanup", "false"))) {
+            // undeploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "false"));
+            // disable the security and deploy the ejb-invoker app
+            CliCommands.payaraGlassFish(asList("set-ejb-invoker-configuration",
+                    "--enabled", "true",
+                    "--securityenabled", "false"));
+        }
     }
 
     @Override

@@ -41,10 +41,14 @@ package fish.payara.samples.ejb.invoker.security;
 
 import fish.payara.ejb.http.client.RemoteEJBContextFactory;
 import fish.payara.ejb.http.protocol.SerializationType;
+import fish.payara.samples.CliCommands;
 import fish.payara.samples.ServerOperations;
+import fish.payara.samples.PayaraTestShrinkWrap;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Hashtable;
 
@@ -54,10 +58,18 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE;
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.JAXRS_CLIENT_KEY_STORE_PASSOWRD;
@@ -69,21 +81,21 @@ import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_CREDE
 import static fish.payara.ejb.http.client.RemoteEJBContextFactory.PROVIDER_PRINCIPAL;
 import static fish.payara.samples.ServerOperations.getClientTrustStoreURL;
 import static fish.payara.samples.ServerOperations.getKeyStore;
-import java.io.IOException;
-import java.net.URI;
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 import static jakarta.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.jboss.shrinkwrap.api.asset.EmptyAsset.INSTANCE;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import static fish.payara.samples.CliCommands.payaraGlassFish;
 
 /**
  *
  * @author jGauravGupta
  */
+@RunWith(Arquillian.class)
 public abstract class AbstractRemoteBeanSecurityTest {
 
     private static final String EJB_INVOKER_PROVIDER_URL = "https://localhost:8181/ejb-invoker";
@@ -95,10 +107,13 @@ public abstract class AbstractRemoteBeanSecurityTest {
     private URI uri;
 
     @Deployment
-    public static Archive<?> deployment() {
-        return ShrinkWrap.create(WebArchive.class)
+    public static WebArchive deploy() {
+        return PayaraTestShrinkWrap.getWebArchive()
+                .addPackage(AbstractRemoteBeanSecurityTest.class.getPackage())
+                .addPackages(false, "fish.payara.samples", "org.omnifaces.utils.security")
+                .addPackages(true, "org.bouncycastle")
                 .addClasses(Bean.class, RemoteBean.class)
-                .addAsManifestResource(INSTANCE, "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     private Context getContextWithCredentialsSet(String username, String password) throws IOException {
@@ -148,7 +163,16 @@ public abstract class AbstractRemoteBeanSecurityTest {
     }
 
     @Test
+    @InSequence(1)
+    public void uploadClientCertificate() throws IOException {
+        if (ServerOperations.isServer()) {
+            ServerOperations.generateClientKeyStore(true);
+        }
+    }
+
+    @Test
     @RunAsClient
+    @InSequence(2)
     public void callRemoteBeanWithCorrectCredentials() throws NamingException, IOException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), getPassword());
@@ -159,6 +183,7 @@ public abstract class AbstractRemoteBeanSecurityTest {
 
     @Test
     @RunAsClient
+    @InSequence(3)
     public void callRemoteBeanWithIncorrectCredentials() throws NamingException, IOException {
         // Obtain the JNDI naming context
         Context ejbRemoteContext = getContextWithCredentialsSet(getUserName(), "InvalidPassword");
