@@ -191,6 +191,23 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+
+                            <!-- Restart server after undoing config -->
+                            <execution>
+                                <id>stop-or-restart-payara-after-config</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTestConfigCleanup}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>${serverRestartCommand}</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
