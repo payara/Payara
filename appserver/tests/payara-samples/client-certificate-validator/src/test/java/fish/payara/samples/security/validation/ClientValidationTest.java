@@ -85,7 +85,7 @@ import static org.junit.Assert.fail;
 public class ClientValidationTest {
 
     private static String certPath;
-    private static final String CERTIFICATE_ALIAS = "omnikey";
+    private static final String CERTIFICATE_ALIAS = "client-certificate-validator";
     private static final String KEYSTORE_PASSWORD = "changeit";
     private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
