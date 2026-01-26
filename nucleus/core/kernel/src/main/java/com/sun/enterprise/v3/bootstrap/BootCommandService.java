@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,14 +42,18 @@ package com.sun.enterprise.v3.bootstrap;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import fish.payara.internal.api.PostBootRunLevel;
 import fish.payara.boot.runtime.BootCommands;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.util.logging.Level.SEVERE;
@@ -65,6 +69,9 @@ public class BootCommandService implements PostConstruct {
 
     @Inject
     CommandRunner commandRunner;
+
+    @Inject
+    ServerEnvironment env;
 
     /**
      * Runs a series of commands from a file
@@ -88,6 +95,13 @@ public class BootCommandService implements PostConstruct {
 
     @Override
     public void postConstruct() {
+        try{
+            LOGGER.fine("Satisfying Optional Packages dependencies...");
+            InstalledLibrariesResolver.initializeInstalledLibRegistry(env.getLibPath().getAbsolutePath());
+        }catch(Exception e){
+            LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionOptionalDepend, e);
+        }
+
         doBootCommands(startupContext.getArguments().getProperty("-postbootcommandfile"), true);
     }
 }
