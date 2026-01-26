@@ -105,7 +105,6 @@
         <module>ejb</module>
         <module>resources</module>
         <module>connectors</module>
-        <module>load-balancer</module>
         <module>jms</module>
         <module>jdbc</module>
         <module>persistence</module>
