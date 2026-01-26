@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+     Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
+
+     The contents of this file are subject to the terms of either the GNU
+     General Public License Version 2 only ("GPL") or the Common Development
+     and Distribution License("CDDL") (collectively, the "License").  You
+     may not use this file except in compliance with the License.  You can
+     obtain a copy of the License at
+     https://github.com/payara/Payara/blob/main/LICENSE.txt
+     See the License for the specific
+     language governing permissions and limitations under the License.
+
+     When distributing the software, include this License Header Notice in each
+     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+
+     GPL Classpath Exception:
+     The Payara Foundation designates this particular file as subject to the "Classpath"
+     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+     file that accompanied this code.
+
+     Modifications:
+     If applicable, add the following below the License Header, with the fields
+     enclosed by brackets [] replaced by your own identifying information:
+     "Portions Copyright [year] [name of copyright owner]"
+
+     Contributor(s):
+     If you wish your version of this file to be governed by only the CDDL or
+     only the GPL Version 2, indicate your decision by adding "[Contributor]
+     elects to include this software in this distribution under the [CDDL or GPL
+     Version 2] license."  If you don't indicate a single choice of license, a
+     recipient has the option to distribute your version of this file under
+     either the CDDL, the GPL Version 2 or to extend the choice of license to
+     its licensees as provided above.  However, if you add GPL Version 2 code
+     and therefore, elected the GPL Version 2 license, then the option applies
+     only if the new code is made subject to such option by the copyright
+     holder.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>fish.payara.samples</groupId>
+        <artifactId>payara-samples</artifactId>
+        <version>7.2026.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>microprofile-config</artifactId>
+
+    <name>Payara Samples - Payara - Microprofile Config</name>
+    <packaging>war</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <!-- Temporary scope changed while EE11 in development, return to test once EE11 fully released-->
+            <scope>provided</scope>
+        </dependency>
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- End of temporary dependencies -->
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-binding</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-payara-for-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerStart}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>start-domain</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Create system property -->
+                    <execution>
+                        <id>create-system-property</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.asadmin}</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>create-system-properties</argument>
+                                <argument>fish.payara.test.create-insecure-endpoint=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Configure HealthCheck -->
+                    <execution>
+                        <id>configure-healthcheck</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.asadmin}</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>set-microprofile-healthcheck-configuration</argument>
+                                <argument>--securityenabled=true</argument>
+                                <argument>--endpoint=mphealth</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Configure OpenAPI -->
+                    <execution>
+                        <id>configure-openapi</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.asadmin}</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>set-openapi-configuration</argument>
+                                <argument>--securityenabled=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Configure Metrics -->
+                    <execution>
+                        <id>configure-metrics</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${payara.asadmin}</executable>
+                            <skip>${skipConfig}</skip>
+                            <arguments>
+                                <argument>set-metrics-configuration</argument>
+                                <argument>--securityenabled=true</argument>
+                                <argument>--endpoint=mpmetrics</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Stop or restart server after applying config -->
+                    <execution>
+                        <id>stop-or-restart-payara-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipServerRestart}</skip>
+                            <executable>${payara.asadmin}</executable>
+                            <arguments>
+                                <argument>${serverRestartCommand}</argument>
+                                <argument>${payara.domain.name}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
