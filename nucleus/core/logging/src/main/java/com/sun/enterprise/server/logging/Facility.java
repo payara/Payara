@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,61 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
-
 package com.sun.enterprise.server.logging;
 
+public enum Facility {
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
+    KERN(0),
+    USER(8),
+    MAIL(16),
+    DAEMON(24),
+    AUTH(32),
+    SYSLOG(40),
+    LPR(48),
+    NEWS(56),
+    UUCP(64),
+    CRON(72),
+    AUTHPRIV(80),
+    FTP(88),
+    LOCAL0(128),
+    LOCAL1(136),
+    LOCAL2(144),
+    LOCAL3(152),
+    LOCAL4(160),
+    LOCAL5(168),
+    LOCAL6(176),
+    LOCAL7(184);
 
-/**
-* Send a message via syslog.
-*/
-/**
- * this code is taken from spy.jar and enhanced
- * User: cmott
- */
-public class Syslog {
-    public static final int EMERG=0;
-    public static final int ALERT=1;
-    public static final int CRIT=2;
-    public static final int ERR=3;
-    public static final int WARNING=4;
-    public static final int NOTICE=5;
-    public static final int INFO=6;
-    public static final int DEBUG=7;
+    private final int value;
 
-    private static final int SYSLOG_PORT=514;
-
-    private final InetAddress addr;
-
-    /**
-     * Log to a particular log host.
-     */
-    public Syslog(String loghost) throws UnknownHostException {
-      addr=InetAddress.getByName(loghost);
+    Facility(int value) {
+        this.value = value;
     }
 
-    /**
-     * Send a log message.
-     */
-    public void log(int facility, int level, String msg) {
-      int fl=facility | level;
-      String what="<" + fl + ">" + msg;
-      try (DatagramSocket datagramSocket = new DatagramSocket()) {
-        byte[] buf = what.getBytes();
-        int len = buf.length;
-        DatagramPacket dp = new DatagramPacket(buf,len,addr,SYSLOG_PORT);
-        datagramSocket.send(dp);
-      } catch(IOException e) {
-        LogFacade.LOGGING_LOGGER.log(Level.SEVERE, LogFacade.ERROR_SENDING_SYSLOG_MSG, e);
-      }
+    public int getValue() {
+        return value;
     }
 
-
+    public static int fromString(String input) {
+        return Facility.valueOf(input.toUpperCase()).getValue();
+    }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging;
 
@@ -80,6 +80,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
     private BooleanLatch done = new BooleanLatch();
     private BlockingQueue<LogRecord> pendingRecords = new ArrayBlockingQueue<LogRecord>(5000);
     private SimpleFormatter simpleFormatter = new SimpleFormatter();
+    private int facility;
 
 
     public void postConstruct() {
@@ -96,6 +97,13 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         String host = TranslatedConfigView.expandValue(manager.getProperty(cname + ".host"));
         if (host == null) {
             host = "localhost";
+        }
+
+        String facility = TranslatedConfigView.expandValue(manager.getProperty(cname + ".facility"));
+        try {
+            this.facility = Facility.fromString(facility);
+        } catch (IllegalArgumentException e) {
+            this.facility = Facility.DAEMON.getValue();
         }
 
         //set up the connection
@@ -188,7 +196,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
             sb.append(formattedMsg);
             //send message
             if (sysLogger != null) {
-                sysLogger.log(Syslog.DAEMON, syslogLevel, sb.toString());
+                sysLogger.log(facility, syslogLevel, sb.toString());
             }
 
         }
