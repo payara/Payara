@@ -232,7 +232,7 @@
 
                             <!-- Restart server after undoing config -->
                             <execution>
-                                <id>stop-or-restart-payara-after-config</id>
+                                <id>stop-or-restart-payara-after-unapplying-config</id>
                                 <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>exec</goal>
