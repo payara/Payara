@@ -22,7 +22,7 @@ public class VersionedOrder {
     @Column(name = "customer_name")
     public String customerName;
 
-    @Column(name = "total_amount", nullable = false) // explicitly updatable
+    @Column(name = "total_amount", nullable = false, precision = 19, scale = 2) // explicitly updatable
     public BigDecimal totalAmount;
 
     @Column(name = "order_date")

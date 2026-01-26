@@ -135,8 +135,6 @@
         <delete file="${runtimedir}/web-gui-plugin-common.jar"/>
         <delete file="${runtimedir}/ha-file-store.jar"/>
         <delete file="${runtimedir}/payara-console-extras.jar"/>
-        <delete file="${runtimedir}/load-balancer-admin.jar"/>
-        <delete file="${runtimedir}/gf-load-balancer-connector.jar"/>
         <delete file="${runtimedir}/backup.jar"/>
         <delete file="${runtimedir}/ant.jar" failonerror="false"/>
         <delete verbose="true" failonerror="false">

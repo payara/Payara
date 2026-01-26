@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,28 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package com.sun.enterprise.server.logging;
 
-package com.sun.enterprise.admin.monitor.stats.lb;
+public enum Facility {
 
-// 
-// This interface has all of the bean info accessor methods.
-// 
+    KERN(0),
+    USER(8),
+    MAIL(16),
+    DAEMON(24),
+    AUTH(32),
+    SYSLOG(40),
+    LPR(48),
+    NEWS(56),
+    UUCP(64),
+    CRON(72),
+    AUTHPRIV(80),
+    FTP(88),
+    LOCAL0(128),
+    LOCAL1(136),
+    LOCAL2(144),
+    LOCAL3(152),
+    LOCAL4(160),
+    LOCAL5(168),
+    LOCAL6(176),
+    LOCAL7(184);
 
-public interface LoadBalancerStatsInterface {
-	public void setClusterStats(com.sun.enterprise.admin.monitor.stats.lb.ClusterStats[] value);
+    private final int value;
 
-	public void setClusterStats(int index, com.sun.enterprise.admin.monitor.stats.lb.ClusterStats value);
+    Facility(int value) {
+        this.value = value;
+    }
 
-	public int addClusterStats(com.sun.enterprise.admin.monitor.stats.lb.ClusterStats value);
+    public int getValue() {
+        return value;
+    }
 
-	public com.sun.enterprise.admin.monitor.stats.lb.ClusterStats[] getClusterStats();
-
-	public int removeClusterStats(com.sun.enterprise.admin.monitor.stats.lb.ClusterStats value);
-
-	public java.util.List fetchClusterStatsList();
-
-	public int sizeClusterStats();
-
-	public com.sun.enterprise.admin.monitor.stats.lb.ClusterStats getClusterStats(int index);
-
+    public static int fromString(String input) {
+        return Facility.valueOf(input.toUpperCase()).getValue();
+    }
 }
