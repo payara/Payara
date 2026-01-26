@@ -64,7 +64,7 @@
         <skipServerStart>${skipTests}</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
         <skipServerRestart>${skipTests}</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
         <serverRestartCommand>stop-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
-        <skipTestConfigCleanup>${skipTests}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
+        <skipTestConfigCleanup>${skipConfig}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
 
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>

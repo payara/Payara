@@ -24,12 +24,12 @@ Note that any test must have a `@Deployment` since otherwise the tests aren't de
   * `skipConfig`: Whether to skip applying server config during pre-integration-test phase. Defaults to false.
   * `skipServerStart`: Whether to skip starting the server before applying config during pre-integration-test phase. Defaults to true.
   * `skipServerRestart`: Whether to skip restarting the server after applying config during pre-integration-test phase. Defaults to false.
-  * `skipTestConfigCleanup`: Whether to skip cleaning up any config applied to the server for a test after executing it. Defaults to false.
+  * `skipTestConfigCleanup`: Whether to skip cleaning up any config applied to the server for a test after executing it. Defaults to the value of `skipConfig`.
 * `payara-server-managed`: Resolves Payara Server via Maven, unpacks it, and controls its start/stop for each test.
     * `skipConfig`: Whether to skip applying server config during pre-integration-test phase. Defaults to false.
     * `skipServerStart`: Whether to skip starting the server before applying config during pre-integration-test phase. Defaults to false.
     * `skipServerRestart`: Whether to skip restarting the server after applying config during pre-integration-test phase. Defaults to false.
-    * `skipTestConfigCleanup`: Whether to skip cleaning up any config applied to the server for a test after executing it. Defaults to false.
+    * `skipTestConfigCleanup`: Whether to skip cleaning up any config applied to the server for a test after executing it. Defaults to the value of `skipConfig`.
     * `skipZombieKill`: Whether to skip attempting to kill a running `payara-server-managed` domain before attempting test configuration and execution. Defaults to the value of `skipServerRestart` (false).
 * `payara-micro-managed`: Resolves Payara Micro via Maven, and controls its start/stop for each test.
 * `web`: Resolve the `fish.payara.distributions:payara-web` instead of the default Platform distribution
