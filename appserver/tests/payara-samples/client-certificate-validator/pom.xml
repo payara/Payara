@@ -2,7 +2,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2021-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -58,4 +58,102 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>samples-test-utils</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <!-- Generate an expired self-signed certificate -->
+                    <execution>
+                        <id>generate-expired-certificate</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <executable>keytool</executable>
+                            <arguments>
+                                <argument>-genkeypair</argument>
+                                <argument>-alias</argument><argument>client-certificate-validator</argument>
+                                <argument>-keyalg</argument><argument>RSA</argument>
+                                <argument>-keysize</argument><argument>2048</argument>
+                                <argument>-sigalg</argument><argument>SHA256withRSA</argument>
+                                <argument>-dname</argument><argument>CN=PrintCertificateCommandTest, OU=Test Test\, Test, O=Payara Foundation, L=Pilsen, C=CZ, EMAILADDRESS=nobody@nowhere.space, UID=LDAP-Test</argument>
+                                <argument>-validity</argument><argument>1</argument>
+                                <argument>-keystore</argument><argument>${project.build.directory}${file.separator}expired-keystore.jks</argument>
+                                <argument>-storepass</argument><argument>changeit</argument>
+                                <argument>-keypass</argument><argument>changeit</argument>
+                                <argument>-startdate</argument><argument>2019/08/01</argument>
+                                <argument>-ext</argument><argument>SAN=email:nobody@nowhere.space</argument>
+                                <argument>-noprompt</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Add expired self-signed certificate to Server trust store -->
+                    <execution>
+                        <id>add-expired-certificate-to-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <executable>keytool</executable>
+                            <arguments>
+                                <argument>-importkeystore</argument>
+                                <argument>-srckeystore</argument><argument>${project.build.directory}${file.separator}expired-keystore.jks</argument>
+                                <argument>-destkeystore</argument><argument>${payara.home}${file.separator}glassfish${file.separator}domains${file.separator}${payara.domain.name}${file.separator}config${file.separator}cacerts.p12</argument>
+                                <argument>-srcstorepass</argument><argument>changeit</argument>
+                                <argument>-deststorepass</argument><argument>changeit</argument>
+                                <argument>-noprompt</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>payara-server-remote</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Restart server after editing trust store -->
+                            <execution>
+                                <id>restart-payara-after-config</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerRestart}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>${serverRestartCommand}</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

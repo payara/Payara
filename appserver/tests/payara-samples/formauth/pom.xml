@@ -46,32 +46,37 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
+    <profiles>
+        <profile>
+            <id>payara-server-remote</id>
 
-                <executions>
-                    <execution>
-                    <id>delete-jvm-option-post</id>
-                    <phase>post-integration-test</phase>
-                    <goals>
-                        <goal>exec</goal>
-                    </goals>
-                    <configuration>
-                        <skip>${skipTestConfigCleanup}</skip>
-                        <successCodes>0,1</successCodes>
-                        <executable>${payara.asadmin}</executable>
-                        <arguments>
-                            <argument>delete-jvm-options</argument>
-                            <argument>-Dfish.payara.permittedFormBasedAuthHttpMethods=POST</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
 
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+                        <executions>
+                            <execution>
+                                <id>delete-jvm-option-post</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTestConfigCleanup}</skip>
+                                    <successCodes>0,1</successCodes>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>delete-jvm-options</argument>
+                                        <argument>-Dfish.payara.permittedFormBasedAuthHttpMethods=POST</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

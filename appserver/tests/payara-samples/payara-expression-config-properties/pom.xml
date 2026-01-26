@@ -136,7 +136,7 @@
 
     <profiles>
         <profile>
-            <id>Windows</id>
+            <id>windows</id>
             <activation>
                 <os>
                     <family>Windows</family>

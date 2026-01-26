@@ -166,7 +166,7 @@
                             <skip>${skipConfig}</skip>
                             <arguments>
                                 <argument>set</argument>
-                                <argument>configs.config.server-config.network-config.protocols.protocol.wibbles-protocol.ssl.cert-nickname=omnikey</argument>
+                                <argument>configs.config.server-config.network-config.protocols.protocol.wibbles-protocol.ssl.cert-nickname=multiple-keystores</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -183,7 +183,7 @@
                             <executable>keytool</executable>
                             <arguments>
                                 <argument>-genkeypair</argument>
-                                <argument>-alias</argument><argument>omnikey</argument>
+                                <argument>-alias</argument><argument>multiple-keystores</argument>
                                 <argument>-keyalg</argument><argument>RSA</argument>
                                 <argument>-keysize</argument><argument>2048</argument>
                                 <argument>-sigalg</argument><argument>SHA256withRSA</argument>

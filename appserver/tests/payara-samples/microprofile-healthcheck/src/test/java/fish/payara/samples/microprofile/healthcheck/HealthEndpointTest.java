@@ -97,7 +97,7 @@ public class HealthEndpointTest {
     @RunAsClient
     public void testHealthcheckResponse() throws IOException {
 
-        String response = newClient().target(URI.create(new URL(base, "mphealth-insecure").toExternalForm())).request(TEXT_PLAIN).get(String.class);
+        String response = newClient().target(URI.create(new URL(base, "health").toExternalForm())).request(TEXT_PLAIN).get(String.class);
 
         System.out.println("-------------------------------------------------------------------------");
         System.out.println("Response: \n\n" + response);
