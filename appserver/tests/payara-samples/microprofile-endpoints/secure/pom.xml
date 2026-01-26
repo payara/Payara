@@ -222,7 +222,7 @@
                                 </goals>
                                 <configuration>
                                     <executable>${payara.asadmin}</executable>
-                                    <skip>${skipConfig}</skip>
+                                    <skip>${skipTestConfigCleanup}</skip>
                                     <arguments>
                                         <argument>set-openapi-configuration</argument>
                                         <argument>--securityenabled=false</argument>
