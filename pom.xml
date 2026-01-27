@@ -363,10 +363,11 @@
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.48.0</opentelemetry.version>
-        <opentelemetry.bom.version>2.14.0</opentelemetry.bom.version>
-        <opentelemetry.semconv.version>1.30.0</opentelemetry.semconv.version>
-        <opentelemetry.instrumentation.annotations.version>2.14.0</opentelemetry.instrumentation.annotations.version>
-        <opentelemetry.instrumentation.annotation.support.version>2.14.0-alpha</opentelemetry.instrumentation.annotation.support.version>
+        <opentelemetry-sdk-extension-incubator.version>1.48.0-alpha</opentelemetry-sdk-extension-incubator.version>
+        <opentelemetry-bom.version>2.14.0</opentelemetry-bom.version>
+        <opentelemetry-semconv.version>1.30.0</opentelemetry-semconv.version>
+        <opentelemetry-instrumentation-annotations.version>2.14.0</opentelemetry-instrumentation-annotations.version>
+        <opentelemetry-instrumentation-annotation-support.version>2.14.0-alpha</opentelemetry-instrumentation-annotation-support.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>

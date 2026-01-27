@@ -524,7 +524,7 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry.bom.version}</version>
+                <version>${opentelemetry-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -574,7 +574,7 @@
             <dependency>
                 <groupId>io.opentelemetry.semconv</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
-                <version>${opentelemetry.semconv.version}</version>
+                <version>${opentelemetry-semconv.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -616,13 +616,19 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-                <version>${opentelemetry.instrumentation.annotations.version}</version>
+                <version>${opentelemetry-instrumentation-annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-                <version>${opentelemetry.instrumentation.annotation.support.version}</version>
+                <version>${opentelemetry-instrumentation-annotation-support.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-extension-incubator</artifactId>
+                <version>${opentelemetry-sdk-extension-incubator.version}</version>
                 <scope>provided</scope>
             </dependency>
 
