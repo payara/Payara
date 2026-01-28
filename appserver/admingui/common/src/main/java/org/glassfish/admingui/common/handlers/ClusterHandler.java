@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2026] [Payara Foundation and/or its affiliates]
 
 /**
  * @author anilam
@@ -463,11 +463,6 @@ public class ClusterHandler {
                         payload.put("id", nodeName);
                     } else if ("SSH".equals(type)) {
                         endpoint = prefix + "delete-node-ssh";
-                        payload = new HashMap<>();
-                        payload.put("id", nodeName);
-                        payload.put("uninstall", "true");
-                    } else if ("DCOM".equals(type)) {
-                        endpoint = prefix + "delete-node-dcom";
                         payload = new HashMap<>();
                         payload.put("id", nodeName);
                         payload.put("uninstall", "true");
