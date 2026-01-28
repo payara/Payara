@@ -56,6 +56,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
 import org.glassfish.hk2.utilities.CleanerFactory;
 
 
+import java.lang.ref.Cleaner;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -291,18 +292,6 @@ public class ConnectionManager {
     private transient int poolSize;
 
     /**
-     * True if connection pooling is enabled.
-     * @serial
-     */
-    private transient boolean pooling;
-
-    /**
-     * The linked list of idle DB connections.
-     * @serial
-     */
-    transient DoubleLinkedList freeList;
-
-    /**
      * The linked list of in-use DB connections.
      * @serial
      */
@@ -314,18 +303,6 @@ public class ConnectionManager {
      * @serial
      */
     private transient Hashtable xactConnections;
-
-    /**
-     * Flag that a shutdown to this ConnectionManager object is pending.
-     * @serial
-     */
-    transient boolean shutDownPending;
-
-    /**
-     * Flag that specifies we are using default connection blocking.
-     * @serial
-     */
-    private transient boolean connectionBlocking;
 
     /**
      * Millisecond time to wait between attempts to connect
@@ -348,12 +325,6 @@ public class ConnectionManager {
     private static final int DEFAULT_RETRY_INTERVAL = 1000;
 
     /**
-     * Indicates whether this ConnectionManager is properly initialized.
-     * @serial
-     */
-    private transient boolean initialized;
-
-    /**
      * Maximumn number of seconds this DataSource will wait while attempting to
      * connection to a database.
      */
@@ -364,11 +335,14 @@ public class ConnectionManager {
      */
     private transient ConnectionImpl freeConn = null;
 
-    
+    private final CleanableConnectionManagerState state = new CleanableConnectionManagerState();
+
+    private final Cleaner.Cleanable cleanable;
+
     /**
      * The logger
      */
-    private static Logger logger = LogHelperSQLStore.getLogger();
+    private static final Logger logger = LogHelperSQLStore.getLogger();
     
     /**
      * I18N message handler
@@ -791,6 +765,105 @@ public class ConnectionManager {
     //
     static final String SQL_RMT_DB_ACCESS = "HZ   "; // NOI18N
 
+    static class CleanableConnectionManagerState implements Runnable {
+
+        /**
+         * Flag that a shutdown to this ConnectionManager object is pending.
+         * @serial
+         */
+        private transient boolean shutDownPending;
+        /**
+         * True if connection pooling is enabled.
+         * @serial
+         */
+        private transient boolean pooling;
+        /**
+         * Flag that specifies we are using default connection blocking.
+         * @serial
+         */
+        private transient boolean connectionBlocking;
+        /**
+         * Indicates whether this ConnectionManager is properly initialized.
+         * @serial
+         */
+        private transient boolean initialized;
+        /**
+         * The linked list of idle DB connections.
+         * @serial
+         */
+        private transient DoubleLinkedList freeList;
+
+        public DoubleLinkedList getFreeList() {
+            return freeList;
+        }
+
+        public void setFreeList(DoubleLinkedList freeList) {
+            this.freeList = freeList;
+        }
+
+        CleanableConnectionManagerState() {
+            this.freeList = null;
+            this.pooling = false;
+            this.shutDownPending = false;
+            this.connectionBlocking = false;
+            this.initialized = false;
+        }
+
+        @Override
+        public void run() {
+            this.shutDownPending = true;
+
+            if (this.pooling) {
+                ConnectionImpl conn;
+                this.connectionBlocking = false;
+                this.pooling = false;
+                this.initialized = false;
+                for
+                (
+                        conn = (ConnectionImpl) this.freeList.getHead();
+                        conn != null;
+                        conn = (ConnectionImpl) conn.getNext()
+                ) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        // ignore it
+                    }
+                }
+                this.freeList = null;
+            }
+
+        }
+
+        public boolean isShutDownPending() {
+            return shutDownPending;
+        }
+
+        public boolean isPooling() {
+            return pooling;
+        }
+
+        public void setPooling(boolean pooling) {
+            this.pooling = pooling;
+        }
+
+        public boolean isConnectionBlocking() {
+            return connectionBlocking;
+        }
+
+        public void setConnectionBlocking(boolean connectionBlocking) {
+            this.connectionBlocking = connectionBlocking;
+        }
+
+        public boolean isInitialized() {
+            return initialized;
+        }
+
+        public void setInitialized(boolean initialized) {
+            this.initialized = initialized;
+        }
+
+    }
 
     /**
      * Default constructor.
@@ -812,18 +885,13 @@ public class ConnectionManager {
         this.minPool = 0;
         this.maxPool = 0;
         this.busyList = null;
-        this.freeList = null;
         this.poolSize = 0;
-        this.pooling = false;
         this.xactConnections = null;
-        this.shutDownPending = false;
-        this.connectionBlocking = false;
         this.msWait = 0;
         this.msInterval = 0;
         this.busyList = null;
         this.xactConnections = null;
-        this.initialized = false;
-        registerCloseEvent();
+        this.cleanable = CleanerFactory.create().register(this, state);
     }
 
     // --------------- Overloaded Constructors -----------------
@@ -842,10 +910,8 @@ public class ConnectionManager {
         try {
             this.setDriverName(driverName);
             startUp();
-        } catch (SQLException se) {
+        } catch (SQLException | ClassNotFoundException se) {
             throw se;
-        } catch (ClassNotFoundException e) {
-            throw e;
         }
     }
 
@@ -1084,8 +1150,17 @@ public class ConnectionManager {
         }
     }
 
-    // ---------------------  Public Methods -----------------------
+    // ----------------  Package Private Methods -------------------
 
+    synchronized boolean isShutdownPending() {
+        return this.state.isShutDownPending();
+    }
+
+    synchronized void insertFreeListTail(ConnectionImpl connection) {
+        this.state.getFreeList().insertAtTail(connection);
+    }
+
+    // ---------------------  Public Methods -----------------------
 
     /**
      * Establishes a connection to the default database URL
@@ -1117,7 +1192,7 @@ public class ConnectionManager {
      *
      */
     public synchronized Connection getConnection() throws SQLException {
-        if (this.shutDownPending == true) {
+        if (this.state.isShutDownPending()) {
             SQLException se = new SQLException
                     (
                             StringScanner.createParamString
@@ -1134,7 +1209,7 @@ public class ConnectionManager {
 
         if (conn != null) {
             // We already know about this transaction.
-        } else if (!this.pooling)					// Get a non-pooled connection.
+        } else if (!this.state.isPooling())					// Get a non-pooled connection.
         {
             conn = (ConnectionImpl) this.getConnection(this.userName,
                     this.password);
@@ -1142,7 +1217,7 @@ public class ConnectionManager {
             conn.checkXact();
         } else	// This is a pooled connection.
         {
-            if (this.freeList.size <= 0)			// Is pool empty?
+            if (this.state.getFreeList().size <= 0)			// Is pool empty?
             {
                 if (this.poolSize < this.maxPool)	// Can we expand the pool?
                 {
@@ -1151,7 +1226,7 @@ public class ConnectionManager {
                     } catch (SQLException se) {
                         throw se;
                     }
-                } else if (this.connectionBlocking != true)	// Can't expand the pool.
+                } else if (!this.state.isConnectionBlocking())	// Can't expand the pool.
                 {
                     // If not blocking, give up.
                     SQLException se = new SQLException
@@ -1173,7 +1248,7 @@ public class ConnectionManager {
                     }
                 }
             }
-            conn = (ConnectionImpl) (this.freeList.removeFromHead());
+            conn = (ConnectionImpl) (this.state.getFreeList().removeFromHead());
             if (conn == null) {
                 // Shouldn't happen.
                 SQLException se = new SQLException
@@ -1212,7 +1287,7 @@ public class ConnectionManager {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
 
-        if (this.shutDownPending == true) {
+        if (this.state.isShutDownPending()) {
             SQLException se = new SQLException
                     (
                             StringScanner.createParamString
@@ -1297,7 +1372,7 @@ public class ConnectionManager {
             ) throws SQLException {
         boolean debug = logger.isLoggable(Logger.FINEST);
 
-        if (this.shutDownPending == true) {
+        if (this.state.isShutDownPending()) {
             SQLException se = new SQLException
                     (
                             StringScanner.createParamString
@@ -1405,7 +1480,7 @@ public class ConnectionManager {
      * @exception  SQLException  if a SQL error is encountered.
      */
     public void startUp() throws ClassNotFoundException, SQLException {
-        if (this.initialized == true) return;
+        if (this.state.isInitialized()) return;
 
         this.busyList = new DoubleLinkedList();
         this.xactConnections = new Hashtable();
@@ -1449,12 +1524,12 @@ public class ConnectionManager {
             // Check if connection pooling is requested.
             if ((this.minPool > 0) && (this.maxPool >= this.minPool)) {
                 // Yes, create a connection of minPool size.
-                this.pooling = true;
-                this.freeList = new DoubleLinkedList();
+                this.state.setPooling(true);
+                this.state.setFreeList(new DoubleLinkedList());
                 expandPool(this.minPool);
             } else if ((this.minPool == 0) && (this.maxPool == 0)) {
                 // No, pooling is to be disabled.
-                this.pooling = false;
+                this.state.setPooling(false);
             }
 
         } catch (SQLException se) {
@@ -1462,7 +1537,7 @@ public class ConnectionManager {
         } catch (ClassNotFoundException e) {
             throw e;
         }
-        this.initialized = true;
+        this.state.setInitialized(true);
     }
 
     /**
@@ -1477,49 +1552,7 @@ public class ConnectionManager {
      *
      */
     public synchronized void shutDown() throws SQLException {
-        this.shutDownPending = true;
-
-        if (this.pooling == true) {
-            ConnectionImpl conn;
-            this.connectionBlocking = false;
-            this.pooling = false;
-            this.initialized = false;
-            for
-                    (
-                    conn = (ConnectionImpl) this.freeList.getHead();
-                    conn != null;
-                    conn = (ConnectionImpl) conn.getNext()
-                    ) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    throw e;
-                }
-            }
-            this.freeList = null;
-        }
-    }
-
-
-    /**
-     * Disconnects all free database connections managed by
-     * the current connection manager and sets the shutDownPending
-     * flag to true.
-     * All busy connections that are not participating
-     * in a transaction will be closed when a yieldConnection() is
-     * performed.  If a connection is participating in a transaction,
-     * the connection will be closed after the transaction is commited
-     * or rolledback.
-     *
-     */
-    public final void registerCloseEvent() {
-        CleanerFactory.create().register(this, () -> {
-            try {
-                shutDown();
-            } catch (SQLException se) {
-                // Ignore it.
-            }
-        });
+        this.cleanable.clean();
     }
 
     // ----------- Public Methods to get and set properties --------------
@@ -1685,7 +1718,7 @@ public class ConnectionManager {
      * @see #setMaxPool
      */
     public synchronized void setMinPool(int minPool) throws SQLException {
-        if (shutDownPending == true) {
+        if (this.state.isShutDownPending()) {
             SQLException se = new SQLException
                     (
                             StringScanner.createParamString
@@ -1724,7 +1757,7 @@ public class ConnectionManager {
                     );
             throw se;
         }
-        if (pooling == true) {
+        if (this.state.isPooling()) {
             if (minPool > maxPool) {
                 SQLException se = new SQLException
                         (
@@ -1782,7 +1815,7 @@ public class ConnectionManager {
      * @see #setMinPool
      */
     public synchronized void setMaxPool(int maxPool) throws SQLException {
-        if (shutDownPending == true) {
+        if (this.state.isShutDownPending()) {
             SQLException se = new SQLException
                     (
                             StringScanner.createParamString
@@ -1807,7 +1840,7 @@ public class ConnectionManager {
                     );
             throw se;
         }
-        if (pooling == true) {
+        if (this.state.isPooling()) {
             if (maxPool < this.maxPool) {
                 SQLException se = new SQLException
                         (
@@ -1899,10 +1932,10 @@ public class ConnectionManager {
             throw se;
         } else if (msWait > 0) {
             this.msWait = msWait;
-            this.connectionBlocking = true;
+            this.state.setConnectionBlocking(true);
         } else {
             this.msWait = msWait;
-            this.connectionBlocking = false;
+            this.state.setConnectionBlocking(false);
         }
     }
 
@@ -2063,8 +2096,8 @@ public class ConnectionManager {
 
         if (tran == null || xactConn.equals((Object) conn)) {
             if (free == true) {
-                if (conn.connectionManager.shutDownPending == false) {
-                    this.freeList.insertAtTail((Linkable) conn);
+                if (!conn.connectionManager.state.isShutDownPending()) {
+                    this.state.getFreeList().insertAtTail((Linkable) conn);
                 } else {
                     conn.close();
                 }
@@ -2093,7 +2126,7 @@ public class ConnectionManager {
     private synchronized void expandPool(int connections) throws SQLException {
         ConnectionImpl conn = null;
 
-        if (this.shutDownPending == true) {
+        if (this.state.isShutDownPending()) {
             SQLException se = new SQLException
                     (
                             StringScanner.createParamString
@@ -2135,7 +2168,7 @@ public class ConnectionManager {
                                     this
                             );
                     conn.setPooled(true);
-                    this.freeList.insertAtTail((Linkable) conn);
+                    this.state.getFreeList().insertAtTail((Linkable) conn);
                     this.poolSize++;
                 } catch (SQLException e) {
                     throw e;
@@ -2198,7 +2231,7 @@ public class ConnectionManager {
         Thread t = Thread.currentThread();
         do {
             // If there are idle connections in the pool
-            if (this.freeList.size > 0) {
+            if (this.state.getFreeList().size > 0) {
                 done = true;
             } else // There are no idle connection in the pool
             {
