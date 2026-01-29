@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -126,7 +125,7 @@ public class CollectLogFiles implements AdminCommand {
         if (targetServer != null && targetServer.isDas()) {
 
             // This loop if target instance is DAS
-            String logFileDetails = "";
+            String logFileDetails;
             String zipFile = "";
 
             try {
@@ -145,15 +144,12 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
 
-                String sourceDir = "";
-
                 String instanceRoot = env.getInstanceRoot().toString();
                 if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
                     logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
 
-                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
-
+                String sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, targetServer.getName());
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
@@ -203,7 +199,6 @@ public class CollectLogFiles implements AdminCommand {
             String serverNode = targetServer.getNodeRef();
             Node node = domain.getNodes().getNode(serverNode);
             String zipFile = "";
-            File targetDir = null;
 
             String logFileDetails = "";
             try {
@@ -218,7 +213,7 @@ public class CollectLogFiles implements AdminCommand {
                 return;
             }
 
-            targetDir = makingDirectoryOnDas(targetServer.getName(), report);
+            File targetDir = makingDirectoryOnDas(targetServer.getName(), report);
 
             try {
                 if (node.isLocal()) {
@@ -293,14 +288,12 @@ public class CollectLogFiles implements AdminCommand {
             targetDir = makingDirectoryOnDas(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME, report);
 
             try {
-                String sourceDir = "";
                 String instanceRoot = env.getInstanceRoot().toString();
                 if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
                     logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
 
-                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
-
+                String sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report,
                         SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME);
             } catch (Exception ex) {
@@ -314,57 +307,9 @@ public class CollectLogFiles implements AdminCommand {
             /******************************************************/
 
 
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-
-            List<Server> instances = cluster.getInstances();
-
             int instanceCount = 0;
             int errorCount = 0;
-            for (Server instance : instances) {
-                // downloading log files for all instances which is part of cluster under temp directory.
-                String instanceName = instance.getName();
-                String serverNode = instance.getNodeRef();
-                Node node = domain.getNodes().getNode(serverNode);
-                boolean errorOccur = false;
-                instanceCount++;
 
-                logFileDetails = "";
-                try {
-                    // getting log file values from logging.propertie file.
-                    logFileDetails = getInstanceLogFileDirectory(domain.getServerNamed(instanceName));
-                } catch (Exception ex) {
-                    final String errorMsg = localStrings.getLocalString(
-                            "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
-                    report.setMessage(errorMsg);
-                    report.setFailureCause(ex);
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-
-                try {
-                    targetDir = makingDirectoryOnDas(instanceName, report);
-
-                    if (node.isLocal()) {
-                        String sourceDir = getLogDirForLocalNode(logFileDetails, node, serverNode, instanceName);
-                        copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, instanceName);
-                    } else {
-                        new LogFilterForInstance().downloadAllInstanceLogFiles(habitat, instance,
-                                domain, LOGGER, instanceName, targetDir.getAbsolutePath(), logFileDetails);
-                    }
-                }
-                catch (Exception ex) {
-                    errorCount++;
-                    final String errorMsg = localStrings.getLocalString(
-                            "collectlogfiles.errInstanceDownloading", "Error while downloading log files from {0}.", instanceName);
-                    errorOccur = true;
-                    finalMessage += errorMsg + "\n";
-                }
-                if (!errorOccur) {
-                    final String successMsg = localStrings.getLocalString(
-                            "collectlogfiles.successInstanceDownloading", "Log files are downloaded for {0}.", instanceName);
-                    finalMessage += successMsg + "\n";
-                }
-            }
             report.setMessage(finalMessage);
 
             if (instanceCount != errorCount) {
@@ -557,12 +502,7 @@ public class CollectLogFiles implements AdminCommand {
         String logFileDetailsForServer = "";
         String targetConfigName = "";
 
-        Cluster clusterForInstance = targetServer.getCluster();
-        if (clusterForInstance != null) {
-            targetConfigName = clusterForInstance.getConfigRef();
-        } else {
-            targetConfigName = targetServer.getConfigRef();
-        }
+        targetConfigName = targetServer.getConfigRef();
 
         logFileDetailsForServer = loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
 

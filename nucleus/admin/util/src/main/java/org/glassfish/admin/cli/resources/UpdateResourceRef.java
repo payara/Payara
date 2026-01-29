@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.cli.resources;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
@@ -77,7 +76,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("update.resource.ref")
 @PerLookup
 @ExecuteOn(value = RuntimeType.DAS)
-@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Resources.class, opType = RestEndpoint.OpType.POST, path = "update-resource-ref", description = "Update a Resource Reference on a given target")
 })
@@ -135,26 +134,6 @@ public class UpdateResourceRef implements AdminCommand {
                 return;
             }
             resourceRefsToChange.add(configResourceRef);
-        }
-
-        // Add the ResourceRefs from a named cluster if the target is a cluster
-        Cluster cluster = domain.getClusterNamed(target);
-        // if the target is a cluster
-        if (cluster != null) {
-            ResourceRef clusterResourceRef = cluster.getResourceRef(name);
-            // if the ResourceRef doesn't exist
-            if (clusterResourceRef == null) {
-                report.failure(logger, LOCAL_STRINGS.getLocalString("resource.ref.not.exists", "Target {1} does not have a reference to resource {0}.", name, target));
-                return;
-            }
-            resourceRefsToChange.add(clusterResourceRef);
-            for (Server instance : cluster.getInstances()) {
-                ResourceRef instanceResourceRef = instance.getResourceRef(name);
-                // if the server in the cluster contains the ResourceRef
-                if (instanceResourceRef != null) {
-                    resourceRefsToChange.add(instanceResourceRef);
-                }
-            }
         }
         
         //Add the ResourceRefs from a named Deployment Group if the target is a Deployment Group

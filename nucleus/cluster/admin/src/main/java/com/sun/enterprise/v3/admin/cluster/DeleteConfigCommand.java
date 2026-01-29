@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -134,7 +134,7 @@ public final class DeleteConfigCommand implements AdminCommand {
                 namesOfContainers.append(referenceContainer.getReference()).append(',');
             }
             report.setMessage(LOCAL_STRINGS.getLocalString("Config.inUseConfig",
-                    "Config {0} is in use " + "and must be referenced by no server instances or clusters", destConfig, namesOfContainers));
+                    "Config {0} is in use " + "and must be referenced by no server instances", destConfig, namesOfContainers));
             report.setActionExitCode(FAILURE);
             
             return;

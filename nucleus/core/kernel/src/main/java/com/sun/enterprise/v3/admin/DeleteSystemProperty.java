@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -74,7 +74,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 /**
  * Delete System Property Command
  * 
- * Removes one system property of the domain, configuration, cluster, or server 
+ * Removes one system property of the domain, configuration, or server
  * instance, at a time
  * 
  * Usage: delete-system-property [--terse=false] [--echo=false] [--interactive=true] 
@@ -85,8 +85,7 @@ import org.glassfish.api.admin.AdminCommandSecurity;
 @Service(name="delete-system-property")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE,
-CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 @I18n("delete.system.property")
 public class DeleteSystemProperty implements AdminCommand,
         AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
@@ -111,7 +110,7 @@ public class DeleteSystemProperty implements AdminCommand,
             final ActionReport report = context.getActionReport();
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             String msg = localStrings.getLocalString("invalid.target.sys.props",
-                    "Invalid target:{0}. Valid targets types are domain, config, cluster, default server, clustered instance, stand alone instance", target);
+                    "Invalid target:{0}. Valid targets types are domain, config, default server, stand alone instance", target);
             report.setMessage(msg);
             return false;
         }
@@ -148,15 +147,8 @@ public class DeleteSystemProperty implements AdminCommand,
             if ("domain".equals(target) || target.equals(domainName)) {
                 for (Server s : domain.getServers().getServer()) {
                     Config config = s.getConfig();
-                    Cluster cluster = s.getCluster();
                     if (!s.containsProperty(propName) && !config.containsProperty(propName)) {
-                        if (cluster != null) {
-                            if (!cluster.containsProperty(propName)) {
-                                doms.add(Dom.unwrap(s));
-                            }
-                        } else {
-                            doms.add(Dom.unwrap(s));
-                        }
+                        doms.add(Dom.unwrap(s));
                     }
                 }
             } else {
@@ -172,30 +164,10 @@ public class DeleteSystemProperty implements AdminCommand,
                             }
                         }
                     }
-                    for (Cluster c : domain.getClusters().getCluster()) {
-                        String configRef = c.getConfigRef();
-                        if (configRef.equals(configName)) {
-                            if (!c.containsProperty(propName)) {
-                                doms.add(Dom.unwrap(c));
-                            }
-                        }
-                    }
                 } else {
-                    Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        doms.add(Dom.unwrap(cluster));
-                        Config clusterConfig = domain.getConfigNamed(cluster.getConfigRef());
-                        doms.add(Dom.unwrap(clusterConfig));
-                        for (Server s : cluster.getInstances()) {
-                            if (!s.containsProperty(propName)) {
-                                doms.add(Dom.unwrap(s));
-                            }
-                        }
-                    } else {
-                        Server server = domain.getServerNamed(target);
-                        doms.add(Dom.unwrap(server));
-                        doms.add(Dom.unwrap(domain.getConfigNamed(server.getConfigRef())));
-                    }
+                    Server server = domain.getServerNamed(target);
+                    doms.add(Dom.unwrap(server));
+                    doms.add(Dom.unwrap(domain.getConfigNamed(server.getConfigRef())));
                 }
             }
             String sysPropName = SystemPropertyConstants.getPropertyAsValue(propName);
@@ -233,32 +205,23 @@ public class DeleteSystemProperty implements AdminCommand,
         //are there multiple <system-property> definitions for the given name?
         int defs = 0;
         SystemPropertyBag bag = domain;
-        if (bag.containsProperty(propName))
+        if (bag.containsProperty(propName)) {
             defs++;
+        }
         
         bag = domain.getServerNamed(target);
         if (bag != null && bag.containsProperty(propName)) {
             defs++;
-            Server server = (Server)bag;
-            Cluster cluster = server.getCluster();
-            if (cluster != null && cluster.containsProperty(propName))
+            Server server = (Server) bag;
+            if (server.getConfig().containsProperty(propName)) {
                 defs++;
-            if (server.getConfig().containsProperty(propName))
-                defs++;
-        }
-        
-        bag = domain.getClusterNamed(target);
-        if (bag != null && bag.containsProperty(propName)) {
-            defs++;
-            Cluster c = (Cluster)bag;
-            Config clusterConfig = domain.getConfigNamed(c.getConfigRef());
-            if (clusterConfig.containsProperty(propName))
-                defs++;
+            }
         }
 
         bag = domain.getConfigNamed(target);
-        if (bag != null && bag.containsProperty(propName))
+        if (bag != null && bag.containsProperty(propName)) {
             defs++;
+        }
 
         return defs;
     }

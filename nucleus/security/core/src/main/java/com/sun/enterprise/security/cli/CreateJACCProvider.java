@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  * 
- * Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
  */
 
 package com.sun.enterprise.security.cli;
@@ -94,7 +94,7 @@ import org.jvnet.hk2.config.types.Property;
 @PerLookup
 @I18n("create.jacc.provider")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class CreateJACCProvider implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =

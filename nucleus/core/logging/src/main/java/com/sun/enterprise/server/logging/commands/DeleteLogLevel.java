@@ -38,12 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2014-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -71,7 +70,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "delete-log-levels")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
@@ -98,10 +97,7 @@ public class DeleteLogLevel implements AdminCommand {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteLogLevel.class);
 
     public void execute(AdminCommandContext context) {
-
-
         final ActionReport report = context.getActionReport();
-        boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
         StringBuilder successMsg = new StringBuilder();
@@ -109,16 +105,14 @@ public class DeleteLogLevel implements AdminCommand {
         boolean success = false;
         String targetConfigName = "";
 
-        Map<String, String> m = new HashMap<String, String>();
+        Map<String, String> m = new HashMap<>();
         try {
-
             String loggerNames[] = properties.split("(?<!\\\\):");
 
             for (final Object key : loggerNames) {
                 final String logger_name = (String) key;
                 m.put(logger_name + ".level", null);
             }
-
 
             Config config = domain.getConfigNamed(target);
             if (config != null) {
@@ -129,32 +123,18 @@ public class DeleteLogLevel implements AdminCommand {
                 if (targetServer != null && targetServer.getConfigRef().equals(target)) {
                     isDas = true;
                 }
-                targetServer = null;
             } else {
                 Server targetServer = domain.getServerNamed(target);
 
                 if (targetServer != null && targetServer.isDas()) {
                     isDas = true;
-                } else {
-                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        isCluster = true;
-                        targetConfigName = cluster.getConfigRef();
-                    } else if (targetServer != null) {
-                        isInstance = true;
-                        targetConfigName = targetServer.getConfigRef();
-                    }
-                }
-
-                if (isInstance) {
-                    Cluster clusterForInstance = targetServer.getCluster();
-                    if (clusterForInstance != null) {
-                        targetConfigName = clusterForInstance.getConfigRef();
-                    }
+                } else if (targetServer != null) {
+                    isInstance = true;
+                    targetConfigName = targetServer.getConfigRef();
                 }
             }
 
-            if (isCluster || isInstance) {
+            if (isInstance) {
                 loggingConfigFactory.provide(targetConfigName).deleteLoggingProperties(m);
                 success = true;
             } else if (isDas) {
@@ -178,8 +158,6 @@ public class DeleteLogLevel implements AdminCommand {
                 report.setMessage(successMsg.toString());
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
             }
-
-
         } catch (IOException e) {
             report.setMessage(localStrings.getLocalString("delete.log.level.failed",
                     "Could not delete logger levels for {0}.", target));

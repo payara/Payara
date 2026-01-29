@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -101,11 +102,7 @@ public class GetApplicationLaunchURLsCommand implements AdminCommand, AdminComma
         List<String> targets = domain.getAllReferencedTargetsForApplication(appname);
         for (String target : targets) {
             if (domain.isAppEnabledInTarget(appname, target)) {
-                servers = new ArrayList<Server>();
-                Cluster cluster = domain.getClusterNamed(target);
-                if (cluster != null) {
-                    servers = cluster.getInstances();
-                }
+                servers = new ArrayList<>();
                 Server server = domain.getServerNamed(target);
                 if (server != null) {
                     servers.add(server);

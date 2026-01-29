@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.util;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -69,24 +69,20 @@ class ServerPorts {
     // things trickier -- its config, for instance, might not be in the domains
     //list of configs yet.
     // So we send everything in explicitly from the Transaction...
-    ServerPorts(Cluster cluster, Config config, Domain domain, Server theServer) {
-        initialize(cluster, config, domain, theServer);
+    ServerPorts(Config config, Domain domain, Server theServer) {
+        initialize(config, domain, theServer);
     }
 
     // this constructor is for use for pre-existing servers.
     ServerPorts(Domain domain, Server theServer) {
-        Cluster cluster = null;
         Config config = null;
-
-        if (theServer.isInstance())
-            cluster = domain.getClusterForInstance(theServer.getName());
 
         String configName = theServer.getConfigRef();
 
         if (StringUtils.ok(configName))
             config = domain.getConfigNamed(configName);
 
-        initialize(cluster, config, domain, theServer);
+        initialize(config, domain, theServer);
     }
 
     Map<String, Integer> getMap() {
@@ -95,7 +91,7 @@ class ServerPorts {
 
     //////////////////////  all private below   //////////////////////////
 
-    private void initialize(Cluster cluster, Config config, Domain domain, Server theServer) {
+    private void initialize(Config config, Domain domain, Server theServer) {
         List<SystemProperty> propList;
         server = theServer;
 
@@ -103,19 +99,13 @@ class ServerPorts {
         propList = domain.getSystemProperty();
         addAll(propList);
 
-        // 1. cluster
-        if (cluster != null) {
-            propList = cluster.getSystemProperty();
-            addAll(propList);
-        }
-
-        // 2. config
+        // 1. config
         if (config != null) {
             propList = config.getSystemProperty();
             addAll(propList);
         }
 
-        // 3. server
+        // 2. server
         propList = server.getSystemProperty();
         addAll(propList);
     }

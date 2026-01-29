@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -50,7 +51,6 @@ import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.util.HostAndPort;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
@@ -115,11 +115,6 @@ public class GetHostAndPortCommand implements AdminCommand, AdminCommandSecurity
         Server server = domain.getServerNamed(target);
         if (server != null) {
             configName = server.getConfigRef();
-        } else {
-            Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                configName = cluster.getConfigRef();
-            }
         }
         config = configs.getConfigByName(configName);
         if (config != null) {

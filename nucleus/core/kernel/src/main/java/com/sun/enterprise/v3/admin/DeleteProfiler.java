@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -64,13 +65,10 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.Profiler;
-import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
 import org.glassfish.api.admin.*;
 
 /**
@@ -81,7 +79,7 @@ import org.glassfish.api.admin.*;
 @PerLookup
 @I18n("delete.profiler")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Profiler.class,
         opType=RestEndpoint.OpType.DELETE, 

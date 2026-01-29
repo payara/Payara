@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] Payara Foundation and/or affiliates
+// Portions Copyright 2021-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.security.cli;
 
@@ -98,7 +98,7 @@ import org.glassfish.config.support.TargetType;
 @PerLookup
 @I18n("create.audit.module")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class CreateAuditModule implements AdminCommand, AdminCommandSecurity.Preauthorization {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateAuditModule.class);    

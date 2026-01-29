@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -78,7 +79,7 @@ import org.glassfish.deployment.common.DeploymentUtils;
 @ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Applications.class,
         opType=RestEndpoint.OpType.GET, 

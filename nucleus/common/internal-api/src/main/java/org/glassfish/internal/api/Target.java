@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.internal.api;
 
@@ -76,36 +76,6 @@ public class Target {
     public boolean isThisInstance() {
         return serverEnv.isInstance();
     }
-
-    /**
-     * Checks if a given target is cluster or nor
-     * @param targetName the name of the target
-     * @return true if the target represents a cluster; false otherwise
-     */
-    public boolean isCluster(String targetName) {
-        return (domain.getClusterNamed(targetName) != null);
-    }
-
-    /**
-     * Returns the Cluster element for a given cluster name
-     * @param targetName the name of the target
-     * @return Cluster element that represents the cluster
-     */
-    public Cluster getCluster(String targetName) {
-        return domain.getClusterNamed(targetName);
-    }
-
-    /**
-     * Returns the config element that represents a given cluster
-     * @param targetName the name of the target
-     * @return Config element representing the cluster
-     */
-    public Config getClusterConfig(String targetName) {
-        Cluster cl = getCluster(targetName);
-        if(cl == null)
-            return null;
-        return(domain.getConfigNamed(cl.getConfigRef()));
-    }
     
     /**
      * Checks if the target is a Deployment Group
@@ -141,8 +111,6 @@ public class Target {
             return getServerConfig(targetName);
         if(CommandTarget.STANDALONE_INSTANCE.isValid(habitat, targetName))
             return getServerConfig(targetName);
-        if(CommandTarget.CLUSTER.isValid(habitat, targetName))
-                return getClusterConfig(targetName);
         if (isDeploymentGroup(targetName)) {
             List<Server> servers = getInstances(targetName);
             if (servers.size() >= 1) {
@@ -154,16 +122,6 @@ public class Target {
     
     public List<DeploymentGroup> getDGForInstance(String targetName) {
         return domain.getDeploymentGroupsForInstance(targetName);
-    }
-
-    /**
-     * Given an instance that is part of a cluster, returns the Cluster element of the cluster to which the
-     * given instance belongs
-     * @param targetName name of target
-     * @return Cluster element to which this instance below
-     */
-    public Cluster getClusterForInstance(String targetName) {
-        return domain.getClusterForInstance(targetName);
     }
 
     /**
@@ -196,16 +154,9 @@ public class Target {
         if(CommandTarget.STANDALONE_INSTANCE.isValid(habitat, targetName)) {
             instances.add(domain.getServerNamed(targetName));
         }
-        if(CommandTarget.CLUSTER.isValid(habitat, targetName)) {
-            instances = getCluster(targetName).getInstances();
-        }
         if(CommandTarget.CONFIG.isValid(habitat, targetName)) {
             List<String> targets = domain.getAllTargets();
             for(String aTarget : targets) {
-                if(CommandTarget.CLUSTER.isValid(habitat, aTarget) &&
-                        getCluster(aTarget).getConfigRef().equals(targetName)) {
-                    instances.addAll(getCluster(aTarget).getInstances());
-                }
                 if(CommandTarget.STANDALONE_INSTANCE.isValid(habitat, aTarget) &&
                         domain.getServerNamed(aTarget).getConfigRef().equals(targetName)) {
                     instances.add(domain.getServerNamed(aTarget));
@@ -247,8 +198,6 @@ public class Target {
      * @return true if the target is a valid cluster or server instance or a config
      */
     public boolean isValid(String targetName) {
-        if(isCluster(targetName))
-            return true;
         if(getInstances(targetName).size() != 0)
             return true;
         if(domain.getConfigNamed(targetName) != null)

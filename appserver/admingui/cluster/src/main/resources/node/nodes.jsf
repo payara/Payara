@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -168,11 +168,6 @@
                         setAttribute(key="iurl" value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{pageSession.encodedInstanceName}");
                     }
 
-                    if ( !#{requestScope.isStandalone}){
-                        gf.getClusterNameForInstance(instanceName="#{requestScope.instance}"  clusterName="#{requestScope.clusterName}");
-                        urlencode(value="#{requestScope.clusterName}" encoding="UTF-8" result="#{requestScope.encodedClusterName}");
-                        setAttribute(key="iurl" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?clusterName=#{requestScope.encodedClusterName}&instanceName=#{pageSession.encodedInstanceName}" );
-                    }
                     setAttribute(key="statusString" value="$resource{i18nc.status.$attribute{status}}  &nbsp; $resource{i18nc.status.image.$attribute{status}}");
                 />
                 </event>

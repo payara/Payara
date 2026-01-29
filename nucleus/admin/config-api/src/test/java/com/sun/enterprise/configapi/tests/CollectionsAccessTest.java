@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests;
 
@@ -50,8 +51,6 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.Application;
 
 import java.util.List;
-import java.beans.PropertyVetoException;
-import org.glassfish.api.admin.config.ApplicationName;
 
 /**
  * User: Jerome Dochez
@@ -76,14 +75,12 @@ public class CollectionsAccessTest extends ConfigApiTest  {
     public void semiProtectedTest() throws TransactionFailure {
         final Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
-        ConfigSupport.apply(new SingleConfigCode<Applications>() {
-            public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
-                // this is the bug, we should not get the list from apps but from param.
-                List<ApplicationName> modules = apps.getModules();
-                Application m = param.createChild(Application.class);
-                modules.add(m); // should throw an exception
-                return m;
-            }
+        ConfigSupport.apply((SingleConfigCode<Applications>) applications -> {
+            // this is the bug, we should not get the list from apps but from param.
+            List<ApplicationName> modules = apps.getModules();
+            Application m = applications.createChild(Application.class);
+            modules.add(m); // should throw an exception
+            return m;
         }, apps);
     }
 
@@ -91,17 +88,15 @@ public class CollectionsAccessTest extends ConfigApiTest  {
     public void protectedTest() throws TransactionFailure {
         final Applications apps = getHabitat().getService(Applications.class);
         assertTrue(apps!=null);
-        ConfigSupport.apply(new SingleConfigCode<Applications>() {
-            public Object run(Applications param) throws PropertyVetoException, TransactionFailure {
-                List<ApplicationName> modules = param.getModules();
-                Application m = param.createChild(Application.class);
-                m.setName( "ejb-test" );
-                m.setLocation("test-location");
-                m.setObjectType("ejb");
-                modules.add(m);
-                modules.remove(m);
-                return m;
-            }
+        ConfigSupport.apply((SingleConfigCode<Applications>) applications -> {
+            List<ApplicationName> modules = applications.getModules();
+            Application m = applications.createChild(Application.class);
+            m.setName( "ejb-test" );
+            m.setLocation("test-location");
+            m.setObjectType("ejb");
+            modules.add(m);
+            modules.remove(m);
+            return m;
         }, apps);
     }    
 }

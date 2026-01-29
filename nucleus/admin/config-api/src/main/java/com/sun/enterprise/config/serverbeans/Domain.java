@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -243,24 +243,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
      * @throws PropertyVetoException
      */
     void setServers(Servers value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the clusters property.
-     *
-     * @return possible object is
-     *         {@link Clusters }
-     */
-    @Element
-    @NotNull
-    Clusters getClusters();
-
-    /**
-     * Sets the value of the clusters property.
-     *
-     * @param value allowed object is {@link Clusters }
-     * @throws PropertyVetoException
-     */
-    void setClusters(Clusters value) throws PropertyVetoException;
     
     /**
      * Gets the value of the deployment groups property.
@@ -426,9 +408,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     Config getConfigNamed(String name);
 
     @DuckTyped
-    Cluster getClusterNamed(String name);
-
-    @DuckTyped
     Node getNodeNamed(String name);
 
     @DuckTyped
@@ -454,9 +433,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     boolean isAppEnabledInTarget(String appName, String target);
 
     @DuckTyped
-    boolean isAppReferencedByPaaSTarget(String appName);
-
-    @DuckTyped
     List<String> getAllReferencedTargetsForApplication(String appName);
 
     @DuckTyped
@@ -478,9 +454,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
     ReferenceContainer getReferenceContainerNamed(String name);
 
     @DuckTyped
-    Cluster getClusterForInstance(String instanceName);
-
-    @DuckTyped
     List<ReferenceContainer> getAllReferenceContainers();
 
     @DuckTyped
@@ -488,9 +461,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
 
     @DuckTyped
     List<Server> getInstancesOnNode(String nodeName);
-
-    @DuckTyped
-    List<Cluster> getClustersOnNode(String nodeName);
 
     @ConfigExtensionMethod
     <T extends DomainExtension> T getExtensionByType(Class<T> type);
@@ -534,29 +504,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                  LOGGER.log(Level.WARNING,ConfigApiLoggerInfo.errorGettingServers , e.getLocalizedMessage());
             }
             return ret;
-        }
-
-        /* return an empty list if given garbage -- or errors are encountered
-         * or if no matches
-         */
-        public static List<Cluster> getClustersOnNode(Domain domain, String nodeName) {
-
-            HashMap<String,Cluster> clMap = new HashMap<String,Cluster>();
-            List<Server> serverList = getInstancesOnNode(domain, nodeName);
-
-            try {
-                for(Server server : serverList) {
-                    Cluster mycl = server.getCluster();
-                    if(nodeName.equals(server.getNodeRef()) )   {
-                        clMap.put(mycl.getName(),mycl);
-                    }
-                }
-            }
-            catch(Exception e) {
-                LOGGER.log(Level.WARNING, ConfigApiLoggerInfo.errorGettingCluster, e.getLocalizedMessage());
-
-            }
-            return new ArrayList(clMap.values());
         }
 
         public static List<Application> getAllDefinedSystemApplications(Domain me) {
@@ -692,19 +639,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             }
             return result;
         }
-        
-         public static Cluster getClusterNamed(Domain d, String name) {
-            if (name == null) {
-                return null;
-            }
-            List<Cluster> clusters = d.getClusters().getCluster();
-            for (Cluster c : clusters) {
-                if (name.equals(c.getName().trim())) {
-                    return c;
-                }
-            }
-            return null;
-        }
 
         public static Node getNodeNamed(Domain d, String name) {
             if (d.getNodes() == null || name == null) {
@@ -743,17 +677,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                     // standalone instance case
                     return true;
                 }
-
-                Cluster cluster = getClusterNamed(d, target2);
-
-                if (cluster != null) {
-                    for (Server svr : cluster.getInstances() ) {
-                        if (svr.getName().equals(currentInstance)) {
-                            // cluster instance case
-                            return true;
-                        }
-                    }
-                }
                 
                 // check the deployment group
                 DeploymentGroup dg = getDeploymentGroupNamed(d, target2);
@@ -776,14 +699,9 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             if (server != null) {
                 servers.add(server);
             } else {
-                Cluster cluster = getClusterNamed(me, target);
-                if (cluster != null) {
-                    servers.addAll(cluster.getInstances());
-                } else {
-                    DeploymentGroup dg = getDeploymentGroupNamed(me, target);
-                    if (dg != null) {
-                        servers.addAll(dg.getInstances());
-                    }
+                DeploymentGroup dg = getDeploymentGroupNamed(me, target);
+                if (dg != null) {
+                    servers.addAll(dg.getInstances());
                 }
             }
             return servers;
@@ -814,22 +732,12 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 if (server != null) {
                     allAppRefs.addAll(server.getApplicationRef());
                 } else {
-                    Cluster cluster = getClusterNamed(me, target);
-                    if (cluster != null) {
-                        allAppRefs.addAll(cluster.getApplicationRef());
+                    DeploymentGroup dg = getDeploymentGroupNamed(me, target);
+                    if (dg != null) {
+                        allAppRefs.addAll(dg.getApplicationRef());
                         if (includeInstances) {
-                            for (Server svr : cluster.getInstances() ) {
+                            for (Server svr : dg.getInstances()) {
                                 allAppRefs.addAll(svr.getApplicationRef());
-                            }
-                        }
-                    } else {
-                        DeploymentGroup dg = getDeploymentGroupNamed(me, target);
-                        if (dg != null) {
-                            allAppRefs.addAll(dg.getApplicationRef());
-                            if (includeInstances) {
-                                for (Server svr: dg.getInstances()) {
-                                    allAppRefs.addAll(svr.getApplicationRef());
-                                }
                             }
                         }
                     }
@@ -851,19 +759,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         public static boolean isAppRefEnabledInTarget(
             Domain me, String appName, String target) {
             boolean found = false;
-
-            Cluster containingCluster = getClusterForInstance(me, target);
-            if (containingCluster != null) {
-                // if this is a clustered instance, check the enable 
-                // attribute of its enclosing cluster first
-                // and return false if the cluster level enable attribute
-                // is false
-                ApplicationRef clusterRef = getApplicationRefInTarget(me, appName, containingCluster.getName());
-                if (clusterRef == null ||
-                    !Boolean.valueOf(clusterRef.getEnabled())) {
-                    return false;
-                }
-            }
             
             List<DeploymentGroup> dgs = getDeploymentGroupsForInstance(me, target);
             if (dgs != null) {
@@ -912,16 +807,11 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         }
 
         public static List<String> getAllTargets(Domain d) {
-            List<String> targets = new ArrayList<String>();
-            // only add non-clustered servers as the cluster 
+            List<String> targets = new ArrayList<>();
+            // only add non-clustered servers as the cluster
             // targets will be separately added
             for (Server server : d.getServers().getServer()) {
-                if (server.getCluster() == null) {
-                    targets.add(server.getName());
-                }
-            }
-            for (Cluster cluster : d.getClusters().getCluster()) {
-                targets.add(cluster.getName());
+                targets.add(server.getName());
             }
             for (DeploymentGroup dg : d.getDeploymentGroups().getDeploymentGroup()) {
                 targets.add(dg.getName());
@@ -954,25 +844,8 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                         referencedTargets.remove(instance.getName());
                     }
                 }
-                Cluster cluster = me.getClusterNamed(reference);
-                if (cluster != null) {
-                    for (Server instance : cluster.getInstances()) {
-                        referencedTargets.remove(instance.getName());
-                    }
-                }
             }
             return referencedTargets;
-        }
-
-        public static boolean isAppReferencedByPaaSTarget(Domain me, String appName) {
-            List<String> referencedTargets = me.getAllReferencedTargetsForApplication(appName);
-            for (String target : referencedTargets) {
-                Cluster cluster = me.getClusterNamed(target);
-                if (cluster != null && cluster.isVirtual()) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         public static List<Application> getApplicationsInTarget(Domain me, String target) {
@@ -981,7 +854,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
                 return me.getApplications().getApplications();
             }
 
-            List<Application> apps = new ArrayList<Application>();
+            List<Application> apps = new ArrayList<>();
 
             List<ApplicationRef> applicationRefs = me.getApplicationRefsInTarget(target);
             for (ApplicationRef ref : applicationRefs) {
@@ -993,8 +866,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
             return apps;
          }
 
-         public static String getVirtualServersForApplication(Domain d,
-             String target, String appName) {
+         public static String getVirtualServersForApplication(Domain d, String target, String appName) {
              ApplicationRef appRef = d.getApplicationRefInTarget(
                  appName, target);
              if (appRef != null) {
@@ -1004,8 +876,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
              }
          }
 
-        public static String getEnabledForApplication(Domain d,
-                                                      String target, String appName) {
+        public static String getEnabledForApplication(Domain d, String target, String appName) {
             ApplicationRef appRef = d.getApplicationRefInTarget(
                     appName, target);
             if (appRef != null) {
@@ -1016,10 +887,6 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         }
 
          public static ReferenceContainer getReferenceContainerNamed(Domain domain, String name) {
-             Cluster cluster = getClusterNamed(domain, name);
-             if (cluster != null) {
-                 return cluster;
-             }
              DeploymentGroup deploymentGroup = getDeploymentGroupNamed(domain, name);
              if (deploymentGroup != null) {
                  return deploymentGroup;
@@ -1029,7 +896,7 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
 
         public static List<ReferenceContainer> getReferenceContainersOf(Domain d, Config config) {
             // Clusters and Servers are ReferenceContainers
-            List<ReferenceContainer> sub = new LinkedList<ReferenceContainer>();
+            List<ReferenceContainer> sub = new LinkedList<>();
 
             // both the config and its name need to be sanity-checked
             String name = null;
@@ -1050,24 +917,10 @@ public interface Domain extends ConfigBeanProxy, PropertyBag, SystemPropertyBag,
         }
 
         public static List<ReferenceContainer> getAllReferenceContainers(Domain d) {
-            List<ReferenceContainer> referenceContainers = new LinkedList<ReferenceContainer>();
+            List<ReferenceContainer> referenceContainers = new LinkedList<>();
             referenceContainers.addAll(d.getServers().getServer());
-            referenceContainers.addAll(d.getClusters().getCluster());
             referenceContainers.addAll(d.getDeploymentGroups().getDeploymentGroup());
             return referenceContainers;
-        }
-
-        public static Cluster getClusterForInstance(Domain d,String instanceName){
-            List<Cluster> clusterList = d.getClusters().getCluster();
-            for (Cluster cluster:clusterList) {
-                List<ServerRef> serverRefs =cluster.getServerRef();
-                for (ServerRef serverRef:serverRefs){
-                    if (serverRef.getRef().equals(instanceName)) {
-                        return cluster;
-                    }
-                }
-            }
-            return null;
         }
 
         public static boolean isServer(Domain d, String name) {

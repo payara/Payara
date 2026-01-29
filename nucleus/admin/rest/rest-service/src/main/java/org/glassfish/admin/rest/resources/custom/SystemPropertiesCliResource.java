@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.rest.resources.custom;
 
@@ -65,7 +65,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.PathSegment;
 import jakarta.ws.rs.core.Response;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 
@@ -93,8 +92,7 @@ import org.jvnet.hk2.config.Dom;
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-@TargetType(value = {CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DAS,
-    CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
+@TargetType(value = {CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 public class SystemPropertiesCliResource extends TemplateExecCommand {
     protected static final String TAG_SYSTEM_PROPERTY = "system-property";
     private static final String VALUE = "value";
@@ -202,14 +200,7 @@ public class SystemPropertiesCliResource extends TemplateExecCommand {
 
         // Figure out how to recurse
         if (dom.getProxyType().equals(Server.class)) {
-            // Clustered instance
-            if (((Server)dom.createProxy()).getCluster() != null) {
-                getSystemProperties(properties, getCluster(dom.parent().parent(), ((Server)dom.createProxy()).getCluster().getName()), true);
-            } else {
-                // Standalone instance or DAS
-                getSystemProperties(properties, getConfig(dom.parent().parent(), dom.attribute("config-ref")), true);
-            }
-        } else if (dom.getProxyType().equals(Cluster.class)) {
+            // Standalone instance or DAS
             getSystemProperties(properties, getConfig(dom.parent().parent(), dom.attribute("config-ref")), true);
         }
     }

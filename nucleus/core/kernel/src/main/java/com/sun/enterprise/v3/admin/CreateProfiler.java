@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -77,7 +78,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("create.profiler")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=JavaConfig.class,
         opType=RestEndpoint.OpType.POST, 

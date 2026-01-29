@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,6 @@
  */
 package fish.payara.ejb.http.admin;
 
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
-import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
@@ -84,7 +82,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "enable-ejb-invoker")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
-@TargetType({DAS, STANDALONE_INSTANCE, CLUSTER, CLUSTERED_INSTANCE, CONFIG, DEPLOYMENT_GROUP})
+@TargetType({DAS, STANDALONE_INSTANCE, CONFIG, DEPLOYMENT_GROUP})
 public class EnableEjbInvokerCommand implements AdminCommand {
 
     @Param(name = "contextRoot", primary = true, optional = true, defaultValue = DEFAULT_ENDPOINT)

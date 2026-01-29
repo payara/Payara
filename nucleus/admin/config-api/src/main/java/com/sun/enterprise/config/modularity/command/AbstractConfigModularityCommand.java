@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.modularity.command;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -94,11 +93,6 @@ public class AbstractConfigModularityCommand {
             return s == null ? null : domain.getConfigNamed(s.getConfigRef());
         }
 
-        if (CommandTarget.CLUSTER.isValid(serviceLocator, targetName)) {
-            Cluster cl = domain.getClusterNamed(targetName);
-            return cl == null ? null : domain.getConfigNamed(cl.getConfigRef());
-
-        }
         return null;
     }
 

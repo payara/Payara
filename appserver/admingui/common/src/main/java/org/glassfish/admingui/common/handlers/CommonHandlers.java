@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 /*
  * CommonHandlers.java
@@ -549,7 +549,7 @@ public class CommonHandlers {
         @HandlerOutput(name="onlyDAS", type=Boolean.class)}
     )
     public static void onlyDas(HandlerContext handlerCtx){
-        boolean onlyDAS = TargetUtil.getClusters().isEmpty() && TargetUtil.getStandaloneInstances().isEmpty();
+        boolean onlyDAS = TargetUtil.getStandaloneInstances().isEmpty();
         handlerCtx.setOutputValue("onlyDAS", onlyDAS);
     }
 

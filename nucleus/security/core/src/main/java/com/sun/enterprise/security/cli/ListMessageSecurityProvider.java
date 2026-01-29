@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021] Payara Foundation and/or affiliates
+// Portions Copyright 2021-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.security.cli;
 
@@ -80,8 +80,7 @@ import org.glassfish.config.support.TargetType;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.message.security.provider")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.CLUSTERED_INSTANCE,
-CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=SecurityService.class,
         opType=RestEndpoint.OpType.GET, 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+//Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -60,7 +60,7 @@ import org.glassfish.hk2.api.PerLookup;
  */
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifOffline = FailurePolicy.Error, ifNeverStarted = FailurePolicy.Error)
 @Service(name = "rotate-log")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @PerLookup
 @I18n("rotate.log")
 @RestEndpoints({

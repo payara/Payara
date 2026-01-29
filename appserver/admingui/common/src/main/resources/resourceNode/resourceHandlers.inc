@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-    // Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    // Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 -->
 
 <!-- resourceNode/resourceHandlers.inc -->
@@ -46,12 +46,10 @@
      Output: listOfRows
 -->
 <handler id="gfr.getResourcesTableData">
-    gf.listClusters(clusters="#{pageSession.clusterList}");
     gf.listDeploymentGroups(deploymentgroups="#{pageSession.deploymentGroupsList}");
     gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.standaloneList}" );
     listAdd(list="#{pageSession.standaloneList}", value="server" index="0");
     setPageSessionAttribute(key="targetList" value={});
-    gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.clusterList}");
     gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.standaloneList}");
     gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.deploymentGroupsList}");
 
@@ -88,21 +86,6 @@
                     if ("#{refAttrs.enabled} = true") {
                         inc(number="#{enabledTargetsCount}" value="#{enabledTargetsCount}");
                     }
-                }
-            }
-        }
-        foreach (var="cluster" list="#{pageSession.clusterList}") {
-            setAttribute(key="clusterUrl" value="#{sessionScope.REST_URL}/clusters/cluster/#{cluster}");
-            gf.getChildrenNamesList(endpoint="#{clusterUrl}/resource-ref"
-                                    result=>$attribute{clusterRefs});
-            gf.containedIn(list="#{clusterRefs}" testStr="#{oneRow['name']}" contain=>$attribute{isTarget});
-            if (#{isTarget}) {
-                listAdd(list="#{resourceTargets}" value="#{oneRow['name']}");
-                mapPut(map="#{targetsMap}" key="#{clusterUrl}" value="#{cluster}");
-                listAdd(list="#{targetUrls}" value="#{clusterUrl}");
-                gf.getEntityAttrs(endpoint="#{clusterUrl}/resource-ref/#{oneRow['encodedName']}" valueMap="#{requestScope.refAttrs}");
-                if ("#{refAttrs.enabled} = true") {
-                    inc(number="#{enabledTargetsCount}" value="#{enabledTargetsCount}");
                 }
             }
         }

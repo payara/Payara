@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 /**
  * @author anilam
  */
 package org.glassfish.admingui.common.handlers;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
@@ -133,25 +132,9 @@ public class ClusterHandler {
         output = {
             @HandlerOutput(name = "exists", type = Boolean.class)
         })
-    public static void isDepoymentGroupName(HandlerContext handlerCtx) {
+    public static void isDeploymentGroupName(HandlerContext handlerCtx) {
         if (!TargetUtil.isDeploymentGroup((String) handlerCtx.getInputValue("dgName"))) {
             GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchDG"));
-            handlerCtx.setOutputValue("exists", false);
-        } else {
-            handlerCtx.setOutputValue("exists", true);
-        }
-    }
-
-    @Handler(id = "gf.isClusterName",
-        input = {
-            @HandlerInput(name = "clusterName", type = String.class, required = true)
-        },
-        output = {
-            @HandlerOutput(name = "exists", type = Boolean.class)
-        })
-    public static void isClusterName(HandlerContext handlerCtx) {
-        if (!TargetUtil.isCluster((String) handlerCtx.getInputValue("clusterName"))) {
-            GuiUtil.handleError(handlerCtx, GuiUtil.getMessage("msg.NoSuchCluster"));
             handlerCtx.setOutputValue("exists", false);
         } else {
             handlerCtx.setOutputValue("exists", true);
@@ -585,15 +568,6 @@ public class ClusterHandler {
         handlerCtx.setOutputValue("deploymentgroups", deploymentGroups);
     }
 
-    @Handler(id = "gf.listClusters",
-        output = {
-            @HandlerOutput(name = "clusters", type = List.class)
-        })
-    public static void listClusters(HandlerContext handlerCtx) {
-        List<String> clusters = TargetUtil.getClusters();
-        handlerCtx.setOutputValue("clusters", clusters);
-    }
-
     @Handler(id = "gf.listConfigs",
         output = {
             @HandlerOutput(name = "configs", type = List.class)
@@ -654,33 +628,6 @@ public class ClusterHandler {
         handlerCtx.setOutputValue("uptimeMap", uptimeMap);
         handlerCtx.setOutputValue("listEmpty", instances.isEmpty());
     }
-
-    @Handler(id = "gf.getClusterNameForInstance",
-        input = {
-            @HandlerInput(name = "instanceName", type = String.class, required = true)},
-        output = {
-            @HandlerOutput(name = "clusterName", type = String.class)})
-    public static void getClusterNameForInstance(HandlerContext handlerCtx) {
-
-        String instanceName = (String) handlerCtx.getInputValue("instanceName");
-        try {
-            List<String> clusterList = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster").keySet());
-            for (String oneCluster : clusterList) {
-                List<String> serverRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" +
-                    URLEncoder.encode(oneCluster, "UTF-8") + "/server-ref").keySet());
-                if (serverRefs.contains(instanceName)) {
-                    handlerCtx.setOutputValue("clusterName", oneCluster);
-                    return;
-                }
-            }
-        } catch (Exception ex) {
-            GuiUtil.getLogger().info(GuiUtil.getCommonMessage("LOG_GET_CLUSTERNAME_FOR_INSTANCE"));
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
 
     @Handler(id = "gf.convertNodePswd",
         input = {
@@ -752,54 +699,5 @@ public class ClusterHandler {
             out = "${ALIAS=" + in + "}";
         }
         handlerCtx.setOutputValue("out", out);
-    }
-
-    @Handler(id = "gf.changeClusterStatus",
-        input = {
-            @HandlerInput(name = "selectedRows", type = List.class, required = true),
-            @HandlerInput(name = "clusterName", type = String.class, required = true),
-            @HandlerInput(name = "Enabled", type = String.class, required = true),
-            @HandlerInput(name = "forLB", type = Boolean.class, required = true)})
-    public static void changeClusterStatus(HandlerContext handlerCtx) {
-        String Enabled = (String) handlerCtx.getInputValue("Enabled");
-        String clusterName = (String) handlerCtx.getInputValue("clusterName");
-        List<Map<String, Object>> selectedRows = (List<Map<String, Object>>) handlerCtx.getInputValue("selectedRows");
-        boolean forLB = (Boolean) handlerCtx.getInputValue("forLB");
-        for (Map<String, Object> oneRow : selectedRows) {
-            Map<String, Object> attrs = new HashMap<>();
-            String name = (String) oneRow.get("name");
-            String endpoint = GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + clusterName + "/server-ref/" + name;
-            if (forLB) {
-                attrs.put("lbEnabled", Enabled);
-                RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, false);
-            } else {
-                attrs.put("enabled", Enabled);
-                RestUtil.restRequest(endpoint, attrs, "post", handlerCtx, false);
-            }
-        }
-    }
-
-    @Handler(id = "gf.getClusterForConfig",
-        input = {
-            @HandlerInput(name = "configName", type = String.class, required = true)
-        },
-        output = {
-            @HandlerOutput(name = "cluster", type = String.class)
-        })
-    public static void getClusterForConfig(HandlerContext handlerCtx) {
-        String configName = (String) handlerCtx.getInputValue("configName");
-        String clusterName = null;
-        Domain domain = GuiUtil.getHabitat().getService(Domain.class);
-
-        for (Cluster cluster : domain.getClusters().getCluster()) {
-            if (cluster.getConfigRef().equals(configName)) {
-                clusterName = cluster.getName();
-                break;
-            }
-        }
-
-        if (clusterName != null) {
-            handlerCtx.setOutputValue("cluster", clusterName);
-        }
     }
 }

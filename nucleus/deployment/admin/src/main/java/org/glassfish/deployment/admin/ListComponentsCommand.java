@@ -67,15 +67,8 @@ import java.util.*;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.GET,
-        path="list-components",
-        description="list-components",
-        params={
-            @RestParam(name="target", value="$parent")
-        }),
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET,
         path="list-components",

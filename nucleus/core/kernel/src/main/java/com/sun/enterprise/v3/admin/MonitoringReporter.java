@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -692,9 +692,6 @@ public class MonitoringReporter extends V2DottedNameSupport {
             setError(Strings.get("admin.get.monitoring.invalidtarget", userarg));
             return false;
         }
-
-        if (targetService.isCluster(targetName) && targets.size() > 1)
-            targetIsMultiInstanceCluster = true;
 
         return true;
     }

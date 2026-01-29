@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -80,8 +80,7 @@ import org.glassfish.api.admin.*;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-@TargetType(value={CommandTarget.CLUSTER,
-    CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTERED_INSTANCE})
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Configs.class,
         opType=RestEndpoint.OpType.GET,
@@ -156,17 +155,11 @@ public final class ListConfigsCommand implements AdminCommand {
 
         if (rc.isServer()) {
             Server s =((Server) rc);
-            List<Config> cl = new LinkedList<Config>();
+            List<Config> cl = new LinkedList<>();
             cl.add(s.getConfig());
             return  cl;
         }
-        else if (rc.isCluster()) {
-            Cluster cluster = (Cluster) rc;
-            List<Config> cl = new LinkedList<Config>();
-            cl.add(domain.getConfigNamed(cluster.getConfigRef()));
-            return cl;
-        }
-        else return null;
+        return null;
     }
 
 }

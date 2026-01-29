@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.common.util;
 
@@ -82,22 +82,18 @@ public class AppUtil {
         return sniffersList;
     }
 
-    public static boolean isApplicationEnabled(String appName,  String target){
+    public static boolean isApplicationEnabled(String appName, String target) {
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-        List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
         List<String> dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
         Map<String, Object> attrs = null;
-        String endpoint="";
-        if (clusters.contains(target)){
-            endpoint = prefix + "/clusters/cluster/" + target + "/application-ref/" + appName;
-            attrs = RestUtil.getAttributesMap(prefix + endpoint);
-        }else if (dgs.contains(target)) {
-            endpoint = prefix+"/deployment-groups/deployment-group/" + target + "/application-ref/" + appName;
+        String endpoint = "";
+        if (dgs.contains(target)) {
+            endpoint = prefix + "/deployment-groups/deployment-group/" + target + "/application-ref/" + appName;
             attrs = RestUtil.getAttributesMap(endpoint);
-        }else{
-            endpoint = prefix+"/servers/server/" + target + "/application-ref/" + appName;
+        } else {
+            endpoint = prefix + "/servers/server/" + target + "/application-ref/" + appName;
             attrs = RestUtil.getAttributesMap(endpoint);
         }
         return Boolean.parseBoolean((String) attrs.get("enabled"));
@@ -139,32 +135,29 @@ public class AppUtil {
         return (Map<?,?>) modMap.get(componentName);
     }
 
-    static public void manageAppTarget(String applicationName, String targetName, boolean add, String enabled, List<String> clusterList, List<?> standaloneList, List<String> dgList, HandlerContext handlerCtx){
-        List<String> clusters = (clusterList == null) ? TargetUtil.getClusters() : clusterList;
-        List<String> dgs = (dgList == null) ? TargetUtil.getDeploymentGroups(): dgList;
-        String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
-        String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
-        String dgEndpoint = GuiUtil.getSessionValue("REST_URL")+"/deployment-groups/deployment-group/";
-        String endpoint ;
+    static public void manageAppTarget(String applicationName, String targetName, boolean add,
+            String enabled, List<?> standaloneList, List<String> dgList, HandlerContext handlerCtx) {
+        List<String> dgs = (dgList == null) ? TargetUtil.getDeploymentGroups() : dgList;
+        String serverEndpoint = GuiUtil.getSessionValue("REST_URL") + "/servers/server/";
+        String dgEndpoint = GuiUtil.getSessionValue("REST_URL") + "/deployment-groups/deployment-group/";
+        String endpoint;
         Map<String, Object> attrs = new HashMap<>();
 
-        if (clusters.contains(targetName)){
-            endpoint = clusterEndpoint + targetName + "/application-ref" ;
-        }else if (dgs.contains(targetName)) {
-            endpoint = dgEndpoint + targetName + "/application-ref" ;
-        }else{
-            endpoint = serverEndpoint + targetName + "/application-ref" ;
+        if (dgs.contains(targetName)) {
+            endpoint = dgEndpoint + targetName + "/application-ref";
+        } else {
+            endpoint = serverEndpoint + targetName + "/application-ref";
         }
-        if (add){
+        if (add) {
             attrs.put("id", applicationName);
-            if (enabled != null){
+            if (enabled != null) {
                 attrs.put("enabled", enabled);
             }
-        }else{
+        } else {
             endpoint = endpoint + "/" + applicationName;
         }
         attrs.put("target", targetName);
-        RestUtil.restRequest(endpoint, attrs, (add)? "POST" : "DELETE", handlerCtx, false);
+        RestUtil.restRequest(endpoint, attrs, (add) ? "POST" : "DELETE", handlerCtx, false);
     }
 
     static public Boolean doesAppContainsResources(String appName, 

@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.server;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -181,7 +180,6 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
 
         List<SystemProperty> domainSPList = domain.getSystemProperty();
         List<SystemProperty> configSPList = getConfigSystemProperties();
-        Cluster cluster = server.getCluster();
         List<SystemProperty> clusterSPList = null;
         List<DeploymentGroup> depGroups = server.getDeploymentGroup();
         List<Property> depGroupProperties = new ArrayList<>();
@@ -189,11 +187,6 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
             depGroupProperties.addAll(group.getProperty());
         }
 
-        if (cluster != null) {
-            clusterSPList = cluster.getSystemProperty();
-
-
-        }
         List<SystemProperty> serverSPList = server.getSystemProperty();
 
         setSystemProperties(domainSPList);

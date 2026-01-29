@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.api.admin;
 
@@ -45,7 +46,7 @@ import org.jvnet.hk2.annotations.Contract;
 
 /**
  * A ClusterExecutor is responsible for remotely executing commands.
- * The list of target servers (either clusters or remote instances) is obtained
+ * The list of target servers is obtained
  * from the parameter list.
  *
  * @author Jerome Dochez

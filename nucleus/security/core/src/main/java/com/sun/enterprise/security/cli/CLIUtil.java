@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -81,10 +81,6 @@ public class CLIUtil {
         Server targetServer = domain.getServerNamed(target);
         if (targetServer != null) {
             config = domain.getConfigNamed(targetServer.getConfigRef());
-        }
-        com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-        if (cluster != null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
         }
         return config;
     }

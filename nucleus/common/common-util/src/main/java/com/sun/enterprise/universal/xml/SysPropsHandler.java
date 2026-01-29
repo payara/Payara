@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ // Portions Copyright 2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.universal.xml;
 
 import java.util.HashMap;
@@ -61,13 +62,12 @@ import static com.sun.enterprise.util.StringUtils.ok;
  */
 class SysPropsHandler {
     enum Type {
-        SERVER, CLUSTER, CONFIG, DOMAIN
+        SERVER, CONFIG, DOMAIN
     };
 
     Map<String, String> getCombinedSysProps() {
-        Map<String, String> map = new HashMap<String, String>(domain);
+        Map<String, String> map = new HashMap<>(domain);
         map.putAll(config);
-        map.putAll(cluster);
         map.putAll(server);
 
         return map;
@@ -90,9 +90,6 @@ class SysPropsHandler {
             case SERVER:
                 server.putAll(map);
                 break;
-            case CLUSTER:
-                cluster.putAll(map);
-                break;
             case CONFIG:
                 config.putAll(map);
                 break;
@@ -112,9 +109,6 @@ class SysPropsHandler {
             case SERVER:
                 server.put(name, value);
                 break;
-            case CLUSTER:
-                cluster.put(name, value);
-                break;
             case CONFIG:
                 config.put(name, value);
                 break;
@@ -125,8 +119,7 @@ class SysPropsHandler {
                 throw new IllegalArgumentException("unknown type");
         }
     }
-    private Map<String, String> server = new HashMap<String, String>();
-    private Map<String, String> cluster = new HashMap<String, String>();
-    private Map<String, String> config = new HashMap<String, String>();
-    private Map<String, String> domain = new HashMap<String, String>();
+    private Map<String, String> server = new HashMap<>();
+    private Map<String, String> config = new HashMap<>();
+    private Map<String, String> domain = new HashMap<>();
 }

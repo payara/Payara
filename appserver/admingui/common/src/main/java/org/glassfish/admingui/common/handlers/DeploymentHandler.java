@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 /*
  * DeploymentHandler.java
@@ -103,13 +103,13 @@ public class DeploymentHandler {
             GuiUtil.handleError(handlerCtx, mesg);
             return;
         }
-        try{
-            String decodedName = URLDecoder.decode((String)attrMap.get("name"), "UTF-8");
+        try {
+            String decodedName = URLDecoder.decode((String) attrMap.get("name"), "UTF-8");
             attrMap.put("name", decodedName);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             //ignore
         }
-        
+
 
         /* Take care some special properties, such as VS  */
         //do not send VS if user didn't specify, refer to bug#6542276
@@ -144,10 +144,10 @@ public class DeploymentHandler {
                 continue;
             }
             if (key.startsWith(prefix)) {
-                if (! value.equals("")){
+                if (!value.equals("")) {
                     props.setProperty(key.substring(prefix.length()), value);
                     sb.append(sep).append(key.substring(prefix.length())).append("=").append(value);
-                    sep=":";
+                    sep = ":";
                 }
 
             } else {
@@ -180,32 +180,30 @@ public class DeploymentHandler {
 
             }
         }
-        if (sb.length() > 0){
+        if (sb.length() > 0) {
             payload.put("properties", sb.toString());
         }
         payload.put("id", filePath);
-        String[] targets = (String[])handlerCtx.getInputValue("targets");
-        if (targets == null || targets.length==0){
+        String[] targets = (String[]) handlerCtx.getInputValue("targets");
+        if (targets == null || targets.length == 0) {
             payload.put("target", "domain");
-        }else{
+        } else {
             //deploy to the 1st target, and add ref to the remaining target.
             payload.put("target", targets[0]);
-            for(int i=1; i< targets.length; i++){
+            for (int i = 1; i < targets.length; i++) {
                 appRefs.add(targets[i]);
             }
         }
         try {
             String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-            RestUtil.restRequest(prefix +  "/applications/application", payload, "post", null, true);
+            RestUtil.restRequest(prefix + "/applications/application", payload, "post", null, true);
             //Create application-ref if needed.
-            if (appRefs.size() > 0){
-                List clusters = TargetUtil.getClusters();
+            if (appRefs.size() > 0) {
                 List standalone = TargetUtil.getStandaloneInstances();
                 List dgs = TargetUtil.getDeploymentGroups();
-                for(int i=0; i< appRefs.size(); i++){
-                    AppUtil.manageAppTarget((String)attrMap.get("name"), 
-                            appRefs.get(i), true, (String)attrMap.get("enabled"), 
-                            clusters, standalone, dgs, handlerCtx);
+                for (int i = 0; i < appRefs.size(); i++) {
+                    AppUtil.manageAppTarget((String) attrMap.get("name"),
+                            appRefs.get(i), true, (String) attrMap.get("enabled"), standalone, dgs, handlerCtx);
                 }
             }
         } catch (Exception ex) {

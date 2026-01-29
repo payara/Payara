@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -68,7 +68,7 @@ import java.util.*;
  */
 @ExecuteOn({RuntimeType.DAS})
 @Service(name = "list-log-levels")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.log.levels")
@@ -92,22 +92,17 @@ public class ListLoggerLevels implements AdminCommand {
     @Inject
     Servers servers;
 
-    @Inject
-    Clusters clusters;
-
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggerLevels.class);
 
     public void execute(AdminCommandContext context) {
-
         final ActionReport report = context.getActionReport();
-        boolean isCluster = false;
         boolean isDas = false;
         boolean isInstance = false;
         boolean isConfig = false;
         String targetConfigName = "";
 
         try {
-            HashMap<String, String> props = null;
+            HashMap<String, String> props;
 
             Config config = domain.getConfigNamed(target);
             if (config != null) {
@@ -119,31 +114,17 @@ public class ListLoggerLevels implements AdminCommand {
                     isDas = true;
                 }
             } else {
-
                 Server targetServer = domain.getServerNamed(target);
 
                 if (targetServer != null && targetServer.isDas()) {
                     isDas = true;
-                } else {
-                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        isCluster = true;
-                        targetConfigName = cluster.getConfigRef();
-                    } else if (targetServer != null) {
-                        isInstance = true;
-                        targetConfigName = targetServer.getConfigRef();
-                    }
-                }
-
-                if (isInstance) {
-                    Cluster clusterForInstance = targetServer.getCluster();
-                    if (clusterForInstance != null) {
-                        targetConfigName = clusterForInstance.getConfigRef();
-                    }
+                } else if (targetServer != null) {
+                    isInstance = true;
+                    targetConfigName = targetServer.getConfigRef();
                 }
             }
 
-            if (isCluster || isInstance) {
+            if (isInstance) {
                 props = (HashMap<String, String>) loggingConfigFactory.provide(targetConfigName).getLoggingProperties();
             } else if (isDas) {
                 props = (HashMap<String, String>) loggingConfigFactory.provide().getLoggingProperties();
@@ -158,13 +139,12 @@ public class ListLoggerLevels implements AdminCommand {
                 return;
             }
 
-            List<String> keys = new ArrayList<String>();
-            keys.addAll(props.keySet());
+            List<String> keys = new ArrayList<>(props.keySet());
             Collections.sort(keys);
             Iterator<String> it2 = keys.iterator();
             // The following Map & List are used to hold the REST data
-            Map<String, String> logLevelMap = new HashMap<String, String>();
-            List<String> loggerList = new ArrayList<String>();
+            Map<String, String> logLevelMap = new HashMap<>();
+            List<String> loggerList = new ArrayList<>();
             while (it2.hasNext()) {
                 String name = it2.next();
                 if (name.endsWith(".level") && !name.equals(".level")) {
@@ -174,7 +154,7 @@ public class ListLoggerLevels implements AdminCommand {
                    // GLASSFISH-21560: removing the condition which filter out logger ending with "Handler" 
                    // above if condition takes care of filtering out everything except log levels from logging.properties
                   //  Format of logger used is <logger_name>.level=<log_level>
-                    part.setMessage(n + "\t" + "<" + (String) props.get(name) + ">");
+                    part.setMessage(n + "\t" + "<" + props.get(name) + ">");
                     logLevelMap.put(n, props.get(name)); //Needed for REST xml and JSON output
                     loggerList.add(n); //Needed for REST xml and JSON output                    
                 }

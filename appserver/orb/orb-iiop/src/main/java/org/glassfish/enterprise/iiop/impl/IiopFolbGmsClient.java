@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.enterprise.iiop.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -56,7 +55,6 @@ import com.sun.corba.ee.impl.folb.GroupInfoServiceBase;
 import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
 import com.sun.corba.ee.spi.folb.SocketInfo;
 import com.sun.corba.ee.spi.misc.ORBConstants;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -114,50 +112,43 @@ public class IiopFolbGmsClient implements ClusterListener {
         }
     }
 
-    public IiopFolbGmsClient( ServiceLocator services ) {
-        fineLog( "IiopFolbGmsClient: constructor: services {0}",
-            services ) ;
-        this.services = services ;
+    public IiopFolbGmsClient(ServiceLocator services) {
+        fineLog("IiopFolbGmsClient: constructor: services {0}", services);
+        this.services = services;
 
         cluster = services.getService(PayaraCluster.class);
-	try {
+        try {
             if (cluster != null && cluster.isEnabled()) {
-                domain = services.getService( Domain.class );
-                fineLog( "IiopFolbGmsClient: domain {0}", domain) ;
+                domain = services.getService(Domain.class);
+                fineLog("IiopFolbGmsClient: domain {0}", domain);
 
-                Servers servers = services.getService(Servers.class );
-                fineLog( "IiopFolbGmsClient: servers {0}", servers );
+                Servers servers = services.getService(Servers.class);
+                fineLog("IiopFolbGmsClient: servers {0}", servers);
 
                 nodes = services.getService(Nodes.class);
-                fineLog( "IiopFolbGmsClient: nodes {0}", nodes );
+                fineLog("IiopFolbGmsClient: nodes {0}", nodes);
 
-                String instanceName = cluster.getUnderlyingHazelcastService().getMemberName() ;
-                fineLog( "IiopFolbGmsClient: instanceName {0}", instanceName );
+                String instanceName = cluster.getUnderlyingHazelcastService().getMemberName();
+                fineLog("IiopFolbGmsClient: instanceName {0}", instanceName);
 
-                myServer = servers.getServer(instanceName) ;
-                fineLog( "IiopFolbGmsClient: myServer {0}", myServer );
+                myServer = servers.getServer(instanceName);
+                fineLog("IiopFolbGmsClient: myServer {0}", myServer);
 
-                gis = new GroupInfoServiceGMSImpl() ;
+                gis = new GroupInfoServiceGMSImpl();
                 fineLog("IiopFolbGmsClient: IIOP GIS created");
-
-                currentMembers = getAllClusterInstanceInfo() ;
-                fineLog( "IiopFolbGmsClient: currentMembers = ", currentMembers ) ;
-
-                fineLog( "iiop instance info = " + getIIOPEndpoints() ) ;
 
                 cluster.addClusterListener(this);
 
-                fineLog( "IiopFolbGmsClient: GMS action factories added");
+                fineLog("IiopFolbGmsClient: GMS action factories added");
             } else {
-                fineLog( "IiopFolbGmsClient: gmsAdapterService is null") ;
-                gis = new GroupInfoServiceNoGMSImpl() ;
+                fineLog("IiopFolbGmsClient: gmsAdapterService is null");
+                gis = new GroupInfoServiceNoGMSImpl();
             }
-
-	} catch (Throwable t) {
+        } catch (Throwable t) {
             _logger.log(Level.SEVERE, t.getLocalizedMessage(), t);
-	} finally {
-            fineLog( "IiopFolbGmsClient: Payara Cluster {0}", cluster ) ;
-	}
+        } finally {
+            fineLog("IiopFolbGmsClient: Payara Cluster {0}", cluster);
+        }
     }
 
     public void setORB( ORB orb ) {
@@ -188,7 +179,7 @@ public class IiopFolbGmsClient implements ClusterListener {
     }
 
     public boolean isGMSAvailable() {
-        return isDeploymentGroupsActive() || isTraditionalClusterActive();
+        return isDeploymentGroupsActive();
     }
 
     ////////////////////////////////////////////////////
@@ -198,10 +189,6 @@ public class IiopFolbGmsClient implements ClusterListener {
 
     private boolean isDeploymentGroupsActive() {
     	return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
-    }
-
-    private boolean isTraditionalClusterActive() {
-    	return myServer != null && myServer.getCluster() != null;
     }
 
     private void removeMember(final String signal)
@@ -383,55 +370,6 @@ public class IiopFolbGmsClient implements ClusterListener {
         fineLog( "getClusterInstanceInfo: result {0}", result ) ;
 
         return result ;
-    }
-
-    private Map<String,ClusterInstanceInfo> getAllClusterInstanceInfo() {
-        final Cluster myCluster = myServer.getCluster() ;
-        fineLog( "getAllClusterInstanceInfo: myCluster {0}", myCluster ) ;
-
-        final Config myConfig = getConfigForServer( myServer ) ;
-        fineLog( "getAllClusterInstanceInfo: myConfig {0}", myConfig ) ;
-
-        final Map<String,ClusterInstanceInfo> result =
-            new HashMap<String,ClusterInstanceInfo>() ;
-
-        //When myServer is DAS's situation, myCluster is null.
-        //null check is needed.
-        if (myCluster != null) {
-            for (Server server : myCluster.getInstances()) {
-                ClusterInstanceInfo cii = getClusterInstanceInfo(server,
-                        myConfig, false);
-                if (cii != null) {
-                    result.put(server.getName(), cii);
-                }
-            }
-        }
-
-        fineLog( "getAllClusterInstanceInfo: result {0}", result ) ;
-        return result ;
-    }
-
-    // return host:port,... string for all clear text ports in the cluster
-    // instance info.
-    public final String getIIOPEndpoints() {
-        final Map<String,ClusterInstanceInfo> cinfos = getAllClusterInstanceInfo() ;
-        final StringBuilder result = new StringBuilder() ;
-        boolean first = true ;
-        for (ClusterInstanceInfo cinfo : cinfos.values() ) {
-            for (SocketInfo sinfo : cinfo.endpoints()) {
-                if (!sinfo.type().startsWith( "SSL" )) {
-                    if (first) {
-                        first = false ;
-                    } else {
-                        result.append( ',' ) ;
-                    }
-
-                    result.append( sinfo.host() ).append( ':' )
-                        .append( sinfo.port() ) ;
-                }
-            }
-        }
-        return result.toString() ;
     }
 
     @Override

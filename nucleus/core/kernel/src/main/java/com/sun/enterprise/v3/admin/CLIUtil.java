@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or affiliates
+// Portions Copyright 2024-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -70,9 +70,6 @@ public class CLIUtil {
             spb = domain;
         } else {
             spb = domain.getConfigNamed(target);
-            if (spb == null) {
-                spb = domain.getClusterNamed(target);
-            }
             if (spb == null) {
                 spb = domain.getServerNamed(target);
             }

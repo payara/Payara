@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.api.admin.config;
 
@@ -49,7 +50,6 @@ package org.glassfish.api.admin.config;
 public interface ReferenceContainer {
 
     public String getReference();
-    public boolean isCluster();
     public boolean isServer();
     public boolean isInstance();
     public boolean isDas();

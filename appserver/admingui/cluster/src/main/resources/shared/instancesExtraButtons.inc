@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2022-2026 Payara Foundation and/or its affiliates
 
 -->
 
@@ -88,35 +88,5 @@
             labels={ "$resource{i18n.common.commandTimeoutDropDown}"
                     "10" "30" "60" "120" "300" "600"
                  }>
-    </sun:dropDown>
-</define>
-
-<!define name="extraDropDown">
-    <sun:dropDown id="dropdown1" rendered="#{pageSession.clusterInstancesPage}" submitForm="#{true}"  disabled="#{false}" toolTip="$resource{i18n.common.moreActionDropDown}"
-            labels={ "$resource{i18n.common.moreActionDropDown}"
-                    "$resource{i18n.button.Enable}"  "$resource{i18n.button.Disable}"
-                    "$resource{i18n.targetListing.table.lbEnable}"  "$resource{i18n.targetListing.table.lbDisable}"
-                 }
-            values={"" "enable" "disable" "lb-enable" "lb-disable" } >
-            <!command
-                getUIComponent(clientId="#{tableRowGroupId}", component=>$attribute{tableRowGroup});
-                getSelectedSingleMapRows(TableRowGroup="$attribute{tableRowGroup}" selectedRows=>$attribute{selectedRows});
-                setAttribute(key="click" value="$this{component}");
-                setAttribute(key="actionValue" value="#{click.selected}")
-
-                if( ${actionValue}=enable){
-                    gf.changeClusterStatus(selectedRows="${selectedRows}"  clusterName="#{pageSession.clusterName}" Enabled="#{true}" forLB="$boolean{false}")
-                }
-                if( ${actionValue}=disable){
-                    gf.changeClusterStatus(selectedRows="${selectedRows}"  clusterName="#{pageSession.clusterName}" Enabled="#{false}" forLB="$boolean{false}")
-                }
-                if( ${actionValue}=lb-enable){
-                    gf.changeClusterStatus(selectedRows="${selectedRows}" clusterName="#{pageSession.clusterName}" Enabled="#{true}" forLB="$boolean{true}")
-                }
-                if( ${actionValue}=lb-disable){
-                    gf.changeClusterStatus(selectedRows="${selectedRows}"  clusterName="#{pageSession.clusterName}" Enabled="#{false}" forLB="$boolean{true}")
-                }
-                gf.redirect(page="#{listLink}");
-            />
     </sun:dropDown>
 </define>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.universal.xml;
 
@@ -82,14 +83,12 @@ public class SysPropsHandlerTest {
         System.out.println("exercise SysPropsHndler");
         SysPropsHandler instance = new SysPropsHandler();
         instance.add(Type.SERVER, "test", "from-server");
-        instance.add(Type.CLUSTER, "test", "from-cluster");
         instance.add(Type.CONFIG, "test", "from-config");
         instance.add(Type.DOMAIN, "test", "from-domain");
         Map<String, String> map = instance.getCombinedSysProps();
         assertTrue(map.size() == 1);
         assertTrue(map.get("test").equals("from-server"));
 
-        instance.add(Type.CLUSTER, "test2", "from-cluster");
         instance.add(Type.CONFIG, "test2", "from-config");
         instance.add(Type.DOMAIN, "test2", "from-domain");
 
@@ -102,7 +101,6 @@ public class SysPropsHandlerTest {
 
         assertTrue(map.size() == 4);
         assertTrue(map.get("test").equals("from-server"));
-        assertTrue(map.get("test2").equals("from-cluster"));
         assertTrue(map.get("test3").equals("from-config"));
         assertTrue(map.get("test4").equals("from-domain"));
     }

@@ -37,13 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.cli;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 import static org.glassfish.api.admin.ServerEnvironment.DEFAULT_INSTANCE_NAME;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
-import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
@@ -83,7 +81,7 @@ import com.sun.enterprise.config.serverbeans.SecurityService;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jacc.provider")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({ DAS, CLUSTERED_INSTANCE, STANDALONE_INSTANCE, CLUSTER, CONFIG })
+@TargetType({ DAS, STANDALONE_INSTANCE, CONFIG })
 @RestEndpoints({
     @RestEndpoint(configBean=SecurityService.class,
         opType=RestEndpoint.OpType.GET, 

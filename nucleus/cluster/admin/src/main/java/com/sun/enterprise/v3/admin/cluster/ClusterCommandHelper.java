@@ -38,12 +38,11 @@
  * holder.
  */
 
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -137,12 +136,8 @@ public class ClusterCommandHelper {
         Logger logger = context.getLogger();
         ActionReport report = context.getActionReport();
 
-        // Get the cluster specified by clusterName
-        Cluster cluster = domain.getClusterNamed(targetName);
-        if (cluster == null) {
-            if (domain.getDeploymentGroupNamed(targetName) == null) {
-                throw new CommandException(Strings.get("cluster.command.unknownCluster", targetName));
-            }
+        if (domain.getDeploymentGroupNamed(targetName) == null) {
+            throw new CommandException(Strings.get("cluster.command.unknownCluster", targetName));
         }
 
         // Get the list of servers in the cluster or deployment group.

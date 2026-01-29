@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -94,9 +95,6 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
     @Inject
     private IterableProvider<Server> servers;
 
-    @Inject
-    private IterableProvider<Cluster> clusters;
-
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -125,8 +123,7 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
 
             // if cascade=true delete all the resources associated with this pool
             // if cascade=false don't delete this connection pool if a resource is referencing it
-            Object obj = deleteAssociatedResources(servers, clusters, domain.getResources(),
-                    cascade, poolname);
+            Object obj = deleteAssociatedResources(servers, domain.getResources(), cascade, poolname);
             if (obj instanceof Integer &&
                     (Integer) obj == ResourceStatus.FAILURE) {
                 report.setMessage(localStrings.getLocalString(
@@ -171,22 +168,18 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
     }
 
     //TODO duplicate code in JDBCConnectionPoolManager
-    private Object deleteAssociatedResources(final Iterable<Server> servers, final Iterable<Cluster> clusters, Resources resources,
-                                           final boolean cascade, final String poolName) throws TransactionFailure {
+    private Object deleteAssociatedResources(final Iterable<Server> servers, Resources resources, final boolean cascade, final String poolName)
+            throws TransactionFailure {
         if (cascade) {
-            ConfigSupport.apply(new SingleConfigCode<Resources>() {
-                public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(param, poolName);
-                    for (BindableResource referringResource : referringResources) {
-                        // delete resource-refs
-                        deleteServerResourceRefs(servers, referringResource.getJndiName());
-                        deleteClusterResourceRefs(clusters, referringResource.getJndiName());
-
-                        // remove the resource
-                        param.getResources().remove(referringResource);
-                    }
-                    return true; //no-op
+            ConfigSupport.apply((SingleConfigCode<Resources>) param -> {
+                Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(param, poolName);
+                for (BindableResource referringResource : referringResources) {
+                    // delete resource-refs
+                    deleteServerResourceRefs(servers, referringResource.getJndiName());
+                    // remove the resource
+                    param.getResources().remove(referringResource);
                 }
+                return true; //no-op
             }, resources);
         }else{
             Collection<BindableResource> referringResources = ConnectorsUtil.getResourcesOfPool(resources, poolName);
@@ -203,15 +196,6 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
         if(servers != null){
             for (Server server : servers) {
                 server.deleteResourceRef(refName);
-            }
-        }
-    }
-
-    private void deleteClusterResourceRefs(Iterable<Cluster>clusters, final String refName)
-            throws TransactionFailure {
-        if(clusters != null){
-            for (Cluster cluster : clusters) {
-                cluster.deleteResourceRef(refName);
             }
         }
     }

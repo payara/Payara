@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package org.glassfish.web.admin.cli;
 
 import static org.glassfish.api.admin.CommandLock.LockType.NONE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.GET;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
@@ -83,7 +82,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @CommandLock(NONE)
 @I18n("list.virtual.servers")
 @ExecuteOn(RuntimeType.DAS)
-@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG })
+@TargetType({ DAS, STANDALONE_INSTANCE, CONFIG })
 @RestEndpoints({
         @RestEndpoint(
                 configBean = HttpService.class, 

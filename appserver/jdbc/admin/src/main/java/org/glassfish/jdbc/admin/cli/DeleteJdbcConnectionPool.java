@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -88,9 +88,6 @@ public class DeleteJdbcConnectionPool implements AdminCommand {
     @Inject
     private IterableProvider<Server> servers;
 
-    @Inject
-    private IterableProvider<Cluster> clusters;
-
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -102,7 +99,7 @@ public class DeleteJdbcConnectionPool implements AdminCommand {
 
         try {
             JDBCConnectionPoolManager jdbcConnMgr = new JDBCConnectionPoolManager();
-            ResourceStatus rs = jdbcConnMgr.delete(servers, clusters, domain.getResources(), cascade.toString(), poolName);
+            ResourceStatus rs = jdbcConnMgr.delete(servers, domain.getResources(), cascade.toString(), poolName);
             if (rs.getMessage() != null) report.setMessage(rs.getMessage());
             if (rs.getStatus() == ResourceStatus.SUCCESS) {
                 report.setActionExitCode(ActionReport.ExitCode.SUCCESS);       

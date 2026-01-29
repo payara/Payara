@@ -41,7 +41,6 @@
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.server.logging.LogManagerService;
@@ -78,7 +77,7 @@ import org.jvnet.hk2.annotations.Service;
  * @since 3.1
  */
 @ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
-@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG })
 @CommandLock(CommandLock.LockType.NONE)
 @Service(name = "set-log-attributes")
 @PerLookup
@@ -109,9 +108,6 @@ public class SetLogAttributes implements AdminCommand {
 
     @Inject
     Servers servers;
-
-    @Inject
-    Clusters clusters;
 
     @Inject
     UnprocessedConfigListener ucl;

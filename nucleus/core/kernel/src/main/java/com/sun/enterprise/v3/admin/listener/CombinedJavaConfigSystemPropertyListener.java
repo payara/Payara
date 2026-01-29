@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.listener;
 
@@ -108,7 +108,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
      * ConfigListener doesn't become a listener for those objects.
      */
     private Domain domain; //note: this should be current, and does contain the already modified values!
-    private Cluster cluster;
     private Config config; // this is the server's Config
     private Server server;
 
@@ -128,7 +127,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
     @Override
     public void postConstruct() {
         domain = habitat.getService(Domain.class);
-        cluster = habitat.getService(Cluster.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         config = habitat.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         server = habitat.getService(Server.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
         jc = config.getJavaConfig();
@@ -214,7 +212,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
 
                     if (p == ConfigSupport.getImpl(server) ||
                             p == ConfigSupport.getImpl(config) ||
-                            (cluster != null && p == ConfigSupport.getImpl(cluster)) ||
                             p == ConfigSupport.getImpl(domain)) {
                         // check to see if this system property is referenced by any of the options
                         String pname = sp.getName();
@@ -228,8 +225,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                             return addToDomain(sp);
                         } else if (proxy instanceof Config && p == ConfigSupport.getImpl(config)) {
                             return addToConfig(sp);
-                        } else if (cluster != null && proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
-                            return addToCluster(sp);
                         } else if (proxy instanceof Server && p == ConfigSupport.getImpl(server)) {
                             return addToServer(sp);
                         }
@@ -238,8 +233,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                             return removeFromDomain(sp);
                         } else if (proxy instanceof Config && p == ConfigSupport.getImpl(config)) {
                             return removeFromConfig(sp);
-                        } else if (cluster != null && proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
-                            return removeFromCluster(sp);
                         } else if (proxy instanceof Server && p == ConfigSupport.getImpl(server)) {
                             return removeFromServer(sp);
                         }
@@ -431,8 +424,6 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
     private NotProcessed removeFromServer(SystemProperty sp) {
         SystemProperty sysProp = getServerSystemProperty(sp.getName());
         if (sysProp == null)
-            sysProp = getClusterSystemProperty(sp.getName());
-        if (sysProp == null)
             sysProp = getConfigSystemProperty(sp.getName());
         if (sysProp == null)
             sysProp = getDomainSystemProperty(sp.getName());
@@ -444,35 +435,21 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
         return null; //processed
     }
 
-    private NotProcessed removeFromCluster(SystemProperty sp) {
-        SystemProperty sysProp = getConfigSystemProperty(sp.getName());
-        if (sysProp == null)
-            sysProp = getDomainSystemProperty(sp.getName());
-        if (sysProp == null) {
-            if (!serverHas(sp))
-                System.clearProperty(sp.getName()); //if server overrides it anyway, this should be a noop
-        } else {
-            if (!serverHas(sp))
-                System.setProperty(sysProp.getName(), sysProp.getValue());
-        }
-        return null; //processed
-    }
-
     private NotProcessed removeFromConfig(SystemProperty sp) {
         SystemProperty sysProp = getDomainSystemProperty(sp.getName());
         if (sysProp == null) {
-            if (!serverHas(sp) && !clusterHas(sp))
+            if (!serverHas(sp))
                 System.clearProperty(sp.getName()); //if server overrides it anyway, this should be a noop
         } else {
-            if (!serverHas(sp) && !clusterHas(sp))
+            if (!serverHas(sp))
                 System.setProperty(sysProp.getName(), sysProp.getValue());
         }
         return null; //processed
     }
 
     private NotProcessed removeFromDomain(SystemProperty sp) {
-        if(!serverHas(sp)&& !clusterHas(sp) && !configHas(sp))
-            System.clearProperty(sp.getName()); //if server, cluster, or config overrides it anyway, this should be a noop
+        if(!serverHas(sp) && !configHas(sp))
+            System.clearProperty(sp.getName()); //if server, or config overrides it anyway, this should be a noop
         return null; //processed
     }
 
@@ -481,21 +458,17 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
         return null; //processed
     }
 
-    private NotProcessed addToCluster(SystemProperty sp) {
-        if (!serverHas(sp))
-            System.setProperty(sp.getName(), sp.getValue()); //if server overrides it anyway, this should be a noop
-        return null; //processed
-    }
-
     private NotProcessed addToConfig(SystemProperty sp) {
-        if (!serverHas(sp) && !clusterHas(sp))
-            System.setProperty(sp.getName(), sp.getValue()); //if server or cluster overrides it anyway, this should be a noop
+        if (!serverHas(sp)) {
+            System.setProperty(sp.getName(), sp.getValue()); //if server overrides it anyway, this should be a noop
+        }
         return null; //processed
     }
 
     private NotProcessed addToDomain(SystemProperty sp) {
-        if (!serverHas(sp) && !clusterHas(sp) && !configHas(sp))
-            System.setProperty(sp.getName(), sp.getValue()); //if server, cluster, or config overrides it anyway, this should be a noop
+        if (!serverHas(sp) && !configHas(sp)) {
+            System.setProperty(sp.getName(), sp.getValue()); //if server or config overrides it anyway, this should be a noop
+        }
         return null; //processed
     }
 
@@ -509,18 +482,8 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
         return c != null ? hasSystemProperty(c.getSystemProperty(), sp) : false;
     }
 
-    private boolean clusterHas(SystemProperty sp) {
-        Cluster c = domain.getClusterForInstance(server.getName());
-        return c != null ? hasSystemProperty(c.getSystemProperty(), sp) : false;
-    }
-
     private SystemProperty getServerSystemProperty(String spName) {
         return getSystemProperty(server.getSystemProperty(), spName);
-    }
-
-    private SystemProperty getClusterSystemProperty(String spName) {
-        Cluster c = domain.getClusterForInstance(server.getName());
-        return c != null ? getSystemProperty(c.getSystemProperty(), spName) : null;
     }
 
     private SystemProperty getConfigSystemProperty(String spName) {

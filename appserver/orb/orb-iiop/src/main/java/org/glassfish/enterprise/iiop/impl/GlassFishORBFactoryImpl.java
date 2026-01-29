@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -58,8 +58,7 @@ import java.util.Properties;
  *         Date: Jan 15, 2009
  */
 @Service
-public class GlassFishORBFactoryImpl
-        implements GlassFishORBFactory, PostConstruct {
+public class GlassFishORBFactoryImpl implements GlassFishORBFactory, PostConstruct {
 
     @Inject
     private ServiceLocator habitat;
@@ -131,11 +130,6 @@ public class GlassFishORBFactoryImpl
     public boolean isEjbCall (ServerRequestInfo sri) {
         return (gfORBManager.isEjbAdapterName(sri.adapter_name()) &&
                 (!gfORBManager.isIsACall(sri.operation())));
-    }
-
-    @Override
-    public String getIIOPEndpoints() {
-        return gfORBManager.getIIOPEndpoints() ;
     }
     
     @Override

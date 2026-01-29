@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+//Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.cli.schemadoc;
 
@@ -71,7 +71,7 @@ import jakarta.inject.Inject;
 @Service(name = "generate-domain-schema")
 @PerLookup
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.POST, // TODO: Should probably be GET

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
 
-    Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 
  */
@@ -48,7 +48,6 @@ import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.universal.Duration;
 import com.sun.enterprise.util.ColumnFormatter;
-import com.sun.enterprise.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -69,29 +68,27 @@ import org.glassfish.hk2.api.ServiceLocator;
  */
 public final class InstanceInfo {
 
-    public InstanceInfo(ServiceLocator habitat, Server svr, int port0, String host0, String cluster0, String deploymentGroups,
+    public InstanceInfo(ServiceLocator habitat, Server svr, int port0, String host0, String deploymentGroups,
             Logger logger0, int timeout0, ActionReport report, InstanceStateService stateService) {
-        if (svr == null )
-//            if (svr == null || host0 == null)
+        if (svr == null ) {
             throw new NullPointerException("null arguments");
+        }
+
 
         this.habitat = habitat;
         this.svr = svr;
         name = svr.getName();
         port = port0;
-        if (host0 == null)
-            host="not yet assigned";
-        else
+        if (host0 == null) {
+            host = "not yet assigned";
+        } else {
             host = host0;
+        }
         logger = logger0;
         timeoutInMsec = timeout0;
         this.report = report;
         this.stateService = stateService;
 
-        if (!StringUtils.ok(cluster0))
-            cluster = null;
-        else
-            cluster = cluster0;
         future = pingInstance();
         if (deploymentGroups == null) {
             deploymentGroups = "";
@@ -100,12 +97,8 @@ public final class InstanceInfo {
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         String cl = "";
-
-        if (cluster != null)
-            cl = ", cluster: " + getCluster();
-
 
         return "name: " + getName()
                 + ", host: " + getHost()
@@ -117,19 +110,11 @@ public final class InstanceInfo {
 
     }
 
-    public final String getDisplayCluster() {
-        return cluster == null ? NO_CLUSTER : cluster;
-    }
-
-    public final String getCluster() {
-        return cluster;
-    }
-
-    public final String getHost() {
+    public String getHost() {
         return host;
     }
 
-    public final int getPort() {
+    public int getPort() {
         return port;
     }
     
@@ -137,25 +122,25 @@ public final class InstanceInfo {
         return deploymentGroups;
     }
 
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    public final long getUptime() {
+    public long getUptime() {
         if (uptime == -1) {
             getFutureResult();
         }
         return uptime;
     }
 
-    public final int getPid() {
+    public int getPid() {
         if (pid < 0) {
             getFutureResult();
         }
         return pid;
     }
 
-    public final String getDisplayState() {
+    public String getDisplayState() {
         StringBuilder display = new StringBuilder();
         if (isRunning() == null) {
             display.append(InstanceState.StateType.UNKNOWN.getDisplayString());
@@ -179,14 +164,14 @@ public final class InstanceInfo {
         return display.toString();
     }
 
-    public final String getState() {
+    public String getState() {
         if (state == null) {
             getFutureResult();
         }
         return state;
     }
 
-    public final Boolean isRunning() {
+    public Boolean isRunning() {
         if (state == null) {
             getFutureResult();
         }
@@ -259,7 +244,7 @@ public final class InstanceInfo {
     /////////////////////////////////////////////////////////////////////////
 
     public static String format(List<InstanceInfo> infos) {
-        String headings[] = {NAME, HOST, PORT, PID, CLUSTER, STATE};
+        String headings[] = {NAME, HOST, PORT, PID, STATE};
         ColumnFormatter cf = new ColumnFormatter(headings);
         for (InstanceInfo info : infos) {
             cf.addRow(new Object[]{
@@ -267,7 +252,6 @@ public final class InstanceInfo {
                         info.getHost(),
                         info.getPort(),
                         formatPid(info),
-                        info.getDisplayCluster(),
                         info.getDisplayState()
                     });
         }
@@ -331,7 +315,6 @@ public final class InstanceInfo {
     private long uptime = -1;
     private String state = null;
     private InstanceState.StateType ssState;
-    private final String cluster;
     private final Logger logger;
     private final int timeoutInMsec;
     private Future<InstanceCommandResult> future;
@@ -347,6 +330,4 @@ public final class InstanceInfo {
     private static final String PORT = Strings.get("ListInstances.port");
     private static final String PID = Strings.get("ListInstances.pid");
     private static final String STATE = Strings.get("ListInstances.state");
-    private static final String CLUSTER = Strings.get("ListInstances.cluster");
-    private static final String NO_CLUSTER = "---";
 }

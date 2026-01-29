@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-Portions Copyright [2016-2017] [Payara Foundation]
+    Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 -->
 
 <!initPage
@@ -75,9 +75,6 @@ Portions Copyright [2016-2017] [Payara Foundation]
             setPageSessionAttribute(key="showCancelButton" value="#{false}" );
             setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
             setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
-            
-            gf.getClusterForConfig(configName="#{configName}" cluster="#{pageSession.clusterName}");
-
         />
     </event>   
 <!-- TO DO: NEED TO ADD CHECK FOR PE OR EE IN ORDER TO POPULATE JMS HOST DROPDOWN  -->   
@@ -102,16 +99,6 @@ Portions Copyright [2016-2017] [Payara Foundation]
                     removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
                     javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
                     gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
-
-                    if (#{pageSession.valueMap['masterBroker']}) {
-                        createMap(result="#{requestScope.mbAttrs}");
-                        mapPut(map="#{requestScope.mbAttrs}" key="id" value="#{pageSession.valueMap['masterBroker']}");
-                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession['clusterName']}/change-master-broker",
-                            attrs="#{requestScope.mbAttrs}",
-                            method="post",
-                            result="#{pageSession.resultMap}",
-                            throwException="#{true}");
-                    }
 
                     prepareSuccessfulMsg();
                     gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");

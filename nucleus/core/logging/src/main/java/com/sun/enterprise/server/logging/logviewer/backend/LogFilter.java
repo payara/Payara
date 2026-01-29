@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -259,21 +258,8 @@ public class LogFilter {
      */
 
     private String getInstanceLogFileDetails(Server targetServer) throws IOException {
-
-        String logFileDetailsForServer = "";
-        String targetConfigName = "";
-
-        Cluster clusterForInstance = targetServer.getCluster();
-        if (clusterForInstance != null) {
-            targetConfigName = clusterForInstance.getConfigRef();
-        } else {
-            targetConfigName = targetServer.getConfigRef();
-        }
-
-        logFileDetailsForServer = loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
-
-        return logFileDetailsForServer;
-
+        String targetConfigName = targetServer.getConfigRef();
+        return loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
     }
 
     /*

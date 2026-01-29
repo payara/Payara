@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2023 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2023-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -90,13 +90,13 @@ public class PostRegisterInstanceCommand extends RegisterInstanceCommandParamete
         final InstanceRegisterInstanceCommandParameters suppInfo =
                 context.getActionReport().getResultType(InstanceRegisterInstanceCommandParameters.class);
 
-        if (suppInfo != null && (clusterName != null || deploymentGroup != null)) {
+        if (suppInfo != null && deploymentGroup != null) {
             try {
                 ParameterMapExtractor pme = new ParameterMapExtractor(suppInfo, this);
                 final ParameterMap paramMap = pme.extract();
 
-                List<String> targets = new ArrayList<String>();
-                List<Server> instances = target.getInstances(this.clusterName != null ? clusterName : deploymentGroup);
+                List<String> targets = new ArrayList<>();
+                List<Server> instances = target.getInstances(deploymentGroup);
                 for (Server s : instances) {
                     targets.add(s.getName());
                 }

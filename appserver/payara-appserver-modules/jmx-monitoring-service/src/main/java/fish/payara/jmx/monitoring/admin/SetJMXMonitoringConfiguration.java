@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,7 +88,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.jmx.monitoring.configuration")
 @ExecuteOn(RuntimeType.DAS)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -302,7 +302,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
      * Updates monitoring attributes through adding a new property and/or
      * deleting an existing one.
      *
-     * @param actionReport
+     * @param report
      * @param monitoringConfig
      * @throws PropertyVetoException
      * @throws TransactionFailure

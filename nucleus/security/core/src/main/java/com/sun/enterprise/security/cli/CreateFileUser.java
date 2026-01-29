@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
@@ -68,7 +68,6 @@ import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.util.SystemPropertyConstants;
 
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
@@ -97,7 +96,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("create.file.user")
 @ExecuteOn({ RuntimeType.INSTANCE, RuntimeType.DAS })
-@TargetType({ DAS, STANDALONE_INSTANCE, CLUSTER, CONFIG, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType({ DAS, STANDALONE_INSTANCE, CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.POST, path = "create-user", description = "Create", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })
