@@ -43,6 +43,8 @@ package org.glassfish.deployment.common;
 import java.io.File;
 import java.io.IOException;
 import org.glassfish.hk2.utilities.CleanerFactory;
+
+import java.lang.ref.Cleaner;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -108,13 +110,10 @@ public class ClientArtifactsManager {
             cause = "The server has created more than one artifact with the same relative path to be included in the generated client JAR file",
             action = "This is an internal server error.  Please file a bug report.")
     private static final String CLIENT_ARTIFACT_COLLISION = "NCLS-DEPLOYMENT-00027";
-    
-    private boolean isArtifactSetConsumed = false;
-    
+
     private static final String CLIENT_ARTIFACTS_KEY = "ClientArtifacts";
     
-    private final Map<URI,Artifacts.FullAndPartURIs> artifacts =
-            new HashMap<URI,Artifacts.FullAndPartURIs>();
+    private final Map<URI,Artifacts.FullAndPartURIs> artifacts = new HashMap<>();
     
     /*
      * To verify sources that are JAR entries we need to make sure the 
@@ -122,10 +121,50 @@ public class ClientArtifactsManager {
      * opening of JAR files we record the JARs previous checked
      * here.
      */
-    private final Map<URI,JarFile> jarFiles = new HashMap<URI,JarFile>();
+    private final Map<URI,JarFile> jarFiles = new HashMap<>();
+
+    private final CleanableClientArtifactsManagerState state;
+    private final Cleaner.Cleanable cleanable;
+
+    static class CleanableClientArtifactsManagerState implements Runnable {
+
+        private boolean artifactSetConsumed = false;
+        private final Map<URI,JarFile> jarFiles;
+
+        CleanableClientArtifactsManagerState(Map<URI,JarFile> jarFiles) {
+            this.jarFiles = jarFiles;
+        }
+
+        @Override
+        public void run() {
+            if (!artifactSetConsumed) {
+                this.closeOpenedJARs();
+            }
+        }
+
+        public void closeOpenedJARs() {
+            for (JarFile jarFile : jarFiles.values()) {
+                try {
+                    jarFile.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            jarFiles.clear();
+        }
+
+        public boolean isArtifactSetConsumed() {
+            return artifactSetConsumed;
+        }
+
+        public void setArtifactSetConsumed(boolean artifactSetConsumed) {
+            this.artifactSetConsumed = artifactSetConsumed;
+        }
+    }
 
     public ClientArtifactsManager() {
-        registerCloseEvent();
+        this.state = new CleanableClientArtifactsManagerState(jarFiles);
+        this.cleanable = CleanerFactory.create().register(this, state);
     }
 
     /**
@@ -217,13 +256,13 @@ public class ClientArtifactsManager {
      * @param artifact 
      */
     public void add(Artifacts.FullAndPartURIs artifact) {
-        final boolean isLogAdditions = deplLogger.isLoggable(Level.FINE);
-        if (isArtifactSetConsumed) {
+        if (state.isArtifactSetConsumed()) {
             throw new IllegalStateException(
                     formattedString(CLIENT_ARTIFACT_OUT_OF_ORDER,
                         artifact.getFull().toASCIIString())
                     );
         } else {
+            final boolean isLogAdditions = deplLogger.isLoggable(Level.FINE);
             Artifacts.FullAndPartURIs existingArtifact =
                     artifacts.get(artifact.getPart());
             if (existingArtifact != null) {
@@ -328,36 +367,17 @@ public class ClientArtifactsManager {
      * @return all client artifacts reported by various deployers
      */
     public Collection<Artifacts.FullAndPartURIs> artifacts() {
-        isArtifactSetConsumed = true;
-        closeOpenedJARs();
+        this.cleanable.clean();
+        this.state.setArtifactSetConsumed(true);
         if (deplLogger.isLoggable(Level.FINE)) {
             deplLogger.log(Level.FINE, "ClientArtifactsManager returned artifacts");
         }
         return Collections.unmodifiableCollection(artifacts.values());
     }
 
-    private void closeOpenedJARs() {
-        for (JarFile jarFile : jarFiles.values()) {
-            try {
-                jarFile.close();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        jarFiles.clear();
-    }
-    
     private String formattedString(final String key, final Object... args) {
         final String format = deplLogger.getResourceBundle().getString(key);
         return MessageFormat.format(format, args);
-    }
-
-    public final void registerCloseEvent() {
-        CleanerFactory.create().register(this, () -> {
-            if (!isArtifactSetConsumed) {
-                closeOpenedJARs();
-            }
-        });
     }
 
     /**
