@@ -264,7 +264,7 @@
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
         <snakeyaml.version>2.5</snakeyaml.version>
-        <mojarra.version>4.1.4.payara-p1</mojarra.version>
+        <mojarra.version>4.1.6.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
         <krazo.version>4.0.1.payara-p1</krazo.version>
@@ -308,7 +308,7 @@
         <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.4</jaxb-api.version>
-        <jackson.version>2.20.1</jackson.version>
+        <jackson.version>2.21.0</jackson.version>
         <jersey.version>4.0.0.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
@@ -365,7 +365,6 @@
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
-        <payara.transformer.version>0.2.14</payara.transformer.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
     </properties>
@@ -687,7 +686,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.2.0</version>
+                    <version>1.2.1</version>
                     <executions>
                         <execution>
                             <id>validate-xml-files</id>

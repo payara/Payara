@@ -119,7 +119,6 @@
 	<init-param>
 	    <param-name>ContentSources</param-name>
 	    <param-value>
-                org.glassfish.admingui.common.servlet.LBConfigContentSource,
                 org.glassfish.admingui.common.servlet.ClientStubsContentSource,
                 org.glassfish.admingui.common.servlet.LogFilesContentSource
                 org.glassfish.admingui.common.servlet.LogViewerContentSource

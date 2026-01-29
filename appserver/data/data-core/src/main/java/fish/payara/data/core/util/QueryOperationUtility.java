@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2025-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,9 @@ import jakarta.data.exceptions.EmptyResultException;
 import jakarta.data.exceptions.MappingException;
 import jakarta.data.repository.Param;
 import jakarta.data.repository.Query;
+import jakarta.persistence.Cache;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.data.exceptions.NonUniqueResultException;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
@@ -158,6 +160,9 @@ public class QueryOperationUtility {
                     startTransactionAndJoin(transactionManager, entityManager, dataForQuery);
                     int deleteReturn = q.executeUpdate();
                     endTransaction(transactionManager, entityManager, dataForQuery);
+
+                    // Clear cache for the affected entity after UPDATE/DELETE
+                    clearCache(entityManager, dataForQuery.getDeclaredEntityClass());
 
                     return processReturnQueryUpdate(method, deleteReturn);
                 } else {
@@ -461,6 +466,18 @@ public class QueryOperationUtility {
         }
 
         return resultList.isEmpty() ? null : resultList.get(0);
+    }
+
+    private static void clearCache(EntityManager entityManager, Class<?> entityClass) {
+        EntityManagerFactory factory = entityManager.getEntityManagerFactory();
+        if (factory != null) {
+            Cache cache = factory.getCache();
+            if (cache != null) {
+                // Only evict the affected entity type, not all entities
+                cache.evict(entityClass);
+            }
+        }
+        entityManager.clear();
     }
 
 }
