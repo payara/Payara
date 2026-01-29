@@ -164,6 +164,7 @@
         <module>microprofile-package</module>
         <module>opentracing-jaxws-package</module>
         <module>data</module>
+        <module>agentic-ai</module>
         <module>payara-mvc</module>
     </modules>
     

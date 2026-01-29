@@ -455,6 +455,11 @@
                 <artifactId>jakarta.data-api</artifactId>
                 <version>${jakarta.data-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>jakarta.ai</groupId>
+                <artifactId>jakarta-agentic-ai-api</artifactId>
+                <version>${jakarta.agentic-ai-api.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.osgi</groupId>
