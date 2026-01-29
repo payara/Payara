@@ -85,13 +85,13 @@
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
 
         <junit.version>4.13.2</junit.version>
-        <testng.version>7.11.0</testng.version>
+        <testng.version>7.12.0</testng.version>
 
         <ldapbp.version>1.0</ldapbp.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.3</classmate.version>
-        <jboss-logging.version>3.6.1.Final</jboss-logging.version>
+        <jboss-logging.version>3.6.2.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
 

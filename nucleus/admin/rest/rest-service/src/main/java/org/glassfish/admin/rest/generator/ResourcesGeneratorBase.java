@@ -492,8 +492,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("JdbcResource", "delete-jdbc-resource");
             put("JaccProvider", "delete-jacc-provider");
 //            put("JmsHost", "delete-jms-host");
-            put("LbConfig", "delete-http-lb-config");
-            put("LoadBalancer", "delete-http-lb");
             put("NetworkListener", "delete-network-listener");
             put("Profiler", "delete-profiler");
             put("Protocol", "delete-protocol");
@@ -532,8 +530,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("ListJdbcConnectionPool", "create-jdbc-connection-pool");
             put("ListJdbcResource", "create-jdbc-resource");
             put("ListJmsHost", "create-jms-host");
-            put("ListLbConfig", "create-http-lb-config");
-            put("ListLoadBalancer", "create-http-lb");
             put("ListMailResource", "create-javamail-resource");
             put("ListMessageSecurityConfig", "create-message-security-provider");
             put("ListNetworkListener", "create-network-listener");
