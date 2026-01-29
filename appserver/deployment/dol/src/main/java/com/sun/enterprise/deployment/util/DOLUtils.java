@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -940,60 +940,63 @@ public class DOLUtils {
     return treatComponentAsModule;
   }
 
-  /**
-   * Generate a unique id name for each J2EE component.
+    /**
+     * Generate a unique id name for each J2EE component.
+     *
      * @param env
      * @return
-   */
-  public static String getComponentEnvId(JndiNameEnvironment env) {
-    String id = null;
+     */
+    public static String getComponentEnvId(JndiNameEnvironment env) {
+        String id = null;
 
-    if (env instanceof EjbDescriptor) {
-      // EJB component
-      EjbDescriptor ejbEnv = (EjbDescriptor) env;
+        if (env instanceof EjbDescriptor) {
+            // EJB component
+            EjbDescriptor ejbEnv = (EjbDescriptor) env;
 
-      // Make jndi name flat so it won't result in the creation of
-      // a bunch of sub-contexts.
-      String flattedJndiName = ejbEnv.getJndiName().replace('/', '.');
+            // Make jndi name flat so it won't result in the creation of
+            // a bunch of sub-contexts.
+            String flattedJndiName = ejbEnv.getJndiName().replace('/', '.');
 
-      EjbBundleDescriptor ejbBundle = ejbEnv.getEjbBundleDescriptor();
-      Descriptor d = ejbBundle.getModuleDescriptor().getDescriptor();
-      // if this EJB is in a war file, use the same component ID
-      // as the web bundle, because they share the same JNDI namespace
-      if (d instanceof WebBundleDescriptor) {
-        // copy of code below
-        WebBundleDescriptor webEnv = (WebBundleDescriptor) d;
-        id = webEnv.getApplication().getName() + ID_SEPARATOR
-            + webEnv.getContextRoot();
-        if (deplLogger.isLoggable(Level.FINER)) {
-          deplLogger.log(Level.FINER, CONVERT_EJB_TO_WEB_ID, id);
+            EjbBundleDescriptor ejbBundle = ejbEnv.getEjbBundleDescriptor();
+            Descriptor d = ejbBundle.getModuleDescriptor().getDescriptor();
+            // if this EJB is in a war file, use the same component ID
+            // as the web bundle, because they share the same JNDI namespace
+            if (d instanceof WebBundleDescriptor) {
+                // copy of code below
+                WebBundleDescriptor webEnv = (WebBundleDescriptor) d;
+                id = webEnv.getApplication().getName() + ID_SEPARATOR
+                        + webEnv.getContextRoot();
+                if (deplLogger.isLoggable(Level.FINER)) {
+                    deplLogger.log(Level.FINER, CONVERT_EJB_TO_WEB_ID, id);
+                }
+
+            } else {
+                id = ejbEnv.getApplication().getName() + ID_SEPARATOR
+                        + ejbBundle.getModuleDescriptor().getArchiveUri() + ID_SEPARATOR
+                        + ejbEnv.getName() + ID_SEPARATOR + flattedJndiName
+                        + ejbEnv.getUniqueId();
+            }
+        } else if (env instanceof WebBundleDescriptor) {
+            WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
+            id = webEnv.getApplication().getName() + ID_SEPARATOR
+                    + webEnv.getContextRoot();
+        } else if (env instanceof ApplicationClientDescriptor) {
+            ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
+            id = "client" + ID_SEPARATOR + appEnv.getName() + ID_SEPARATOR
+                    + appEnv.getMainClassName();
+        } else if (env instanceof ManagedBeanDescriptor) {
+            id = ((ManagedBeanDescriptor) env).getGlobalJndiName();
+        } else if (env instanceof EjbBundleDescriptor) {
+            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
+            id = "__ejbBundle__" + ID_SEPARATOR
+                    + ejbBundle.getApplication().getName() + ID_SEPARATOR
+                    + ejbBundle.getModuleName();
+        } else if (env instanceof Application app) {
+            id = app.getAppName();
         }
 
-      } else {
-        id = ejbEnv.getApplication().getName() + ID_SEPARATOR
-            + ejbBundle.getModuleDescriptor().getArchiveUri() + ID_SEPARATOR
-            + ejbEnv.getName() + ID_SEPARATOR + flattedJndiName
-            + ejbEnv.getUniqueId();
-      }
-    } else if (env instanceof WebBundleDescriptor) {
-      WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
-      id = webEnv.getApplication().getName() + ID_SEPARATOR
-          + webEnv.getContextRoot();
-    } else if (env instanceof ApplicationClientDescriptor) {
-      ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
-      id = "client" + ID_SEPARATOR + appEnv.getName() + ID_SEPARATOR
-          + appEnv.getMainClassName();
-    } else if (env instanceof ManagedBeanDescriptor) {
-      id = ((ManagedBeanDescriptor) env).getGlobalJndiName();
-    } else if (env instanceof EjbBundleDescriptor) {
-      EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
-      id = "__ejbBundle__" + ID_SEPARATOR
-          + ejbBundle.getApplication().getName() + ID_SEPARATOR
-          + ejbBundle.getModuleName();
+        return id;
     }
-
-    return id;
-  }
 
     /**
      * Supports extreme classloading isolation

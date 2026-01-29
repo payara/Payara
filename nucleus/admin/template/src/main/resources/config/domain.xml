@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
@@ -108,7 +108,7 @@
           <property value="fileRealm" name="jaas-context" />
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-        <jacc-provider policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl" policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default"></jacc-provider>
+        <jacc-provider policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory" policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default"></jacc-provider>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
             <request-policy auth-source="content" />
@@ -161,6 +161,7 @@
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
+          <jvm-options>-Djakarta.security.jacc.PolicyFactory.provider=org.glassfish.exousia.modules.def.DefaultPolicyFactory</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
         <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
         <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
@@ -258,7 +259,7 @@
                  <property name="jaas-context" value="fileRealm" />
              </auth-realm>
              <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
-             <jacc-provider policy-provider="fish.payara.security.jacc.provider.PolicyProviderImpl" name="default" policy-configuration-factory-provider="fish.payara.security.jacc.provider.PolicyConfigurationFactoryImpl"></jacc-provider>
+             <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
              <message-security-config auth-layer="SOAP">
                  <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
                      <request-policy auth-source="content" />
@@ -303,6 +304,7 @@
              <jvm-options>-Djava.awt.headless=true</jvm-options>
              <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
              <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
+             <jvm-options>-Djakarta.security.jacc.PolicyFactory.provider=org.glassfish.exousia.modules.def.DefaultPolicyFactory</jvm-options>
              <jvm-options>-Dcom.sun.enterprise.security.httpsOutboundKeyAlias=s1as</jvm-options>
              <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.p12</jvm-options>
              <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.p12</jvm-options>

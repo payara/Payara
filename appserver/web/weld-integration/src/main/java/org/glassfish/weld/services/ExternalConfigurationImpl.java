@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2024] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -42,9 +42,6 @@ package org.glassfish.weld.services;
 import java.util.HashMap;
 import java.util.Map;
 import static org.jboss.weld.config.ConfigurationKey.BEAN_IDENTIFIER_INDEX_OPTIMIZATION;
-import static org.jboss.weld.config.ConfigurationKey.PROBE_ALLOW_REMOTE_ADDRESS;
-import static org.jboss.weld.config.ConfigurationKey.PROBE_EVENT_MONITOR_EXCLUDE_TYPE;
-import static org.jboss.weld.config.ConfigurationKey.PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE;
 import static org.jboss.weld.config.ConfigurationKey.ROLLING_UPGRADES_ID_DELIMITER;
 import static org.jboss.weld.config.ConfigurationKey.CONCURRENT_DEPLOYMENT;
 import static org.jboss.weld.config.ConfigurationKey.NON_PORTABLE_MODE;
@@ -79,21 +76,6 @@ public class ExternalConfigurationImpl implements ExternalConfiguration {
 
     public void setBeanIndexOptimization(boolean beanIndexOptimization) {
         propsMap.put(BEAN_IDENTIFIER_INDEX_OPTIMIZATION.get(), beanIndexOptimization);
-    }
-
-    public void setProbeInvocationMonitorExcludeType(String probeInvocationMonitorExcludeType) {
-        propsMap.put(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE.get(),
-                System.getProperty(PROBE_INVOCATION_MONITOR_EXCLUDE_TYPE.get(), probeInvocationMonitorExcludeType));
-    }
-
-    public void setProbeEventMonitorExcludeType(String probeEventMonitorExcludeType) {
-        propsMap.put(PROBE_EVENT_MONITOR_EXCLUDE_TYPE.get(), 
-                System.getProperty(PROBE_EVENT_MONITOR_EXCLUDE_TYPE.get(), probeEventMonitorExcludeType));
-    }
-
-    public void setProbeAllowRemoteAddress(String probeAllowRemoteAddress) {
-        propsMap.put(PROBE_ALLOW_REMOTE_ADDRESS.get(), 
-                System.getProperty(PROBE_ALLOW_REMOTE_ADDRESS.get(), probeAllowRemoteAddress));
     }
 
     @Override

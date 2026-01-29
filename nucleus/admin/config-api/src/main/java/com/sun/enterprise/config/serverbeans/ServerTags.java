@@ -1,19 +1,19 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2024 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -195,7 +195,6 @@ public class ServerTags  {
     public static final String APPLICATION_REF = "application-ref";
     //public static final String ENABLED = "enabled";
     public static final String VIRTUAL_SERVERS = "virtual-servers";
-    public static final String CDI_DEV_MODE_ENABLED_PROP = "cdiDevModeEnabled";
     public static final String EMPTY_BEANS_XML_MODE_ALL_PROP = "emptyBeansXmlModeALL";
     
     //public static final String LB_ENABLED = "lb-enabled";
@@ -505,7 +504,6 @@ public class ServerTags  {
     public static final String DEFAULT_VIRTUAL_SERVER = "default-virtual-server";
     public static final String SERVER_NAME = "server-name";
     public static final String REDIRECT_PORT = "redirect-port";
-    public static final String XPOWERED_BY = "xpowered-by";
     //public static final String ENABLED = "enabled";
     /** Tags for Element virtual-server */
     public static final String VIRTUAL_SERVER = "virtual-server";

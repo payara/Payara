@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2024 Payara Foundation and/or affiliates
 
 /*
  * EntityManagerMethod.java
@@ -352,6 +353,84 @@ public enum EntityManagerMethod {
     GET_ENTITY_GRAPHS  {
         public String toString() {
             return "getEntityGraphs(Class<T> entityClass)";
+        }
+    },
+
+    FIND_CLASS_OBJECT_FINDOPTION {
+        public String toString() {
+            return "find(Class<T> aClass, Object o, FindOption... findOptions)";
+        }
+    },
+
+    FIND_ENTITYGRAPH_OBJECT_FINDOPTION {
+        public String toString() {
+            return "find(EntityGraph<T> entityGraph, Object o, FindOption... findOptions)";
+        }
+    },
+
+    GET_REFERENCE_T {
+        public String toString() {
+            return "getReference(T t)";
+        }
+    },
+
+    LOCK_OBJECT_LOCKMODETYPE_LOCKOPTION {
+        public String toString() {
+            return "lock(Object o, LockModeType lockModeType, LockOption... lockOptions)";
+        }
+    },
+
+    REFRESH_OBJECT_REFRESHOPTION {
+        public String toString() {
+            return "refresh(Object o, RefreshOption... refreshOptions)";
+        }
+    },
+
+    SET_CACHE_RETRIEVE_MODE {
+        public String toString() {
+            return "setCacheRetrieveMode(CacheRetrieveMode cacheRetrieveMode)";
+        }
+    },
+
+    SET_CACHE_STORE_MODE {
+        public String toString() {
+            return "setCacheStoreMode(CacheStoreMode cacheStoreMode)";
+        }
+    },
+
+    GET_CACHE_RETRIEVE_MODE {
+        public String toString() {
+            return "getCacheRetrieveMode()";
+        }
+    },
+
+    GET_CACHE_STORE_MODE {
+        public String toString() {
+            return "getCacheStoreMode()";
+        }
+    },
+
+    CREATE_QUERY_CRITERIASELECT {
+        public String toString() {
+            return "createQuery(CriteriaSelect<T> criteriaSelect)";
+        }
+    },
+
+    CREATE_QUERY_TYPEDQUERYREFERENCE {
+        public String toString() {
+            return "createQuery(TypedQueryReference<T> typedQueryReference)";
+        }
+    },
+
+    RUN_WITH_CONNECTION {
+        public String toString() {
+            return "runWithConnection(ConnectionConsumer<C> connectionConsumer)";
+        }
+    },
+
+    CALL_WITH_CONNECTION {
+        public String toString() {
+            return "callWithConnection(ConnectionFunction<C, T> connectionFunction)";
         }
     }
 }

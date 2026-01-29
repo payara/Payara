@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -574,15 +574,6 @@ public class WeldUtils {
         }
 
         return result;
-    }
-
-    public static boolean isCDIDevModeEnabled(DeploymentContext context) {
-        Object propValue = context.getAppProps().get(ServerTags.CDI_DEV_MODE_ENABLED_PROP);
-        return propValue != null && Boolean.parseBoolean((String) propValue);
-    }
-
-    public static void setCDIDevMode(DeploymentContext context, boolean enabled) {
-       context.getAppProps().setProperty(ServerTags.CDI_DEV_MODE_ENABLED_PROP, String.valueOf(enabled));
     }
     
     public static boolean isEmptyBeansXmlModeALL(DeploymentContext context) {

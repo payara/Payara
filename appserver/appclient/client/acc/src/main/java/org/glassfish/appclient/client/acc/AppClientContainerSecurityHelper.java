@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -38,12 +38,15 @@
  * holder.
  */
 
+// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.appclient.client.acc;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.security.appclient.integration.AppClientSecurityInfo;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -53,17 +56,13 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.inject.Inject;
 import javax.security.auth.callback.CallbackHandler;
 import org.glassfish.appclient.client.acc.config.ClientCredential;
 import org.glassfish.appclient.client.acc.config.MessageSecurityConfig;
 import org.glassfish.appclient.client.acc.config.TargetServer;
-//import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
-
-import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  *
@@ -83,15 +82,11 @@ public class AppClientContainerSecurityHelper {
 
     private ClassLoader classLoader;
 
-    void init(
-            final TargetServer[] targetServers,
-            final List<MessageSecurityConfig> msgSecConfigs,
-            final Properties containerProperties,
-            final ClientCredential clientCredential,
-            final CallbackHandler callerSuppliedCallbackHandler,
-            final ClassLoader classLoader,
-            final ApplicationClientDescriptor acDesc,
-            final boolean isTextAuth) throws InstantiationException, IllegalAccessException, InjectionException, ClassNotFoundException, IOException {
+    void init(final TargetServer[] targetServers, final List<MessageSecurityConfig> msgSecConfigs,
+            final Properties containerProperties, final ClientCredential clientCredential,
+            final CallbackHandler callerSuppliedCallbackHandler, final ClassLoader classLoader,
+            final ApplicationClientDescriptor acDesc, final boolean isTextAuth) 
+            throws InstantiationException, IllegalAccessException, InjectionException, ClassNotFoundException, IOException {
 
         this.classLoader = (classLoader == null) ? Thread.currentThread().getContextClassLoader() : classLoader;
 
@@ -99,10 +94,10 @@ public class AppClientContainerSecurityHelper {
         CallbackHandler callbackHandler = 
                 initSecurity(callerSuppliedCallbackHandler, acDesc);
 
-        secInfo.initializeSecurity(Arrays.asList(targetServers),
+        secInfo.initializeSecurity(
+                Arrays.asList(targetServers),
                 msgSecConfigs,
                 callbackHandler,
-                AppClientSecurityInfo.CredentialType.USERNAME_PASSWORD,
                 (clientCredential == null ? null : clientCredential.getUserName()),
                 (clientCredential == null || 
                     clientCredential.getPassword() == null ||

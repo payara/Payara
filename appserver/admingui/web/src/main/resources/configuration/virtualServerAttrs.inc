@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2025 Payara Foundation and/or its affiliates -->
 
 <!-- web/configuration/virtualServerAttrs.inc -->
 #include "/common/applications/applicationHandlers.inc"
@@ -68,6 +69,17 @@
         <sun:property id="ssoCookieHttpOnly"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.ssoCookieHttpOnly}" helpText="$resource{i18n_web.vs.ssoCookieHttpOnlyHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['ssoCookieHttpOnly']}"  selectedValue="true" />
         </sun:property>
+
+        <sun:property id="sessionCookieHttpOnly"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sessionCookieHttpOnly}" helpText="$resource{i18n_web.vs.sessionCookieHttpOnlyHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['sessionCookieHttpOnly']}"  selectedValue="true" />
+        </sun:property>
+
+#         <sun:property id="sessionCookieSecure"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sessionCookieSecure}" helpText="$resource{i18n_web.vs.sessionCookieSecureHelp}">
+#             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['sessionCookieSecure']}"  selectedValue="true" />
+#         </sun:property>
+        <sun:property id="sessionCookieSecure"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sessionCookieSecure}" helpText="$resource{i18n_web.vs.sessionCookieSecureHelp}">
+             <sun:dropDown id="cookieSecure"  selected="#{pageSession.valueMap['sessionCookieSecure']}" labels={"$resource{i18n_web.vs.sessionCookieSecure.dynamic}","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"dynamic","true","false"} />
+         </sun:property>
 
         <sun:property id="nwProps"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.NetworkListeners}" helpText="$resource{i18n_web.vs.NetworkListenersHelp}">
             <sun:listbox id="nw" immediate="#{true}" multiple="#{true}"  rows="$int{4}" 

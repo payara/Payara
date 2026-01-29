@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,41 +37,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.security.webservices;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import com.sun.enterprise.deployment.ServiceRefPortInfo;
+import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
+import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
+import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
+import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
+import com.sun.xml.ws.api.message.Message;
+import com.sun.xml.ws.api.message.Packet;
+import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
+import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import jakarta.inject.Singleton;
 import jakarta.security.auth.message.MessageInfo;
-import javax.xml.namespace.QName;
 import jakarta.xml.soap.MimeHeaders;
 import jakarta.xml.soap.Name;
+import jakarta.xml.soap.Node;
 import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPElement;
 import jakarta.xml.soap.SOAPEnvelope;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.soap.SOAPPart;
-
-import org.glassfish.api.invocation.ComponentInvocation;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.namespace.QName;
 import org.jvnet.hk2.annotations.Service;
-
-import com.sun.enterprise.deployment.ServiceRefPortInfo;
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
-import com.sun.enterprise.security.jaspic.WebServicesDelegate;
-import com.sun.enterprise.security.jauth.AuthParam;
-import com.sun.enterprise.security.jauth.jaspic.provider.PacketMessageInfo;
-import com.sun.enterprise.security.jauth.jaspic.provider.SOAPAuthParam;
-import com.sun.jaspic.services.AuthConfigRegistrationWrapper;
-import com.sun.xml.ws.api.message.Message;
-import com.sun.xml.ws.api.message.Packet;
-import com.sun.xml.ws.api.model.wsdl.WSDLBoundOperation;
-import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 
 /**
  *
@@ -86,7 +80,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
     private static final String DEFAULT_WEBSERVICES_PROVIDER = "com.sun.xml.wss.provider.wsit.WSITAuthConfigProvider";
 
     @Override
-    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map<String, ?> properties) {
+    public MessageSecurityBindingDescriptor getBinding(ServiceReferenceDescriptor svcRef, Map properties) {
         MessageSecurityBindingDescriptor binding = null;
         WSDLPort p = (WSDLPort) properties.get("WSDL_MODEL");
         QName portName = null;
@@ -101,13 +95,7 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
         }
         return binding;
     }
-
-    @Override
-    public void removeListener(AuthConfigRegistrationWrapper listener) {
-        // TODO:V3 convert the pipes to Tubes.
-        ClientPipeCloser.getInstance().removeListenerWrapper(listener);
-    }
-
+    
     @Override
     public String getDefaultWebServicesProvider() {
         return DEFAULT_WEBSERVICES_PROVIDER;
@@ -115,39 +103,32 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
 
     @Override
     public String getAuthContextID(MessageInfo messageInfo) {
+        if (!(messageInfo instanceof PacketMessageInfo)) {
+            return getOpName((SOAPMessage) messageInfo.getRequestMessage());
+        }
 
-        // make this more efficient by operating on packet
-        String rvalue = null;
-        if (messageInfo instanceof PacketMessageInfo) {
-            PacketMessageInfo pmi = (PacketMessageInfo) messageInfo;
-            Packet p = pmi.getRequestPacket();
-            if (p != null) {
-                Message m = p.getMessage();
-                if (m != null) {
-                    WSDLPort port = (WSDLPort) messageInfo.getMap().get("WSDL_MODEL");
-                    if (port != null) {
-                        WSDLBoundOperation w = m.getOperation(port);
-                        if (w != null) {
-                            QName n = w.getName();
-                            if (n != null) {
-                                rvalue = n.getLocalPart();
-                            }
+        // Make this more efficient by operating on packet
+        String authContextID = null;
+        PacketMessageInfo pmi = (PacketMessageInfo) messageInfo;
+
+        Packet requestPacket = pmi.getRequestPacket();
+        if (requestPacket != null) {
+            Message message = requestPacket.getMessage();
+            if (message != null) {
+                WSDLPort port = (WSDLPort) messageInfo.getMap().get("WSDL_MODEL");
+                if (port != null) {
+                    WSDLBoundOperation boundOperation = message.getOperation(port);
+                    if (boundOperation != null) {
+                        QName name = boundOperation.getName();
+                        if (name != null) {
+                            authContextID = name.getLocalPart();
                         }
                     }
                 }
             }
-            return rvalue;
-        } else {
-            // make this more efficient by operating on packet
-            return getOpName((SOAPMessage) messageInfo.getRequestMessage());
         }
 
-    }
-
-    @Override
-    public AuthParam newSOAPAuthParam(MessageInfo messageInfo) {
-        return new SOAPAuthParam((SOAPMessage) messageInfo.getRequestMessage(), (SOAPMessage) messageInfo.getResponseMessage());
-
+        return authContextID;
     }
 
     private String getOpName(SOAPMessage message) {
@@ -155,33 +136,33 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
             return null;
         }
 
-        String rvalue = null;
+        String opName = null;
 
-        // first look for a SOAPAction header.
+        // First look for a SOAPAction header.
         // this is what .net uses to identify the operation
 
         MimeHeaders headers = message.getMimeHeaders();
         if (headers != null) {
             String[] actions = headers.getHeader("SOAPAction");
             if (actions != null && actions.length > 0) {
-                rvalue = actions[0];
-                if (rvalue != null && rvalue.equals("\"\"")) {
-                    rvalue = null;
+                opName = actions[0];
+                if (opName != null && opName.equals("\"\"")) {
+                    opName = null;
                 }
             }
         }
 
-        // if that doesn't work then we default to trying the name
+        // If that doesn't work then we default to trying the name
         // of the first child element of the SOAP envelope.
 
-        if (rvalue == null) {
+        if (opName == null) {
             Name name = getName(message);
             if (name != null) {
-                rvalue = name.getLocalName();
+                opName = name.getLocalName();
             }
         }
 
-        return rvalue;
+        return opName;
     }
 
     private Name getName(SOAPMessage message) {
@@ -193,11 +174,11 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
                 if (envelope != null) {
                     SOAPBody body = envelope.getBody();
                     if (body != null) {
-                        Iterator it = body.getChildElements();
+                        Iterator<Node> it = body.getChildElements();
                         while (it.hasNext()) {
-                            Object o = it.next();
-                            if (o instanceof SOAPElement) {
-                                rvalue = ((SOAPElement) o).getElementName();
+                            Node node = it.next();
+                            if (node instanceof SOAPElement) {
+                                rvalue = ((SOAPElement) node).getElementName();
                                 break;
                             }
                         }
@@ -211,21 +192,4 @@ public class WebServicesDelegateImpl implements WebServicesDelegate {
         }
         return rvalue;
     }
-
-    @Override
-    public Object getSOAPMessage(ComponentInvocation inv) {
-        /*
-         * V3 commented getting this from EJBPolicyContextDelegate instead currently getting this from
-         * EjbPolicyContextDelegate which might be OK SOAPMessage soapMessage = null; MessageContext
-         * msgContext = inv.messageContext;
-         *
-         * if (msgContext != null) { if (msgContext instanceof SOAPMessageContext) { SOAPMessageContext smc
-         * = (SOAPMessageContext) msgContext; soapMessage = smc.getMessage(); } } else { soapMessage =
-         * inv.getSOAPMessage(); }
-         *
-         * return soapMessage;
-         */
-        return null;
-    }
-
 }

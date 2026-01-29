@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -847,7 +847,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
 	throws Throwable
     {
 	Object pKeys = super.invokeTargetBeanMethod(method,
-	    inv, inv.ejb, args, null);
+	    inv, inv.ejb, args);
 	return postFind(inv, pKeys, null);
     }
 
@@ -1686,19 +1686,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
             try {
                 //We need to set the context class loader for this
                 //(deamon) thread!!
-                if(System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(myClassLoader);
-                } else {
-                    java.security.AccessController.doPrivileged(
-                            new java.security.PrivilegedAction() {
-                        @Override
-                        public java.lang.Object run() {
-                            currentThread.setContextClassLoader(myClassLoader);
-                            return null;
-                        }
-                    }
-                    );
-                }
+                currentThread.setContextClassLoader(myClassLoader);
 
                 ComponentContext ctx = null;
                 do {
@@ -1724,19 +1712,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
                 synchronized (asyncTaskSemaphore) {
                     addedASyncTask = false;
                 }
-                if(System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(previousClassLoader);
-                } else {
-                    java.security.AccessController.doPrivileged(
-                            new java.security.PrivilegedAction() {
-                        @Override
-                        public java.lang.Object run() {
-                            currentThread.setContextClassLoader(previousClassLoader);
-                            return null;
-                        }
-                    }
-                    );
-                }
+                currentThread.setContextClassLoader(previousClassLoader);
             }
         }
     }
@@ -2820,24 +2796,12 @@ public class EntityContainer extends BaseContainer implements CacheListener {
         public void run() {
             final Thread currentThread = Thread.currentThread();
             final ClassLoader previousClassLoader =
-                currentThread.getContextClassLoader();
+                    currentThread.getContextClassLoader();
             final ClassLoader myClassLoader = loader;
 
             try {
-            //We need to set the context class loader for this (deamon) thread!!
-                if(System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(myClassLoader);
-                } else {
-                    java.security.AccessController.doPrivileged(
-                            new java.security.PrivilegedAction() {
-                        @Override
-                        public java.lang.Object run() {
-                            currentThread.setContextClassLoader(myClassLoader);
-                            return null;
-                        }
-                    }
-                    );
-                }
+                //We need to set the context class loader for this (deamon) thread!!
+                currentThread.setContextClassLoader(myClassLoader);
 
                 ArrayList localKeys = null;
                 do {
@@ -2852,7 +2816,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
                     }
 
                     int maxIndex = localKeys.size();
-                    for (int i=0; i<maxIndex; i++) {
+                    for (int i = 0; i < maxIndex; i++) {
                         doCleanup(localKeys.get(i));
                     }
                 } while (true);
@@ -2863,19 +2827,7 @@ public class EntityContainer extends BaseContainer implements CacheListener {
                 synchronized (lock) {
                     addedTask = false;
                 }
-                if(System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(previousClassLoader);
-                } else {
-                    java.security.AccessController.doPrivileged(
-                            new java.security.PrivilegedAction() {
-                        @Override
-                        public java.lang.Object run() {
-                            currentThread.setContextClassLoader(previousClassLoader);
-                            return null;
-                        }
-                    }
-                    );
-                }
+                currentThread.setContextClassLoader(previousClassLoader);
             }
         }
 

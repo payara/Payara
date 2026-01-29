@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,11 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.iiop.security;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Hashtable;
 
 /**
@@ -60,13 +58,7 @@ public class ConnectionExecutionContext {
 
     public static final String IIOP_CLIENT_PER_THREAD_FLAG = "com.sun.appserv.iiopclient.perthreadauth";
 
-    private static final boolean isPerThreadAuth = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
-        @Override
-        public Boolean run() {
-            return Boolean.valueOf(Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG));
-        }
-
-    });
+    private static final boolean isPerThreadAuth = Boolean.getBoolean(IIOP_CLIENT_PER_THREAD_FLAG);
 
     private static final ThreadLocal<Hashtable<String, Object>> currentContext = isPerThreadAuth ? new ThreadLocal<>()
             : new InheritableThreadLocal<>();

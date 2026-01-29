@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,16 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2024] Payara Foundation and/or affiliates
+// Portions Copyright [2024] Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.deployment.common;
 
-import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.security.common.Role;
 
+import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This interface defines the protocol used by the DOL to access the role
@@ -72,20 +76,20 @@ public interface SecurityRoleMapper {
     /**
      * @return an iterator on all the assigned roles
      */
-    Iterator getRoles();
+    Iterator<String> getRoles();
     
     /**
      * @rturns an enumeration of Principals assigned to the given role
      * @param The Role to which the principals are assigned to.
      */
-    Enumeration getUsersAssignedTo(Role r);
+    Enumeration<? extends Principal> getUsersAssignedTo(Role r);
     
     
     /**
      * Returns an enumeration of Groups assigned to the given role
      * @param The Role to which the groups are assigned to.
      */
-    Enumeration getGroupsAssignedTo(Role r);
+    Enumeration<? extends Principal> getGroupsAssignedTo(Role r);
     
     /**
      * Assigns a Principal to the specified role.
@@ -112,5 +116,38 @@ public interface SecurityRoleMapper {
     /*
      * @Map a map of roles to the corresponding subjects
      */
-    Map getRoleToSubjectMapping();
-}
+    Map<String, Subject> getRoleToSubjectMapping();
+
+    /**
+     *
+     * @return
+     */
+    Map<String, Set<String>> getGroupToRolesMapping();
+
+
+    /**
+     *
+     * @return
+     */
+        Map<String, Set<String>> getCallerToRolesMapping();
+
+    /**
+     *
+     * @return
+     */
+    boolean isDefaultPrincipalToRoleMapping();
+
+    /**
+     * Extracts the groups from the GlassFish specific and potential other unknown principals.
+     *
+     * @param subject container for finding groups, may be null
+     * @return a list of (non-mapped) groups
+     */
+    Set<String> getGroups(Subject subject);
+
+    /**
+     *
+     * @param subject
+     * @return
+     */
+    Principal getCallerPrincipal(Subject subject);}

@@ -3,7 +3,7 @@
   ~
   ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+  ~  Copyright (c) [2023-2024] Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~  The contents of this file are subject to the terms of either the GNU
   ~  General Public License Version 2 only ("GPL") or the Common Development
@@ -15,7 +15,7 @@
   ~  language governing permissions and limitations under the License.
   ~
   ~  When distributing the software, include this License Header Notice in each
-  ~  file and include the License file at glassfish/legal/LICENSE.txt.
+  ~  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
   ~
   ~  GPL Classpath Exception:
   ~  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <name>Payara Samples - OpenTelemetry</name>
@@ -60,6 +60,28 @@
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
         </dependency>
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- End of temporary dependencies -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>

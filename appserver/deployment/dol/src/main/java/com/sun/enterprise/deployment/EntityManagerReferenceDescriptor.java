@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Copyright [2020] Payara Foundation and/or affiliates
+// Copyright 2020-2025 Payara Foundation and/or affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.deployment;
 
@@ -73,6 +74,10 @@ public class EntityManagerReferenceDescriptor extends EnvironmentProperty implem
     }
 
     public EntityManagerReferenceDescriptor() {}
+
+    public EntityManagerReferenceDescriptor(String unitName) {
+        this.unitName = unitName;
+    }
 
     @Override
     public void setUnitName(String unitName) {

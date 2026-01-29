@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2024] Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.enterprise.security.acl;
 
@@ -45,6 +47,7 @@ import static com.sun.enterprise.security.common.AppservAccessController.privile
 import static com.sun.logging.LogDomains.SECURITY_LOGGER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -62,6 +65,7 @@ import java.util.logging.Logger;
 
 import javax.security.auth.Subject;
 
+import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
@@ -69,7 +73,7 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+
 import org.glassfish.security.common.Role;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
@@ -77,6 +81,8 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.logging.LogDomains;
+import org.glassfish.security.common.UserNameAndPassword;
+import org.glassfish.security.common.UserPrincipal;
 
 /**
  * This class maintains a mapping of users and groups to application specific roles.
@@ -154,8 +160,8 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
             Enumeration<Principal> users = r.getUsersAssignedTo(new Role(role));
             Set<Principal> usersToRole = new HashSet<Principal>();
             for (; users.hasMoreElements();) {
-                PrincipalImpl gp = (PrincipalImpl) users.nextElement();
-                usersToRole.add(new PrincipalImpl(gp.getName()));
+                UserPrincipal gp = (UserPrincipal) users.nextElement();
+                usersToRole.add(new UserNameAndPassword(gp.getName()));
                 addRoleToPrincipal(gp, role);
             }
             this.roleToPrincipal.put(role, usersToRole);
@@ -275,6 +281,73 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
             return defaultRTSM;
         }
         return roleToSubject;
+    }
+
+    @Override
+    public Map<String, Set<String>> getGroupToRolesMapping() {
+        Map<String, Set<String>> groupToRoles = new HashMap<>();
+
+        for (Map.Entry<String, Subject> roleToSubject : getRoleToSubjectMapping().entrySet()) {
+            for (String group : getGroups(roleToSubject.getValue())) {
+                groupToRoles.computeIfAbsent(group, g -> new HashSet<>())
+                        .add(roleToSubject.getKey());
+            }
+        }
+
+        return groupToRoles;
+    }
+
+    @Override
+    public Map<String, Set<String>> getCallerToRolesMapping() {
+        Map<String, Set<String>> callerToRoles = new HashMap<>();
+
+        for (Map.Entry<String, Subject> roleToSubject : getRoleToSubjectMapping().entrySet()) {
+            for (String callerName : getCallerPrincipalNames(roleToSubject.getValue())) {
+                callerToRoles.computeIfAbsent(callerName, g -> new HashSet<>())
+                        .add(roleToSubject.getKey());
+            }
+        }
+
+        return callerToRoles;
+    }
+
+    @Override
+    public boolean isDefaultPrincipalToRoleMapping() {
+        return defaultP2RMappingClassName != null;
+    }
+
+    @Override
+    public Set<String> getGroups(Subject subject) {
+        return
+                subject.getPrincipals()
+                        .stream()
+                        .filter(e -> e instanceof Group)
+                        .map(Principal::getName)
+                        .collect(toSet());
+    }
+
+    @Override
+    public Principal getCallerPrincipal(Subject subject) {
+        return
+                subject.getPublicCredentials()
+                        .stream()
+                        .filter(DistinguishedPrincipalCredential.class::isInstance)
+                        .map(Principal.class::cast)
+                        .findAny()
+                        .orElse(subject.getPrincipals()
+                                .stream()
+                                .filter(UserPrincipal.class::isInstance)
+                                .findAny()
+                                .orElse(null));
+    }
+
+    private Set<String> getCallerPrincipalNames(Subject subject) {
+        return
+                subject.getPrincipals()
+                        .stream()
+                        .filter(UserPrincipal.class::isInstance)
+                        .map(Principal::getName)
+                        .collect(toSet());
     }
 
     // The method that does the work for assignRole().

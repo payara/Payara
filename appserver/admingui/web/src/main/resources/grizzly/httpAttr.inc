@@ -9,12 +9,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates.] -->
 
 <!-- grizzly/httpAttr.inc -->
 
@@ -229,10 +229,6 @@
 
         <sun:property id="chunking"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Chunking}" helpText="$resource{i18n_web.http.ChunkingHelp}" >
             <sun:checkbox id="chunkingEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['chunkingEnabled']}" selectedValue="true" />
-        </sun:property>
-
-        <sun:property id="XpoweredBy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.XpoweredBy}" helpText="$resource{i18n_web.http.XpoweredByHelp}" >
-            <sun:checkbox id="xpoweredByEnabled" selected="#{pageSession.httpMap['xpoweredBy']}" selectedValue="true" />
         </sun:property>
     
         <sun:property id="ServerHeader"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.ServerHeader}" helpText="$resource{i18n_web.http.ServerHeaderHelp}" >

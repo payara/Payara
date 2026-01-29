@@ -4,7 +4,7 @@ NAME
        add-library - adds one or more library JAR files to GlassFish Server
 
 SYNOPSIS
-           add-library [--help] [--type={common|ext|app}] [--upload={false|true}]
+           add-library [--help] [--type={common|ext|app|war}] [--upload={false|true}]
 
            library-file-path [library-file-path ... ]
 
@@ -55,6 +55,10 @@ OPTIONS
            app
                Adds the library files to the application-specific class loader
                directory, domain-dir/lib/applibs.
+
+           war
+               Adds the library files to the war-packaged class loader directory,
+               domain-dir/lib/warlibs.
 
            For more information about these directories, see "Class Loaders"
            in Oracle GlassFish Server Application Development Guide.

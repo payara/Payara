@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -73,14 +73,16 @@ public class JwtPublicKeyStore {
     private final Config config;
     private final Supplier<Optional<String>> cacheSupplier;
     private final Duration defaultCacheTTL;
+    private final Duration retainOnErrorDuration;
     private String keyLocation = "/publicKey.pem";
 
     /**
      * @param defaultCacheTTL Public key cache TTL 
      */
-    public JwtPublicKeyStore(Duration defaultCacheTTL) {
+    public JwtPublicKeyStore(Duration defaultCacheTTL, Duration retainOnErrorDuration) {
         this.config = ConfigProvider.getConfig();
         this.defaultCacheTTL = defaultCacheTTL;
+        this.retainOnErrorDuration = retainOnErrorDuration;
         this.cacheSupplier = new KeyLoadingCache(this::readRawPublicKey)::get;
     }
 
@@ -88,8 +90,8 @@ public class JwtPublicKeyStore {
      * @param defaultCacheTTL Public key cache TTL
      * @param keyLocation location of the public key
      */
-    public JwtPublicKeyStore(Duration defaultCacheTTL, Optional<String> keyLocation) {
-        this(defaultCacheTTL);
+    public JwtPublicKeyStore(Duration defaultCacheTTL, Duration retainOnErrorDuration, Optional<String> keyLocation) {
+        this(defaultCacheTTL, retainOnErrorDuration);
         this.keyLocation = keyLocation.orElse(this.keyLocation);
     }
 
@@ -106,20 +108,20 @@ public class JwtPublicKeyStore {
     }
     
     private CacheableString readRawPublicKey() {
-        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL);
+        CacheableString publicKey = JwtKeyStoreUtils.readKeyFromLocation(keyLocation, defaultCacheTTL, retainOnErrorDuration);
         
         if (!publicKey.isPresent()) {
             publicKey = readMPEmbeddedPublicKey();
         }
         if (!publicKey.isPresent()) {
-            publicKey = JwtKeyStoreUtils.readMPKeyFromLocation(config, VERIFIER_PUBLIC_KEY_LOCATION, defaultCacheTTL);
+            publicKey = JwtKeyStoreUtils.readMPKeyFromLocation(config, VERIFIER_PUBLIC_KEY_LOCATION, defaultCacheTTL, retainOnErrorDuration);
         }
         return publicKey;
     }
 
     private CacheableString readMPEmbeddedPublicKey() {
         String publicKey = config.getOptionalValue(VERIFIER_PUBLIC_KEY, String.class).orElse(null);
-        return CacheableString.from(publicKey, defaultCacheTTL);
+        return CacheableString.from(publicKey, defaultCacheTTL, retainOnErrorDuration);
     }
 
     private PublicKey createPublicKey(String key, String keyID) {

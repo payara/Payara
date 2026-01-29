@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -51,6 +51,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Negative;
+import jakarta.validation.constraints.NegativeOrZero;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.DELETE;
@@ -117,10 +129,13 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
     private Map<Class<? extends Annotation>, VisitorFunction<AnnotationModel, E>> annotationVisitor;
     private Map<Class<? extends Annotation>, List<Class<? extends Annotation>>> annotationAlternatives;
 
-    public OpenApiWalker(OpenAPI api, Map<String, Type> allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader) {
+    private final boolean scanBeanValidation;
+
+    public OpenApiWalker(OpenAPI api, Map<String, Type> allTypes, Set<Type> allowedTypes, ClassLoader appClassLoader, boolean scanBeanValidation) {
         this.allowedTypes = new TreeSet<>(Comparator.comparing(Type::getName, String::compareTo));
         this.allowedTypes.addAll(allowedTypes);
         this.context = new OpenApiContext(allTypes, this.allowedTypes, appClassLoader, api);
+        this.scanBeanValidation = scanBeanValidation;
     }
 
     @Override
@@ -262,6 +277,21 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
             // Visit Schema objects
             annotationVisitor.put(Schema.class, visitor::visitSchema);
             annotationVisitor.put(XmlRootElement.class, visitor::visitSchema);
+
+            // Bean Validation annotations
+            if (scanBeanValidation) {
+                annotationVisitor.put(NotEmpty.class, visitor::visitNotEmpty);
+                annotationVisitor.put(NotBlank.class, visitor::visitNotBlank);
+                annotationVisitor.put(Size.class, visitor::visitSize);
+                annotationVisitor.put(DecimalMax.class, visitor::visitDecimalMax);
+                annotationVisitor.put(DecimalMin.class, visitor::visitDecimalMin);
+                annotationVisitor.put(Max.class, visitor::visitMax);
+                annotationVisitor.put(Min.class, visitor::visitMin);
+                annotationVisitor.put(Negative.class, visitor::visitNegative);
+                annotationVisitor.put(NegativeOrZero.class, visitor::visitNegativeOrZero);
+                annotationVisitor.put(Positive.class, visitor::visitPositive);
+                annotationVisitor.put(PositiveOrZero.class, visitor::visitPositiveOrZero);
+            }
 
             // All other OpenAPI annotations
             annotationVisitor.put(Server.class, visitor::visitServer);

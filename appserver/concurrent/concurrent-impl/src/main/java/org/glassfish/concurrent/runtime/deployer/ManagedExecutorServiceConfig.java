@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates
 package org.glassfish.concurrent.runtime.deployer;
 
 import org.glassfish.concurrent.config.ManagedExecutorService;
@@ -50,12 +50,13 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
     private int hungAfterSeconds;
     private boolean longRunningTasks;
     private boolean useForkJoinPool;
+    private boolean useVirtualThread;
     private int threadPriority;
     private int corePoolSize;
     private long keepAliveSeconds;
     private int maximumPoolSize;
     private int taskQueueCapacity;
-    private long threadLifeTimeSeconds;
+    private int threadLifeTimeSeconds;
     private String context;
 
     public ManagedExecutorServiceConfig(ManagedExecutorService config) {
@@ -63,12 +64,13 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
         useForkJoinPool = Boolean.valueOf(config.getUseForkJoinPool());
+        useVirtualThread = Boolean.valueOf(config.getUseVirtualThreads());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
         keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
         maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
         taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
-        threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
+        threadLifeTimeSeconds = parseInt(config.getThreadLifetimeSeconds(), 0);
         context = config.getContext();
     }
 
@@ -100,12 +102,16 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         return taskQueueCapacity;
     }
 
-    public long getThreadLifeTimeSeconds() {
+    public int getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
     }
     
     public boolean getUseForkJoinPool() {
         return useForkJoinPool;
+    }
+
+    public boolean getUseVirtualThread() {
+        return useVirtualThread;
     }
 
     public String getContext() {

@@ -11,7 +11,7 @@
  *     language governing permissions and limitations under the License.
  * 
  *     When distributing the software, include this License Header Notice in each
- *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  * 
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -287,61 +287,7 @@ public class PayaraRestApiHandlers {
           }
           handlerCtx.setOutputValue("result", result);
     }
-    
-    /**
-     * Gets a map of components with CDI dev mode status
-     * @param handlerCtx 
-     */
-    @Handler(id = "py.isCDIDevMode",
-        input = {
-            @HandlerInput(name = "appName", type = String.class, required = true),
-            @HandlerInput(name = "rowList", type = java.util.List.class, required = true)},
-        output = {
-            @HandlerOutput(name = "result", type = java.util.Map.class)})
-    public static void isCDIDevMode(HandlerContext handlerCtx) {
-        Map result = new HashMap();
-        try{
-            String appName = (String) handlerCtx.getInputValue("appName");
-            String encodedAppName = URLEncoder.encode(appName, "UTF-8");
-            List rowList = (List) handlerCtx.getInputValue("rowList");
-            for(Object row : rowList) {
-                Map rowMap = (Map) row;
-                boolean enabled = false;
-                String componentName = (String) rowMap.get("name");
-                String encodedComponentName = URLEncoder.encode(componentName, "UTF-8");
-                result.put(componentName, false);
-                if(!((String)rowMap.get("sniffers")).contains("cdi")){
-                    continue;
-                }
-                
-                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + encodedAppName + "/property";
-                Map attrMap = Collections.singletonMap("componentname", encodedComponentName);
-                Map payaraEndpointDataMap = RestUtil.restRequest(endpoint, attrMap, "GET", null, true, false);
-                Map payaraEndpointsExtraProps = ((Map) ((Map) payaraEndpointDataMap.get("data")).get("extraProperties"));
-                List<Map> properties = (List<Map>)payaraEndpointsExtraProps.get("properties");
-                for (Map property : properties) {
-                    if (ServerTags.CDI_DEV_MODE_ENABLED_PROP.equals(property.get("name"))
-                            && Boolean.parseBoolean((String) property.get("value"))) {
-                        result.put(componentName, true);
-                        enabled = true;
-                        break;
-                    }
-                }
-                if (!enabled) {
-                    // constant inlined because we cannot transitively depend on Faces 4, which weld-integration would bring
-                    result.put(componentName, Boolean.getBoolean("org.jboss.weld.development"));
-                }
-            }
 
-          }catch(Exception ex){
-            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.isCDIDevMode"), ex.getLocalizedMessage()});
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-                ex.printStackTrace();
-            }
-          }
-          handlerCtx.setOutputValue("result", result);
-    }
-    
     /**
      * Sets the successful command message to be displayed
      * @param handlerCtx 

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -492,8 +492,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("JdbcResource", "delete-jdbc-resource");
             put("JaccProvider", "delete-jacc-provider");
 //            put("JmsHost", "delete-jms-host");
-            put("LbConfig", "delete-http-lb-config");
-            put("LoadBalancer", "delete-http-lb");
             put("NetworkListener", "delete-network-listener");
             put("Profiler", "delete-profiler");
             put("Protocol", "delete-protocol");
@@ -532,8 +530,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("ListJdbcConnectionPool", "create-jdbc-connection-pool");
             put("ListJdbcResource", "create-jdbc-resource");
             put("ListJmsHost", "create-jms-host");
-            put("ListLbConfig", "create-http-lb-config");
-            put("ListLoadBalancer", "create-http-lb");
             put("ListMailResource", "create-javamail-resource");
             put("ListMessageSecurityConfig", "create-message-security-provider");
             put("ListNetworkListener", "create-network-listener");

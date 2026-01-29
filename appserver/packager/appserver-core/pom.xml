@@ -17,7 +17,7 @@
  file and include the License.
 
  When distributing the software, include this License Header Notice in each
- file and include the License file at glassfish/legal/LICENSE.txt.
+ file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
  GPL Classpath Exception:
  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
     <artifactId>appserver-core</artifactId>
     <name>Payara Appserver Core Modules</name>
@@ -176,11 +176,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.security</groupId>
-            <artifactId>jaspic.provider.framework</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>libpam4j-repackaged</artifactId>
             <version>${project.version}</version>
@@ -232,6 +227,11 @@
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>jakarta-ee9-shim</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>jakarta-ee11-shim</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -289,6 +289,10 @@
         <dependency>
             <groupId>jakarta.jws</groupId>
             <artifactId>jakarta.jws-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-el-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

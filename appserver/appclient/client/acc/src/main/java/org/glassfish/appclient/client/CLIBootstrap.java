@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  * 
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  * 
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or affiliates
+// Portions Copyright 2018-2025 Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client;
 
@@ -45,14 +45,17 @@ import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.OS;
 import org.glassfish.appclient.client.acc.UserError;
+import org.glassfish.appclient.common.ClassPathUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Objects.nonNull;
@@ -172,6 +175,13 @@ public class CLIBootstrap {
         }
     }
 
+    static String quoteEscapedArgument(String string) {
+        if (!OS.isWindows()) {
+            string = string.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$").replace("`", "\\`");
+        }
+        return "\"" + string + "\"";
+    }
+
     /**
      * Replaces commas in an argument value (which can confuse the ACC agent argument parsing because shells strip out
      * double-quotes) with a special sequence.
@@ -198,7 +208,10 @@ public class CLIBootstrap {
          * The pattern matches a quoted string (double quotes around a string containing no double quote) or a non-quoted string
          * (a string containing no white space or quotes).
          */
-        Pattern argPattern = Pattern.compile("\"([^\"]+)\"|([^\"\\s]+)");
+        final String escapedDoubleQuoteRegex = "?:(?<!\\\\)(?:(?:\\\\\\\\)*\\\\)\"";
+        Pattern argPattern = Pattern.compile(
+                "\"((" + escapedDoubleQuoteRegex + "|[^\"])*)\""
+                        + "|((" + escapedDoubleQuoteRegex + "|[^\"\\s])+)");
 
         Matcher matcher = argPattern.matcher(inputArgs);
         List<String> argList = new ArrayList<String>();
@@ -238,7 +251,7 @@ public class CLIBootstrap {
         jvmPropertySettings = new JVMOption("-D.*", userVMArgs.evJVMPropertySettings);
         jvmValuedOptions = new JVMValuedOption(JVM_VALUED_OPTIONS_PATTERN, userVMArgs.evJVMValuedOptions);
         otherJVMOptions = new JVMOption("-.*", userVMArgs.evOtherJVMOptions);
-        arguments = new CommandLineElement(".*", Pattern.DOTALL);
+        arguments = new CommandLineArgument(".*", Pattern.DOTALL);
 
         initCommandLineElements();
     }
@@ -268,8 +281,6 @@ public class CLIBootstrap {
                 jvmValuedOptions,
                 jvmPropertySettings,
                 otherJVMOptions,
-                accUnvaluedOptions,
-                accValuedOptions,
                 jvmMainSetting,
                 arguments
         };
@@ -492,6 +503,21 @@ public class CLIBootstrap {
         }
     }
 
+    class CommandLineArgument extends CommandLineElement {
+        CommandLineArgument(String patternString, int flags) {
+            super(patternString, flags);
+        }
+        @Override
+        StringBuilder format(final StringBuilder commandLine,
+                             final boolean useQuotes, final String nextArg) {
+            if (commandLine.length() > 0) {
+                commandLine.append(' ');
+            }
+            commandLine.append((useQuotes ? quoteEscapedArgument(nextArg) : nextArg));
+            return commandLine;
+        }
+    }
+
     /**
      * A command-line option (an element which starts with "-").
      */
@@ -699,6 +725,15 @@ public class CLIBootstrap {
         }
 
         @Override
+        boolean matches(String element) {
+            /*
+             * For backward compatibility, the -client element can appear multiple times with the last appearance overriding earlier
+             * ones.
+             */
+            return ((!isSet()) || ((isClientSetting() && element.equals("-client")))) && super.matches(element);
+        }
+
+        @Override
         int processValue(String[] args, int slot) throws UserError {
             /*
              * We only care about the most recent setting.
@@ -732,6 +767,12 @@ public class CLIBootstrap {
                         if (path.endsWith(".ear")) {
                             introducer = "-jar";
                             values.set(values.size() - 1, gfInfo.agentJarPath());
+                        } else if (path.endsWith(".jar")) {
+                            introducer = null;
+                            values.set(values.size() - 1, "-classpath");
+                            values.add(gfInfo.agentJarPath() + File.pathSeparatorChar + getClassPathForGfClient(path));
+                            String mainClass = ClassPathUtils.getMainClass(clientSpec);
+                            values.add(mainClass == null ? "" : mainClass);
                         }
                     }
                     return result;
@@ -749,6 +790,16 @@ public class CLIBootstrap {
 
             }
         }
+
+        private String getClassPathForGfClient(String clientJarPath) {
+            URL[] classpath = ClassPathUtils.getJavaClassPathForAppClient();
+            if (classpath.length == 0) {
+                return clientJarPath;
+            }
+            return clientJarPath + File.pathSeparator + Stream.of(classpath).map(ClassPathUtils::convertToString)
+                    .collect(Collectors.joining(File.pathSeparator));
+        }
+
 
         @Override
         boolean format(final StringBuilder commandLine) {
@@ -839,15 +890,15 @@ public class CLIBootstrap {
      * @param command
      */
     private void addProperties(final StringBuilder command) {
-        command.append(' ')
-               .append(INSTALL_ROOT_PROPERTY_EXPR).append(quote(gfInfo.home().getAbsolutePath()))
-               .append(' ')
-               .append(SECURITY_POLICY_PROPERTY_EXPR).append(quote(gfInfo.securityPolicy().getAbsolutePath()))
-               .append(' ')
-               .append(SYSTEM_CLASS_LOADER_PROPERTY_EXPR)
-               .append(' ')
-               .append(SECURITY_AUTH_LOGIN_CONFIG_PROPERTY_EXPR).append(quote(gfInfo.loginConfig().getAbsolutePath()));
-
+        command.append(' ').append("-Dorg.glassfish.gmbal.no.multipleUpperBoundsException=true");
+        command.append(' ').append("--add-opens=java.base/java.lang=ALL-UNNAMED");
+        command.append(' ').append("--add-opens=java.base/java.io=ALL-UNNAMED");
+        command.append(' ').append(INSTALL_ROOT_PROPERTY_EXPR).append(quote(gfInfo.home().getAbsolutePath()));
+        command.append(' ').append(SECURITY_POLICY_PROPERTY_EXPR).append(quote(gfInfo.securityPolicy().getAbsolutePath()));
+        command.append(' ').append("-classpath").append(' ').append(gfInfo.agentJarPath()).append(File.pathSeparatorChar).append('.');
+        command.append(' ').append(SYSTEM_CLASS_LOADER_PROPERTY_EXPR);
+        command.append(' ').append("-Xshare:off");
+        command.append(' ').append(SECURITY_AUTH_LOGIN_CONFIG_PROPERTY_EXPR).append(quote(gfInfo.loginConfig().getAbsolutePath()));
     }
 
     private boolean processCommandElement(final StringBuilder command, final CommandLineElement e, final boolean needSep) {
@@ -1071,7 +1122,8 @@ public class CLIBootstrap {
             for (int i = 0; i < envVarJVMArgs.length;) {
                 boolean isMatched = false;
                 for (CommandLineElement commandLineElement : evElements) {
-                    if (isMatched = commandLineElement.matches(envVarJVMArgs[i])) {
+                    isMatched = commandLineElement.matches(envVarJVMArgs[i]);
+                    if (isMatched) {
                         i = commandLineElement.processValue(envVarJVMArgs, i);
                         break;
                     }

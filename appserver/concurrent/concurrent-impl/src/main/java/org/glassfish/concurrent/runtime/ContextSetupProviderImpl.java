@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -49,12 +49,11 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
-import fish.payara.opentracing.propagation.MapToTextMap;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
-import org.glassfish.enterprise.concurrent.spi.ContextHandle;
-import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
+import org.glassfish.concurro.spi.ContextHandle;
+import org.glassfish.concurro.spi.ContextSetupProvider;
 import org.glassfish.internal.deployment.Deployment;
 
 import jakarta.enterprise.concurrent.ContextService;
@@ -71,12 +70,9 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.notification.requesttracing.RequestTraceSpanContext;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.Tracer.SpanBuilder;
-import io.opentracing.propagation.Format;
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -317,7 +313,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         if (stuckThreads != null) {
-            stuckThreads.registerThread(Thread.currentThread().getId());
+            stuckThreads.registerThread(Thread.currentThread().threadId());
         }
 
         // execute thread contexts snapshots to begin
@@ -408,7 +404,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             requestTracing.endTrace();
         }
         if (stuckThreads != null) {
-            stuckThreads.deregisterThread(Thread.currentThread().getId());
+            stuckThreads.deregisterThread(Thread.currentThread().threadId());
         }
     }
 

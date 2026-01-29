@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,15 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.appclient;
 
 
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.jaspic.AuthMessagePolicy;
-import com.sun.enterprise.security.jaspic.config.ConfigParser;
-import com.sun.enterprise.security.jaspic.config.GFServerConfigProvider;
 import com.sun.logging.LogDomains;
 import jakarta.security.auth.message.MessagePolicy;
 import jakarta.xml.bind.JAXBContext;
@@ -57,6 +54,10 @@ import org.glassfish.appclient.client.acc.config.Property;
 import org.glassfish.appclient.client.acc.config.ProviderConfig;
 import org.glassfish.appclient.client.acc.config.RequestPolicy;
 import org.glassfish.appclient.client.acc.config.ResponsePolicy;
+import org.glassfish.epicyro.config.factory.ConfigParser;
+import org.glassfish.epicyro.config.helper.AuthMessagePolicy;
+import org.glassfish.epicyro.data.AuthModuleConfig;
+import org.glassfish.epicyro.data.AuthModulesLayerConfig;
 import org.glassfish.internal.api.Globals;
 
 import java.io.FileInputStream;
@@ -83,22 +84,22 @@ public class ConfigXMLParser implements ConfigParser {
     private static Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{\\{(.*?)}}|\\$\\{(.*?)}");
 
     // configuration info
-    private Map configMap = new HashMap();
+    private final Map<String, AuthModulesLayerConfig> authModuleLayers = new HashMap<>();
     private Set<String> layersWithDefault = new HashSet<String>();
     private List<MessageSecurityConfig> msgSecConfigs = null;
     private static final String ACC_XML = "glassfish-acc.xml.url";
 
-    public ConfigXMLParser() throws IOException {
+    public ConfigXMLParser() {
     }
 
     public void initialize(List<MessageSecurityConfig> msgConfigs) throws IOException {
         this.msgSecConfigs = msgConfigs;
         if (this.msgSecConfigs != null) {
-            processClientConfigContext(configMap);
+            processClientConfigContext(authModuleLayers);
         }
     }
 
-    private void processClientConfigContext(Map newConfig) throws IOException {
+    private void processClientConfigContext(Map<String, AuthModulesLayerConfig> newConfig) throws IOException {
         // auth-layer
         String intercept = null;
 
@@ -113,16 +114,12 @@ public class ConfigXMLParser implements ConfigParser {
         }
 
     }
-
-    public Map getConfigMap() {
-        return configMap;
-    }
-
+    
     public Set<String> getLayersWithDefault() {
         return layersWithDefault;
     }
 
-    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map newConfig) throws IOException {
+    private String parseInterceptEntry(MessageSecurityConfig msgConfig, Map<String, AuthModulesLayerConfig> newConfig) throws IOException {
         String intercept = null;
         String defaultServerID = null;
         String defaultClientID = null;
@@ -140,19 +137,19 @@ public class ConfigXMLParser implements ConfigParser {
             layersWithDefault.add(intercept);
         }
 
-        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) newConfig.get(intercept);
+        AuthModulesLayerConfig intEntry = newConfig.get(intercept);
         if (intEntry != null) {
             throw new IOException("found multiple MessageSecurityConfig " + "entries with the same auth-layer");
         }
 
         // create new intercept entry
-        intEntry = new GFServerConfigProvider.InterceptEntry(defaultClientID, defaultServerID, null);
+        intEntry = new AuthModulesLayerConfig(defaultClientID, defaultServerID, null);
         newConfig.put(intercept, intEntry);
         return intercept;
     }
 
     // duplicate implementation for clientbeans config
-    private void parseIDEntry(ProviderConfig pConfig, Map newConfig, String intercept) throws IOException {
+    private void parseIDEntry(ProviderConfig pConfig, Map<String, AuthModulesLayerConfig> newConfig, String intercept) throws IOException {
         String id = pConfig.getProviderId();
         String type = pConfig.getProviderType();
         String moduleClass = pConfig.getClassName();
@@ -183,20 +180,21 @@ public class ConfigXMLParser implements ConfigParser {
 
         // create ID entry
 
-        GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy,
-                responsePolicy, options);
+        //GFServerConfigProvider.IDEntry idEntry = new GFServerConfigProvider.IDEntry(type, moduleClass, requestPolicy,
+          //      responsePolicy, options);
+        AuthModuleConfig idEntry = new AuthModuleConfig(type, moduleClass, requestPolicy, responsePolicy, options);
 
-        GFServerConfigProvider.InterceptEntry intEntry = (GFServerConfigProvider.InterceptEntry) newConfig.get(intercept);
+        AuthModulesLayerConfig intEntry = newConfig.get(intercept);
         if (intEntry == null) {
             throw new IOException("intercept entry for " + intercept + " must be specified before ID entries");
         }
 
-        if (intEntry.getIdMap() == null) {
-            intEntry.setIdMap(new HashMap());
+        if (intEntry.getAuthModules() == null) {
+            intEntry.setIdMap(new HashMap<>());
         }
 
         // map id to Intercept
-        intEntry.getIdMap().put(id, idEntry);
+        intEntry.getAuthModules().put(id, idEntry);
     }
 
     private String expand(String rawProperty) {
@@ -269,5 +267,10 @@ public class ConfigXMLParser implements ConfigParser {
         }
         
         this.initialize(msgconfigs);
+    }
+
+    @Override
+    public Map<String, AuthModulesLayerConfig> getAuthModuleLayers() {
+        return this.authModuleLayers;
     }
 }

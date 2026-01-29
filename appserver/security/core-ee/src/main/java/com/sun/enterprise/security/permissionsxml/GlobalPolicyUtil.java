@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -38,39 +38,36 @@
  * holder.
  *
  */
-// Portions Copyright 2018-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2018-2024 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.permissionsxml;
 
-import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.EEGranted;
-import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.EERestricted;
-import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.ServerAllowed;
-import static java.util.logging.Level.FINE;
+import com.sun.logging.LogDomains;
+import jakarta.security.jacc.Policy;
+import jakarta.security.jacc.PolicyContext;
+import jakarta.security.jacc.PolicyFactory;
+import org.glassfish.api.deployment.DeploymentContext;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.CodeSource;
 import java.security.NoSuchAlgorithmException;
 import java.security.Permission;
 import java.security.PermissionCollection;
-import java.security.Policy;
-import java.security.URIParameter;
-import java.security.cert.Certificate;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.glassfish.api.deployment.DeploymentContext;
-
-import com.sun.logging.LogDomains;
-import java.util.Arrays;
-import java.util.List;
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.EEGranted;
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.EERestricted;
+import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.PolicyType.ServerAllowed;
+import static java.util.logging.Level.FINE;
 
 /**
  *
@@ -318,12 +315,11 @@ public class GlobalPolicyUtil {
             logger.fine("Loading policy from " + policyFileURL);
         }
 
-        Policy pf = Policy.getInstance("JavaPolicy", new URIParameter(policyFileURL.toURI()));
+        Policy pf = PolicyFactory.getPolicyFactory().getPolicy("JavaPolicy");
 
         // EJB
-        
-        CodeSource codeSource = new CodeSource(new URL(EJB_TYPE_CODESOURCE), (Certificate[]) null);
-        PermissionCollection pc = pf.getPermissions(codeSource);
+
+        PermissionCollection pc = pf.getPermissionCollection(PolicyContext.get(PolicyContext.SUBJECT));
         policyMap.put(CommponentType.ejb, pc);
         if (logger.isLoggable(FINE)) {
             logger.fine("Loaded EJB policy = " + pc);
@@ -331,26 +327,20 @@ public class GlobalPolicyUtil {
         
         // WEB
 
-        codeSource = new CodeSource(new URL(WEB_TYPE_CODESOURCE), (Certificate[]) null);
-        pc = pf.getPermissions(codeSource);
         policyMap.put(CommponentType.war, pc);
         if (logger.isLoggable(FINE)) {
             logger.fine("Loaded WEB policy =" + pc);
         }
 
         // RAR
-        
-        codeSource = new CodeSource(new URL(RAR_TYPE_CODESOURCE), (Certificate[]) null);
-        pc = pf.getPermissions(codeSource);
+
         policyMap.put(CommponentType.rar, pc);
         if (logger.isLoggable(FINE)) {
             logger.fine("Loaded rar policy =" + pc);
         }
 
         // CAR
-        
-        codeSource = new CodeSource(new URL(CLIENT_TYPE_CODESOURCE), (Certificate[]) null);
-        pc = pf.getPermissions(codeSource);
+
         policyMap.put(CommponentType.car, pc);
         if (logger.isLoggable(FINE)) {
             logger.fine("Loaded car policy =" + pc);
@@ -358,8 +348,6 @@ public class GlobalPolicyUtil {
         
         // EAR
 
-        codeSource = new CodeSource(new URL(EAR_TYPE_CODESOURCE), (Certificate[]) null);
-        pc = pf.getPermissions(codeSource);
         policyMap.put(CommponentType.ear, pc);
         if (logger.isLoggable(FINE)) {
             logger.fine("Loaded ear policy =" + pc);

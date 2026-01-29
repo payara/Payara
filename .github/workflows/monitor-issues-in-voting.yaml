@@ -21,13 +21,11 @@ jobs:
       - name: Notify MS Teams channel
         id: notify-ms-teams
         if: ${{ success() && !steps.select-top-voted-issue.outputs.result == '' }}
-        uses: simbo/msteams-message-card-action@latest
+        uses: tlolkema/simple-teams-message@main
         with:
           webhook: ${{ secrets.COMMUNITY_EVENTS_WEBHOOK_URL }}
-          title: An Enhancement Proposal Issue has been selected the top-voted issue!
-          message: <code>${{ fromJSON(steps.select-top-voted-issue.outputs.result).title }}</code> assigned to <strong>${{ fromJSON(steps.select-top-voted-issue.outputs.result).assignee }}</strong>
-          buttons: |
-            View Issue on GitHub ${{ fromJSON(steps.select-top-voted-issue.outputs.result).url }}
+          message_title: An Enhancement Proposal Issue has been selected the top-voted issue!
+          message_description: "${{ fromJSON(steps.select-top-voted-issue.outputs.result).title }} assigned to ${{ fromJSON(steps.select-top-voted-issue.outputs.result).assignee }}"
   close-forgotten-voting-issues:
     runs-on: ubuntu-latest
     permissions:

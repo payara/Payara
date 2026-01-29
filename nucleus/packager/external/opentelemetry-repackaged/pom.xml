@@ -15,7 +15,7 @@
   ~  language governing permissions and limitations under the License.
   ~
   ~  When distributing the software, include this License Header Notice in each
-  ~  file and include the License file at glassfish/legal/LICENSE.txt.
+  ~  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
   ~
   ~  GPL Classpath Exception:
   ~  The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-external</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>opentelemetry-repackaged</artifactId>
@@ -187,7 +187,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

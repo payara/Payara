@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-invoker-secure-endpoint</artifactId>
@@ -28,13 +28,6 @@
             <groupId>jakarta.ejb</groupId>
             <artifactId>jakarta.ejb-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>fish.payara.samples</groupId>
-            <artifactId>asadmin</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
         </dependency>
     </dependencies>
 </project>

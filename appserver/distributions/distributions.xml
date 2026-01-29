@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -336,8 +336,8 @@
     <target name="create-glassfish-domain" depends="init-glassfish-home, create-glassfish-domain-on-windows, create-glassfish-domain-on-unix"/>
 
     <target name="set-distribution">
-        <echo message="Setting distribution in ${basedir}/target/stage/payara6/glassfish/config/branding/glassfish-version.properties"/>
-        <replace file="${basedir}/target/stage/payara6/glassfish/config/branding/glassfish-version.properties" token="@@@DISTRIBUTION@@@" value="${distribution}"/>
+        <echo message="Setting distribution in ${basedir}/target/stage/payara7/glassfish/config/branding/glassfish-version.properties"/>
+        <replace file="${basedir}/target/stage/payara7/glassfish/config/branding/glassfish-version.properties" token="@@@DISTRIBUTION@@@" value="${distribution}"/>
     </target>
 
     <!--<target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>-->

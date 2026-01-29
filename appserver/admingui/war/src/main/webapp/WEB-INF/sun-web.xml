@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -60,6 +60,6 @@
         <parameter-encoding default-charset="UTF-8" />
     </locale-charset-info>
     <class-loader delegate="true"
-        extra-class-path="WEB-INF/extra/woodstock-webui-jsf-suntheme-${woodstock-jsf-suntheme.version}${enterprise.theme.classifier}.jar:WEB-INF/extra/dojo-ajax-nodemo-${woodstock-dojo-ajax-nodemo.version}.jar:WEB-INF/extra/woodstock-webui-jsf-${woodstock-jsf.version}.jar:WEB-INF/extra/commons-io-${commons-io.version}.jar:WEB-INF/extra/json-${woodstock-json.version}.jar:WEB-INF/extra/prototype-${woodstock-prototype.version}.jar"/>
+        extra-class-path="WEB-INF/extra/woodstock-webui-jsf-suntheme-${woodstock-jsf-suntheme.version}${enterprise.theme.classifier}.jar:WEB-INF/extra/dojo-${woodstock-external.dojo.version}.jar:WEB-INF/extra/woodstock-webui-jsf-${woodstock-jsf.version}.jar:WEB-INF/extra/commons-io-${commons-io.version}.jar:WEB-INF/extra/json-${woodstock-json.version}.jar:WEB-INF/extra/prototype-${woodstock-external.prototype.version}.jar"/>
     <property name="useBundledJsf" value="true"/>
 </sun-web-app>

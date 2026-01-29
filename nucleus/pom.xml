@@ -10,12 +10,12 @@
     and Distribution License("CDDL") (collectively, the "License").  You
     may not use this file except in compliance with the License.  You can
     obtain a copy of the License at
-    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
-    or packager/legal/LICENSE.txt.  See the License for the specific
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
     language governing permissions and limitations under the License.
 
     When distributing the software, include this License Header Notice in each
-    file and include the License file at packager/legal/LICENSE.txt.
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
     GPL Classpath Exception:
     Oracle designates this particular file as subject to the "Classpath"
@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -59,18 +59,18 @@
         <!-- on Hudson and RE, ${build.number} gets replaced by real build ID -->
         <build.id>${build.number}</build.id>
 
-        <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
-        <maven.antrun.plugin.version>3.1.0</maven.antrun.plugin.version>
+        <maven.assembly.plugin.version>3.8.0</maven.assembly.plugin.version>
+        <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.9.0</maven.invoker.plugin.version>
-        <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
+        <maven.invoker.plugin.version>3.9.1</maven.invoker.plugin.version>
+        <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
         <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.9.9</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.12</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -78,20 +78,20 @@
 
         <!-- Other -->
 
-        <hk2.plugin.version>3.0.2</hk2.plugin.version>
+        <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
 
-        <glassfish-corba.version>4.2.4.payara-p3</glassfish-corba.version>
+        <glassfish-corba.version>5.0.0.payara-p1</glassfish-corba.version>
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
 
         <junit.version>4.13.2</junit.version>
-        <testng.version>7.5.1</testng.version>
+        <testng.version>7.12.0</testng.version>
 
         <ldapbp.version>1.0</ldapbp.version>
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
-        <classmate.version>1.7.0</classmate.version>
-        <jboss-logging.version>3.6.1.Final</jboss-logging.version>
+        <classmate.version>1.7.3</classmate.version>
+        <jboss-logging.version>3.6.2.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
 
@@ -99,18 +99,18 @@
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>4.1.2.payara-p1</pfl.version>
+        <pfl.version>5.1.0</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.0.3</gmbal.version>
+        <gmbal.version>4.1.0</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
-        <commons-io.version>2.19.0</commons-io.version>
+        <commons-io.version>2.21.0</commons-io.version>
 
         <mimepull.version>1.10.0</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
-        <org.apache.felix.webconsole.version>5.0.10</org.apache.felix.webconsole.version>
+        <org.apache.felix.webconsole.version>5.0.18</org.apache.felix.webconsole.version>
         <org.apache.felix.eventadmin.version>1.6.4</org.apache.felix.eventadmin.version>
         <org.apache.felix.shell.version>1.4.3</org.apache.felix.shell.version>
         <org.apache.felix.gogo.runtime.version>1.1.6</org.apache.felix.gogo.runtime.version>
@@ -118,7 +118,7 @@
         <org.apache.felix.gogo.command.version>1.1.2</org.apache.felix.gogo.command.version>
         <org.apache.felix.fileinstall.version>3.7.4.payara-p1</org.apache.felix.fileinstall.version>
         <org.apache.felix.configadmin.version>1.9.26</org.apache.felix.configadmin.version>
-        <org.apache.felix.scr.version>2.2.12</org.apache.felix.scr.version>
+        <org.apache.felix.scr.version>2.2.14</org.apache.felix.scr.version>
         <org.apache.felix.bundlerepository.version>2.0.10</org.apache.felix.bundlerepository.version>
 
         <!-- OSGi Promise and Function is required for Apache Felix scr -->
@@ -132,12 +132,12 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>5.17.0</mockito.version>
+        <mockito.version>5.21.0</mockito.version>
 
         <!-- Build -->
         <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
-        <logging-annotation-processor.version>1.9</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.17</command-security-plugin.version>
+        <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
+        <command-security-plugin.version>1.0.20</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.15</ant.version>
@@ -145,14 +145,14 @@
         <javadoc.options>-Xdoclint:none</javadoc.options>
 
         <!-- Debug / analysis -->
-        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
 
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.1.20</kotlin-version>
+        <kotlin-version>2.3.0</kotlin-version>
 
-        <payara.deployment.transformer.version>1.3</payara.deployment.transformer.version>
+        <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>
 
     <modules>
@@ -408,7 +408,7 @@
                             <rules>
                                 <requireJavaVersion>
                                     <version>[${jdk.version},)</version>
-                                    <message>You need at least JDK11</message>
+                                    <message>You need at least JDK21</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.6.3,)</version>
@@ -608,11 +608,6 @@ Parent is ${project.parent}</echo>
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>fish.payara.monitoring-console</groupId>
-                <artifactId>monitoring-console-api</artifactId>
-                <version>${monitoring-console-api.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
                 <version>${osgi-resource-locator.version}</version>
@@ -636,6 +631,11 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.glassfish.gmbal</groupId>
                 <artifactId>gmbal</artifactId>
+                <version>${gmbal.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.gmbal</groupId>
+                <artifactId>gmbal-api-only</artifactId>
                 <version>${gmbal.version}</version>
             </dependency>
             <dependency>

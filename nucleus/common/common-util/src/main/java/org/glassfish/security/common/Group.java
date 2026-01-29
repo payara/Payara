@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,8 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2024 Contributors to the Eclipse Foundation
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
+
 package org.glassfish.security.common;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.Objects;
 
 /**
  * This class implements the EJB concept of a Group. A Group is a privilege attribute that several
@@ -48,15 +55,16 @@ package org.glassfish.security.common;
  *
  * @author Harish Prabandham
  */
-public class Group extends PrincipalImpl {
+public class Group implements Principal, Serializable {
 
     private static final long serialVersionUID = -3087471149205106412L;
+    private final String name;
 
     /**
      * @param name - a name of the group
      */
     public Group(String name) {
-        super(name);
+        this.name = Objects.requireNonNull(name);
     }
 
     @Override
@@ -76,5 +84,10 @@ public class Group extends PrincipalImpl {
     @Override
     public int hashCode() {
         return getName().hashCode();
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

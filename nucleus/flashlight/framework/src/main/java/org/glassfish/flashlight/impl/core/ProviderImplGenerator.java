@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.flashlight.impl.core;
 
@@ -48,6 +48,11 @@ package org.glassfish.flashlight.impl.core;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.flashlight.FlashlightLoggerInfo;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
@@ -58,70 +63,23 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.security.PrivilegedActionException;
-import java.security.ProtectionDomain;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 public class ProviderImplGenerator {
     private static final Logger logger = FlashlightLoggerInfo.getLogger();
 
     public String defineClass(FlashlightProbeProvider provider, Class providerClazz) {
-
         String generatedClassName = provider.getModuleProviderName() + "_Flashlight_" + provider.getModuleName() + "_"
                 + "Probe_" + ((provider.getProbeProviderName() == null) ? providerClazz.getName() : provider.getProbeProviderName());
         generatedClassName = providerClazz.getName() + "_" + generatedClassName;
-
         byte[] classData = generateClassData(provider, providerClazz, generatedClassName);
-
-        ProtectionDomain pd = providerClazz.getProtectionDomain();
-
-        java.lang.reflect.Method jm = null;
-        for (java.lang.reflect.Method jm2 : ClassLoader.class.getDeclaredMethods()) {
-            if (jm2.getName().equals("defineClass") && jm2.getParameterTypes().length == 5) {
-                jm = jm2;
-                break;
-            }
-        }
-
-        if (jm == null)
-            throw new RuntimeException();
-
-        final java.lang.reflect.Method clM = jm;
         try {
-            java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedExceptionAction() {
-                        public java.lang.Object run() throws Exception {
-                            if (!clM.isAccessible()) {
-                                clM.setAccessible(true);
-                            }
-                            return null;
-                        }
-                    });
-
-            clM.invoke(providerClazz.getClassLoader(), generatedClassName, classData, 0,
-                    classData.length, pd);
-
+            MethodHandles.privateLookupIn(providerClazz, MethodHandles.lookup()).defineClass(classData);
             return generatedClassName;
-        }
-        catch (PrivilegedActionException pEx) {
-            throw new RuntimeException(pEx);
-        }
-        catch (IllegalAccessException illegalAccessException) {
+        } catch (IllegalAccessException illegalAccessException) {
             throw new RuntimeException(illegalAccessException);
         }
-        catch (InvocationTargetException invtEx) {
-            throw new RuntimeException(invtEx);
-        }
-
     }
 
     public byte[] generateClassData(FlashlightProbeProvider provider, Class providerClazz, String generatedClassName) {
-
-
         Type classType = Type.getType(providerClazz);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("** classType: " + classType);
@@ -226,16 +184,13 @@ public class ProviderImplGenerator {
                     fos.write(classData);
                     fos.flush();
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
-            }
-            finally {
+            } finally {
                 try {
                     if (fos != null)
                         fos.close();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     // nothing can be done...
                 }
             }

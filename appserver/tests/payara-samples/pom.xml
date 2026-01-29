@@ -14,7 +14,7 @@
  *    language governing permissions and limitations under the License.
  *
  *    When distributing the software, include this License Header Notice in each
- *    file and include the License file at glassfish/legal/LICENSE.txt.
+ *    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *    GPL Classpath Exception:
  *    The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -71,9 +71,12 @@
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
-        <smallrye-config.version>3.10.1</smallrye-config.version>
-        <smallrye-common.version>2.8.0</smallrye-common.version>
+        <smallrye-config.version>3.15.1</smallrye-config.version>
+        <smallrye-common.version>2.15.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
+        <shrinkwrap.version>1.2.6</shrinkwrap.version>
+        <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+        <arquillian.version>1.10.0.Final</arquillian.version>
     </properties>
 
     <modules>
@@ -83,7 +86,6 @@
         can only be serially executed - they change configuration
         that other modules depend on
         -->
-        <module>asadmin</module>
         <module>ejb-invoker-secure-endpoint</module>
         <!-- Can be executed in parallel -->
         <module>samples</module>
@@ -105,7 +107,7 @@
             </activation>
             <properties>
                 <payara.domain.name>domain1</payara.domain.name>
-                <payara.directory.name>payara6</payara.directory.name>
+                <payara.directory.name>payara7</payara.directory.name>
             </properties>
 
             <dependencies>
@@ -299,21 +301,21 @@
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
                 <!-- >= 1.7.0 supports parallel testing -->
-                <version>1.9.1.Final</version>
+                <version>${arquillian.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-bom</artifactId>
-                <version>1.2.6</version>
+                <version>${shrinkwrap.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.shrinkwrap.resolver</groupId>
                 <artifactId>shrinkwrap-resolver-bom</artifactId>
-                <version>3.3.4</version>
+                <version>${shrinkwrap.resolver.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -331,12 +333,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>fish.payara.server.internal.tests</groupId>
-                <artifactId>jacc-provider-repackaged</artifactId>
-                <version>${project.version}</version>
-                <classifier>jakartaee9</classifier>
-            </dependency>
             <!-- JSON Web Token implementation -->
             <dependency>
                 <groupId>com.nimbusds</groupId>
@@ -369,12 +365,6 @@
             </dependency>
 
             <dependency>
-                <groupId>fish.payara.server.internal.extras</groupId>
-                <artifactId>payara-micro-boot</artifactId>
-                <version>${payara.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>fish.payara.server.internal.payara-modules</groupId>
                 <artifactId>notification-core</artifactId>
                 <version>${payara.version}</version>
@@ -389,7 +379,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.27.3</version>
+                <version>3.27.7</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -495,7 +485,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.1</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>

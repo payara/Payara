@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2018-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  *     language governing permissions and limitations under the License.
  *
  *     When distributing the software, include this License Header Notice in each
- *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -50,8 +50,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,14 +61,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.xml.bind.JAXB;
 
-import org.eclipse.microprofile.metrics.Counting;
-import org.eclipse.microprofile.metrics.Gauge;
-import org.eclipse.microprofile.metrics.Metadata;
-import org.eclipse.microprofile.metrics.Metric;
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
-import org.eclipse.microprofile.metrics.MetricUnits;
-import org.eclipse.microprofile.metrics.Timer;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -83,23 +75,18 @@ import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
-import fish.payara.microprofile.metrics.MetricUnitsUtils;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.microprofile.metrics.admin.MetricsServiceConfiguration;
 import fish.payara.microprofile.metrics.exception.NoSuchRegistryException;
 import fish.payara.microprofile.metrics.jmx.MetricsMetadata;
 import fish.payara.microprofile.metrics.jmx.MetricsMetadataConfig;
 import fish.payara.microprofile.metrics.jmx.MetricsMetadataHelper;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.HealthCheckStatsProvider;
-import java.util.logging.Level;
 
 @Service(name = "microprofile-metrics-service")
 @RunLevel(StartupRunLevel.VAL)
-public class MetricsServiceImpl implements MetricsService, ConfigListener, MonitoringDataSource {
+public class MetricsServiceImpl implements MetricsService, ConfigListener {
 
     private static final Logger LOGGER = Logger.getLogger(MetricsService.class.getName());
 
@@ -254,154 +241,6 @@ public class MetricsServiceImpl implements MetricsService, ConfigListener, Monit
             return contextByName.computeIfAbsent(name, key -> new MetricsContextImpl(key));
         }
         return contextByName.get(name);
-    }
-
-    @Override
-    public void collect(MonitoringDataCollector rootCollector) {
-        if (!isEnabled())
-            return;
-        MonitoringDataCollector metricsCollector = rootCollector.in("metric");
-        for (MetricsContextImpl context : contextByName.values()) {
-            processMetadataToAnnotations(context, metricsCollector);
-            String contextName = context.getName();
-            collectRegistry(contextName, context.getBaseRegistry(), metricsCollector);
-            collectRegistry(contextName, context.getVendorRegistry(), metricsCollector);
-            if (!context.isServerContext()) {
-                collectRegistry(contextName, context.getApplicationRegistry(), metricsCollector);
-            }
-        }
-    }
-
-    private void collectRegistry(String contextName, MetricRegistry registry, MonitoringDataCollector collector) {
-
-        // OBS: this way of iterating the metrics in the registry is optimal because of its internal data organisation
-        for (String name : registry.getNames()) {
-            for (Entry<MetricID, Metric> entry : ((MetricRegistryImpl) registry).getMetrics(name).entrySet()) {
-                MetricID metricID = entry.getKey();
-                Metric metric = entry.getValue();
-                try {
-                    MonitoringDataCollector metricCollector = tagCollector(contextName, metricID, collector);
-                    if (metric instanceof HealthCheckStatsProvider
-                            && (!((HealthCheckStatsProvider) metric).isEnabled() || !healthCheckService.isEnabled())) {
-                        continue;
-                    }
-                    if (metric instanceof Counting) {
-                        metricCollector.collect(toName(metricID, "Count"), ((Counting) metric).getCount());
-                    }
-                    if (metric instanceof Timer) {
-                        metricCollector.collect(toName(metricID, "MaxDuration"), ((Timer) metric).getSnapshot().getMax());
-                    }
-                    if (metric instanceof Gauge) { 
-                        Object value = ((Gauge<?>) metric).getValue();
-                        if (value instanceof Number) {
-                            metricCollector.collect(toName(metricID,
-                                    getMetricUnitSuffix(registry.getMetadata(name).unit())), ((Number) value));
-                        }
-                    }
-                } catch (Exception ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to retrieve metric: {0}", metricID);
-                }
-            }
-        }
-    }
-
-    private static void processMetadataToAnnotations(MetricsContextImpl context, MonitoringDataCollector collector) {
-       RegisteredMetric metric = context.pollNewlyRegistered();
-        while (metric != null) {
-            MetricID metricID = metric.id;
-            MetricRegistry registry = context.getOrCreateRegistry(metric.scope);
-            MonitoringDataCollector metricCollector = tagCollector(context.getName(), metricID, collector);
-            Metadata metadata = registry.getMetadata(metricID.getName());
-            String suffix = "Count";
-            String property = "Count";
-            boolean isGauge = metadata.getName() == Gauge.class.getName();
-            if (isGauge) {
-                suffix = getMetricUnitSuffix(metadata.unit());
-                property = "Value";
-            }
-            // Note that by convention an annotation with value 0 done before the series collected any value is considered permanent
-            metricCollector.annotate(toName(metricID, suffix), 0, false,
-                    metadataToAnnotations(context.getName(), metric.scope, metadata, property));
-            metric = context.pollNewlyRegistered();
-        }
-    }
-
-    private static String getMetricUnitSuffix(Optional<String> unit) {
-        if (!unit.isPresent()) {
-            return "";
-        }
-        String value = unit.get();
-        if (MetricUnits.NONE.equalsIgnoreCase(value) || value.isEmpty()) {
-            return "";
-        }
-        return toFirstLetterUpperCase(value);
-    }
-
-    private static String toFirstLetterUpperCase(String value) {
-        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
-    }
-
-    private static String[] metadataToAnnotations(String contextName, String scope, Metadata metadata, String property) {
-        String unit = metadata.unit().orElse(MetricUnits.NONE);
-        return new String[] {
-                "App", contextName, //
-                "Scope", scope, //
-                "Name", metadata.getName(), //
-                "Unit", unit, //
-                "Description", metadata.getDescription(), //
-                "Property", property, //
-                "BaseUnit", MetricUnitsUtils.baseUnit(unit), //
-                "ScaleToBaseUnit", MetricUnitsUtils.scaleToBaseUnit(1L, unit).toString()
-        };
-    }
-
-    private static String toName(MetricID metric, String suffix) {
-        String name = metric.getName();
-        if (name.indexOf(' ') >= 0) { // trying to avoid replace
-            name = name.replace(' ', '_');
-        } else {
-            int dotIndex = name.indexOf('.');
-            if (dotIndex > 0) {
-                name = name.substring(dotIndex + 1);
-            }
-            if (name.indexOf('.') > 0) {
-                String[] words = name.split("\\.");
-                StringBuilder nameBuilder = new StringBuilder();
-                for (String word : words) {
-                    nameBuilder.append(toFirstLetterUpperCase(word));
-                }
-                name += nameBuilder.toString();
-            }
-        }
-        name = toFirstLetterUpperCase(name);
-        return name.endsWith(suffix) || suffix.isEmpty() ? name : name + suffix;
-    }
-
-    private static MonitoringDataCollector tagCollector(String contextName, MetricID metric, MonitoringDataCollector collector) {
-        Map<String, String> tags = metric.getTags();
-        if (tags.isEmpty()) {
-            String name = metric.getName();
-            int dotIndex = name.indexOf('.');
-            if (dotIndex > 0 ) {
-                String firstWord = name.substring(0, dotIndex);
-                return collector.group(firstWord);
-            }
-            return contextName.isEmpty() ? collector : collector.group(contextName);
-        }
-        StringBuilder tag = new StringBuilder();
-        if (!contextName.isEmpty()) {
-            tag.append(contextName).append('_');
-        }
-        for (Entry<String, String> e : metric.getTags().entrySet()) {
-            if (tag.length() > 0) {
-                tag.append('_');
-            }
-            if (!"name".equals(e.getKey())) {
-                tag.append(e.getKey().replace(' ', '_'));
-            }
-            tag.append(e.getValue().replace(' ', '_'));
-        }
-        return collector.group(tag);
     }
 
     private static void checkSystemCpuLoadIssue(MetricsMetadataConfig metadataConfig) {

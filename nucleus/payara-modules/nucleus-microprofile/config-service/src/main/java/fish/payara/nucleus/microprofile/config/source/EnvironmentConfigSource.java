@@ -13,7 +13,7 @@
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at glassfish/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -72,7 +72,7 @@ public class EnvironmentConfigSource implements ConfigSource {
     public String getValue(String propertyName) {
 
         // search environment variables as defined in the spec
-        // https://github.com/eclipse/microprofile-config/blob/master/spec/src/main/asciidoc/configsources.asciidoc
+        // https://github.com/eclipse/microprofile-config/blob/main/spec/src/main/asciidoc/configsources.asciidoc
 
         //Done this way to resolve PAYARA-3064 instead of genenv(propertyname)
         //as windows is case-insensitive but Java is not

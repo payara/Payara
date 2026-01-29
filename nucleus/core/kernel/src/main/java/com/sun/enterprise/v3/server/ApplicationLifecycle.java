@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -38,11 +38,10 @@
  * holder.
  */
 
-// Portions Copyright 2016-2023 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
-import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformer;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
@@ -403,8 +402,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
 
             span.finish();
-
-            transformApplication(context, types, tracing, span);
 
             // containers that are started are not stopped even if
             // the deployment fail, the main reason
@@ -786,61 +783,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return null;
         }
         return new ClassloaderResourceLocatorAdapter(commonClassLoaderService.getCommonClassLoader());
-    }
-
-    private void transformApplication(ExtendedDeploymentContext context, Types types,
-            StructuredDeploymentTracing tracing, SpanSequence span) throws IOException {
-        String transformNS = System.getProperty("fish.payara.deployment.transform.namespace");
-
-        if (Boolean.parseBoolean(transformNS) || transformNS == null) {
-            span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
-
-            Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional;
-            try {
-                jakartaNamespaceDeploymentTransformerOptional = ServiceLoader.load(
-                        JakartaNamespaceDeploymentTransformer.class).findFirst();
-            } catch (NoClassDefFoundError exception) {
-                // ClassNotFoundException gets thrown if we've found a service but couldn't instantiate it
-                logger.log(Level.WARNING,
-                        "Caught exception trying to instantiate a deployment transformer, skipping...",
-                        exception);
-                span.finish();
-                return;
-            }
-
-            if (!jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
-                logger.log(Level.INFO, "No deployment transformer implementation found.");
-                span.finish();
-                return;
-            }
-
-            JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
-                    jakartaNamespaceDeploymentTransformerOptional.get();
-
-            if (types == null) {
-                types = getDeployableTypes(context);
-            }
-
-            if (!jakartaNamespaceDeploymentTransformerService.isJakartaEEApplication(types)) {
-                context.getSource().close();
-
-                // DeploymentException will be thrown here if this fails
-                File output = jakartaNamespaceDeploymentTransformerService.transformApplication(context);
-
-                context.getAppProps().setProperty(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP, Boolean.TRUE.toString());
-                context.setSource((FileArchive) archiveFactory.createArchive(output));
-
-                // reset transient and module data of original deployed archive
-                context.removeTransientAppMetaData(Types.class.getName());
-                context.removeTransientAppMetaData(Parser.class.getName());
-                context.resetModuleMetaData();
-                tracing.register(context);
-
-                // Rescan for the data we just removed
-                getDeployableTypes(context);
-            }
-            span.finish();
-        }
     }
 
     private void notifyLifecycleInterceptorsBefore(final ExtendedDeploymentContext.Phase phase,

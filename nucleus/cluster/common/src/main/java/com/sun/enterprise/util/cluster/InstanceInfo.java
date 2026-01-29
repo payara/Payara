@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
 
-    Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
 
 
  */
@@ -52,6 +52,7 @@ import com.sun.enterprise.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.CommandException;
@@ -156,12 +157,16 @@ public final class InstanceInfo {
 
     public final String getDisplayState() {
         StringBuilder display = new StringBuilder();
-        display.append(isRunning() ?
-            InstanceState.StateType.RUNNING.getDisplayString() :
-            InstanceState.StateType.NOT_RUNNING.getDisplayString());
+        if (isRunning() == null) {
+            display.append(InstanceState.StateType.UNKNOWN.getDisplayString());
+        } else {
+            display.append(Boolean.TRUE.equals(isRunning()) ?
+                    InstanceState.StateType.RUNNING.getDisplayString() :
+                    InstanceState.StateType.NOT_RUNNING.getDisplayString());
+        }
 
         if (ssState == InstanceState.StateType.RESTART_REQUIRED) {
-            if (isRunning()) {
+            if (Boolean.TRUE.equals(isRunning())) {
                 display.append("; ").append(InstanceState.StateType.RESTART_REQUIRED.getDisplayString());
             }
             List<String> failedCmds = stateService.getFailedCommands(name);
@@ -181,7 +186,7 @@ public final class InstanceInfo {
         return state;
     }
 
-    public final boolean isRunning() {
+    public final Boolean isRunning() {
         if (state == null) {
             getFutureResult();
         }
@@ -198,11 +203,20 @@ public final class InstanceInfo {
 
             if ((!instanceLocation.endsWith(res.getServer().getName()))
                     || (res.getReport().getActionExitCode() != ActionReport.ExitCode.SUCCESS)) {
-                uptime = -1;
-                state = NOT_RUNNING;
-                running = false;
-                pid = -1;
-                ssState = stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false);
+                // this can be a timeout
+                if (res.getReport().getMessage().contains("No response")) {
+                    running = null;
+                    state = UNKNOWN;
+                    uptime = -1;
+                    pid = -1;
+                    ssState = stateService.setState(name, InstanceState.StateType.UNKNOWN, false);
+                } else {
+                    uptime = -1;
+                    running = false;
+                    state = NOT_RUNNING;
+                    pid = -1;
+                    ssState = stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false);
+                }
             }
             else {
                 Properties props = res.getReport().getTopMessagePart().getProps();
@@ -226,8 +240,13 @@ public final class InstanceInfo {
                 state = formatTime(uptime);
                 running = true;
             }
-        }
-        catch (Exception e) {
+        } catch (TimeoutException e) {
+            uptime = -1;
+            state = UNKNOWN;
+            ssState = stateService.setState(name, InstanceState.StateType.UNKNOWN, false);
+            running = null;
+            pid = -1;
+        } catch (Exception e) {
             uptime = -1;
             state = NOT_RUNNING;
             ssState = stateService.setState(name, InstanceState.StateType.NOT_RUNNING, false);
@@ -320,8 +339,9 @@ public final class InstanceInfo {
     private final InstanceStateService stateService;
     private final Server svr;
     private int pid;
-    private boolean running;
+    private Boolean running;
     private static final String NOT_RUNNING = Strings.get("ListInstances.NotRunning");
+    private static final String UNKNOWN = Strings.get("ListInstances.Unknown");
     private static final String NAME = Strings.get("ListInstances.name");
     private static final String HOST = Strings.get("ListInstances.host");
     private static final String PORT = Strings.get("ListInstances.port");

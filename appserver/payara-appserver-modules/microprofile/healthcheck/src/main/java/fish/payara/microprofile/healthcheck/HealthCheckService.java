@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2017-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -13,7 +13,7 @@
  *     language governing permissions and limitations under the License.
  *
  *     When distributing the software, include this License Header Notice in each
- *     file and include the License file at glassfish/legal/LICENSE.txt.
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *     GPL Classpath Exception:
  *     The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -45,16 +45,13 @@ import com.sun.enterprise.web.WebContainer;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.LIVENESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.READINESS;
 import static fish.payara.microprofile.healthcheck.HealthCheckType.STARTUP;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
 import static java.util.logging.Level.WARNING;
-import static java.util.stream.Collectors.joining;
 
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -80,7 +77,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
-import org.eclipse.microprofile.health.HealthCheckResponse.Status;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
@@ -95,11 +91,6 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import fish.payara.microprofile.healthcheck.checks.PayaraHealthCheck;
 import fish.payara.microprofile.healthcheck.config.MicroprofileHealthCheckConfiguration;
-import fish.payara.monitoring.collect.MonitoringData;
-import fish.payara.monitoring.collect.MonitoringDataCollector;
-import fish.payara.monitoring.collect.MonitoringDataSource;
-import fish.payara.monitoring.collect.MonitoringWatchCollector;
-import fish.payara.monitoring.collect.MonitoringWatchSource;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.events.PayaraHealthCheckServiceEvents;
 import java.util.Optional;
@@ -114,7 +105,7 @@ import org.glassfish.internal.data.ApplicationInfo;
  */
 @Service(name = "healthcheck-service")
 @RunLevel(StartupRunLevel.VAL)
-public class HealthCheckService implements EventListener, ConfigListener, MonitoringDataSource, MonitoringWatchSource {
+public class HealthCheckService implements EventListener, ConfigListener {
 
     @Inject
     private Events events;
@@ -145,133 +136,6 @@ public class HealthCheckService implements EventListener, ConfigListener, Monito
             events = Globals.getDefaultBaseServiceLocator().getService(Events.class);
         }
         events.register(this);
-    }
-
-    @Override
-    @MonitoringData(ns = "health", intervalSeconds = 12)
-    public void collect(MonitoringDataCollector collector) {
-        Map<String, Set<String>> collected = new HashMap<>();
-        Map<String, List<HealthCheckResponse>> readinessResponsesByAppName = collectChecks(collector, readiness, collected);
-        Map<String, List<HealthCheckResponse>> livenessResponsesByAppName = collectChecks(collector, liveness, collected);
-        Map<String, List<HealthCheckResponse>> startupResponsesByAppName = collectChecks(collector, startup, collected);
-        checksCollected.set(collected);
-        if (!collected.isEmpty()) {
-            List<HealthCheckResponse> overall = new ArrayList<>();
-            overall.addAll(collectJointType(collector, "Readiness", readinessResponsesByAppName));
-            overall.addAll(collectJointType(collector, "Liveness", livenessResponsesByAppName));
-            overall.addAll(collectJointType(collector, "Startup", startupResponsesByAppName));
-            collectUpDown(collector, computeJointState("Overall", overall));
-        }
-        for (String appName : collected.keySet()) {
-            List<HealthCheckResponse> overallByApp = new ArrayList<>();
-            overallByApp.addAll(readinessResponsesByAppName.getOrDefault(appName, emptyList()));
-            overallByApp.addAll(livenessResponsesByAppName.getOrDefault(appName, emptyList()));
-            overallByApp.addAll(startupResponsesByAppName.getOrDefault(appName, emptyList()));
-            collectUpDown(collector.group(appName), computeJointState("Overall", overallByApp));
-        }
-    }
-
-    private static void collectUpDown(MonitoringDataCollector collector, HealthCheckResponse response) {
-        collector.collect(response.getName(), response.getStatus() == Status.UP ? 1 : 0);
-    }
-
-    private static List<HealthCheckResponse> collectJointType(MonitoringDataCollector collector, String type,
-            Map<String, List<HealthCheckResponse>> healthResponsesByAppName) {
-        List<HealthCheckResponse> allForType = new ArrayList<>();
-        for (Entry<String, List<HealthCheckResponse>> e : healthResponsesByAppName.entrySet()) {
-            HealthCheckResponse joint = computeJointState(type, e.getValue());
-            collectUpDown(collector.group(e.getKey()), joint);
-            allForType.addAll(e.getValue());
-        }
-        collectUpDown(collector, computeJointState(type, allForType));
-        return allForType;
-    }
-
-    @Override
-    public void collect(MonitoringWatchCollector collector) {
-        Map<String, Set<String>> collected = checksCollected.get();
-        if (collected != null) {
-            for (Entry<String, Set<String>> e : collected.entrySet()) {
-                String appName = e.getKey();
-                for (String metric : e.getValue()) {
-                    addWatch(collector, appName, metric);
-                }
-                addWatch(collector, appName, "Readiness");
-                addWatch(collector, appName, "Liveness");
-                addWatch(collector, appName, "Startup");
-                addWatch(collector, appName, "Health");
-            }
-            if (!collected.isEmpty()) {
-                addWatch(collector, null, "Readiness");
-                addWatch(collector, null, "Liveness");
-                addWatch(collector, null, "Startup");
-                addWatch(collector, null, "Health");
-            }
-        }
-    }
-
-    private static void addWatch(MonitoringWatchCollector collector, String appName, String metric) {
-        String series = appName == null ? "ns:health " + metric : "ns:health @:" + appName + " " + metric;
-        String watchName = "RAG "+ metric + (appName == null ? "" : " @" + appName);
-        collector.watch(series, watchName, "updown")
-            .red(-1L, 5, false, null, 1, false)
-            .amber(-1L, 1, false, null, 1, false)
-            .green(1L, 1, false, null, 1, false);
-    }
-
-    private Map<String, List<HealthCheckResponse>> collectChecks(MonitoringDataCollector collector,
-            Map<String, Set<HealthCheck>> checks,            Map<String, Set<String>> collected) {
-        Map<String, List<HealthCheckResponse>> statusByApp = new HashMap<>();
-        for (Entry<String, Set<HealthCheck>> entry : checks.entrySet()) {
-            String appName = entry.getKey();
-            MonitoringDataCollector appCollector = collector.group(appName);
-            for (HealthCheck check : entry.getValue()) {
-                HealthCheckResponse response = performHealthCheckInApplicationContext(appName, check);
-                String metric = response.getName();
-                Set<String> appCollected = collected.get(appName);
-                // prevent adding same check more then once, unfortunately we have to run it to find that out
-                if (appCollected == null || !appCollected.contains(metric)) {
-                    statusByApp.computeIfAbsent(appName, key -> new ArrayList<>()).add(response);
-                    collectUpDown(appCollector, response);
-                    if (response.getStatus() == Status.DOWN && response.getData().isPresent()) {
-                        appCollector.annotate(metric, 0L, createAnnotation(response.getData().get()));
-                    }
-                    collected.computeIfAbsent(appName, key -> new HashSet<>()).add(metric);
-                }
-            }
-        }
-        return statusByApp;
-    }
-
-    private static HealthCheckResponse computeJointState(String name, Collection<HealthCheckResponse> responses) {
-        long ups = responses.stream().filter(response -> response.getStatus() == Status.UP).count();
-        if (ups == responses.size()) {
-            return HealthCheckResponse.up(name);
-        }
-        String upNames = responses.stream()
-                .filter(r -> r.getStatus() == Status.UP)
-                .map(r -> r.getName())
-                .collect(joining(","));
-        String downNames = responses.stream()
-                .filter(r -> r.getStatus() == Status.DOWN)
-                .map(r -> r.getName())
-                .collect(joining(","));
-        return HealthCheckResponse.named(name).down()
-                .withData("up", upNames)
-                .withData("down", downNames)
-                .build();
-    }
-
-    private static String[] createAnnotation(Map<String, Object> data) {
-        List<String> attrs = new ArrayList<>();
-        for (Entry<String, Object> e : data.entrySet()) {
-            Object value = e.getValue();
-            if (value instanceof String || value instanceof Number || value instanceof Boolean) {
-                attrs.add(e.getKey());
-                attrs.add(value.toString());
-            }
-        }
-        return attrs.toArray(new String[0]);
     }
 
     @Override

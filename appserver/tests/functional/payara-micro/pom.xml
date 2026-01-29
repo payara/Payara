@@ -2,7 +2,7 @@
 <!--
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2024 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2024-2025 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -14,7 +14,7 @@
  *    language governing permissions and limitations under the License.
  *
  *    When distributing the software, include this License Header Notice in each
- *    file and include the License file at glassfish/legal/LICENSE.txt.
+ *    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  *    GPL Classpath Exception:
  *    The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
         <relativePath>../payara-samples/samples</relativePath>
     </parent>
 
@@ -77,6 +77,7 @@
         <dependency>
             <groupId>fish.payara.server.internal.extras</groupId>
             <artifactId>payara-micro-boot</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -85,7 +86,7 @@
             <id>payara-micro-managed</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-            </activation> 
+            </activation>
         </profile>
         <profile>
             <id>payara-server-remote</id>
@@ -117,12 +118,12 @@
                 </pluginManagement>
             </build>
         </profile>
-        
+
         <profile>
             <id>install-deps</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-            </activation>  
+            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -150,7 +151,7 @@
                         </configuration>
                     </plugin>
                 </plugins>
-            </build>         
+            </build>
         </profile>
     </profiles>
 </project>

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.base.io;
 
+import com.sun.ejb.codegen.RemoteGenerator;
 import com.sun.ejb.containers.BaseContainer;
 import com.sun.ejb.EJBUtils;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
@@ -72,12 +73,10 @@ import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
  *
  * @author Mahesh Kannan
  */
-public class EJBObjectOutputStreamHandler
-    implements GlassFishOutputStreamHandler
-{
+public class EJBObjectOutputStreamHandler implements GlassFishOutputStreamHandler {
     static JavaEEIOUtils _javaEEIOUtils;
 
-    protected static final Logger _ejbLogger =
+    protected static final Logger logger = 
             LogDomains.getLogger(EJBObjectOutputStreamHandler.class, LogDomains.EJB_LOGGER);
 
     static final int EJBID_OFFSET = 0;
@@ -95,6 +94,7 @@ public class EJBObjectOutputStreamHandler
      * This code is needed to serialize non-Serializable objects that
      * can be part of a bean's state. See EJB2.0 section 7.4.1.
      */
+    @Override
     public Object replaceObject(Object obj)
             throws IOException {
         Object result = obj;
@@ -130,25 +130,17 @@ public class EJBObjectOutputStreamHandler
 	    return orbHelper.isORBInitialized() ? Optional.of(orbHelper.getProtocolManager()) : Optional.empty();
     }
 
-    private Serializable getRemoteBusinessObjectFactory
-        (RemoteBusinessWrapperBase remoteBusinessWrapper)
-        throws IOException {
+    private Serializable getRemoteBusinessObjectFactory(RemoteBusinessWrapperBase remoteBusinessWrapper)
+            throws IOException {
         // Create a serializable object with the remote delegate and
         // the name of the client wrapper class.
-        org.omg.CORBA.Object target = (org.omg.CORBA.Object)
-            remoteBusinessWrapper.getStub();
-        return getSerializableEJBReference(
-                target,
-                getProtocolManager().orElse(null),
-                remoteBusinessWrapper.getBusinessInterfaceName()
-        );
+        org.omg.CORBA.Object target = (org.omg.CORBA.Object) remoteBusinessWrapper.getStub();
+        return getSerializableEJBReference(target, getProtocolManager().orElse(null),
+                remoteBusinessWrapper.getBusinessInterfaceName());
     }
 
-    private Serializable getSerializableEJBReference(org.omg.CORBA.Object obj,
-						     ProtocolManager protocolMgr,
-                             String remoteBusinessInterface)
-	throws IOException
-    {
+    private Serializable getSerializableEJBReference(org.omg.CORBA.Object obj, ProtocolManager protocolMgr,
+                                                     String remoteBusinessInterface) throws IOException {
         Serializable result = (Serializable) obj;
         if (protocolMgr != null) {
             try {
@@ -160,13 +152,13 @@ public class EJBObjectOutputStreamHandler
                     int keyLength = Utility.bytesToInt(oid, INSTANCEKEYLEN_OFFSET);
                     if (oid.length == keyLength + INSTANCEKEY_OFFSET) {
                         boolean isHomeReference =
-                            ((keyLength == 1) && (oid[INSTANCEKEY_OFFSET] == HOME_KEY));
+                                ((keyLength == 1) && (oid[INSTANCEKEY_OFFSET] == HOME_KEY));
                         if (isHomeReference) {
                             result = new SerializableS1ASEJBHomeReference(containerId);
                         } else {
                             SerializableS1ASEJBObjectReference serRef =
-                                new SerializableS1ASEJBObjectReference(containerId,
-                                oid, keyLength, remoteBusinessInterface);
+                                    new SerializableS1ASEJBObjectReference(containerId,
+                                            oid, keyLength, remoteBusinessInterface);
                             result = serRef;
                             /* TODO
                             if (serRef.isHAEnabled()) {
@@ -180,25 +172,22 @@ public class EJBObjectOutputStreamHandler
                     }
                 }
             } catch (Exception ex) {
-                _ejbLogger.log(Level.WARNING, "Exception while getting serializable object", ex);
+                logger.log(Level.WARNING, "Exception while getting serializable object", ex);
                 IOException ioEx = new IOException("Exception during extraction of instance key");
                 ioEx.initCause(ex);
                 throw ioEx;
             }
         }
-	    return result;
+        return result;
     }
 
 }
 
-final class SerializableJNDIContext
-    implements SerializableObjectFactory
-{
+final class SerializableJNDIContext implements SerializableObjectFactory {
     private String name;
 
     SerializableJNDIContext(Context ctx)
-        throws IOException
-    {
+            throws IOException {
         try {
             // Serialize state for a jndi context.  The spec only requires
             // support for serializing contexts pointing to java:comp/env
@@ -216,8 +205,7 @@ final class SerializableJNDIContext
     }
 
     public Object createObject(long appUniquId)
-        throws IOException
-    {
+            throws IOException {
         try {
             if ((name == null) || (name.length() == 0)) {
                 return new InitialContext();
@@ -228,61 +216,59 @@ final class SerializableJNDIContext
             IOException ioe = new IOException();
             ioe.initCause(namEx);
             throw ioe;
-	}
+        }
     }
 
 }
 
-abstract class AbstractSerializableS1ASEJBReference
-    implements SerializableObjectFactory
-{
+abstract class AbstractSerializableS1ASEJBReference implements SerializableObjectFactory {
     protected long containerId;
-    protected String debugStr;	//used for loggin purpose only
+    protected String debugStr;    //used for loggin purpose only
 
 
     protected static Logger _ejbLogger =
-       LogDomains.getLogger(AbstractSerializableS1ASEJBReference.class, LogDomains.EJB_LOGGER);
+            LogDomains.getLogger(AbstractSerializableS1ASEJBReference.class, LogDomains.EJB_LOGGER);
 
     AbstractSerializableS1ASEJBReference(long containerId) {
-	this.containerId = containerId;
-	BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
+        this.containerId = containerId;
+        BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
 
-	//container can be null if the app has been undeployed
-	//  after this was serialized
-	if (container == null) {
-	    _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container", containerId);
-	    debugStr = "" + containerId;
-	} else {
-	    debugStr = container.toString();
-	}
+        //container can be null if the app has been undeployed
+        //  after this was serialized
+        if (container == null) {
+            _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container", containerId);
+            debugStr = "" + containerId;
+        } else {
+            debugStr = container.toString();
+        }
     }
 
 
     protected static java.rmi.Remote doRemoteRefClassLoaderConversion
-        (java.rmi.Remote reference) throws IOException {
+            (java.rmi.Remote reference) throws IOException {
 
         Thread currentThread = Thread.currentThread();
         ClassLoader contextClassLoader =
-            currentThread.getContextClassLoader();
+                currentThread.getContextClassLoader();
 
         java.rmi.Remote returnReference = reference;
 
-        if( reference.getClass().getClassLoader() !=
-            contextClassLoader) {
+        if (reference.getClass().getClassLoader() !=
+                contextClassLoader) {
             try {
                 byte[] serializedRef = EJBObjectOutputStreamHandler._javaEEIOUtils.serializeObject
-                    (reference, false);
+                        (reference, false);
                 returnReference = (java.rmi.Remote)
                         EJBObjectOutputStreamHandler._javaEEIOUtils.deserializeObject(serializedRef, false,
-                                             contextClassLoader);
+                                contextClassLoader);
                 GlassFishORBHelper orbHelper = EjbContainerUtilImpl.getInstance().getORBHelper();
                 ProtocolManager protocolMgr = orbHelper.getProtocolManager();
 
-               protocolMgr.connectObject(returnReference);
+                protocolMgr.connectObject(returnReference);
 
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 throw ioe;
-            } catch(Exception e) {
+            } catch (Exception e) {
                 IOException ioEx = new IOException(e.getMessage());
                 ioEx.initCause(e);
                 throw ioEx;
@@ -293,51 +279,46 @@ abstract class AbstractSerializableS1ASEJBReference
     }
 }
 
-final class SerializableS1ASEJBHomeReference
-    extends AbstractSerializableS1ASEJBReference
-{
+final class SerializableS1ASEJBHomeReference extends AbstractSerializableS1ASEJBReference {
 
     SerializableS1ASEJBHomeReference(long containerId) {
-	super(containerId);
+        super(containerId);
     }
 
     @Override
     public Object createObject(long appUniqueId)
-        throws IOException
-    {
-	    Object result = null;
-	    BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
-	    //container can be null if the app has been undeployed
-	    //  after this was serialized
-	    if (container == null) {
-	        _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container", debugStr);
-	        result = null;
-	    } else {
+            throws IOException {
+        Object result = null;
+        BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
+        //container can be null if the app has been undeployed
+        //  after this was serialized
+        if (container == null) {
+            _ejbLogger.log(Level.WARNING, "ejb.base.io.EJBOutputStream.null_container", debugStr);
+            result = null;
+        } else {
             // Note that we can assume it's a RemoteHome stub because an
             // application never sees a reference to the internal
             // Home for the Remote Business view.
-	        result = AbstractSerializableS1ASEJBReference.
-                doRemoteRefClassLoaderConversion(container.getEJBHomeStub());
-	    }
+            result = AbstractSerializableS1ASEJBReference.
+                    doRemoteRefClassLoaderConversion(container.getEJBHomeStub());
+        }
 
-	    return result;
+        return result;
     }
 }
 
-final class SerializableS1ASEJBObjectReference
-    extends AbstractSerializableS1ASEJBReference
-{
-    private byte[] instanceKey;
+final class SerializableS1ASEJBObjectReference extends AbstractSerializableS1ASEJBReference {
+    private final byte[] instanceKey;
     private Object sfsbKey;
     private long sfsbClientVersion;
     private boolean haEnabled;
 
     // If 3.0 Remote business view, the name of the remote business
     // interface to which this stub corresponds.
-    private String remoteBusinessInterface;
+    private final String remoteBusinessInterface;
 
-    SerializableS1ASEJBObjectReference(long containerId, byte[] objKey,
-            int keySize, String remoteBusinessInterfaceName) {
+    SerializableS1ASEJBObjectReference(long containerId, byte[] objKey, int keySize, 
+                                       String remoteBusinessInterfaceName) {
         super(containerId);
         BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId);
         if (container != null) {
@@ -359,58 +340,56 @@ final class SerializableS1ASEJBObjectReference
     }
 
     @Override
-    public Object createObject(long appUniqueId)
-        throws IOException
-    {
+    public Object createObject(long appUniqueId) throws IOException {
         Object result = null;
         BaseContainer container = EjbContainerUtilImpl.getInstance().getContainer(containerId, appUniqueId);
         //container can be null if the app has been undeployed
         //  after this was serialized
         if (container == null) {
             _ejbLogger.log(Level.WARNING,
-                               "ejb.base.io.EJBOutputStream.null_container", debugStr);
+                    "ejb.base.io.EJBOutputStream.null_container", debugStr);
             result = null;
         } else {
-                try {
-                    if( remoteBusinessInterface == null ) {
-                        java.rmi.Remote reference = container.
+            try {
+                if (remoteBusinessInterface == null) {
+                    java.rmi.Remote reference = container.
                             createRemoteReferenceWithId(instanceKey, null);
-                        result = AbstractSerializableS1ASEJBReference.
+                    result = AbstractSerializableS1ASEJBReference.
                             doRemoteRefClassLoaderConversion(reference);
 
-                    } else {
+                } else {
 
-                        String generatedRemoteIntfName = EJBUtils.
+                    String generatedRemoteIntfName = RemoteGenerator.
                             getGeneratedRemoteIntfName(remoteBusinessInterface);
 
-                        java.rmi.Remote remoteRef = container.
+                    java.rmi.Remote remoteRef = container.
                             createRemoteReferenceWithId(instanceKey,
-                                                        generatedRemoteIntfName);
+                                    generatedRemoteIntfName);
 
-                        java.rmi.Remote newRemoteRef =
+                    java.rmi.Remote newRemoteRef =
                             AbstractSerializableS1ASEJBReference.
-                                doRemoteRefClassLoaderConversion(remoteRef);
+                                    doRemoteRefClassLoaderConversion(remoteRef);
 
 
-                        Thread currentThread = Thread.currentThread();
-                        ClassLoader contextClassLoader =
+                    Thread currentThread = Thread.currentThread();
+                    ClassLoader contextClassLoader =
                             currentThread.getContextClassLoader();
 
-                        result = EJBUtils.createRemoteBusinessObject
+                    result = EJBUtils.createRemoteBusinessObject
                             (contextClassLoader, remoteBusinessInterface,
-                             newRemoteRef);
+                                    newRemoteRef);
 
-                    }
+                }
                     /*TODO
                     if (haEnabled) {
                         SFSBClientVersionManager.setClientVersion(
                                 containerId, sfsbKey, sfsbClientVersion);
                     }*/
-                } catch(Exception e) {
-                    IOException ioex = new IOException("remote ref create error");
-                    ioex.initCause(e);
-                    throw ioex;
-                }
+            } catch (Exception e) {
+                IOException ioex = new IOException("remote ref create error");
+                ioex.initCause(e);
+                throw ioex;
+            }
         }
 
         return result;

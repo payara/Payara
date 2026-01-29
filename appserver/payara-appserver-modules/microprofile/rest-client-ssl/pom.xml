@@ -14,7 +14,7 @@ See the License for the specific
 language governing permissions and limitations under the License.
 
 When distributing the software, include this License Header Notice in each
-file and include the License file at glassfish/legal/LICENSE.txt.
+file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
 
 GPL Classpath Exception:
 The Payara Foundation designates this particular file as subject to the "Classpath"
@@ -45,7 +45,7 @@ holder.
     <parent>
         <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
         <artifactId>microprofile</artifactId>
-        <version>6.2025.6-SNAPSHOT</version>
+        <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>rest-client-ssl</artifactId>
@@ -60,6 +60,11 @@ holder.
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <!-- Temporary dependency while EE11 is in development. Should get removed once EE 11 is finished and platform API is updated -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>

@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portion Copyright [2018] Payara Foundation and/or affiliates
+// Portion Copyright [2024] Payara Foundation and/or affiliates
 
 /*
  * MappingPolicy.java
@@ -47,10 +47,12 @@
 
 package com.sun.jdo.spi.persistence.generator.database;
 
+import com.sun.jdo.spi.persistence.utility.logging.Logger;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Types;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,17 +63,10 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.sql.Types;
-
-import org.glassfish.persistence.common.I18NHelper;
 import org.glassfish.common.util.StringHelper;
-
-import com.sun.jdo.spi.persistence.utility.logging.Logger;
-
-import org.glassfish.persistence.common.database.DBVendorTypeHelper;
 import org.glassfish.persistence.common.DatabaseConstants;
+import org.glassfish.persistence.common.I18NHelper;
+import org.glassfish.persistence.common.database.DBVendorTypeHelper;
 
 // XXX Capitalization of acronyms such as Jdbc vs. JDBC is inconsistent
 // throught out this package.
@@ -653,22 +648,16 @@ public class MappingPolicy implements Cloneable {
         } else {
             final ClassLoader loader =
                     MappingPolicy.class.getClassLoader();
-            in = (InputStream) AccessController.doPrivileged(
-                    (PrivilegedAction<Object>) () -> {
-                        Object rc = null;
-                        if (loader != null) {
-                            rc =loader.getResourceAsStream(
-                                    resourceName);
-                        } else {
-                            rc =
-                                ClassLoader.getSystemResourceAsStream(
-                                        resourceName);
-                        }
-                        return rc;
-                    });
+            if (loader != null) {
+                in = loader.getResourceAsStream(resourceName);
+            } else {
+                in = ClassLoader.getSystemResourceAsStream(resourceName);
+            }
+
+
             if (in == null) {
                 throw new IOException(I18NHelper.getMessage(messages,
-                    "EXC_ResourceNotFound", resourceName));// NOI18N
+                        "EXC_ResourceNotFound", resourceName));// NOI18N
             }
         }
         return in;

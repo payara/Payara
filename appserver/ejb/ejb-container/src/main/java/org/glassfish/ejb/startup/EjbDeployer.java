@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.startup;
 
@@ -89,7 +89,7 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.security.PolicyLoader;
+import com.sun.enterprise.security.ee.authorization.PolicyLoader;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.util.IASSecurityException;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -269,7 +269,7 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             compEnvManager.bindToComponentNamespace(ejbBundle);
 
             // If within .war, also bind dependencies declared by web application. There is
-            // a single naming environment for the entire .war module. Yhis is necessary
+            // a single naming environment for the entire .war module. This is necessary
             // in order for eagerly initialized ejb components to have visibility to all the
             // dependencies b/c the web container does not bind to the component namespace until
             // its start phase, which comes after the ejb start phase.
@@ -283,7 +283,12 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
             throw new RuntimeException("Exception registering ejb bundle level resources", e);
         }
 
-        ejbApp.loadContainers(dc);
+        try {
+            ejbApp.loadContainers(dc);
+        } catch (Exception e) {
+            unload(ejbApp, dc);
+            throw e;
+        }
 
         return ejbApp;
     }
@@ -294,6 +299,11 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
 
         try {
             compEnvManager.unbindFromComponentNamespace(ejbBundle);
+            Object rootDesc = ejbBundle.getModuleDescriptor().getDescriptor();
+            if ((rootDesc != ejbBundle) && (rootDesc instanceof WebBundleDescriptor)) {
+                WebBundleDescriptor webBundle = (WebBundleDescriptor) rootDesc;
+                compEnvManager.unbindFromComponentNamespace(webBundle);
+            }
         } catch (Exception e) {
             _logger.log(Level.WARNING, "Error unbinding ejb bundle " + ejbBundle.getModuleName() + " dependency namespace", e);
         }

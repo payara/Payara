@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
 /*
  * PrincipalGroupFactory.java
  *
@@ -46,11 +46,14 @@
 
 package com.sun.enterprise.security.web.integration;
 
+import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import java.lang.ref.WeakReference;
 
+import org.glassfish.security.common.UserNameAndPassword;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
+import org.glassfish.security.common.UserPrincipal;
+
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.enterprise.security.PrincipalGroupFactory;
@@ -65,10 +68,10 @@ public class PrincipalGroupFactoryImpl implements PrincipalGroupFactory {
     private static WeakReference<WebSecurityManagerFactory> webSecurityManagerFactory = new WeakReference<WebSecurityManagerFactory>(null);
 
     @Override
-    public PrincipalImpl getPrincipalInstance(String name, String realm) {
-        PrincipalImpl principal = (PrincipalImpl) getWebSecurityManagerFactory().getAdminPrincipal(name, realm);
+    public UserPrincipal getPrincipalInstance(String name, String realm) {
+        UserPrincipal principal = (UserPrincipal) getWebSecurityManagerFactory().getAdminPrincipal(name, realm);
         if (principal == null) {
-            principal = new PrincipalImpl(name);
+            principal = new UserNameAndPassword(name);
         }
         
         return principal;

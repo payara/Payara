@@ -8,12 +8,12 @@
  * and Distribution License("CDDL") (collectively, the "License").  You
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
- * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
  * Oracle designates this particular file as subject to the "Classpath"
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -105,6 +105,16 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
 
     private boolean validateSteadyPoolSize(final JdbcConnectionPool jdbcPool) {
         final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
+        if (steadyPoolSize == null) {
+            String property = jdbcPool.getSteadyPoolSize();
+            if (property != null) {
+                String resolvedProperty = resolve(property);
+                if (resolvedProperty == null) {
+                    // User has specified env / mpconfig value, which can be defined in application later
+                    return true;
+                }
+            }
+        }
         return steadyPoolSize != null && steadyPoolSize >= 0;
     }
 
@@ -113,14 +123,18 @@ public class JdbcConnectionPoolValidator implements ConstraintValidator<JdbcConn
         final Integer steadyPoolSize = getSteadyPoolSize(jdbcPool);
         final String propertyValue = jdbcPool.getMaxPoolSize();
         final String value = propertyValue == null ? Constants.DEFAULT_MAX_POOL_SIZE : propertyValue;
-        final Integer maxPoolSize = toInteger(resolve(value));
+        String resolvedValue = resolve(value);
+        if (resolvedValue == null) {
+            // User has specified env / mpconfig value, which can be defined in application later
+            return true;
+        }
+        final Integer maxPoolSize = toInteger(resolvedValue);
+
         if (maxPoolSize == null || maxPoolSize < 1) {
             return false;
         }
-        if (steadyPoolSize != null && steadyPoolSize > maxPoolSize) {
-            return false;
-        }
-        return true;
+
+        return steadyPoolSize == null || steadyPoolSize <= maxPoolSize;
     }
 
 
