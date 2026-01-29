@@ -38,7 +38,7 @@
  * holder.
  */
 
-/*  Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] */
+/*  Portions Copyright 2016-2026 Payara Foundation and/or its affiliates */
 
 /* CSS Document */
 
@@ -1206,7 +1206,6 @@ img[src$="resources.gif"],
 img[src$="notification.png"],
 img[src$="requestTracing.png"],
 img[src$="dg.png"],
-img[src$="cluster.gif"],
 img[src$="tree_folder.gif"],
 img[src$="connector.png"],
 img[src$="configurations.gif"],
@@ -1272,8 +1271,7 @@ img[src$="notification.png"] {
 img[src$="requestTracing.png"] {
     background: url(../images/icons/request_tracing.png) no-repeat left top;
 }
-img[src$="dg.png"],
-img[src$="cluster.gif"] {
+img[src$="dg.png"] {
     background: url(../images/icons/deployment_groups.png) no-repeat left top;
 }
 img[src$="tree_folder.gif"] {
