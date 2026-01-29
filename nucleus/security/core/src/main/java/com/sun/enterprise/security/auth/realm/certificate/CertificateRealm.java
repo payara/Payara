@@ -200,10 +200,6 @@ public final class CertificateRealm extends BaseRealm {
             ));
             return;
         }
-        if (certificate == null) {
-            _logger.warning(() -> String.format("No X509Certificate found(subject=%s, principal=%s)", subject, principal));
-            return;
-        }
 
         // Ask all the Client Certificate Validator.
         List<ClientCertificateValidator> validators = Collections.emptyList();
