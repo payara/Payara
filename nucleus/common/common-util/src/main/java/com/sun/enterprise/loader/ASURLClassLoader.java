@@ -1097,6 +1097,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
     protected static final class SentinelInputStream extends FilterInputStream {
 
         private final CleanableSentinelInputStreamState state;
+        private final Cleaner.Cleanable cleanable;
 
         static class CleanableSentinelInputStreamState implements Runnable {
 
@@ -1149,7 +1150,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         protected SentinelInputStream(ASURLClassLoader loader, final InputStream in) {
             super(in);
             this.state = new CleanableSentinelInputStreamState(in);
-            CleanerFactory.create().register(this, state);
+            this.cleanable = CleanerFactory.create().register(this, state);
         }
 
         /**
@@ -1162,6 +1163,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             }
             // race condition with above check, but should have no harmful effects
             state.setClosed(true);
+            this.cleanable.clean(); // just to unregister runnable
             super.close();
         }
 
