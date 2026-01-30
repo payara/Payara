@@ -55,16 +55,27 @@ import java.util.logging.Logger;
 /**
  * CDI producer for LargeLanguageModel instances.
  * <p>
- * Configuration is done via MicroProfile Config properties:
+ * Supports multiple LLM providers configured via MicroProfile Config:
  * <ul>
- *     <li>{@code jakarta.ai.llm.provider} - The LLM provider (default: "openai")</li>
- *     <li>{@code jakarta.ai.llm.api-key} - The API key for the LLM service</li>
- *     <li>{@code jakarta.ai.llm.model} - The model to use (e.g., "gpt-4", "claude-3")</li>
- *     <li>{@code jakarta.ai.llm.endpoint} - Custom API endpoint URL</li>
+ *     <li>{@code jakarta.ai.llm.provider} - The LLM provider: openai, anthropic, ollama, azure, gemini, mistral (default: "openai")</li>
+ *     <li>{@code jakarta.ai.llm.api-key} - The API key for the LLM service (not required for Ollama)</li>
+ *     <li>{@code jakarta.ai.llm.model} - The model to use (e.g., "gpt-4", "claude-3-sonnet", "llama2")</li>
+ *     <li>{@code jakarta.ai.llm.endpoint} - Custom API endpoint URL (optional, uses provider defaults)</li>
  *     <li>{@code jakarta.ai.llm.timeout} - Request timeout in seconds (default: 30)</li>
  * </ul>
+ * <p>
+ * Supported providers and their default models:
+ * <table>
+ *     <tr><th>Provider</th><th>Default Model</th><th>Requires API Key</th></tr>
+ *     <tr><td>openai</td><td>gpt-4</td><td>Yes</td></tr>
+ *     <tr><td>anthropic</td><td>claude-3-sonnet-20240229</td><td>Yes</td></tr>
+ *     <tr><td>ollama</td><td>llama2</td><td>No (local)</td></tr>
+ *     <tr><td>azure</td><td>gpt-4</td><td>Yes (+ endpoint required)</td></tr>
+ *     <tr><td>gemini</td><td>gemini-pro</td><td>Yes</td></tr>
+ *     <tr><td>mistral</td><td>mistral-medium</td><td>Yes</td></tr>
+ * </table>
  *
- * @author Luis Neto <luis.neto@payara.fish>
+ * @author Luis Neto
  */
 @ApplicationScoped
 public class LargeLanguageModelProducer {
@@ -80,8 +91,8 @@ public class LargeLanguageModelProducer {
     private Optional<String> apiKey;
 
     @Inject
-    @ConfigProperty(name = "jakarta.ai.llm.model", defaultValue = "gpt-4")
-    private String model;
+    @ConfigProperty(name = "jakarta.ai.llm.model")
+    private Optional<String> model;
 
     @Inject
     @ConfigProperty(name = "jakarta.ai.llm.endpoint")
@@ -101,44 +112,69 @@ public class LargeLanguageModelProducer {
     @Default
     @ApplicationScoped
     public LargeLanguageModel produceLargeLanguageModel(InjectionPoint injectionPoint) {
+        LLMProvider llmProvider = LLMProvider.fromConfigName(provider);
+
         logger.log(Level.INFO, "Producing LargeLanguageModel: provider={0}, model={1}",
-                new Object[]{provider, model});
+                new Object[]{llmProvider.getConfigName(), model.orElse("(default)")});
 
         LLMConfiguration config = new LLMConfiguration(
                 provider,
                 apiKey.orElse(null),
-                model,
+                model.orElse(null),
                 endpoint.orElse(null),
                 timeout
         );
 
-        return createLargeLanguageModel(config);
+        return createLargeLanguageModel(llmProvider, config);
     }
 
     /**
-     * Creates a LargeLanguageModel based on the configuration.
-     * This method can be extended to support different LLM providers.
+     * Creates a LargeLanguageModel based on the provider and configuration.
      *
-     * @param config the LLM configuration
+     * @param llmProvider the LLM provider
+     * @param config      the LLM configuration
      * @return the configured LargeLanguageModel
      */
-    private LargeLanguageModel createLargeLanguageModel(LLMConfiguration config) {
-        // For now, return the configurable default implementation
-        // This can be extended to support different providers like:
-        // - OpenAI
-        // - Anthropic Claude
-        // - Azure OpenAI
-        // - Local models via Ollama
-        // - Custom implementations
+    private LargeLanguageModel createLargeLanguageModel(LLMProvider llmProvider, LLMConfiguration config) {
+        // Ollama doesn't require an API key (local)
+        if (llmProvider == LLMProvider.OLLAMA) {
+            logger.log(Level.INFO, "Using Ollama for local LLM inference");
+            return new OllamaLargeLanguageModel(config);
+        }
 
+        // All other providers require an API key
         if (config.apiKey() == null || config.apiKey().isEmpty()) {
             logger.log(Level.WARNING,
-                    "No API key configured for LLM. Set jakarta.ai.llm.api-key property. " +
-                            "Using mock implementation for development.");
+                    "No API key configured for LLM provider ''{0}''. Set jakarta.ai.llm.api-key property. " +
+                            "Using mock implementation for development.",
+                    llmProvider.getConfigName());
             return new MockLargeLanguageModel();
         }
 
-        return new ConfigurableLargeLanguageModel(config);
+        // Select implementation based on provider
+        return switch (llmProvider) {
+            case ANTHROPIC -> {
+                logger.log(Level.INFO, "Using Anthropic Claude API");
+                yield new AnthropicLargeLanguageModel(config);
+            }
+            case OPENAI, AZURE, OPENAI_COMPATIBLE -> {
+                logger.log(Level.INFO, "Using OpenAI-compatible API: {0}", llmProvider.getConfigName());
+                yield new ConfigurableLargeLanguageModel(config);
+            }
+            case GEMINI -> {
+                logger.log(Level.INFO, "Using Google Gemini API");
+                yield new GeminiLargeLanguageModel(config);
+            }
+            case MISTRAL -> {
+                logger.log(Level.INFO, "Using Mistral AI API");
+                // Mistral uses OpenAI-compatible format
+                yield new ConfigurableLargeLanguageModel(config);
+            }
+            default -> {
+                logger.log(Level.INFO, "Using default OpenAI-compatible implementation");
+                yield new ConfigurableLargeLanguageModel(config);
+            }
+        };
     }
 
     /**
