@@ -290,7 +290,7 @@
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.1.0</concurro.version>
         <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
-        <jakarta.agentic-ai-api.version>1.0.0-SNAPSHOT</jakarta.agentic-ai-api.version>
+        <jakarta.agentic-ai-api.version>1.0.0</jakarta.agentic-ai-api.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.security-connectors.version>4.0.0.Alpha3</payara.security-connectors.version>
         <hk2.version>4.0.0-M3.payara-p2</hk2.version>
