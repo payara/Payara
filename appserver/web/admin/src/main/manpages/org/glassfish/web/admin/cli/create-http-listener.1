@@ -9,7 +9,6 @@ SYNOPSIS
            {--default-virtual-server | --defaultvs} virtual-server
            [--servername server-name]
            [--acceptorthreads acceptor-threads]
-           [--redirectport redirect-port]
            [--securityenabled={false|true}]
            [--enabled={true|false}]
            [--target target]
@@ -74,13 +73,6 @@ OPTIONS
            The number of acceptor threads for the listener socket. The
            recommended value is the number of processors in the machine. The
            default value is 1.
-
-       --redirectport
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
 
        --securityenabled
            If set to true, the HTTP listener runs SSL. The security
