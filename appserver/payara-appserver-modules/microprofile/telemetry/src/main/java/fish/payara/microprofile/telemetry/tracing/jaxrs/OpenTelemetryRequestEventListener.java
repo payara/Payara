@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,14 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+import java.net.URI;
 import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
@@ -157,10 +161,10 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
         LOG.fine(() -> "onException(event=" + event.getType() + ")");
         activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
         activeSpan.setAttribute("error", true);
-        activeSpan.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
-        activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        activeSpan.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
-                Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
+        activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+        activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
+        activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
+                Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
         activeSpan.recordException(event.getException());
     }
 
@@ -171,7 +175,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
         LOG.fine(() -> "Response context: status code=" + statusInfo.getStatusCode() //
                 + ", hasEntity=" + response.hasEntity());
         LOG.finest("Setting the HTTP response status etc. to the active span...");
-        activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusInfo.getStatusCode());
+        activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, statusInfo.getStatusCode());
 
         // If the response status is an error, add error information to the span
         if (statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
@@ -180,9 +184,9 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
                 activeSpan.recordException((Throwable) response.getEntity());
-                activeSpan.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
-                activeSpan.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
-                        Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
+                activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+                activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
+                        Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
                 activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
             }
         }
@@ -205,17 +209,17 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
                 ? "" : "?" + requestContext.getRequestUri().getQuery();
         final SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
                 .setSpanKind(SpanKind.SERVER)
-                .setAttribute(SemanticAttributes.HTTP_METHOD, requestContext.getMethod())
-                .setAttribute(SemanticAttributes.HTTP_URL, requestContext.getRequestUri().toString())
-                .setAttribute(SemanticAttributes.HTTP_TARGET,
+                .setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, requestContext.getMethod())
+                .setAttribute(UrlAttributes.URL_FULL, requestContext.getRequestUri().toString())
+                .setAttribute(UrlAttributes.URL_PATH.toString() + UrlAttributes.URL_QUERY,
                         requestContext.getUriInfo().getRequestUri().getPath() + queryParam)
-                .setAttribute(SemanticAttributes.HTTP_SCHEME, requestContext.getRequestUri().getScheme())
-                .setAttribute(SemanticAttributes.NET_HOST_NAME, requestContext.getRequestUri().getHost())
-                .setAttribute(SemanticAttributes.HTTP_ROUTE, openTracingHelper.getHttpRoute(requestContext, resourceInfo))
+                .setAttribute(UrlAttributes.URL_SCHEME, requestContext.getRequestUri().getScheme())
+                .setAttribute(ServerAttributes.SERVER_ADDRESS, requestContext.getRequestUri().getHost())
+                .setAttribute(HttpAttributes.HTTP_ROUTE, openTracingHelper.getHttpRoute(requestContext, resourceInfo))
                 .setAttribute("component", "jaxrs");
 
         if (requestContext.getRequestUri().getPort() != -1) {
-            spanBuilder.setAttribute(SemanticAttributes.NET_HOST_PORT, (long)requestContext.getRequestUri().getPort());
+            spanBuilder.setAttribute(ServerAttributes.SERVER_PORT, (long)requestContext.getRequestUri().getPort());
         }
 
         openTracingHelper.augmentSpan(spanBuilder);
