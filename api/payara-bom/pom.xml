@@ -524,7 +524,7 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -572,9 +572,9 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>io.opentelemetry</groupId>
+                <groupId>io.opentelemetry.semconv</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry-semconv.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -616,13 +616,19 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-instrumentation-annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry-instrumentation-annotation-support.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-extension-incubator</artifactId>
+                <version>${opentelemetry-sdk-extension-incubator.version}</version>
                 <scope>provided</scope>
             </dependency>
 
