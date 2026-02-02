@@ -64,7 +64,7 @@
         <skipServerStart>${skipTests}</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
         <skipServerRestart>${skipTests}</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
         <serverRestartCommand>stop-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
-        <skipTestConfigCleanup>${skipTests}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
+        <skipTestConfigCleanup>${skipConfig}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
 
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
@@ -124,7 +124,7 @@
         <module>rolesallowed-unprotected-methods</module>
         <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
-        <!--module>client-certificate-validator</module-->
+        <module>client-certificate-validator</module>
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
         <!--<module>corba-read-timeout</module>-->
         <module>microprofile-rest-client</module>
@@ -154,7 +154,7 @@
             <properties>
                 <payara.directory.name>payara7</payara.directory.name>
                 <payara.containerType>SERVER</payara.containerType>
-                <skipZombieKill>${skipServerRestart}</skipZombieKill> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
+                <killZombies>true</killZombies> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
             </properties>
 
             <dependencies>
@@ -188,7 +188,6 @@
                                     <goal>unpack</goal>
                                 </goals>
                                 <phase>pre-integration-test</phase>
-                                <inherited>false</inherited>
                                 <configuration>
                                     <skip>${skipConfig}</skip>
                                     <artifactItems>
@@ -197,7 +196,7 @@
                                             <artifactId>${payara.server.artifact}</artifactId>
                                             <version>${payara.version}</version>
                                             <type>zip</type>
-                                            <overWrite>true</overWrite>
+                                            <overWrite>false</overWrite>
                                             <outputDirectory>${maven.multiModuleProjectDirectory}${file.separator}target</outputDirectory>
                                         </artifactItem>
                                     </artifactItems>
@@ -218,15 +217,66 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <skip>${skipZombieKill}</skip>
+                                    <skip>${killZombies}</skip>
                                     <!-- Don't fail the build if this step fails -->
-                                    <successCodes>0,1</successCodes>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
                                         <argument>stop-domain</argument>
                                         <argument>--kill=true</argument>
                                         <argument>${payara.domain.name}</argument>
                                     </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>clean-payara-install</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTestConfigCleanup}</skip>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${payara.home}</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Stash the server logs for each test, as we delete the domain each time -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>stash-server-test-logs</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipTests}</skip>
+                                    <outputDirectory>${project.build.directory}${file.separator}server-logs</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${payara.home}${file.separator}glassfish${file.separator}domains${file.separator}${payara.domain.name}${file.separator}logs</directory>
+                                            <includes>*.log</includes>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>

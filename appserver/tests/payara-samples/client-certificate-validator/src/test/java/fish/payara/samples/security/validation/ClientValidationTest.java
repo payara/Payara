@@ -45,42 +45,52 @@ import fish.payara.samples.SecurityUtils;
 import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.omnifaces.utils.security.Certificates;
 
-import javax.net.ssl.*;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.*;
-import java.security.cert.CertificateException;
+import java.nio.file.Paths;
+import java.security.KeyStore;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.omnifaces.utils.security.Certificates;
 
-/**
- *
- * @author James Hillyard
- */
+import static org.junit.Assert.fail;
 
-@Ignore
 @RunWith(PayaraArquillianTestRunner.class)
 @SincePayara("5.2021.8")
 public class ClientValidationTest {
 
     private static String certPath;
-
-    private static final String CERTIFICATE_ALIAS = "omnikey";
+    private static final String KEYSTORE_PASSWORD = "changeit";
+    private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
+    private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
+    private static final Logger logger = Logger.getLogger(ClientValidationTest.class.getName());
 
     @Deployment
     public static WebArchive deploy() {
@@ -97,52 +107,172 @@ public class ClientValidationTest {
     }
 
     @Test
-    @InSequence(1)
-    public void generateCertsInTrustStore() throws IOException {
-        if (ServerOperations.isServer()) {
-            certPath = ServerOperations.generateClientKeyStore(true, true, CERTIFICATE_ALIAS);
+    @RunAsClient
+    public void validationFailTest() throws Exception {
+        certPath = new File("target", "expired-keystore.jks").getAbsolutePath();
+        System.out.println("Key Store Path: " + certPath);
+
+        // Configure SSL system properties
+        String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains", System.getProperty("payara.domain.name")).toString();
+        String keystorePath = domainDir + "/config/keystore.p12";
+        String truststorePath = domainDir + "/config/cacerts.p12";
+
+        System.out.println("DEBUGGING Keystore Path: " + keystorePath);
+
+        // Set all system properties for SSL at once
+        System.setProperty("javax.net.ssl.keyStore", keystorePath);
+        System.setProperty("javax.net.ssl.keyStorePassword", KEYSTORE_PASSWORD);
+        System.setProperty("javax.net.ssl.keyStoreType", KEYSTORE_TYPE);
+        System.setProperty("javax.net.ssl.trustStore", truststorePath);
+        System.setProperty("javax.net.ssl.trustStorePassword", KEYSTORE_PASSWORD);
+        System.setProperty("javax.net.ssl.trustStoreType", KEYSTORE_TYPE);
+        System.setProperty("javax.net.debug", "all");
+        System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+        System.setProperty("https.protocols", "TLSv1.2");
+
+        // Verify certPath is not null and keystore exists and is readable
+        if (certPath == null) {
+            fail("Unable to find certificate path. Aborting...");
+        }
+
+        File keystoreFile = new File(certPath);
+
+        if (!keystoreFile.exists()) {
+            fail("Keystore file does not exist: " + certPath);
+        }
+        if (!keystoreFile.canRead()) {
+            fail("Cannot read keystore file: " + certPath);
+        }
+
+        KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+        try (FileInputStream fis = new FileInputStream(certPath)) {
+            keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
+        }
+
+        // Set up key manager factory with PKCS12
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
+
+        // Create a trust manager that trusts all certificates (for testing only)
+        TrustManager[] trustAllCerts = new TrustManager[] {
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return new X509Certificate[0];
+                    }
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        // Initialize SSL context with the trust managers using TLSv1.2
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+        sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
+
+        // Get the socket factory and make the call
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+        int statusCode = callEndpoint(sslSocketFactory);
+
+        // Verify the response status code
+        if (statusCode != 401) {
+            fail("Expected status code 401 but got: " + statusCode);
+        }
+
+        // Verify the certificate validation failure was logged by the API
+        boolean validationFailed = checkForAPIValidationFailure(domainDir);
+        if (!validationFailed) {
+            fail("Expected certificate validation failure in server logs but none found");
         }
     }
 
-    @Test
-    @InSequence(2)
-    public void validationFailTest() throws Exception {
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        SSLSocketFactory sslSocketFactory = getSslSocketFactory(certPath, kmf, CERTIFICATE_ALIAS);
-        assertEquals(401, callEndpoint(sslSocketFactory));
-        assertTrue(checkForAPIValidationFailure());
+    private int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
+        HttpsURLConnection connection = null;
 
-    }
+        try {
+            try {
+                URL url = new URI(LOCALHOST_URL).toURL();
+                connection = (HttpsURLConnection) url.openConnection();
+            } catch (java.net.URISyntaxException e) {
+                throw new IOException("Invalid URL: " + LOCALHOST_URL, e);
+            }
 
-    private static int callEndpoint(SSLSocketFactory sslSocketFactory) throws IOException {
-        URL url = new URL(LOCALHOST_URL);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setSSLSocketFactory(sslSocketFactory);
-        return connection.getResponseCode();
-    }
+            connection.setSSLSocketFactory(sslSocketFactory);
+            connection.setHostnameVerifier((hostname, session) -> true);
 
-    private static SSLSocketFactory getSslSocketFactory(String certPath, KeyManagerFactory kmf, String alias) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, KeyManagementException {
-        String keystorePassword = "changeit";
+            // Set request method and headers
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "*/*");
+            connection.setRequestProperty("Connection", "close");
+            connection.setDoOutput(true);
 
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        keyStore.load(new FileInputStream(certPath), keystorePassword.toCharArray());
-        kmf.init(keyStore, keystorePassword.toCharArray());
+            // Make the request and read the response
+            int responseCode = connection.getResponseCode();
+            logger.log(Level.FINE, "Response Code: {0}", responseCode);
+            return responseCode;
 
-        KeyManager[] keyManagers = kmf.getKeyManagers();
+        } catch (SSLException e) {
+            // Log SSL errors
+            if (e instanceof SSLHandshakeException) {
+                logger.log(Level.SEVERE, "SSL Handshake Failed: {0}", e.getMessage());
+            } else {
+                logger.log(Level.SEVERE, "SSL Error: {0}", e.getMessage());
+            }
+            logger.log(Level.FINER, "SSL Error details", e);
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
-        ctx.init(new KeyManager[]{new MyKeyManager((X509ExtendedKeyManager) keyManagers[0], alias)}, null, null);
-        return ctx.getSocketFactory();
+            // Try to get more error details if connection is available
+            if (connection != null) {
+                try (InputStream es = connection.getErrorStream()) {
+                    if (es != null) {
+                        try (BufferedReader in = new BufferedReader(new InputStreamReader(es))) {
+                            String inputLine;
+                            StringBuilder errorResponse = new StringBuilder();
+                            while ((inputLine = in.readLine()) != null) {
+                                errorResponse.append(inputLine);
+                            }
+                            if (errorResponse.length() > 0) {
+                                logger.log(Level.SEVERE, "Error response: {0}", errorResponse.toString());
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Could not read error response: {0}", ex.getMessage());
+                }
+            }
+
+            // If we have a response code, use it, otherwise rethrow the exception
+            if (connection != null) {
+                try {
+                    return connection.getResponseCode();
+                } catch (IOException ex) {
+                    // If we can't get the response code, rethrow the original exception
+                    throw e;
+                }
+            } else {
+                throw e;
+            }
+        } finally {
+            // Ensure the connection is closed
+            if (connection != null) {
+                try {
+                    connection.disconnect();
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Error disconnecting: {0}", e.getMessage());
+                }
+            }
+        }
     }
 
     /**
      * @return true if the correct warning is found in the logs
      * @throws IOException
      */
-    public boolean checkForAPIValidationFailure() throws IOException {
-        List<String> log = viewLog();
+    public boolean checkForAPIValidationFailure(String domainDir) throws IOException {
+        List<String> log = viewLog(domainDir);
         for (String line : log) {
-            if (line.contains("Certificate Validation Failed via API")) {
+            if (line.contains(EXPECTED_VALIDATION_ERROR)) {
                 return true;
             }
         }
@@ -152,10 +282,8 @@ public class ClientValidationTest {
     /**
      * @return the contents of the server log
      */
-    private List<String> viewLog() throws IOException {
-        Path serverLog = ServerOperations.getDomainPath("logs/server.log");
+    private List<String> viewLog(String domainDir) throws IOException {
+        Path serverLog = Paths.get(domainDir, "logs", "server.log");
         return Files.readAllLines(serverLog);
     }
-
-
 }

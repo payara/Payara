@@ -3,7 +3,7 @@
   ~
   ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~  Copyright (c) 2022-2023 Payara Foundation and/or its affiliates. All rights reserved.
+  ~  Copyright (c) 2022-2026 Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~  The contents of this file are subject to the terms of either the GNU
   ~  General Public License Version 2 only ("GPL") or the Common Development
@@ -54,27 +54,16 @@
     <artifactId>reproducers</artifactId>
     <name>Payara Samples - Reproducers</name>
 
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-    </properties>
-
     <dependencies>
-        <dependency>
-            <groupId>org.eclipse.microprofile.metrics</groupId>
-            <artifactId>microprofile-metrics-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile</groupId>
             <artifactId>microprofile</artifactId>
-            <version>6.1</version>
             <type>pom</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>10.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
