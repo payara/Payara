@@ -9,47 +9,25 @@
  */
 package fish.payara.samples.agentic;
 
-import fish.payara.samples.agentic.agent.FraudDetectionAgent;
 import fish.payara.samples.agentic.model.FraudAnalysisResult;
 import fish.payara.samples.agentic.model.Transaction;
-import jakarta.inject.Inject;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 
 import static org.junit.Assert.*;
 
 /**
- * Tests for the FraudDetectionAgent demonstrating Jakarta Agentic AI capabilities.
+ * Unit tests for the FraudDetection models demonstrating Jakarta Agentic AI data structures.
+ *
+ * These are unit tests that validate the model classes used by the FraudDetectionAgent.
+ * Integration tests for the full agent workflow require a running Payara container with
+ * the Jakarta Agentic AI implementation.
  */
-@RunWith(Arquillian.class)
 public class FraudDetectionAgentTest {
 
-    @Deployment
-    public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "agentic-ai-test.war")
-                .addPackages(true, "fish.payara.samples.agentic.agent")
-                .addPackages(true, "fish.payara.samples.agentic.model")
-                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-    }
-
-    @Inject
-    private FraudDetectionAgent fraudDetectionAgent;
-
     @Test
-    public void testAgentInjection() {
-        assertNotNull("FraudDetectionAgent should be injected", fraudDetectionAgent);
-    }
-
-    @Test
-    public void testLowRiskTransaction() {
-        // Create a normal, low-risk transaction
+    public void testTransactionCreation() {
         Transaction transaction = new Transaction(
                 "TXN-001",
                 "ACC-12345",
@@ -59,15 +37,19 @@ public class FraudDetectionAgentTest {
                 "New York, NY"
         );
 
-        // Note: In a full implementation, the WorkflowExecutor would orchestrate the agent
-        // For now, we're testing that the agent is properly instantiated and can be injected
         assertNotNull("Transaction should be created", transaction);
         assertEquals("TXN-001", transaction.getTransactionId());
+        assertEquals("ACC-12345", transaction.getAccountId());
+        assertEquals(new BigDecimal("50.00"), transaction.getAmount());
+        assertEquals("Coffee Shop", transaction.getMerchantName());
+        assertEquals("food_and_beverage", transaction.getMerchantCategory());
+        assertEquals("New York, NY", transaction.getLocation());
+        assertNotNull("Timestamp should be set", transaction.getTimestamp());
+        assertFalse("Should not be flagged by default", transaction.isFlaggedAsSuspicious());
     }
 
     @Test
     public void testHighValueTransaction() {
-        // Create a high-value transaction that should trigger detailed analysis
         Transaction transaction = new Transaction(
                 "TXN-002",
                 "ACC-12345",
@@ -86,17 +68,59 @@ public class FraudDetectionAgentTest {
     public void testFraudAnalysisResultCreation() {
         FraudAnalysisResult result = new FraudAnalysisResult("TXN-003");
 
+        assertNotNull("Result should be created", result);
+        assertEquals("TXN-003", result.getTransactionId());
+        assertEquals(FraudAnalysisResult.RiskLevel.LOW, result.getRiskLevel());
+        assertEquals(0.0, result.getRiskScore(), 0.001);
+        assertFalse("Should not be fraudulent by default", result.isFraudulent());
+        assertNotNull("Risk factors list should be initialized", result.getRiskFactors());
+        assertTrue("Risk factors should be empty", result.getRiskFactors().isEmpty());
+    }
+
+    @Test
+    public void testFraudAnalysisResultWithRiskFactors() {
+        FraudAnalysisResult result = new FraudAnalysisResult("TXN-003");
+
         result.setRiskScore(0.75);
         result.addRiskFactor("High-value transaction");
         result.addRiskFactor("Unusual location");
 
         assertEquals(FraudAnalysisResult.RiskLevel.HIGH, result.getRiskLevel());
         assertEquals(2, result.getRiskFactors().size());
+        assertTrue(result.getRiskFactors().contains("High-value transaction"));
+        assertTrue(result.getRiskFactors().contains("Unusual location"));
+    }
+
+    @Test
+    public void testLowRiskLevel() {
+        FraudAnalysisResult result = new FraudAnalysisResult("TXN-LOW");
+        result.setRiskScore(0.2);
+
+        assertEquals("Score < 0.4 should be LOW",
+                FraudAnalysisResult.RiskLevel.LOW, result.getRiskLevel());
+    }
+
+    @Test
+    public void testMediumRiskLevel() {
+        FraudAnalysisResult result = new FraudAnalysisResult("TXN-MED");
+        result.setRiskScore(0.5);
+
+        assertEquals("Score between 0.4 and 0.7 should be MEDIUM",
+                FraudAnalysisResult.RiskLevel.MEDIUM, result.getRiskLevel());
+    }
+
+    @Test
+    public void testHighRiskLevel() {
+        FraudAnalysisResult result = new FraudAnalysisResult("TXN-HIGH");
+        result.setRiskScore(0.8);
+
+        assertEquals("Score between 0.7 and 0.9 should be HIGH",
+                FraudAnalysisResult.RiskLevel.HIGH, result.getRiskLevel());
     }
 
     @Test
     public void testCriticalRiskLevel() {
-        FraudAnalysisResult result = new FraudAnalysisResult("TXN-004");
+        FraudAnalysisResult result = new FraudAnalysisResult("TXN-CRIT");
         result.setRiskScore(0.95);
 
         assertEquals("Score >= 0.9 should be CRITICAL",
@@ -104,11 +128,46 @@ public class FraudDetectionAgentTest {
     }
 
     @Test
-    public void testMediumRiskLevel() {
-        FraudAnalysisResult result = new FraudAnalysisResult("TXN-005");
-        result.setRiskScore(0.5);
+    public void testFraudAnalysisResultSetters() {
+        FraudAnalysisResult result = new FraudAnalysisResult();
 
-        assertEquals("Score between 0.4 and 0.7 should be MEDIUM",
-                FraudAnalysisResult.RiskLevel.MEDIUM, result.getRiskLevel());
+        result.setTransactionId("TXN-SET");
+        result.setFraudulent(true);
+        result.setRecommendation("BLOCK transaction");
+        result.setLlmAnalysis("AI analysis indicates fraud patterns");
+
+        assertEquals("TXN-SET", result.getTransactionId());
+        assertTrue(result.isFraudulent());
+        assertEquals("BLOCK transaction", result.getRecommendation());
+        assertEquals("AI analysis indicates fraud patterns", result.getLlmAnalysis());
+    }
+
+    @Test
+    public void testTransactionToString() {
+        Transaction transaction = new Transaction(
+                "TXN-STR",
+                "ACC-123",
+                new BigDecimal("100.00"),
+                "Test Merchant",
+                "retail",
+                "Test Location"
+        );
+
+        String str = transaction.toString();
+        assertTrue("toString should contain transaction ID", str.contains("TXN-STR"));
+        assertTrue("toString should contain account ID", str.contains("ACC-123"));
+        assertTrue("toString should contain merchant name", str.contains("Test Merchant"));
+    }
+
+    @Test
+    public void testFraudAnalysisResultToString() {
+        FraudAnalysisResult result = new FraudAnalysisResult("TXN-STR");
+        result.setRiskScore(0.5);
+        result.setRecommendation("FLAG for monitoring");
+
+        String str = result.toString();
+        assertTrue("toString should contain transaction ID", str.contains("TXN-STR"));
+        assertTrue("toString should contain risk level", str.contains("MEDIUM"));
+        assertTrue("toString should contain recommendation", str.contains("FLAG for monitoring"));
     }
 }
