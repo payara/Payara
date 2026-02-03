@@ -63,9 +63,6 @@ list-auth-realms R
 create-virtual-server R
 delete-virtual-server R
 list-virtual-servers R
-create-profiler R
-delete-profiler R
-list-profilers R
 create-ssl R
 delete-ssl R
 #no list-ssl

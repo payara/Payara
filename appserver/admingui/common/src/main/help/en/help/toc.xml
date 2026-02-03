@@ -65,7 +65,6 @@
       <tocitem target="task-jvmpathsettings" text="To Configure the JVM Path Settings" expand="false"></tocitem>
       <tocitem target="task-jvmoptions" text="To Configure the JVM Options" expand="false"></tocitem>
       <tocitem target="task-securitymanagerdisable" text="To Disable the Security Manager" expand="false"></tocitem>
-      <tocitem target="task-jvmprofilersettings" text="To Configure the JVM Profiler Settings" expand="false"></tocitem>
     </tocitem>
     <tocitem target="task-group-logging" text="Configuring Logging" expand="false">
       <tocitem target="task-eelogging" text="To Configure General Logging Settings" expand="false"></tocitem>
@@ -188,7 +187,6 @@
         <tocitem target="ref-serverinstjvmgeneral" text="JVM General Settings" expand="false"></tocitem>
         <tocitem target="ref-serverinstjvmpathsettings" text="JVM Path Settings" expand="false"></tocitem>
         <tocitem target="ref-serverinstjvmoptions" text="JVM Options" expand="false"></tocitem>
-        <tocitem target="ref-serverinstjvmprofiler" text="JVM Profiler Settings" expand="false"></tocitem>
       </tocitem>
       <tocitem target="ref-group-logging" text="Logger Settings" expand="false">
         <tocitem target="ref-eelogging" text="Logger Settings" expand="false"></tocitem>

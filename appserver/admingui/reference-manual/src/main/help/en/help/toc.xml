@@ -100,7 +100,6 @@
     <tocitem target="reference/create-node-dcom" text="create-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/create-node-ssh" text="create-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/create-password-alias" text="create-password-alias" expand="false"></tocitem>
-    <tocitem target="reference/create-profiler" text="create-profiler" expand="false"></tocitem>
     <tocitem target="reference/create-protocol-filter" text="create-protocol-filter" expand="false"></tocitem>
     <tocitem target="reference/create-protocol-finder" text="create-protocol-finder" expand="false"></tocitem>
     <tocitem target="reference/create-protocol" text="create-protocol" expand="false"></tocitem>
@@ -155,7 +154,6 @@
     <tocitem target="reference/delete-node-dcom" text="delete-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/delete-node-ssh" text="delete-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/delete-password-alias" text="delete-password-alias" expand="false"></tocitem>
-    <tocitem target="reference/delete-profiler" text="delete-profiler" expand="false"></tocitem>
     <tocitem target="reference/delete-protocol-filter" text="delete-protocol-filter" expand="false"></tocitem>
     <tocitem target="reference/delete-protocol-finder" text="delete-protocol-finder" expand="false"></tocitem>
     <tocitem target="reference/delete-protocol" text="delete-protocol" expand="false"></tocitem>
