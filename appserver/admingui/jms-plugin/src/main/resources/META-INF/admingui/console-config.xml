@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <console-config id="jms">
     <integration-point  id="jms_resources_nodes"
@@ -94,13 +95,6 @@
                 type="org.glassfish.admingui:standaloneInstTab"
                 priority="300"
                 content="/physdest/standaloneInstPhysDestTab.jsf"
-    />
-    <integration-point
-                id="physDestCluster"
-                parentId="clusterTabs"
-                type="org.glassfish.admingui:clusterTab"
-                priority="300"
-                content="/physdest/clusterPhysDestTab.jsf"
     />
     <integration-point
                 id="physDestServer"

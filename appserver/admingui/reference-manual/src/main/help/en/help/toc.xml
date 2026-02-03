@@ -49,11 +49,9 @@
     <tocitem target="reference/backup-domain" text="backup-domain" expand="false"></tocitem>
     <tocitem target="reference/capture-schema" text="capture-schema" expand="false"></tocitem>
     <tocitem target="reference/change-admin-password" text="change-admin-password" expand="false"></tocitem>
-    <tocitem target="reference/change-master-broker" text="change-master-broker" expand="false"></tocitem>
     <tocitem target="reference/change-master-password" text="change-master-password" expand="false"></tocitem>
     <tocitem target="reference/collect-log-files" text="collect-log-files" expand="false"></tocitem>
     <tocitem target="reference/configuration" text="configuration" expand="false"></tocitem>
-    <tocitem target="reference/configure-jms-cluster" text="configure-jms-cluster" expand="false"></tocitem>
     <tocitem target="reference/configure-lb-weight" text="configure-lb-weight" expand="false"></tocitem>
     <tocitem target="reference/configure-ldap-for-admin" text="configure-ldap-for-admin" expand="false"></tocitem>
     <tocitem target="reference/configure-managed-jobs" text="configure-managed-jobs" expand="false"></tocitem>
@@ -62,7 +60,6 @@
     <tocitem target="reference/create-application-ref" text="create-application-ref" expand="false"></tocitem>
     <tocitem target="reference/create-audit-module" text="create-audit-module" expand="false"></tocitem>
     <tocitem target="reference/create-auth-realm" text="create-auth-realm" expand="false"></tocitem>
-    <tocitem target="reference/create-cluster" text="create-cluster" expand="false"></tocitem>
     <tocitem target="reference/create-connector-connection-pool" text="create-connector-connection-pool" expand="false"></tocitem>
     <tocitem target="reference/create-connector-resource" text="create-connector-resource" expand="false"></tocitem>
     <tocitem target="reference/create-connector-security-map" text="create-connector-security-map" expand="false"></tocitem>
@@ -116,7 +113,6 @@
     <tocitem target="reference/delete-application-ref" text="delete-application-ref" expand="false"></tocitem>
     <tocitem target="reference/delete-audit-module" text="delete-audit-module" expand="false"></tocitem>
     <tocitem target="reference/delete-auth-realm" text="delete-auth-realm" expand="false"></tocitem>
-    <tocitem target="reference/delete-cluster" text="delete-cluster" expand="false"></tocitem>
     <tocitem target="reference/delete-config" text="delete-config" expand="false"></tocitem>
     <tocitem target="reference/delete-connector-connection-pool" text="delete-connector-connection-pool" expand="false"></tocitem>
     <tocitem target="reference/delete-connector-resource" text="delete-connector-resource" expand="false"></tocitem>
@@ -211,7 +207,6 @@
     <tocitem target="reference/list-batch-jobs" text="list-batch-jobs" expand="false"></tocitem>
     <tocitem target="reference/list-batch-job-steps" text="list-batch-job-steps" expand="false"></tocitem>
     <tocitem target="reference/list-batch-runtime-configuration" text="list-batch-runtime-configuration" expand="false"></tocitem>
-    <tocitem target="reference/list-clusters" text="list-clusters" expand="false"></tocitem>
     <tocitem target="reference/list-commands" text="list-commands" expand="false"></tocitem>
     <tocitem target="reference/list-components" text="list-components" expand="false"></tocitem>
     <tocitem target="reference/list-configs" text="list-configs" expand="false"></tocitem>
@@ -312,12 +307,10 @@
     <tocitem target="reference/set-web-context-param" text="set-web-context-param" expand="false"></tocitem>
     <tocitem target="reference/set-web-env-entry" text="set-web-env-entry" expand="false"></tocitem>
     <tocitem target="reference/show-component-status" text="show-component-status" expand="false"></tocitem>
-    <tocitem target="reference/start-cluster" text="start-cluster" expand="false"></tocitem>
     <tocitem target="reference/start-database" text="start-database" expand="false"></tocitem>
     <tocitem target="reference/start-domain" text="start-domain" expand="false"></tocitem>
     <tocitem target="reference/start-instance" text="start-instance" expand="false"></tocitem>
     <tocitem target="reference/start-local-instance" text="start-local-instance" expand="false"></tocitem>
-    <tocitem target="reference/stop-cluster" text="stop-cluster" expand="false"></tocitem>
     <tocitem target="reference/stop-database" text="stop-database" expand="false"></tocitem>
     <tocitem target="reference/stop-domain" text="stop-domain" expand="false"></tocitem>
     <tocitem target="reference/stop-instance" text="stop-instance" expand="false"></tocitem>

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -66,9 +67,7 @@ public class ConnectorsTest extends BaseSeleniumTestClass {
         String testConnector = "connectorResource" + generateRandomString();
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
 
         clickAndWait("treeForm:tree:resources:Connectors:connectorConnectionPools:connectorConnectionPools_link", TRIGGER_CONNECTOR_CONNECTION_POOLS);
 

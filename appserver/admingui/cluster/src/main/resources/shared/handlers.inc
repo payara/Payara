@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 -->
 
@@ -49,11 +49,7 @@
 -->
 <handler id="gfj.checkNameExist">
     urlencode(value="#{requestScope.nameToCheck}" result="#{requestScope.encodedNameToCheck}");
-    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
-
-    if ("!#{requestScope.nameAlreadyExists}"){
-        gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
-    }
+    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.encodedNameToCheck}", exists="#{requestScope.nameAlreadyExists}");
     if ("!#{requestScope.nameAlreadyExists}"){
         gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.encodedNameToCheck}", exists="##{requestScope.nameAlreadyExists}");
     }

@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
+
 package org.glassfish.admingui.devtests;
 
 import static org.junit.Assert.assertEquals;
@@ -195,29 +197,4 @@ public class JavaMessageServiceTest extends BaseSeleniumTestClass {
         deleteRow("propertyForm:configs:topActionsGroup1:deleteButton", "propertyForm:configs", name);
     }
 
-    @Test
-    public void testMasterBroker() {
-        ClusterTest ct = new ClusterTest();
-        try {
-            final String FIELD_MASTER_BROKER = "propertyForm:propertyContentPage:propertySheet:propertSectionTextField:maseterBrokerProp:MasterBroker";
-
-            String clusterName = "clusterName" + generateRandomString();
-            ct.deleteAllClusters();
-            final String instance1 = clusterName + generateRandomString();
-            final String instance2 = clusterName + generateRandomString();
-            ct.createCluster(clusterName, instance1, instance2);
-            final String ELEMENT_JMS_LINK = "treeForm:tree:configurations:" + clusterName + "-config:jmsConfiguration:jmsConfiguration_link";
-
-            clickAndWait(ELEMENT_JMS_LINK, TRIGGER_JMS_SERVICE);
-            selectDropdownOption(FIELD_MASTER_BROKER, instance2);
-
-            clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
-            reset();
-            clickAndWait(ELEMENT_JMS_LINK, TRIGGER_JMS_SERVICE);
-
-            assertEquals(instance2, getFieldValue(FIELD_MASTER_BROKER));
-        } finally {
-            ct.deleteAllClusters();
-        }
-    }
 }

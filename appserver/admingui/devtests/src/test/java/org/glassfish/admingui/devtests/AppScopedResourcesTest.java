@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -182,10 +183,8 @@ public class AppScopedResourcesTest extends BaseSeleniumTestClass {
     public void deployApp(String applicationName) {
         
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
-        
+
         clickAndWait("treeForm:tree:applications:applications_link", TRIGGER_APPLICATIONS);
         int preCount = this.getTableRowCount(ELEMENT_DEPLOY_TABLE);
 

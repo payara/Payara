@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 -->
 
 <!initPage
@@ -86,7 +86,7 @@
         } 
 
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.batchJobsTableTitle}");
-        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/batch/batchJobExecution.jsf?target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.encodedTabSetName}");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/batch/batchJobExecution.jsf?target=#{pageSession.target}&tabSetName=#{pageSession.encodedTabSetName}");
     />
     </event>
 #include"/batch/assets/js/batch.js"

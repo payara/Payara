@@ -594,24 +594,6 @@ public class CommonHandlers {
         handlerCtx.setOutputValue("result", result);
     }
 
-
-    
-    /**
-     *	<p> This handler checks if particular feature is supported  </p>
-     *
-     *  <p> Output value: "supportCluster" -- Type: <code>Boolean</code>/</p>
-     *  <p> Output value: "supportHADB" -- Type: <code>Boolean</code>/</p>
-     *	@param	handlerCtx	The HandlerContext.
-     */
-//    @Handler(id="checkSupport",
-//    output={
-//        @HandlerOutput(name="supportCluster", type=Boolean.class),
-//        @HandlerOutput(name="supportHADB", type=Boolean.class)})
-//        public static void checkSupport(HandlerContext handlerCtx) {
-//            handlerCtx.setOutputValue("supportCluster", false);
-//            handlerCtx.setOutputValue("supportHADB", false);
-//    }
-
     /**
      *	<p> This handler allows the "partialRequest" flag to be set.  This
      *	    was added to work-a-round a bug in JSF where the behavior was

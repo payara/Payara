@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -115,9 +116,6 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
         final String DB_URL = "jdbc:mysql://hostname:portno/dbname?password=" + generateRandomString();
         final String DB_PASSWORD = generateRandomString();
 
-        ClusterTest ct = new ClusterTest();
-        ct.createCluster(clusterName);
-
         try {
             clickAndWait("treeForm:tree:configurations:" + clusterName + "-config:availabilityService:availabilityService_link", TRIGGER_AVAILABILTY_SERVICE_PAGE);
             clickAndWait("propertyForm:availabilityTabs:jmsAvailabilityTab", TRIGGER_JMS_AVAILABILTY);
@@ -147,8 +145,6 @@ public class AvailabilityServiceTest extends BaseSeleniumTestClass {
             setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", generateRandomString());
             clickAndWait("propertyForm:propertyContentPage:topButtons:saveButton", TRIGGER_NEW_VALUES_SAVED);
             assertTableRowCount("propertyForm:basicTable", count);
-        } finally {
-            ct.deleteAllClusters();
         }
     }
 }

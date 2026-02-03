@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- common/resourceNode/addResourcesFrame.jsf -->
 <!initPage
@@ -157,9 +158,7 @@
             <sun:property id="targetProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.resources.addResources.target}" helpText="$resource{i18nc.resources.addResources.targetHelp}" >
                      <sun:dropDown id="target" selected="#{pageSession.selectedTarget}" labels="$pageSession{targetList}"  values="$pageSession{targetList}" required="#{true}">
                         <!beforeCreate
-                            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster", result="#{pageSession.clusterList}");
                             gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.targetList}" );
-                            gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.clusterList}");
                             listAdd(list="#{pageSession.targetList}", value="server" index="0");
                         />
                      </sun:dropDown>

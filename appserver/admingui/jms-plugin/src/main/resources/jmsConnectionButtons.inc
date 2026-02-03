@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}" 
         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
@@ -88,9 +89,6 @@
             gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}", exists="#{requestScope.isServer}");
             if (#{requestScope.isServer}){
                 setAttribute(key="endp" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref");
-            }
-            if (!#{requestScope.isServer}){
-                setAttribute(key="endp" value="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref");
             }
             createMap(result="#{requestScope.refsMap}")
             mapPut(map="#{requestScope.refsMap}" key="id" value="#{pageSession.valueMap2['name']}")

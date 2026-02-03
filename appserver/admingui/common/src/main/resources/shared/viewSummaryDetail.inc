@@ -39,15 +39,10 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- common/shared/viewSummaryDetail.inc -->
 
 setPageSessionAttribute(key="viewKey" value="$pageSession{viewKeyValue}");
 setPageSessionAttribute(key="showDetail" value="$boolean{false}");
 setPageSessionAttribute(key="viewValue" value="summary");
-if( $session{supportCluster}){
-    if ( !$session{$pageSession{viewKeyValue}} ){
-	setPageSessionAttribute(key="showDetail" value="$boolean{true}");
-	setPageSessionAttribute(key="viewValue" value="detail");
-    }
-}

@@ -70,11 +70,9 @@
         }
         gf.getConfigName(target="#{instance}" configName=>$attribute{configName});
         setAttribute(key="actionLink" value="#{request.contextPath}/common/monitor/monitoringPage.jsf?configName=#{configName}");
-        gf.createAttributeMap(keys={"instanceName", "instanceLink",
-                                    "clusterLink", "actionLink", "appMonitor",
-                                    "serverMonitor", "resMonitor", "isCluster"}
+        gf.createAttributeMap(keys={"instanceName", "instanceLink", "actionLink", "appMonitor",
+                                    "serverMonitor", "resMonitor"}
                               values={"${instance}", "$attribute{instanceLink}",
-                                      "$attribute{clusterLink}",
                                       "$attribute{actionLink}",
                                       "$attribute{commonLink}/$attribute{applicationsMonitorLink}",
                                       "$attribute{commonLink}/$attribute{serverMonitorLink}",

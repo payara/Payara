@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- enableSecurityAdmin.jsf -->
 
@@ -71,34 +72,6 @@
 		</sun:hidden>
 		<sun:propertySheet id="propertySheetLogResults">
 		    <sun:propertySheetSection id="propertSectionLogResults">
-			<sun:property id="clusterProp" labelAlign="left" noWrap="true" overlapLabel="false" rendered="#{requestScope.clusters.size() != 0}">
-                <sun:radioButton 
-                    id="clusterRB" 
-                    label="$resource{i18n.common.Cluster}"
-                    name="targetType"
-                    selected="#{targetType}"  
-                    selectedValue="cluster"
-                    onChange="$('#{targetNameId}').value = $('#{clusterNameId}').value"/>
-			    <sun:dropDown id="clusterDropDown" selected="#{clusterName}" labels="#{requestScope.clusters}" submitForm="true">
-		        <!afterCreate
-		            getClientId(component="$this{component}" clientId=>$page{clusterNameId});
-		        />
-				<!beforeCreate
-				    /* Get the cluster list */
-				    gf.restRequest(
-					endpoint="#{sessionScope.REST_URL}/clusters/cluster.json"
-					method="GET"
-					result="#{requestScope.resp}");
-                    setAttribute(key="clusters" value="#{requestScope.resp.data.extraProperties.childResources}");
-                    gf.getMapKeys(Map="#{requestScope.resp.data.extraProperties.childResources}" Keys="#{requestScope.clusters}" );
-				/>
-				<!command
-					setAttribute(key="targetType" value="cluster");
-					setAttribute(key="targetName" value="$attribute{clusterName}");
-				    gf.navigate(page="#{request.contextPath}/common/appServer/domainLogs.jsf");
-				/>
-			    </sun:dropDown>
-			</sun:property>
 			<sun:property id="instanceProp" labelAlign="left" noWrap="true" overlapLabel="false">
                 <sun:radioButton 
                     id="instanceRB" 

@@ -18,39 +18,6 @@
 
 <toc version="2.0">
   <tocitem target="tasks-topic-group" text="Payara Server Administration Console Tasks" expand="false">
-    <tocitem target="task-group-clusters" text="Configuring and Managing Payara Server Clusters" expand="false">
-      <tocitem target="task-create-cluster" text="To Create a Cluster" expand="false"></tocitem>
-      <tocitem target="task-delete-cluster" text="To Delete a Cluster" expand="false"></tocitem>
-      <tocitem target="task-availabilityservice" text="To Configure Availability Settings for a Cluster" expand="false"></tocitem>
-      <tocitem target="task-start-cluster" text="To Start a Cluster" expand="false"></tocitem>
-      <tocitem target="task-stop-cluster" text="To Stop a Cluster" expand="false"></tocitem>
-      <tocitem target="task-modify-cluster-config" text="To Modify the Configuration of a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-deploy" text="To Deploy an Application to a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-list" text="To List Applications That Are Deployed to a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-undeploy" text="To Undeploy Applications From a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-remove" text="To Remove Applications From a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-edit" text="To Edit an Application That Is Deployed to a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-enable-disable" text="To Enable or Disable an Application That Is Deployed to a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-app-lb-enable-disable" text="To Enable or Disable Load Balancing for an Application That Is Deployed to a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-resource-create" text="To Create a Resource for a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-resource-display" text="To List Resources for a Cluster" expand="false"></tocitem>
-      <tocitem target="task-cluster-resource-enable-disable" text="To Enable or Disable a Resource Globally" expand="false"></tocitem>
-      <tocitem target="task-cluster-resource-edit" text="To Edit a Resource for a Cluster" expand="false"></tocitem>
-      <tocitem target="task-upgrade-components" text="To Upgrade Components Without Loss of Service" expand="false"></tocitem>
-    </tocitem>
-    <tocitem target="task-group-serverinstances" text="Configuring and Managing Clustered Payara Server Instances" expand="false">
-      <tocitem target="task-create-clustered-instance" text="To Add a Payara Server Instance to a Cluster" expand="false"></tocitem>
-      <tocitem target="task-delete-clustered-instances" text="To Delete Clustered Payara Server Instances" expand="false"></tocitem>
-      <tocitem target="task-start-clustered-instances" text="To Start Clustered Payara Server Instances" expand="false"></tocitem>
-      <tocitem target="task-stop-clustered-instances" text="To Stop Clustered Payara Server Instances" expand="false"></tocitem>
-      <tocitem target="task-view-logs-clustered-instance" text="To View Log Files for a Clustered Payara Server Instance" expand="false"></tocitem>
-      <tocitem target="task-recovertransactions" text="To Recover Transactions for a Clustered Payara Server Instance" expand="false"></tocitem>
-      <tocitem target="task-change-clustered-instance-ports" text="To Modify the Port Numbers of a Clustered Payara Server Instance" expand="false"></tocitem>
-      <tocitem target="task-set-props-clustered-instance" text="To Set Instance-Only Properties for a Clustered Payara Server Instance" expand="false"></tocitem>
-      <tocitem target="task-mon-app-clustered-instance" text="To View Application Monitoring Data for a Clustered Payara Server Instance" expand="false"></tocitem>
-      <tocitem target="task-mon-server-clustered-instance" text="To View Virtual-Server Monitoring Data for a Clustered Payara Server Instance" expand="false"></tocitem>
-      <tocitem target="task-mon-resource-clustered-instance" text="To View Resource Monitoring Data for a Clustered Payara Server Instance" expand="false"></tocitem>
-    </tocitem>
     <tocitem target="task-group-standalone-serverinstances" text="Configuring and Managing Standalone Payara Server Instances" expand="false">
       <tocitem target="task-create-standalone-instance" text="To Create a Standalone Payara Server Instance" expand="false"></tocitem>
       <tocitem target="task-delete-standalone-instances" text="To Delete Standalone Payara Server Instances" expand="false"></tocitem>
@@ -75,11 +42,6 @@
       <tocitem target="task-mon-server-standalone-instance" text="To View Virtual-Server Monitoring Data for a Standalone Payara Server Instance" expand="false"></tocitem>
       <tocitem target="task-mon-resource-standalone-instance" text="To View Resource Monitoring Data for a Standalone Payara Server Instance" expand="false"></tocitem>
     </tocitem>
-    <tocitem target="task-group-gms" text="Configuring and Managing GMS" expand="false">
-      <tocitem target="task-gmsenable" text="To Enable the Group Management Service" expand="false"></tocitem>
-      <tocitem target="task-gmscluster" text="To Configure Group Management Service Settings for a Cluster" expand="false"></tocitem>
-      <tocitem target="task-gms" text="To Configure the Group Management Service" expand="false"></tocitem>
-    </tocitem>
     <tocitem target="task-group-nodes" text="Creating, Deleting, and Editing Payara Server Nodes" expand="false">
       <tocitem target="task-createnode" text="To Create a Node" expand="false"></tocitem>
       <tocitem target="task-nodenewssh" text="To Finish the Creation of an SSH Node" expand="false"></tocitem>
@@ -97,28 +59,6 @@
     </tocitem>
   </tocitem>
   <tocitem target="ref-topic-group" text="Payara Server Administration Console Reference" expand="false">
-    <tocitem target="ref-group-clusters" text="Clusters" expand="false">
-      <tocitem target="ref-clusters" text="Clusters" expand="false"></tocitem>
-      <tocitem target="ref-clusternew" text="New Cluster" expand="false"></tocitem>
-      <tocitem target="ref-group-clustergeneral" text="General Information" expand="false">
-        <tocitem target="ref-clustergeneral" text="General Information" expand="false"></tocitem>
-        <tocitem target="ref-migrateejbtimers" text="Migrate EJB Timers" expand="false"></tocitem>
-      </tocitem>
-      <tocitem target="ref-clusterapplications" text="Applications" expand="false"></tocitem>
-      <tocitem target="ref-group-clusterinstances" text="Clustered Server Instances" expand="false">
-        <tocitem target="ref-clusterinstances" text="Clustered Server Instances" expand="false"></tocitem>
-        <tocitem target="ref-clusterinstancenew" text="New Clustered Server Instance" expand="false"></tocitem>
-        <tocitem target="ref-group-clusterinstanceedit" text="General Information" expand="false">
-          <tocitem target="ref-clusterinstanceedit" text="General Information" expand="false"></tocitem>
-          <tocitem target="ref-recovertransactions" text="Recover Transactions" expand="false"></tocitem>
-        </tocitem>
-        <tocitem target="ref-clusterinstanceconfigproperties" text="Instance System Properties" expand="false"></tocitem>
-        <tocitem target="ref-clusterinstanceproperties" text="Instance Properties" expand="false"></tocitem>
-      </tocitem>
-      <tocitem target="ref-clusterresources" text="Resources" expand="false"></tocitem>
-      <tocitem target="ref-clustersystemproperties" text="Cluster System Properties" expand="false"></tocitem>
-      <tocitem target="ref-clusterproperties" text="Cluster Properties" expand="false"></tocitem>
-    </tocitem>
     <tocitem target="ref-group-nodes" text="Nodes" expand="false">
       <tocitem target="ref-nodes" text="Nodes" expand="false"></tocitem>
       <tocitem target="ref-nodenew" text="New Node" expand="false"></tocitem>
@@ -136,9 +76,6 @@
     <tocitem target="ref-group-configuration" text="Configurations" expand="false">
       <tocitem target="ref-group-availabilityservice" text="Availability Service" expand="false">
         <tocitem target="ref-availabilityservice" text="Availability Service" expand="false"></tocitem>
-      </tocitem>
-      <tocitem target="ref-group-gms" text="Edit Group Management Service" expand="false">
-        <tocitem target="ref-gms" text="Edit Group Management Service" expand="false"></tocitem>
       </tocitem>
     </tocitem>
   </tocitem>

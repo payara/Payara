@@ -39,8 +39,7 @@
     holder.
 
 -->
-
-<!-- cluster/clusters.jsf -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -150,10 +149,6 @@
                         gf.containedIn(list="#{pageSession.standaloneList}" testStr="#{instance}" contain="#{requestScope.isStandalone}" );
                         if (#{requestScope.isStandalone}){
                             setAttribute(key="iurl" value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{instance}");
-                        }
-
-                        if ( !#{requestScope.isStandalone}){
-                            setAttribute(key="iurl" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?instanceName=#{instance}" );
                         }
                     }
 

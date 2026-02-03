@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright 2026 Payara Foundation and/or its affiliates
 -->
 
 <sun:tabSet id="batchExecutionTabs" immediate="$boolean{true}" selected="#{sessionScope.batchExecutionTabs}">
@@ -49,13 +50,13 @@
     <sun:tab id="jobParameters" immediate="$boolean{true}" text="$resource{i18nf.batch.jobParametersTab}" toolTip="$resource{i18nf.batch.jobParametersTabTip}" >
         <!command
         setSessionAttribute(key="batchExecutionTabs" value="jobParameters");
-        gf.redirect(page="#{request.contextPath}/full/batch/batchJobExecution.jsf?executionId=#{pageSession.executionId}&target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.tabSetName}");
+        gf.redirect(page="#{request.contextPath}/full/batch/batchJobExecution.jsf?executionId=#{pageSession.executionId}&target=#{pageSession.target}&tabSetName=#{pageSession.tabSetName}");
         />
     </sun:tab>
     <sun:tab id="steps" immediate="$boolean{true}" text="$resource{i18nf.batch.stepTab}" toolTip="$resource{i18nf.batch.stepTabTip}" >
         <!command
         setSessionAttribute(key="batchExecutionTabs" value="steps");
-        gf.redirect(page="#{request.contextPath}/full/batch/batchStepListing.jsf?executionId=#{pageSession.executionId}&target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.tabSetName}");
+        gf.redirect(page="#{request.contextPath}/full/batch/batchStepListing.jsf?executionId=#{pageSession.executionId}&target=#{pageSession.target}&tabSetName=#{pageSession.tabSetName}");
         />
     </sun:tab>
 </sun:tabSet>

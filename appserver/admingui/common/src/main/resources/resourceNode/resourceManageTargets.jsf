@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-     Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+     Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 -->
 
 <!-- applications/manageTargets.jsf -->
@@ -73,7 +73,6 @@
             <sun:button id="saveButton"  text="$resource{i18n.button.Save}" 
                     onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
-                    setAttribute(key="clusterEndpoint" value="#{sessionScope.REST_URL}/clusters/cluster");
                     setAttribute(key="serverEndpoint" value="#{sessionScope.REST_URL}/servers/server");
                     setAttribute(key="deploymentEndpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group");                   
                     //Convert the seleted Targets Array to String
@@ -91,25 +90,18 @@
                             removeListElement(list="#{pageSession.selectedTargetList}" name="#{newTarget}" finalList="#{pageSession.selectedTargetList}");
                         }
                         if (!#{requestScope.isAssociatedTarget}) {
-                            gf.containedIn(list="#{pageSession.clusterList}" testStr="#{newTarget}" contain="#{requestScope.isCluster}");
                             gf.containedIn(list="#{pageSession.dgList}" testStr="#{newTarget}" contain="#{requestScope.isDeploymentGroup}");
-                                                     
-                            if (#{requestScope.isCluster}) {
-                                setAttribute(key="endpoint" value="#{clusterEndpoint}/#{newTarget}/resource-ref");
-                            }
                             
                             if (#{requestScope.isDeploymentGroup}) {
                                 setAttribute(key="endpoint" value="#{deploymentEndpoint}/#{newTarget}/resource-ref");
                             }
-                            
-                            if (!#{requestScope.isCluster}) {
-                                if (!#{requestScope.isDeploymentGroup}) {                             
-                                    py.checkIfResourceIsInInstance(instanceName="#{newTarget}" resourceName="#{pageSession.resName}" isPresent="#{requestScope.isResourceInInstance}");
-                                    if ("#{requestScope.isResourceInInstance}") {
-                                         setAttribute(key="createResource" value="");
-                                    } 
-                                    setAttribute(key="endpoint" value="#{serverEndpoint}/#{newTarget}/resource-ref");
+
+                            if (!#{requestScope.isDeploymentGroup}) {
+                                py.checkIfResourceIsInInstance(instanceName="#{newTarget}" resourceName="#{pageSession.resName}" isPresent="#{requestScope.isResourceInInstance}");
+                                if ("#{requestScope.isResourceInInstance}") {
+                                    setAttribute(key="createResource" value="");
                                 }
+                                setAttribute(key="endpoint" value="#{serverEndpoint}/#{newTarget}/resource-ref");
                             }
                          
                           if ("#{createResource}=true") {   
@@ -121,21 +113,14 @@
                         }
                     }
                     foreach(var="oTarget" list="#{pageSession.selectedTargetList}") {
-                        gf.containedIn(list="#{pageSession.clusterList}" testStr="#{oTarget}" contain="#{requestScope.isCluster}");
                         gf.containedIn(list="#{pageSession.dgList}" testStr="#{oTarget}" contain="#{requestScope.isDeploymentGroup}");
-                                                 
-                        if (#{requestScope.isCluster}) {
-                            setAttribute(key="endpoint" value="#{clusterEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
-                        }
                         
                         if (#{requestScope.isDeploymentGroup}) {
                             setAttribute(key="endpoint" value="#{deploymentEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
                         }
-                        
-                        if (!#{requestScope.isCluster}) {
-                            if (!#{requestScope.isDeploymentGroup}) {
-                                setAttribute(key="endpoint" value="#{serverEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
-                            }
+
+                        if (!#{requestScope.isDeploymentGroup}) {
+                            setAttribute(key="endpoint" value="#{serverEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
                         }
                         createMap(result="#{requestScope.resRefAttrsMap}");
                         mapPut(map="#{requestScope.resRefAttrsMap}" key="target" value="#{oTarget}");

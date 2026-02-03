@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <ui:event type="initPage">
     setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
@@ -155,14 +155,9 @@
                         <sun:form id="af" prependId="false">
                             <event id="restartCheck">
                                 <ui:event type="beforeEncode">
-                                    if ("!$session{supportCluster}") {
-                                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/_get-restart-required", method="get", result="#{requestScope.result}");
-                                        setSessionAttribute(key="restartRequired", value="#{requestScope.result.data.extraProperties.entity.restartRequired}");
-                                        setSessionAttribute(key="unprocessedChanges", value="#{requestScope.result.data.extraProperties.entity.unprocessedChanges}");
-                                    }
-                                    if("$session{supportCluster}") {
-                                        setSessionAttribute(key="restartRequired" value="$boolean{false}");
-                                    }
+                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/_get-restart-required", method="get", result="#{requestScope.result}");
+                                    setSessionAttribute(key="restartRequired", value="#{requestScope.result.data.extraProperties.entity.restartRequired}");
+                                    setSessionAttribute(key="unprocessedChanges", value="#{requestScope.result.data.extraProperties.entity.unprocessedChanges}");
                                 </ui:event>
                                 <!-- Masthead Integration Point -->
                                 <ui:event type="afterCreate">

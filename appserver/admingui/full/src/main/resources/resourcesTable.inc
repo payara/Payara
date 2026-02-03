@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- full/resourcesTable.inc -->
 
@@ -75,11 +76,6 @@
         <sun:hyperlink id="link" text="#{td.value.name}"
             url="#{pageSession.editLink}?name=#{td.value.name}" />
     </sun:tableColumn>
-
-    <!--TODO enable when we enable cluster support
-    <sun:tableColumn rendered="#{supportCluster}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col2">
-        <sun:hyperlink rendered="#{supportCluster}" id="targetLink" text="#{td.value.enabled}" url="#{targetLink}?name=#{td.value.jndiName}" />
-    </sun:tableColumn>-->
 
     <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">
         <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetPage}?name=#{td.value.encodedName}&generalPage=#{pageSession.generalPage}?name=#{td.value.encodedName}" />
