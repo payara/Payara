@@ -693,6 +693,10 @@ public class MonitoringReporter extends V2DottedNameSupport {
             return false;
         }
 
+        if (targetService.isDeploymentGroup(targetName) && targets.size() > 1) {
+            targetIsMultiInstanceCluster = true;
+        }
+
         return true;
     }
 
