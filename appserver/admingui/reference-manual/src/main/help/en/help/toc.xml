@@ -68,7 +68,6 @@
     <tocitem target="reference/create-custom-resource" text="create-custom-resource" expand="false"></tocitem>
     <tocitem target="reference/create-domain" text="create-domain" expand="false"></tocitem>
     <tocitem target="reference/create-file-user" text="create-file-user" expand="false"></tocitem>
-    <tocitem target="reference/create-http-health-checker" text="create-http-health-checker" expand="false"></tocitem>
     <tocitem target="reference/create-http" text="create-http" expand="false"></tocitem>
     <tocitem target="reference/create-http-lb-config" text="create-http-lb-config" expand="false"></tocitem>
     <tocitem target="reference/create-http-lb" text="create-http-lb" expand="false"></tocitem>
@@ -122,7 +121,6 @@
     <tocitem target="reference/delete-custom-resource" text="delete-custom-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-domain" text="delete-domain" expand="false"></tocitem>
     <tocitem target="reference/delete-file-user" text="delete-file-user" expand="false"></tocitem>
-    <tocitem target="reference/delete-http-health-checker" text="delete-http-health-checker" expand="false"></tocitem>
     <tocitem target="reference/delete-http" text="delete-http" expand="false"></tocitem>
     <tocitem target="reference/delete-http-lb-config" text="delete-http-lb-config" expand="false"></tocitem>
     <tocitem target="reference/delete-http-lb" text="delete-http-lb" expand="false"></tocitem>
