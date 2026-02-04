@@ -58,6 +58,10 @@ import org.jvnet.hk2.annotations.Service;
 public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemetryBootstrapFactoryService {
     
     private OpenTelemetry runtimeSdk = null;
+    
+    private static final String OTEL_PROPERTIES_PREFIX = "otel";
+    private static final String OTEL_SYSTEM_PROPERTY_NAME = "otel.sdk.disabled";
+    private static final String OTEL_ENVIRONMENT_PROPERTY_NAME = "OTEL_SDK_DISABLED";
 
     @PostConstruct
     public void init() {
@@ -83,11 +87,11 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
 
     private boolean isOtelEnabled() {
         if (System.getProperty("otel.sdk.disabled") != null) {
-            return !"false".equalsIgnoreCase(System.getProperty("otel.sdk.disabled", "true"));
+            return !"false".equalsIgnoreCase(System.getProperty(OTEL_SYSTEM_PROPERTY_NAME, "true"));
         }
 
         if (System.getenv("OTEL_SDK_DISABLED") != null) {
-            return !"false".equalsIgnoreCase(System.getenv("OTEL_SDK_DISABLED"));
+            return !"false".equalsIgnoreCase(System.getenv(OTEL_ENVIRONMENT_PROPERTY_NAME));
         }
         return true;
     }
@@ -95,10 +99,10 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
     private Map<String, String> readOtelProperties() {
         Map<String, String> props = new HashMap<>();
         Map<String, String> environmentOtelPropsAvailable = System.getenv().entrySet().stream()
-                .filter(e -> e.getKey().startsWith("otel") || e.getKey().startsWith("OTEL"))
+                .filter(e -> e.getKey().startsWith(OTEL_PROPERTIES_PREFIX))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         Map<String, String> systemOtelPropsAvailable = System.getProperties().entrySet().stream()
-                .filter(e -> ((String) e.getKey()).startsWith("otel") || ((String) e.getKey()).startsWith("OTEL"))
+                .filter(e -> ((String) e.getKey()).startsWith(OTEL_PROPERTIES_PREFIX))
                 .map(e -> Map.entry((String) e.getKey(), (String) e.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         props.putAll(environmentOtelPropsAvailable);
