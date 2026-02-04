@@ -47,8 +47,6 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.mq:mq-client"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.glassfish:jakarta.faces"
-        update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.soteria:soteria"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.soteria:soteria.spi.bean.decorator.weld"
@@ -157,3 +155,11 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.jboss.weld.environment:weld-environment-common"
         update-types: ["version-update:semver-major"]
+
+      # jakarta.faces is intentionally pinned for bundled JSF tests and must not be updated by Dependabot.
+      - dependency-name: "org.glassfish:jakarta.faces"
+        dependency-type: "direct"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
