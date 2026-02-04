@@ -217,10 +217,10 @@ OPTIONS
        --enabled
            Allows users to access the application. If set to false, users will
            not be able to access the application. This option enables the
-           application on the specified target instance or cluster. If you
-           deploy to the target domain, this option is ignored, since
+           application on the specified target instance or deployment group.
+           If you deploy to the target domain, this option is ignored, since
            deploying to the domain doesn't deploy to a specific instance or
-           cluster. The default is true.
+           deployment group. The default is true.
 
        --generatermistubs
            If set to true, static RMI-IIOP stubs are generated and put into
@@ -304,19 +304,18 @@ OPTIONS
            domain
                Deploys the component to the domain. If domain is the target
                for an initial deployment, the application is deployed to the
-               domain, but no server instances or clusters reference the
+               domain, but no server instances or deployment groups reference the
                application. If domain is the target for a redeployment (the
                --force option is set to true), and dynamic reconfiguration is
-               enabled for the clusters or server instances that reference the
-               application, the referencing clusters or server instances
+               enabled for the server instances that reference the
+               application, the referencing server instances
                automatically get the new version of the application. If
                redeploying, and dynamic configuration is disabled, the
-               referencing clusters or server instances do not get the new
-               version of the application until the clustered or standalone
-               server instances are restarted.
+               referencing server instances do not get the new
+               version of the application until the server instances are restarted.
 
-           cluster_name
-               Deploys the component to every server instance in the cluster.
+           deployment_group
+               Deploys the component to every server instance in the deployment group.
 
            instance_name
                Deploys the component to a particular stand-alone sever
@@ -471,7 +470,7 @@ EXAMPLES
            This example deploys the enterprise application packaged in the
            Cart.ear file to the default server instance server. You can use
            the --target option to deploy to a different server instance or to
-           a cluster.
+           a deployment group.
 
                asadmin> deploy Cart.ear
                Application deployed successfully with name Cart.
@@ -480,7 +479,7 @@ EXAMPLES
        Example 2, Deploying a Web Application With the Default Context Root
            This example deploys the web application in the hello.war file to
            the default server instance server. You can use the --target option
-           to deploy to a different server instance or to a cluster.
+           to deploy to a different server instance or to a deployment group.
 
                asadmin> deploy hello.war
                Application deployed successfully with name hello.
@@ -503,7 +502,7 @@ EXAMPLES
            the bean.
 
            This example uses the --target option. The target in this example
-           is an existing cluster, cluster1.
+           is an existing deployment group, cluster1.
 
                asadmin> deploy --createtables=true --target cluster1 EmployeeEJB.jar
                Application deployed successfully with name EmployeeEJB.
@@ -515,7 +514,7 @@ EXAMPLES
 
            This example uses the --target option. The target in this example
            is an existing standalone server instance that does not belong to a
-           cluster.
+           deployment group.
 
                asadmin> deploy --target myinstance jdbcra.rar
                Application deployed successfully with name jdbcra.

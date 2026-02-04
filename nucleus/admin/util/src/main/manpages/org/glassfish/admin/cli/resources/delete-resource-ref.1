@@ -35,9 +35,9 @@ OPTIONS
                Removes the resource reference from the default server instance
                server and is the default value.
 
-           cluster_name
+           deployment_group
                Removes the resource reference from every server instance in
-               the cluster.
+               the deployment group.
 
            instance_name
                Removes the resource reference from the named unclustered
@@ -50,7 +50,7 @@ OPERANDS
 EXAMPLES
        Example 1, Removing a Reference to a Resource
            This example removes a reference to the JMS destination resource
-           jms/Topic on the cluster cluster1.
+           jms/Topic on the deployment group cluster1.
 
                asadmin> delete-resource-ref --target cluster1 jms/Topic
                resource-ref jms/Topic deleted successfully.
