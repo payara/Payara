@@ -49,6 +49,7 @@ import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilterForInstance;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -306,9 +307,56 @@ public class CollectLogFiles implements AdminCommand {
             }
             /******************************************************/
 
+            DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
+            List<Server> instances = deploymentGroup.getInstances();
 
             int instanceCount = 0;
             int errorCount = 0;
+            for (Server instance : instances) {
+                // downloading log files for all instances which is part of cluster under temp directory.
+                String instanceName = instance.getName();
+                String serverNode = instance.getNodeRef();
+                Node node = domain.getNodes().getNode(serverNode);
+                boolean errorOccur = false;
+                instanceCount++;
+
+                logFileDetails = "";
+                try {
+                    // getting log file values from logging.propertie file.
+                    logFileDetails = getInstanceLogFileDirectory(domain.getServerNamed(instanceName));
+                } catch (Exception ex) {
+                    final String errorMsg = localStrings.getLocalString(
+                            "collectlogfiles.errGettingLogFiles", "Error while getting log file attribute for {0}.", target);
+                    report.setMessage(errorMsg);
+                    report.setFailureCause(ex);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+
+                try {
+                    targetDir = makingDirectoryOnDas(instanceName, report);
+
+                    if (node.isLocal()) {
+                        String sourceDir = getLogDirForLocalNode(logFileDetails, node, serverNode, instanceName);
+                        copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, instanceName);
+                    } else {
+                        new LogFilterForInstance().downloadAllInstanceLogFiles(habitat, instance,
+                                domain, LOGGER, instanceName, targetDir.getAbsolutePath(), logFileDetails);
+                    }
+                }
+                catch (Exception ex) {
+                    errorCount++;
+                    final String errorMsg = localStrings.getLocalString(
+                            "collectlogfiles.errInstanceDownloading", "Error while downloading log files from {0}.", instanceName);
+                    errorOccur = true;
+                    finalMessage += errorMsg + "\n";
+                }
+                if (!errorOccur) {
+                    final String successMsg = localStrings.getLocalString(
+                            "collectlogfiles.successInstanceDownloading", "Log files are downloaded for {0}.", instanceName);
+                    finalMessage += successMsg + "\n";
+                }
+            }
 
             report.setMessage(finalMessage);
 
