@@ -64,6 +64,35 @@
             <artifactId>samples-test-utils</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.security.enterprise</groupId>
+            <artifactId>jakarta.security.enterprise-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Payara JAX-RS Extension for SSL Certificate Alias Configuration -->
+        <dependency>
+            <groupId>fish.payara.ecosystem.jaxrs</groupId>
+            <artifactId>rest-ssl-configuration</artifactId>
+            <version>1.2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- JAX-RS Client API -->
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Jersey Client for JAX-RS implementation -->
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -84,7 +113,7 @@
                             <executable>keytool</executable>
                             <arguments>
                                 <argument>-genkeypair</argument>
-                                <argument>-alias</argument><argument>client-certificate-validator</argument>
+                                <argument>-alias</argument><argument>client-certificate-expired</argument>
                                 <argument>-keyalg</argument><argument>RSA</argument>
                                 <argument>-keysize</argument><argument>2048</argument>
                                 <argument>-sigalg</argument><argument>SHA256withRSA</argument>
@@ -120,8 +149,47 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-valid-certificate</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>keytool</executable>
+                            <arguments>
+                                <argument>-genkeypair</argument>
+                                <argument>-alias</argument><argument>client-certificate-valid</argument>
+                                <argument>-validity</argument><argument>365</argument>
+                                <argument>-keystore</argument><argument>${project.build.directory}${file.separator}valid-keystore.jks</argument>
+                                <argument>-storepass</argument><argument>changeit</argument>
+                                <argument>-keypass</argument><argument>changeit</argument>
+                                <argument>-keyalg</argument><argument>RSA</argument>
+                                <argument>-keysize</argument><argument>2048</argument>
+                                <argument>-dname</argument><argument>CN=ValidClient, OU=Test, O=Payara, L=Pilsen, C=CZ</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-valid-certificate-to-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>keytool</executable>
+                            <arguments>
+                                <argument>-importkeystore</argument>
+                                <argument>-srckeystore</argument><argument>${project.build.directory}${file.separator}valid-keystore.jks</argument>
+                                <argument>-srcstorepass</argument><argument>changeit</argument>
+                                <argument>-destkeystore</argument><argument>${payara.home}${file.separator}glassfish${file.separator}domains${file.separator}${payara.domain.name}${file.separator}config${file.separator}cacerts.p12</argument>
+                                <argument>-deststorepass</argument><argument>changeit</argument>
+                                <argument>-noprompt</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
-            </plugin>
+            </plugin>    
         </plugins>
     </build>
 
@@ -134,6 +202,22 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
+                            <execution>
+                                <id>enable-client-auth</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipConfig}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>set</argument>
+                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
                             <!-- Restart server after editing trust store -->
                             <execution>
                                 <id>restart-payara-after-config</id>
