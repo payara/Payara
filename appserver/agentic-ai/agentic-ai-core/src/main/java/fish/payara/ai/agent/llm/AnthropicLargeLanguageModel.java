@@ -24,6 +24,7 @@ package fish.payara.ai.agent.llm;
 
 import fish.payara.ai.agent.llm.LargeLanguageModelProducer.LLMConfiguration;
 import jakarta.ai.agent.LargeLanguageModel;
+import jakarta.ai.agent.LLMException;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 
@@ -131,7 +132,7 @@ public class AnthropicLargeLanguageModel implements LargeLanguageModel {
             if (response.statusCode() != 200) {
                 logger.log(Level.WARNING, "Anthropic API error: {0} - {1}",
                         new Object[]{response.statusCode(), response.body()});
-                throw new RuntimeException("Anthropic API error: " + response.statusCode());
+                throw new LLMException("Anthropic API error: " + response.statusCode());
             }
 
             return extractResponseContent(response.body());
@@ -141,7 +142,7 @@ public class AnthropicLargeLanguageModel implements LargeLanguageModel {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-            throw new RuntimeException("Failed to communicate with Anthropic API", e);
+            throw new LLMException("Failed to communicate with Anthropic API", e);
         }
     }
 
@@ -246,7 +247,7 @@ public class AnthropicLargeLanguageModel implements LargeLanguageModel {
             return jsonb.fromJson(response, resultType);
         } catch (Exception e) {
             logger.log(Level.WARNING, "Could not parse response to type " + resultType.getName(), e);
-            throw new RuntimeException("Failed to parse LLM response to " + resultType.getName(), e);
+            throw new LLMException("Failed to parse LLM response to " + resultType.getName(), e);
         }
     }
 

@@ -42,27 +42,65 @@ package fish.payara.ai.agent.runtime;
 import jakarta.ai.agent.WorkflowContext;
 import jakarta.ai.agent.WorkflowScoped;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Payara implementation of WorkflowContext.
  * <p>
- * This implementation extends the base WorkflowContext and is
+ * This implementation implements the WorkflowContext interface and is
  * scoped to the workflow lifecycle via @WorkflowScoped.
  *
  * @author Luis Neto <luis.neto@payara.fish>
  */
 @WorkflowScoped
-public class WorkflowContextImpl extends WorkflowContext {
+public class WorkflowContextImpl implements WorkflowContext {
+
+    private final Map<String, Object> attributes = new ConcurrentHashMap<>();
+    private Object triggerEvent;
+
+    @Override
+    public void setAttribute(String name, Object value) {
+        if (name == null) {
+            throw new IllegalArgumentException("Attribute name must not be null");
+        }
+        if (value == null) {
+            removeAttribute(name);
+        } else {
+            attributes.put(name, value);
+        }
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return attributes.get(name);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        attributes.remove(name);
+    }
+
+    @Override
+    public Set<String> getAttributeNames() {
+        return Collections.unmodifiableSet(attributes.keySet());
+    }
+
+    @Override
+    public Object getTriggerEvent() {
+        return triggerEvent;
+    }
 
     /**
      * Sets the trigger event that started this workflow.
-     * This overrides the protected method from the base class to make it accessible
-     * to the WorkflowExecutor.
+     * This method is called by the runtime when the workflow is initiated.
      *
      * @param event the trigger event
      */
-    @Override
     public void setTriggerEvent(Object event) {
-        super.setTriggerEvent(event);
+        this.triggerEvent = event;
     }
 
     /**
@@ -89,18 +127,6 @@ public class WorkflowContextImpl extends WorkflowContext {
      * @return true if the attribute exists
      */
     public boolean hasAttribute(String name) {
-        return getAttribute(name) != null;
-    }
-
-    /**
-     * Removes an attribute from the context.
-     *
-     * @param name the attribute name
-     * @return the previous value, or null if not found
-     */
-    public Object removeAttribute(String name) {
-        Object value = getAttribute(name);
-        setAttribute(name, null);
-        return value;
+        return attributes.containsKey(name);
     }
 }

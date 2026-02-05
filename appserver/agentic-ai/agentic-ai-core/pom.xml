@@ -64,8 +64,8 @@
         <!-- Jakarta Agentic AI API -->
         <dependency>
             <groupId>jakarta.ai</groupId>
-            <artifactId>jakarta-agentic-ai-api</artifactId>
-            <version>1.0.0</version>
+            <artifactId>jakarta.agentic-ai-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <!-- CDI API -->
