@@ -128,6 +128,7 @@
         <module>payara-appserver-modules</module>
         <module>docker</module>
         <module>data</module>
+        <module>agentic-ai</module>
     </modules>
 
 

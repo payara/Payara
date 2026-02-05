@@ -91,6 +91,8 @@
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>
         <module>data</module>
+        <module>agentic-ai</module>
+        <module>agentic-ai-quickstart</module>
         <module>versioned-deployment</module>
         <module>microprofile-jwt-error-cache</module>
     </modules>
