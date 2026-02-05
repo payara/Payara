@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2017-2023 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -217,15 +218,6 @@ public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSe
                     // tolerable of the partial deployment case
                     report.setMessage(localStrings.getLocalString("appref.not.exists","Target {1} does not have a reference to application {0}.", appName, target));
                     report.setActionExitCode(ActionReport.ExitCode.WARNING);
-                }
-                return;
-            }
-
-            if (application.isLifecycleModule()) {
-                try  {
-                    deployment.unregisterAppFromDomainXML(appName, target, true);
-                } catch(Exception e) {
-                    report.failure(logger, e.getMessage());
                 }
                 return;
             }
