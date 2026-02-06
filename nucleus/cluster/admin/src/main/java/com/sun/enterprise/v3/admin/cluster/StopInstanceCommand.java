@@ -50,8 +50,6 @@ import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.v3.admin.StopServer;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -137,7 +135,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     private Server instance;
     File pidFile = null;
     SFTPClient ftpClient = null;
-    private WindowsRemoteFile wrf;
 
     @Override
     public void execute(AdminCommandContext context) {
