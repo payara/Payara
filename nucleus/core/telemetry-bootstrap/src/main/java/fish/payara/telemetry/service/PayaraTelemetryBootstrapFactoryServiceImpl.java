@@ -67,9 +67,6 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
     @PostConstruct
     public void init() {
         runtimeSdk = createTelemetryRuntimeInstance();
-        if (GlobalOpenTelemetry.get() == null) {
-            GlobalOpenTelemetry.set(runtimeSdk);
-        }
     }
 
     @Override
