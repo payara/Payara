@@ -74,11 +74,6 @@ public class RuntimeDescriptorFactory {
     private static void initMapping() {
         descriptorClasses = new HashMap();
 
-        // weblogic DD
-        register(new XMLElement(RuntimeTagNames.RESOURCE_DESCRIPTION), ResourceReferenceDescriptor.class);
-        register(new XMLElement(RuntimeTagNames.RESOURCE_ENV_DESCRIPTION), ResourceEnvReferenceDescriptor.class);
-        register(new XMLElement(RuntimeTagNames.EJB_REFERENCE_DESCRIPTION), EjbReference.class);
-
 	// connector related
 	register(new XMLElement(RuntimeTagNames.PRINCIPAL), Principal.class);
 	register(new XMLElement(RuntimeTagNames.BACKEND_PRINCIPAL), Principal.class);

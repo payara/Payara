@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
@@ -2429,13 +2428,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void validateUndeploymentTarget(String target, String name) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.size() > 1) {
-            Application app = applications.getApplication(name);
             if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
-                if (app.isLifecycleModule()) {
-                    throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name));
-                } else {
-                    throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
-                }
+                throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
             }
         }
     }

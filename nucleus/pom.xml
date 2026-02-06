@@ -91,7 +91,7 @@
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.3</classmate.version>
-        <jboss-logging.version>3.6.1.Final</jboss-logging.version>
+        <jboss-logging.version>3.6.2.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
 
@@ -150,7 +150,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.3.0</kotlin-version>
+        <kotlin-version>2.3.10</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>

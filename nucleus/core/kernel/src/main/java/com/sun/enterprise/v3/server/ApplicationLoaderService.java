@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.server;
 
@@ -373,11 +373,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
         String source = app.getLocation();
         final String appName = app.getName();
-
-        // lifecycle modules are loaded separately
-        if (Boolean.valueOf(app.getDeployProperties().getProperty(ServerTags.IS_LIFECYCLE))) {
-            return Collections.emptyList();
-        }
 
         URI uri;
         try {
