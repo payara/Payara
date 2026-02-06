@@ -138,9 +138,7 @@ public class WarHandler extends AbstractArchiveHandler {
         try {
             WebXmlParser webXmlParser = getWebXmlParser(archive, Application.createApplication());
             versionIdentifierValue = webXmlParser.getVersionIdentifier();
-        } catch (XMLStreamException e) {
-            logger.log(Level.SEVERE, e.getMessage());
-        } catch (IOException e) {
+        } catch (XMLStreamException | IOException e) {
             logger.log(Level.SEVERE, e.getMessage());
         }
         return versionIdentifierValue;
@@ -222,9 +220,6 @@ public class WarHandler extends AbstractArchiveHandler {
     protected WebXmlParser getWebXmlParser(ReadableArchive archive, Application application)
             throws XMLStreamException, IOException {
         
-        if (!archive.exists(PAYARA_WEB_XML)) {
-            throw new FileNotFoundException(PAYARA_WEB_XML);
-        }
         return new PayaraWebXmlParser(archive, application);
     }
 
