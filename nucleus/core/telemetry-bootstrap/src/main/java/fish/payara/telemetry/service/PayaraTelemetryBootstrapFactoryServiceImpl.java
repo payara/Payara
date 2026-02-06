@@ -40,6 +40,7 @@
 package fish.payara.telemetry.service;
 
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import jakarta.annotation.PostConstruct;
@@ -66,6 +67,9 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
     @PostConstruct
     public void init() {
         runtimeSdk = createTelemetryRuntimeInstance();
+        if (GlobalOpenTelemetry.get() == null) {
+            GlobalOpenTelemetry.set(runtimeSdk);
+        }
     }
 
     @Override
@@ -98,15 +102,15 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
 
     private Map<String, String> readOtelProperties() {
         Map<String, String> props = new HashMap<>();
-        Map<String, String> environmentOtelPropsAvailable = System.getenv().entrySet().stream()
-                .filter(e -> e.getKey().startsWith(OTEL_PROPERTIES_PREFIX))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         Map<String, String> systemOtelPropsAvailable = System.getProperties().entrySet().stream()
                 .filter(e -> ((String) e.getKey()).startsWith(OTEL_PROPERTIES_PREFIX))
                 .map(e -> Map.entry((String) e.getKey(), (String) e.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        props.putAll(environmentOtelPropsAvailable);
+        Map<String, String> environmentOtelPropsAvailable = System.getenv().entrySet().stream()
+                .filter(e -> e.getKey().startsWith(OTEL_PROPERTIES_PREFIX))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         props.putAll(systemOtelPropsAvailable);
+        props.putAll(environmentOtelPropsAvailable);
         return props;
     }
 
