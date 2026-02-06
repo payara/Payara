@@ -33,7 +33,7 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
-<!--  Portions Copyright [2022] Payara Foundation and/or affiliates -->
+<!--  Portions Copyright 2022-2026 Payara Foundation and/or affiliates -->
 
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
@@ -949,34 +949,10 @@ For the default file provider, the param used is: filename.
      file at every module and application directory level to trigger reload.
      polling frequency is controlled by reload-poll-interval-in-seconds
   -->
-<!ELEMENT applications ((lifecycle-module | j2ee-application | ejb-module | 
+<!ELEMENT applications ((j2ee-application | ejb-module |
                          web-module | connector-module)*)>
 <!ATTLIST applications dynamic-reload-enabled                   %boolean; "false"
                        dynamic-reload-poll-interval-in-seconds  CDATA     "2">
-<!-- 
-     Server Lifecycle Listener Modules 
-
-     name       unqiue identifier for the deployed server lifecycle event 
-                listener module. 
-     class-name fully qualified name of the startup class.
-     classpath  where this module is actually located, if it is not under 
-                applications-root
-     load-order integer value that can be used to force the order in which deployed 
-                lifecycle modules are loaded at server start up. Smaller numbered
-                modules get loaded sooner. Order is unspecified if two or more 
-                lifecycle modules have the same load-order value.
-     is-failure-fatal, if true, aborts server start up if this module does not 
-                load properly.
-     enabled    boolean attribute. If set to "false" this module will not be 
-                loaded at server start up.
--->
-<!ELEMENT lifecycle-module (description?, property*)>
-<!ATTLIST lifecycle-module  name             CDATA     #REQUIRED
-                            class-name       CDATA     #REQUIRED
-                            classpath        CDATA     #IMPLIED
-                            load-order       CDATA     #IMPLIED
-                            is-failure-fatal %boolean; "false"
-                            enabled          %boolean; "true">
 
 <!ELEMENT j2ee-application (description?)>
 <!ATTLIST j2ee-application  name                      CDATA     #REQUIRED
