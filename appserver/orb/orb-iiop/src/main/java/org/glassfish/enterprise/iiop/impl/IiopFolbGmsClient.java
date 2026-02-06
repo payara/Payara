@@ -243,17 +243,18 @@ public class IiopFolbGmsClient implements ClusterListener {
     }
 
     private int resolvePort(Server server, IiopListener listener) {
-        fineLog("resolvePort: server {0} listener {1}", server, listener);
+        fineLog("resolvePort: server {0} listener {1}", server.getName(), listener.getId());
 
         IiopListener ilRaw = GlassFishConfigBean.getRawView(listener);
-        fineLog("resolvePort: ilRaw {0}", ilRaw);
-
         PropertyResolver pr = new PropertyResolver(domain, server.getName());
-        fineLog("resolvePort: pr {0}", pr);
 
         String port = pr.getPropertyValue(ilRaw.getPort());
         fineLog("resolvePort: port {0}", port);
 
+        if (port == null) {
+            fineLog("resolvePort: getPropertyValue returned null, setting port to raw value {0}", ilRaw.getPort());
+            port = ilRaw.getPort();
+        }
         return Integer.parseInt(port);
     }
 
