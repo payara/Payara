@@ -71,7 +71,7 @@
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
-        <smallrye-config.version>3.15.1</smallrye-config.version>
+        <smallrye-config.version>3.16.0</smallrye-config.version>
         <smallrye-common.version>2.15.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
@@ -379,7 +379,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.27.6</version>
+                <version>3.27.7</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

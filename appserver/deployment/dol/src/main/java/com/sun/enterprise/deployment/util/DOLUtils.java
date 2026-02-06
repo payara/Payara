@@ -150,15 +150,6 @@ public class DOLUtils {
     @LogMessageInfo(message = "DOLUtils: converting EJB to web bundle id {0}.", level="FINER")
     private static final String CONVERT_EJB_TO_WEB_ID = "AS-DEPLOYMENT-00017";
 
-    /** The system property to control the precedence between GF DD
-    // and WLS DD when they are both present. When this property is
-    // set to true, GF DD will have higher precedence over WLS DD. */
-    private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
-
-    /** The system property to control whether we should just ignore
-    // WLS DD. When this property is set to true, WLS DD will be ignored.*/
-    private static final String IGNORE_WLSDD = "ignore.wlsdd";
-
     private static final String ID_SEPARATOR = "_";
     private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.glassfish.wasp.", "fish.payara.", "com.ibm.jbatch.",
                             "org.hibernate.validator.", "org.jboss.weld.", "com.ctc.wstx.", "java.", "javax.", "jakarta."};
@@ -378,22 +369,10 @@ public class DOLUtils {
         return result;
     }
 
-    /** returns true if GF DD should have higher precedence over
-     * WLS DD when both present in the same archive
-     * @return  */
-    public static boolean isGFDDOverWLSDD() {
-        return Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD));
-    }
-
-    /** returns true if we should ignore WLS DD in the archive
-     * @return  */
-    public static boolean isIgnoreWLSDD() {
-        return Boolean.valueOf(System.getProperty(IGNORE_WLSDD));
-    }
-
-    /**
-     * Given a list of different deployment descriptor files, this returns a new list containing only the Payara file.
-     */
+    /** process the list of the configuration files, and return the sorted
+    // configuration file with precedence from high to low
+    // this list does not take consideration of what runtime files are
+    // present in the current archive */
     private static List<ConfigurationDeploymentDescriptorFile> extractPayaraDDFile(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType, ReadableArchive archive) {
         ConfigurationDeploymentDescriptorFile payaraConfDD = null;
         for (ConfigurationDeploymentDescriptorFile ddFile : ddFiles) {
@@ -464,11 +443,7 @@ public class DOLUtils {
         List<ConfigurationDeploymentDescriptorFile> archivistConfDDFiles = archivist.getConfigurationDDFiles();
         for (ConfigurationDeploymentDescriptorFile ddFile : extractPayaraDDFile(archivistConfDDFiles, archivist.getModuleType(), embeddedArchive)) {
             String ddPath = ddFile.getDeploymentDescriptorPath();
-            if (ddPath.contains(DescriptorConstants.WLS) && appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
-                // TODO: need to revisit this for WLS alt-dd pattern
-                confDD = ddFile;
-                altRuntimeDDPath = DescriptorConstants.WLS + altDDPath;
-            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX) && appArchive.exists(DescriptorConstants.PAYARA_PREFIX + altDDPath)) {
+            if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX) && appArchive.exists(DescriptorConstants.PAYARA_PREFIX + altDDPath)) {
                 confDD = ddFile;
                 altRuntimeDDPath = DescriptorConstants.PAYARA_PREFIX + altDDPath;
             } else if (ddPath.contains(DescriptorConstants.GF_PREFIX) && appArchive.exists(DescriptorConstants.GF_PREFIX + altDDPath)) {
@@ -739,27 +714,6 @@ public class DOLUtils {
         }
         return false;
     }
-
-  /**
-   * Returns a list of the proprietary schema namespaces
-     * @return
-   */
-  public static List<String> getProprietarySchemaNamespaces() {
-    ArrayList<String> ns = new ArrayList<>();
-    ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_BEA);
-    ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_ORACLE);
-    return ns;
-  }
-
-  /**
-   * Returns a list of the proprietary dtd system IDs
-     * @return
-   */
-  public static List<String> getProprietaryDTDStart() {
-    ArrayList<String> ns = new ArrayList<>();
-    ns.add(DescriptorConstants.WLS_DTD_SYSTEM_ID_BEA);
-    return ns;
-  }
 
   public static boolean isEarApplication(JndiNameEnvironment env) {
     return env instanceof Application;

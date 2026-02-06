@@ -114,10 +114,6 @@ public class WarHandler extends AbstractArchiveHandler {
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WarHandler.class);
 
 
-    //the following two system properties need to be in sync with DOLUtils
-    private static final boolean gfDDOverWLSDD = Boolean.valueOf(System.getProperty("gfdd.over.wlsdd"));
-    private static final boolean ignoreWLSDD = Boolean.valueOf(System.getProperty("ignore.wlsdd"));
-
     @Inject @Named(WarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
 
