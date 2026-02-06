@@ -967,4 +967,8 @@ public final class GlassFishORBManager {
         return corbalocURLString;
     }
 
+    String getIIOPEndpoints() {
+        return gmsClient.getIIOPEndpoints();
+    }
+
 }

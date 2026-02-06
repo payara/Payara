@@ -131,6 +131,11 @@ public class GlassFishORBFactoryImpl implements GlassFishORBFactory, PostConstru
         return (gfORBManager.isEjbAdapterName(sri.adapter_name()) &&
                 (!gfORBManager.isIsACall(sri.operation())));
     }
+
+    @Override
+    public String getIIOPEndpoints() {
+        return gfORBManager.getIIOPEndpoints() ;
+    }
     
     @Override
     public boolean isClusterActive() {

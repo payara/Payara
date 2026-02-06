@@ -404,15 +404,19 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
      * @return
      */
     private String targetServerSetting(final Properties props) {
-        // Find the IIOP listener with the default listener ID.
-        String port = null;
-        for (IiopListener listener : iiopService.getIiopListener()) {
-            if (listener.getId().equals(DEFAULT_ORB_LISTENER_ID)) {
-                port = listener.getPort();
-                break;
+        String result = orbFactory.getIIOPEndpoints();
+        if (result == null || result.isEmpty()) {
+            // Find the IIOP listener with the default listener ID.
+            String port = null;
+            for (IiopListener listener : iiopService.getIiopListener()) {
+                if (listener.getId().equals(DEFAULT_ORB_LISTENER_ID)) {
+                    port = listener.getPort();
+                    break;
+                }
             }
+            result = props.getProperty("request.host") + ":" + port;
         }
-        String result = props.getProperty("request.host") + ":" + port;
+
         return result;
     }
 

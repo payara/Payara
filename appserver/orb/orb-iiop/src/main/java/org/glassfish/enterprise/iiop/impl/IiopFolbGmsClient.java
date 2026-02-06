@@ -41,40 +41,42 @@
 
 package org.glassfish.enterprise.iiop.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-
-import com.sun.logging.LogDomains;
-
-import com.sun.corba.ee.spi.orb.ORB ;
+import com.sun.corba.ee.impl.folb.GroupInfoServiceBase;
 import com.sun.corba.ee.spi.folb.ClusterInstanceInfo;
 import com.sun.corba.ee.spi.folb.GroupInfoService;
-import com.sun.corba.ee.impl.folb.GroupInfoServiceBase;
 import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
 import com.sun.corba.ee.spi.folb.SocketInfo;
 import com.sun.corba.ee.spi.misc.ORBConstants;
+import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
-import org.glassfish.orb.admin.config.IiopListener;
-import org.glassfish.orb.admin.config.IiopService;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.config.serverbeans.Nodes;
-import com.sun.enterprise.config.serverbeans.Node;
-import fish.payara.nucleus.cluster.PayaraCluster;
+import com.sun.logging.LogDomains;
 import fish.payara.nucleus.cluster.ClusterListener;
 import fish.payara.nucleus.cluster.MemberEvent;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import static org.glassfish.api.naming.NamingClusterInfo.IIOP_CLUSTER_UPDATE_PROPERTY;
+import fish.payara.nucleus.cluster.PayaraCluster;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.PropertyResolver;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.orb.admin.config.IiopListener;
+import org.glassfish.orb.admin.config.IiopService;
 import org.omg.CORBA.ORBPackage.InvalidName;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static org.glassfish.api.naming.NamingClusterInfo.IIOP_CLUSTER_UPDATE_PROPERTY;
 
 // REVISIT impl
 //import com.sun.corba.ee.impl.folb.ServerGroupManager;
@@ -83,19 +85,18 @@ import org.omg.CORBA.ORBPackage.InvalidName;
  * @author Harold Carr
  */
 public class IiopFolbGmsClient implements ClusterListener {
-    private static final Logger _logger =
-       LogDomains.getLogger(IiopFolbGmsClient.class,
-           LogDomains.CORBA_LOGGER);
+
+    private static final Logger _logger = LogDomains.getLogger(IiopFolbGmsClient.class, LogDomains.CORBA_LOGGER);
 
     private ServiceLocator services;
 
-    private Domain domain ;
+    private Domain domain;
 
-    private Server myServer ;
+    private Server myServer;
 
-    private Nodes nodes ;
+    private Nodes nodes;
 
-    private Map<String, ClusterInstanceInfo> currentMembers;
+    private Map<String, ClusterInstanceInfo> currentMembers = new HashMap<>();
 
     private GroupInfoService gis;
 
@@ -106,9 +107,9 @@ public class IiopFolbGmsClient implements ClusterListener {
     private static final String USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY = "fish.payara.iiop.gmsClient."
             + USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY;
 
-    private void fineLog( String fmt, Object... args ) {
-        if(_logger.isLoggable(Level.FINE)) {
-		_logger.log(Level.FINE, fmt, args ) ;
+    private void fineLog(String fmt, Object... args) {
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, fmt, args);
         }
     }
 
@@ -137,6 +138,12 @@ public class IiopFolbGmsClient implements ClusterListener {
                 gis = new GroupInfoServiceGMSImpl();
                 fineLog("IiopFolbGmsClient: IIOP GIS created");
 
+                currentMembers = getAllClusterInstanceInfo() ;
+                fineLog( "IiopFolbGmsClient: currentMembers = ", currentMembers);
+
+//                currentMembers.put(myServer.getName(), getClusterInstanceInfo(myServer.getName()));
+                fineLog("iiop instance info = " + getIIOPEndpoints());
+
                 cluster.addClusterListener(this);
 
                 fineLog("IiopFolbGmsClient: GMS action factories added");
@@ -151,225 +158,253 @@ public class IiopFolbGmsClient implements ClusterListener {
         }
     }
 
-    public void setORB( ORB orb ) {
+    public void setORB(ORB orb) {
         try {
-            orb.register_initial_reference(
-                    ORBConstants.FOLB_SERVER_GROUP_INFO_SERVICE,
-                    (org.omg.CORBA.Object) gis);
-            fineLog( ".initGIS: naming registration complete: {0}", gis);
+            orb.register_initial_reference(ORBConstants.FOLB_SERVER_GROUP_INFO_SERVICE, (org.omg.CORBA.Object) gis);
+            fineLog(".initGIS: naming registration complete: {0}", gis);
 
             // Just for logging
-            GroupInfoService gisRef = (GroupInfoService)orb.resolve_initial_references(
-                ORBConstants.FOLB_SERVER_GROUP_INFO_SERVICE);
-            List<ClusterInstanceInfo> lcii =
-                    gisRef.getClusterInstanceInfo(null);
-            fineLog( "Results from getClusterInstanceInfo:");
+            GroupInfoService gisRef = (GroupInfoService) orb.resolve_initial_references(ORBConstants.FOLB_SERVER_GROUP_INFO_SERVICE);
+            List<ClusterInstanceInfo> lcii = gisRef.getClusterInstanceInfo(null);
+            fineLog("Results from getClusterInstanceInfo:");
             if (lcii != null) {
                 for (ClusterInstanceInfo cii : lcii) {
-                    fineLog( cii.toString() );
+                    fineLog(cii.toString());
                 }
             }
         } catch (InvalidName e) {
-            fineLog( ".initGIS: registering GIS failed: {0}", e);
+            fineLog(".initGIS: registering GIS failed: {0}", e);
         }
     }
 
     public GroupInfoService getGroupInfoService() {
-        return gis ;
+        return gis;
     }
 
     public boolean isGMSAvailable() {
         return isDeploymentGroupsActive();
     }
 
-    ////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////
     //
     // Implementation
     //
-
     private boolean isDeploymentGroupsActive() {
-    	return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
+        return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
     }
 
-    private void removeMember(final String signal)
-    {
+    private void removeMember(final String signal) {
         // TBD really need to map to real member name
-	String instanceName = signal;
-	try {
-            fineLog( "IiopFolbGmsClient.removeMember->: {0}",
-                instanceName);
+        String instanceName = signal;
+        try {
+            fineLog("IiopFolbGmsClient.removeMember->: {0}", instanceName);
 
-	    synchronized (this) {
-		if (currentMembers.get(instanceName) != null) {
-		    currentMembers.remove(instanceName);
+            synchronized (this) {
+                if (currentMembers.get(instanceName) != null) {
+                    currentMembers.remove(instanceName);
 
-                    fineLog(
-                        "IiopFolbGmsClient.removeMember: {0} removed - notifying listeners",
-                        instanceName);
+                    fineLog("IiopFolbGmsClient.removeMember: {0} removed - notifying listeners", instanceName);
 
-		    gis.notifyObservers();
+                    gis.notifyObservers();
 
-                    fineLog(
-                        "IiopFolbGmsClient.removeMember: {0} - notification complete",
-                        instanceName);
-		} else {
-                    fineLog(
-                        "IiopFolbGmsClient.removeMember: {0} not present: no action",
-                        instanceName);
-		}
-	    }
-	} finally {
-            fineLog( "IiopFolbGmsClient.removeMember<-: {0}", instanceName);
-	}
+                    fineLog("IiopFolbGmsClient.removeMember: {0} - notification complete", instanceName);
+                } else {
+                    fineLog("IiopFolbGmsClient.removeMember: {0} not present: no action", instanceName);
+                }
+            }
+        } finally {
+            fineLog("IiopFolbGmsClient.removeMember<-: {0}", instanceName);
+        }
     }
 
-    private void addMember(final String signal)
-    {
-	final String instanceName = signal;
-	try {
-            fineLog( "IiopFolbGmsClient.addMember->: {0}", instanceName);
+    private void addMember(final String signal) {
+        final String instanceName = signal;
+        try {
+            fineLog("IiopFolbGmsClient.addMember->: {0}", instanceName);
 
-	    synchronized (this) {
-		if (currentMembers.get(instanceName) != null) {
-                    fineLog( "IiopFolbGmsClient.addMember: {0} already present: no action",
-                            instanceName);
-		} else {
-		    ClusterInstanceInfo clusterInstanceInfo =
-                        getClusterInstanceInfo(instanceName) ;
+            synchronized (this) {
+                if (currentMembers.get(instanceName) != null) {
+                    fineLog("IiopFolbGmsClient.addMember: {0} already present: no action", instanceName);
+                } else {
+                    ClusterInstanceInfo clusterInstanceInfo = getClusterInstanceInfo(instanceName);
 
-		    currentMembers.put( clusterInstanceInfo.name(),
-                        clusterInstanceInfo);
+                    currentMembers.put(clusterInstanceInfo.name(), clusterInstanceInfo);
 
-                    fineLog( "IiopFolbGmsClient.addMember: {0} added - notifying listeners",
-                        instanceName);
+                    fineLog("IiopFolbGmsClient.addMember: {0} added - notifying listeners", instanceName);
 
-		    gis.notifyObservers();
+                    gis.notifyObservers();
 
-                    fineLog( "IiopFolbGmsClient.addMember: {0} - notification complete",
-                        instanceName);
-		}
-	    }
-	} finally {
-            fineLog( "IiopFolbGmsClient.addMember<-: {0}", instanceName);
-	}
+                    fineLog("IiopFolbGmsClient.addMember: {0} - notification complete", instanceName);
+                }
+            }
+        } finally {
+            fineLog("IiopFolbGmsClient.addMember<-: {0}", instanceName);
+        }
     }
 
-    private int resolvePort( Server server, IiopListener listener ) {
-        fineLog( "resolvePort: server {0} listener {1}", server, listener ) ;
+    private int resolvePort(Server server, IiopListener listener) {
+        fineLog("resolvePort: server {0} listener {1}", server, listener);
 
-        IiopListener ilRaw = GlassFishConfigBean.getRawView( listener ) ;
-        fineLog( "resolvePort: ilRaw {0}", ilRaw ) ;
+        IiopListener ilRaw = GlassFishConfigBean.getRawView(listener);
+        fineLog("resolvePort: ilRaw {0}", ilRaw);
 
-        PropertyResolver pr = new PropertyResolver( domain, server.getName() ) ;
-        fineLog( "resolvePort: pr {0}", pr ) ;
+        PropertyResolver pr = new PropertyResolver(domain, server.getName());
+        fineLog("resolvePort: pr {0}", pr);
 
-        String port = pr.getPropertyValue( ilRaw.getPort() ) ;
-        fineLog( "resolvePort: port {0}", port ) ;
+        String port = pr.getPropertyValue(ilRaw.getPort());
+        fineLog("resolvePort: port {0}", port);
 
-        return Integer.parseInt(port) ;
+        return Integer.parseInt(port);
     }
 
-    private ClusterInstanceInfo getClusterInstanceInfo( Server server,
-        Config config, boolean assumeInstanceIsRunning ) {
+    private ClusterInstanceInfo getClusterInstanceInfo(Server server, Config config, boolean assumeInstanceIsRunning) {
         if (server == null) {
-            return null ;
+            return null;
         }
 
         if (!assumeInstanceIsRunning) {
             if (!server.isRunning()) {
-                return null ;
+                return null;
             }
         }
 
-        fineLog( "getClusterInstanceInfo: server {0}, config {1}",
-            server, config ) ;
+        fineLog("getClusterInstanceInfo: server {0}, config {1}", server, config);
 
-        final String name = server.getName() ;
-        fineLog( "getClusterInstanceInfo: name {0}", name ) ;
+        final String name = server.getName();
+        fineLog("getClusterInstanceInfo: name {0}", name);
 
-        final int weight = Integer.parseInt( server.getLbWeight() ) ;
-        fineLog( "getClusterInstanceInfo: weight {0}", weight ) ;
+        final int weight = Integer.parseInt(server.getLbWeight());
+        fineLog("getClusterInstanceInfo: weight {0}", weight);
 
-        final IiopService iservice = config.getExtensionByType(IiopService.class) ;
-        fineLog( "getClusterInstanceInfo: iservice {0}", iservice ) ;
+        final IiopService iservice = config.getExtensionByType(IiopService.class);
+        fineLog("getClusterInstanceInfo: iservice {0}", iservice);
 
-        final String nodeName = server.getNodeRef() ;
-        String hostName = nodeName ;
+        final String nodeName = server.getNodeRef();
+        String hostName = nodeName;
         if (nodes != null) {
-            Node node = nodes.getNode( nodeName ) ;
+            Node node = nodes.getNode(nodeName);
             if (node != null) {
                 // If this is the local node, and the useNodeHostForLocalNode property has not been set at the ORB or
                 // System level, use the local host name
                 if ((node.isLocal() && !Boolean.getBoolean(USE_NODE_HOST_FOR_LOCAL_NODE_SYSTEM_PROPERTY))
                         && (node.isLocal() && !Boolean.parseBoolean(iservice.getOrb().getPropertyValue(
-                                USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY, "false")))) {
+                        USE_NODE_HOST_FOR_LOCAL_NODE_PROPERTY, "false")))) {
                     try {
-                        hostName = InetAddress.getLocalHost().getHostName() ;
+                        hostName = InetAddress.getLocalHost().getHostName();
                     } catch (UnknownHostException exc) {
-                        fineLog( "getClusterInstanceInfo: caught exception for localhost lookup {0}",
-                            exc )  ;
+                        fineLog("getClusterInstanceInfo: caught exception for localhost lookup {0}", exc);
                     }
                 } else {
-                    hostName = node.getNodeHost() ;
+                    hostName = node.getNodeHost();
                 }
             }
         }
 
-        fineLog( "getClusterInstanceInfo: host {0}", hostName ) ;
+        fineLog("getClusterInstanceInfo: host {0}", hostName);
 
-        final List<IiopListener> listeners = iservice.getIiopListener() ;
-        fineLog( "getClusterInstanceInfo: listeners {0}", listeners ) ;
+        final List<IiopListener> listeners = iservice.getIiopListener();
+        fineLog("getClusterInstanceInfo: listeners {0}", listeners);
 
-        final List<SocketInfo> sinfos = new ArrayList<SocketInfo>() ;
+        final List<SocketInfo> sinfos = new ArrayList<>();
         for (IiopListener il : listeners) {
-            SocketInfo sinfo = new SocketInfo( il.getId(), hostName,
-                resolvePort( server, il ) ) ;
-            sinfos.add( sinfo ) ;
+            SocketInfo sinfo = new SocketInfo(il.getId(), hostName, resolvePort(server, il));
+            sinfos.add(sinfo);
         }
-        fineLog( "getClusterInstanceInfo: sinfos {0}", sinfos ) ;
+        fineLog("getClusterInstanceInfo: sinfos {0}", sinfos);
 
-        final ClusterInstanceInfo result = new ClusterInstanceInfo( name, weight,
-            sinfos ) ;
-        fineLog( "getClusterInstanceInfo: result {0}", result ) ;
+        final ClusterInstanceInfo result = new ClusterInstanceInfo(name, weight, sinfos);
+        fineLog("getClusterInstanceInfo: result {0}", result);
 
-        return result ;
+        return result;
     }
 
-    private Config getConfigForServer( Server server ) {
-        fineLog( "getConfigForServer: server {0}", server ) ;
+    private Config getConfigForServer(Server server) {
+        fineLog("getConfigForServer: server {0}", server);
 
-        String configRef = server.getConfigRef() ;
-        fineLog( "getConfigForServer: configRef {0}", configRef ) ;
+        String configRef = server.getConfigRef();
+        fineLog("getConfigForServer: configRef {0}", configRef);
 
-        Configs configs = services.getService( Configs.class ) ;
-        fineLog( "getConfigForServer: configs {0}", configs ) ;
+        Configs configs = services.getService(Configs.class);
+        fineLog("getConfigForServer: configs {0}", configs);
 
-        Config config = configs.getConfigByName(configRef) ;
-        fineLog( "getConfigForServer: config {0}", config ) ;
+        Config config = configs.getConfigByName(configRef);
+        fineLog("getConfigForServer: config {0}", config);
 
-        return config ;
+        return config;
     }
 
     // For addMember.
-    private ClusterInstanceInfo getClusterInstanceInfo( String instanceName) {
-        fineLog( "getClusterInstanceInfo: instanceName {0}", instanceName ) ;
+    private ClusterInstanceInfo getClusterInstanceInfo(String instanceName) {
+        fineLog("getClusterInstanceInfo: instanceName {0}", instanceName);
 
-        final Servers servers = services.getService( Servers.class );
-        fineLog( "getClusterInstanceInfo: servers {0}", servers ) ;
+        final Servers servers = services.getService(Servers.class);
+        fineLog("getClusterInstanceInfo: servers {0}", servers);
 
-        final Server server = servers.getServer(instanceName) ;
-        fineLog( "getClusterInstanceInfo: server {0}", server ) ;
+        final Server server = servers.getServer(instanceName);
+        fineLog("getClusterInstanceInfo: server {0}", server);
 
-        final Config config = getConfigForServer( server ) ;
-        fineLog( "getClusterInstanceInfo: servers {0}", servers ) ;
+        final Config config = getConfigForServer(server);
+        fineLog("getClusterInstanceInfo: servers {0}", servers);
 
         // assumeInstanceIsRunning is set to true since this is
         // coming from addMember, because shoal just told us that the instance is up.
-        ClusterInstanceInfo result = getClusterInstanceInfo( server, config,
-            true ) ;
-        fineLog( "getClusterInstanceInfo: result {0}", result ) ;
+        ClusterInstanceInfo result = getClusterInstanceInfo(server, config, true);
+        fineLog("getClusterInstanceInfo: result {0}", result);
 
-        return result ;
+        return result;
+    }
+
+    private Map<String, ClusterInstanceInfo> getAllClusterInstanceInfo() {
+        if (currentMembers.isEmpty()) {
+            final Config myConfig = getConfigForServer(myServer);
+            fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
+            currentMembers.put(myServer.getName(), getClusterInstanceInfo(myServer, myConfig, false));
+
+            if (cluster != null && cluster.isEnabled()) {
+                for (UUID clusterMemberId : cluster.getClusterMembers()) {
+                    if (clusterMemberId.equals(cluster.getLocalUUID())) {
+                        // Should™ already be added
+                        continue;
+                    }
+
+                    Server server = domain.getServerNamed(cluster.getMemberName(clusterMemberId));
+                    fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
+
+                    if (server != null) {
+                        final Config serverConfig = getConfigForServer(server);
+
+                        if (serverConfig != null) {
+                            currentMembers.put(server.getName(), getClusterInstanceInfo(myServer, myConfig, false));
+                        }
+                    }
+                }
+            }
+        }
+
+        fineLog("getAllClusterInstanceInfo: result {0}", currentMembers);
+        return currentMembers;
+    }
+
+    // return host:port,... string for all clear text ports in the cluster
+    // instance info.
+    public final String getIIOPEndpoints() {
+        final Map<String, ClusterInstanceInfo> cinfos = currentMembers;
+        final StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (ClusterInstanceInfo cinfo : cinfos.values()) {
+            for (SocketInfo sinfo : cinfo.endpoints()) {
+                if (!sinfo.type().startsWith("SSL")) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        result.append(',');
+                    }
+
+                    result.append(sinfo.host()).append(':').append(sinfo.port());
+                }
+            }
+        }
+        return result.toString();
     }
 
     @Override
@@ -390,18 +425,14 @@ public class IiopFolbGmsClient implements ClusterListener {
 
     class GroupInfoServiceGMSImpl extends GroupInfoServiceBase {
         @Override
-        public List<ClusterInstanceInfo> internalClusterInstanceInfo(
-            List<String> endpoints) {
-
-            fineLog( "internalClusterInstanceInfo: currentMembers {0}",
-                currentMembers ) ;
+        public List<ClusterInstanceInfo> internalClusterInstanceInfo(List<String> endpoints) {
+            fineLog("internalClusterInstanceInfo: currentMembers {0}", currentMembers);
 
             boolean disableClusterUpdate = !Boolean.parseBoolean(System.getProperty(IIOP_CLUSTER_UPDATE_PROPERTY, "true"));
             if (currentMembers == null || disableClusterUpdate) {
-                return new ArrayList<ClusterInstanceInfo>() ;
+                return new ArrayList<>();
             } else {
-                return new ArrayList<ClusterInstanceInfo>(
-                    currentMembers.values() ) ;
+                return new ArrayList<>(currentMembers.values());
             }
         }
     }
@@ -428,5 +459,3 @@ public class IiopFolbGmsClient implements ClusterListener {
         }
     }
 }
-
-// End of file.

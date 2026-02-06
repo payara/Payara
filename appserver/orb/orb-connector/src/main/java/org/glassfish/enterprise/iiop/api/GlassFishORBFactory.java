@@ -73,6 +73,8 @@ public interface GlassFishORBFactory {
     int getORBPort(ORB orb);
 
     boolean isEjbCall (ServerRequestInfo sri);
+
+    String getIIOPEndpoints();
     
     boolean isClusterActive();
 }
