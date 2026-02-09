@@ -47,6 +47,8 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.mq:mq-distribution"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.glassfish:jakarta.faces"
+        update-types: ["version-update:semver-major"]
       - dependency-name: "org.glassfish.mq:mq-client"
         update-types: [ "version-update:semver-major" ]
       - dependency-name: "org.glassfish.soteria:soteria"
