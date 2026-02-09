@@ -58,9 +58,6 @@
 
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/create-node-ssh");
         gf.getDefaultValues(endpoint="#{pageSession.selfUrl}",  valueMap="#{pageSession.valueMap}");
-        mapPut(map="#{requestScope.vMap}", key="remotetestdir" value="C:\\");
-        mapPut(map="#{pageSession.valueMap}", key="windowsuser" value="#{requestScope.dcMap['windowsuser']}");
-        mapPut(map="#{pageSession.valueMap}", key="remotetestdir" value="#{requestScope.vMap['remotetestdir']}");
         mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
         mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
         mapPut(map="#{pageSession.valueMap}", key="installdirDocker" value="/opt/payara/payara7");
