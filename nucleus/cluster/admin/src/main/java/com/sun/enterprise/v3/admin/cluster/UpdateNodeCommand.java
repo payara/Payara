@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -247,7 +247,7 @@ public class UpdateNodeCommand implements AdminCommand {
                     if (type != null) {
                         writeableNode.setType(type);
                     }
-                    if (RemoteType.SSH.name().equals(type) || RemoteType.DCOM.name().equals(type)) {
+                    if (RemoteType.SSH.name().equals(type)) {
                         SshConnector sshConnector = writeableNode.getSshConnector();
                         if (sshConnector == null)  {
                             sshConnector = writeableNode.createChild(SshConnector.class);

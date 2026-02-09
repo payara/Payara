@@ -117,13 +117,6 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     }
 
     /**
-     * Get DCOM password from password file or user.
-     */
-    String getWindowsPassword(String node) throws CommandException {
-        return getRemotePassword(node, "AS_ADMIN_WINDOWSPASSWORD");
-    }
-
-    /**
      * Get SSH password from password file or user.
      */
     private String getRemotePassword(String node, String key) throws CommandException {
