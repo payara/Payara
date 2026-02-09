@@ -77,7 +77,6 @@ import org.glassfish.cluster.ssh.connect.NodeRunner;
  */
 public class NodeUtils {
     public static final String NODE_DEFAULT_SSH_PORT = "22";
-    public static final String NODE_DEFAULT_DCOM_PORT = "135";
     public static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
     public static final String NODE_DEFAULT_INSTALLDIR = "${com.sun.aas.productRoot}";
     // Command line option parameter names
@@ -301,7 +300,7 @@ public class NodeUtils {
     }
 
     /**
-     * Make sure we can make an SSH or DCOM connection using an existing node.
+     * Make sure we can make an SSH connection using an existing node.
      *
      * @param node  Node to connect to
      * @throws CommandValidationException
@@ -539,21 +538,6 @@ public class NodeUtils {
             return SshAuthType.valueOf(authType);
         } catch (Exception e) {
             throw new CommandValidationException(e);
-        }
-    }
-
-    // DCOMFIX - installroot is probably the parent of the glassfish directory
-    // DCOMFIX it would be nice to have the actual install-root of GF in the config
-    private String getInstallRoot(String installDir) {
-        // Imagine if you send in "C:\" as installDir.  THat is NOT the same as "C:" !
-        // that's why we need extra processing.
-        char[] chars = installDir.toCharArray();
-        char end = chars[chars.length - 1];
-
-        if (end != '/' && end != '\\') {
-            return installDir + "/glassfish";
-        } else {
-            return installDir + "glassfish";
         }
     }
 }
