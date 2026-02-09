@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2018-2025 Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2018-2026 Payara Foundation and/or affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -167,6 +167,12 @@
         <dependency>
             <groupId>fish.payara.server.internal.admin</groupId>
             <artifactId>launcher</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.core</groupId>
+            <artifactId>telemetry-bootstrap</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
