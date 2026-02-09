@@ -139,6 +139,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.snakeyaml</groupId>
+            <artifactId>snakeyaml-engine</artifactId>
+            <version>${snakeyaml-version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <!-- next we need to relocate okhttp, and add OSGi manifest -->
@@ -165,10 +172,12 @@
                             !com.android.*,
                             !dalvik.*,
                             io.opentelemetry.exporter.prometheus;resolution:=optional,
+                            io.opentelemetry.sdk.extension.incubator.fileconfig;resolution:=optional,
                             sun.security.ssl;resolution:=optional,
                             !kotlin.*,
                             !org.bouncycastle.*,
                             !org.openjsse.*,
+                            !org.snakeyaml.engine.*,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
@@ -176,7 +185,8 @@
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
                             *;groupId=io.opentelemetry.instrumentation;inline=true,
-                            *;groupId=org.jetbrains.kotlin.*;inline=true
+                            *;groupId=org.jetbrains.kotlin.*;inline=true,
+                            *;groupId=org.snakeyaml;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
@@ -208,7 +218,8 @@
                     <artifactSet>
                         <includes>
                             <include>com.squareup.*:*</include>
-                            <inclue>org.jetbrains.kotlin.*:*</inclue>
+                            <include>org.jetbrains.kotlin.*:*</include>
+                            <include>org.snakeyaml.*:*</include>
                         </includes>
                     </artifactSet>
                     <filters>
@@ -221,6 +232,12 @@
                         </filter>
                         <filter>
                             <artifact>org.jetbrains.kotlin.*:*</artifact>
+                            <excludes>
+                                <exclude>**</exclude>
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.snakeyaml.*:*</artifact>
                             <excludes>
                                 <exclude>**</exclude>
                             </excludes>
@@ -238,6 +255,10 @@
                         <relocation>
                             <pattern>kotlin.</pattern>
                             <shadedPattern>fish.payara.shaded.kotlin.</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.snakeyaml.engine.</pattern>
+                            <shadedPattern>fish.payara.shaded.snakeyaml.engine.</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
