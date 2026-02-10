@@ -51,7 +51,7 @@
     <packaging>war</packaging>
     <groupId>fish.payara.samples.client-certificate-validator</groupId>
     <artifactId>client-certificate-validator</artifactId>
-    <name>Payara-Samples - Payara - Client Certificate Validator</name>
+    <name>Payara-Samples - Client Certificate Validator</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

@@ -1,0 +1,60 @@
+# Client Certificate Functional Tests
+
+This directory contains functional tests for validating Client Certificate Authentication in Payara Server, specifically verifying behavior with the Payara JAX-RS Extension and server-side validation settings.
+
+## Modules
+
+### 1. Client Certificate Validator (`client-certificate-validator`)
+*   **Purpose**: Validates standard client certificate authentication flows.
+*   **Scenarios**:
+    *   **Valid Certificate**: Verifies that a valid client certificate correctly authenticates the user and maps to the expected principal.
+    *   **Expired Certificate**: Verifies that an expired certificate is **rejected** by the server and logs the expected error message (`Certificate Validation Failed via API`).
+*   **Configuration**: Enables `client-auth=want` on the HTTP listener.
+
+### 2. Client Certificate Expired Test (`client-certificate-expired-test`)
+*   **Purpose**: Verifies the specific Payara configuration property `certificate-validation` which allows bypassing certificate expiration checks.
+*   **Scenarios**:
+    *   **Expired Certificate (Allowed)**: Configuring `certificate-validation=false` at the `auth-realm` level allows an expired certificate to be accepted. The test asserts that a request with an expired certificate returns `200 OK` instead of `401 Unauthorized`.
+*   **Configuration**: 
+    *   Enables `client-auth=want`.
+    *   Sets `configs.config.server-config.security-service.auth-realm.certificate.property.certificate-validation=false`.
+
+---
+
+## Prerequisites
+
+*   **JDK**: Java 21 or higher.
+*   **Payara Server**: A valid installation of Payara Server 7.
+
+## How to Run
+
+These tests are designed to be run against a running or remote Payara Server instance using the `payara-server-remote` Maven profile.
+
+The following command template is recommended for running the tests, ensuring all necessary system properties and build flags are set.
+
+### Running Client Certificate Validator
+This test expects standard certificate validation to be **active** (default).
+
+```bash
+mvn -V -B -ff clean install --strict-checksums \
+    -Ppayara-server-remote \
+    -Djavax.net.ssl.trustStore=/path/to/your/jdk/lib/security/cacerts \
+    -Djavax.xml.accessExternalSchema=all \
+    -Dpayara.home=/path/to/payara7 \
+    -f appserver/tests/functional/client-certificate/client-certificate-validator
+```
+
+### Running Client Certificate Expired Test
+This test **modifies the server configuration** to disable certificate expiration checks.
+
+```bash
+mvn -V -B -ff clean install --strict-checksums \
+    -Ppayara-server-remote \
+    -Djavax.net.ssl.trustStore=/path/to/your/jdk/lib/security/cacerts \
+    -Djavax.xml.accessExternalSchema=all \
+    -Dpayara.home=/path/to/payara7 \
+    -f appserver/tests/functional/client-certificate/client-certificate-expired-test
+```
+
+> **Note**: Update `/path/to/your/jdk/lib/security/cacerts` and `/path/to/payara7` with your actual system paths. The `javax.net.ssl.trustStore` property ensures the test runner trusts the server's certificate if using a custom or self-signed CA.
+
