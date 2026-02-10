@@ -57,6 +57,11 @@ public interface DescriptorConstants {
     /** Prefix used for S1AS Cmp xmls */
     String S1AS_CMP_PREFIX = "sun-cmp-";
 
+    String WLS = "weblogic";
+   
+    /** Prefix used for WebLogic xmls */
+    String WLS_PREFIX = "weblogic-";
+
     /** Prefix used for GF xmls */
     String GF_PREFIX = "glassfish-";
     
