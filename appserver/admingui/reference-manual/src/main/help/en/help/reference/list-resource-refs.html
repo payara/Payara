@@ -99,7 +99,7 @@ the resources (for example, JDBC resources) available in the JNDI tree
 of the specified target.</p>
 </div>
 <div class="paragraph">
-<p>The target instance or instances in the cluster need not be running or
+<p>The target instance or instances in the deployment group need not be running or
 available for this subcommand to succeed.</p>
 </div>
 <div class="paragraph">
@@ -138,6 +138,10 @@ targets are as follows:<br></p>
 <p>Lists the resource references for the default server instance and is
 the default target.</p>
 </dd>
+<dt class="hdlist1"><code>deployment_group</code></dt>
+<dd>
+<p>Lists the resource reference for every server instance in the deployment group</p>
+</dd>
 <dt class="hdlist1">instance_name</dt>
 <dd>
 <p>Lists the resource references for the named unclustered server
@@ -155,10 +159,10 @@ instance.</p>
 <p><a id="GSRFM707"></a><a id="sthref1784"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 1   Listing Resource References for a Cluster</p>
+<p>Example 1   Listing Resource References for a Deployment Group</p>
 </div>
 <div class="paragraph">
-<p>This example lists resource references for the cluster <code>cluster1</code>.</p>
+<p>This example lists resource references for the deployment group <code>cluster1</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
