@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.io;
 
@@ -107,12 +107,6 @@ public interface DescriptorConstants {
     /** The name of the deployment descriptor entry in web fragment jar. */
     String WEB_FRAGMENT_JAR_ENTRY = "META-INF/web-fragment.xml";
 
-    /** The name of the S1AS deployment descriptor entry in web module. */
-    String S1AS_WEB_DD_ENTRY = "WEB-INF" + File.separator + S1AS_PREFIX+"web.xml";
-
-    /** The name of the S1AS deployment descriptor entry in web jar. */
-    String S1AS_WEB_JAR_ENTRY = "WEB-INF/" + S1AS_PREFIX + "web.xml";
-
     /** The name of the deployment descriptor entry in the rar module. */
     String RAR_DD_ENTRY = "META-INF" + File.separator + "ra.xml";
 
@@ -128,9 +122,6 @@ public interface DescriptorConstants {
     /** The name of the glassfish deployment descriptor entry inside the ear. */
     String GF_APPLICATION_JAR_ENTRY = "META-INF/" + GF_PREFIX +
         "application.xml";
-
-    /** The name of the glassfish deployment descriptor entry in web jar. */
-    String GF_WEB_JAR_ENTRY = "WEB-INF/" + GF_PREFIX + "web.xml";
 
     /** The name of the glassfish deployment descriptor entry in the ejb jar. */
     String GF_EJB_JAR_ENTRY = "META-INF/" + GF_PREFIX + "ejb-jar.xml";
