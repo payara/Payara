@@ -39,11 +39,11 @@
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-<!-- Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
-<!DOCTYPE sun-web-app PUBLIC '-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Servlet 2.3//EN' 'http://www.sun.com/software/sunone/appserver/dtds/sun-web-app_2_3-0.dtd'>
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 4 Servlet 3.0//EN" "https://docs.payara.fish/schemas/payara-web-app_4.dtd">
 
-<sun-web-app httpservlet-security-provider="GFConsoleAuthModule">
+<payara-web-app httpservlet-security-provider="GFConsoleAuthModule">
     <security-role-mapping>
         <role-name>admin</role-name>
         <principal-name>admin</principal-name>
@@ -62,4 +62,4 @@
     <class-loader delegate="true"
         extra-class-path="WEB-INF/extra/woodstock-webui-jsf-suntheme-${woodstock-jsf-suntheme.version}${enterprise.theme.classifier}.jar:WEB-INF/extra/dojo-${woodstock-external.dojo.version}.jar:WEB-INF/extra/woodstock-webui-jsf-${woodstock-jsf.version}.jar:WEB-INF/extra/commons-io-${commons-io.version}.jar:WEB-INF/extra/json-${woodstock-json.version}.jar:WEB-INF/extra/prototype-${woodstock-external.prototype.version}.jar"/>
     <property name="useBundledJsf" value="true"/>
-</sun-web-app>
+</payara-web-app>
