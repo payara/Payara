@@ -14,8 +14,10 @@
 	
 	SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 -->
-<!DOCTYPE sun-web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Servlet 2.4//EN" "http://www.sun.com/software/appserver/dtds/sun-web-app_2_4-1.dtd">
-<sun-web-app>
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
+
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 4 Servlet 3.0//EN" "https://docs.payara.fish/schemas/payara-web-app_4.dtd">
+<payara-web-app>
   <session-config>
     <session-properties/>
     <cookie-properties/>
@@ -32,4 +34,4 @@
     </property>
     <property name="fork" value="false" />
   </jsp-config>
-</sun-web-app>
+</payara-web-app>

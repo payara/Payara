@@ -107,6 +107,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
     private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
     private static final String PAYARA_WEB_XML = "WEB-INF/payara-web.xml";
+    @Deprecated
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
     private static final String WAR_CONTEXT_XML = "META-INF/context.xml";
     private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
