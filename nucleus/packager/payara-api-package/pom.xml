@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.2</version>
     </parent>
     <artifactId>payara-api-package</artifactId>
     <name>Nucleus Payara API Package</name>

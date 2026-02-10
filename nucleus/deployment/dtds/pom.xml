@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.deployment</groupId>
         <artifactId>nucleus-deployment</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.2</version>
     </parent>
     <artifactId>nucleus-dtds</artifactId>
     <packaging>distribution-fragment</packaging>

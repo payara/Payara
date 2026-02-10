@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.2</version>
     </parent>
 
     <artifactId>jsr109-impl-l10n</artifactId>

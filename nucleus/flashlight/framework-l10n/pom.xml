@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.flashlight</groupId>
         <artifactId>nucleus-flashlight</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>flashlight-framework-l10n</artifactId>

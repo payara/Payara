@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.concurrent</groupId>
         <artifactId>concurrent</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.2</version>
     </parent>    
     <artifactId>concurrent-connector</artifactId>
     <packaging>glassfish-jar</packaging>

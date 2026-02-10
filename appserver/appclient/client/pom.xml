@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.appclient</groupId>
         <artifactId>appclient</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.2</version>
     </parent>
     <groupId>fish.payara.server.appclient</groupId>
     <artifactId>client</artifactId>
