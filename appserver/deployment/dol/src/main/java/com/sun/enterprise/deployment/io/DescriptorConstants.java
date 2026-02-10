@@ -57,11 +57,6 @@ public interface DescriptorConstants {
     /** Prefix used for S1AS Cmp xmls */
     String S1AS_CMP_PREFIX = "sun-cmp-";
 
-    String WLS = "weblogic";
-
-    /** Prefix used for WebLogic xmls */
-    String WLS_PREFIX = "weblogic-";
-
     /** Prefix used for GF xmls */
     String GF_PREFIX = "glassfish-";
     
@@ -125,22 +120,6 @@ public interface DescriptorConstants {
     /** The name of the deployment descriptor entry in the rar jar */
     String S1AS_RAR_JAR_ENTRY = "META-INF/" + S1AS_PREFIX + "ra.xml";
 
-    /** The name of the deployment descriptor entry inside the ear. */
-    String WLS_APPLICATION_JAR_ENTRY = "META-INF/" + WLS_PREFIX + 
-        "application.xml";
-
-    /** The name of the WebLogic deployment descriptor entry in web jar. */
-    String WLS_WEB_JAR_ENTRY = "WEB-INF/" + "weblogic.xml";
-
-    /** The name of the WebLogic deployment descriptor entry in the ejb jar. */
-    String WLS_EJB_JAR_ENTRY = "META-INF/" + WLS_PREFIX + "ejb-jar.xml";
-
-    /** The name of the WebLogic deployment descriptor entry in the rar */
-    String WLS_RAR_JAR_ENTRY = "META-INF/"+ WLS_PREFIX + "ra.xml";
-
-    /** The name of the weblogic deployment descriptor entry in the client jar. */
-    String WLS_APP_CLIENT_JAR_ENTRY = "META-INF/"+ WLS_PREFIX + "application-client.xml";
-
     /** The name of the glassfish deployment descriptor entry inside the ear. */
     String GF_APPLICATION_JAR_ENTRY = "META-INF/" + GF_PREFIX +
         "application.xml";
@@ -168,9 +147,6 @@ public interface DescriptorConstants {
 
     /** The name of the Payara deployment descriptor entry in the client jar. */
     String PAYARA_APP_CLIENT_JAR_ENTRY = "META-INF/"+ PAYARA_PREFIX + "application-client.xml";
-
-    /** The name of the weblogic deployment descriptor entry in the war. */
-    String WLS_EJB_IN_WAR_ENTRY = "WEB-INF/" + WLS_PREFIX + "ejb-jar.xml";
 
     /** The name of the WEB-INF entry in a war. */
     String WEB_INF = "WEB-INF";
@@ -237,11 +213,4 @@ public interface DescriptorConstants {
 
     /** Object to Relational mapping DD entry */
     String ORM_DD_ENTRY = "META-INF/orm.xml";
-
-    /** Schema Namespaces for WLS */
-    String WLS_SCHEMA_NAMESPACE_BEA = "http://www.bea.com/ns/weblogic/";
-    String WLS_SCHEMA_NAMESPACE_ORACLE = "http://xmlns.oracle.com/weblogic/";
-
-    /** DTD System IDs for WLS */
-    String WLS_DTD_SYSTEM_ID_BEA = "http://www.beasys.com/servers";
 }

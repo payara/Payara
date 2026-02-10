@@ -54,9 +54,6 @@ list-admin-objects R
 create-iiop-listener R
 delete-iiop-listener R
 list-iiop-listeners R
-create-lifecycle-module R
-delete-lifecycle-module R
-list-lifecycle-modules R
 create-http-listener R
 delete-http-listener R
 list-http-listeners R
