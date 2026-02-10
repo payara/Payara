@@ -6,7 +6,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>test-domain-setup</artifactId>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
-            <version>7.2026.2</version>
+            <version>7.2026.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>

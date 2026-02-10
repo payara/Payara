@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>cmp-internal-api</artifactId>
     <packaging>glassfish-jar</packaging>

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>appserv-rt-pom</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <name>GlassFish appserv-rt distribution fragment</name>
     <artifactId>appserv-rt-frag</artifactId>

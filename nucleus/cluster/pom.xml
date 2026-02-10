@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-nucleus-parent</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.server.internal.cluster</groupId>
     <artifactId>cluster</artifactId>

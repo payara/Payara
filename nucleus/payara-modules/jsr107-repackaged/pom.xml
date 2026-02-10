@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.server.internal.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>jsr107-repackaged</artifactId>
     <name>Repackaged JSR 107</name>

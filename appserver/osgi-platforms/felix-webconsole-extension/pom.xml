@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.osgi-platforms</groupId>
         <artifactId>osgi-console-extensions</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>felix-webconsole-extension</artifactId>
     <packaging>glassfish-jar</packaging>

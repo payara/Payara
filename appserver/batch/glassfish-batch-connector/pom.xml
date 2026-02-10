@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>7.2026.2</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-batch-connector</artifactId>
