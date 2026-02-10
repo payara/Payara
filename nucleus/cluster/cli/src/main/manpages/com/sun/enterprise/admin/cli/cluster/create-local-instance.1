@@ -7,7 +7,7 @@ NAME
 SYNOPSIS
            create-local-instance [--help]
            [--node node-name] [--nodedir node-dir]
-           [--config config-name | --deploymentGroup group-name]
+           [--config config-name] [--deploymentGroup group-name]
            [--lbenabled={true|false}]
            [--portbase port-number] [--checkports={true|false}]
            [--savemasterpassword={false|true}]
@@ -144,12 +144,11 @@ OPTIONS
            server-config. Specifying the --config option creates a shared
            instance.
 
-           If the --config option is omitted, a standalone instance is
+           If the --config option is omitted, a standalone instance config is
            created.
 
        --deploymentGroup
-           Specifies the deployment group from which the instance inherits its
-           configuration.
+           Specifies the deployment group the instance will join.
 
        --lbenabled
            Specifies whether the instance is enabled for load balancing.

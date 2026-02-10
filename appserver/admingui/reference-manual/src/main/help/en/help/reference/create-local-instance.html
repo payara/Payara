@@ -82,7 +82,7 @@ run</p>
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-local-instance [--help]
 [--node node-name] [--nodedir node-dir]
-[--config config-name]
+[--config config-name] [--deploymentGroup group-name]
 [--lbenabled={true|false}]
 [--portbase port-number] [--checkports={true|false}]
 [--savemasterpassword={false|true}]
@@ -151,11 +151,10 @@ existing node for the instance.</p>
 </li>
 <li>
 <p>The named configuration that defines the configuration of the
-instance. The configuration can be specified in the command to create
-the instance, but is not required. If no configuration is specified for
-an instance that is not joining a cluster, the subcommand creates a
-configuration for the instance. An instance that is joining a cluster
-receives its configuration from its parent cluster.</p>
+instance. The configuration can be specified in the command to
+create the instance, but is not required. If no configuration is
+specified for an instance, the subcommand creates a configuration
+for the instance.</p>
 </li>
 </ul>
 </div>
@@ -168,18 +167,18 @@ instance:</p>
 <dt class="hdlist1">Standalone instance</dt>
 <dd>
 <p>A standalone instance does not share its configuration with any other
-instances or clusters. A standalone instance is created if either of
+instances. A standalone instance is created if either of
 the following conditions is met:<br></p>
 <div class="ulist">
 <ul>
 <li>
-<p>No configuration or cluster is specified in the command to create
+<p>No configuration is specified in the command to create
 the instance.</p>
 </li>
 <li>
-<p>A configuration that is not referenced by any other instances or
-clusters is specified in the command to create the instance.<br>
-When no configuration or cluster is specified, a copy of the
+<p>A configuration that is not referenced by any other instances
+is specified in the command to create the instance.<br>
+When no configuration is specified, a copy of the
 <code>default-config</code> configuration is created for the instance. The name
 of this configuration is instance-name`-config`, where instance-name
 represents the name of an unclustered server instance.</p>
@@ -189,18 +188,17 @@ represents the name of an unclustered server instance.</p>
 </dd>
 <dt class="hdlist1">Shared instance</dt>
 <dd>
-<p>A shared instance shares its configuration with other instances or
-clusters. A shared instance is created if a configuration that is
-referenced by other instances or clusters is specified in the command
-to create the instance.</p>
+<p>A shared instance shares its configuration with other instances.
+A shared instance is created if a configuration that is
+referenced by other instances is specified in the
+command to create the instance.</p>
 </dd>
-<dt class="hdlist1">Clustered instance</dt>
+<dt class="hdlist1">`Clustered instance</dt>
 <dd>
-<p>A clustered instance inherits its configuration from the cluster to
-which the instance belongs and shares its configuration with other
-instances in the cluster. A clustered instance is created if a cluster
-is specified in the command to create the instance.<br>
-Any instance that is not part of a cluster is considered an
+<p>A clustered instance is an instance within a deployment group.
+A clustered instance is created if a deployment group is specified in
+the command to create the instance.<br>
+Any instance that is not part of a deployment group is considered an
 unclustered server instance. Therefore, standalone instances and
 shared instances are unclustered server instances.</p>
 </dd>
@@ -277,18 +275,12 @@ be stored. The default is as-install`/nodes`.</p>
 configuration must exist and must not be named <code>default-config</code> or
 <code>server-config</code>. Specifying the <code>--config</code> option creates a shared
 instance.<br>
-The <code>--config</code> option and the <code>--cluster</code> option are mutually
-exclusive. If both options are omitted, a standalone instance is
+If the <code>--config</code> option is omitted, a standalone instance config is
 created.</p>
 </dd>
-<dt class="hdlist1"><code>--cluster</code></dt>
+<dt class="hdlist1"><code>--deploymentGroup</code></dt>
 <dd>
-<p>Specifies the cluster from which the instance inherits its
-configuration. Specifying the <code>--cluster</code> option creates a clustered
-instance.<br>
-The <code>--config</code> option and the <code>--cluster</code> option are mutually
-exclusive. If both options are omitted, a standalone instance is
-created.</p>
+<p>Specifies the deployment group the instance will join.</p>
 </dd>
 <dt class="hdlist1"><code>--lbenabled</code></dt>
 <dd>
@@ -395,7 +387,7 @@ The master password must be the same for all instances in a domain.</p>
 <p>Defines system properties for the instance. These properties override
 property definitions for port settings in the instance&#8217;s
 configuration. Predefined port settings must be overridden if, for
-example, two clustered instances reside on the same host. In this
+example, two instances reside on the same host. In this
 situation, port settings for one instance must be overridden because
 both instances share the same configuration.<br>
 The following properties are available:<br></p>
@@ -519,7 +511,7 @@ The name must meet the following requirements:<br></p>
 </li>
 <li>
 <p>The name must be unique in the domain and must not be the name of
-another \{product---name} instance, a cluster, a named configuration,
+another \{product---name} instance, a deployment group, a named configuration,
 or a node.</p>
 </li>
 <li>
@@ -571,8 +563,8 @@ Command create-local-instance executed successfully.</code></pre>
 Specific Node</p>
 </div>
 <div class="paragraph">
-<p>This example creates the clustered instance <code>ymli2</code> on node <code>sj02</code>. The
-instance is a member of the cluster <code>ymlclust</code>.</p>
+<p>This example creates the instance <code>ymli2</code> on node <code>sj02</code>. The
+instance is a member of the deployment group <code>ymlclust</code>.</p>
 </div>
 <div class="paragraph">
 <p>The command is run on the host <code>sj02</code>, which is the host that the node
@@ -583,7 +575,7 @@ node, the host on which the DAS is running is provided through the
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">sj02# asadmin --host sr04 create-local-instance --cluster ymlclust --node sj02 ymli2
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">sj02# asadmin --host sr04 create-local-instance --deploymentGroup ymlclust --node sj02 ymli2
 Rendezvoused with DAS on sr04:4848.
 Port Assignments for server instance ymli2:
 JMX_SYSTEM_CONNECTOR_PORT=28686
