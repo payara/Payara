@@ -85,9 +85,6 @@ public class ListJavaMailResources implements AdminCommand {
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String targetOperand;
 
-    @Param(optional = true, obsolete = true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
-
     @Inject
     private BindableResourcesHelper bindableResourcesHelper;
 

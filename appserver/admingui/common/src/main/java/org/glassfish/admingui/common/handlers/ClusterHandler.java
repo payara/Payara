@@ -392,11 +392,6 @@ public class ClusterHandler {
                         payload = new HashMap<>();
                         payload.put("id", nodeName);
                         payload.put("uninstall", "true");
-                    } else if ("DCOM".equals(type)) {
-                        endpoint = prefix + "delete-node-dcom";
-                        payload = new HashMap<>();
-                        payload.put("id", nodeName);
-                        payload.put("uninstall", "true");
                     }
                     GuiUtil.getLogger().info(endpoint);
                     RestUtil.restRequest(endpoint, payload, "DELETE", null, false);

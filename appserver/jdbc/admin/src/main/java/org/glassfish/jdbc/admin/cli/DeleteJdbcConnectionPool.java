@@ -44,7 +44,6 @@ package org.glassfish.jdbc.admin.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -78,9 +77,6 @@ public class DeleteJdbcConnectionPool implements AdminCommand {
     
     @Param(name="jdbc_connection_pool_id", primary=true)
     private String poolName;
-
-    @Param(optional=true, obsolete = true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME; 
 
     @Inject
     private Domain domain;

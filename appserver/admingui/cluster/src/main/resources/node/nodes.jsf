@@ -89,10 +89,6 @@
                 mapPut(map="#{oneNode}" key="hasPing" value="#{true}");
                 mapPut(map="#{oneNode}" key="cmd" value="ping-node-ssh");
             }
-            if ("#{oneNode.type}=DCOM"){
-                mapPut(map="#{oneNode}" key="hasPing" value="#{true}");
-                mapPut(map="#{oneNode}" key="cmd" value="ping-node-dcom");
-            }
          }
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncs.msg.JS.confirmDeleteNodes}");
         setPageSessionAttribute(key="createLink" value="#{request.contextPath}/cluster/node/nodeNew.jsf");

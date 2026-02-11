@@ -44,7 +44,6 @@ package org.glassfish.connectors.admin.cli;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -96,9 +95,6 @@ public class ListConnectorSecurityMaps extends ConnectorSecurityMap implements A
 
     @Param(name="pool-name", primary=true)
     String poolName;
-
-    @Param(optional = true, alias = "targetName", obsolete = true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Inject
     private Domain domain;

@@ -92,9 +92,6 @@ public class ListResourceAdapterConfigs implements AdminCommand {
     @Param(name="long", optional=true, defaultValue="false", shortName="l", alias="verbose")
     private Boolean long_opt;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, alias = "targetName", obsolete = true)
-    private String target ;
-
     @Inject
     private Domain domain;
 

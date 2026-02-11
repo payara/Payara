@@ -94,10 +94,6 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
 
-    @Deprecated
-    @Param(name = "secureMetrics", optional = true)
-    private Boolean secure;
-
     @Param(name = "dynamic", optional = true)
     private Boolean dynamic;
 
@@ -149,13 +145,7 @@ public class SetMetricsConfigurationCommand extends SetSecureMicroprofileConfigu
                         metricsService.resetMetricsEnabledProperty();
                     }
                 }
-                if (secure != null) {
-                    actionReport.setMessage("--secureMetrics option is deprecated, replaced by --securityEnabled option.");
-                    configProxy.setSecureMetrics(secure.toString());
-                    if(dynamic != null && dynamic || Boolean.valueOf(metricsConfiguration.getDynamic())) {
-                        metricsService.resetMetricsSecureProperty();
-                    }
-                }
+
                 if (endpoint != null) {
                     configProxy.setEndpoint(endpoint);
                 }

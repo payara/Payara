@@ -83,9 +83,6 @@ public class ListConnectorConnectionPools implements AdminCommand {
 
     @Inject
     private Domain domain;
-
-    @Param(primary = true, optional = true, alias = "targetName", obsolete = true)
-    private String target ;
     
     /**
      * Executes the command with the command parameters passed as Properties

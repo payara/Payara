@@ -80,7 +80,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-jvm-options [--help]
-[--target target] [--profiler={true|false}]
+[--target target]
 (jvm-option-name=jvm-option-value) [:jvm-option-name=jvm-option-value*]</code></pre>
 </div>
 </div>
@@ -93,17 +93,8 @@ are passed to the Java application launcher when \{product---name} is
 started. The options that this subcommand creates are in addition to the
 options that are preset with \{product---name}. Java application
 launcher options are stored in the Java configuration <code>java—config</code>
-element or the profiler <code>profiler</code> element of the <code>domain.xml</code> file. The
-options are sent to the command line in the order they appear in the
-<code>java—config</code> element or the profiler <code>profiler</code> element in the
-<code>domain.xml</code> file.</p>
-</div>
-<div class="paragraph">
-<p>Profiler options are used to record the settings that are required to
-start a particular profiler. The profiler must already exist. If
-necessary, use the
-<a href="create-profiler.html#create-profiler-1"><code>create-profiler</code>(1)</a>
-subcommand to create the profiler.</p>
+element. The options are sent to the command line in the order they appear in the
+<code>java—config</code> element.</p>
 </div>
 <div class="paragraph">
 <p>This subcommand can be used to create the following types of options:</p>
@@ -228,12 +219,6 @@ Valid values are as follows:<br></p>
 </dd>
 </dl>
 </div>
-</dd>
-<dt class="hdlist1"><code>--profiler</code></dt>
-<dd>
-<p>Indicates whether the Java application launcher options are for the
-profiler. The profiler must exist for this option to be true. Default
-is false.</p>
 </dd>
 </dl>
 </div>
@@ -374,19 +359,6 @@ subcommand reports that only one option was set.</p>
 <div class="paragraph">
 <p><a id="GSRFM503"></a><a id="sthref377"></a></p>
 </div>
-<div class="paragraph">
-<p>Example 4   Setting a JVM Startup Parameter for the Profiler</p>
-</div>
-<div class="paragraph">
-<p>This example sets a JVM startup parameter for the profiler.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-jvm-options --profiler=true -XX\:MaxPermSize=192m
-created 1 option(s)
-Command create-jvm-options executed successfully.</code></pre>
-</div>
-</div>
 <div id="sthref378" class="paragraph">
 <p>Exit Status</p>
 </div>
@@ -409,8 +381,7 @@ Command create-jvm-options executed successfully.</code></pre>
 <p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
 </div>
 <div class="paragraph">
-<p><a href="create-profiler.html#create-profiler-1"><code>create-profiler</code>(1)</a>,
-<a href="delete-jvm-options.html#delete-jvm-options-1"><code>delete-jvm-options</code>(1)</a>,
+<p><a href="delete-jvm-options.html#delete-jvm-options-1"><code>delete-jvm-options</code>(1)</a>,
 <a href="list-jvm-options.html#list-jvm-options-1"><code>list-jvm-options</code>(1)</a>,
 <a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a></p>
 </div>

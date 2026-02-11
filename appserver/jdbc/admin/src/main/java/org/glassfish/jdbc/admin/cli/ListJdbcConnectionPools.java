@@ -87,9 +87,6 @@ public class ListJdbcConnectionPools implements AdminCommand {
     @Inject
     private Domain domain;
 
-    @Param(primary = true, optional = true, alias = "targetName", obsolete = true)
-    private String target ;
-
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values

@@ -128,26 +128,7 @@ public class MiniXmlParser {
         return jvmOptions;
     }
 
-    public Map<String, String> getProfilerConfig() throws MiniXmlParserException {
-        if (!valid) {
-            throw new MiniXmlParserException(strings.get(INVALID));
-        }
-        return profilerConfig;
-    }
 
-    public List<String> getProfilerJvmOptions() throws MiniXmlParserException {
-        if (!valid) {
-            throw new MiniXmlParserException(strings.get(INVALID));
-        }
-        return profilerJvmOptions;
-    }
-
-    public Map<String, String> getProfilerSystemProperties() throws MiniXmlParserException {
-        if (!valid) {
-            throw new MiniXmlParserException(strings.get(INVALID));
-        }
-        return profilerSysProps;
-    }
 
     public Map<String, String> getSystemProperties() throws MiniXmlParserException {
         if (!valid) {
@@ -682,33 +663,13 @@ public class MiniXmlParser {
         // cursor --> <java-config>
         // get the attributes for <java-config>
         javaConfig = parseAttributes();
-        parseJvmAndProfilerOptions();
+        parseJvmOptions();
     }
 
-    private void parseJvmAndProfilerOptions() throws XMLStreamException, EndDocumentException {
-        while (skipToButNotPast("java-config", "jvm-options", "profiler")) {
+    private void parseJvmOptions() throws XMLStreamException, EndDocumentException {
+        while (skipToButNotPast("java-config", "jvm-options")) {
             if ("jvm-options".equals(parser.getLocalName())) {
                 jvmOptions.add(new JvmOption(parser.getElementText()));
-            } else {// profiler
-                parseProfiler();
-            }
-        }
-    }
-
-    private void parseProfiler() throws XMLStreamException, EndDocumentException {
-        // cursor --> START_ELEMENT of profiler
-        // it has attributes and <jvm-options>'s and <property>'s
-        profilerConfig = parseAttributes();
-
-        // the default is true
-        if (!profilerConfig.containsKey("enabled"))
-            profilerConfig.put("enabled", "true");
-
-        while (skipToButNotPast("profiler", "jvm-options", PROPERTY)) {
-            if ("jvm-options".equals(parser.getLocalName())) {
-                profilerJvmOptions.add(parser.getElementText());
-            } else {
-                parseProperty(profilerSysProps);
             }
         }
     }
@@ -1136,10 +1097,7 @@ public class MiniXmlParser {
     private String serverName;
     private String configRef;
     private List<JvmOption> jvmOptions = new ArrayList<>();
-    private List<String> profilerJvmOptions = new ArrayList<>();
     private Map<String, String> javaConfig;
-    private Map<String, String> profilerConfig = Collections.emptyMap();
-    private Map<String, String> profilerSysProps = new HashMap<>();
     private boolean valid = false;
     private List<HostAndPort> adminAddresses = new ArrayList<>();
     private String domainName;

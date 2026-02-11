@@ -5,14 +5,13 @@ NAME
        application launcher
 
 SYNOPSIS
-           delete-jvm-options [--help] [--target target] [--profiler={true|false}]
+           delete-jvm-options [--help] [--target target]
            (jvm-option-name[=jvm-option-value]) [:jvm-option-name[=jvm-option-name]]*
 
 DESCRIPTION
        The delete-jvm-options subcommand removes one or more command-line
        options for the Java application launcher. These options are removed
-       from the Java configuration java—config element or the profiler
-       profiler element of the domain.xml file. To see the Java application
+       from the Java configuration java—config element. To see the Java application
        launcher options that can be deleted, use the list-jvm-options(1)
        subcommand.
 
@@ -68,11 +67,6 @@ OPTIONS
            configuration-name
                Specifies a named configuration.
 
-       --profiler
-           Indicates whether the Java application launcher options are for the
-           profiler. The option must have been set for a profiler for this
-           option to be true.
-
 OPERANDS
        jvm-option-name
            One or more options delimited by a colon (:). The format of the
@@ -103,14 +97,6 @@ EXAMPLES
                asadmin> delete-jvm-options -Doption1=value1
                "-Doption1=value1:-Doption2=value2"
                Command delete-jvm-options executed successfully
-
-       Example 2, Deleting a Java Application Launcher Option From the
-       Profiler
-           This example removes a Java application launcher startup parameter
-           for the profiler.
-
-               asadmin> delete-jvm-options --profiler=true -XX:MaxPermSize=192m
-               Command delete-jvm-options executed successfully.
 
 EXIT STATUS
        0

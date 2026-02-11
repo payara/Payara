@@ -79,7 +79,6 @@
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-connector-connection-pool [--help]
-[--target=target]
 --raname raname
 --connectiondefinition connectiondefinitionname
 [--steadypoolsize steadypoolsize]
@@ -355,13 +354,6 @@ from 0 to <code>MAX_INTEGER</code>. Default value is 2.</p>
 <dd>
 <p>The minimum and initial number of connections maintained in the pool.
 Default value is 8.</p>
-</dd>
-<dt class="hdlist1"><code>--target</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
 </dd>
 <dt class="hdlist1"><code>--transactionsupport</code></dt>
 <dd>

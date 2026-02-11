@@ -84,7 +84,6 @@
 {--default-virtual-server | --defaultvs} virtual-server
 [--servername server-name]
 [--acceptorthreads acceptor-threads]
-[--redirectport redirect-port]
 [--securityenabled={false|true}]
 [--enabled={true|false}]
 [--target target]
@@ -178,13 +177,6 @@ used in URLs that the server sends to the client.</p>
 <p>The number of acceptor threads for the listener socket. The
 recommended value is the number of processors in the machine. The
 default value is 1.</p>
-</dd>
-<dt class="hdlist1"><code>--redirectport</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
 </dd>
 <dt class="hdlist1"><code>--securityenabled</code></dt>
 <dd>

@@ -177,10 +177,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
             public <T extends ConfigBeanProxy> NotProcessed changed(TYPE type, Class<T> tc, T t) {
                 NotProcessed result = null;
 
-                if (tc == Profiler.class) {
-                    result = new NotProcessed("Creation or changes to a profiler require restart");
-                }
-                else if (tc == Property.class && t.getParent().getClass() == JavaConfig.class) {
+                if (tc == Property.class && t.getParent().getClass() == JavaConfig.class) {
                     result = new NotProcessed("Addition of properties to JavaConfig requires restart");
                 }
                 else if (tc == JavaConfig.class && t instanceof JavaConfig) {
