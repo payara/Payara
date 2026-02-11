@@ -38,7 +38,7 @@ You are now free to start working on Payara issues, adding new features, or tink
 Payara uses Maven to build the server. You can use JDK 21 to build Payara Server.
 To build Payara from the root of the cloned source code tree, execute:
 ```
-mvn -DskipTests clean package -Pjakarta-staging
+mvn -DskipTests clean package
 ```
 When finished, the Payara distribution zip file will be available in the directory:
 ```
