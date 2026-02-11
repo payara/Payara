@@ -16,7 +16,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <p><a id="ref-virtualserverprops" name="ref-virtualserverprops"></a><a id="GHWEB00012" name="GHWEB00012"></a></p>
 
@@ -51,7 +51,7 @@
 <p>The <code>JSESSIONIDSSO</code> cookie inherits the <code>Secure</code> setting of the first session participating in SSO.</p>
 </dd>
 </dl>
-<p>To set the Secure attribute of a <code>JSESSIONID</code> cookie, use the <code>cookieSecure</code> <code>cookie-properties</code> property in the <code>sun-web.xml</code> file.</p>
+<p>To set the Secure attribute of a <code>JSESSIONID</code> cookie, use the <code>cookieSecure</code> <code>cookie-properties</code> property in the <code>payara-web.xml</code> file.</p>
 </dd>
 <dt><code>setCacheControl</code></dt>
 <dd>
@@ -89,7 +89,7 @@
 <dt><code>securePagesWithPragma</code></dt>
 <dd>
 <p>Set this property to <code>false</code> to ensure that for all web applications on this virtual server file downloads using SSL work properly in Internet Explorer.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file.</p>
+<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>payara-web.xml</code> file.</p>
 <p>The default value is <code>true</code>.</p>
 </dd>
 <dt><code>alternatedocroot_</code><i>n</i></dt>
@@ -117,7 +117,7 @@
    value="from=/jpg/* dir=/src/images"/&gt;
 </pre>
 <p>The <code>value</code> of each alternate docroot has two components: The first component, <code>from</code>, specifies the alternate docroot's URI pattern, and the second component, <code>dir</code>, specifies the alternate docroot's physical location (directory). Spaces are allowed in the <code>dir</code> component.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>sun-web.xml</code> file.</p>
+<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>payara-web.xml</code> file.</p>
 </dd>
 <dt><code>contextXmlDefault</code></dt>
 <dd>
@@ -125,7 +125,7 @@
 </dd>
 <dt><code>allowLinking</code></dt>
 <dd>
-<p>If <code>true</code>, resources that are symbolic links will be served for all web applications deployed on this virtual server. Individual web applications may override this setting by using the <code>sun-web-app</code> property <code>allowLinking</code> in the <code>sun-web.xml</code> file:</p>
+<p>If <code>true</code>, resources that are symbolic links will be served for all web applications deployed on this virtual server. Individual web applications may override this setting by using the <code>sun-web-app</code> property <code>allowLinking</code> in the <code>payara-web.xml</code> file:</p>
 <pre>
 &lt;sun-web-app&gt;
    &lt;property name="allowLinking" 
