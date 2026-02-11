@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -88,7 +88,7 @@ pool</p>
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] list-connector-security-maps [--help]
 [--securitymap securitymap]
-[--verbose={false|true}] [--target target]
+[--verbose={false|true}]
 pool-name</code></pre>
 </div>
 </div>
@@ -131,13 +131,6 @@ listed. With this option, <code>--verbose</code> is redundant.</p>
 <dd>
 <p>If set to <code>true</code>, returns a list including the identity, principals,
 and security name. The default is <code>false</code>.</p>
-</dd>
-<dt class="hdlist1"><code>--target</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
 </dd>
 </dl>
 </div>
