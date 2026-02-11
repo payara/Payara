@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.common</groupId>
         <artifactId>nucleus-common</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>glassfish-api</artifactId>

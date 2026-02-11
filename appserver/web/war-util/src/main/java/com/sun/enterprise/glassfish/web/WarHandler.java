@@ -108,17 +108,12 @@ public class WarHandler extends AbstractArchiveHandler {
     private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
     private static final String PAYARA_WEB_XML = "WEB-INF/payara-web.xml";
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
-    private static final String WEBLOGIC_XML = "WEB-INF/weblogic.xml";
     private static final String WAR_CONTEXT_XML = "META-INF/context.xml";
     private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
     private static final Logger logger = LogFacade.getLogger();
     private static final ResourceBundle rb = logger.getResourceBundle();
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WarHandler.class);
 
-
-    //the following two system properties need to be in sync with DOLUtils
-    private static final boolean gfDDOverWLSDD = Boolean.valueOf(System.getProperty("gfdd.over.wlsdd"));
-    private static final boolean ignoreWLSDD = Boolean.valueOf(System.getProperty("ignore.wlsdd"));
 
     @Inject @Named(WarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
@@ -225,26 +220,17 @@ public class WarHandler extends AbstractArchiveHandler {
             throws XMLStreamException, IOException {
 
         WebXmlParser webXmlParser = null;
-        boolean hasWSLDD = archive.exists(WEBLOGIC_XML);
         File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
         if (runtimeAltDDFile != null && "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) && runtimeAltDDFile.isFile()) {
             webXmlParser = new GlassFishWebXmlParser(archive, application);
-        } else if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
-            webXmlParser = new WeblogicXmlParser(archive);
         } else if (archive.exists(PAYARA_WEB_XML)){
             webXmlParser = new PayaraWebXmlParser(archive, application);
         } else if (archive.exists(GLASSFISH_WEB_XML)) {
             webXmlParser = new GlassFishWebXmlParser(archive, application);
         } else if (archive.exists(SUN_WEB_XML)) {
             webXmlParser = new SunWebXmlParser(archive, application);
-        } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
-            webXmlParser = new WeblogicXmlParser(archive);
         } else { // default
-            if (gfDDOverWLSDD || ignoreWLSDD) {
-                webXmlParser = new GlassFishWebXmlParser(archive, application);
-            } else {
-                webXmlParser = new WeblogicXmlParser(archive);
-            }
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
         }
         return webXmlParser;
     }
@@ -709,45 +695,6 @@ public class WarHandler extends AbstractArchiveHandler {
         @Override
         public String getCookieSameSiteValue() {
             return cookieSameSiteValue;
-        }
-    }
-
-    protected class WeblogicXmlParser extends WebXmlParser {
-        WeblogicXmlParser(ReadableArchive archive)
-                throws XMLStreamException, IOException {
-
-            super(archive, Application.createApplication());
-        }
-
-        @Override
-        protected String getXmlFileName() {
-            return WEBLOGIC_XML;
-        }
-
-        @Override
-        protected void read(InputStream input) throws XMLStreamException {
-            parser = getXMLInputFactory().createXMLStreamReader(input);
-
-            skipRoot("weblogic-web-app");
-
-            int event = 0;
-            while (parser.hasNext() && (event = parser.next()) != END_DOCUMENT) {
-                if (event == START_ELEMENT) {
-                    String name = parser.getLocalName();
-                    if ("prefer-web-inf-classes".equals(name)) {
-                        //weblogic DD has default "false" for perfer-web-inf-classes
-                        delegate = !Boolean.parseBoolean(parser.getElementText());
-                        break;
-                    }  else if (!"container-descriptor".equals(name)) {
-                        skipSubTree(name);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public String getCookieSameSiteValue() {
-            return "";
         }
     }
 

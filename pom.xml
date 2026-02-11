@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.2-SNAPSHOT</version>
+    <version>7.2026.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -346,7 +346,7 @@
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
         <weld.version>6.0.4.Final</weld.version>
-        <tyrus.version>2.2.0</tyrus.version>
+        <tyrus.version>2.2.2</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
         <asm.version>9.9.1</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>

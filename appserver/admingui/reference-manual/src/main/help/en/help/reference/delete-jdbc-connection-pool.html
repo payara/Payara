@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -87,7 +87,6 @@
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-jdbc-connection-pool [--help]
 [--cascade={false|true}]
-[--target target]
 jdbc_connection_pool_id</code></pre>
 </div>
 </div>
@@ -124,13 +123,6 @@ the pool, apart from the pool itself, are deleted. When set to false,
 the deletion of pool fails if any resources are associated with the
 pool. Resources must be deleted explicitly or the option must be set
 to true. The default value is false.</p>
-</dd>
-<dt class="hdlist1"><code>--target</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
 </dd>
 </dl>
 </div>
