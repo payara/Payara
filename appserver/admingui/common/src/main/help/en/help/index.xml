@@ -208,10 +208,6 @@
     <indexitem text="configuring (reference)" target="ref-serverinstjvmpathsettings"></indexitem>
     <indexitem text="configuring (task)" target="task-jvmpathsettings"></indexitem>
   </indexitem>
-  <indexitem text="JVM profiler settings">
-    <indexitem text="configuring (reference)" target="ref-serverinstjvmprofiler"></indexitem>
-    <indexitem text="configuring (task)" target="task-jvmprofilersettings"></indexitem>
-  </indexitem>
   <indexitem text="launching application clients" target="task-appclientlaunch"></indexitem>
   <indexitem text="launching applications (reference)" target="ref-appclientlaunch"></indexitem>
   <indexitem text="launching applications (task)" target="task-applaunch"></indexitem>
