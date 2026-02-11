@@ -48,19 +48,20 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
  */
 public class ResourceUtil {
-
+    @Deprecated
     private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
+    @Deprecated
     private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
     private static final String PAYARA_RESOURCES_XML_META_INF = "META-INF/payara-resources.xml";
     private static final String PAYARA_RESOURCES_XML_WEB_INF = "WEB-INF/payara-resources.xml";
-
-
-
+    
+    @Deprecated
     public static boolean hasGlassfishResourcesXML(ReadableArchive archive, ServiceLocator locator){
         boolean hasResourcesXML = false;
         if (archive != null) {
@@ -68,6 +69,8 @@ public class ResourceUtil {
                 if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
                     //handle top-level META-INF/glassfish-resources.xml
                     if(archive.exists(RESOURCES_XML_META_INF)){
+                        Logger.getAnonymousLogger().warning("The glassfish-resource.xml file is deprecated and support"
+                            + " will be removed in the future. It is recommended to use payara-resources.xml instead.");
                         return true;
                     }
 
@@ -83,21 +86,28 @@ public class ResourceUtil {
                                 subArchive.close();
                             }
                             if (answer) {
-                                return true;
+                                hasResourcesXML = true;
+                                break;
                             }
                        }
                     }
                 }else{
                     if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)){
-                        return archive.exists(RESOURCES_XML_WEB_INF);
+                        hasResourcesXML = archive.exists(RESOURCES_XML_WEB_INF);
                     }else {
-                        return archive.exists(RESOURCES_XML_META_INF);
+                        hasResourcesXML = archive.exists(RESOURCES_XML_META_INF);
                     }
                 }
             }catch(IOException ioe){
                 //ignore
             }
         }
+        
+        if (hasResourcesXML) {
+            Logger.getAnonymousLogger().warning("The glassfish-resource.xml file is deprecated and support will be "
+                + "removed in the future. It is recommended to use payara-resources.xml instead.");
+        }
+        
         return hasResourcesXML;
     }
 
