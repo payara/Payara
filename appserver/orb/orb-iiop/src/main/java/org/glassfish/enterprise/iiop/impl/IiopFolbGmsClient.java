@@ -73,6 +73,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -359,21 +360,46 @@ public class IiopFolbGmsClient implements ClusterListener {
     }
 
     private Map<String, ClusterInstanceInfo> getAllClusterInstanceInfo() {
-        final Cluster myCluster = myServer.getCluster();
-        fineLog("getAllClusterInstanceInfo: myCluster {0}", myCluster);
+        Map<String, ClusterInstanceInfo> result = new HashMap<>();
 
         final Config myConfig = getConfigForServer(myServer);
-        fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
+        fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig.getName());
+        result.put(myServer.getName(), getClusterInstanceInfo(myServer, myConfig, false));
 
-        final Map<String, ClusterInstanceInfo> result = new HashMap<>();
+        // Iterate over cluster or deployment group
+        // When myServer is DAS's situation, myCluster is null - we check we're not adding the same server twice
+        if (isTraditionalClusterActive()) {
+            final Cluster myCluster = myServer.getCluster();
+            fineLog("getAllClusterInstanceInfo: myCluster {0}", myCluster.getName());
 
-        //When myServer is DAS's situation, myCluster is null.
-        //null check is needed.
-        if (myCluster != null) {
             for (Server server : myCluster.getInstances()) {
+                if (server.getName().equals(myServer.getName())) {
+                    // Should™ already be added
+                    continue;
+                }
+
                 ClusterInstanceInfo cii = getClusterInstanceInfo(server, myConfig, false);
                 if (cii != null) {
                     result.put(server.getName(), cii);
+                }
+            }
+        } else if (isDeploymentGroupsActive()) {
+            for (UUID clusterMemberId : cluster.getClusterMembers()) {
+                if (clusterMemberId.equals(cluster.getLocalUUID())) {
+                    // Should™ already be added
+                    continue;
+                }
+
+                Server server = domain.getServerNamed(cluster.getMemberName(clusterMemberId));
+
+                if (server != null) {
+                    final Config serverConfig = getConfigForServer(server);
+
+                    fineLog("getAllClusterInstanceInfo: serverConfig {0}", serverConfig.getName());
+
+                    if (serverConfig != null) {
+                        result.put(server.getName(), getClusterInstanceInfo(myServer, myConfig, false));
+                    }
                 }
             }
         }
