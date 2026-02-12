@@ -1,8 +1,6 @@
 package fish.payara.samples.security.expiration;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.SecurityUtils;
-import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -43,7 +41,6 @@ public class ExpirationValidationTest {
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class, "client-cert-expiration-test.war")
                 .addPackage(ExpirationValidationTest.class.getPackage())
-                .addClasses(ServerOperations.class, SecurityUtils.class, HelloServlet.class)
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/glassfish-web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/beans.xml"));

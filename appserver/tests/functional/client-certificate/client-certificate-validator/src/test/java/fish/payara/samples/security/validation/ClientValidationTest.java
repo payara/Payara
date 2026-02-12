@@ -41,8 +41,6 @@
 package fish.payara.samples.security.validation;
 
 import fish.payara.samples.PayaraArquillianTestRunner;
-import fish.payara.samples.SecurityUtils;
-import fish.payara.samples.ServerOperations;
 import fish.payara.samples.SincePayara;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -81,8 +79,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.omnifaces.utils.security.Certificates;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -100,12 +96,6 @@ public class ClientValidationTest {
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class, "security.war")
                 .addPackage(ClientValidationTest.class.getPackage())
-                .addPackages(true, "org.bouncycastle")
-                .addPackages(true, "com.gargoylesoftware")
-                .addPackages(true, "net.sourceforge.htmlunit")
-                .addPackages(true, "org.eclipse")
-                .addPackages(true, PayaraArquillianTestRunner.class.getPackage())
-                .addClasses(ServerOperations.class, SecurityUtils.class, Certificates.class)
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp", "WEB-INF/beans.xml"));
     }
