@@ -363,12 +363,12 @@ public class IiopFolbGmsClient implements ClusterListener {
             fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
             currentMembers.put(myServer.getName(), getClusterInstanceInfo(myServer, myConfig, false));
 
-            if (cluster != null && cluster.isEnabled()) {
-                for (UUID clusterMemberId : cluster.getClusterMembers()) {
-                    if (clusterMemberId.equals(cluster.getLocalUUID())) {
-                        // Should™ already be added
-                        continue;
-                    }
+        if (isDeploymentGroupsActive()) {
+            for (UUID clusterMemberId : cluster.getClusterMembers()) {
+                if (clusterMemberId.equals(cluster.getLocalUUID())) {
+                    // Should™ already be added
+                    continue;
+                }
 
                     Server server = domain.getServerNamed(cluster.getMemberName(clusterMemberId));
                     fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
