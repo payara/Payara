@@ -283,6 +283,9 @@ public class IiopFolbGmsClient implements ClusterListener {
         String hostName = nodeName;
         if (nodes != null) {
             Node node = nodes.getNode(nodeName);
+            if (node == null) {
+                node = nodes.getDefaultLocalNode();
+            }
             if (node != null) {
                 // If this is the local node, and the useNodeHostForLocalNode property has not been set at the ORB or
                 // System level, use the local host name
