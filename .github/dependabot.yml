@@ -5,6 +5,8 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    exclude-paths:
+      - "appserver/tests/payara-samples/samples/use-bundled-jsf-primefaces/**"
     open-pull-requests-limit: 5
     target-branch: "main"
     ignore:
