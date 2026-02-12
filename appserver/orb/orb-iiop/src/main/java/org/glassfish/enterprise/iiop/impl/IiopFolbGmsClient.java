@@ -358,10 +358,11 @@ public class IiopFolbGmsClient implements ClusterListener {
     }
 
     private Map<String, ClusterInstanceInfo> getAllClusterInstanceInfo() {
-        if (currentMembers.isEmpty()) {
-            final Config myConfig = getConfigForServer(myServer);
-            fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
-            currentMembers.put(myServer.getName(), getClusterInstanceInfo(myServer, myConfig, false));
+        Map<String, ClusterInstanceInfo> result = new HashMap<>();
+
+        final Config myConfig = getConfigForServer(myServer);
+        fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
+        result.put(myServer.getName(), getClusterInstanceInfo(myServer, myConfig, false));
 
         if (isDeploymentGroupsActive()) {
             for (UUID clusterMemberId : cluster.getClusterMembers()) {
@@ -370,28 +371,27 @@ public class IiopFolbGmsClient implements ClusterListener {
                     continue;
                 }
 
-                    Server server = domain.getServerNamed(cluster.getMemberName(clusterMemberId));
-                    fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
+                Server server = domain.getServerNamed(cluster.getMemberName(clusterMemberId));
+                fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig);
 
-                    if (server != null) {
-                        final Config serverConfig = getConfigForServer(server);
+                if (server != null) {
+                    final Config serverConfig = getConfigForServer(server);
 
-                        if (serverConfig != null) {
-                            currentMembers.put(server.getName(), getClusterInstanceInfo(myServer, myConfig, false));
-                        }
+                    if (serverConfig != null) {
+                        result.put(server.getName(), getClusterInstanceInfo(myServer, myConfig, false));
                     }
                 }
             }
         }
 
-        fineLog("getAllClusterInstanceInfo: result {0}", currentMembers);
-        return currentMembers;
+        fineLog("getAllClusterInstanceInfo: result {0}", result);
+        return result;
     }
 
     // return host:port,... string for all clear text ports in the cluster
     // instance info.
     public final String getIIOPEndpoints() {
-        final Map<String, ClusterInstanceInfo> cinfos = currentMembers;
+        final Map<String, ClusterInstanceInfo> cinfos = getAllClusterInstanceInfo();
         final StringBuilder result = new StringBuilder();
         boolean first = true;
         for (ClusterInstanceInfo cinfo : cinfos.values()) {
