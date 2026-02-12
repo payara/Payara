@@ -4,55 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples</artifactId>
+        <artifactId>client-certificate</artifactId>
         <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>war</packaging>
-    <groupId>fish.payara.samples.client-certificate-expirated-test</groupId>
     <artifactId>client-certificate-expirated-test</artifactId>
     <name>Payara-Samples - Client Certificate Expiration Validation Test</name>
-
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.samples</groupId>
-            <artifactId>samples-test-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.security.enterprise</groupId>
-            <artifactId>jakarta.security.enterprise-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- JAX-RS Client API for testing -->
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.ecosystem.jaxrs</groupId>
-            <artifactId>rest-ssl-configuration</artifactId>
-            <version>1.2.1</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -141,23 +100,6 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
-                            <!-- Enable Client Auth on Listener -->
-                            <execution>
-                                <id>enable-client-auth</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
                             <!-- Disable Certificate Expiration Validation -->
                             <execution>
                                 <id>disable-expiration-validation</id>
@@ -186,7 +128,7 @@
                                     <skip>${skipConfig}</skip>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
-                                        <argument>restart-domain</argument>
+                                        <argument>${serverRestartCommand}</argument>
                                         <argument>${payara.domain.name}</argument>
                                     </arguments>
                                 </configuration>

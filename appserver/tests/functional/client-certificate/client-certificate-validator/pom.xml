@@ -43,57 +43,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples</artifactId>
+        <artifactId>client-certificate</artifactId>
         <version>7.2026.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <packaging>war</packaging>
-    <groupId>fish.payara.samples.client-certificate-validator</groupId>
     <artifactId>client-certificate-validator</artifactId>
     <name>Payara-Samples - Client Certificate Validator</name>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>fish.payara.samples</groupId>
-            <artifactId>samples-test-utils</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.security.enterprise</groupId>
-            <artifactId>jakarta.security.enterprise-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- Payara JAX-RS Extension for SSL Certificate Alias Configuration -->
-        <dependency>
-            <groupId>fish.payara.ecosystem.jaxrs</groupId>
-            <artifactId>rest-ssl-configuration</artifactId>
-            <version>1.2.1</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- JAX-RS Client API -->
-        <dependency>
-            <groupId>jakarta.ws.rs</groupId>
-            <artifactId>jakarta.ws.rs-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- Jersey Client for JAX-RS implementation -->
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -202,22 +159,6 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>enable-client-auth</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
                             <!-- Restart server after editing trust store -->
                             <execution>
                                 <id>restart-payara-after-config</id>
