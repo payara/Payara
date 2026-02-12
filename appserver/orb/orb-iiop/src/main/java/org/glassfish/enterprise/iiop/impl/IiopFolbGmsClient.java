@@ -139,9 +139,8 @@ public class IiopFolbGmsClient implements ClusterListener {
                 fineLog("IiopFolbGmsClient: IIOP GIS created");
 
                 currentMembers = getAllClusterInstanceInfo() ;
-                fineLog( "IiopFolbGmsClient: currentMembers = ", currentMembers);
+                fineLog( "IiopFolbGmsClient: currentMembers = {0}", currentMembers);
 
-//                currentMembers.put(myServer.getName(), getClusterInstanceInfo(myServer.getName()));
                 fineLog("iiop instance info = " + getIIOPEndpoints());
 
                 cluster.addClusterListener(this);
