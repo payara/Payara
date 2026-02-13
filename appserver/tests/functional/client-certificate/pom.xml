@@ -59,6 +59,10 @@
         <maven.compiler.target>21</maven.compiler.target>
     </properties>
 
+    <modules>
+        <module>client-certificate-base</module>
+    </modules>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.samples</groupId>
