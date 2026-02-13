@@ -36,7 +36,7 @@ The following command template is recommended for running the tests, ensuring al
 This test expects standard certificate validation to be **active** (default).
 
 ```bash
-mvn -V -B -ff clean install --strict-checksums \
+mvn -V -B -ff install --strict-checksums \
     -Ppayara-server-remote \
     -Djavax.net.ssl.trustStore=/path/to/your/jdk/lib/security/cacerts \
     -Djavax.xml.accessExternalSchema=all \
@@ -48,13 +48,14 @@ mvn -V -B -ff clean install --strict-checksums \
 This test **modifies the server configuration** to disable certificate expiration checks.
 
 ```bash
-mvn -V -B -ff clean install --strict-checksums \
+mvn -V -B -ff install --strict-checksums \
     -Ppayara-server-remote \
     -Djavax.net.ssl.trustStore=/path/to/your/jdk/lib/security/cacerts \
     -Djavax.xml.accessExternalSchema=all \
     -Dpayara.home=/path/to/payara7 \
     -f appserver/tests/functional/client-certificate/client-certificate-expired-test
 ```
+> **Tip**: Once you have executed a module's tests as above at least once, you can add `-DskipConfig=true` to skip the re-configuration and restart of the Payara instance. This can be useful when debugging.
 
 > **Note**: Update `/path/to/your/jdk/lib/security/cacerts` and `/path/to/payara7` with your actual system paths. The `javax.net.ssl.trustStore` property ensures the test runner trusts the server's certificate if using a custom or self-signed CA.
 
