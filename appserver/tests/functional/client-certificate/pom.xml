@@ -118,6 +118,21 @@
                                     </arguments>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>assign-certificate-realm-group</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipConfig}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>set</argument>
+                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

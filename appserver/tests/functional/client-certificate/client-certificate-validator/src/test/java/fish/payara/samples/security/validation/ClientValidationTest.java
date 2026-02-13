@@ -290,47 +290,4 @@ public class ClientValidationTest {
         Path serverLog = Paths.get(domainDir, "logs", "server.log");
         return Files.readAllLines(serverLog);
     }
-
-    /**
-     * Inner class implementing the authentication mechanism for testing purposes.
-     */
-    @ApplicationScoped
-    public static class ClientCertAuthenticationMechanism implements HttpAuthenticationMechanism {
-
-        @Override
-        public AuthenticationStatus validateRequest(HttpServletRequest request, HttpServletResponse response,
-                HttpMessageContext httpMessageContext) throws AuthenticationException {
-
-            X509Certificate[] certs = (X509Certificate[]) request
-                    .getAttribute("jakarta.servlet.request.X509Certificate");
-            if (certs == null) {
-                certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-            }
-
-            if (certs != null && certs.length > 0) {
-                X509Certificate clientCert = certs[0];
-                String principalName = clientCert.getSubjectX500Principal().getName();
-
-                try {
-                    clientCert.checkValidity();
-                    System.out.println("Certificate is valid. Authenticating: " + principalName);
-                    return httpMessageContext.notifyContainerAboutLogin(
-                            principalName,
-                            Collections.singleton("myRole"));
-                } catch (CertificateExpiredException | CertificateNotYetValidException e) {
-                    // This EXACT string is expected by the test to verify validation failures
-                    System.out.println("Certificate Validation Failed via API for: " + principalName);
-                    return httpMessageContext.responseUnauthorized();
-                }
-            }
-
-            // Return unauthorized for protected resources if no certificate is found
-            if (request.getRequestURI().contains("/secure/")) {
-                System.out.println("No certificate presented for protected resource: " + request.getRequestURI());
-                return httpMessageContext.responseUnauthorized();
-            }
-
-            return httpMessageContext.doNothing();
-        }
-    }
 }
