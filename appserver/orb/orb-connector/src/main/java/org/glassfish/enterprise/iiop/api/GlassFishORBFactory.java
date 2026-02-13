@@ -75,6 +75,7 @@ public interface GlassFishORBFactory {
     boolean isEjbCall (ServerRequestInfo sri);
 
     String getIIOPEndpoints();
-    
+
+    @Deprecated
     boolean isClusterActive();
 }
