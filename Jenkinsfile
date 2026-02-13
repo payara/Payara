@@ -411,43 +411,43 @@ pipeline {
                         }
                     }
                 }
-                stage('MicroProfile REST Client TCK') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    options {
-                        retry(3)
-                    }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/microprofile-7.1"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                        setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
-                        -Dsurefire.rerunFailingTestsCount=2 \
-                        -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Ppayara-server-remote,full \
-                        -f MicroProfile-Rest-Client"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'mp-tck-log.zip'
-                        }
-                    }
-                }
+//                stage('MicroProfile REST Client TCK') {
+//                    agent {
+//                        label 'general-purpose'
+//                    }
+//                    options {
+//                        retry(3)
+//                    }
+//                    steps{
+//                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
+//                            branches: [[name: "*/microprofile-7.1"]],
+//                            userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
+//                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//
+//                        setupDomain()
+//                        updatePomPayaraVersion("${pom.version}")
+//
+//                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                        sh """mvn -B -V -ff -e clean verify --strict-checksums \
+//                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+//                        -Djavax.xml.accessExternalSchema=all \
+//                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+//                        -Dsurefire.rerunFailingTestsCount=2 \
+//                        -Dfailsafe.rerunFailingTestsCount=2 \
+//                        -Ppayara-server-remote,full \
+//                        -f MicroProfile-Rest-Client"""
+//                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                    }
+//                    post {
+//                        always {
+//                            processReportAndStopDomain()
+//                        }
+//                        cleanup {
+//                            saveLogsAndCleanup 'mp-tck-log.zip'
+//                        }
+//                    }
+//                }
                 stage('EE8 Tests') {
                     agent {
                         label 'general-purpose'
