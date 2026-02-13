@@ -161,6 +161,22 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
+                            <!-- Enable Certificate Expiration Validation -->
+                            <execution>
+                                <id>enable-expiration-validation</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipConfig}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>set</argument>
+                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.certificate-validation=true</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
                             <!-- Restart server after editing trust store -->
                             <execution>
                                 <id>restart-payara-after-config</id>
