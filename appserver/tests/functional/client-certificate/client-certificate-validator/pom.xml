@@ -167,7 +167,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
-                                    <skip>${skipServerRestart}</skip>
+                                    <skip>${skipConfig}</skip>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
                                         <argument>${serverRestartCommand}</argument>
