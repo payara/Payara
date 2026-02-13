@@ -140,7 +140,7 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         //set semantic attribute for OS name and version
         builder.put("os.name", System.getProperty("os.name"));
         builder.put("os.version", System.getProperty("os.version"));
-        //set semantic attribute for information
+        //set semantic attribute for host information
         builder.put("host.name", InetAddress.getLocalHost().getHostName());
         builder.put("host.arch", System.getProperty("os.arch"));
         //set semantic attribute for jvm information
