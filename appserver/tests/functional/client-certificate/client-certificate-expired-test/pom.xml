@@ -52,6 +52,15 @@
     <artifactId>client-certificate-expirated-test</artifactId>
     <name>Payara-Samples - Client Certificate Expiration Validation Test</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.samples</groupId>
+            <artifactId>client-certificate-base</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

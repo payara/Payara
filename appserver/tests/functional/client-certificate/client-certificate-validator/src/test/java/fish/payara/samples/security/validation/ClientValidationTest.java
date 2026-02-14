@@ -40,6 +40,7 @@
 
 package fish.payara.samples.security.validation;
 
+import fish.payara.functional.server.security.client.cert.BaseClientCertTest;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.SincePayara;
 
@@ -50,30 +51,11 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.security.enterprise.AuthenticationException;
-import jakarta.security.enterprise.AuthenticationStatus;
-import jakarta.security.enterprise.authentication.mechanism.http.HttpAuthenticationMechanism;
-import jakarta.security.enterprise.authentication.mechanism.http.HttpMessageContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.security.KeyStore;
-import java.security.SecureRandom;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.Collections;
 import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -84,12 +66,9 @@ import static org.junit.Assert.fail;
 
 @RunWith(PayaraArquillianTestRunner.class)
 @SincePayara("5.2021.8")
-public class ClientValidationTest {
+public class ClientValidationTest extends BaseClientCertTest {
 
-    private static final String KEYSTORE_PASSWORD = "changeit";
-    private static final String KEYSTORE_TYPE = "PKCS12";
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
-    private static final String PAYARA_CERTIFICATE_ALIAS_PROPERTY = "fish.payara.jaxrs.client.certificate.alias";
     private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
 
     @Deployment
@@ -132,92 +111,15 @@ public class ClientValidationTest {
                 expectedStatusCode, certAlias));
         System.out.println("Client Certificate Path: " + certPath);
 
-        // Verify keystore exists
-        File keystoreFile = new File(certPath);
-        if (!keystoreFile.exists()) {
-            fail("Keystore file does not exist: " + certPath);
-        }
+        sendRequest(certPath, certAlias, new URI(LOCALHOST_URL), response -> assertResponse(response, expectedStatusCode));
 
-        // Load the keystore
-        KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-        try (FileInputStream fis = new FileInputStream(certPath)) {
-            keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
-        }
-        System.out.println("Keystore loaded successfully");
-
-        // Print certificate details
-        printCertificateDetails(keyStore, certAlias);
-
-        // Set up key manager factory
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
-        System.out.println("KeyManagerFactory initialized");
-
-        // Create a trust manager that trusts all certificates (for testing only)
-        TrustManager[] trustAllCerts = new TrustManager[] {
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return new X509Certificate[0];
-                    }
-
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                    }
-
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    }
-                }
-        };
-
-        // Initialize SSL context
-        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
-        sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
-        System.out.println("SSLContext initialized with TLSv1.2");
-
-        // Build JAX-RS client using Payara Extension
-        System.out.println("\nBuilding JAX-RS Client with Payara Extension:");
-        System.out.println("  Property: " + PAYARA_CERTIFICATE_ALIAS_PROPERTY);
-        System.out.println("  Value: " + certAlias);
-
-        Client client = ClientBuilder.newBuilder()
-                .sslContext(sslContext)
-                .hostnameVerifier((hostname, session) -> true)
-                // Use Payara's JAX-RS Extension to specify certificate alias
-                .property(PAYARA_CERTIFICATE_ALIAS_PROPERTY, certAlias)
-                .build();
-
-        System.out.println("JAX-RS Client built with property " + PAYARA_CERTIFICATE_ALIAS_PROPERTY + "=" + certAlias);
-
-        // Make the request
-        System.out.println("Making HTTPS request to: " + LOCALHOST_URL);
-        Response response = null;
-        try {
-            response = client.target(new URI(LOCALHOST_URL))
-                    .request()
-                    .get();
-
-            int statusCode = response.getStatus();
-            System.out.println("Response received: HTTP " + statusCode);
-
-            // Verify the response status code
-            System.out.println("\nValidating Response:");
-            assertEquals("Expected status code " + expectedStatusCode + " but got: " + statusCode,
-                    expectedStatusCode, statusCode);
-            System.out.println("HTTPS Request successful. Received expected status code " + statusCode);
-
-        } finally {
-            if (response != null) {
-                response.close();
-            }
-            client.close();
-        }
+        String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains",
+                System.getProperty("payara.domain.name")).toString();
+        System.out.println("Checking Server Logs in: " + domainDir);
 
         // Verify the certificate validation failure was logged by the API
         if (checkLog) {
-            String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains",
-                    System.getProperty("payara.domain.name")).toString();
-            System.out.println("Checking Server Logs in: " + domainDir);
-            boolean validationFailed = checkForAPIValidationFailure(domainDir);
-            if (!validationFailed) {
+            if (!checkForAPIValidationFailure(domainDir)) {
                 System.err.println(" ✗ Expected validation error message not found in logs");
                 fail("Expected certificate validation failure in server logs but none found");
             }
@@ -226,53 +128,24 @@ public class ClientValidationTest {
 
         System.out.println("========================================");
         System.out.println("Test completed successfully!");
-
     }
 
-    private void printCertificateDetails(KeyStore keyStore, String alias) {
-        try {
-            System.out.println("Certificate Details:");
-            if (keyStore.containsAlias(alias)) {
-                System.out.println("  Alias: " + alias);
-                if (keyStore.isCertificateEntry(alias) || keyStore.isKeyEntry(alias)) {
-                    java.security.cert.Certificate cert = keyStore.getCertificate(alias);
-                    if (cert instanceof X509Certificate) {
-                        X509Certificate x509 = (X509Certificate) cert;
-                        System.out.println("    Subject: " + x509.getSubjectX500Principal().getName());
-                        System.out.println("    Issuer: " + x509.getIssuerX500Principal().getName());
-                        System.out.println("    Valid From: " + x509.getNotBefore());
-                        System.out.println("    Valid Until: " + x509.getNotAfter());
-                        try {
-                            x509.checkValidity();
-                            System.out.println("    Status: ✓ VALID");
-                        } catch (CertificateExpiredException e) {
-                            System.out.println("    Status: ✗ EXPIRED");
-                            System.out.println("Certificate " + alias + " is EXPIRED");
-                        } catch (CertificateNotYetValidException e) {
-                            System.out.println("    Status: ✗ NOT YET VALID");
-                            System.out.println("Certificate " + alias + " is NOT YET VALID");
-                        }
-                    }
-                }
-            } else {
-                System.out.println("  Warning: Alias '" + alias + "' not found in keystore");
-                System.out.println("Alias " + alias + " not found in keystore");
-                System.out.println("  Available aliases:");
-                java.util.Enumeration<String> aliases = keyStore.aliases();
-                while (aliases.hasMoreElements()) {
-                    System.out.println("    - " + aliases.nextElement());
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Warning: Could not read certificate details: " + e.getMessage());
-        }
+    private static void assertResponse(Response response, int expectedStatusCode) {
+        int statusCode = response.getStatus();
+        System.out.println("Response received: HTTP " + statusCode);
+
+        // Verify the response status code
+        System.out.println("\nValidating Response:");
+        assertEquals("Expected status code " + expectedStatusCode + " but got: " + statusCode,
+                expectedStatusCode, statusCode);
+        System.out.println("HTTPS Request successful. Received expected status code " + statusCode);
     }
 
     /**
      * @return true if the correct warning is found in the logs
      * @throws IOException
      */
-    private boolean checkForAPIValidationFailure(String domainDir) throws IOException {
+    private static boolean checkForAPIValidationFailure(String domainDir) throws IOException {
         List<String> log = viewLog(domainDir);
         for (String line : log) {
             if (line.contains(EXPECTED_VALIDATION_ERROR)) {
@@ -286,7 +159,7 @@ public class ClientValidationTest {
     /**
      * @return the contents of the server log
      */
-    private List<String> viewLog(String domainDir) throws IOException {
+    private static List<String> viewLog(String domainDir) throws IOException {
         Path serverLog = Paths.get(domainDir, "logs", "server.log");
         return Files.readAllLines(serverLog);
     }
