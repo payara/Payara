@@ -4,20 +4,23 @@ This directory contains functional tests for validating Client Certificate Authe
 
 ## Modules
 
-### 1. Client Certificate Validator (`client-certificate-validator`)
+### 1. Client Certificate Validation Enabled (`client-certificate-validation-enabled`)
 *   **Purpose**: Validates standard client certificate authentication flows.
 *   **Scenarios**:
     *   **Valid Certificate**: Verifies that a valid client certificate correctly authenticates the user and maps to the expected principal.
     *   **Expired Certificate**: Verifies that an expired certificate is **rejected** by the server and logs the expected error message (`Certificate Validation Failed via API`).
-*   **Configuration**: Enables `client-auth=want` on the HTTP listener.
+*   **Configuration**: 
+    *   Sets `client-auth=want` on the HTTP listener.
+    *   Sets `configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole`
 
-### 2. Client Certificate Expired Test (`client-certificate-expired-test`)
+### 2. Client Certificate Validation Disabled (`client-certificate-validation-disabled`)
 *   **Purpose**: Verifies the specific Payara configuration property `certificate-validation` which allows bypassing certificate expiration checks.
 *   **Scenarios**:
     *   **Expired Certificate (Allowed)**: Configuring `certificate-validation=false` at the `auth-realm` level allows an expired certificate to be accepted. The test asserts that a request with an expired certificate returns `200 OK` instead of `401 Unauthorized`.
 *   **Configuration**: 
-    *   Enables `client-auth=want`.
+    *   Sets `client-auth=want` on the HTTP listener.
     *   Sets `configs.config.server-config.security-service.auth-realm.certificate.property.certificate-validation=false`.
+    *   Sets `configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole`
 
 ---
 
@@ -32,7 +35,7 @@ These tests are designed to be run against a running or remote Payara Server ins
 
 The following command template is recommended for running the tests, ensuring all necessary system properties and build flags are set.
 
-### Running Client Certificate Validator
+### Running Client Certificate Validation Enabled Tests
 This test expects standard certificate validation to be **active** (default).
 
 ```bash
@@ -41,10 +44,10 @@ mvn -V -B -ff install --strict-checksums \
     -Djavax.net.ssl.trustStore=/path/to/your/jdk/lib/security/cacerts \
     -Djavax.xml.accessExternalSchema=all \
     -Dpayara.home=/path/to/payara7 \
-    -f appserver/tests/functional/client-certificate/client-certificate-validator
+    -f appserver/tests/functional/client-certificate/client-certificate-validation-enabled
 ```
 
-### Running Client Certificate Expired Test
+### Running Client Certificate Validation Disabled Tests
 This test **modifies the server configuration** to disable certificate expiration checks.
 
 ```bash
@@ -53,7 +56,7 @@ mvn -V -B -ff install --strict-checksums \
     -Djavax.net.ssl.trustStore=/path/to/your/jdk/lib/security/cacerts \
     -Djavax.xml.accessExternalSchema=all \
     -Dpayara.home=/path/to/payara7 \
-    -f appserver/tests/functional/client-certificate/client-certificate-expired-test
+    -f appserver/tests/functional/client-certificate/client-certificate-validation-disabled
 ```
 > **Tip**: Once you have executed a module's tests as above at least once, you can add `-DskipConfig=true` to skip the re-configuration and restart of the Payara instance. This can be useful when debugging.
 
