@@ -61,8 +61,8 @@
 
     <modules>
         <module>client-certificate-base</module>
-        <module>client-certificate-validator</module>
-        <module>client-certificate-expired-test</module>
+        <module>client-certificate-validation-enabled</module>
+        <module>client-certificate-validation-disabled</module>
     </modules>
 
     <dependencies>
