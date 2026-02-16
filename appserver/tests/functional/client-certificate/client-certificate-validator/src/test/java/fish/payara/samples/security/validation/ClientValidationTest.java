@@ -56,6 +56,9 @@ import jakarta.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -93,6 +96,22 @@ public class ClientValidationTest extends BaseClientCertTest {
         String certPath = new File("target", "valid-keystore.jks").getAbsolutePath();
         String certAlias = "client-certificate-valid";
         performTest(certPath, certAlias, 200, false);
+    }
+
+    protected void printCertificateDetails(X509Certificate cert) {
+        super.printCertificateDetails(cert);
+        try {
+            cert.checkValidity();
+            System.out.println("    Status: ✓ VALID");
+        } catch (CertificateExpiredException e) {
+            System.out.println("    Status: ✗ EXPIRED");
+            System.out.println("Certificate is EXPIRED");
+        } catch (CertificateNotYetValidException e) {
+            System.out.println("    Status: ✗ NOT YET VALID");
+            System.out.println("Certificate is NOT YET VALID");
+        } catch (Exception e) {
+            System.out.println("Certificate Validity Check: " + e.getMessage());
+        }
     }
 
     private void performTest(String certPath, String certAlias, int expectedStatusCode, boolean checkLog)

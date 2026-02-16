@@ -50,11 +50,7 @@ public class ExpirationValidationTest extends BaseClientCertTest {
 
     @Override
     protected void printCertificateDetails(X509Certificate cert) {
-        // Print certificate details for debugging
-        System.out.println("Certificate Subject: " + cert.getSubjectX500Principal());
-        System.out.println("Certificate Issuer: " + cert.getIssuerX500Principal());
-        System.out.println("Certificate Not Before: " + cert.getNotBefore());
-        System.out.println("Certificate Not After: " + cert.getNotAfter());
+        super.printCertificateDetails(cert);
         try {
             cert.checkValidity();
             System.out.println("Certificate is CURRENTLY VALID (this might be unexpected if testing expiration).");

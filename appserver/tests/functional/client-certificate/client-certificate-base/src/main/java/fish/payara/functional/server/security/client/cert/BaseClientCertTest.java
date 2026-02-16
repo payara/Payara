@@ -17,8 +17,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
 
@@ -125,22 +123,10 @@ public class BaseClientCertTest {
     }
 
     protected void printCertificateDetails(X509Certificate cert) {
-        System.out.println("    Subject: " + cert.getSubjectX500Principal().getName());
-        System.out.println("    Issuer: " + cert.getIssuerX500Principal().getName());
+        System.out.println("Certificate Subject: " + cert.getSubjectX500Principal().getName());
+        System.out.println("Certificate Issuer: " + cert.getIssuerX500Principal().getName());
         System.out.println("Certificate Not Before: " + cert.getNotBefore());
         System.out.println("Certificate Not After: " + cert.getNotAfter());
-        try {
-            cert.checkValidity();
-            System.out.println("    Status: ✓ VALID");
-        } catch (CertificateExpiredException e) {
-            System.out.println("    Status: ✗ EXPIRED");
-            System.out.println("Certificate is EXPIRED");
-        } catch (CertificateNotYetValidException e) {
-            System.out.println("    Status: ✗ NOT YET VALID");
-            System.out.println("Certificate is NOT YET VALID");
-        } catch (Exception e) {
-            System.out.println("Certificate Validity Check: " + e.getMessage());
-        }
     }
 
 }
