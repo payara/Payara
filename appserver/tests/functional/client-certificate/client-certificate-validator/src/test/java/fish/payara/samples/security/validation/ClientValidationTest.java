@@ -48,6 +48,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -65,6 +66,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(PayaraArquillianTestRunner.class)
@@ -73,6 +76,15 @@ public class ClientValidationTest extends BaseClientCertTest {
 
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
     private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
+
+    private static String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains",
+            System.getProperty("payara.domain.name")).toString();
+    private static int nextLogLineNumber;
+
+    @BeforeClass
+    public static void beforeClass() throws IOException {
+        nextLogLineNumber = viewLog().size();
+    }
 
     @Deployment
     public static WebArchive deploy() {
@@ -120,13 +132,13 @@ public class ClientValidationTest extends BaseClientCertTest {
         }
     }
 
-    private void performTest(String certPath, String certAlias, int expectedStatusCode, boolean checkLog)
+    private void performTest(String certPath, String certAlias, int expectedStatusCode, boolean expectErrorInLog)
             throws Exception {
         System.out.println("\n========================================");
         System.out.println("Client Certificate Validation Test");
         System.out.println("Using Payara JAX-RS Extension");
         System.out.println("Expected status code: " + expectedStatusCode);
-        System.out.println("Check server logs: " + checkLog);
+        System.out.println("Expect error in log: " + expectErrorInLog);
         System.out.println("========================================");
         System.out.println("Client Certificate Path: " + certPath);
         System.out.println("Certificate Alias: " + certAlias);
@@ -143,12 +155,15 @@ public class ClientValidationTest extends BaseClientCertTest {
         System.out.println("Checking Server Logs in: " + domainDir);
 
         // Verify the certificate validation failure was logged by the API
-        if (checkLog) {
-            if (!checkForAPIValidationFailure(domainDir)) {
-                System.err.println(" ✗ Expected validation error message not found in logs");
-                fail("Expected certificate validation failure in server logs but none found");
-            }
+        boolean errorLogged = checkForAPIValidationFailure();
+
+        if (expectErrorInLog) {
+            assertTrue("Expected certificate validation failure in server logs but none found", errorLogged);
             System.out.println("Verified certificate validation failure was correctly logged by the server");
+        }
+        else {
+            assertFalse("Did not expect certificate validation failure in server logs", errorLogged);
+            System.out.println("No validation error logged by the server");
         }
 
         System.out.println("========================================");
@@ -170,21 +185,26 @@ public class ClientValidationTest extends BaseClientCertTest {
      * @return true if the correct warning is found in the logs
      * @throws IOException
      */
-    private static boolean checkForAPIValidationFailure(String domainDir) throws IOException {
-        List<String> log = viewLog(domainDir);
-        for (String line : log) {
-            if (line.contains(EXPECTED_VALIDATION_ERROR)) {
-                System.out.println("Found expected validation error in server logs: " + line);
-                return true;
+    private boolean checkForAPIValidationFailure() throws IOException {
+        List<String> log = viewLog();
+        try {
+            for (String line : log.subList(nextLogLineNumber, log.size())) {
+                if (line.contains(EXPECTED_VALIDATION_ERROR)) {
+                    System.out.println("Found a validation error in the server log at line " + line);
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
+        finally {
+            nextLogLineNumber = log.size();
+        }
     }
 
     /**
      * @return the contents of the server log
      */
-    private static List<String> viewLog(String domainDir) throws IOException {
+    private static List<String> viewLog() throws IOException {
         Path serverLog = Paths.get(domainDir, "logs", "server.log");
         return Files.readAllLines(serverLog);
     }
