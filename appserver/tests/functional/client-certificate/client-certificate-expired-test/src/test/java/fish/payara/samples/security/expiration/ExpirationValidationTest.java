@@ -49,11 +49,10 @@ public class ExpirationValidationTest extends BaseClientCertTest {
     }
 
     @Override
-    protected void printCertificateDetails(X509Certificate cert) {
-        super.printCertificateDetails(cert);
+    protected void assertCertificate(String alias, X509Certificate cert) {
         try {
             cert.checkValidity();
-            System.out.println("Certificate is CURRENTLY VALID (this might be unexpected if testing expiration).");
+            fail("Certificate 'Not After' should be in the past in order to test the relaxed validation.");
         } catch (Exception e) {
             System.out.println("Certificate Validity Check: " + e.getMessage());
         }

@@ -20,7 +20,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
 
-public class BaseClientCertTest {
+public abstract class BaseClientCertTest {
 
     private static final String PAYARA_CERTIFICATE_ALIAS_PROPERTY = "fish.payara.jaxrs.client.certificate.alias";
     private static final String KEYSTORE_TYPE = "PKCS12";
@@ -73,6 +73,8 @@ public class BaseClientCertTest {
         }
     }
 
+    protected abstract void assertCertificate(String alias, X509Certificate cert);
+
     protected void checkCertificate(KeyStore keyStore, String alias) throws GeneralSecurityException {
         if (keyStore.containsAlias(alias)) {
             // Print certificate details
@@ -80,6 +82,7 @@ public class BaseClientCertTest {
             if (keyStore.isCertificateEntry(alias) || keyStore.isKeyEntry(alias)) {
                 if (keyStore.getCertificate(alias) instanceof X509Certificate x509) {
                     printCertificateDetails(x509);
+                    assertCertificate(alias, x509);
                     return;
                 }
             }

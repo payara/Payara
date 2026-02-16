@@ -98,19 +98,25 @@ public class ClientValidationTest extends BaseClientCertTest {
         performTest(certPath, certAlias, 200, false);
     }
 
-    protected void printCertificateDetails(X509Certificate cert) {
-        super.printCertificateDetails(cert);
+    @Override
+    protected void assertCertificate(String alias, X509Certificate cert) {
         try {
             cert.checkValidity();
-            System.out.println("    Status: ✓ VALID");
+            if (alias.equals("client-certificate-expired")) {
+                fail("Certificate 'Not After' should be in the past in order to test expired certificates.");
+            }
+            System.out.println("Status: ✓ VALID");
+            return;
         } catch (CertificateExpiredException e) {
-            System.out.println("    Status: ✗ EXPIRED");
-            System.out.println("Certificate is EXPIRED");
+            System.out.println("Status: ✗ EXPIRED");
         } catch (CertificateNotYetValidException e) {
-            System.out.println("    Status: ✗ NOT YET VALID");
-            System.out.println("Certificate is NOT YET VALID");
+            System.out.println("Status: ✗ NOT YET VALID");
         } catch (Exception e) {
             System.out.println("Certificate Validity Check: " + e.getMessage());
+        }
+
+        if (alias.equals("client-certificate-valid")) {
+            fail("Certificate 'Not After' should be in the future in order to test valid certificates.");
         }
     }
 
