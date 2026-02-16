@@ -320,7 +320,6 @@
     <tocitem target="reference/update-node-ssh" text="update-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/update-password-alias" text="update-password-alias" expand="false"></tocitem>
     <tocitem target="reference/uptime" text="uptime" expand="false"></tocitem>
-    <tocitem target="reference/validate-multicast" text="validate-multicast" expand="false"></tocitem>
     <tocitem target="reference/verify-domain-xml" text="verify-domain-xml" expand="false"></tocitem>
     <tocitem target="reference/version" text="version" expand="false"></tocitem>
   </tocitem>
