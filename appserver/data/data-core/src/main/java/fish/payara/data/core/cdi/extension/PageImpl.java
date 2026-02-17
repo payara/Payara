@@ -71,7 +71,7 @@ public class PageImpl<T> implements Page<T> {
         this.pageRequest = pageRequest;
         this.entityManager = em;
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getDeclaredEntityClass());
+        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getQueryMetadata().getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -211,7 +211,7 @@ public class PageImpl<T> implements Page<T> {
     @Override
     public String toString() {
         return "Page:" + this.pageRequest.page() +
-                " From Entity:" + this.queryData.getDeclaredEntityClass().getName() +
+                " From Entity:" + this.queryData.getQueryMetadata().getDeclaredEntityClass().getName() +
                 " page size:" + this.pageRequest.size();
     }
 }

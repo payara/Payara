@@ -41,6 +41,7 @@ package fish.payara.data.core.util;
 
 import fish.payara.data.core.cdi.extension.EntityMetadata;
 import fish.payara.data.core.cdi.extension.QueryData;
+import fish.payara.data.core.cdi.extension.QueryMetadata;
 import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
@@ -99,7 +100,7 @@ public class DataCommonOperationUtility {
     public static final Predicate<Method> paginationPredicate = m -> Page.class.equals(m.getReturnType()) ||
             CursoredPage.class.equals(m.getReturnType());
 
-    public static Object processReturnType(QueryData dataForQuery, List<Object> results) {
+    public static Object processReturnType(QueryMetadata dataForQuery, List<Object> results) {
         Class<?> returnType = dataForQuery.getMethod().getReturnType();
 
         if (evaluateReturnTypeVoidPredicate.test(returnType)) {
@@ -328,11 +329,11 @@ public class DataCommonOperationUtility {
         }
     }
 
-    public static Object[] getCursorValues(Object entity, List<Sort<?>> sorts, QueryData queryData) {
+    public static Object[] getCursorValues(Object entity, List<Sort<?>> sorts, QueryMetadata queryMetadata) {
         ArrayList<Object> cursorValues = new ArrayList<>();
         for (Sort<?> sort : sorts)
             try {
-                Member member = queryData.getEntityMetadata().getAttributeAccessors().get(sort.property());
+                Member member = queryMetadata.getEntityMetadata().getAttributeAccessors().get(sort.property());
                 Object value = entity;
 
                 if (member instanceof Method) {
@@ -372,7 +373,7 @@ public class DataCommonOperationUtility {
         if (upper.contains(" ORDER BY ")) {
             throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
         }
-        EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
+        EntityMetadata entityMetadata = dataForQuery.getQueryMetadata().getEntityMetadata();
         StringBuilder sortCriteria = new StringBuilder(" ORDER BY ");
         boolean firstItem = true;
         for (Sort<?> sort : sortList) {

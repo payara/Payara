@@ -95,7 +95,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private BeanManager beanManager;
     private JakartaDataExtension jakartaDataExtension;
     private Set<Type> beanTypes = null;
-    private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
+    private Map<Class<?>, List<QueryMetadata>> queriesForEntity = new HashMap<>();
     private Map<Class<?>, EntityMetadata> mapOfMetaData = new HashMap<>();
     private Predicate<Method> methodAnnotationValidationPredicate = method -> method.getParameterCount() == 1 &&
             !method.isDefault() && (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
@@ -327,7 +327,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @param method
      */
     public void addQueries(Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
-        List<QueryData> queries;
+        List<QueryMetadata> queries;
         queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
         QueryType queryType = null;
         if (method.isAnnotationPresent(Save.class)) {
@@ -354,22 +354,22 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 queryType = QueryType.FIND_BY_NAME;
             }
         }
-        QueryData dataForQuery = new QueryData(repository, method, declaredEntityClass, entityParamType,
+        QueryMetadata queryMetadata = new QueryMetadata(repository, method, declaredEntityClass, entityParamType,
                 queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName()));
 
         try {
-            evaluateDataQuery(dataForQuery, method);
-            queries.add(dataForQuery);
+            evaluateDataQuery(queryMetadata, method);
+            queries.add(queryMetadata);
         } catch (MappingException e) {
             logger.warning(e.getMessage());
         }
     }
 
-    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
-        if (dataForQuery.getDeclaredEntityClass() == null) {
+    private void evaluateDataQuery(QueryMetadata queryMetadata, Method method) {
+        if (queryMetadata.getDeclaredEntityClass() == null) {
             Class<?> entityType = findEntityTypeInMethod(method);
             if (entityType != null) {
-                dataForQuery.setDeclaredEntityClass(entityType);
+                queryMetadata.setDeclaredEntityClass(entityType);
                 return;
             }
             Class<?> declaringClass = method.getDeclaringClass();
@@ -380,7 +380,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 }
                 entityType = findEntityTypeInMethod(interfaceMethod);
                 if (entityType != null) {
-                    dataForQuery.setDeclaredEntityClass(entityType);
+                    queryMetadata.setDeclaredEntityClass(entityType);
                     return;
                 }
             }

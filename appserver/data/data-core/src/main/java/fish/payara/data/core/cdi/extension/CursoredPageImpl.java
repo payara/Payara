@@ -80,7 +80,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
         String sql = cursor.isEmpty() ? queryData.getQueryString() : isForward ? queryData.getQueryNext() : queryData.getQueryPrevious();
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(sql, queryData.getDeclaredEntityClass());
+        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(sql, queryData.getQueryMetadata().getDeclaredEntityClass());
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -156,7 +156,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         if (hasNext()) {
             return PageRequest.afterCursor(PageRequest.Cursor
                             .forKey(getCursorValues(results.get(Math.min(pageRequest.size(), results.size()) - 1),
-                                    this.queryData.getOrders(), this.queryData)),
+                                    this.queryData.getOrders(), this.queryData.getQueryMetadata())),
                     pageRequest.page() + 1, pageRequest.size(), pageRequest.requestTotal());
         } else {
             throw new NoSuchElementException("Not an available page for cursor");
@@ -167,7 +167,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     public PageRequest previousPageRequest() {
         if (hasPrevious()) {
             return PageRequest.beforeCursor(
-                    PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
+                    PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData.getQueryMetadata())),
                     pageRequest.page() == 1 ? 1 : pageRequest.page() - 1,
                     pageRequest.size(),
                     pageRequest.requestTotal()
@@ -247,6 +247,6 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         return "CursoredPage " +
                 "page=" + pageRequest.page() +
                 ", pageRequest=" + pageRequest +
-                ", from Entity=" + queryData.getDeclaredEntityClass().getName();
+                ", from Entity=" + queryData.getQueryMetadata().getDeclaredEntityClass().getName();
     }
 }

@@ -50,12 +50,6 @@ import java.util.Set;
  */
 public class QueryData {
 
-    private Class<?> repositoryInterface;
-    private Method method;
-    private Class<?> entityParamType;
-    private Class<?> declaredEntityClass;
-    private QueryType queryType;
-    private EntityMetadata entityMetadata;
     private Set<String> jpqlParameters = new LinkedHashSet<>();
     private String queryString;
     private String countQueryString;
@@ -65,62 +59,14 @@ public class QueryData {
     private List<Sort<?>> orders;
     private boolean isUserTransaction = false;
     private boolean isNewTransaction = false;
+    private final QueryMetadata queryMetadata;
 
-    public QueryData(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
-        this.repositoryInterface = repositoryInterface;
-        this.method = method;
-        this.entityParamType = entityParamType;
-        this.declaredEntityClass = declaredEntityClass;
-        this.queryType = queryType;
-        this.entityMetadata = entityMetadata;
+    public QueryData(QueryMetadata queryMetadata) {
+        this.queryMetadata = queryMetadata;
     }
 
-    public Class<?> getRepositoryInterface() {
-        return repositoryInterface;
-    }
-
-    public void setRepositoryInterface(Class<?> repositoryInterface) {
-        this.repositoryInterface = repositoryInterface;
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public Class<?> getEntityParamType() {
-        return entityParamType;
-    }
-
-    public void setEntityParamType(Class<?> entityParamType) {
-        this.entityParamType = entityParamType;
-    }
-
-    public QueryType getQueryType() {
-        return queryType;
-    }
-
-    public void setQueryType(QueryType queryType) {
-        this.queryType = queryType;
-    }
-
-    public Class<?> getDeclaredEntityClass() {
-        return declaredEntityClass;
-    }
-
-    public void setDeclaredEntityClass(Class<?> declaredEntityClass) {
-        this.declaredEntityClass = declaredEntityClass;
-    }
-
-    public EntityMetadata getEntityMetadata() {
-        return entityMetadata;
-    }
-
-    public void setEntityMetadata(EntityMetadata entityMetadata) {
-        this.entityMetadata = entityMetadata;
+    public QueryMetadata getQueryMetadata() {
+        return queryMetadata;
     }
 
     public String getQueryString() {

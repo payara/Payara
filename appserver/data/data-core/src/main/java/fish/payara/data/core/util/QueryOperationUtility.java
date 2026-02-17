@@ -40,6 +40,7 @@
 package fish.payara.data.core.util;
 
 import fish.payara.data.core.cdi.extension.QueryData;
+import fish.payara.data.core.cdi.extension.QueryMetadata;
 import jakarta.annotation.Nullable;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
@@ -90,17 +91,18 @@ public class QueryOperationUtility {
 
     public static Object processQueryOperation(Object[] args, QueryData dataForQuery, EntityManager entityManager,
                                                TransactionManager transactionManager, DataParameter dataParameter) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
-        Method method = dataForQuery.getMethod();
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
+        Method method = queryMetadata.getMethod();
         Query queryAnnotation = method.getAnnotation(Query.class);
         String mappedQuery = queryAnnotation.value();
 
         mappedQuery = handlesEmptyQuery(dataForQuery, mappedQuery);
         Class<?> identifiedClass = findEntityTypeInMethod(method);
-        if (identifiedClass != null && !identifiedClass.equals(dataForQuery.getDeclaredEntityClass())) {
-            dataForQuery.setDeclaredEntityClass(identifiedClass);
+        if (identifiedClass != null && !identifiedClass.equals(queryMetadata.getDeclaredEntityClass())) {
+            queryMetadata.setDeclaredEntityClass(identifiedClass);
         }
 
-        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
+        boolean evaluatePages = paginationPredicate.test(queryMetadata.getMethod());
         int length = mappedQuery.length();
         int firstCharPosition = 0;
         char firstChar = ' ';
@@ -162,11 +164,11 @@ public class QueryOperationUtility {
                     endTransaction(transactionManager, entityManager, dataForQuery);
 
                     // Clear cache for the affected entity after UPDATE/DELETE
-                    clearCache(entityManager, dataForQuery.getDeclaredEntityClass());
+                    clearCache(entityManager, queryMetadata.getDeclaredEntityClass());
 
                     return processReturnQueryUpdate(method, deleteReturn);
                 } else {
-                    objectToReturn = processReturnType(dataForQuery, q.getResultList());
+                    objectToReturn = processReturnType(queryMetadata, q.getResultList());
                 }
             }
         } else {
@@ -183,7 +185,7 @@ public class QueryOperationUtility {
 
     private static String handlesEmptyQuery(QueryData dataForQuery, String mappedQuery) {
         if (mappedQuery == null || mappedQuery.trim().isEmpty()) {
-            String entityName = dataForQuery.getDeclaredEntityClass().getSimpleName();
+            String entityName = dataForQuery.getQueryMetadata().getDeclaredEntityClass().getSimpleName();
             mappedQuery = "FROM " + entityName;
             dataForQuery.setQueryString(mappedQuery);
         }
@@ -212,7 +214,7 @@ public class QueryOperationUtility {
                     && queryString.regionMatches(true, startIndex, patternPositions.get(startIndex), 0, patternPositions.get(startIndex).length())
                     && !Character.isJavaIdentifierPart(queryString.charAt(startIndex + patternPositions.get(startIndex).length()))) {
                 addQueryPart(queryBuilder, patternPositions.get(startIndex),
-                        queryString, dataForQuery.getDeclaredEntityClass(), patternPositions);
+                        queryString, dataForQuery.getQueryMetadata().getDeclaredEntityClass(), patternPositions);
                 startIndex += patternPositions.get(startIndex).length();
                 continue;
             } else if (Character.isJavaIdentifierStart(queryCharacter)) {
@@ -381,7 +383,8 @@ public class QueryOperationUtility {
     }
 
     public static void validateParameters(QueryData dataForQuery, Set<String> parameters, String query) {
-        Method method = dataForQuery.getMethod();
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
+        Method method = queryMetadata.getMethod();
         if (!parameters.isEmpty()) {
             Set<String> jpqlParameters = dataForQuery.getJpqlParameters();
             for (String parameter : parameters) {
@@ -410,7 +413,7 @@ public class QueryOperationUtility {
                                     this value. Try use @Param annotation to define the parameter name in case you didn't add 
                                     the -parameters option to the java compiler that resolves the parameter names.
                                     """,
-                            method.getName(), dataForQuery.getRepositoryInterface().getName(), parameter, query);
+                            method.getName(), queryMetadata.getRepositoryInterface().getName(), parameter, query);
                     throw new MappingException(message);
                 }
             }
@@ -423,7 +426,7 @@ public class QueryOperationUtility {
         return found.isPresent();
     }
 
-    private static Object processReturnType(QueryData data, List<?> resultList) {
+    private static Object processReturnType(QueryMetadata data, List<?> resultList) {
         Class<?> returnType = data.getMethod().getReturnType();
 
         if (List.class.isAssignableFrom(returnType)) {
