@@ -536,7 +536,7 @@ public class FindOperationUtility {
     }
 
     public static int getParamCount(QueryData dataForQuery, Object[] args) {
-        int paramCount = dataForQuery.getJpqlParameters().isEmpty() ? 0 : dataForQuery.getJpqlParameters().size();
+        int paramCount = dataForQuery.getJpqlParameters().size();
         if (paramCount == 0) {
             for (int i = 0; i < args.length; i++) {
                 if (!excludeParameter(args[i])) {
