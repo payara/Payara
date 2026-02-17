@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resources.util;
 
@@ -69,7 +69,7 @@ public class ResourceUtil {
                 if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
                     //handle top-level META-INF/glassfish-resources.xml
                     if(archive.exists(RESOURCES_XML_META_INF)){
-                        Logger.getAnonymousLogger().warning("The glassfish-resource.xml file is deprecated and support"
+                        Logger.getAnonymousLogger().warning("The glassfish-resources.xml file is deprecated and support"
                             + " will be removed in the future. It is recommended to use payara-resources.xml instead.");
                         return true;
                     }
@@ -104,7 +104,7 @@ public class ResourceUtil {
         }
         
         if (hasResourcesXML) {
-            Logger.getAnonymousLogger().warning("The glassfish-resource.xml file is deprecated and support will be "
+            Logger.getAnonymousLogger().warning("The glassfish-resources.xml file is deprecated and support will be "
                 + "removed in the future. It is recommended to use payara-resources.xml instead.");
         }
         
