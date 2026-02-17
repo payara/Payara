@@ -521,6 +521,7 @@ pipeline {
                         }
                     }
                 }
+               
                 stage('EE7 Tests') {
                     agent {
                         label 'general-purpose'
@@ -528,35 +529,19 @@ pipeline {
                     options {
                         retry(3)
                     }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                        setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean install --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} \
-                        -Dsurefire.rerunFailingTestsCount=2 \
-                        -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Ppayara-server-remote,stable"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee7-samples-log.zip'
-                        }
+                    steps {
+                        build job: 'Miscellaneous/Run-EE7-Samples', 
+                            parameters: [
+                                string(name: 'payaraBuildNumber', value: "${currentBuild.number}"),
+                                string(name: 'buildProject', value: "${env.JOB_NAME}"),
+                                string(name: 'repoOrg', value: 'payara'),
+                                string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                                string(name: 'jdkChoice', value: 'zulu-21'),
+                                string(name: 'arquillianProfile', value: 'payara-server-remote')
+                            ]
                     }
                 }
+
                 stage('Payara Functional Tests') {
                     agent {
                         label 'general-purpose'
