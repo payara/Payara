@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2025 Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,11 +90,11 @@ public class JVMStatsProviderBootstrap implements PostConstruct {
         StatsProviderManager.register("jvm", PluginPoint.SERVER, "jvm/operating-system", osStatsProvider, ContainerMonitoring.LEVEL_LOW);
         StatsProviderManager.register("jvm", PluginPoint.SERVER, "jvm/runtime", runtimeStatsProvider, ContainerMonitoring.LEVEL_LOW);
         StatsProviderManager.register("jvm", PluginPoint.SERVER, "jvm/thread-system", threadSysStatsProvider, ContainerMonitoring.LEVEL_LOW);
-        for (ThreadInfo t : threadBean.getThreadInfo(threadBean.getAllThreadIds(), 5)) {
-            if (t == null) continue; // See issue #12636
-            JVMThreadInfoStatsProvider threadInfoStatsProvider = new JVMThreadInfoStatsProvider(t);
+        for (long threadId : threadBean.getAllThreadIds()) {
+            if (threadBean.getThreadInfo(threadId) == null) continue; // See issue #12636
+            JVMThreadInfoStatsProvider threadInfoStatsProvider = new JVMThreadInfoStatsProvider(threadBean, threadId);
             StatsProviderManager.register("jvm", PluginPoint.SERVER, 
-                    "jvm/thread-system/thread-"+t.getThreadId(), threadInfoStatsProvider, ContainerMonitoring.LEVEL_HIGH);
+                    "jvm/thread-system/thread-"+ threadId, threadInfoStatsProvider, ContainerMonitoring.LEVEL_HIGH);
         }
     }
 
