@@ -40,7 +40,7 @@
 package fish.payara.telemetry.service;
 
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
@@ -50,6 +50,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.glassfish.common.util.Constants;
@@ -65,19 +66,21 @@ import static fish.payara.telemetry.service.PayaraTelemetryConstants.*;
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
 public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemetryBootstrapFactoryService {
     
-    private OpenTelemetry runtimeSdk = null;
+    private OpenTelemetrySdk runtimeSdk = null;
+    
+    private OpenTelemetrySdk noopInstance = null;
 
     @PostConstruct
     public void init() {
-        runtimeSdk = createTelemetryRuntimeInstance();
+        createTelemetryRuntimeInstance();
     }
 
     @Override
-    public OpenTelemetry createTelemetryRuntimeInstance() {
+    public void createTelemetryRuntimeInstance() {
         if (!isRuntimeOtelEnabled()) {
             // need to read otel properties
             final Map<String, String> props = new HashMap<>(readOtelProperties());
-            return AutoConfiguredOpenTelemetrySdk.builder()
+            runtimeSdk = AutoConfiguredOpenTelemetrySdk.builder()
                     //Need to provide custom Resources to start impl
                     .addResourceCustomizer(provideDefaultResourceCustomizer(!isRuntimeOtelEnabled()))
                     //Need to provide properties read from the system and env
@@ -86,13 +89,19 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
                     .disableShutdownHook()
                     .setResultAsGlobal()
                     .build().getOpenTelemetrySdk();
+        } else {
+            noopInstance = OpenTelemetrySdk.builder().build();
         }
-        return runtimeSdk;
     }
 
     @Override
-    public OpenTelemetry getAvailableRuntimeReference() {
-        return runtimeSdk;
+    public Optional<OpenTelemetrySdk> getAvailableRuntimeReference() {
+        return Optional.ofNullable(runtimeSdk);
+    }
+
+    @Override
+    public Optional<OpenTelemetrySdk> getAvailableNoopReference() {
+        return Optional.ofNullable(noopInstance);
     }
 
     @Override
@@ -150,6 +159,4 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         return builder;
     }
     
-
-
 }

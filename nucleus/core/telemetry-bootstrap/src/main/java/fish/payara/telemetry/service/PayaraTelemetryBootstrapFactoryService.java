@@ -39,13 +39,16 @@
  */
 package fish.payara.telemetry.service;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import java.util.Optional;
 
 public interface PayaraTelemetryBootstrapFactoryService {
     
-    public OpenTelemetry createTelemetryRuntimeInstance();
+    public void createTelemetryRuntimeInstance();
     
-    public OpenTelemetry getAvailableRuntimeReference();
+    public Optional<OpenTelemetrySdk> getAvailableRuntimeReference();
+    
+    public Optional<OpenTelemetrySdk> getAvailableNoopReference();
     
     public boolean isRuntimeOtelEnabled();
 }
