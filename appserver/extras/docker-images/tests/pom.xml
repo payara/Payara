@@ -109,7 +109,7 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap.resolver</groupId>
             <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
-            <version>3.3.4</version>
+            <version>3.3.5</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
