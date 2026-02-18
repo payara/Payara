@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -185,9 +185,9 @@ public class DeploymentPlanArchive extends JarArchive implements ReadableArchive
             String prefix = "META-INF/";
             ArchiveType warType = locator.getService(ArchiveType.class, "war");
             boolean isWar = DeploymentUtils.isArchiveOfType(getParentArchive(), warType, locator);
-            if (entryName.contains("sun-web.xml") || entryName.contains("glassfish-web.xml") || entryName.contains("payara-web.xml")) {
+            if (entryName.contains("payara-web.xml")) {
                 prefix = "WEB-INF/";
-            } else if ((entryName.contains("glassfish-resources.xml") || entryName.contains("payara-resources.xml"))&& isWar) {
+            } else if (entryName.contains("payara-resources.xml") && isWar) {
                 prefix = "WEB-INF/";
             } else if (entryName.contains("glassfish-services.xml") && isWar) {
                 prefix = "WEB-INF/";
