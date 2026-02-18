@@ -123,6 +123,12 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
         <!-- Not a perfect solution to the problem, but we need to wait for OTEL project
              to decouple their exporter from OkHttp so that we can replace HTTP transport -->
         <dependency>
@@ -185,6 +191,7 @@
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
                             *;groupId=io.opentelemetry.instrumentation;inline=true,
+                            *;groupId=io.opentelemetry.semconv;inline=true,
                             *;groupId=org.jetbrains.kotlin.*;inline=true,
                             *;groupId=org.snakeyaml;inline=true
                         </Embed-Dependency>
