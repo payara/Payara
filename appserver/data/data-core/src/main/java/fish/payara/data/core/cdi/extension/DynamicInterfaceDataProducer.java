@@ -354,43 +354,44 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 queryType = QueryType.FIND_BY_NAME;
             }
         }
-        QueryMetadata queryMetadata = new QueryMetadata(repository, method, declaredEntityClass, entityParamType,
-                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName()));
 
         try {
-            evaluateDataQuery(queryMetadata, method);
-            queries.add(queryMetadata);
-        } catch (MappingException e) {
+            if (declaredEntityClass == null) {
+                declaredEntityClass = evaluateDataQuery(method);
+            }
+
+            queries.add(new QueryMetadata(
+                    repository, method, declaredEntityClass, entityParamType,
+                    queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method,
+                    this.jakartaDataExtension.getApplicationName())));
+        }
+        catch (MappingException e) {
             logger.warning(e.getMessage());
         }
     }
 
-    private void evaluateDataQuery(QueryMetadata queryMetadata, Method method) {
-        if (queryMetadata.getDeclaredEntityClass() == null) {
-            Class<?> entityType = findEntityTypeInMethod(method);
-            if (entityType != null) {
-                queryMetadata.setDeclaredEntityClass(entityType);
-                return;
-            }
-            Class<?> declaringClass = method.getDeclaringClass();
-            Method[] allMethods = declaringClass.getMethods();
-            for (Method interfaceMethod : allMethods) {
-                if (interfaceMethod.equals(method)) {
-                    continue;
-                }
-                entityType = findEntityTypeInMethod(interfaceMethod);
-                if (entityType != null) {
-                    queryMetadata.setDeclaredEntityClass(entityType);
-                    return;
-                }
-            }
-            throw new MappingException(
-                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                    "Either extend a repository interface with entity type parameters or " +
-                                    "ensure entity type is determinable from method signature.",
-                            method.getName(), declaringClass.getName())
-            );
+    private Class<?> evaluateDataQuery(Method method) {
+        Class<?> entityType = findEntityTypeInMethod(method);
+        if (entityType != null) {
+            return entityType;
         }
+        Class<?> declaringClass = method.getDeclaringClass();
+        Method[] allMethods = declaringClass.getMethods();
+        for (Method interfaceMethod : allMethods) {
+            if (interfaceMethod.equals(method)) {
+                continue;
+            }
+            entityType = findEntityTypeInMethod(interfaceMethod);
+            if (entityType != null) {
+                return entityType;
+            }
+        }
+        throw new MappingException(
+                String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                "Either extend a repository interface with entity type parameters or " +
+                                "ensure entity type is determinable from method signature.",
+                        method.getName(), declaringClass.getName())
+        );
     }
 
     @Override
