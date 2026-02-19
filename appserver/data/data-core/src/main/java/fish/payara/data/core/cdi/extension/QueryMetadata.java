@@ -23,32 +23,16 @@ public class QueryMetadata {
         return repositoryInterface;
     }
 
-    public void setRepositoryInterface(Class<?> repositoryInterface) {
-        this.repositoryInterface = repositoryInterface;
-    }
-
     public Method getMethod() {
         return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
     }
 
     public Class<?> getEntityParamType() {
         return entityParamType;
     }
 
-    public void setEntityParamType(Class<?> entityParamType) {
-        this.entityParamType = entityParamType;
-    }
-
     public QueryType getQueryType() {
         return queryType;
-    }
-
-    public void setQueryType(QueryType queryType) {
-        this.queryType = queryType;
     }
 
     public Class<?> getDeclaredEntityClass() {
@@ -61,9 +45,5 @@ public class QueryMetadata {
 
     public EntityMetadata getEntityMetadata() {
         return entityMetadata;
-    }
-
-    public void setEntityMetadata(EntityMetadata entityMetadata) {
-        this.entityMetadata = entityMetadata;
     }
 }
