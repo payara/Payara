@@ -97,10 +97,6 @@ public class QueryOperationUtility {
         String mappedQuery = queryAnnotation.value();
 
         mappedQuery = handlesEmptyQuery(dataForQuery, mappedQuery);
-        Class<?> identifiedClass = findEntityTypeInMethod(method);
-        if (identifiedClass != null && !identifiedClass.equals(queryMetadata.getDeclaredEntityClass())) {
-            queryMetadata.setDeclaredEntityClass(identifiedClass);
-        }
 
         boolean evaluatePages = paginationPredicate.test(queryMetadata.getMethod());
         int length = mappedQuery.length();
