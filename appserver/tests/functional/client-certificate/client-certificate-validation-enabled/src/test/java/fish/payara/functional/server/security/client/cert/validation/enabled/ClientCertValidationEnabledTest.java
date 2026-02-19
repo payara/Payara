@@ -61,6 +61,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.logging.Logger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,6 +74,8 @@ import static org.junit.Assert.fail;
 @RunWith(PayaraArquillianTestRunner.class)
 @SincePayara("5.2021.8")
 public class ClientCertValidationEnabledTest extends BaseClientCertTest {
+
+    private static final Logger LOGGER = Logger.getLogger(ClientCertValidationEnabledTest.class.getName());
 
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
     private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
@@ -117,14 +120,14 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
             if (alias.equals("client-certificate-expired")) {
                 fail("Certificate 'Not After' should be in the past in order to test expired certificates.");
             }
-            System.out.println("Status: ✓ VALID");
+            LOGGER.info("Status: ✓ VALID");
             return;
         } catch (CertificateExpiredException e) {
-            System.out.println("Status: ✗ EXPIRED");
+            LOGGER.info("Status: ✗ EXPIRED");
         } catch (CertificateNotYetValidException e) {
-            System.out.println("Status: ✗ NOT YET VALID");
+            LOGGER.info("Status: ✗ NOT YET VALID");
         } catch (Exception e) {
-            System.out.println("Certificate Validity Check: " + e.getMessage());
+            LOGGER.info("Certificate Validity Check: " + e.getMessage());
         }
 
         if (alias.equals("client-certificate-valid")) {
@@ -134,51 +137,51 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
 
     private void performTest(String certPath, String certAlias, int expectedStatusCode, boolean expectErrorInLog)
             throws Exception {
-        System.out.println("\n========================================");
-        System.out.println("Client Certificate Validation Enabled Test");
-        System.out.println("Using Payara JAX-RS Extension");
-        System.out.println("Expected status code: " + expectedStatusCode);
-        System.out.println("Expect error in log: " + expectErrorInLog);
-        System.out.println("========================================");
-        System.out.println("Client Certificate Path: " + certPath);
-        System.out.println("Certificate Alias: " + certAlias);
+        LOGGER.info("\n========================================");
+        LOGGER.info("Client Certificate Validation Enabled Test");
+        LOGGER.info("Using Payara JAX-RS Extension");
+        LOGGER.info("Expected status code: " + expectedStatusCode);
+        LOGGER.info("Expect error in log: " + expectErrorInLog);
+        LOGGER.info("========================================");
+        LOGGER.info("Client Certificate Path: " + certPath);
+        LOGGER.info("Certificate Alias: " + certAlias);
 
-        System.out.println(String.format(
+        LOGGER.info(String.format(
                 "Starting Client Certificate Validation Test (Expected Status: %d, Alias: %s)",
                 expectedStatusCode, certAlias));
-        System.out.println("Client Certificate Path: " + certPath);
+        LOGGER.info("Client Certificate Path: " + certPath);
 
         sendRequest(certPath, certAlias, new URI(LOCALHOST_URL), response -> assertResponse(response, expectedStatusCode));
 
         String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains",
                 System.getProperty("payara.domain.name")).toString();
-        System.out.println("Checking Server Logs in: " + domainDir);
+        LOGGER.info("Checking Server Logs in: " + domainDir);
 
         // Verify the certificate validation failure was logged by the API
         boolean errorLogged = checkForAPIValidationFailure();
 
         if (expectErrorInLog) {
             assertTrue("Expected certificate validation failure in server logs but none found", errorLogged);
-            System.out.println("Verified certificate validation failure was correctly logged by the server");
+            LOGGER.info("Verified certificate validation failure was correctly logged by the server");
         }
         else {
             assertFalse("Did not expect certificate validation failure in server logs", errorLogged);
-            System.out.println("No validation error logged by the server");
+            LOGGER.info("No validation error logged by the server");
         }
 
-        System.out.println("========================================");
-        System.out.println("Test completed successfully!");
+        LOGGER.info("========================================");
+        LOGGER.info("Test completed successfully!");
     }
 
     private static void assertResponse(Response response, int expectedStatusCode) {
         int statusCode = response.getStatus();
-        System.out.println("Response received: HTTP " + statusCode);
+        LOGGER.info("Response received: HTTP " + statusCode);
 
         // Verify the response status code
-        System.out.println("\nValidating Response:");
+        LOGGER.info("\nValidating Response:");
         assertEquals("Expected status code " + expectedStatusCode + " but got: " + statusCode,
                 expectedStatusCode, statusCode);
-        System.out.println("HTTPS Request successful. Received expected status code " + statusCode);
+        LOGGER.info("HTTPS Request successful. Received expected status code " + statusCode);
     }
 
     /**
@@ -190,7 +193,7 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
         try {
             for (String line : log.subList(nextLogLineNumber, log.size())) {
                 if (line.contains(EXPECTED_VALIDATION_ERROR)) {
-                    System.out.println("Found a validation error in the server log at line " + line);
+                    LOGGER.info("Found a validation error in the server log at line " + line);
                     return true;
                 }
             }

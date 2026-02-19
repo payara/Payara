@@ -19,8 +19,11 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 public abstract class BaseClientCertTest {
+
+    private static final Logger LOGGER = Logger.getLogger(BaseClientCertTest.class.getName());
 
     private static final String PAYARA_CERTIFICATE_ALIAS_PROPERTY = "fish.payara.jaxrs.client.certificate.alias";
     private static final String KEYSTORE_TYPE = "PKCS12";
@@ -47,17 +50,17 @@ public abstract class BaseClientCertTest {
         };
 
         // Initialize SSL context
-        System.out.println("Initializing SSL Context with TLSv1.2");
+        LOGGER.info("Initializing SSL Context with TLSv1.2");
         SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(kmf.getKeyManagers(), trustAllCerts, new SecureRandom());
 
         // Build JAX-RS client using Payara Extension
-        System.out.println("\nBuilding JAX-RS Client with Payara Extension:");
-        System.out.println("  Property: " + PAYARA_CERTIFICATE_ALIAS_PROPERTY);
-        System.out.println("  Value: " + certAlias);
+        LOGGER.info("\nBuilding JAX-RS Client with Payara Extension:");
+        LOGGER.info("  Property: " + PAYARA_CERTIFICATE_ALIAS_PROPERTY);
+        LOGGER.info("  Value: " + certAlias);
 
         // Make the request
-        System.out.println("Making HTTPS request to: " + uri);
+        LOGGER.info("Making HTTPS request to: " + uri);
         try (
                 Client client = ClientBuilder.newBuilder()
                         .sslContext(sslContext)
@@ -78,7 +81,7 @@ public abstract class BaseClientCertTest {
     protected void checkCertificate(KeyStore keyStore, String alias) throws GeneralSecurityException {
         if (keyStore.containsAlias(alias)) {
             // Print certificate details
-            System.out.println("Certificate details of '" + alias + "':");
+            LOGGER.info("Certificate details of '" + alias + "':");
             if (keyStore.isCertificateEntry(alias) || keyStore.isKeyEntry(alias)) {
                 if (keyStore.getCertificate(alias) instanceof X509Certificate x509) {
                     printCertificateDetails(x509);
@@ -89,12 +92,12 @@ public abstract class BaseClientCertTest {
             throw new CertificateException("Certificate must be of type X.509");
         }
         else {
-            System.out.println("Error: Alias '" + alias + "' not found in keystore");
-            System.out.println("Alias " + alias + " not found in keystore");
-            System.out.println("  Available aliases:");
+            LOGGER.info("Error: Alias '" + alias + "' not found in keystore");
+            LOGGER.info("Alias " + alias + " not found in keystore");
+            LOGGER.info("  Available aliases:");
             java.util.Enumeration<String> aliases = keyStore.aliases();
             while (aliases.hasMoreElements()) {
-                System.out.println("    - " + aliases.nextElement());
+                LOGGER.info("    - " + aliases.nextElement());
             }
         }
     }
@@ -113,23 +116,23 @@ public abstract class BaseClientCertTest {
         try (FileInputStream fis = new FileInputStream(certPath)) {
             keyStore.load(fis, KEYSTORE_PASSWORD.toCharArray());
         }
-        System.out.println("Keystore loaded successfully");
+        LOGGER.info("Keystore loaded successfully");
 
         checkCertificate(keyStore, alias);
 
         // Set up key manager factory
         KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         kmf.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
-        System.out.println("KeyManagerFactory initialized");
+        LOGGER.info("KeyManagerFactory initialized");
 
         return kmf;
     }
 
     protected void printCertificateDetails(X509Certificate cert) {
-        System.out.println("Certificate Subject: " + cert.getSubjectX500Principal().getName());
-        System.out.println("Certificate Issuer: " + cert.getIssuerX500Principal().getName());
-        System.out.println("Certificate Not Before: " + cert.getNotBefore());
-        System.out.println("Certificate Not After: " + cert.getNotAfter());
+        LOGGER.info("Certificate Subject: " + cert.getSubjectX500Principal().getName());
+        LOGGER.info("Certificate Issuer: " + cert.getIssuerX500Principal().getName());
+        LOGGER.info("Certificate Not Before: " + cert.getNotBefore());
+        LOGGER.info("Certificate Not After: " + cert.getNotAfter());
     }
 
 }
