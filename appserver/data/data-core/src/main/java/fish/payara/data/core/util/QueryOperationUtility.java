@@ -98,8 +98,9 @@ public class QueryOperationUtility {
 
         mappedQuery = handlesEmptyQuery(dataForQuery, mappedQuery);
         Class<?> identifiedClass = findEntityTypeInMethod(method);
-        if (identifiedClass != null && !identifiedClass.equals(queryMetadata.getDeclaredEntityClass())) {
-            queryMetadata.setDeclaredEntityClass(identifiedClass);
+        Class<?> entityClass = queryMetadata.getDeclaredEntityClass();
+        if (identifiedClass != null && !identifiedClass.equals(entityClass)) {
+            entityClass = identifiedClass;
         }
 
         boolean evaluatePages = paginationPredicate.test(queryMetadata.getMethod());
@@ -164,11 +165,11 @@ public class QueryOperationUtility {
                     endTransaction(transactionManager, entityManager, dataForQuery);
 
                     // Clear cache for the affected entity after UPDATE/DELETE
-                    clearCache(entityManager, queryMetadata.getDeclaredEntityClass());
+                    clearCache(entityManager, entityClass);
 
                     return processReturnQueryUpdate(method, deleteReturn);
                 } else {
-                    objectToReturn = processReturnType(queryMetadata, q.getResultList());
+                    objectToReturn = processReturnType(queryMetadata, entityClass, q.getResultList());
                 }
             }
         } else {
@@ -426,7 +427,7 @@ public class QueryOperationUtility {
         return found.isPresent();
     }
 
-    private static Object processReturnType(QueryMetadata data, List<?> resultList) {
+    private static Object processReturnType(QueryMetadata data, Class<?> entityClass, List<?> resultList) {
         Class<?> returnType = data.getMethod().getReturnType();
 
         if (List.class.isAssignableFrom(returnType)) {
@@ -441,7 +442,7 @@ public class QueryOperationUtility {
             return resultList.isEmpty() ? Optional.empty() : Optional.of(resultList.get(0));
         }
 
-        if (!returnType.isArray() && data.getDeclaredEntityClass().equals(returnType)) {
+        if (!returnType.isArray() && entityClass.equals(returnType)) {
             if (resultList == null || resultList.isEmpty()) {
                 throw new EmptyResultException("No result found for query");
             }
