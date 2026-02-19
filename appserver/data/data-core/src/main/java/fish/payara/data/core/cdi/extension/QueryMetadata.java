@@ -39,10 +39,6 @@ public class QueryMetadata {
         return declaredEntityClass;
     }
 
-    public void setDeclaredEntityClass(Class<?> declaredEntityClass) {
-        this.declaredEntityClass = declaredEntityClass;
-    }
-
     public EntityMetadata getEntityMetadata() {
         return entityMetadata;
     }
