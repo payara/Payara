@@ -537,14 +537,14 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Use branch name or commit hash for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = env.ghprbPullId ? "refs/pull/${env.ghprbPullId}/head" : env.GIT_COMMIT_ID
+                            // Use PR pull request ID for specificBranchCommitOrTag
+                            def specificBranchCommitOrTag = "refs/pull/${env.ghprbPullId}/head"
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
                                 parameters: [
                                     string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                                    string(name: 'repoOrg', value: repoOrg),
+                                    string(name: 'repoOrg', value: 'payara'),
                                     string(name: 'jdkVer', value: 'zulu-21'),
                                     string(name: 'stream', value: 'Community'),
                                     string(name: 'profiles', value: 'BuildEmbedded'),
