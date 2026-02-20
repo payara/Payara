@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms.config;
 
@@ -158,17 +158,6 @@ public interface JmsService extends ConfigExtension, PropertyBag, Container {
      *              {@link String }
      */
     void setDefaultJmsHost(String value) throws PropertyVetoException;
-
-     @Attribute
-    String getMasterBroker();
-
-    /**
-     * Sets the value of the MasterBroker property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setMasterBroker(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the reconnectIntervalInSeconds property.
