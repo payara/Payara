@@ -101,7 +101,7 @@
     <dependencies>
         <dependency>
             <groupId>jakarta.ai</groupId>
-            <artifactId>jakarta-agentic-ai-api</artifactId>
+            <artifactId>jakarta.agentic-ai-api</artifactId>
             <version>1.0.0</version>
             <optional>true</optional>
         </dependency>

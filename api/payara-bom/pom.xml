@@ -457,7 +457,7 @@
             </dependency>
             <dependency>
                 <groupId>jakarta.ai</groupId>
-                <artifactId>jakarta-agentic-ai-api</artifactId>
+                <artifactId>jakarta.agentic-ai-api</artifactId>
                 <version>${jakarta.agentic-ai-api.version}</version>
             </dependency>
 
