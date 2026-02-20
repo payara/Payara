@@ -546,8 +546,8 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Get the PR head commit (not merged commit) for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = sh(script: 'git log --oneline -1 | head -1 | cut -d" " -f1', returnStdout: true).trim()
+                            // Try using branch parameter instead for PR builds
+                            def specificBranchCommitOrTag = "PR-${env.PR_ID}"
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
