@@ -149,7 +149,7 @@ public class SignedJWTIdentityStore implements IdentityStore {
     }
 
     public static Optional<Properties> readVendorProperties() {
-        URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
+        URL mpJwtResource = currentThread().getContextClassLoader().getResource("payara-mp-jwt.properties");
         Properties properties = null;
         if (mpJwtResource != null) {
             try {
