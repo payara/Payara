@@ -530,15 +530,31 @@ pipeline {
                         retry(3)
                     }
                     steps {
-                        build job: 'Miscellaneous/Run-EE7-Samples', 
-                            parameters: [
-                                string(name: 'payaraBuildNumber', value: "${currentBuild.number}"),
-                                string(name: 'buildProject', value: "${env.JOB_NAME}"),
-                                string(name: 'repoOrg', value: 'payara'),
-                                string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
-                                string(name: 'jdkChoice', value: 'zulu-21'),
-                                string(name: 'arquillianProfile', value: 'payara-server-remote')
-                            ]
+                        script {
+                            // First build the build job and capture its build number
+                            def buildJob = build job: 'Build/Build', wait: true,
+                                parameters: [
+                                    string(name: 'specificBranchCommitOrTag', value: 'Payara7'),
+                                    string(name: 'repoOrg', value: 'payara'),
+                                    string(name: 'jdkVer', value: 'zulu-21'),
+                                    string(name: 'stream', value: 'Community'),
+                                    string(name: 'profiles', value: 'BuildEmbedded'),
+                                    booleanParam(name: 'skipTests', value: false),
+                                    string(name: 'multiThread', value: '1')
+                                ]
+                            def buildId = buildJob.getNumber()
+
+                            // Now use the build job's ID for EE7 tests
+                            build job: 'Miscellaneous/Run-EE7-Samples',
+                                parameters: [
+                                    string(name: 'payaraBuildNumber', value: "${buildId}"),
+                                    string(name: 'buildProject', value: "Build/GrabArtifactsFromMaven"),
+                                    string(name: 'repoOrg', value: 'payara'),
+                                    string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                                    string(name: 'jdkChoice', value: 'zulu-21'),
+                                    string(name: 'arquillianProfile', value: 'payara-server-remote')
+                                ]
+                        }
                     }
                 }
 
