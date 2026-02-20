@@ -547,7 +547,7 @@ pipeline {
                     steps {
                         script {
                             // Use the actual commit hash from the PR for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = env.GIT_COMMIT_ID
+                            def specificBranchCommitOrTag = "origin/PR-${env.PR_ID}"
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
