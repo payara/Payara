@@ -40,7 +40,7 @@ pipeline {
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
                     echo "Git commit ID is ${env.GIT_COMMIT_ID}"
-                    echo "Checked out PR ${prId}"
+                    echo "Checked out PR-${prId}"
               }
             }
         }
@@ -546,14 +546,14 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Use the actual commit hash from the PR for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = "origin/PR-${env.PR_ID}"
+                            // Use the merged commit hash (which exists in main branch) for specificBranchCommitOrTag
+                            def specificBranchCommitOrTag = env.GIT_COMMIT_ID
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
                                 parameters: [
                                     string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                                    string(name: 'repoOrg', value: 'payara'),
+                                    string(name: 'repoOrg', value: 'Payara'),
                                     string(name: 'jdkVer', value: 'zulu-21'),
                                     string(name: 'stream', value: 'Community'),
                                     string(name: 'profiles', value: 'BuildEmbedded'),
@@ -567,7 +567,7 @@ pipeline {
                                 parameters: [
                                     string(name: 'payaraBuildNumber', value: "${buildId}"),
                                     string(name: 'buildProject', value: "Build/GrabArtifactsFromMaven"),
-                                    string(name: 'repoOrg', value: 'payara'),
+                                    string(name: 'repoOrg', value: 'Payara'),
                                     string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
                                     string(name: 'jdkChoice', value: 'zulu-21'),
                                     string(name: 'arquillianProfile', value: 'payara-server-remote')
