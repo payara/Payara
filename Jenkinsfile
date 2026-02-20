@@ -531,11 +531,28 @@ pipeline {
                     }
                     steps {
                         script {
+                            // Get current git information from the workspace
+                            def gitCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                            def gitBranch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                            def gitRemote = sh(script: 'git config --get remote.origin.url', returnStdout: true).trim()
+                            
+                            // Extract repo org from remote URL
+                            def repoOrg = 'payara' // default
+                            if (gitRemote.contains('github.com')) {
+                                def parts = gitRemote.split('/')
+                                if (parts.length >= 2) {
+                                    repoOrg = parts[-2].replace('git@github.com:', '').replace('https://github.com/', '')
+                                }
+                            }
+                            
+                            // Use branch name or commit hash for specificBranchCommitOrTag
+                            def specificBranchCommitOrTag = gitBranch.equals('HEAD') ? gitCommit : gitBranch
+                            
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
                                 parameters: [
-                                    string(name: 'specificBranchCommitOrTag', value: 'Payara7'),
-                                    string(name: 'repoOrg', value: 'payara'),
+                                    string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                                    string(name: 'repoOrg', value: repoOrg),
                                     string(name: 'jdkVer', value: 'zulu-21'),
                                     string(name: 'stream', value: 'Community'),
                                     string(name: 'profiles', value: 'BuildEmbedded'),
