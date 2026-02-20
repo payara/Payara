@@ -31,6 +31,7 @@ pipeline {
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
                     echo "Git commit ID is ${env.GIT_COMMIT_ID}"
+                    echo "Checked out PR ${env.ghprbPullId}"
               }
             }
         }
@@ -536,22 +537,8 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Get current git information from the workspace
-                            def gitCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                            def gitBranch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-                            def gitRemote = sh(script: 'git config --get remote.origin.url', returnStdout: true).trim()
-                            
-                            // Extract repo org from remote URL
-                            def repoOrg = 'payara' // default
-                            if (gitRemote.contains('github.com')) {
-                                def parts = gitRemote.split('/')
-                                if (parts.length >= 2) {
-                                    repoOrg = parts[-2].replace('git@github.com:', '').replace('https://github.com/', '')
-                                }
-                            }
-                            
                             // Use branch name or commit hash for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = env.GIT_COMMIT_ID
+                            def specificBranchCommitOrTag = env.ghprbPullId ? "refs/pull/${env.ghprbPullId}/head" : env.GIT_COMMIT_ID
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
