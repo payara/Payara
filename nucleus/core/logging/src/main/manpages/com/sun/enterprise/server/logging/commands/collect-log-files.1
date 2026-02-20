@@ -9,10 +9,9 @@ SYNOPSIS
 
 DESCRIPTION
        The collect-log-files subcommand collects all available log files for
-       the domain administration server (DAS), the specified cluster, or the
+       the domain administration server (DAS), the specified deployment group, or the
        specified GlassFish Server instance and creates a single ZIP archive of
-       the log files. If a cluster is specified, the ZIP archive also contains
-       the log file for the DAS.
+       the log files.
 
        This subcommand is supported in remote mode only.
 
@@ -76,7 +75,7 @@ EXAMPLES
        Example 2, Collecting Log Files for a Deployment Group
            This example generates a ZIP archive from the log files for a
            deployment group named cluster1 and the two server instances running
-           in the cluster.
+           in the group.
 
                asadmin> collect-log-files --target cluster1
                Log files are downloaded for instance1.

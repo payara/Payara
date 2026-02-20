@@ -88,10 +88,9 @@
 </div>
 <div class="paragraph">
 <p>The <code>collect-log-files</code> subcommand collects all available log files for
-the domain administration server (DAS), the specified cluster, or the
+the domain administration server (DAS), the specified deployment group, or the
 specified \{product---name} instance and creates a single ZIP archive of
-the log files. If a cluster is specified, the ZIP archive also contains
-the log file for the DAS.</p>
+the log files.</p>
 </div>
 <div class="paragraph">
 <p>This subcommand is supported in remote mode only.</p>
@@ -214,7 +213,7 @@ Command collect-log-files executed successfully.</code></pre>
 </div>
 <div class="paragraph">
 <p>This example generates a ZIP archive from the log files for a deployment group
-named <code>cluster1</code> and the two server instances running in the cluster.</p>
+named <code>cluster1</code> and the two server instances running in the group.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -291,13 +290,6 @@ Command collect-log-files executed successfully.</code></pre>
 		<a href="change-master-password.html">
 			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
 			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
-
-		<td align="left">
-		<a href="configure-jms-cluster.html">
-			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
 		</a>
 		</td>
 
