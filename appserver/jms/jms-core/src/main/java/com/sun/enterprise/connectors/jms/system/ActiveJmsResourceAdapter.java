@@ -1934,21 +1934,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         }
     }
 
-    public void setMasterBroker(String newMasterBroker) {
-        try {
-            Class c = resourceadapter_.getClass();
-            Method m = c.getMethod("setMasterBroker", String.class);
-            m.invoke(resourceadapter_, newMasterBroker);
-            if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, JMSLoggerInfo.MASTER_BROKER_SUCCESS, new Object[]{newMasterBroker});
-            }
-        } catch (Exception ex) {
-            if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, JMSLoggerInfo.MASTER_BROKER_FAILURE, new Object[]{newMasterBroker, ex.getMessage()});
-            }
-        }
-    }
-
     protected void setClusterBrokerList(String brokerList) {
         try {
             Class c = resourceadapter_.getClass();
