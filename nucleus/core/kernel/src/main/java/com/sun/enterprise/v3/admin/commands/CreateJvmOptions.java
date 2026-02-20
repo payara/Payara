@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -86,7 +86,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup            //should be provided "per lookup of this class", not singleton
 @I18n("create.jvm.options")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @UnknownOptionsAreOperands()
 public final class CreateJvmOptions implements AdminCommand, AdminCommandSecurity.Preauthorization {
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,7 +68,7 @@ import java.util.List;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.list.services")
 @ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.GET,
@@ -107,7 +107,7 @@ public class HealthCheckServiceLister implements AdminCommand {
                 serviceListerColumnFormatter.addRow(values);
             }
 
-            sb.append(serviceListerColumnFormatter.toString());
+            sb.append(serviceListerColumnFormatter);
             report.setMessage(sb.toString());
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.api.admin;
 
@@ -66,7 +67,7 @@ public @interface ExecuteOn {
 
     /**
      * Identifies the {@link ClusterExecutor} that is responsible for remotely executing
-     * commands on the target clusters or instances. The provider will be looked up
+     * commands on the target instances. The provider will be looked up
      * in the habitat by its type.
      * 
      * @return a {@link ClusterExecutor} type or null to use the default executor that takes the

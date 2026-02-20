@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -127,11 +127,6 @@ public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyB
     @Override
     String getReference();
 
-    // five trivial methods that ReferenceContainer's need to implement
-    @DuckTyped
-    @Override
-    boolean isCluster();
-
     @DuckTyped
     @Override
     boolean isServer();
@@ -159,7 +154,6 @@ public interface DeploymentGroup extends Named, Payload, RefContainer, PropertyB
 
 
     class Duck {
-        public static boolean isCluster(DeploymentGroup me) { return false; }
         public static boolean isServer(DeploymentGroup me)  { return false; }
         public static boolean isInstance(DeploymentGroup me) { return false; }
         public static boolean isDas(DeploymentGroup me) { return false; }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -67,7 +67,7 @@ import java.beans.PropertyVetoException;
  * Delete Admin Object command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @ExecuteOn(value={RuntimeType.ALL})
 @Service(name="delete-admin-object")
 @PerLookup
@@ -121,7 +121,7 @@ public class DeleteAdminObject implements AdminCommand {
                 if (resourceUtil.getTargetsReferringResourceRef(jndiName).size() > 0) {
                     report.setMessage(localStrings.getLocalString("delete.admin.object.resource-ref.exist",
                             "admin-object [ {0} ] is referenced in an" +
-                                    "instance/cluster target, Use delete-resource-ref on appropriate target",
+                                    "instance target, Use delete-resource-ref on appropriate target",
                             jndiName));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
@@ -139,7 +139,7 @@ public class DeleteAdminObject implements AdminCommand {
                 if (resourceUtil.getTargetsReferringResourceRef(jndiName).size() > 1) {
                     report.setMessage(localStrings.getLocalString("delete.admin.object.multiple.resource-refs",
                             "admin-object [ {0} ] is referenced in multiple " +
-                                    "instance/cluster targets, Use delete-resource-ref on appropriate target",
+                                    "instance targets, Use delete-resource-ref on appropriate target",
                             jndiName));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;

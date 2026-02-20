@@ -9,10 +9,9 @@ SYNOPSIS
 
 DESCRIPTION
        The collect-log-files subcommand collects all available log files for
-       the domain administration server (DAS), the specified cluster, or the
+       the domain administration server (DAS), the specified deployment group, or the
        specified GlassFish Server instance and creates a single ZIP archive of
-       the log files. If a cluster is specified, the ZIP archive also contains
-       the log file for the DAS.
+       the log files.
 
        This subcommand is supported in remote mode only.
 
@@ -50,12 +49,11 @@ OPTIONS
                The log files will be collected for the DAS (default).
 
            instance-name
-               The log files will be collected for the specified GlassFish
+               The log files will be collected for the specified Payara
                Server instance.
 
-           cluster-name
-               The log files will be collected for the specified cluster and
-               the DAS.
+           deployment-group-name
+               The log files will be collected for the specified deployment group
 
 OPERANDS
        retrievefilepath
@@ -74,10 +72,10 @@ EXAMPLES
                collected-logs/log_2010-12-15_15-46-23.zip.
                Command collect-log-files executed successfully.
 
-       Example 2, Collecting Log Files for a Cluster
+       Example 2, Collecting Log Files for a Deployment Group
            This example generates a ZIP archive from the log files for a
-           cluster named cluster1 and the two server instances running in the
-           cluster.
+           deployment group named cluster1 and the two server instances running
+           in the group.
 
                asadmin> collect-log-files --target cluster1
                Log files are downloaded for instance1.
@@ -87,9 +85,9 @@ EXAMPLES
                Command collect-log-files executed successfully.
 
        Example 3, Collecting Log Files in a Directory Other Than the Default
-       for a Cluster
+       for a Deployment Group
            This example generates a ZIP archive from the log files for a
-           cluster named cluster1 and its two server instances, and saves the
+           deployment group named cluster1 and its two server instances, and saves the
            archive in a directory named /space/output.
 
                asadmin> collect-log-files --target cluster1 --retrieve true /space/output

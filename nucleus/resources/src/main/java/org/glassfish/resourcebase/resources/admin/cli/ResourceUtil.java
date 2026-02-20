@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resourcebase.resources.admin.cli;
 
@@ -93,23 +94,6 @@ public class ResourceUtil {
                 // create new ResourceRef as a child of Server
                 server.createResourceRef(enabled, jndiName);
             }
-        } else {
-            Cluster cluster = domain.getClusterNamed(target);
-            if(cluster != null){
-                if (!cluster.isResourceRefExists(jndiName)) {
-                    // create new ResourceRef as a child of Cluster
-                    cluster.createResourceRef(enabled, jndiName);
-
-                    // create new ResourceRef for all instances of Cluster
-                    Target tgt = targetProvider.get();
-                    List<Server> instances = tgt.getInstances(target);
-                    for (Server svr : instances) {
-                        if (!svr.isResourceRefExists(jndiName)) {
-                            svr.createResourceRef(enabled, jndiName);
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -162,15 +146,13 @@ public class ResourceUtil {
 
 
     public Set<String> getTargetsReferringResourceRef(String refName) {
-        Set<String> targets = new HashSet<String>();
+        Set<String> targets = new HashSet<>();
         List<Server> servers = domain.getServers().getServer();
-        for(Server server: servers){
-            if(server.getResourceRef(refName) != null){
-                if(server.getCluster() != null){
-                    targets.add(server.getCluster().getName());
-                }else if(server.isDas()){
+        for (Server server: servers) {
+            if (server.getResourceRef(refName) != null) {
+                if (server.isDas()) {
                     targets.add(SystemPropertyConstants.DAS_SERVER_NAME);
-                }else if(server.isInstance()){
+                } else if (server.isInstance()) {
                     targets.add(server.getName());
                 }
             }
@@ -194,23 +176,6 @@ public class ResourceUtil {
                 if (server.isResourceRefExists(jndiName)) {
                     // delete ResourceRef for Server
                     server.deleteResourceRef(jndiName);
-                }
-            } else {
-                Cluster cluster = domain.getClusterNamed(target);
-                if(cluster != null){
-                    if (cluster.isResourceRefExists(jndiName)) {
-                        // delete ResourceRef of Cluster
-                        cluster.deleteResourceRef(jndiName);
-
-                        // delete ResourceRef for all instances of Cluster
-                        Target tgt = targetProvider.get();
-                        List<Server> instances = tgt.getInstances(target);
-                        for (Server svr : instances) {
-                            if (svr.isResourceRefExists(jndiName)) {
-                                svr.deleteResourceRef(jndiName);
-                            }
-                        }
-                    }
                 }
             }
         }

@@ -37,41 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
-import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommand;
-import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.OpsParams;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.common.util.admin.ParameterMapExtractor;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.glassfish.api.admin.AccessRequired;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 
 /**
@@ -88,52 +76,6 @@ public class DeploymentCommandUtils {
     final static String SERVERS_RESOURCE_NAME = "domain/servers/server";
     
     final private static String COPY_IN_PLACE_ARCHIVE_PROP_NAME = "copy.inplace.archive";
-    
-    private static final List<String> LIST_CONTAINING_DOMAIN = new ArrayList<String>(Arrays.asList(DeploymentUtils.DOMAIN_TARGET_NAME));
-
-    /**
-     * Replicates an enable or disable command to all instances in the cluster
-     * of which the target is a member.  If the target is not cluster member
-     * this method is a no-op.
-     * @param commandName name of the command to replicate to cluster instances
-     * @param domain domain containing the relevant configuration
-     * @param target name of the target being enabled or disabled
-     * @param appName name of the application being enabled or disabled
-     * @param habitat hk2 habitat
-     * @param context command context passed to the running enable or disable command 
-     * @param command command object
-     * @return
-     */
-    public static ActionReport.ExitCode replicateEnableDisableToContainingCluster(
-            final String commandName,
-            final Domain domain,
-            final String target,
-            final String appName,
-            final ServiceLocator habitat,
-            final AdminCommandContext context,
-            final AdminCommand command) throws IllegalArgumentException, IllegalAccessException {
-        /*
-         * If the target is a cluster instance, the DAS will broadcast the command
-         * to all instances in the cluster so they can all update their configs.
-         */
-        final Cluster containingCluster = domain.getClusterForInstance(target);
-        if (containingCluster != null) {
-            final ParameterMapExtractor extractor = new ParameterMapExtractor(command);
-            final ParameterMap pMap = extractor.extract(Collections.EMPTY_LIST);
-            pMap.set("DEFAULT", appName);
-
-            return ClusterOperationUtil.replicateCommand(
-                    commandName,
-                    FailurePolicy.Error,
-                    FailurePolicy.Warn,
-                    FailurePolicy.Ignore,
-                    containingCluster.getInstances(),
-                    context,
-                    pMap,
-                    habitat);
-        }
-        return ActionReport.ExitCode.SUCCESS;
-    }
 
     public static String getLocalHostName() {
         String defaultHostName = "localhost";
@@ -220,10 +162,7 @@ public class DeploymentCommandUtils {
         final StringBuilder sb = new StringBuilder();
         ConfigBeanProxy p = d.getServerNamed(target);
         if (p == null) {
-            p = d.getClusterNamed(target);
-            if (p == null) {
-                p = d.getDeploymentGroupNamed(target);
-            }
+            p = d.getDeploymentGroupNamed(target);
         }
         if (p == null) {
             sb.append("domain/???/").append(target);

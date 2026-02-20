@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,9 +40,7 @@
 package fish.payara.nucleus.hazelcast.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.util.List;
 import java.util.Properties;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -60,7 +58,6 @@ import org.glassfish.api.admin.TargetBasedExecutor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -72,7 +69,7 @@ import org.jvnet.hk2.annotations.Service;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("restart-hazelcast")
 @ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DOMAIN})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DOMAIN})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -92,9 +89,6 @@ public class RestartHazelcast implements AdminCommand {
     
     @Inject
     private ServerEnvironment serverEnv;
-    
-    @Inject
-    Target targetUtil;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -131,16 +125,7 @@ public class RestartHazelcast implements AdminCommand {
             result = true;
         }
         
-        if(targetUtil.isCluster(target)) {
-            List<Server> servers = targetUtil.getInstances(target);
-            for (Server server : servers) {
-                if (server.getName().equals(instanceName)) {
-                    result = true;
-                    break;
-                }
-            }
-            
-        } else if (target.equals("domain")) {
+        if (target.equals("domain")) {
             result = true;
         }
         return result;

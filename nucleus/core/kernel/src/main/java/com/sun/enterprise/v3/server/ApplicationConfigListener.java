@@ -44,7 +44,6 @@ package com.sun.enterprise.v3.server;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.ServerTags;
@@ -120,8 +119,7 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                         break;
                     }
                 }
-            } else if (event.getSource() instanceof Server || 
-                    event.getSource() instanceof Cluster) {
+            } else if (event.getSource() instanceof Server) {
                 if (event.getPropertyName().equals(
                         ServerTags.APPLICATION_REF)) {
                     if (oldValue == null || newValue == null) {
@@ -237,10 +235,6 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
             if (grandparent instanceof Server) {
                 Server gpServer = (Server)grandparent;      
                 if ( ! server.getName().equals(gpServer.getName())) {
-                    return false; 
-                }
-            } else if (grandparent instanceof Cluster) {
-                if (server.isDas()) {
                     return false; 
                 }
             }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2023 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2023-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms.util;
 
@@ -99,16 +99,14 @@ public class JmsRaUtil {
         = "cmt-max-runtime-exceptions";
     private static final int DEFAULT_CMT_MAX_RUNTIME_EXCEPTIONS = 1;
 
-    private static final String ENABLE_AUTO_CLUSTERING = "com.sun.enterprise.connectors.system.enableAutoClustering";
-
     private int cmtMaxRuntimeExceptions = DEFAULT_CMT_MAX_RUNTIME_EXCEPTIONS;
 
     private int reconnectDelayInSeconds = DEFAULT_RECONNECT_DELAY;
     private int reconnectMaxRetries = DEFAULT_RECONNECT_RETRIES;
     private boolean reconnectEnabled = false;
 
-    JmsService js = null;
-    MQAddressList list = null;
+    JmsService js;
+    MQAddressList list;
 
     private static final Logger _logger = JMSLoggerInfo.getLogger();
 
@@ -121,73 +119,38 @@ public class JmsRaUtil {
             if (js != null) {
             this.js = js;
             } else {
-                  this.js = (JmsService) Globals.get(JmsService.class);
+                  this.js = Globals.get(JmsService.class);
             }
             list = new MQAddressList(this.js);
-//            if (isClustered() && ! this.js.getType().equals(
-//                ActiveJmsResourceAdapter.REMOTE)) {
-//                list.setupForLocalCluster();
-//            } else {
-//                list.setup();
-//            }
         } catch(Exception ce) {
             throw handleException(ce);
         }
     }
 
-    public void setupAddressList() throws ConnectorRuntimeException{
-      try {
-    list.setup();
-    } catch (Exception e) {
-        throw handleException(e);
-    }
+    public void setupAddressList() throws ConnectorRuntimeException {
+        try {
+            list.setup();
+        } catch (Exception e) {
+            throw handleException(e);
+        }
     }
 
     public String getUrl() {
-    try {
+        try {
             return list.toString();
-    } catch (Exception e) {
-        return null;
-    }
-    }
-
-    public static boolean isClustered(List clusters, String instanceName) {
-              return (enableClustering() && isServerClustered(clusters,
-                instanceName));
-     }
-
-    /**
-     * Return true if the given server instance is part of a cluster.
-     */
-    public static boolean isServerClustered(List clusters, String instanceName) {
-        return (getClusterForServer(clusters, instanceName) != null);
-    }
-
-    public static Cluster getClusterForServer(List<Cluster> clusters, String instanceName){
-        //Return the server only if it is part of a cluster (i.e. only if a cluster
-        //has a reference to it).
-        for (Cluster cluster : clusters) {
-            final List<Server> servers = cluster.getInstances();
-            for (Server server : servers) {
-                if (server.getName().equals(instanceName)) {
-                    // check to see if the server exists as a sanity check.
-                    // NOTE: we are not checking for duplicate server instances here.
-                    return cluster;
-                }
-            }
+        } catch (Exception e) {
+            return null;
         }
-        return null;
     }
 
     /**
      * Return true if the given server instance is part of a deployment group.
      */
-    public static boolean isServerInDeploymentGroup(List<DeploymentGroup> deploymentGroupList, String instanceName)
-    {
-        return (getDeploymentGroupForServer(deploymentGroupList, instanceName) != null);
+    public static boolean isServerInDeploymentGroup(List<DeploymentGroup> deploymentGroupList, String instanceName) {
+        return getDeploymentGroupForServer(deploymentGroupList, instanceName) != null;
     }
 
-    public static DeploymentGroup getDeploymentGroupForServer(List<DeploymentGroup> deploymentGroupList, String instanceName){
+    public static DeploymentGroup getDeploymentGroupForServer(List<DeploymentGroup> deploymentGroupList, String instanceName) {
         for (DeploymentGroup deploymentGroup : deploymentGroupList) {
             final List<Server> servers = deploymentGroup.getInstances();
             for (Server server : servers) {
@@ -197,25 +160,6 @@ public class JmsRaUtil {
             }
         }
         return null;
-    }
-    
-    private static boolean enableClustering() {
-        try {
-            /* This flag disables the auto clustering functionality
-               * No uMQ clusters will  be created with AS cluster if
-               * this flag is set to false. Default is true.
-               */
-            String enablecluster = System.getProperty(ENABLE_AUTO_CLUSTERING);
-            _logger.log(Level.FINE, "Sun MQ Auto cluster system property " + enablecluster);
-            if ((enablecluster != null) && (enablecluster.trim().equals("false"))){
-                _logger.log(Level.FINE, "Disabling Sun MQ Auto Clustering");
-                return false;
-            }
-        } catch (Exception e) {
-            ;
-        }
-        _logger.log(Level.FINE, "Enabling Sun MQ Auto Clustering");
-        return true;
     }
 
     public String getJMSServiceType(){
@@ -335,27 +279,6 @@ public class JmsRaUtil {
 
     }
 
-    public void configureDescriptor(ConnectorDescriptor cd) {
-
-        Object[] envProps = cd.getConfigProperties().toArray();
-
-        for (int i = 0; i < envProps.length; i++) {
-            ConnectorConfigProperty  envProp = (ConnectorConfigProperty ) envProps[i];
-            String name = envProp.getName();
-        if (!name.equals("ConnectionURL")) {
-            continue;
-        }
-            String userValue = getUrl();
-            if (userValue != null) {
-                cd.removeConfigProperty(envProp);
-                cd.addConfigProperty(new ConnectorConfigProperty (
-                              name, userValue, userValue, envProp.getType()));
-            }
-
-        }
-
-    }
-
     /**
      * Obtains the Implementation-Version from the MQ Client libraries
      * that are deployed in the application server and in MQ installation
@@ -399,97 +322,90 @@ public class JmsRaUtil {
     }
 
     private String getInstalledMqVersion() throws Exception {
-       String ver = null;
-       // Full path of installed Mq Client library
-       String installed_dir =
-           System.getProperty(SystemPropertyConstants.IMQ_LIB_PROPERTY);
-       String jarFile = installed_dir + File.separator + MQ_RAR;
-       _logger.log(Level.FINE,"Installed MQ JAR " + jarFile);
-    JarFile jFile = null;
-       try {
-       if ((new File(jarFile)).exists()) {
-        /* This is for a file based install
-           * RAR has to be present in this location
-           * ASHOME/imq/lib
-           */
-        jFile = new JarFile(jarFile);
-       } else {
-        /* This is for a package based install
-           * RAR has to be present in this location
-           * /usr/lib
-           */
-        jFile = new JarFile(installed_dir + File.separator + ".." + File.separator + MQ_RAR);
-       }
-           Manifest mf = jFile.getManifest();
-           ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
-           return ver;
-       } catch (Exception e) {
-           _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_CHECK_FAILED, 
-                   new Object[]{e.getMessage() + ":" + jarFile});
-           throw e;
-       } finally {
-           if (jFile != null) {
-               jFile.close();
-           }
-       }
+        String ver;
+        // Full path of installed Mq Client library
+        String installed_dir = System.getProperty(SystemPropertyConstants.IMQ_LIB_PROPERTY);
+        String jarFile = installed_dir + File.separator + MQ_RAR;
+        _logger.log(Level.FINE, "Installed MQ JAR " + jarFile);
+        JarFile jFile = null;
+        try {
+            if ((new File(jarFile)).exists()) {
+                /* This is for a file based install
+                 * RAR has to be present in this location
+                 * ASHOME/imq/lib
+                 */
+                jFile = new JarFile(jarFile);
+            } else {
+                /* This is for a package based install
+                 * RAR has to be present in this location
+                 * /usr/lib
+                 */
+                jFile = new JarFile(installed_dir + File.separator + ".." + File.separator + MQ_RAR);
+            }
+            Manifest mf = jFile.getManifest();
+            ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
+            return ver;
+        } catch (Exception e) {
+            _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_CHECK_FAILED,
+                    new Object[]{e.getMessage() + ":" + jarFile});
+            throw e;
+        } finally {
+            if (jFile != null) {
+                jFile.close();
+            }
+        }
     }
 
     private String getDeployedMqVersion() throws Exception {
-       String ver = null;
+        String ver;
         // Full path of Mq client library that is deployed in appserver.
-       String deployed_dir =
-           System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)
-           + File.separator + SYSTEM_APP_DIR;
-       String manifestFile = deployed_dir + File.separator +
-                             MQ_RAR_MANIFEST;
-       _logger.log(Level.FINE,"Deployed MQ version Manifest file" + manifestFile);
-       try (FileInputStream fis = new FileInputStream(manifestFile)) {
-           Manifest mf = new Manifest(fis);
-           ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
-           return ver;
-       } catch (Exception e) {
-           _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_CHECK_FAILED, 
-                   new Object[]{e.getMessage() + ":" + manifestFile});
-           throw e;
-       }
-   }
+        String deployed_dir = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)
+                + File.separator + SYSTEM_APP_DIR;
+        String manifestFile = deployed_dir + File.separator + MQ_RAR_MANIFEST;
+        _logger.log(Level.FINE, "Deployed MQ version Manifest file" + manifestFile);
+        try (FileInputStream fis = new FileInputStream(manifestFile)) {
+            Manifest mf = new Manifest(fis);
+            ver = mf.getMainAttributes().getValue(MANIFEST_TAG);
+            return ver;
+        } catch (Exception e) {
+            _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_CHECK_FAILED,
+                    new Object[]{e.getMessage() + ":" + manifestFile});
+            throw e;
+        }
+    }
 
-   private static ConnectorRuntimeException handleException(Exception e) {
-        ConnectorRuntimeException cre =
-             new ConnectorRuntimeException(e.getMessage());
-        cre.initCause(e);
+    private static ConnectorRuntimeException handleException(Exception e) {
+        ConnectorRuntimeException cre = new ConnectorRuntimeException(e.getMessage(), e);
         return cre;
     }
 
     public static String getJMSPropertyValue(Server as){
-
         SystemProperty sp = as.getSystemProperty("JMS_PROVIDER_PORT");
-        if (sp != null) return sp.getValue();
-
-        Cluster cluster = as.getCluster();
-        if (cluster != null) {
-            sp = cluster.getSystemProperty("JMS_PROVIDER_PORT");
-            if (sp != null) return sp.getValue();
+        if (sp != null) {
+            return sp.getValue();
         }
 
         Config config = as.getConfig();
-        if (config != null)
+        if (config != null) {
             sp = config.getSystemProperty("JMS_PROVIDER_PORT");
+        }
 
-        if (sp != null) return sp.getValue();
+        if (sp != null) {
+            return sp.getValue();
+        }
 
         return null;
     }
 
-    public static String getUnAliasedPwd(String alias){
-        try{
+    public static String getUnAliasedPwd(String alias) {
+        try {
             String unalisedPwd = RelativePathResolver.getRealPasswordFromAlias(alias);
-            if (unalisedPwd != null && "".equals(unalisedPwd))
-               return unalisedPwd;
-
-        }catch(Exception e){
+            if (unalisedPwd != null && "".equals(unalisedPwd)) {
+                return unalisedPwd;
+            }
+        } catch (Exception e) {
 
         }
-         return alias;
+        return alias;
     }
 }

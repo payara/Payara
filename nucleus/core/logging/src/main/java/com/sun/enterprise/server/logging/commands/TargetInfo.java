@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.server.logging.commands;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -73,16 +73,7 @@ final class TargetInfo {
                 if (targetServer != null) {
                     if (!targetServer.isDas()) {
                         configName = targetServer.getConfigRef();
-                        Cluster clusterForInstance = targetServer.getCluster();
-                        if (clusterForInstance != null) {
-                            configName = clusterForInstance.getConfigRef();
-                        }
                     }
-                } else {
-                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        configName = cluster.getConfigRef();
-                    } 
                 }
             }                    
         }        

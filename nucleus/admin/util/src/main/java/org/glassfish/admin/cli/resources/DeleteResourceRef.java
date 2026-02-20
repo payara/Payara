@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.cli.resources;
 
@@ -68,7 +68,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  *
  * @author Jennifer Chou, Jagadish Ramu 
  */
-@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = Resources.class,
                 opType = RestEndpoint.OpType.DELETE,
@@ -141,19 +141,9 @@ public class DeleteResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         
         try {
             deleteResourceRef();
-            if (refContainer instanceof Cluster) {
-
-                // delete ResourceRef for all instances of Cluster
-                Target tgt = habitat.getService(Target.class);
-                List<Server> instances = tgt.getInstances(target);
-                for (Server svr : instances) {
-                    svr.deleteResourceRef(refName);
-                }
-            }
             
             if (refContainer instanceof DeploymentGroup) {
-
-                // delete ResourceRef for all instances of Cluster
+                // delete ResourceRef for all instances of DeploymentGroup
                 Target tgt = habitat.getService(Target.class);
                 List<Server> instances = tgt.getInstances(target);
                 for (Server svr : instances) {

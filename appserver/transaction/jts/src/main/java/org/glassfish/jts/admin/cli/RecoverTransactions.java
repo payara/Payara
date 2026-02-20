@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jts.admin.cli;
 
@@ -64,7 +65,7 @@ import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RestParam;
 
 @Service(name = "recover-transactions")
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.DAS)
 @PerLookup
 @I18n("recover.transactions")

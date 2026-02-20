@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
 
-import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.I18n;
@@ -65,7 +65,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.config.dom.Protocol;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -74,7 +73,7 @@ import org.glassfish.api.ActionReport.ExitCode;
 @PerLookup
 @I18n("delete.threadpool")
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class DeleteThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     final private static LocalStringManagerImpl localStrings =

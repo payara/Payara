@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright 2026 Payara Foundation and/or its affiliates
 -->
 
 <!--
@@ -53,10 +54,7 @@
         setAttribute(key="instanceArgs" value="?instanceName=#{instance}");
         gf.containedIn(list="#{pageSession.standaloneList}" testStr="#{instance}" contain=>$attribute{isStandalone});
         setAttribute(key="instanceLink" value="");
-        setAttribute(key="clusterLink" value="");
-        setAttribute(key="isCluster" value="$boolean{false}");
         if(#{isStandalone}) {
-            setAttribute(key="clusterName" value="");            
             setAttribute(key="instanceLink" value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{instance}");
             setAttribute(key="applicationsMonitorLink" value="standaloneInstanceMonitoringAppStatsPage.jsf#{instanceArgs}");
             setAttribute(key="serverMonitorLink" value="standaloneInstanceMonitoringServerPage.jsf#{instanceArgs}");
@@ -64,34 +62,21 @@
         }
         if(!#{isStandalone}) {
             if("#{instance}=server") {
-                setAttribute(key="clusterName" value="");
                 setAttribute(key="instanceLink" value="#{request.contextPath}/common/appServer/serverInstGeneralPe.jsf#{instanceArgs}");
                 setAttribute(key="applicationsMonitorLink" value="serverInstMonitoringAppsPage.jsf#{instanceArgs}");
                 setAttribute(key="serverMonitorLink" value="serverInstMonitoringServerPage.jsf#{instanceArgs}");
                 setAttribute(key="resourcesMonitorLink" value="serverInstMonitoringResourcesPage.jsf#{instanceArgs}");
             }
-            if("!(#{instance}=server)") {
-                setAttribute(key="isCluster" value="$boolean{true}");
-                gf.getClusterNameForInstance(instanceName="#{instance}"  clusterName=>$attribute{clusterName});
-                setAttribute(key="instanceLink" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf#{instanceArgs}&clusterName=#{clusterName}");
-                setAttribute(key="clusterLink" value="#{request.contextPath}/cluster/cluster/clusterGeneral.jsf?clusterName=#{clusterName}");
-                setAttribute(key="applicationsMonitorLink" value="clusterInstanceMonitoringAppStatsPage.jsf#{instanceArgs}&clusterName=#{clusterName}");
-                setAttribute(key="serverMonitorLink" value="clusterInstanceMonitoringServerPage.jsf#{instanceArgs}&clusterName=#{clusterName}");
-                setAttribute(key="resourcesMonitorLink" value="clusterInstanceMonitoringResourcePage.jsf#{instanceArgs}&clusterName=#{clusterName}");
-            }
         }
         gf.getConfigName(target="#{instance}" configName=>$attribute{configName});
         setAttribute(key="actionLink" value="#{request.contextPath}/common/monitor/monitoringPage.jsf?configName=#{configName}");
-        gf.createAttributeMap(keys={"instanceName", "instanceLink", "clusterName",
-                                    "clusterLink", "actionLink", "appMonitor",
-                                    "serverMonitor", "resMonitor", "isCluster"}
+        gf.createAttributeMap(keys={"instanceName", "instanceLink", "actionLink", "appMonitor",
+                                    "serverMonitor", "resMonitor"}
                               values={"${instance}", "$attribute{instanceLink}",
-                                      "$attribute{clusterName}", "$attribute{clusterLink}",
                                       "$attribute{actionLink}",
                                       "$attribute{commonLink}/$attribute{applicationsMonitorLink}",
                                       "$attribute{commonLink}/$attribute{serverMonitorLink}",
-                                      "$attribute{commonLink}/$attribute{resourcesMonitorLink}",
-                                      "$attribute{isCluster}",}
+                                      "$attribute{commonLink}/$attribute{resourcesMonitorLink}"}
                                     map="#{requestScope.oneRowMap}");
         listAdd(list="$pageSession{listOfRows}" value="#{requestScope.oneRowMap}");
     }

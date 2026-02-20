@@ -112,9 +112,6 @@ public class CreateInstanceCommand implements AdminCommand {
     @I18n("generic.config")
     String configRef;
     
-    @Param(name = "cluster", optional = true)
-    String clusterName;
-    
     @Param(name = "deploymentgroup", optional = true)
     String deploymentGroup;
     
@@ -195,14 +192,6 @@ public class CreateInstanceCommand implements AdminCommand {
             return;
         }
 
-        if (lbEnabled != null && clusterName == null) {
-            String msg = Strings.get("lbenabledNotForStandaloneInstance");
-            logger.warning(msg);
-            report.setActionExitCode(FAILURE);
-            report.setMessage(msg);
-            return;
-        }
-
         nodeHost = theNode.getNodeHost();
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
@@ -224,7 +213,6 @@ public class CreateInstanceCommand implements AdminCommand {
         ParameterMap commandParameters = new ParameterMap();
         commandParameters.add("node", node);
         commandParameters.add("config", configRef);
-        commandParameters.add("cluster", clusterName);
         commandParameters.add("deploymentgroup", deploymentGroup);
         if (lbEnabled != null) {
             commandParameters.add("lbenabled", lbEnabled.toString());

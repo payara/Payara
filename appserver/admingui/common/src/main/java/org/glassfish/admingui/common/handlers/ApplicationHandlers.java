@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
-
 /**
  *
  * @author anilam
@@ -346,14 +345,11 @@ public class ApplicationHandlers {
     }
 
     private static String getVirtualServers(String target, String appName) {
-        List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
         List<String> dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
         String ep = (String)GuiUtil.getSessionValue(REST_URL);
-        if (clusters.contains(target)){
-            ep = ep + "/clusters/cluster/" + target + "/application-ref/" + appName;
-        }else if (dgs.contains(target)) {
+        if (dgs.contains(target)) {
             ep = ep + "/deployment-groups/deployment-group/" + target + "/application-ref/" + appName;
         }else{
             ep = ep + "/servers/server/" + target + "/application-ref/" + appName;
@@ -455,7 +451,6 @@ public class ApplicationHandlers {
         String[] selTargets = (String[])handlerCtx.getInputValue("targets");
         List<String> selectedTargets = Arrays.asList(selTargets);
 
-        List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
         List<String> dgs = TargetUtil.getDeploymentGroups();
          standalone.add("server");
@@ -469,12 +464,12 @@ public class ApplicationHandlers {
                 associatedTargets.remove(newTarget);
                 continue;
             }else{
-                AppUtil.manageAppTarget(appName, newTarget, true, status, clusters, standalone, dgs, handlerCtx);
+                AppUtil.manageAppTarget(appName, newTarget, true, status, standalone, dgs, handlerCtx);
             }
          }
 
          for(String oTarget :  associatedTargets){
-            AppUtil.manageAppTarget(appName, oTarget, false, null, clusters, standalone, dgs, handlerCtx);
+            AppUtil.manageAppTarget(appName, oTarget, false, null, standalone, dgs, handlerCtx);
         }
     }
 
@@ -534,25 +529,20 @@ public class ApplicationHandlers {
     public static void getTargetListInfo(HandlerContext handlerCtx) {
         String appName = (String) handlerCtx.getInputValue("appName");
         String prefix = (String) GuiUtil.getSessionValue(REST_URL);
-        List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
-        List<String> dgs = TargetUtil.getDeploymentGroups();
         standalone.add("server");
         List<String> targetList = DeployUtil.getApplicationTarget(appName, "application-ref");
         List<Map<String, Object>> result = new ArrayList<>();
         Map<String, Object> attrs = null;
-        String endpoint="";
-        for(String oneTarget : targetList){
+        String endpoint = "";
+        for (String oneTarget : targetList) {
             HashMap<String, Object> oneRow = new HashMap<>();
-            if (clusters.contains(oneTarget)){
-                endpoint = prefix + "/clusters/cluster/" + oneTarget + "/application-ref/" + appName;
-                attrs = RestUtil.getAttributesMap(endpoint);
-            }else if (standalone.contains(oneTarget)){
-                endpoint = prefix+"/servers/server/" + oneTarget + "/application-ref/" + appName;
+            if (standalone.contains(oneTarget)) {
+                endpoint = prefix + "/servers/server/" + oneTarget + "/application-ref/" + appName;
                 attrs = RestUtil.getAttributesMap(endpoint);
             } else {
-                endpoint = prefix+"/deployment-groups/deployment-group/" + oneTarget + "/application-ref/" + appName;
-                attrs = RestUtil.getAttributesMap(endpoint);                
+                endpoint = prefix + "/deployment-groups/deployment-group/" + oneTarget + "/application-ref/" + appName;
+                attrs = RestUtil.getAttributesMap(endpoint);
             }
             oneRow.put("name", appName);
             oneRow.put("selected", false);
@@ -566,7 +556,7 @@ public class ApplicationHandlers {
     }
 
     /*
-     * This handler is called for populating the application table in the cluster or instance Application tab.
+     * This handler is called for populating the application table in the instance Application tab.
      */
     @Handler(id = "gf.getSingleTargetAppsInfo",
         input = {
@@ -674,13 +664,8 @@ public class ApplicationHandlers {
             String virtualServers = getVirtualServers(target, appId);
             String configName = TargetUtil.getConfigName(target);
 
-            List<String> clusters = TargetUtil.getClusters();
             List<String> instances = new ArrayList<>();
-            if (clusters.contains(target)) {
-                instances = TargetUtil.getClusteredInstances(target);
-            } else {
-                instances.add(target);
-            }
+            instances.add(target);
 
             for (String instance : instances) {
                 Collection<String> hostNames = TargetUtil.getHostNames(instance);
@@ -689,11 +674,11 @@ public class ApplicationHandlers {
         }
 
         Iterator<String> it = URLs.iterator();
-        String url = null;
+        String url;
         List<Map<String, String>> list = new ArrayList<>();
 
         while (it.hasNext()) {
-            url = it.next(); 
+            url = it.next();
             String target = "";
             int i = url.indexOf("@@@");
             if (i >= 0) {

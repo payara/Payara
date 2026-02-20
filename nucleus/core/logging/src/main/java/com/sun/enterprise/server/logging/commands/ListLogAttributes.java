@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -67,7 +67,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -82,7 +81,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
  */
 @ExecuteOn({RuntimeType.DAS})
 @Service(name = "list-log-attributes")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @PerLookup
 @I18n("list.log.attributes")
 @RestEndpoints({
@@ -104,9 +103,6 @@ public class ListLogAttributes implements AdminCommand {
 
     @Inject
     Servers servers;
-
-    @Inject
-    Clusters clusters;
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListLoggerLevels.class);
 

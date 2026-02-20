@@ -37,7 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-     Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 -->
 
@@ -45,10 +46,8 @@
 
 <sun:propertySheet id="targetSection">
     <!beforeCreate
-        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster", result="#{requestScope.clusterList}");
         gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.targetList}" );
         gf.listDeploymentGroups(deploymentgroups="#{pageSession.dgList}")
-        gf.listCombine(list="#{pageSession.targetList}",  list2="#{requestScope.clusterList}");
         gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.dgList}");
         listAdd(list="#{pageSession.targetList}", value="server" index="0");
 

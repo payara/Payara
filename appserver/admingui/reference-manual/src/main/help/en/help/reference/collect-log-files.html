@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -47,13 +47,6 @@
 		<a href="change-master-password.html">
 			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
 			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
-
-		<td align="left">
-		<a href="configure-jms-cluster.html">
-			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
 		</a>
 		</td>
 
@@ -95,10 +88,9 @@
 </div>
 <div class="paragraph">
 <p>The <code>collect-log-files</code> subcommand collects all available log files for
-the domain administration server (DAS), the specified cluster, or the
+the domain administration server (DAS), the specified deployment group, or the
 specified \{product---name} instance and creates a single ZIP archive of
-the log files. If a cluster is specified, the ZIP archive also contains
-the log file for the DAS.</p>
+the log files.</p>
 </div>
 <div class="paragraph">
 <p>This subcommand is supported in remote mode only.</p>
@@ -169,10 +161,9 @@ Possible values are as follows:<br></p>
 <p>The log files will be collected for the specified \{product---name}
 instance.</p>
 </dd>
-<dt class="hdlist1">cluster-name</dt>
+<dt class="hdlist1">deployment-group-name</dt>
 <dd>
-<p>The log files will be collected for the specified cluster and the
-DAS.</p>
+<p>The log files will be collected for the specified deployment group.</p>
 </dd>
 </dl>
 </div>
@@ -218,11 +209,11 @@ Command collect-log-files executed successfully.</code></pre>
 <p><a id="GSRFM452"></a><a id="sthref75"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 2   Collecting Log Files for a Cluster</p>
+<p>Example 2   Collecting Log Files for a Deployment Group</p>
 </div>
 <div class="paragraph">
-<p>This example generates a ZIP archive from the log files for a cluster
-named <code>cluster1</code> and the two server instances running in the cluster.</p>
+<p>This example generates a ZIP archive from the log files for a deployment group
+named <code>cluster1</code> and the two server instances running in the group.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -239,10 +230,10 @@ Command collect-log-files executed successfully.</code></pre>
 </div>
 <div class="paragraph">
 <p>Example 3   Collecting Log Files in a Directory Other Than the Default
-for a Cluster</p>
+for a Deployment Group</p>
 </div>
 <div class="paragraph">
-<p>This example generates a ZIP archive from the log files for a cluster
+<p>This example generates a ZIP archive from the log files for a deployment group
 named <code>cluster1</code> and its two server instances, and saves the archive in
 a directory named <code>/space/output</code>.</p>
 </div>
@@ -299,13 +290,6 @@ Command collect-log-files executed successfully.</code></pre>
 		<a href="change-master-password.html">
 			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
 			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
-
-		<td align="left">
-		<a href="configure-jms-cluster.html">
-			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
 		</a>
 		</td>
 

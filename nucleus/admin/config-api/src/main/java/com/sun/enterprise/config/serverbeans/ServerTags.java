@@ -246,7 +246,6 @@ public class ServerTags  {
     /** Tags for Element jms-service */
     public static final String JMS_SERVICE = "jms-service";
     public static final String INIT_TIMEOUT_IN_SECONDS = "init-timeout-in-seconds";
-    public static final String MASTER_BROKER = "master-broker";
     //public static final String TYPE = "type";
     public static final String START_ARGS = "start-args";
     public static final String DEFAULT_JMS_HOST = "default-jms-host";

@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.util;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -58,8 +57,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 public final class PortManager {
 
-    public PortManager(Cluster cluster, Config config, Domain theDomain,
-            Server theNewServer) throws TransactionFailure {
+    public PortManager(Config config, Domain theDomain, Server theNewServer) throws TransactionFailure {
         try {
             if (theNewServer == null || theDomain == null)
                 throw new TransactionFailure(Strings.get("internal.error", "null argument in PortManager constructor"));
@@ -77,8 +75,8 @@ public final class PortManager {
 
             host = new ServerHelper(theNewServer, config).getAdminHost();
 
-            allPorts = new TreeSet<Integer>();
-            newServerPorts = new ServerPorts(cluster, config, domain, newServer);
+            allPorts = new TreeSet<>();
+            newServerPorts = new ServerPorts(config, domain, newServer);
 
             isLocal = NetUtils.isThisHostLocal(host);
 
@@ -92,7 +90,7 @@ public final class PortManager {
                     it.remove();
                 }
             }
-            serversOnHost = new ArrayList<ServerPorts>();
+            serversOnHost = new ArrayList<>();
         }
         catch (TransactionFailure tf) {
             throw tf;

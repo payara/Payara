@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -78,21 +78,6 @@ public enum CommandTarget implements TargetValidator {
         }
     },
     /**
-     * a clustered instance configuration change
-     */
-    CLUSTERED_INSTANCE {
-        @Override
-        public boolean isValid(ServiceLocator habitat, String target) {
-            Domain domain = habitat.getService(Domain.class);
-            return (domain.getClusterForInstance(target) != null);
-        }
-
-        @Override
-        public String getDescription() {
-            return "Clustered Instance";
-        }
-    },
-    /**
      * a standalone instance configuration change
      */
     STANDALONE_INSTANCE {
@@ -120,21 +105,6 @@ public enum CommandTarget implements TargetValidator {
         @Override
         public String getDescription() {
             return "Config";
-        }
-    },
-    /**
-     * a cluster configuration change
-     */
-    CLUSTER {
-        @Override
-        public boolean isValid(ServiceLocator habitat, String target) {
-            Domain domain = habitat.getService(Domain.class);
-            return domain.getClusterNamed(target) != null;
-        }
-
-        @Override
-        public String getDescription() {
-            return "Cluster";
         }
     },
     /**

@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.cli.resources;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -64,10 +63,6 @@ public class CLIUtil {
         Server server = configBeansUtilities.getServerNamed(target);
         if (server != null) {
             return server;
-        }
-        Cluster cluster = domain.getClusterNamed(target);
-        if (cluster != null) {
-            return cluster;
         }
         return domain.getDeploymentGroupNamed(target);
     }

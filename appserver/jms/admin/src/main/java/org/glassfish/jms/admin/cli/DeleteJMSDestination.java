@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+//Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -78,15 +78,8 @@ import org.glassfish.config.support.TargetType;
 @PerLookup
 @I18n("delete.jms.dest")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.DELETE, 
-        path="delete-jmsdest", 
-        description="Delete JMS Destination",
-        params={
-            @RestParam(name="target", value="$parent")
-        }),
     @RestEndpoint(configBean=Server.class,
         opType=RestEndpoint.OpType.DELETE, 
         path="delete-jmsdest", 
@@ -102,104 +95,90 @@ import org.glassfish.config.support.TargetType;
             @RestParam(name="target", value="$parent")
         })
 })
-
 public class DeleteJMSDestination extends JMSDestination implements AdminCommand {
 
-        private final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSDestination.class);
+    private final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSDestination.class);
 
-        @Param(name="destType", shortName="T", optional=false)
-        String destType;
+    @Param(name = "destType", shortName = "T", optional = false)
+    String destType;
 
-        @Param(name="dest_name", primary=true)
-        String destName;
+    @Param(name = "dest_name", primary = true)
+    String destName;
 
-        @Param(optional=true)
-        String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
+    @Param(optional = true)
+    String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
 
-        @Inject
-        com.sun.appserv.connectors.internal.api.ConnectorRuntime connectorRuntime;
+    @Inject
+    com.sun.appserv.connectors.internal.api.ConnectorRuntime connectorRuntime;
 
-        @Inject
-        Domain domain;
+    @Inject
+    Domain domain;
 
-        @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-        Config config;
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    Config config;
 
-        @Inject
-        ServerContext serverContext;
+    @Inject
+    ServerContext serverContext;
 
-
-     public void execute(AdminCommandContext context) {
-
+    public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        logger.entering(getClass().getName(), "deleteJMSDestination",
-        new Object[] {destName, destType});
+        logger.entering(getClass().getName(), "deleteJMSDestination", new Object[]{destName, destType});
 
-		 try{
+        try {
             validateJMSDestName(destName);
             validateJMSDestType(destType);
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             report.setMessage(e.getMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
         try {
-                deleteJMSDestination(destName, destType, target);
-                return;
+            deleteJMSDestination(destName, destType);
         } catch (Exception e) {
             logger.throwing(getClass().getName(), "deleteJMSDestination", e);
-            //e.printStackTrace();//handleException(e);
             report.setMessage(localStrings.getLocalString("delete.jms.dest.noJmsDelete",
-                            "Delete JMS Destination failed. Please verify if the JMS Destination specified for deletion exists"));
+                    "Delete JMS Destination failed. Please verify if the JMS Destination specified for deletion exists"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-     }
+    }
 
-       // delete-jmsdest
-	private Object deleteJMSDestination(String destName, String destType,
-		String tgtName)
-		throws Exception {
-
+    // delete-jmsdest
+    private Object deleteJMSDestination(String destName, String destType) throws Exception {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "deleteJMSDestination ...");
         }
+
         MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
 
-		//MBeanServerConnection  mbsc = getMBeanServerConnection(tgtName);
+        try {
+            MBeanServerConnection mbsc = mqInfo.getMQMBeanServerConnection();
+            ObjectName on = new ObjectName(DESTINATION_MANAGER_CONFIG_MBEAN_NAME);
+            String[] signature;
+            Object[] params;
 
-		try {
-			MBeanServerConnection mbsc = mqInfo.getMQMBeanServerConnection();
-			ObjectName on = new ObjectName(
-				DESTINATION_MANAGER_CONFIG_MBEAN_NAME);
-			String [] signature = null;
-			Object [] params = null;
-
-			signature = new String [] {
-				"java.lang.String",
-				"java.lang.String"};
-
-			if (destType.equalsIgnoreCase("topic")) {
-				destType = DESTINATION_TYPE_TOPIC;
-			} else if (destType.equalsIgnoreCase("queue")) {
-				destType = DESTINATION_TYPE_QUEUE;
-			}
-			params = new Object [] {destType, destName};
-			return mbsc.invoke(on, "destroy", params, signature);
-
+            signature = new String[]{"java.lang.String", "java.lang.String"};
+            if (destType.equalsIgnoreCase("topic")) {
+                destType = DESTINATION_TYPE_TOPIC;
+            } else if (destType.equalsIgnoreCase("queue")) {
+                destType = DESTINATION_TYPE_QUEUE;
+            }
+            params = new Object[]{destType, destName};
+            return mbsc.invoke(on, "destroy", params, signature);
         } catch (Exception e) {
-                   //log JMX Exception trace as WARNING
-                   logAndHandleException(e, "admin.mbeans.rmb.error_deleting_jms_dest");
-                } finally {
-                    try {
-                        if(mqInfo != null) {
-                            mqInfo.closeMQMBeanServerConnection();
-                        }
-                    } catch (Exception e) {
-                      handleException(e);
-                    }
+            //log JMX Exception trace as WARNING
+            logAndHandleException(e, "admin.mbeans.rmb.error_deleting_jms_dest");
+        } finally {
+            try {
+                if (mqInfo != null) {
+                    mqInfo.closeMQMBeanServerConnection();
                 }
-           return null;
+            } catch (Exception e) {
+                handleException(e);
+            }
+        }
+        return null;
     }
 }

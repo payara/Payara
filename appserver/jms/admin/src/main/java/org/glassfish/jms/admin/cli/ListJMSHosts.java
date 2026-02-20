@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -73,7 +74,7 @@ import org.glassfish.api.admin.*;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jms.hosts")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=JmsService.class,
         opType=RestEndpoint.OpType.GET, 
@@ -81,7 +82,8 @@ import org.glassfish.api.admin.*;
         description="list-jms-hosts")
 })
 public class ListJMSHosts implements AdminCommand {
-        final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSHosts.class);
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ListJMSHosts.class);
 
     @Param(name="target", optional=true)
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
@@ -91,6 +93,7 @@ public class ListJMSHosts implements AdminCommand {
 
     @Inject
     Domain domain;
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values
@@ -98,35 +101,25 @@ public class ListJMSHosts implements AdminCommand {
      * @param context information
      */
     public void execute(AdminCommandContext context) {
-
         final ActionReport report = context.getActionReport();
         Config targetConfig = domain.getConfigNamed(target);
-                if (targetConfig != null)
-                    config = targetConfig;
-                
-        Server targetServer = domain.getServerNamed(target);
-        //String configRef = targetServer.getConfigRef();
-        if (targetServer!=null) {
-            config = domain.getConfigNamed(targetServer.getConfigRef());
+        if (targetConfig != null) {
+            config = targetConfig;
         }
-        com.sun.enterprise.config.serverbeans.Cluster cluster =domain.getClusterNamed(target);
-        if (cluster!=null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
+
+        Server targetServer = domain.getServerNamed(target);
+        if (targetServer != null) {
+            config = domain.getConfigNamed(targetServer.getConfigRef());
         }
 
         JmsService jmsService = config.getExtensionByType(JmsService.class);
-            /*for (Config c : configs.getConfig()) {
-                if(configRef.equals(c.getName()))
-                     jmsService = c.getJmsService();
-            } */
 
-            if (jmsService == null) {
-            report.setMessage(localStrings.getLocalString("list.jms.host.invalidTarget",
-                            "Invalid Target specified."));
+        if (jmsService == null) {
+            report.setMessage(localStrings.getLocalString("list.jms.host.invalidTarget", "Invalid Target specified."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
-          }
-           try {
+        }
+        try {
             ArrayList<String> list = new ArrayList();
             for (JmsHost r : jmsService.getJmsHost()) {
                 list.add(r.getName());
@@ -137,8 +130,7 @@ public class ListJMSHosts implements AdminCommand {
                 part.setMessage(jmsName);
             }
         } catch (Exception e) {
-            report.setMessage(localStrings.getLocalString("list.jms.host.fail",
-                    "Unable to list JMS Hosts") + " " + e.getLocalizedMessage());
+            report.setMessage(localStrings.getLocalString("list.jms.host.fail", "Unable to list JMS Hosts") + " " + e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
             return;

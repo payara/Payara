@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -336,11 +335,6 @@ public class V2DottedNameSupport {
         Named[] nodes = getNamedNodes(domain.getServers().getServer(),
                 domain.getConfigs().getConfig(), name);
 
-        if (nodes==null && domain.getClusters()!=null) {
-            // no luck with server, try cluster.
-            nodes = getNamedNodes(domain.getClusters().getCluster(),
-                    domain.getConfigs().getConfig(), name);
-        }
         if (nodes!=null) {
             TreeNode[] result = new TreeNode[nodes.length];
             for (int i=0;i<nodes.length;i++) {
@@ -399,8 +393,6 @@ public class V2DottedNameSupport {
         int level = 4;
         if(Config.class.getCanonicalName().equals(parent))
             level = 1;
-        if(Cluster.class.getCanonicalName().equals(parent))
-            level = 2;
         if(Server.class.getCanonicalName().equals(parent))
             level = 3;
         return level;

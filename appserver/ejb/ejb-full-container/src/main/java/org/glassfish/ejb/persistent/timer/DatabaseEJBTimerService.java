@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -45,7 +45,6 @@ import com.sun.ejb.PersistentTimerService;
 import com.sun.ejb.containers.EjbContainerUtil;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBTimerService;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.transaction.api.RecoveryResourceRegistry;
@@ -159,25 +158,12 @@ public class DatabaseEJBTimerService
         // check whether the server is any of the same clusters or deployment groups 
         // as the disappeared server and if so migrate timers
         boolean migrate = false;
-        Cluster forServer = domain.getClusterForInstance(server);
-        if (forServer != null) {
-            for (Server instance : forServer.getInstances()) {
+        for (DeploymentGroup deploymentGroup : domain.getDeploymentGroupsForInstance(server)) {
+            for (Server instance : deploymentGroup.getInstances()) {
                 if (instance.getName().equals(thisServer)) {
                     // if I am in the same cluster
-                    migrate = true; 
+                    migrate = true;
                     break;
-                }
-            }
-        }
-        
-        if (!migrate) {
-            for (DeploymentGroup deploymentGroup : domain.getDeploymentGroupsForInstance(server)) {
-                for (Server instance : deploymentGroup.getInstances()) {
-                    if (instance.getName().equals(thisServer)) {
-                        // if I am in the same cluster
-                        migrate = true; 
-                        break;
-                    }                    
                 }
             }
         }

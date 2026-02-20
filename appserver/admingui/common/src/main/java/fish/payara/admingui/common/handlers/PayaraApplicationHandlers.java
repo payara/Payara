@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,6 @@ import static org.glassfish.admingui.common.util.RestUtil.get;
  */
 public class PayaraApplicationHandlers {
     
-    private static final String CLUSTER = "/clusters/cluster/";
     private static final String SERVER = "/servers/server/";
     private static final String DEPLOYMENT_GROUP = "/deployment-groups/deployment-group/";
     private static final String APPLICATION_REF = "/application-ref/";
@@ -77,7 +76,6 @@ public class PayaraApplicationHandlers {
         String applicationName = (String) handlerCtx.getInputValue("appName");
         String prefix = (String) GuiUtil.getSessionValue(REST_URL);
         
-        List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
         List<String> deploymentGroup = TargetUtil.getDeploymentGroups();
         
@@ -93,11 +91,7 @@ public class PayaraApplicationHandlers {
         for (String oneTarget : targetList) {
             Boolean addToResult = false;
             HashMap<String, Object> oneRow = new HashMap<>();
-            if (clusters.contains(oneTarget)) {
-                endpoint = prefix + CLUSTER + oneTarget + APPLICATION_REF + applicationName;
-                attributes = RestUtil.getAttributesMap(endpoint);
-                addToResult = true;
-            } else if (standalone.contains(oneTarget) && !instancesInDeploymentGroup.contains(oneTarget)) {
+            if (standalone.contains(oneTarget) && !instancesInDeploymentGroup.contains(oneTarget)) {
                 endpoint = prefix + SERVER + oneTarget + APPLICATION_REF + applicationName;
                 attributes = RestUtil.getAttributesMap(endpoint);
                 addToResult = true;
@@ -148,25 +142,16 @@ public class PayaraApplicationHandlers {
         String endpoint;
 
         for (String targetName : targetList) {
-            endpoint = prefix + CLUSTER + targetName + RESOURCE_REF + resourceName;
-            boolean existsInCluster = isEndpointValid(endpoint);
-
-            if (!existsInCluster) {
-                endpoint = prefix + DEPLOYMENT_GROUP + targetName + RESOURCE_REF + resourceName;
-                boolean existsInDeploymentGroup = isEndpointValid(endpoint);
-                if (!existsInDeploymentGroup) {
-                    endpoint = prefix + SERVER + targetName + RESOURCE_REF + resourceName;
-                    boolean existsInServer = isEndpointValid(endpoint);
-                    if (existsInServer) {
-                        selectedTargetList.add(targetName);
-                    }
-                }
-                if (existsInDeploymentGroup) {
+            endpoint = prefix + DEPLOYMENT_GROUP + targetName + RESOURCE_REF + resourceName;
+            boolean existsInDeploymentGroup = isEndpointValid(endpoint);
+            if (!existsInDeploymentGroup) {
+                endpoint = prefix + SERVER + targetName + RESOURCE_REF + resourceName;
+                boolean existsInServer = isEndpointValid(endpoint);
+                if (existsInServer) {
                     selectedTargetList.add(targetName);
                 }
             }
-
-            if (existsInCluster) {
+            if (existsInDeploymentGroup) {
                 selectedTargetList.add(targetName);
             }
         }

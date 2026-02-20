@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 -->
 
@@ -81,9 +81,6 @@
                         mapPut(map="#{requestScope.attrs}" key="config"  value="#{pageSession.config}" )
                     }
                 }
-                if (!#{forStandalone}){
-                    mapPut(map="#{requestScope.attrs}" key="cluster"  value="#{pageSession.clusterName}" )
-                }
                 if (#{forDG}){
                     mapPut(map="#{requestScope.attrs}" key="deploymentgroup"  value="#{pageSession.dgName}" )
                 }
@@ -118,10 +115,6 @@
     <sun:propertySheet id="propertySheet">
 
         <sun:propertySheetSection id="propertSectionTextField">
-
-            <sun:property id="clusterNameProp" rendered="#{!forStandalone}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.ClusterName}" >
-                <sun:staticText id="clusterName" text="#{encodedClusterName}" />
-            </sun:property>
 
             <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.instanceName}" >
                 <sun:textField id="NameText" text="#{pageSession.name}" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" />

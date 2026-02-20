@@ -1,7 +1,7 @@
 /*
  *   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *   Copyright (c) 2024 Payara Foundation and/or its affiliates.
+ *   Copyright (c) 2024-2026 Payara Foundation and/or its affiliates.
  *   All rights reserved.
  *
  *   The contents of this file are subject to the terms of either the GNU
@@ -81,7 +81,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("generate.heap.dump")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted = FailurePolicy.Error)
 @AccessRequired(resource = "domain/jvm", action = "read")
 public class GenerateHeapDumpCommand implements AdminCommand {

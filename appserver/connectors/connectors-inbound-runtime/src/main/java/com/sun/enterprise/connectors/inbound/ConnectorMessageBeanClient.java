@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.inbound;
 
 import java.lang.reflect.Method;
 import java.security.AccessController;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +58,6 @@ import javax.transaction.xa.XAResource;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
 import com.sun.enterprise.connectors.ConnectorRegistry;
@@ -469,41 +467,26 @@ public final class ConnectorMessageBeanClient
      * @Override
      */
     public String getActivationName(){
-      if(activationName == null){
-        
-        String appName = descriptor_.getApplication().getName();
-        String moduleID = descriptor_.getEjbBundleDescriptor().getModuleID();
-        int pound = moduleID.indexOf('#');
-        if(pound>=0){
-            // the module ID is in the format: appName#ejbName.jar
-            // remove the appName part since it is duplicated
-            moduleID = moduleID.substring(pound+1);
-        }
-        String mdbClassName = descriptor_.getEjbClassName();
+        if (activationName == null) {
+            String appName = descriptor_.getApplication().getName();
+            String moduleID = descriptor_.getEjbBundleDescriptor().getModuleID();
+            int pound = moduleID.indexOf('#');
+            if (pound >= 0) {
+                // the module ID is in the format: appName#ejbName.jar
+                // remove the appName part since it is duplicated
+                moduleID = moduleID.substring(pound + 1);
+            }
+            String mdbClassName = descriptor_.getEjbClassName();
 
-        ServerEnvironmentImpl env = Globals.get(ServerEnvironmentImpl.class);
-        String instanceName = env.getInstanceName();
-        
-        Domain domain = Globals.get(Domain.class);
-        String domainName = domain.getName();
-        Cluster cluster = domain.getServerNamed(instanceName).getCluster();
+            ServerEnvironmentImpl env = Globals.get(ServerEnvironmentImpl.class);
+            String instanceName = env.getInstanceName();
 
-        String clusterName=null;
-        if(cluster!=null){
-          // this application is deployed in a cluster
-          clusterName = cluster.getName();
-        }
-        
-        if(clusterName!=null){
-            // this application is deployed in a cluster
-            activationName = combineString(domainName, clusterName, appName, moduleID, mdbClassName);
-            
-        }else{
-            // this application is deployed in a stand-alone server instance.
+            Domain domain = Globals.get(Domain.class);
+            String domainName = domain.getName();
             activationName = combineString(domainName, instanceName, appName, moduleID, mdbClassName);
         }
-      }
-      return activationName;
+
+        return activationName;
     }
 
 //    /**

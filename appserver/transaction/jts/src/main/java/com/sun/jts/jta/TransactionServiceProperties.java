@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.jts.jta;
 
@@ -56,7 +56,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import com.sun.enterprise.transaction.api.ResourceRecoveryManager;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
@@ -231,14 +230,6 @@ public class TransactionServiceProperties {
 
                         // Check if the server system property is set
                         String logdir = getTXLogDir(server);
-
-                        // if not, check if the cluster system property is set
-                        if(logdir == null) {
-                            Cluster cluster = server.getCluster();
-                            if (cluster != null) {
-                                logdir = getTXLogDir(cluster);
-                            }
-                        }
 
                         // No system properties are set - get tx log dir from transaction service
                         if(logdir == null) {

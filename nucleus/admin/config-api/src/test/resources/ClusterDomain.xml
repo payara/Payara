@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2020-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2020-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="dochez-private">
   <system-applications />
@@ -427,10 +427,4 @@
     </config>
   </configs>
   <property name="administrative.domain.name" value="domain1" />
-  <clusters>
-    <cluster name="clusterA" config-ref="server-config">
-      <server-ref disable-timeout-in-minutes="30" enabled="true" lb-enabled="false" ref="server"/>
-    </cluster>
-    <cluster name="clusterB" config-ref="config-cluster2" />
-  </clusters>
 </domain>

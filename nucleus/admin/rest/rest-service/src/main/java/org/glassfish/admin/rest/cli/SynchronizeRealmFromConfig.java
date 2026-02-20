@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.rest.cli;
 
@@ -87,8 +87,7 @@ import jakarta.inject.Named;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE,
-    CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Config.class,
         opType=OpType.POST,
@@ -130,10 +129,6 @@ public class SynchronizeRealmFromConfig implements AdminCommand {
             Server targetServer = domain.getServerNamed(target);
             if (targetServer != null) {
                 realConfig = domain.getConfigNamed(targetServer.getConfigRef());
-            }
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                realConfig = domain.getConfigNamed(cluster.getConfigRef());
             }
         }
 

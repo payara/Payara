@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.admin.cli;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
@@ -80,12 +79,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 @PerLookup
 @I18n("migrate.timers")
 @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.INSTANCE}, ifNeverStarted = FailurePolicy.Error)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="migrate-timers", 
-        description="Migrate Timers"),
     @RestEndpoint(configBean=DeploymentGroup.class,
         opType=RestEndpoint.OpType.POST, 
         path="migrate-timers", 
@@ -160,12 +155,7 @@ public class MigrateTimers implements AdminCommand {
     }
 
     private String validate() {
-        
-        if (targetUtil.isCluster(target)) {
-            return validateCluster();
-        } else {
-            return validateDG();
-        }
+        return validateDG();
     }
 
     private boolean isServerRunning(String serverName) {
@@ -188,46 +178,6 @@ public class MigrateTimers implements AdminCommand {
 
         return result;
     }
-
-    private String validateCluster() {
-        //verify fromServer is clusteredInstance
-        Cluster fromServerCluster = targetUtil.getClusterForInstance(fromServer);
-        if(fromServerCluster == null) {
-            return localStrings.getString("migrate.timers.fromServerNotClusteredInstance", fromServer);
-        }
-
-        //if destinationServer is not set, or set to DAS, pick a running instance
-        //in the same cluster as fromServer
-        if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
-            List<Server> instances = fromServerCluster.getInstances();
-            for(Server instance : instances) {
-                if(instance.isRunning() && !instance.getName().equals(fromServer)) {
-                    target = instance.getName();
-                    needRedirect = true;
-                }
-            }
-            //if destination is still DAS, that means no running server is available
-            if(target.equals(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)) {
-                return localStrings.getString("migrate.timers.noRunningInstanceToChoose",
-                        target);
-            }
-        } else {
-            //verify fromServer and destinationServer are in the same cluster, and
-            //verify destination is a clustered instance.
-            Cluster destinationServerCluster = targetUtil.getClusterForInstance(target);
-            if (!fromServerCluster.getName().equals(destinationServerCluster.getName())) {
-                return localStrings.getString(
-                        "migrate.timers.fromServerAndTargetNotInSameCluster", fromServer, target);
-            }
-            //verify destinationServer is running
-            if (!isServerRunning(target)) {
-                return localStrings.getString("migrate.timers.destinationServerIsNotAlive", target);
-            }
-        }
-        
-        return null;
-    }
-
 
     private String validateDG() {
         List<DeploymentGroup> dgs = targetUtil.getDGForInstance(fromServer);

@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2022-2025] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2022-2026 Payara Foundation and/or its affiliates -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
  
@@ -191,19 +191,19 @@
       <class name="fromjava.client.CheckTesterUITestNG"/>
     </classes>
   </test>-->
-  <test name="cluster_setup">
+  <test name="deploymentgroup_setup">
     <classes>
-        <class name="test.clustersetup.ClusterSetupTest"/>
+        <class name="test.deploymentgroupsetup.DeploymentGroupSetupTest"/>
     </classes>
   </test>
-  <!--test name="cluster_helloworld">
+  <!--test name="deploymentgroup_helloworld">
     <classes>
-        <class name="test.hellocluster.ClusterHelloworldTest"/>
+        <class name="test.hellodeploymentgroup.DeploymentGroupHelloworldTest"/>
     </classes>
   </test-->
-  <test name="cluster_teardown">
+  <test name="deploymentgroup_teardown">
     <classes>
-        <class name="test.clusterteardown.ClusterTeardownTest"/>
+        <class name="test.deploymentgroupteardown.DeploymentGroupTeardownTest"/>
     </classes>
   </test>
   <test name="jms_injection_jmsContext">

@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -81,15 +80,12 @@ public class NotDuplicateTargetNameValidator implements ConstraintValidator<NotD
         // type of object being created since that check has already been
         // done by the config framework, and checking for duplicates is not cheap
         // We use these booleans for readability
-        boolean checkCluster = true;
         boolean checkConfig = true;
         boolean checkNode = true;
         boolean checkServer = true;
 
         if (bean instanceof Server) {
             checkServer = false;
-        } else if (bean instanceof Cluster) {
-            checkCluster = false;
         } else if (bean instanceof Config) {
             checkConfig = false;
         } else if (bean instanceof Node) {
@@ -105,8 +101,7 @@ public class NotDuplicateTargetNameValidator implements ConstraintValidator<NotD
             return true;
         }
 
-        return !((checkCluster && domain.getClusterNamed(name) != null) ||
-                (checkConfig  && domain.getConfigNamed(name) != null) ||
+        return !((checkConfig  && domain.getConfigNamed(name) != null) ||
                 (checkNode    && domain.getNodeNamed(name) != null) ||
                 (checkServer  && domain.getServerNamed(name) != null));
     }

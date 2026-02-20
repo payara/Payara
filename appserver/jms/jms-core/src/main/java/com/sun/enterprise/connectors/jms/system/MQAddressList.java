@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2023 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2023-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -61,7 +61,6 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
-import org.glassfish.api.logging.LogHelper;
 
 /**
  * Defines an MQ addressList.
@@ -77,7 +76,6 @@ public class MQAddressList {
     private List<MQUrl> urlList = new ArrayList<MQUrl>();
 
     private JmsService jmsService = null;
-    //private AppserverClusterViewFromCacheRepository rep = null;
     private static String nodeHost = null;
     private String targetName = null;
 
@@ -201,26 +199,21 @@ public class MQAddressList {
     }
 
     String dasPropertiesHostName= null;
-    public String getHostNameFromDasProperties()
-    {
-        if (dasPropertiesHostName != null) return dasPropertiesHostName;
+    public String getHostNameFromDasProperties() {
+        if (dasPropertiesHostName != null) {
+            return dasPropertiesHostName;
+        }
 
-        String agentsDirPath = getSystemProperty(
-                SystemPropertyConstants.AGENT_ROOT_PROPERTY);
+        String agentsDirPath = getSystemProperty(SystemPropertyConstants.AGENT_ROOT_PROPERTY);
 
-        if(!StringUtils.ok(agentsDirPath))
-        //return agentsDirPath;
-        {
-            String installRootPath = getSystemProperty(
-                    SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+        if(!StringUtils.ok(agentsDirPath)) {
+            String installRootPath = getSystemProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
 
-            if(!StringUtils.ok(installRootPath))
-                installRootPath = System.getProperty(
-                        SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+            if(!StringUtils.ok(installRootPath)) {
+                installRootPath = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
+            }
             agentsDirPath = installRootPath + File.separator + "nodes";
         }
-        // if(!StringUtils.ok(installRootPath))
-        //   throw new CommandException("Agent.noInstallDirPath");
 
         String dasPropsFilePath = agentsDirPath + File.separator + "agent" + File.separator + "config";
         File dasPropsFile = new File(dasPropsFilePath, "das.properties");
@@ -235,7 +228,6 @@ public class MQAddressList {
             dasPropertiesHostName = dasprops.getProperty("agent.das.host");
             return dasPropertiesHostName;
         } catch (IOException ioex) {
-            ;
         } finally {
             if (fis != null) {
                 try {
@@ -249,87 +241,27 @@ public class MQAddressList {
     }
 
     Map<String,String> systemProps = null;
-
-    protected String getSystemProperty(String propertyName)
-    {
-        if (systemProps == null)
+    protected String getSystemProperty(String propertyName) {
+        if (systemProps == null) {
             systemProps = Collections.unmodifiableMap(new ASenvPropertyReader().getProps());
-
+        }
         return systemProps.get(propertyName);
     }
 
-    public String getMasterBroker(String clustername) {
-        String masterbrk = null;
-        try {
-            JmsHost mb = getMasterJmsHostInCluster(clustername);
-            JmsService js = getJmsServiceForMasterBroker(clustername);
-            MQUrl url = createUrl(mb, js);
-            masterbrk = url.toString();
-            if (logger.isLoggable(Level.FINE))
-                logger.log(Level.FINE, "Master broker obtained is " + masterbrk);
-        } catch (Exception e) {
-            LogHelper.log(logger, Level.SEVERE, JMSLoggerInfo.GET_MASTER_FAILED, e);
-        }
-        return masterbrk;
-    }
-
-    private JmsService getJmsServiceForMasterBroker(String clusterName) {
-        Domain domain = Globals.get(Domain.class);
-        Cluster cluster = domain.getClusterNamed(clusterName);
-        final Server[] buddies = getServersInCluster(cluster);
-        final Config cfg = getConfigForServer(buddies[0]);
-        return cfg.getExtensionByType(JmsService.class);
-    }
-
-    private Config getConfigForServer(Server server){
-
+    private Config getConfigForServer(Server server) {
         String cfgRef = server.getConfigRef();
         return getConfigByName(cfgRef);
     }
-    private Config getConfigByName(String cfgRef){
+
+    private Config getConfigByName(String cfgRef) {
         Domain domain = Globals.get(Domain.class);
         Configs configs = domain.getConfigs();
         List configList = configs.getConfig();
-        for(int i=0; i < configList.size(); i++){
-            Config config = (Config)configList.get(i);
-            if (config.getName().equals(cfgRef))
+        for (int i = 0; i < configList.size(); i++) {
+            Config config = (Config) configList.get(i);
+            if (config.getName().equals(cfgRef)) {
                 return config;
-        }
-        return null;
-    }
-
-    private JmsHost getMasterJmsHostInCluster(String clusterName) throws Exception {
-        Domain domain = Globals.get(Domain.class);
-        Cluster cluster = domain.getClusterNamed(clusterName);
-        Config config = domain.getConfigNamed(cluster.getConfigRef());
-        JmsService jmsService = config.getExtensionByType(JmsService.class);
-        Server masterBrokerInstance = null;
-
-        String masterBrokerInstanceName = jmsService.getMasterBroker();
-        if (masterBrokerInstanceName != null) {
-            masterBrokerInstance = domain.getServerNamed(masterBrokerInstanceName);
-        } else {
-            Server[] buddies = getServersInCluster(cluster);
-            // return the first valid host
-            // there may be hosts attached to an NA that is down
-            if (buddies.length > 0) {
-                masterBrokerInstance = buddies[0];
             }
-        }
-        final JmsHost copy = getResolvedJmsHost(masterBrokerInstance);
-        if (copy != null)
-            return copy;
-        else
-            throw new RuntimeException("No JMS hosts available to select as Master");
-    }
-
-    public Cluster getClusterByName(String clusterName) {
-        Domain domain = Globals.get(Domain.class);
-        Clusters clusters = domain.getClusters();
-        List<Cluster> clusterList = clusters.getCluster();
-        for (Cluster cluster : clusterList) {
-            if (cluster.getName().equals(clusterName))
-                return cluster;
         }
         return null;
     }
@@ -345,20 +277,6 @@ public class MQAddressList {
         return null;
     }
 
-    public Server[] getServersInCluster(String clusterName) {
-        Cluster cluster = getClusterByName(clusterName);
-        return getServersInCluster(cluster);
-    }
-
-    public Server[] getServersInCluster(Cluster cluster) {
-        List servers = cluster.getInstances();
-        Server[] result = new Server[servers.size()];
-        for (int i = 0; i <  servers.size(); i++) {
-            result[i] = (Server) servers.get(i);
-        }
-        return result;
-    }
-
     public List<Server> getServersInDeploymentGroup(String deploymentGroup) {
         DeploymentGroup dg = getDeploymentGroupByName(deploymentGroup);
         return dg.getInstances();
@@ -372,7 +290,6 @@ public class MQAddressList {
     }
 
     public boolean isAConfig(String targetName)  {
-        //return ServerHelper.isAConfig(getAdminConfigContext(), targetName);
         final Config config = getConfigByName(targetName);
         return (config != null ? true : false);
     }
@@ -397,7 +314,7 @@ public class MQAddressList {
     /**
      * Default setup concatanates all JMSHosts in a JMSService to create the address list
      */
-    private void defaultSetup() throws Exception {
+    private void defaultSetup() {
         logFine("performing defaultsetup");
         JmsService jmsService = Globals.get(JmsService.class);
         List hosts = jmsService.getJmsHost();
@@ -416,11 +333,7 @@ public class MQAddressList {
      * cluster to enable sticky connection balancing by MQ.
      */
     private void setupForCluster() {
-        java.util.Map<String,JmsHost> hostMap =
-                getResolvedLocalJmsHostsInMyCluster(true);
-        if (hostMap == null || hostMap.size() == 0) {
-            hostMap = getResolvedLocalJmsHostsInDeploymentGroup(true);
-        }
+        java.util.Map<String,JmsHost> hostMap = getResolvedLocalJmsHostsInDeploymentGroup(true);
         //First add my jms host.
         JmsHost jmsHost = hostMap.get(myName);
         MQUrl myUrl = createUrl(jmsHost, nodeHost);
@@ -432,27 +345,6 @@ public class MQAddressList {
             MQUrl url = createUrl(host);
             urlList.add(url);
         }
-    }
-
-    public Map<String, JmsHost> getResolvedLocalJmsHostsInMyCluster(final boolean includeMe) {
-        final Map<String, JmsHost> map = new HashMap<String, JmsHost>();
-        Cluster cluster = getClusterForServer(myName);
-        if (cluster != null) {
-            final Server[] buddies = getServersInCluster(cluster);
-            for (final Server as : buddies) {
-                if (!includeMe && myName.equals(as.getName()))
-                    continue;
-
-                JmsHost copy = null;
-                try {
-                    copy = getResolvedJmsHost(as);
-                } catch (Exception e) {
-                    logger.log(Level.FINE, e.getMessage());
-                }
-                map.put(as.getName(), copy);
-            }
-        }
-        return (map);
     }
 
     public Map<String, JmsHost> getResolvedLocalJmsHostsInDeploymentGroup(final boolean includeMe) {
@@ -478,29 +370,7 @@ public class MQAddressList {
         return (map);
     }
 
-    public Cluster getClusterForServer(String instanceName) {
-        Domain domain = Globals.get(Domain.class);
-        Clusters clusters = domain.getClusters();
-        List<Cluster> clusterList = clusters.getCluster();
-        for (Cluster cluster : clusterList) {
-            if (isServerInCluster(cluster, instanceName)) {
-                return cluster;
-            }
-        }
-        return null;
-    }
-
-    private boolean isServerInCluster (Cluster cluster, String instanceName){
-        List<Server> instances = cluster.getInstances();
-        for (Server instance : instances) {
-            if (instanceName.equals(instance.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public DeploymentGroup getDeploymentGroupForServer(String instanceName){
+    public DeploymentGroup getDeploymentGroupForServer(String instanceName) {
         Domain domain = Globals.get(Domain.class);
         DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
         List<DeploymentGroup> deploymentGroupList = deploymentGroups.getDeploymentGroup();
@@ -513,7 +383,7 @@ public class MQAddressList {
         return null;
     }
 
-    private boolean isServerInDeploymentGroup (DeploymentGroup deploymentGroup, String instanceName){
+    private boolean isServerInDeploymentGroup (DeploymentGroup deploymentGroup, String instanceName) {
         List<Server> instances = deploymentGroup.getInstances();
         for (Server instance : instances) {
             if (instanceName.equals(instance.getName())) {
@@ -720,14 +590,6 @@ public class MQAddressList {
 
     public boolean isClustered()  {
         Domain domain = Globals.get(Domain.class);
-        Clusters clusters = domain.getClusters();
-        if (clusters != null) {
-            List<Cluster> clusterList = clusters.getCluster();
-            if (clusterList.size() > 0) {
-                logger.log(Level.FINE, "clusters IDENTIFIED");
-                return JmsRaUtil.isClustered(clusterList, myName);
-            }
-        }
         DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
         if (deploymentGroups != null) {
             List<DeploymentGroup> deploymentGroupList = deploymentGroups.getDeploymentGroup();
@@ -736,7 +598,7 @@ public class MQAddressList {
                 return JmsRaUtil.isServerInDeploymentGroup(deploymentGroupList, myName);
             }
         }
-        logger.log(Level.FINE, "neither deploymentGroups nor clusters");
+        logger.log(Level.FINE, "Not deploymentGroups found");
         return false;
     }
 

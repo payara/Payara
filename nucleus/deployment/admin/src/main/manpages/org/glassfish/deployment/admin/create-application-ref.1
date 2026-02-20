@@ -10,11 +10,11 @@ SYNOPSIS
 
 DESCRIPTION
        The create-application-ref subcommand creates a reference from a
-       cluster or an unclustered server instance to a previously deployed
+       deployment group or an unclustered server instance to a previously deployed
        application element (for example, a Java EE application, a Web module,
        or an enterprise bean module). This effectively results in the
        application element being deployed and made available on the targeted
-       instance or cluster.
+       instance or deployment group.
 
        The target instance or instances making up the cluster need not be
        running or available for this subcommand to succeed. If one or more
@@ -36,8 +36,8 @@ OPTIONS
                default server instance and is the default value for this
                option.
 
-           *   cluster_name- Specifies a particular cluster as the target for
-               creating the application reference.
+           *   deployment_group- Specifies a particular deployment group as the
+               target for creating the application reference.
 
            *   instance_name- Specifies a particular stand-alone server
                instance as the target for creating the application reference.

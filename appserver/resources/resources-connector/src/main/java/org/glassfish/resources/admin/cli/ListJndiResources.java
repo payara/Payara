@@ -64,7 +64,7 @@ import java.util.List;
 /**
  * List Jndi Resources command
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE })
 @ExecuteOn(value={RuntimeType.DAS})
 @Service(name = "list-jndi-resources")
 @PerLookup

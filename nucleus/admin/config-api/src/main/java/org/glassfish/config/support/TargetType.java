@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.config.support;
 
@@ -60,6 +61,5 @@ public @interface TargetType {
      *
      * @return the list of valid command target by type
      */
-    CommandTarget[] value() default {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER,
-                                        CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP};    
+    CommandTarget[] value() default {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP};
 }

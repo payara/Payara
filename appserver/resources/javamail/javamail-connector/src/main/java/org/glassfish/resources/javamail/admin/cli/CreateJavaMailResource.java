@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2024] Payara Foundation and/or its affiliates
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
  */
 
 package org.glassfish.resources.javamail.admin.cli;
@@ -67,8 +67,7 @@ import java.util.logging.Logger;
  * Create Java Mail Resource
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE,
-        CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
         @RestEndpoint(configBean=Resources.class,
                 opType=RestEndpoint.OpType.POST,

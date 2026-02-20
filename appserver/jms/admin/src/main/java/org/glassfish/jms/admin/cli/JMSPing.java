@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -67,19 +66,12 @@ import jakarta.resource.ResourceException;
 import java.util.Properties;
 
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CLUSTERED_INSTANCE,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @Service(name="jms-ping")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("jms-ping")
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="jms-ping", 
-        description="Ping JMS",
-        params={
-            @RestParam(name="id", value="$parent")
-        }),
     @RestEndpoint(configBean=Server.class,
         opType=RestEndpoint.OpType.GET, 
         path="jms-ping", 
@@ -120,10 +112,6 @@ public class JMSPing implements AdminCommand {
          //String configRef = targetServer.getConfigRef();
         if (targetServer!=null) {
             config = domain.getConfigNamed(targetServer.getConfigRef());
-        }
-        com.sun.enterprise.config.serverbeans.Cluster cluster =domain.getClusterNamed(target);
-        if (cluster!=null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
         }
 
         JmsService jmsservice = config.getExtensionByType(JmsService.class);
@@ -183,76 +171,68 @@ public class JMSPing implements AdminCommand {
          }
     }
 
-   void createJMSResource(JmsHost defaultJmsHost, ActionReport subReport, String tmpJMSResource, final Subject subject)
-   {
-       
+   void createJMSResource(JmsHost defaultJmsHost, ActionReport subReport, String tmpJMSResource, final Subject subject) {
         String port = null;
         String host = null;
         Server targetServer = domain.getServerNamed(target);
-            if (targetServer != null && ! targetServer.isDas()) {
-                port = JmsRaUtil.getJMSPropertyValue(targetServer);
-                host = domain.getNodeNamed(targetServer.getNodeRef()).getNodeHost();
-            } else{
-                Cluster cluster = domain.getClusterNamed(target);
-                if (cluster != null && cluster.getInstances().size() != 0) {
-                    targetServer = cluster.getInstances().get(0);
-                    port = JmsRaUtil.getJMSPropertyValue(targetServer);
-                    host = domain.getNodeNamed(targetServer.getNodeRef()).getNodeHost();
-                }
-            }
+       if (targetServer != null && !targetServer.isDas()) {
+           port = JmsRaUtil.getJMSPropertyValue(targetServer);
+           host = domain.getNodeNamed(targetServer.getNodeRef()).getNodeHost();
+       }
 
-        String userName = defaultJmsHost.getAdminUserName();
-        String password = defaultJmsHost.getAdminPassword();
-        if(host == null)
-             host = defaultJmsHost.getHost();
-        if(port == null)
-            port = defaultJmsHost.getPort();
+       String userName = defaultJmsHost.getAdminUserName();
+       String password = defaultJmsHost.getAdminPassword();
+       if (host == null) {
+           host = defaultJmsHost.getHost();
+       }
+       if (port == null) {
+           port = defaultJmsHost.getPort();
+       }
 
-        ParameterMap aoAttrList = new ParameterMap();
+       ParameterMap aoAttrList = new ParameterMap();
 
-        Properties properties = new Properties();
-        properties.put("imqDefaultUsername",userName);
-         if (isPasswordAlias(password)){
-                       //If the string is a password alias, it needs to be escapted with another pair of quotes...
-                       properties.put("imqDefaultPassword", "\"" + password + "\"");
-         }else
-             properties.put("imqDefaultPassword",password);
+       Properties properties = new Properties();
+       properties.put("imqDefaultUsername", userName);
+       if (isPasswordAlias(password)) {
+           //If the string is a password alias, it needs to be escapted with another pair of quotes...
+           properties.put("imqDefaultPassword", "\"" + password + "\"");
+       } else {
+           properties.put("imqDefaultPassword", password);
+       }
 
        //need to escape the addresslist property so that they get passed on correctly to the create-connector-connection-pool command
-        properties.put("AddressList", "\"mq://"+host + ":"+ port +"\"");
+       properties.put("AddressList", "\"mq://" + host + ":" + port + "\"");
 
-        StringBuilder builder = new StringBuilder();
-        for (java.util.Map.Entry<Object, Object>prop : properties.entrySet()) {
-            builder.append(prop.getKey()).append("=").append(prop.getValue()).append(":");
-        }
-        String propString = builder.toString();
-        int lastColonIndex = propString.lastIndexOf(':');
-        if (lastColonIndex >= 0) {
-            propString = propString.substring(0, lastColonIndex);
-        }
-        aoAttrList.set("property", propString);
+       StringBuilder builder = new StringBuilder();
+       for (java.util.Map.Entry<Object, Object> prop : properties.entrySet()) {
+           builder.append(prop.getKey()).append("=").append(prop.getValue()).append(":");
+       }
+       String propString = builder.toString();
+       int lastColonIndex = propString.lastIndexOf(':');
+       if (lastColonIndex >= 0) {
+           propString = propString.substring(0, lastColonIndex);
+       }
+       aoAttrList.set("property", propString);
 
-        aoAttrList.set("restype",  "jakarta.jms.QueueConnectionFactory");
-        aoAttrList.set("DEFAULT",  tmpJMSResource);
-        //aoAttrList.set("target", target);
-        commandRunner.getCommandInvocation("create-jms-resource", subReport, subject).parameters(aoAttrList).execute();
+       aoAttrList.set("restype", "jakarta.jms.QueueConnectionFactory");
+       aoAttrList.set("DEFAULT", tmpJMSResource);
+       //aoAttrList.set("target", target);
+       commandRunner.getCommandInvocation("create-jms-resource", subReport, subject).parameters(aoAttrList).execute();
+   }
 
-    }
-    private boolean isPasswordAlias(String password){
-        if (password != null && password.contains("${ALIAS"))
+    private boolean isPasswordAlias(String password) {
+        if (password != null && password.contains("${ALIAS")) {
             return true;
-
+        }
         return false;
     }
 
-    boolean pingConnectionPool(String tmpJMSResource) throws ResourceException
-    {
+    boolean pingConnectionPool(String tmpJMSResource) throws ResourceException {
         PoolInfo poolInfo = new PoolInfo(tmpJMSResource);
         return connectorRuntime.pingConnectionPool(poolInfo);
     }
     
-    void deleteJMSResource(ActionReport subReport, String tmpJMSResource, final Subject subject)
-    {
+    void deleteJMSResource(ActionReport subReport, String tmpJMSResource, final Subject subject) {
         ParameterMap aoAttrList = new ParameterMap();
         aoAttrList.set("DEFAULT",  tmpJMSResource);
         //aoAttrList.set("target", target);

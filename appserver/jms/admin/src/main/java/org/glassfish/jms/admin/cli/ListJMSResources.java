@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -74,7 +75,7 @@ import org.jvnet.hk2.annotations.Service;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jms.resources")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN,CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.GET, 
@@ -206,14 +207,9 @@ public class ListJMSResources implements AdminCommand {
         List<Map<String,String>> resourceList = new ArrayList<>();
         if (target != null){
             List<ResourceRef> resourceRefs = null;
-            Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                resourceRefs=  cluster.getResourceRef();
-            } else {
-                Server server = domain.getServerNamed(target);
-                if (server != null) {
-                    resourceRefs = server.getResourceRef();
-                }
+            Server server = domain.getServerNamed(target);
+            if (server != null) {
+                resourceRefs = server.getResourceRef();
             }
             if (resourceRefs != null && !resourceRefs.isEmpty()) {
                 for (Map<String,String> m : list) {

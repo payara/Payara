@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -59,9 +60,7 @@ public class JmsResourcesTest extends BaseSeleniumTestClass {
         final String description = "Test Pool - " + poolName;
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
 
         clickAndWait("treeForm:tree:resources:jmsResources:jmsConnectionFactories:jmsConnectionFactories_link", TRIGGER_JMS_CONNECTION_FACTORIES);
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_JMS_CONN_FACT);
@@ -148,9 +147,7 @@ public class JmsResourcesTest extends BaseSeleniumTestClass {
         final String description = "Test Destination - " + resourceName;
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
 
         clickAndWait("treeForm:tree:resources:jmsResources:jmsDestinationResources:jmsDestinationResources_link", TRIGGER_JMS_DESTINATION_RESOURCES);
         sleep(1000);

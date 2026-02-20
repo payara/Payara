@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!initPage
     setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
@@ -62,9 +63,6 @@
         setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/standalone/standaloneInstanceResources.jsf?instanceName=#{pageSession.encodedInstanceName}");
         setPageSessionAttribute(key="restURL" value="#{sessionScope.REST_URL}/servers/server/#{pageSession.encodedInstanceName}/resource-ref");
         gf.checkIfEndPointExist(endpoint="#{pageSession.restURL}.json", exists="#{requestScope.isServer}");
-        if (!#{requestScope.isServer}) {
-            setPageSessionAttribute(key="restURL" value="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedInstanceName}/resource-ref");            
-        }
     />
     </event>
 <sun:form id="propertyForm">

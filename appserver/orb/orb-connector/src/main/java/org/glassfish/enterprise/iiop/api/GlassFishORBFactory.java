@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package org.glassfish.enterprise.iiop.api;
 
 import org.jvnet.hk2.annotations.Contract;
@@ -54,28 +54,28 @@ import java.util.Properties;
 public interface GlassFishORBFactory {
     // This is ORBConstants.ENV_IS_SERVER_PROPERTY. We cannot
     // reference ORBConstants from this class.
-    public static final String ENV_IS_SERVER_PROPERTY = 
-        "com.sun.corba.ee.ORBEnvironmentIsGlassFishServer" ;
+    String ENV_IS_SERVER_PROPERTY = "com.sun.corba.ee.ORBEnvironmentIsGlassFishServer" ;
 
-    public ORB createORB(Properties props);
+    ORB createORB(Properties props);
 
-    public int getOTSPolicyType();
+    int getOTSPolicyType();
 
-    public int getCSIv2PolicyType();
+    int getCSIv2PolicyType();
 
-    public Properties getCSIv2Props();
+    Properties getCSIv2Props();
 
-    public void setCSIv2Prop(String name, String value);
+    void setCSIv2Prop(String name, String value);
 
-    public int getORBInitialPort();
+    int getORBInitialPort();
 
-    public String getORBHost(ORB orb);
+    String getORBHost(ORB orb);
 
-    public int getORBPort(ORB orb); 
+    int getORBPort(ORB orb);
 
-    public boolean isEjbCall (ServerRequestInfo sri);
+    boolean isEjbCall (ServerRequestInfo sri);
 
-    public String getIIOPEndpoints() ;
-    
+    String getIIOPEndpoints();
+
+    @Deprecated
     boolean isClusterActive();
 }

@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.orb.admin.cli;
 
@@ -82,8 +78,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @PerLookup
 @I18n("delete.iiop.listener")
 @ExecuteOn(value={RuntimeType.DAS,RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.CLUSTER,CommandTarget.CONFIG,
-    CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE } )
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE } )
 public class DeleteIiopListener implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings =

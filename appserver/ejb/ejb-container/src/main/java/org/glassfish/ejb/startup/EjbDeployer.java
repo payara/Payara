@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.startup;
 
 import java.security.SecureRandom;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
@@ -82,7 +81,6 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.ejb.codegen.StaticRmiStubGenerator;
 import com.sun.ejb.containers.EJBTimerService;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
@@ -503,8 +501,8 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
                 List<String> targets = (List<String>) context.getTransientAppMetaData(DeploymentProperties.PREVIOUS_TARGETS, List.class);
                 for (String ref : targets) {
                     target = ref;
-                    if (domain.getClusterNamed(target) != null || domain.getDeploymentGroupNamed(target) != null) {
-                        break; // prefer cluster target
+                    if (domain.getDeploymentGroupNamed(target) != null) {
+                        break; // prefer deployment group target
                     }
                 }
             }
@@ -582,17 +580,12 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
 
     private String getOwnerId(String target) {
         // If target is a cluster or deployment group replace it with the instance
-        List<Server> instances = Collections.EMPTY_LIST;
-        Cluster cluster = domain.getClusterNamed(target);
-        if (cluster != null) {
-            instances = cluster.getInstances();
+        List<Server> instances;
+        DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+        if (dg != null) {
+            instances = dg.getInstances();
         } else {
-            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
-            if (dg != null) {
-                instances = dg.getInstances();
-            } else {
-                return target;
-            }
+            return target;
         }
 
         // Try a random instance in a cluster

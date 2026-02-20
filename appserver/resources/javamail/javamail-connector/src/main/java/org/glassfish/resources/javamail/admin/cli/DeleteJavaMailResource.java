@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resources.javamail.admin.cli;
 
@@ -66,7 +67,7 @@ import java.beans.PropertyVetoException;
  *
  */
 
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE })
 @RestEndpoints({
         @RestEndpoint(configBean = Resources.class,
                 opType = RestEndpoint.OpType.DELETE,

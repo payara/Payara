@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 
 package com.sun.enterprise.admin.cli.cluster;
@@ -90,14 +90,10 @@ import static com.sun.enterprise.admin.servermgmt.domain.DomainConstants.MASTERP
 @I18n("create.local.instance")
 public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesystemCommand {
     private static final String CONFIG = "config";
-    private static final String CLUSTER = "cluster";
     private static final String DEPLOYMENT_GROUP = "deploymentGroup";
 
     @Param(name = CONFIG, optional = true)
     private String configName;
-
-    @Param(name = CLUSTER, optional = true)
-    private String clusterName;
     
     @Param(name = DEPLOYMENT_GROUP, optional = true)
     private String deploymentGroup;
@@ -148,13 +144,6 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     @Override
     protected void validate() throws CommandException {
         echoCommand();
-        if (configName != null && clusterName != null) {
-            throw new CommandException(Strings.get("ConfigClusterConflict"));
-        }
-
-        if (lbEnabled != null && clusterName == null) {
-            throw new CommandException(Strings.get("lbenabledNotForStandaloneInstance"));
-        }
 
         setDasDefaultsOnly = true; //Issue 12847 - Call super.validate to setDasDefaults only
         super.validate();          //so _validate-node uses das host from das.properties. No dirs created.
@@ -420,10 +409,6 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private int registerToDAS() throws CommandException {
         ArrayList<String> argsList = new ArrayList<String>();
         argsList.add(0, "_register-instance");
-        if (clusterName != null) {
-            argsList.add("--cluster");
-            argsList.add(clusterName);
-        }
         if (deploymentGroup != null) {
             argsList.add("--deploymentgroup");
             argsList.add(deploymentGroup);

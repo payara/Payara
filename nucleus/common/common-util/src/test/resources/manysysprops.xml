@@ -39,7 +39,7 @@
 
 -->
 
-<!-- Portions Copyright [2020-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2020-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="wnevins-private">
   <system-property name="shouldbeserver" value="domain"></system-property>
@@ -1082,19 +1082,4 @@
   <property name="administrative.domain.name" value="domain1"></property>
   <load-balancers></load-balancers>
   <lb-configs></lb-configs>
-  <clusters>
-    <cluster gms-multicast-port="15611" gms-bind-interface-address="${GMS-BIND-INTERFACE-ADDRESS-c1}" name="c1" gms-multicast-address="228.9.42.56" config-ref="c1-config">
-      <server-ref ref="i1"></server-ref>
-      <server-ref ref="i2"></server-ref>
-      <property name="GMS_LISTENER_PORT" value="${GMS_LISTENER_PORT-c1}"></property>
-  <system-property name="shouldbeserver" value="cluster"></system-property>
-  <system-property name="shouldbecluster" value="cluster"></system-property>
-    </cluster>
-    <cluster gms-multicast-port="15731" gms-bind-interface-address="${GMS-BIND-INTERFACE-ADDRESS-c2}" name="c2" gms-multicast-address="228.9.70.244" config-ref="c2-config">
-      <property name="GMS_LISTENER_PORT" value="${GMS_LISTENER_PORT-c2}"></property>
-    </cluster>
-    <cluster gms-multicast-port="27278" gms-bind-interface-address="${GMS-BIND-INTERFACE-ADDRESS-c3}" name="c3" gms-multicast-address="228.9.5.171" config-ref="c3-config">
-      <property name="GMS_LISTENER_PORT" value="${GMS_LISTENER_PORT-c3}"></property>
-    </cluster>
-  </clusters>
 </domain>

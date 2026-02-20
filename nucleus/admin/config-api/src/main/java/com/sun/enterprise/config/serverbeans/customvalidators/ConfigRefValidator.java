@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans.customvalidators;
 
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -73,17 +72,12 @@ public class ConfigRefValidator
         if (bean == null) return true;
 
         Server server = null ;
-        Cluster mycluster = null;
         String configRef = null;
         String serverName = null;
         if (bean instanceof Server) {
             server = (Server)bean;
             configRef = server.getConfigRef();
             serverName = server.getName();
-        } else if (bean instanceof Cluster){
-            mycluster = (Cluster)bean  ;
-            configRef = mycluster.getConfigRef();
-            serverName = mycluster.getName();
         }
 
 
@@ -113,18 +107,6 @@ public class ConfigRefValidator
             final Configs configs = domain.getConfigs();
 
             if (servers.getServer(serverName) != null) { // validate for set, not _register-instance
-                // cannot change config ref of a clustered instance
-                Cluster cluster = domain.getClusterForInstance(serverName);
-                if (cluster != null) { // cluster is not null during create-local-instance --cluster c1 i1
-                    if (!cluster.getConfigRef().equals(configRef)) {
-                        // During set when trying to change config-ref of a clustered instance,
-                        // the value of desired config-ref will be different than the current config-ref.
-                        // During _register-instance, (create-local-instance --cluster c1 i1)
-                        // cluster.getConfigRef().equals(configRef) will be true and not come here.
-                        LOGGER.warning(ConfigApiLoggerInfo.configRefClusteredInstance);
-                        return false;
-                    }
-                }
                 // cannot use a non-existent config  (Only used by set.  _register-instance will fail earlier)
                 if (configs == null || configs.getConfigByName(configRef) == null) {
                     LOGGER.warning(ConfigApiLoggerInfo.configRefNonexistent);

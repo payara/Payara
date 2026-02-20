@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -107,7 +107,7 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 @I18n("disable.command")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @PerLookup
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,opType=RestEndpoint.OpType.POST, path="disable", description="Disable",
         params={@RestParam(name="id", value="$parent")})
@@ -270,10 +270,6 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
      * @param context context for the command.
      */
     public void execute(AdminCommandContext context) {
-        if (origin == Origin.unload && command == Command.disable) {
-            // we should only validate this for the disable command
-            deployment.validateSpecifiedTarget(target);
-        }
         InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
         final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
         suppInfo.setAccessChecks(accessChecks);
@@ -362,22 +358,6 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 }
             }
         }
-
-        /*
-         * If the target is a cluster instance, the DAS will broadcast the command
-         * to all instances in the cluster so they can all update their configs.
-         */
-        if (env.isDas()) {
-            try {
-                notifier.ensureBeforeReported(ExtendedDeploymentContext.Phase.REPLICATION);
-                DeploymentCommandUtils.replicateEnableDisableToContainingCluster(
-                        "disable", domain, target, appName, habitat, context, this);
-
-            } catch (Exception e) {
-                report.failure(logger, e.getMessage());
-                return;
-            }
-        }
                 
         try {
             
@@ -387,7 +367,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
             // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE DISABLING 
             String serverName = server.getName();
-            if (serverName.equals(target) || isTargetCluster() || isTargetDeploymentGroup() || isTargetInstanceInDeploymentGroup()) {
+            if (serverName.equals(target) || isTargetDeploymentGroup() || isTargetInstanceInDeploymentGroup()) {
                 // wait until all applications are loaded. Otherwise we get "Application not registered"
                 startupProvider.get();
                 ApplicationInfo appInfo = deployment.get(appName);
@@ -435,17 +415,6 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
                 }
             }
         }
-    }
- 
-    private boolean isTargetCluster() {
-        Cluster cluster = server.getCluster();
-        if (cluster != null) {
-            if (cluster.getName().equals(target)) {
-                return true;
-            }
-        }
-        
-        return false;
     }
 
     private boolean isTargetDeploymentGroup() {

@@ -47,9 +47,6 @@ OPTIONS
            configuration_name
                Creates the listener for the named configuration.
 
-           cluster_name
-               Creates the listener for every server instance in the cluster.
-
            stand-alone_instance_name
                Creates the listener for a particular standalone server
                instance.
@@ -65,15 +62,6 @@ EXAMPLES
 
                asadmin> create-iiop-listener --listeneraddress 192.168.1.100
                --iiopport 1400 sample_iiop_listener
-               Command create-iiop-listener executed successfully.
-
-       Example 2, Creating an IIOP Listener with a Target Cluster
-           The following command creates an IIOP listener named
-           iiop_listener_2 for the cluster mycluster. It uses the target
-           option.
-
-               asadmin> create-iiop-listener --listeneraddress 0.0.0.0 --iiopport 1401
-               --target mycluster iiop_listener_2
                Command create-iiop-listener executed successfully.
 
 EXIT STATUS

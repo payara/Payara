@@ -2,14 +2,14 @@ list-system-properties(1)  asadmin Utility Subcommands  list-system-properties(1
 
 NAME
        list-system-properties - lists the system properties of the domain,
-       configuration, cluster, or server instance
+       configuration, or server instance
 
 SYNOPSIS
            list-system-properties [--help] [target]
 
 DESCRIPTION
        The list-system-properties subcommand lists the system properties of a
-       domain, configuration, cluster, or server instance.
+       domain, configuration, or server instance.
 
        This subcommand is supported in remote mode only.
 
@@ -27,18 +27,12 @@ OPERANDS
 
            configuration_name
                Lists the system properties for the named configuration as well
-               as those the cluster inherits from the domain.
-
-           cluster_name
-               Lists the system properties defined for the named cluster as
-               well as those the cluster. inherits from its configuration and
-               the domain.
+               as those the config inherits from the domain.
 
            instance_name
                Lists the system properties defined for the named server
-               instance as well as those the server inherits from its cluster
-               (if the instance is clustered), its configuration, and the
-               domain.
+               instance as well as those the server inherits from its configuration,
+               and the domain.
 
 EXAMPLES
        Example 1, Listing System Properties

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -110,7 +110,7 @@ import org.glassfish.deployment.versioning.VersioningException;
 @I18n("undeploy.command")
 @PerLookup
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
         @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.DELETE, path = "undeploy", description = "Undeploy an application")
 })
@@ -165,8 +165,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
     public boolean preAuthorization(AdminCommandContext context) {
         report = context.getActionReport();
         logger = context.getLogger();
-
-        deployment.validateSpecifiedTarget(target);
 
         // we need to set the default target for non-paas case first
         // so the versioned code could execute as expected

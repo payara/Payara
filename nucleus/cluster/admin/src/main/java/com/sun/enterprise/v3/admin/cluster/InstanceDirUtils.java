@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -62,7 +63,7 @@ final class InstanceDirUtils{
     /**
      * Returns the directory for the selected instance that is on the local
      * system.
-     * @param instanceName name of the instance
+     * @param instance name of the instance
      * @return File for the local file system location of the instance directory
      * @throws IOException
      */

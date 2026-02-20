@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.plugin.jms;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.connectors.ConnectorRuntime;
@@ -454,22 +454,16 @@ public class JmsHandlers {
 
         return map;
     }
-    
-    private static MBeanServerConnection getMBeanServerConnection(String target) throws ConnectorRuntimeException, Exception {
+
+    private static MBeanServerConnection getMBeanServerConnection(String target) throws Exception {
         ServiceLocator habitat = GuiUtil.getHabitat();
         Domain domain = habitat.getService(Domain.class);
-        Cluster cluster = domain.getClusterNamed(target);
-        String configRef = null;
-        if (cluster == null) {
-            Server server = domain.getServerNamed(target);
-            configRef = server.getConfigRef();
-        } else {
-            configRef = cluster.getConfigRef();
-        }
-        
+        Server server = domain.getServerNamed(target);
+        String configRef = server.getConfigRef();
+
         PhysicalDestinations pd = new PhysicalDestinations();
         MQJMXConnectorInfo mqInfo = pd.getConnectorInfo(target, configRef, habitat, domain);
-        
+
         return mqInfo.getMQMBeanServerConnection();
     }
     

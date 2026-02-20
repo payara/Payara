@@ -1,5 +1,5 @@
 /*
- *     Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *     Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,7 @@ import java.util.Properties;
  * @author mertcaliskan
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "bootstrap-requesttracing")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup

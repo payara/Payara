@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.cli;
 
 import java.beans.PropertyVetoException;
@@ -91,7 +91,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @PerLookup
 @I18n("delete.file.user")
 @ExecuteOn({ RuntimeType.DAS, RuntimeType.INSTANCE })
-@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType({ CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean = AuthRealm.class, opType = RestEndpoint.OpType.DELETE, path = "delete-user", description = "Delete", params = {
                 @RestParam(name = "authrealmname", value = "$parent") }) })

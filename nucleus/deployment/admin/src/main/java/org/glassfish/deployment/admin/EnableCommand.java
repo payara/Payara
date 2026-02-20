@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2020-2021] [Payara Foundation]
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.admin;
 
@@ -98,7 +97,7 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext.Phase;
 @I18n("enable.command")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @PerLookup
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Application.class,
         opType=RestEndpoint.OpType.POST, 
@@ -190,7 +189,6 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
      * @param context context for the command.
      */
     public void execute(AdminCommandContext context) {
-        deployment.validateSpecifiedTarget(target);
         InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
         DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
         suppInfo.setDeploymentContext(notifier.dc());
@@ -242,20 +240,6 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
                     return;
                 }
             }
-
-            /*
-             * If the target is a cluster instance, the DAS will broadcast the command
-             * to all instances in the cluster so they can all update their configs.
-             */
-
-            try {
-                notifier.ensureBeforeReported(Phase.REPLICATION);
-                DeploymentCommandUtils.replicateEnableDisableToContainingCluster(
-                        "enable", domain, target, name(), habitat, context, this);
-            } catch (Exception e) {
-                report.failure(logger, e.getMessage());
-                return;
-            }
         }
 
         try {              
@@ -269,7 +253,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             
             // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE ENABLING 
             String serverName = server.getName();
-            if (serverName.equals(target) || isTargetCluster() || isTargetDeploymentGroup()) {
+            if (serverName.equals(target) || isTargetDeploymentGroup()) {
                 ApplicationRef appRef = domain.getApplicationRefInTarget(name(), target);
                 Application app = applications.getApplication(name()); 
                 DeploymentContext deploymentContext = deployment.enable(target, app, appRef, report, logger);
@@ -289,17 +273,6 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         } 
-    }        
-
-     private boolean isTargetCluster() {
-        Cluster cluster = server.getCluster();
-        if (cluster != null) {
-            if (cluster.getName().equals(target)) {
-                return true;
-            }
-        }
-        
-        return false;
     }
 
     private boolean isTargetDeploymentGroup() {

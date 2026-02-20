@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -77,8 +77,7 @@ import org.glassfish.hk2.api.ServiceHandle;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.threadpools")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG,
-    CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=ThreadPools.class,
         opType=RestEndpoint.OpType.GET, 

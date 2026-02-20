@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -71,7 +72,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("delete.jms.host")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=JmsHost.class,
         opType=RestEndpoint.OpType.DELETE, 
@@ -90,7 +91,6 @@ public class DeleteJMSHost implements AdminCommand {
     @Param(name="jms_host_name", primary=true)
     String jmsHostName;
 
-    //@Inject(name = ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
     @Inject
@@ -102,68 +102,51 @@ public class DeleteJMSHost implements AdminCommand {
      * @param context information
      */
     public void execute(AdminCommandContext context) {
-
         final ActionReport report = context.getActionReport();
 
         Config targetConfig = domain.getConfigNamed(target);
-                if (targetConfig != null)
-                    config = targetConfig;
-
+        if (targetConfig != null) {
+            config = targetConfig;
+        }
 
         Server targetServer = domain.getServerNamed(target);
-        if (targetServer!=null) {
+        if (targetServer != null) {
             config = domain.getConfigNamed(targetServer.getConfigRef());
         }
-        com.sun.enterprise.config.serverbeans.Cluster cluster =domain.getClusterNamed(target);
-        if (cluster!=null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
-        }
 
-         if (jmsHostName == null) {
-            report.setMessage(localStrings.getLocalString("delete.jms.host.noHostName",
-                            "No JMS Host Name specified for JMS Host."));
+        if (jmsHostName == null) {
+            report.setMessage(localStrings.getLocalString("delete.jms.host.noHostName", "No JMS Host Name specified for JMS Host."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-            JmsService jmsService = config.getExtensionByType(JmsService.class);
-           /* for (Config c : configs.getConfig()) {
-
-               if(configRef.equals(c.getName()))
-                     jmsService = c.getJmsService();
-            }*/
-
-            if (jmsService == null) {
-            report.setMessage(localStrings.getLocalString("list.jms.host.invalidTarget",
-                            "Invalid Target specified."));
+        JmsService jmsService = config.getExtensionByType(JmsService.class);
+        if (jmsService == null) {
+            report.setMessage(localStrings.getLocalString("list.jms.host.invalidTarget", "Invalid Target specified."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-            JmsHost jmsHost = null;
-            for (JmsHost r : jmsService.getJmsHost()) {
-                if(jmsHostName.equals(r.getName())){
-                    jmsHost = r;
-                    break;
-                }
+        JmsHost jmsHost = null;
+        for (JmsHost r : jmsService.getJmsHost()) {
+            if (jmsHostName.equals(r.getName())) {
+                jmsHost = r;
+                break;
             }
-           if (jmsHost == null) {
-            report.setMessage(localStrings.getLocalString("list.jms.host.noJmsHostFound",
-                            "JMS Host {0} does not exist.", jmsHostName));
+        }
+        if (jmsHost == null) {
+            report.setMessage(localStrings.getLocalString("list.jms.host.noJmsHostFound", "JMS Host {0} does not exist.", jmsHostName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
         final JmsHost jHost = jmsHost;
-         try {
-            ConfigSupport.apply(new SingleConfigCode<JmsService>() {
-                public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
-                    return param.getJmsHost().remove(jHost);
-                }
-            }, jmsService);
-        } catch(TransactionFailure tfe) {
+        try {
+            ConfigSupport.apply((SingleConfigCode<JmsService>) jmsServiceConfigCode ->
+                    jmsServiceConfigCode.getJmsHost().remove(jHost), jmsService);
+        } catch (TransactionFailure tfe) {
             report.setMessage(localStrings.getLocalString("delete.jms.host.fail",
-                            "Unable to delete jms host {0}.", jmsHostName) +
-                            " " + tfe.getLocalizedMessage());
+                    "Unable to delete jms host {0}.", jmsHostName) +
+                    " " + tfe.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
         }

@@ -38,6 +38,8 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright 2026 Payara Foundation and/or its affiliates
+
 -->
 
 <!-- shared/saveInstanceWtButton.inc -->
@@ -51,8 +53,7 @@
             getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows="#{requestScope.selectedRows}");
             gf.saveInstanceWeight(rows="#{requestScope.selectedRows}" );
             setAttribute(key="selectedRows" value="${selectedRows}");
-            gf.isClusterName(clusterName="#{pageSession.clusterName}" );
-            
+
             prepareSuccessfulMsg();
             gf.redirect(page="#{pageSession.listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
 

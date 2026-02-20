@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!initPage
     setResourceBundle(key="i18njms" bundle="org.glassfish.jms.admingui.Strings");
@@ -71,12 +72,7 @@
         setPageSessionAttribute(key="type" value="jmsHost");
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n.msg.JS.confirmDeleteJmsHosts}");
 
-        if ("#{supportCluster}") {
-            setAttribute(key="refreshId" value="'form:tree:configurations'");
-        }
-        if ("!#{supportCluster}") {
-            setAttribute(key="refreshId" value="null");
-        }
+        setAttribute(key="refreshId" value="null");
     />
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:jmsConfiguration:jmsHosts");</script>

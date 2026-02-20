@@ -10,7 +10,7 @@ SYNOPSIS
 
 DESCRIPTION
        The list-instances subcommand lists GlassFish Server instances in a
-       domain. The list can be filtered by cluster, instance, node, or
+       domain. The list can be filtered by instance, node, or
        configuration.
 
        The subcommand displays every GlassFish Server instance in the
@@ -55,9 +55,6 @@ OPTIONS
 
                *   The process identifier (PID) of the instance process or -1
                    if the instance is not running
-
-               *   The name of the cluster of which the instance is a member,
-                   if any
 
                *   The state of the instance, which is running or not running
 
@@ -119,9 +116,6 @@ OPERANDS
 
            domain
                Lists all instances in the domain (default).
-
-           cluster-name
-               Lists the instances that are members of the specified cluster.
 
            instance-name
                Lists only the specified instance.

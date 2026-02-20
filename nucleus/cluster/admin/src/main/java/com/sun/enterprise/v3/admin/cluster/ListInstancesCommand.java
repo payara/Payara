@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -79,13 +79,6 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("list.instances.command")
 @PerLookup
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.GET,
-        path="list-instances",
-        description="List Cluster Instances",
-        params={
-            @RestParam(name="id", value="$parent")
-        }),
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET,
         path="list-instances",
@@ -93,7 +86,7 @@ import org.jvnet.hk2.annotations.Service;
     @RestEndpoint(configBean=DeploymentGroup.class,
         opType=RestEndpoint.OpType.GET,
         path="list-instances",
-        description="List Cluster Instances",
+        description="List Deployment Group Instances",
         params={
             @RestParam(name="id", value="$parent")
         })
@@ -211,12 +204,6 @@ public class ListInstancesCommand implements AdminCommand {
         List<Map<String, Object>> instanceList = new ArrayList<>();
 
         for (Server server : serverList) {
-            boolean clustered = server.getCluster() != null;
-
-            if (standaloneonly && clustered) {
-                continue;
-            }
-
             String name = server.getName();
 
             if (notDas(name)) {
@@ -254,14 +241,8 @@ public class ListInstancesCommand implements AdminCommand {
 
             for (Server server : serverList) {
                 futures.add(executorService.submit(() -> {
-                    boolean clustered = server.getCluster() != null;
                     int port = helper.getAdminPort(server);
                     String host = server.getAdminHost();
-
-                    if (standaloneonly && clustered) {
-                        return null;
-                    }
-
                     String name = server.getName();
 
                     if (name == null) {
@@ -273,8 +254,6 @@ public class ListInstancesCommand implements AdminCommand {
                         deploymentGroup.append(dg.getName()).append(' ');
                     }
 
-                    Cluster cluster = domain.getClusterForInstance(name);
-                    String clusterName = (cluster != null) ? cluster.getName() : null;
                     // skip DAS
                     if (notDas(name)) {
                         ActionReport tReport = habitat.getService(ActionReport.class, "html");
@@ -283,7 +262,6 @@ public class ListInstancesCommand implements AdminCommand {
                                 server,
                                 port,
                                 host,
-                                clusterName,
                                 deploymentGroup.toString(),
                                 logger,
                                 timeoutInMsec,
@@ -372,34 +350,26 @@ public class ListInstancesCommand implements AdminCommand {
 
     /*
      * return null means the whichTarget is garbage
-     * return empty list means the whichTarget was an empty cluster
+     * return empty list means the whichTarget was an empty deployment group
      */
     private List<Server> createServerList() {
         // 1. no whichTarget specified
-        if (!StringUtils.ok(whichTarget))
+        if (!StringUtils.ok(whichTarget)) {
             return allServers.getServer();
-
+        }
         ReferenceContainer rc = domain.getReferenceContainerNamed(whichTarget);
-        // 2. Not a server or a cluster. Could be a config or a Node
+        // 2. Not a server. Could be a config or a Node
         if (rc == null) {
             return getServersForNodeOrConfig();
-        }
-        else if (rc.isServer()) {
+        } else if (rc.isServer()) {
             List<Server> l = new LinkedList<>();
             l.add((Server) rc);
             return l;
-        }
-        else if (rc.isCluster()) { 
-            Cluster cluster = (Cluster) rc;
-            return cluster.getInstances();
-        }
-        else if (rc.isDeploymentGroup()) {
+        } else if (rc.isDeploymentGroup()) {
             DeploymentGroup deploymentGroup = (DeploymentGroup) rc;
             return deploymentGroup.getInstances();
         }
-        else {
-            return null;
-        }
+        return null;
     }
 
     private List<Server> getServersForNodeOrConfig() {

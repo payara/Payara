@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.config.support.GlassFishDocument;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -86,13 +86,6 @@ public abstract class ConfigApiTest extends org.glassfish.tests.utils.ConfigApiT
             ServiceLocatorUtilities.addOneDescriptor(habitat, serverDescriptor);
 
             server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        
-            Cluster c = server.getCluster();
-            if (c != null) {
-                ActiveDescriptor<Cluster> clusterDescriptor = BuilderHelper.createConstantDescriptor(c,
-                        ServerEnvironment.DEFAULT_INSTANCE_NAME, Cluster.class);
-                ServiceLocatorUtilities.addOneDescriptor(habitat, clusterDescriptor);
-            }
         }
     }
 }

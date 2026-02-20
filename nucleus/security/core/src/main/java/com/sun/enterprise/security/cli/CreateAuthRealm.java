@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.security.cli;
 
@@ -47,7 +47,6 @@ import static com.sun.enterprise.util.SystemPropertyConstants.DEFAULT_SERVER_INS
 import static org.glassfish.api.ActionReport.ExitCode.FAILURE;
 import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 import static org.glassfish.api.ActionReport.ExitCode.WARNING;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.STANDALONE_INSTANCE;
@@ -120,7 +119,7 @@ import javax.security.auth.login.Configuration;
 @PerLookup
 @I18n("create.auth.realm")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({DAS,STANDALONE_INSTANCE,CLUSTER, CONFIG})
+@TargetType({DAS,STANDALONE_INSTANCE, CONFIG})
 public class CreateAuthRealm implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateAuthRealm.class);

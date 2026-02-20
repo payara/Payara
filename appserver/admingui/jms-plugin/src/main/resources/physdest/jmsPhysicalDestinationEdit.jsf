@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2017] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2017-2026 Payara Foundation and/or its affiliates -->
 
 <!initPage
     setResourceBundle(key="i18njms" bundle="org.glassfish.jms.admingui.Strings");
@@ -62,9 +62,6 @@
 
         if ("#{targetType} = instance") {
             setPageSessionAttribute(key="baseUrl", value="#{sessionScope.REST_URL}/servers/server/#{pageSession.target}");
-        }
-        if ("#{targetType} = cluster") {
-            setPageSessionAttribute(key="baseUrl", value="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.target}");
         }
 
         gf.restRequest(endpoint="#{pageSession.baseUrl}/__get-jmsdest?id=#{pageSession.destName}&destType=#{pageSession.destType}", method="get", result="#{requestScope.restResponse}");

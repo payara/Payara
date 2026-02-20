@@ -37,16 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
  */
 
 package org.glassfish.admin.rest.composite;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import java.io.StringReader;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Set;
 import jakarta.json.Json;
@@ -55,7 +51,6 @@ import jakarta.json.JsonObject;
 import jakarta.json.stream.JsonParser;
 import jakarta.validation.ConstraintViolation;
 
-import org.glassfish.admin.rest.composite.metadata.AttributeReference;
 import org.glassfish.admin.rest.model.BaseModel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -98,22 +93,6 @@ public class CompositeUtilTest {
 
         Set<ConstraintViolation<BaseModel>> violations = cu.validateRestModel(locale, model);
         Assert.assertEquals(3, violations.size());
-    }
-
-    @Test
-    public void testAttributeReferenceProcessing() throws Exception {
-        final CompositeUtil cu = CompositeUtil.instance();
-        BaseModel model = cu.getModel(BaseModel.class);
-        
-        final Method clusterMethod = Cluster.class.getMethod("getConfigRef");
-        final Method modelMethod = model.getClass().getDeclaredMethod("getConfigRef");
-
-        Annotation[] fromCluster = clusterMethod.getAnnotations();
-        Annotation[] fromRestModel = modelMethod.getAnnotations();
-
-        Assert.assertEquals(fromCluster.length, fromRestModel.length);
-        Assert.assertEquals(clusterMethod.getAnnotation(ReferenceConstraint.RemoteKey.class).message(),
-                            modelMethod.getAnnotation(ReferenceConstraint.RemoteKey.class).message());
     }
 
     @Test

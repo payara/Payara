@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,8 +54,6 @@ import org.glassfish.api.admin.RestEndpoint;
 import static org.glassfish.api.admin.RestEndpoint.OpType.GET;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import static org.glassfish.config.support.CommandTarget.CLUSTER;
-import static org.glassfish.config.support.CommandTarget.CLUSTERED_INSTANCE;
 import static org.glassfish.config.support.CommandTarget.CONFIG;
 import static org.glassfish.config.support.CommandTarget.DAS;
 import static org.glassfish.config.support.CommandTarget.DEPLOYMENT_GROUP;
@@ -72,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "get-ejb-invoker-configuration")
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
-@TargetType({CLUSTER, CLUSTERED_INSTANCE, CONFIG, DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE})
+@TargetType({CONFIG, DAS, DEPLOYMENT_GROUP, STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean = EjbInvokerConfiguration.class,
             opType = GET,

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020-2025] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -342,8 +342,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         skipClientInfoValidation = (String) attrList.get(SKIP_CLIENT_INFO_VALIDATION);
     }
 
-    public ResourceStatus delete(Iterable<Server> servers, Iterable<Cluster> clusters, final Resources resources, final String cascade,
-                                 final String poolName) throws Exception {
+    public ResourceStatus delete(Iterable<Server> servers, final Resources resources, final String cascade, final String poolName) throws Exception {
 
         if (poolName == null) {
             String msg = localStrings.getLocalString("jdbcConnPool.resource.noJndiName",
@@ -362,8 +361,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
 
             // if cascade=true delete all the resources associated with this pool 
             // if cascade=false don't delete this connection pool if a resource is referencing it
-            Object obj = deleteAssociatedResources(servers, clusters, resources,
-                    Boolean.parseBoolean(cascade), poolName);
+            Object obj = deleteAssociatedResources(servers, resources, Boolean.parseBoolean(cascade), poolName);
             if (obj instanceof Integer &&
                     (Integer) obj == ResourceStatus.FAILURE) {
                 String msg = localStrings.getLocalString(
@@ -403,25 +401,22 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         return ConnectorsUtil.getResourceByName(resources, JdbcConnectionPool.class, poolName) != null;
     }
 
-    private Object deleteAssociatedResources(final Iterable<Server> servers, final Iterable<Cluster> clusters, Resources resources,
-                                           final boolean cascade, final String poolName) throws TransactionFailure {
+    private Object deleteAssociatedResources(final Iterable<Server> servers, Resources resources, final boolean cascade, final String poolName)
+            throws TransactionFailure {
         if (cascade) {
-            ConfigSupport.apply(new SingleConfigCode<Resources>() {
-                public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    Collection<BindableResource> referringResources = JdbcResourcesUtil.getResourcesOfPool(param, poolName);
-                    for (BindableResource referringResource : referringResources) {
-                        // delete resource-refs
-                        deleteServerResourceRefs(servers, referringResource.getJndiName());
-                        deleteClusterResourceRefs(clusters, referringResource.getJndiName());
-                        // remove the resource
-                        param.getResources().remove(referringResource);
-                    }
-                    return true; //no-op
+            ConfigSupport.apply((SingleConfigCode<Resources>) resourcesConfigCode -> {
+                Collection<BindableResource> referringResources = JdbcResourcesUtil.getResourcesOfPool(resourcesConfigCode, poolName);
+                for (BindableResource referringResource : referringResources) {
+                    // delete resource-refs
+                    deleteServerResourceRefs(servers, referringResource.getJndiName());
+                    // remove the resource
+                    resourcesConfigCode.getResources().remove(referringResource);
                 }
+                return true; //no-op
             }, resources);
-        }else{
+        } else {
             Collection<BindableResource> referringResources = JdbcResourcesUtil.getResourcesOfPool(resources, poolName);
-            if(referringResources.size() > 0){
+            if (referringResources.size() > 0) {
                 return ResourceStatus.FAILURE;
             }
         }
@@ -433,15 +428,6 @@ public class JDBCConnectionPoolManager implements ResourceManager {
         if(servers != null){
             for (Server server : servers) {
                 server.deleteResourceRef(refName);
-            }
-        }
-    }
-
-    private void deleteClusterResourceRefs(Iterable<Cluster> clusters, final String refName)
-            throws TransactionFailure {
-        if(clusters != null){
-            for (Cluster cluster : clusters) {
-                cluster.deleteResourceRef(refName);
             }
         }
     }

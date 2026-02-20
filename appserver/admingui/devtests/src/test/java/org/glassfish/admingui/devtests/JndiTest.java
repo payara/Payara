@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -61,9 +62,7 @@ public class JndiTest extends BaseSeleniumTestClass {
         final String resourceName = "customResource" + generateRandomString();
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
 
         clickAndWait("treeForm:tree:resources:jndi:customResources:customResources_link", TRIGGER_CUSTOM_RESOURCES);
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_CUSTOM_RESOURCE);
@@ -168,9 +167,7 @@ public class JndiTest extends BaseSeleniumTestClass {
         final String description = resourceName + " - description";
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
 
         clickAndWait("treeForm:tree:resources:jndi:externalResources:externalResources_link", TRIGGER_EXTERNAL_RESOURCES);
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_EXTERNAL_RESOURCE);

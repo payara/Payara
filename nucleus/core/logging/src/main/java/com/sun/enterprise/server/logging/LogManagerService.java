@@ -119,7 +119,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     ServiceLocator habitat;
 
     @Inject @Optional
-    Agent agent = null;
+    Agent agent;
 
     @Inject
     FileMonitoring fileMonitoring;
@@ -257,9 +257,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         // Find the logging config
         LoggingConfig loggingConfig = loggingConfigFactory.provide();
         if (targetServer != null && !targetServer.isDas()) {
-            if (targetServer.getCluster() != null) {
-                loggingConfig = loggingConfigFactory.provide(targetServer.getCluster().getConfigRef());
-            } else if (targetServer.isInstance()) {
+            if (targetServer.isInstance()) {
                 loggingConfig = loggingConfigFactory.provide(targetServer.getConfigRef());
             }
         }
@@ -352,12 +350,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         if (targetServer != null) {
             if (targetServer.isDas()) {
                 file = new File(env.getConfigDirPath(), ServerEnvironmentImpl.kLoggingPropertiesFileName);
-            } else if (targetServer.getCluster() != null) {
-                String pathForLogging = env.getConfigDirPath() + File.separator + targetServer.getCluster().getConfigRef();
-                File dirForLogging = new File(pathForLogging);
-
-                file = new File(dirForLogging, ServerEnvironmentImpl.kLoggingPropertiesFileName);
-
             } else if (targetServer.isInstance()) {
                 String pathForLogging = env.getConfigDirPath() + File.separator + targetServer.getConfigRef();
                 File dirForLogging = new File(pathForLogging);

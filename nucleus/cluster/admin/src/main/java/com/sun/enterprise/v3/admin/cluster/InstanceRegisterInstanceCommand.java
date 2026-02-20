@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2023] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -58,16 +58,12 @@ import jakarta.inject.Named;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
-import java.beans.PropertyVetoException;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.ServerRef;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.util.InstanceRegisterInstanceCommandParameters;
@@ -108,84 +104,55 @@ public class InstanceRegisterInstanceCommand extends InstanceRegisterInstanceCom
             // create node if it doesn't exist
             Node n = domain.getNodes().getNode(node);
             if (n == null) {
-                ConfigSupport.apply(new SingleConfigCode<Nodes>() {
+                ConfigSupport.apply((SingleConfigCode<Nodes>) param -> {
+                    Node newNode = param.createChild(Node.class);
+                    newNode.setName(node);
+                    if(installdir != null && !"".equals(installdir))
+                        newNode.setInstallDir(installdir);
+                    if (nodedir != null && !"".equals(nodedir))
+                         newNode.setNodeDir(nodedir);
+                    if (nodehost != null && !"".equals(nodehost))
+                        newNode.setNodeHost(nodehost);
+                    newNode.setType(type);
 
-                    @Override
-                    public Object run(Nodes param) throws PropertyVetoException, TransactionFailure {
-
-                        Node newNode = param.createChild(Node.class);
-                        newNode.setName(node);
-                        if(installdir != null && !"".equals(installdir))
-                            newNode.setInstallDir(installdir);
-                        if (nodedir != null && !"".equals(nodedir))
-                             newNode.setNodeDir(nodedir);
-                        if (nodehost != null && !"".equals(nodehost))
-                            newNode.setNodeHost(nodehost);
-                        newNode.setType(type);
-
-                        param.getNode().add(newNode);
-                        return newNode;
-                    }
+                    param.getNode().add(newNode);
+                    return newNode;
                 }, domain.getNodes());
             }
 
             // create server if it doesn't exist
             Server s = domain.getServers().getServer(instanceName);
             if (s == null) {
-                ConfigSupport.apply(new SingleConfigCode<Servers>() {
+                ConfigSupport.apply((SingleConfigCode<Servers>) param -> {
+                    Server newServer = param.createChild(Server.class);
 
-                    public Object run(Servers param) throws PropertyVetoException, TransactionFailure {
+                    newServer.setConfigRef(config);
+                    newServer.setName(instanceName);
+                    newServer.setNodeRef(node);
 
-                        Server newServer = param.createChild(Server.class);
-
-                        newServer.setConfigRef(config);
-                        newServer.setName(instanceName);
-                        newServer.setNodeRef(node);
-
-                        if (systemProperties != null) {
-                            for (final Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
-                                final String propName = (String) entry.getKey();
-                                final String propValue = (String) entry.getValue();
-                                SystemProperty newSP = newServer.createChild(SystemProperty.class);
-                                newSP.setName(propName);
-                                newSP.setValue(propValue);
-                                newServer.getSystemProperty().add(newSP);
-                            }
+                    if (systemProperties != null) {
+                        for (final Map.Entry<Object, Object> entry : systemProperties.entrySet()) {
+                            final String propName = (String) entry.getKey();
+                            final String propValue = (String) entry.getValue();
+                            SystemProperty newSP = newServer.createChild(SystemProperty.class);
+                            newSP.setName(propName);
+                            newSP.setValue(propValue);
+                            newServer.getSystemProperty().add(newSP);
                         }
-
-                        param.getServer().add(newServer);
-                        return newServer;
                     }
+
+                    param.getServer().add(newServer);
+                    return newServer;
                 }, domain.getServers());
-
-                // create server-ref on cluster
-                Cluster thisCluster = domain.getClusterNamed(clusterName);
-                if (thisCluster != null) {
-                    ConfigSupport.apply(new SingleConfigCode<Cluster>() {
-
-                        @Override
-                        public Object run(Cluster param) throws PropertyVetoException, TransactionFailure {
-
-                            ServerRef newServerRef = param.createChild(ServerRef.class);
-                            newServerRef.setRef(instanceName);
-                            newServerRef.setLbEnabled(lbEnabled);
-                            param.getServerRef().add(newServerRef);
-                            return param;
-                        }
-                    }, thisCluster);
-                }
 
                 // create dg-server-ref on DG
                 DeploymentGroup deploymentGroupNamed = domain.getDeploymentGroupNamed(deploymentGroup);
                 if (deploymentGroupNamed != null) {
-                    ConfigSupport.apply(new SingleConfigCode<DeploymentGroup>() {
-                        @Override
-                        public Object run(DeploymentGroup param) throws PropertyVetoException, TransactionFailure {
-                            DGServerRef newDGServerRef = param.createChild(DGServerRef.class);
-                            newDGServerRef.setRef(instanceName);
-                            param.getDGServerRef().add(newDGServerRef);
-                            return param;
-                        }
+                    ConfigSupport.apply((SingleConfigCode<DeploymentGroup>) param -> {
+                        DGServerRef newDGServerRef = param.createChild(DGServerRef.class);
+                        newDGServerRef.setRef(instanceName);
+                        param.getDGServerRef().add(newDGServerRef);
+                        return param;
                     }, deploymentGroupNamed);
                 }
             }

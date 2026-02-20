@@ -38,30 +38,21 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 -->
 
 getRequestValue(key="target" value="#{pageSession.target}");
 urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
-getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
 getRequestValue(key="tabSetName" value="#{pageSession.tabSetName}");
 getRequestValue(key="offsetValue" value="#{pageSession.offsetValue}" default="$int{0}");
 urlencode(value="#{pageSession.tabSetName}" encoding="UTF-8" result="#{pageSession.encodedTabSetName}");
 
-if(#{pageSession.isCluster}=true){
-    setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
-    setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
-    setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{pageSession.offsetValue}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
+setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
+if(#{pageSession.target}=server){
+    setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{pageSession.offsetValue}&tabSetName=#{pageSession.encodedTabSetName}");
 }
-if(#{pageSession.isCluster}=false){
-    setPageSessionAttribute(key="isCluster", value="false");
-    setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
-    setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
-    if(#{pageSession.target}=server){
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&offsetValue=#{pageSession.offsetValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
-    }
-    if("!(#{pageSession.target}=server)"){
-        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{pageSession.offsetValue}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
-    }
+if("!(#{pageSession.target}=server)"){
+    setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&offsetValue=#{pageSession.offsetValue}&tabSetName=#{pageSession.encodedTabSetName}");
 }
 

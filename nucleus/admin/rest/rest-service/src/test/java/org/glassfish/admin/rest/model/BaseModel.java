@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package org.glassfish.admin.rest.model;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public interface BaseModel extends RestModel {
     List<RelatedModel> getRelated();
     void setRelated(List<RelatedModel> related);
 
-    @AttributeReference(bean="com.sun.enterprise.config.serverbeans.Cluster", attribute="ConfigRef")
+    @AttributeReference(bean="com.sun.enterprise.config.serverbeans.Server", attribute="ConfigRef")
     String getConfigRef();
     void setConfigRef(String value);
 

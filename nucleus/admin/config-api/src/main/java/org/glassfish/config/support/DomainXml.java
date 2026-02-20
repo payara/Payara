@@ -38,11 +38,10 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.config.support;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
@@ -161,11 +160,6 @@ public abstract class DomainXml implements Populator {
         ServiceLocatorUtilities.addOneConstant(habitat, server, ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
 
         server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-
-        Cluster c = server.getCluster();
-        if (c != null) {
-            ServiceLocatorUtilities.addOneConstant(habitat, c, ServerEnvironment.DEFAULT_INSTANCE_NAME, Cluster.class);
-        }
     }
 
     protected void upgrade() {

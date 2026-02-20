@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests.cluster;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 
 import org.glassfish.hk2.api.ServiceLocator;
@@ -72,11 +72,9 @@ public class DuckMethodsTest extends ConfigApiTest {
 
 
     @Test
-    public void getClusterFromServerTest() {
+    public void getServerFromDomainTest() {
         Domain d = habitat.getService(Domain.class);
         Server server = d.getServerNamed("server");
         assertTrue(server!=null);
-        Cluster cluster = server.getCluster();
-        System.out.println("Cluster name is " + cluster.getName());
     }
 }

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests;
 
@@ -44,7 +45,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 
 import java.util.logging.Logger;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigBean;
 
@@ -59,8 +59,7 @@ public class SubTypesTest extends ConfigApiTest {
     // not testing all the sub types, just a few to be sure it works ok.
     String expectedClassNames[] = {
         "com.sun.enterprise.config.serverbeans.Applications",
-        "com.sun.enterprise.config.serverbeans.Configs",
-        "com.sun.enterprise.config.serverbeans.Clusters"
+        "com.sun.enterprise.config.serverbeans.Configs"
     };
 
 

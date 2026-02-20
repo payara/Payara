@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 
@@ -68,7 +67,6 @@ import java.util.List;
 public class PropertyResolver {
 
     private Domain domain = null;
-    private Cluster cluster = null;
     private Server server = null;
     private Config config = null;
     
@@ -80,7 +78,6 @@ public class PropertyResolver {
         } else {
             config = domain.getConfigNamed(instanceName);
         }
-        cluster = domain.getClusterForInstance(instanceName);
     }
     
     /**
@@ -119,11 +116,6 @@ public class PropertyResolver {
             propVal = getPropertyValue(propName, server.getSystemProperty());
         }
         if (propVal == null) {
-            if (cluster != null) {
-                //If not found in the server instance, look for the propName in the 
-                //cluster
-                propVal = getPropertyValue(propName, cluster.getSystemProperty());
-            }
             if (propVal == null && config != null) {
                 //If not found in the server instance or cluster, look for the 
                 //propName in the config

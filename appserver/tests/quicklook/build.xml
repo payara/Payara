@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2018-2026 Payara Foundation and/or its affiliates -->
 <project name="GlassFish-V3-QuickLook" default="all" basedir=".">
 	<property environment="env"/>
 
@@ -55,20 +55,20 @@
 		<javac includeantruntime="false" />
 	</presetdef>
 
-	<target name="cluster">
-		<ant dir="cluster/clustersetup" target="build"/>
-		<ant dir="cluster/helloworld" target="build"/>
-		<ant dir="cluster/clusterteardown" target="build"/>
+	<target name="deployment-group">
+		<ant dir="deployment-group/deploymentgroupsetup" target="build"/>
+		<ant dir="deployment-group/helloworld" target="build"/>
+		<ant dir="deployment-group/deploymentgroupteardown" target="build"/>
 		<antcall target="runtest">
-			<param name="testng.xml" value="testng/testng_cluster.xml"/>
+			<param name="testng.xml" value="testng/testng_deploymentgroup.xml"/>
 		</antcall>
     </target>
-	<target name="all_cluster">
+	<target name="all_deploymentgroup">
 		<record name="${basedir}/allrun.output" action="start"/>
 		<antcall target="start-server-felix"/>
-		<antcall target="build-cluster"/>
+		<antcall target="build-deployment-group"/>
 		<antcall target="runtest">
-			<param name="testng.xml" value="testng/testng_cluster.xml"/>
+			<param name="testng.xml" value="testng/testng_deploymentgroup.xml"/>
 		</antcall>
 		<antcall target="stop-server"/>
 		<antcall target="testng-summary"/>
@@ -84,9 +84,9 @@
 		<record name="${basedir}/embeddedrun.output" action="stop"/>
 	</target>
 
-	<target name="build-cluster">
-		<ant dir="cluster/clustersetup" target="build"/>
-		<ant dir="cluster/clusterteardown" target="build"/>
+	<target name="build-deployment-group">
+		<ant dir="deployment-group/deploymentgroupsetup" target="build"/>
+		<ant dir="deployment-group/deploymentgroupteardown" target="build"/>
 	</target>
 
 	<!-- target name="all_wd" depends="clean" -->
@@ -163,7 +163,7 @@
 		<antcall target="build-deploy"/>
 		<antcall target="build-deploy-gd"/>
 
-		<antcall target="build-cluster"/>
+		<antcall target="build-deployment-group"/>
 
 		<antcall target="runtest">
 			<param name="testng.xml" value="testng/testng_gd.xml"/>
@@ -239,7 +239,7 @@
 		<antcall target="start-server-felix"/>
 		<antcall target="build-deploy"/>
 		<antcall target="build-deploy-gd"/>
-		<antcall target="build-cluster"/>
+		<antcall target="build-deployment-group"/>
 		<antcall target="runtest">
 			<param name="testng.xml" value="testng/testng_gd.xml"/>
 		</antcall>

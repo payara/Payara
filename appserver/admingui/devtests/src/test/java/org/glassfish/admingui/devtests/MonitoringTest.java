@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -61,7 +62,6 @@ public class MonitoringTest extends BaseSeleniumTestClass {
     
     public static final String TARGET_SERVER_TYPE = "server";
     public static final String TARGET_STANDALONE_TYPE = "standalone";
-    public static final String TARGET_CLUSTER_TYPE = "cluster";
     
     private static final String TRIGGER_STANDALONE_PAGE = "Create and manage standalone instances for a node agent.";
     private static final String TRIGGER_STANDALONE_GENERAL_PAGE = "General Information";

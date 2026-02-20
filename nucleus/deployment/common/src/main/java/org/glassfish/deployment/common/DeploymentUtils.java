@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.deployment.common;
 
@@ -530,21 +530,14 @@ public class DeploymentUtils {
             config = domain.getConfigs().getConfigByName(
                 server.getConfigRef());
         } else {
-            Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                config = domain.getConfigs().getConfigByName(
-                    cluster.getConfigRef());
-            } else {
-                DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
-                if (dg != null) {
-                    // get the first server in the group
-                    List<Server> servers = dg.getInstances();
-                    if (servers!= null && servers.size() >= 1) {
-                        config = servers.get(0).getConfig();
-                    }
+            DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+            if (dg != null) {
+                // get the first server in the group
+                List<Server> servers = dg.getInstances();
+                if (servers != null && servers.size() >= 1) {
+                    config = servers.get(0).getConfig();
                 }
             }
-            
         }
 
         if (config != null) {

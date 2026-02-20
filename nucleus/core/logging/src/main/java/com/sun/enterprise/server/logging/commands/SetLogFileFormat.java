@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -64,8 +64,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -80,7 +78,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
  * Updates the formatter for the log file to either ODL, ULF or a custom name.
  */
 @ExecuteOn( { RuntimeType.DAS, RuntimeType.INSTANCE })
-@TargetType( { CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG })
+@TargetType( { CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG })
 @CommandLock(CommandLock.LockType.NONE)
 @Service(name = "set-log-file-format")
 @PerLookup
@@ -108,9 +106,6 @@ public class SetLogFileFormat implements AdminCommand {
 
     @Inject
     Servers servers;
-
-    @Inject
-    Clusters clusters;
     
     @Inject
     ServerEnvironment env;
@@ -120,7 +115,7 @@ public class SetLogFileFormat implements AdminCommand {
 
     public void execute(AdminCommandContext context) {
         
-        String formatterClassName = null;
+        String formatterClassName;
         if (formatter.equalsIgnoreCase(ODL_FORMATTER_NAME)) {
             formatterClassName = ODLLogFormatter.class.getName();
         } else if (formatter.equalsIgnoreCase(ULF_FORMATTER_NAME)) {
@@ -133,7 +128,7 @@ public class SetLogFileFormat implements AdminCommand {
             formatterClassName = ODLLogFormatter.class.getName();
         }
 
-        Map<String, String> loggingProperties = new HashMap<String, String>();
+        Map<String, String> loggingProperties = new HashMap<>();
         loggingProperties.put("com.sun.enterprise.server.logging.GFFileHandler.formatter", formatterClassName);
         
         final ActionReport report = context.getActionReport();
@@ -155,18 +150,7 @@ public class SetLogFileFormat implements AdminCommand {
                         isDas = true;
                     } else {
                         isInstance = true;
-                        Cluster clusterForInstance = targetServer.getCluster();
-                        if (clusterForInstance != null) {
-                            targetConfigName = clusterForInstance.getConfigRef();
-                        } else {
-                            targetConfigName = targetServer.getConfigRef();
-                        }
-                    }
-                } else {
-                    com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        isCluster = true;
-                        targetConfigName = cluster.getConfigRef();
+                        targetConfigName = targetServer.getConfigRef();
                     }
                 }
             }

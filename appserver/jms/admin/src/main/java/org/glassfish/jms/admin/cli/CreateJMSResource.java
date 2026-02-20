@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+//Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -74,7 +74,7 @@ import java.util.Properties;
 @PerLookup
 @I18n("create.jms.resource")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean=Resources.class,
         opType=RestEndpoint.OpType.POST, 
@@ -290,34 +290,25 @@ public class CreateJMSResource implements AdminCommand {
         report.setActionExitCode(ec);
     }
 
-    private boolean filterForTarget(String jndiName){
-        //List<String> resourceList = new ArrayList();
-         if (target != null){
-             List<ResourceRef> resourceRefs = null;
-             Cluster cluster = domain.getClusterNamed(target);
-             if (cluster != null)
-                      resourceRefs=  cluster.getResourceRef();
-
-             else {
-                  Server server = domain.getServerNamed(target);
-                  if (server != null) {
-                      resourceRefs = server.getResourceRef();
-                  } else {
-                      DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
-                      if (dg != null) {
-                          resourceRefs = dg.getResourceRef();
-                      }
-                  }
-
-             }
-             if (resourceRefs != null && resourceRefs.size() != 0){
-
-                  for (ResourceRef resource : resourceRefs)
-                     if(jndiName.equalsIgnoreCase(resource.getRef()))
-                           return true;
-                  }
-
+    private boolean filterForTarget(String jndiName) {
+        if (target != null) {
+            List<ResourceRef> resourceRefs = null;
+            Server server = domain.getServerNamed(target);
+            if (server != null) {
+                resourceRefs = server.getResourceRef();
+            } else {
+                DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
+                if (dg != null) {
+                    resourceRefs = dg.getResourceRef();
+                }
             }
+
+            if (resourceRefs != null && resourceRefs.size() != 0) {
+                for (ResourceRef resource : resourceRefs)
+                    if (jndiName.equalsIgnoreCase(resource.getRef()))
+                        return true;
+            }
+        }
         return false;
     }
 

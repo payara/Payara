@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.admin.cli;
 
@@ -87,7 +87,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("create.transport")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class CreateTransport implements AdminCommand {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();

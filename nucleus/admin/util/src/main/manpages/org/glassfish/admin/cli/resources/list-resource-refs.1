@@ -12,8 +12,8 @@ DESCRIPTION
        the resources (for example, JDBC resources) available in the JNDI tree
        of the specified target.
 
-       The target instance or instances in the cluster need not be running or
-       available for this subcommand to succeed.
+       The target instance or instances in the deployment group need not be
+       running or available for this subcommand to succeed.
 
        This subcommand is supported in remote mode only.
 
@@ -30,17 +30,17 @@ OPERANDS
                Lists the resource references for the default server instance
                and is the default target.
 
-           cluster_name
+           deployment_group
                Lists the resource references for every server instance in the
-               cluster.
+               deployment group.
 
            instance_name
                Lists the resource references for the named unclustered server
                instance.
 
 EXAMPLES
-       Example 1, Listing Resource References for a Cluster
-           This example lists resource references for the cluster cluster1.
+       Example 1, Listing Resource References for a Deployment Group
+           This example lists resource references for the deployment group cluster1.
 
                asadmin> list-resource-refs cluster1
                jms/Topic

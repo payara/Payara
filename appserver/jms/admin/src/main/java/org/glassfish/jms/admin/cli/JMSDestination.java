@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2023] Payara Foundation and/or affiliates
+//Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -45,7 +45,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -67,6 +66,7 @@ import jakarta.resource.spi.ResourceAdapter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -151,33 +151,23 @@ public abstract class JMSDestination {
             ActiveJmsResourceAdapter air = getMQAdapter(connectorRuntime);
             final Class mqRAClassName = air.getResourceAdapter().getClass();
             final CommandTarget ctarget = this.getTypeForTarget(target);
-            MQJMXConnectorInfo mqjmxForServer = (MQJMXConnectorInfo)
-                    java.security.AccessController.doPrivileged
-                            (new java.security.PrivilegedExceptionAction() {
-                                public java.lang.Object run() throws Exception {
-                                    if (ctarget == CommandTarget.CLUSTER || ctarget == CommandTarget.CLUSTERED_INSTANCE) {
-                                        if (logger.isLoggable(Level.FINE)) {
-                                            logger.log(Level.FINE, "Getting JMX connector for cluster target " + target);
-                                        }
-                                        return _getMQJMXConnectorInfoForCluster(target,
-                                                jmsService, mqRAClassName, serverContext);
-                                    } else if (ctarget == CommandTarget.DEPLOYMENT_GROUP) {
-                                        if (logger.isLoggable(Level.FINE)) {
-                                            logger.log(Level.FINE, "Getting JMX connector for" +
-                                                    " cluster target " + target);
-                                        }
-                                        return _getMQJMXConnectorInfoForDeploymentGroup(target,
-                                                jmsService, mqRAClassName, serverContext);
-                                    } else {
-                                        if (logger.isLoggable(Level.FINE)) {
-                                            logger.log(Level.FINE, "Getting JMX connector for" +
-                                                    " standalone target " + target);
-                                        }
-                                        return _getMQJMXConnectorInfo(target,
-                                                jmsService, mqRAClassName, serverContext, config, domain);
-                                    }
-                                }
-                            });
+            MQJMXConnectorInfo mqjmxForServer = (MQJMXConnectorInfo) java.security.AccessController.doPrivileged((PrivilegedExceptionAction) () -> {
+                if (ctarget == CommandTarget.DEPLOYMENT_GROUP) {
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Getting JMX connector for" +
+                                " cluster target " + target);
+                    }
+                    return _getMQJMXConnectorInfoForDeploymentGroup(target,
+                            jmsService, mqRAClassName, serverContext);
+                } else {
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, "Getting JMX connector for" +
+                                " standalone target " + target);
+                    }
+                    return _getMQJMXConnectorInfo(target,
+                            jmsService, mqRAClassName, serverContext, config, domain);
+                }
+            });
 
             return new MQJMXConnectorInfo[]{mqjmxForServer};
         } catch (Exception e) {
@@ -204,7 +194,7 @@ public abstract class JMSDestination {
                 mqadList.setJmsService(serverJmsService);
                 mqadList.setTargetName(targetName);
                 logger.log(Level.FINE, "JMSDestination L204 NOT CLUSTERED");
-                mqadList.setup(false);
+                mqadList.setup();
                 connectionURL = mqadList.toString();
             }
             if (logger.isLoggable(Level.FINE)) {
@@ -316,80 +306,6 @@ public abstract class JMSDestination {
         }
     }
 
-    /**
-     * Gets the <code>MQJMXConnector</code> object for a cluster. Since this code is
-     * executed in DAS, an admin API is used to resolve hostnames and ports of
-     * cluster instances for LOCAL type brokers while creating the connectionURL.
-     */
-    protected MQJMXConnectorInfo _getMQJMXConnectorInfoForCluster(
-            String target, JmsService jmsService, Class mqRAClassName, ServerContext serverContext)
-            throws ConnectorRuntimeException {
-        ResourceAdapter raInstance = null;
-        MQAddressList list = null;
-        try {
-            if (jmsService.getType().equalsIgnoreCase(ActiveJmsResourceAdapter.REMOTE)) {
-                list = getDefaultAddressList(jmsService);
-            } else {
-                list = new MQAddressList();
-                CommandTarget ctarget = this.getTypeForTarget(target);
-                if (ctarget == CommandTarget.CLUSTER) {
-                    Server[] servers = list.getServersInCluster(target);
-                    if (servers != null && servers.length > 0)
-                        list.setInstanceName(servers[0].getName());
-                } else if (ctarget == CommandTarget.CLUSTERED_INSTANCE) {
-                    list.setInstanceName(target);
-                }
-                Map<String, JmsHost> hostMap = list.getResolvedLocalJmsHostsInMyCluster(true);
-                if (hostMap.size() == 0) {
-                    String msg = localStrings.getLocalString("mqjmx.no_jms_hosts", "No JMS Hosts Configured");
-                    throw new ConnectorRuntimeException(msg);
-                }
-                for (JmsHost host : hostMap.values()) {
-                    list.addMQUrl(host);
-                }
-            }
-            String connectionUrl = list.toString();
-            String adminUserName = null;
-            String adminPassword = null;
-            JmsHost jmsHost = list.getDefaultJmsHost(jmsService);
-            if (jmsHost != null) {
-                adminUserName = jmsHost.getAdminUserName();
-                adminPassword = JmsRaUtil.getUnAliasedPwd(jmsHost.getAdminPassword());
-            } else {
-                if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, " _getMQJMXConnectorInfo, using default jms admin user and password ");
-                }
-            }
-            raInstance = getConfiguredRA(mqRAClassName, connectionUrl,
-                    adminUserName, adminPassword);
-        } catch (Exception e) {
-            throw new ConnectorRuntimeException(e.getMessage(), e);
-        }
-
-        try {
-            String jmxServiceURL = null, jmxServiceURLList = null;
-            Map<String, ?> jmxConnectorEnv = null;
-            Method[] methds = raInstance.getClass().getMethods();
-            for (int i = 0; i < methds.length; i++) {
-                Method m = methds[i];
-                if (m.getName().equalsIgnoreCase("get" + JMXSERVICEURLLIST)) {
-                    jmxServiceURLList = (String) m.invoke(raInstance, new Object[]{});
-                    if (jmxServiceURLList != null && !jmxServiceURLList.trim().equals("")) {
-                        jmxServiceURL = getFirstJMXServiceURL(jmxServiceURLList);
-                    }
-                } else if (m.getName().equalsIgnoreCase("get" + JMXCONNECTORENV)) {
-                    jmxConnectorEnv = (Map<String, ?>) m.invoke(raInstance, new Object[]{});
-                }
-            }
-            MQJMXConnectorInfo mqInfo = new MQJMXConnectorInfo(target,
-                    ActiveJmsResourceAdapter.getBrokerInstanceName(jmsService),
-                    jmsService.getType(), jmxServiceURL, jmxConnectorEnv);
-            return mqInfo;
-        } catch (Exception e) {
-            throw new ConnectorRuntimeException(e.getMessage(), e);
-        }
-    }
-
     /*
      *  Configures an instance of MQ-RA with the connection URL passed in.
      *  This configured RA is then used to obtain the JMXServiceURL/JMXServiceURLList
@@ -464,10 +380,6 @@ public abstract class JMSDestination {
             } else {
                 return CommandTarget.STANDALONE_INSTANCE;
             }
-        }
-        Cluster cluster = domain.getClusterNamed(target);
-        if (cluster != null) {
-            return CommandTarget.CLUSTER;
         }
         DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
         if (deploymentGroup != null) {

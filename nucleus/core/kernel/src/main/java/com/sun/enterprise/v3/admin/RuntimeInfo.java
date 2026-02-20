@@ -37,17 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.admin;
 
 import java.io.*;
-import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
-import java.util.Properties;
-import org.glassfish.internal.api.Globals;
-import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.OS;
 import org.glassfish.api.ActionReport;
@@ -85,7 +81,7 @@ import static org.glassfish.api.ActionReport.ExitCode.SUCCESS;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @ExecuteOn({RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 
