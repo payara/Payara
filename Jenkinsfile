@@ -546,8 +546,8 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Use the merged commit hash (which exists in main branch) for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = env.GIT_COMMIT_ID
+                            // Use PR reference format that matches main pipeline fetch pattern
+                            def specificBranchCommitOrTag = "refs/pull/${env.PR_ID}/head"
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
