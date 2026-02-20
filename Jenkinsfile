@@ -546,8 +546,8 @@ pipeline {
                     }
                     steps {
                         script {
-                            // Use PR reference format that matches main pipeline fetch pattern
-                            def specificBranchCommitOrTag = "refs/pull/${env.PR_ID}/head"
+                            // Get the PR head commit (not merged commit) for specificBranchCommitOrTag
+                            def specificBranchCommitOrTag = sh(script: 'git log --oneline -1 | head -1 | cut -d" " -f1', returnStdout: true).trim()
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
