@@ -23,9 +23,14 @@ pipeline {
                     pom = readMavenPom file: 'pom.xml'
                     payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
                     DOMAIN_NAME = "test-domain"
+                    
+                    // Get current git commit ID for Build job
+                    env.GIT_COMMIT_ID = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
+                    echo "Git commit ID is ${env.GIT_COMMIT_ID}"
               }
             }
         }
@@ -546,7 +551,7 @@ pipeline {
                             }
                             
                             // Use branch name or commit hash for specificBranchCommitOrTag
-                            def specificBranchCommitOrTag = gitBranch.equals('HEAD') ? gitCommit : gitBranch
+                            def specificBranchCommitOrTag = env.GIT_COMMIT_ID
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
