@@ -63,7 +63,6 @@ public abstract class AbstractSecurityContext implements AppServSecurityContext,
     // The principal that this security context represents.
     protected Principal callerPrincipal;
     protected Subject subject;
-    protected Principal additionalPrincipal;
 
     /**
      * This method should  be implemented by the subclasses to
@@ -83,14 +82,6 @@ public abstract class AbstractSecurityContext implements AppServSecurityContext,
      */
     @Override
     abstract public Subject getSubject();
-
-    public Principal getAdditionalPrincipal() {
-        return additionalPrincipal;
-    }
-
-    public void setAdditionalPrincipal(Principal principal) {
-        additionalPrincipal = principal;
-    }
 }
 
 

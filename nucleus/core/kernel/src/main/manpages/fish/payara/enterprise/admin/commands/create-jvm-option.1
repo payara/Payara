@@ -4,7 +4,7 @@ NAME
        create-jvm-option - creates a single option for the Java application launcher
 
 SYNOPSIS
-           create-jvm-option [--help] [--target target] [--profiler={true|false}]
+           create-jvm-option [--help] [--target target]
            (assignment=jvm-option)
 
 DESCRIPTION
@@ -14,15 +14,8 @@ DESCRIPTION
        started. The options that this subcommand creates are in addition to
        the options that are preset with Payara Server. Java application
        launcher options are stored in the Java configuration java—config
-       element or the profiler profiler element of the domain.xml file. The
-       options are sent to the command line in the order they appear in the
-       java—config element or the profiler profiler element in the domain.xml
-       file.
-
-       Profiler options are used to record the settings that are required to
-       start a particular profiler. The profiler must already exist. If
-       necessary, use the create-profiler(1) subcommand to create the
-       profiler.
+       element. The options are sent to the command line in the order
+       they appear in the java—config element.
 
        This subcommand can be used to create the following types of options:
 
@@ -114,11 +107,6 @@ OPTIONS
            configuration-name
                Specifies a named configuration.
 
-       --profiler
-           Indicates whether the Java application launcher option is for the
-           profiler. The profiler must exist for this option to be true.
-           Default is false.
-
 OPERANDS
        assignment
            A single option assignment. The format of an option depends
@@ -169,13 +157,6 @@ EXAMPLES
                The previously configured maximum heap size (-Xmx512m) will be replaced by the new configuration: -Xmx1024m
                Command create-jvm-option executed successfully.
 
-       Example 3, Setting a JVM Startup Parameter for the Profiler
-           This example sets a JVM startup parameter for the profiler.
-
-               asadmin> create-jvm-option --profiler=true -XX:MaxPermSize=192m
-               Successfully added JVM option: -XX:MaxPermSize=192m
-               Command create-jvm-option executed successfully.
-
 EXIT STATUS
        0
            subcommand executed successfully
@@ -184,7 +165,7 @@ EXIT STATUS
            error in executing the subcommand
 
 SEE ALSO
-       delete-jvm-options(1), list-jvm-options(1), create-profiler(1),
+       delete-jvm-options(1), list-jvm-options(1),
        restart-domain(1), create-jvm-options(1)
 
        asadmin(1M)

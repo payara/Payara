@@ -50,7 +50,7 @@
     <parent>
         <artifactId>quicklook</artifactId>
         <groupId>org.glassfish.quicklook</groupId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     <description>Runs the tests on admin/asadmin code</description>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affilates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -68,8 +68,6 @@ public class MonitorCommand extends CLICommand {
     private String type;
     @Param(optional = true)
     private String filter;
-    @Param(optional = true)
-    private File fileName;
     @Param(primary = true, optional = true)
     private String target;	// XXX - not currently used
     private static final LocalStringsImpl STRINGS = new LocalStringsImpl(MonitorCommand.class);
@@ -81,7 +79,7 @@ public class MonitorCommand extends CLICommand {
         Timer timer = new Timer();
         try {
             MonitorTask monitorTask = new MonitorTask(timer, getRemoteArgs(),
-                    programOpts, env, type, filter, fileName);
+                    programOpts, env, type, filter);
             timer.scheduleAtFixedRate(monitorTask, 0, (long) interval * 1000);
             boolean done = false;
             final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.client;
 
@@ -115,14 +115,6 @@ public class DFDeploymentProperties extends Properties {
     public static final String RUNNING = "running";
     public static final String NON_RUNNING = "non-running";
 
-    // lifecycle module constants
-    public static final String LIFECYCLE_MODULE = "lifecycle-module";
-    public static final String CLASS_NAME = "class-name";
-    public static final String CLASSPATH = "classpath";
-    public static final String LOAD_ORDER = "load-order";
-    public static final String IS_FAILURE_FATAL = "is-failure-fatal";
-    public static final String IS_LIFECYCLE = "isLifecycle";
-    public static final String IS_COMPOSITE = "isComposite";
     public static final String MODULE_EXTENSION = "moduleExtension";
 
     public String getWsdlTargetHint() throws IllegalArgumentException {
