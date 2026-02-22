@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -93,12 +93,6 @@
 [--multicastport multicast-port]
 [--multicastaddress multicast-address]
 [--bindaddress bind-address]
-[--hosts hadb-host-list]
-[--haagentport port-number]
-[--haadminpassword password]
-[--haadminpasswordfile file-name] [--devicesize devicesize ]
-[--haproperty (name=value)[:name=value]*]
-[--autohadb=false] [--portbase port-number]
 cluster-name</code></pre>
 </div>
 </div>
@@ -486,62 +480,6 @@ set the `--bindaddress</code> option of this subcommand to
 property. Finally, for each instance in the cluster, set the
 `GMS-BIND-INTERFACE-ADDRESS-`cluster-name system property to the
 required network interface address on the instance&#8217;s machine.</p>
-</dd>
-<dt class="hdlist1"><code>--hosts</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--haagentport</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--haadminpassword</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--haadminpasswordfile</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--devicesize</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--haproperty</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--autohadb</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
-</dd>
-<dt class="hdlist1"><code>--portbase</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
 </dd>
 </dl>
 </div>

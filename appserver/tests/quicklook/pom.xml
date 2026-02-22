@@ -43,13 +43,13 @@
 
 <!-- Portions Copyright 2018-2023 Payara Foundation and/or its affiliates -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"> 
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> 
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
 
     <groupId>org.glassfish.quicklook</groupId>
@@ -80,18 +80,18 @@
                         <phase>test</phase>
                         <configuration>
                             <target>
-                                <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="maven.plugin.classpath" />
+                                <taskdef classpathref="maven.plugin.classpath" resource="net/sf/antcontrib/antcontrib.properties"/>
                                 <property name="compile_classpath" refid="maven.compile.classpath"/>
                                 <property name="plugin_classpath" refid="maven.plugin.classpath"/>
 
                                 <echo message="compile classpath: ${compile_classpath}"/>
-                                <echo message="${line.separator} ###############################" />
+                                <echo message="${line.separator} ###############################"/>
                                 <echo message="plugin classpath:  ${plugin_classpath}"/>
-                                <echo message="${line.separator}" />
+                                <echo message="${line.separator}"/>
 
 
                                 <if>
-                                    <equals arg1="${test.gd}" arg2="true" />
+                                    <equals arg1="${test.gd}" arg2="true"/>
                                     <then>
 
                                         <echo>${line.separator}</echo>
@@ -104,7 +104,7 @@
                                         <echo>glassfish.home: ${glassfish.home} </echo>
                                         <echo>domain.name: ${domain.name} </echo>
 
-                                        <ant dir="." antfile="build.xml" target="all">
+                                        <ant antfile="build.xml" dir="." target="all">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                             <property name="domain.name" value="${domain.name}"/>
                                             <property name="jruby-all.version" value="${jruby-all.version}"/>
@@ -114,63 +114,63 @@
                                 </if>
 
                                 <if>
-                                    <equals arg1="${test.wd}" arg2="true" />
+                                    <equals arg1="${test.wd}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="all_wd">
+                                        <ant antfile="build.xml" dir="." target="all_wd">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${test.em}" arg2="true" />
+                                    <equals arg1="${test.em}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="all_embedded">
+                                        <ant antfile="build.xml" dir="." target="all_embedded">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${test.ri}" arg2="true" />
+                                    <equals arg1="${test.ri}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="all_ri">
+                                        <ant antfile="build.xml" dir="." target="all_ri">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${test.wd.security}" arg2="true" />
+                                    <equals arg1="${test.wd.security}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="all_wd_security">
+                                        <ant antfile="build.xml" dir="." target="all_wd_security">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${start.wd.security}" arg2="true" />
+                                    <equals arg1="${start.wd.security}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="start_server_with_security_manager_enabled">
+                                        <ant antfile="build.xml" dir="." target="start_server_with_security_manager_enabled">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${stop.wd.security}" arg2="true" />
+                                    <equals arg1="${stop.wd.security}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="stop_server_with_security_manager_enabled">
+                                        <ant antfile="build.xml" dir="." target="stop_server_with_security_manager_enabled">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${test.gd.security}" arg2="true" />
+                                    <equals arg1="${test.gd.security}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="all_gd_security">
+                                        <ant antfile="build.xml" dir="." target="all_gd_security">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                             <property name="jruby-all.version" value="${jruby-all.version}"/>
                                             <property name="jruby-all.classifier" value="${jruby-all.classifier}"/>
@@ -179,16 +179,16 @@
                                 </if>
 
                                 <if>
-                                    <isset property="test.report" />
+                                    <isset property="test.report"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="report"/>
+                                        <ant antfile="build.xml" dir="." target="report"/>
                                     </then>
                                 </if>
 
                                 <if>
-                                    <equals arg1="${test.debug}" arg2="true" />
+                                    <equals arg1="${test.debug}" arg2="true"/>
                                     <then>
-                                        <ant dir="." antfile="build.xml" target="dev_debug">
+                                        <ant antfile="build.xml" dir="." target="dev_debug">
                                             <property name="glassfish.home" value="${glassfish.home}"/>
                                         </ant>
                                     </then>
@@ -205,7 +205,7 @@
                     <dependency>
                         <groupId>commons-codec</groupId>
                         <artifactId>commons-codec</artifactId>
-                        <version>1.20.0</version>
+                        <version>1.21.0</version>
                     </dependency>
                     <dependency>
                         <groupId>org.testng</groupId>
@@ -337,6 +337,5 @@
             </properties>
         </profile>
     </profiles>
-
+    
 </project>
-

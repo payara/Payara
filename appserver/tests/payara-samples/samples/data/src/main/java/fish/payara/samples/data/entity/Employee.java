@@ -3,12 +3,15 @@ package fish.payara.samples.data.entity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "Employee")
+@Cacheable  // Enable L2 cache for cache eviction testing
 public class Employee {
     @Id
     public UUID id;
@@ -25,6 +28,7 @@ public class Employee {
 
     public String title;
 
+    @Column(precision = 19, scale = 2)
     public BigDecimal salary;
 
     public boolean active;

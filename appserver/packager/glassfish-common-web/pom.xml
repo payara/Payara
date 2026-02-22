@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-common-web</artifactId>
     <name>Glassfish Commons for Web Profile Distribution </name>
@@ -128,11 +128,6 @@
             <artifactId>backup</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.load-balancer</groupId>
-            <artifactId>load-balancer-admin</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <!-- schema2beans - both CMP and LB admin now depend on it -->
         <dependency>
             <groupId>org.glassfish.external</groupId>
@@ -149,11 +144,6 @@
             <artifactId>glassfish-embedded-static-shell-frag</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.load-balancer</groupId>
-            <artifactId>gf-load-balancer-connector</artifactId>
-            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

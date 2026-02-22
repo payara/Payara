@@ -121,6 +121,10 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.eclipse.angus:angus-mail"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "org.eclipse.krazo:krazo-jersey"
+        update-types: ["version-update:semver-major"] 
+      - dependency-name: "org.eclipse.krazo:krazo-core"
+        update-types: ["version-update:semver-major"] 
 
       # Ignore major version updates for com.ibm.jbatch and related dependencies
       - dependency-name: "com.ibm.jbatch:com.ibm.jbatch.container"

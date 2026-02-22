@@ -91,7 +91,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected Dom parent;
     protected String tagName;
     protected String target;
-    protected String profiler = "false";
     protected boolean isJvmOptions = false;
 
     public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
@@ -135,7 +134,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 target = parent.parent().attribute("name");
             } else {
                 target = parent.parent().parent().attribute("name");
-                profiler = "true";
             }
         }
     }
@@ -369,9 +367,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
             results.put("target", target);
-        }
-        if (results.get("profiler") == null) {
-            results.put("profiler", profiler);
         }
 
         return results;

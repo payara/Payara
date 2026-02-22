@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>kernel</artifactId>
@@ -259,10 +259,6 @@
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>tiger-types</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.transformer</groupId>
-            <artifactId>fish.payara.transformer.payara</artifactId>
         </dependency>
     </dependencies>
 </project>

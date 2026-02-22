@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging;
 
@@ -65,27 +65,6 @@ public class Syslog {
     public static final int NOTICE=5;
     public static final int INFO=6;
     public static final int DEBUG=7;
-
-    public static final int KERN = 0;
-    public static final int USER = 8;
-    public static final int MAIL = 16;
-    public static final int DAEMON = 24;
-    public static final int AUTH = 32;
-    public static final int SYSLOG = 40;
-    public static final int LPR = 48;
-    public static final int NEWS = 56;
-    public static final int UUCP = 64;
-    public static final int CRON = 72;
-    public static final int AUTHPRIV = 80;
-    public static final int FTP = 88;
-    public static final int LOCAL0 = 128;
-    public static final int LOCAL1 = 136;
-    public static final int LOCAL2 = 144;
-    public static final int LOCAL3 = 152;
-    public static final int LOCAL4 = 160;
-    public static final int LOCAL5 = 168;
-    public static final int LOCAL6 = 176;
-    public static final int LOCAL7 = 184;
 
     private static final int SYSLOG_PORT=514;
 

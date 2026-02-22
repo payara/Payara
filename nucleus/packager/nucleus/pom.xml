@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>nucleus</artifactId>
     <name>Nucleus Package</name>
@@ -128,11 +128,6 @@
             <groupId>fish.payara.server.internal.deployment</groupId>
             <artifactId>deployment-admin</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.transformer</groupId>
-            <artifactId>fish.payara.transformer.payara</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
