@@ -36,9 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates] 
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
@@ -109,8 +109,7 @@ public class CreateHttpListener implements AdminCommand {
     Boolean xFrameOptions;
     @Param(name = "acceptorthreads", optional = true)
     String acceptorThreads;
-    @Param(name = "redirectport", optional = true)
-    String redirectPort;
+
     @Param(name = "securityenabled", optional = true, defaultValue = "false")
     Boolean securityEnabled;
     @Param(optional = true, defaultValue = "true")

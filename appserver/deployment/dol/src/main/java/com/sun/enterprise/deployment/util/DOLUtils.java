@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -118,7 +118,15 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  * @version
  */
 public class DOLUtils {
+    /** The system property to control the precedence between GF DD
+     // and WLS DD when they are both present. When this property is
+     // set to true, GF DD will have higher precedence over WLS DD. */
+    private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
 
+    /** The system property to control whether we should just ignore
+     // WLS DD. When this property is set to true, WLS DD will be ignored.*/
+    private static final String IGNORE_WLSDD = "ignore.wlsdd";
+    
     public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
 
@@ -149,15 +157,6 @@ public class DOLUtils {
 
     @LogMessageInfo(message = "DOLUtils: converting EJB to web bundle id {0}.", level="FINER")
     private static final String CONVERT_EJB_TO_WEB_ID = "AS-DEPLOYMENT-00017";
-
-    /** The system property to control the precedence between GF DD
-    // and WLS DD when they are both present. When this property is
-    // set to true, GF DD will have higher precedence over WLS DD. */
-    private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
-
-    /** The system property to control whether we should just ignore
-    // WLS DD. When this property is set to true, WLS DD will be ignored.*/
-    private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
     private static final String[] SYSTEM_PACKAGES = {"com.sun.", "org.glassfish.", "org.glassfish.wasp.", "fish.payara.", "com.ibm.jbatch.",
@@ -378,19 +377,6 @@ public class DOLUtils {
         return result;
     }
 
-    /** returns true if GF DD should have higher precedence over
-     * WLS DD when both present in the same archive
-     * @return  */
-    public static boolean isGFDDOverWLSDD() {
-        return Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD));
-    }
-
-    /** returns true if we should ignore WLS DD in the archive
-     * @return  */
-    public static boolean isIgnoreWLSDD() {
-        return Boolean.valueOf(System.getProperty(IGNORE_WLSDD));
-    }
-
     /** process the list of the configuration files, and return the sorted
     // configuration file with precedence from high to low
     // this list does not take consideration of what runtime files are
@@ -400,25 +386,27 @@ public class DOLUtils {
         ConfigurationDeploymentDescriptorFile payaraConfDD = null;
         ConfigurationDeploymentDescriptorFile gfConfDD = null;
         ConfigurationDeploymentDescriptorFile sunConfDD = null;
+        
         for (ConfigurationDeploymentDescriptorFile ddFile : ddFiles) {
             ddFile.setArchiveType(archiveType);
             String ddPath = ddFile.getDeploymentDescriptorPath();
-            if (ddPath.contains(DescriptorConstants.WLS)) {
+            boolean isWebXML = ddPath.contains("-web.xml");
+            
+            if (ddPath.contains(DescriptorConstants.WLS) && !isWebXML) {
                 wlsConfDD = ddFile;
-            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX)){
+            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX)) {
                 payaraConfDD = ddFile;
-            } else if (ddPath.contains(DescriptorConstants.GF_PREFIX)) {
+            } else if (ddPath.contains(DescriptorConstants.GF_PREFIX) && !isWebXML) {
                 gfConfDD = ddFile;
-            } else if (ddPath.contains(DescriptorConstants.S1AS_PREFIX)) {
+            } else if (ddPath.contains(DescriptorConstants.S1AS_PREFIX) && !isWebXML) {
                 sunConfDD = ddFile;
             }
         }
+        
         List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<>();
-
         // if there is external runtime alternate deployment descriptor
         // specified, just use that
-        File runtimeAltDDFile = archive.getArchiveMetaData(
-            DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
         if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
             String runtimeAltDDPath = runtimeAltDDFile.getPath();
             validateRuntimeAltDDPath(runtimeAltDDPath);
@@ -528,11 +516,7 @@ public class DOLUtils {
         List<ConfigurationDeploymentDescriptorFile> archivistConfDDFiles = archivist.getConfigurationDDFiles();
         for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivistConfDDFiles, archivist.getModuleType(), embeddedArchive)) {
             String ddPath = ddFile.getDeploymentDescriptorPath();
-            if (ddPath.contains(DescriptorConstants.WLS) && appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
-                // TODO: need to revisit this for WLS alt-dd pattern
-                confDD = ddFile;
-                altRuntimeDDPath = DescriptorConstants.WLS + altDDPath;
-            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX) && appArchive.exists(DescriptorConstants.PAYARA_PREFIX + altDDPath)) {
+            if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX) && appArchive.exists(DescriptorConstants.PAYARA_PREFIX + altDDPath)) {
                 confDD = ddFile;
                 altRuntimeDDPath = DescriptorConstants.PAYARA_PREFIX + altDDPath;
             } else if (ddPath.contains(DescriptorConstants.GF_PREFIX) && appArchive.exists(DescriptorConstants.GF_PREFIX + altDDPath)) {
@@ -803,27 +787,6 @@ public class DOLUtils {
         }
         return false;
     }
-
-  /**
-   * Returns a list of the proprietary schema namespaces
-     * @return
-   */
-  public static List<String> getProprietarySchemaNamespaces() {
-    ArrayList<String> ns = new ArrayList<>();
-    ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_BEA);
-    ns.add(DescriptorConstants.WLS_SCHEMA_NAMESPACE_ORACLE);
-    return ns;
-  }
-
-  /**
-   * Returns a list of the proprietary dtd system IDs
-     * @return
-   */
-  public static List<String> getProprietaryDTDStart() {
-    ArrayList<String> ns = new ArrayList<>();
-    ns.add(DescriptorConstants.WLS_DTD_SYSTEM_ID_BEA);
-    return ns;
-  }
 
   public static boolean isEarApplication(JndiNameEnvironment env) {
     return env instanceof Application;

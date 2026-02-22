@@ -51,7 +51,7 @@
                     getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
                     prepareSuccessfulMsg();
-                    saveJvmOptionValues(endpoint="#{pageSession.selfUrl}", target="#{pageSession.configName}", options="$attribute{newList}" , origList="#{pageSession.origList}", profiler="false");
+                    saveJvmOptionValues(endpoint="#{pageSession.selfUrl}", target="#{pageSession.configName}", options="$attribute{newList}" , origList="#{pageSession.origList}");
                     gf.redirect(page="#{selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
                 />
             </sun:button>

@@ -36,9 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2016-2020s] [Payara Foundation and/or its affiliates]
  */
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.kernel;
 
@@ -371,24 +370,7 @@ public class KernelLoggerInfo {
             cause = "An unexpected exception occurred while closing an archive.",
             action = "Check the system logs and contact Payara Support.",
             level = "SEVERE")
-    public static final String exceptionWhileClosing = LOGMSG_PREFIX + "-00051";    
-
-    @LogMessageInfo(
-            message = "Exception loading lifecycle module [{0}]; [{1}]",
-            cause = "An unexpected exception occurred while loading a lifecycle module.",
-            action = "Check the system logs and contact Payara Support.",
-            level = "SEVERE")
-    public static final String exceptionLoadingLifecycleModule = LOGMSG_PREFIX + "-00052";    
-
-    @LogMessageInfo(
-            message = "Lifecycle module [{0}] threw ServerLifecycleException, exception: {1}",
-            level = "WARNING")
-    public static final String serverLifecycleException = LOGMSG_PREFIX + "-00053";
-    
-    @LogMessageInfo(
-            message = "Lifecycle module [{0}] threw an Exception; please check your lifecycle module. Exception: {1}",
-            level = "WARNING")
-    public static final String lifecycleModuleException = LOGMSG_PREFIX + "-00054";
+    public static final String exceptionWhileClosing = LOGMSG_PREFIX + "-00051";
     
     @LogMessageInfo(
             message = "GrizzlyService stop-proxy problem",

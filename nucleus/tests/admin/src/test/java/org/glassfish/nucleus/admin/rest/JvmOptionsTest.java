@@ -60,14 +60,6 @@ public class JvmOptionsTest extends RestTestBase {
     protected static final String URL_SERVER_JVM_OPTIONS = "/domain/configs/config/server-config/java-config/jvm-options";
     protected static final String URL_DEFAULT_JVM_OPTIONS = "/domain/configs/config/default-config/java-config/jvm-options";
 
-    protected static final String URL_SERVER_CONFIG_CREATE_PROFILER = "/domain/configs/config/server-config/java-config/create-profiler";
-    protected static final String URL_SERVER_CONFIG_DELETE_PROFILER = "/domain/configs/config/server-config/java-config/profiler/delete-profiler";
-    protected static final String URL_SERVER_CONFIG_PROFILER_JVM_OPTIONS = "/domain/configs/config/server-config/java-config/profiler/jvm-options";
-
-    protected static final String URL_DEFAULT_CONFIG_CREATE_PROFILER = "/domain/configs/config/default-config/java-config/create-profiler";
-    protected static final String URL_DEFAULT_CONFIG_DELETE_PROFILER = "/domain/configs/config/default-config/java-config/profiler/delete-profiler";
-    protected static final String URL_DEFAULT_CONFIG_PROFILER_JVM_OPTIONS = "/domain/configs/config/default-config/java-config/profiler/jvm-options";
-
     private ConfigTest configTest;
     private String testConfigName;
     private String URL_TEST_CONFIG;
@@ -196,35 +188,6 @@ public class JvmOptionsTest extends RestTestBase {
     }
 
     @Test
-    public void testProfilerJvmOptions() {
-        final String profilerName = "profiler" + generateRandomString();
-        final String optionName = "-Doption" + generateRandomString();
-        Map<String, String> attrs = new HashMap<String, String>() {{
-            put("name", profilerName);
-            put("target", testConfigName);
-        }};
-        Map<String, String> newOptions = new HashMap<String, String>() {{
-//            put("target", testConfigName);
-//            put("profiler", "true");
-            put(optionName, "");
-        }};
-
-        deleteProfiler(URL_TEST_CONFIG + "/java-config/profiler/delete-profiler", testConfigName, false);
-
-        Response response = post(URL_TEST_CONFIG + "/java-config/create-profiler", attrs);
-        assertTrue(isSuccess(response));
-
-        response = post(URL_TEST_CONFIG + "/java-config/profiler/jvm-options", newOptions);
-        assertTrue(isSuccess(response));
-
-        response = get(URL_TEST_CONFIG + "/java-config/profiler/jvm-options");
-        List<String> jvmOptions = getJvmOptions(response);
-        assertTrue(jvmOptions.contains(optionName));
-
-        deleteProfiler(URL_TEST_CONFIG + "/java-config/profiler/delete-profiler", testConfigName, true);
-    }
-
-    @Test
     public void testJvmOptionWithColon() {
         final String optionName = "-XX:MaxPermSize";
         final String optionValue = "152m";
@@ -244,13 +207,6 @@ public class JvmOptionsTest extends RestTestBase {
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         jvmOptions = getJvmOptions(response);
         assertFalse(jvmOptions.contains(optionName+"="+optionValue));
-    }
-
-    protected void deleteProfiler(final String url, final String target, final boolean failOnError) {
-        Response response = delete (url, new HashMap() {{ put ("target", target); }});
-        if (failOnError) {
-            assertTrue(isSuccess(response));
-        }
     }
 
     protected List<String> getJvmOptions(Response response) {

@@ -604,11 +604,8 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             // Jakarta Authentication is enabled for this application
             try {
                 context.fireContainerEvent(BEFORE_AUTHENTICATION, null);
-                RequestFacade requestFacade = (RequestFacade) request.getRequest();
-                SecurityContext.getCurrent().setSessionPrincipal(requestFacade.getRequestPrincipal());
                 return validateRequest(request, response, config, authenticator, calledFromAuthenticate);
             } finally {
-                SecurityContext.getCurrent().setSessionPrincipal(null);
                 context.fireContainerEvent(AFTER_AUTHENTICATION, null);
             }
         }
@@ -619,7 +616,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
     private boolean validateRequest(HttpRequest request, HttpResponse response, LoginConfig config, Authenticator authenticator, boolean calledFromAuthenticate) throws IOException {
 
-        HttpServletRequest servletRequest = (HttpServletRequest) request.getRequest();
+        RequestFacade servletRequest = (RequestFacade) request.getRequest();
         HttpServletResponse servletResponse = (HttpServletResponse) response.getResponse();
 
         Subject subject = new Subject();
@@ -668,7 +665,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
 
                 // See if there's a Subject stored in the session that contain all relevant principals and
                 // credentials for reuse, and the caller has indicated to take these.
-                Subject sessionSubject = reuseSessionSubject(caller);
+                Subject sessionSubject = reuseSessionSubject(caller, servletRequest);
                 if (sessionSubject != null) {
                     // Copy principals, public credentials and private credentials from the Subject that lives in
                     // the session to the receiving Subject.
@@ -813,13 +810,19 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         return callers.iterator().next();
     }
 
-    private Subject reuseSessionSubject(final Caller caller) {
-        Principal returnedPrincipal = findPrincipalWrapper(caller.getCallerPrincipal());
+    private Subject reuseSessionSubject(Caller caller, RequestFacade requestFacade) {
+        // Get the session's WebPrincipal for enriching the authenticated principal upon Soteria callback
+        Principal callerPrincipal = caller.getCallerPrincipal();
+        Principal requestPrincipal = requestFacade.getRequestPrincipal();
 
-        if (returnedPrincipal instanceof WebPrincipal) {
-            return reuseWebPrincipal((WebPrincipal) returnedPrincipal);
+        // Check if the top level session principal is indeed wrapping our current principal
+        if (callerPrincipal != null
+                && !(callerPrincipal instanceof WebPrincipal)
+                && requestPrincipal instanceof WebPrincipal webPrincipalFromSession
+                && webPrincipalFromSession.getCustomPrincipal() == callerPrincipal) {
+
+            return reuseWebPrincipal(webPrincipalFromSession);
         }
-
         return null;
     }
 
@@ -885,30 +888,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         }
 
         return securityContextSubject;
-    }
-
-    private Principal findPrincipalWrapper(Principal principal) {
-        if (principal != null && !(principal instanceof WebPrincipal)) {
-
-            // Get the top level session principal
-            Principal sessionPrincipal = SecurityContext.getCurrent().getSessionPrincipal();
-
-            // If it's the wrapper we're looking for, it must be of type WebPrincipal
-            if (sessionPrincipal instanceof WebPrincipal) {
-                WebPrincipal webPrincipalFromSession = (WebPrincipal) sessionPrincipal;
-
-                // Check if the top level session principal is indeed wrapping our current principal
-                if (webPrincipalFromSession.getCustomPrincipal() == principal) {
-
-                    // Custom principal from wrapper is the same as our current principal, so
-                    // this is the wrapper we're looking for.
-                    return webPrincipalFromSession;
-                }
-            }
-        }
-
-        // Not wrapped, or wrapper could not be found
-        return principal;
     }
 
     @Override

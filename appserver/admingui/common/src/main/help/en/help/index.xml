@@ -15,6 +15,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <index version="2.0">
   <indexitem text="admin realm">
@@ -207,23 +208,11 @@
     <indexitem text="configuring (reference)" target="ref-serverinstjvmpathsettings"></indexitem>
     <indexitem text="configuring (task)" target="task-jvmpathsettings"></indexitem>
   </indexitem>
-  <indexitem text="JVM profiler settings">
-    <indexitem text="configuring (reference)" target="ref-serverinstjvmprofiler"></indexitem>
-    <indexitem text="configuring (task)" target="task-jvmprofilersettings"></indexitem>
-  </indexitem>
   <indexitem text="launching application clients" target="task-appclientlaunch"></indexitem>
   <indexitem text="launching applications (reference)" target="ref-appclientlaunch"></indexitem>
   <indexitem text="launching applications (task)" target="task-applaunch"></indexitem>
   <indexitem text="LDAP realm">
     <indexitem text="properties" target="ref-ldaprealmprop"></indexitem>
-  </indexitem>
-  <indexitem text="lifecycle modules">
-    <indexitem text="creating (reference)" target="ref-lifecyclemodulenew"></indexitem>
-    <indexitem text="creating (task)" target="task-lifecyclemodulenew"></indexitem>
-    <indexitem text="deleting" target="task-lifecyclemoduledelete"></indexitem>
-    <indexitem text="editing (reference)" target="ref-lifecyclemoduleedit"></indexitem>
-    <indexitem text="editing (task)" target="task-lifecyclemoduleedit"></indexitem>
-    <indexitem text="viewing and configuring" target="ref-lifecyclemodules"></indexitem>
   </indexitem>
   <indexitem text="log levels">
     <indexitem text="configuring (reference)" target="ref-eelogginglevels"></indexitem>

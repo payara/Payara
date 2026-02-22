@@ -51,7 +51,6 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.io.runtime.WLSWebServicesDeploymentDescriptorFile;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.webservices.io.WebServicesDeploymentDescriptorFile;
 import org.jvnet.hk2.annotations.Service;
@@ -84,8 +83,7 @@ public class WebServicesArchivist extends ExtensionsArchivist {
      */
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles(RootDeploymentDescriptor descriptor) {
         if (confDDFiles == null) {
-            confDDFiles = new ArrayList<ConfigurationDeploymentDescriptorFile>();
-            confDDFiles.add(new WLSWebServicesDeploymentDescriptorFile(descriptor));
+            confDDFiles = new ArrayList<>();
         }
         return confDDFiles;
     }

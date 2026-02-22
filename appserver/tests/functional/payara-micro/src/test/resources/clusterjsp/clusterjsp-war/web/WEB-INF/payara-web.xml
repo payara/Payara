@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Copyright (c) 2019 Oracle and/or its affiliates. All rights reserved.
+	
+	This program and the accompanying materials are made available under the
+	terms of the Eclipse Public License v. 2.0, which is available at
+	http://www.eclipse.org/legal/epl-2.0.
+	
+	This Source Code may also be made available under the following Secondary
+	Licenses when the conditions for such availability set forth in the
+	Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+	version 2 with the GNU Classpath Exception, which is available at
+	https://www.gnu.org/software/classpath/license.html.
+	
+	SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+-->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
+
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 4 Servlet 3.0//EN" "https://docs.payara.fish/schemas/payara-web-app_4.dtd">
+<payara-web-app>
+  <session-config>
+    <session-properties/>
+    <cookie-properties/>
+  </session-config>
+  <cache max-entries="4096" timeout-in-seconds="30" enabled="false">
+    <default-helper/>
+  </cache>
+  <jsp-config>
+    <property value="true" name="classdebuginfo">
+      <description>Enable debug info compilation in the generated servlet class</description>
+    </property>
+    <property value="true" name="mappedfile">
+      <description>Maintain a one-to-one correspondence between static content and the generated servlet class' java code</description>
+    </property>
+    <property name="fork" value="false" />
+  </jsp-config>
+</payara-web-app>
