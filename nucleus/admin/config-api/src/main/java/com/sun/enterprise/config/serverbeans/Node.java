@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiiates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -371,15 +371,15 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
         String installdir = null;
         @Param(name = "type")
         String type = null;
-        @Param(name = "sshport", optional = true, alias = "dcomport")
+        @Param(name = "sshport", optional = true)
         String sshPort = null;
-        @Param(name = "sshnodehost", optional = true, alias = "dcomnodehost")
+        @Param(name = "sshnodehost", optional = true)
         String sshHost = null;
-        @Param(name = "sshuser", optional = true, alias = "dcomuser")
+        @Param(name = "sshuser", optional = true)
         String sshuser = null;
         @Param(name = "sshkeyfile", optional = true)
         String sshkeyfile;
-        @Param(name = "sshpassword", optional = true, alias = "dcompassword")
+        @Param(name = "sshpassword", optional = true)
         String sshpassword;
         @Param(name = "sshkeypassphrase", optional = true)
         String sshkeypassphrase;
@@ -484,15 +484,7 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
 
             if (StringUtils.ok(sshHost))
                 sshC.setSshHost(sshHost);
-
-            if ("DCOM".equals(type)) {
-                if (StringUtils.ok(windowsdomain))
-                    instance.setWindowsDomain(windowsdomain);
-                else if(StringUtils.ok(nodehost))
-                    instance.setWindowsDomain(nodehost);
-                else if(StringUtils.ok(sshHost))
-                    instance.setWindowsDomain(sshHost);
-            }
+            
             instance.setSshConnector(sshC);
         }
     }

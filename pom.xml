@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.2-SNAPSHOT</version>
+    <version>7.2026.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -111,16 +111,6 @@
                 <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>jakarta-releases</id>
-            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
-            <releases>
-                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
-            </releases>
-            <snapshots>
-                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
-            </snapshots>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -177,16 +167,6 @@
                 <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </pluginRepository>
-        <pluginRepository>
-            <id>jakarta-releases</id>
-            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
-            <releases>
-                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
-            </releases>
-            <snapshots>
-                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
-            </snapshots>
-        </pluginRepository>
     </pluginRepositories>
 
     <distributionManagement>
@@ -226,13 +206,13 @@
     <properties>
         <!-- build versions -->
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.5.0</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.4.0</maven.resources.plugin.version>
         <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.9.0</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.10.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
@@ -256,8 +236,6 @@
         <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
-        <jakarta-staging.repo.releases.enabled>false</jakarta-staging.repo.releases.enabled>
-        <jakarta-staging.repo.snapshots.enabled>false</jakarta-staging.repo.snapshots.enabled>
         <payara-nexus-staging.repo.releases.enabled>false</payara-nexus-staging.repo.releases.enabled>
         <payara-nexus-staging.repo.snapshots.enabled>false</payara-nexus-staging.repo.snapshots.enabled>
 
@@ -307,7 +285,7 @@
         <microprofile-config.version>3.1</microprofile-config.version>
         <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
-        <jaxb-api.version>4.0.4</jaxb-api.version>
+        <jaxb-api.version>4.0.5</jaxb-api.version>
         <jackson.version>2.21.0</jackson.version>
         <jersey.version>4.0.0.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
@@ -346,7 +324,7 @@
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
         <weld.version>6.0.4.Final</weld.version>
-        <tyrus.version>2.2.0</tyrus.version>
+        <tyrus.version>2.2.2</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
         <asm.version>9.9.1</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
@@ -503,14 +481,6 @@
             <properties>
                 <payara-nexus-staging.repo.releases.enabled>true</payara-nexus-staging.repo.releases.enabled>
                 <payara-nexus-staging.repo.snapshots.enabled>true</payara-nexus-staging.repo.snapshots.enabled>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>jakarta-staging</id>
-            <properties>
-                <jakarta-staging.repo.releases.enabled>true</jakarta-staging.repo.releases.enabled>
-                <jakarta-staging.repo.snapshots.enabled>true</jakarta-staging.repo.snapshots.enabled>
             </properties>
         </profile>
 

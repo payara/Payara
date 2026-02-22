@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -134,8 +134,7 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     }
 
     /**
-     * We can't put these values into the base class simply to get the names that the user sees correct. I.e. "ssh" versus
-     * "dcom" versus future types...
+     * We can't put these values into the base class simply to get the names that the user sees correct. I.e. "ssh"
      *
      */
     @Override

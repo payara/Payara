@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.server;
 
@@ -206,10 +206,6 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
 
     private void handleAppEnableChange(Object parent, 
         String appName, boolean enabled) {
-        Application application = applications.getApplication(appName);
-        if (application.isLifecycleModule()) {
-            return;
-        }
         if (enabled) {
             if (isCurrentInstanceMatchingTarget(parent)) {
                 enableApplication(appName);
@@ -223,9 +219,6 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
 
     private void handleOtherAppConfigChanges(Object parent, String appName) {
         Application application = applications.getApplication(appName);
-        if (application.isLifecycleModule()) {
-            return;
-        }
         // reload the application for other application related 
         // config changes if the application is in enabled state
         if (isCurrentInstanceMatchingTarget(parent) && 
