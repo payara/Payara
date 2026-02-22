@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.persistence</groupId>
         <artifactId>persistence</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
     <name>GlassFish Oracle JDBC Packages</name>

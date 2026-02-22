@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
@@ -351,6 +352,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         return clonedObj;
     }
 
+    @JsonIgnore
     public Map<String, Set<String>> getEndpoints() {
         return endpoints;
     }

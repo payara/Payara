@@ -1,7 +1,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -89,7 +89,6 @@
     <tocitem target="reference/create-jms-resource" text="create-jms-resource" expand="false"></tocitem>
     <tocitem target="reference/create-jndi-resource" text="create-jndi-resource" expand="false"></tocitem>
     <tocitem target="reference/create-jvm-options" text="create-jvm-options" expand="false"></tocitem>
-    <tocitem target="reference/create-lifecycle-module" text="create-lifecycle-module" expand="false"></tocitem>
     <tocitem target="reference/create-local-instance" text="create-local-instance" expand="false"></tocitem>
     <tocitem target="reference/create-managed-executor-service" text="create-managed-executor-service" expand="false"></tocitem>
     <tocitem target="reference/create-managed-scheduled-executor-service" text="create-managed-scheduled-executor-service" expand="false"></tocitem>
@@ -98,10 +97,8 @@
     <tocitem target="reference/create-module-config" text="create-module-config" expand="false"></tocitem>
     <tocitem target="reference/create-network-listener" text="create-network-listener" expand="false"></tocitem>
     <tocitem target="reference/create-node-config" text="create-node-config" expand="false"></tocitem>
-    <tocitem target="reference/create-node-dcom" text="create-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/create-node-ssh" text="create-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/create-password-alias" text="create-password-alias" expand="false"></tocitem>
-    <tocitem target="reference/create-profiler" text="create-profiler" expand="false"></tocitem>
     <tocitem target="reference/create-protocol-filter" text="create-protocol-filter" expand="false"></tocitem>
     <tocitem target="reference/create-protocol-finder" text="create-protocol-finder" expand="false"></tocitem>
     <tocitem target="reference/create-protocol" text="create-protocol" expand="false"></tocitem>
@@ -145,7 +142,6 @@
     <tocitem target="reference/delete-jms-resource" text="delete-jms-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-jndi-resource" text="delete-jndi-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-jvm-options" text="delete-jvm-options" expand="false"></tocitem>
-    <tocitem target="reference/delete-lifecycle-module" text="delete-lifecycle-module" expand="false"></tocitem>
     <tocitem target="reference/delete-local-instance" text="delete-local-instance" expand="false"></tocitem>
     <tocitem target="reference/delete-managed-executor-service" text="delete-managed-executor-service" expand="false"></tocitem>
     <tocitem target="reference/delete-managed-scheduled-executor-service" text="delete-managed-scheduled-executor-service" expand="false"></tocitem>
@@ -154,10 +150,8 @@
     <tocitem target="reference/delete-module-config" text="delete-module-config" expand="false"></tocitem>
     <tocitem target="reference/delete-network-listener" text="delete-network-listener" expand="false"></tocitem>
     <tocitem target="reference/delete-node-config" text="delete-node-config" expand="false"></tocitem>
-    <tocitem target="reference/delete-node-dcom" text="delete-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/delete-node-ssh" text="delete-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/delete-password-alias" text="delete-password-alias" expand="false"></tocitem>
-    <tocitem target="reference/delete-profiler" text="delete-profiler" expand="false"></tocitem>
     <tocitem target="reference/delete-protocol-filter" text="delete-protocol-filter" expand="false"></tocitem>
     <tocitem target="reference/delete-protocol-finder" text="delete-protocol-finder" expand="false"></tocitem>
     <tocitem target="reference/delete-protocol" text="delete-protocol" expand="false"></tocitem>
@@ -198,7 +192,6 @@
     <tocitem target="reference/get-health" text="get-health" expand="false"></tocitem>
     <tocitem target="reference/get" text="get" expand="false"></tocitem>
     <tocitem target="reference/import-sync-bundle" text="import-sync-bundle" expand="false"></tocitem>
-    <tocitem target="reference/install-node-dcom" text="install-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/install-node" text="install-node" expand="false"></tocitem>
     <tocitem target="reference/install-node-ssh" text="install-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/instance" text="instance" expand="false"></tocitem>
@@ -245,7 +238,6 @@
     <tocitem target="reference/list-jobs" text="list-jobs" expand="false"></tocitem>
     <tocitem target="reference/list-jvm-options" text="list-jvm-options" expand="false"></tocitem>
     <tocitem target="reference/list-libraries" text="list-libraries" expand="false"></tocitem>
-    <tocitem target="reference/list-lifecycle-modules" text="list-lifecycle-modules" expand="false"></tocitem>
     <tocitem target="reference/list-log-attributes" text="list-log-attributes" expand="false"></tocitem>
     <tocitem target="reference/list-loggers" text="list-loggers" expand="false"></tocitem>
     <tocitem target="reference/list-log-levels" text="list-log-levels" expand="false"></tocitem>
@@ -256,7 +248,6 @@
     <tocitem target="reference/list-modules" text="list-modules" expand="false"></tocitem>
     <tocitem target="reference/list-network-listeners" text="list-network-listeners" expand="false"></tocitem>
     <tocitem target="reference/list-nodes-config" text="list-nodes-config" expand="false"></tocitem>
-    <tocitem target="reference/list-nodes-dcom" text="list-nodes-dcom" expand="false"></tocitem>
     <tocitem target="reference/list-nodes" text="list-nodes" expand="false"></tocitem>
     <tocitem target="reference/list-nodes-ssh" text="list-nodes-ssh" expand="false"></tocitem>
     <tocitem target="reference/list-password-aliases" text="list-password-aliases" expand="false"></tocitem>
@@ -291,7 +282,6 @@
     <tocitem target="reference/package-appclient" text="package-appclient" expand="false"></tocitem>
     <tocitem target="reference/passwords" text="passwords" expand="false"></tocitem>
     <tocitem target="reference/ping-connection-pool" text="ping-connection-pool" expand="false"></tocitem>
-    <tocitem target="reference/ping-node-dcom" text="ping-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/ping-node-ssh" text="ping-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/preface" text="preface" expand="false"></tocitem>
     <tocitem target="reference/recover-transactions" text="recover-transactions" expand="false"></tocitem>
@@ -310,7 +300,6 @@
     <tocitem target="reference/set-log-attributes" text="set-log-attributes" expand="false"></tocitem>
     <tocitem target="reference/set-log-file-format" text="set-log-file-format" expand="false"></tocitem>
     <tocitem target="reference/set-log-levels" text="set-log-levels" expand="false"></tocitem>
-    <tocitem target="reference/setup-local-dcom" text="setup-local-dcom" expand="false"></tocitem>
     <tocitem target="reference/setup-ssh" text="setup-ssh" expand="false"></tocitem>
     <tocitem target="reference/set-web-context-param" text="set-web-context-param" expand="false"></tocitem>
     <tocitem target="reference/set-web-env-entry" text="set-web-env-entry" expand="false"></tocitem>
@@ -327,7 +316,6 @@
     <tocitem target="reference/stop-local-instance" text="stop-local-instance" expand="false"></tocitem>
     <tocitem target="reference/undeploy" text="undeploy" expand="false"></tocitem>
     <tocitem target="reference/unfreeze-transaction-service" text="unfreeze-transaction-service" expand="false"></tocitem>
-    <tocitem target="reference/uninstall-node-dcom" text="uninstall-node-dcom" expand="false"></tocitem>
     <tocitem target="reference/uninstall-node" text="uninstall-node" expand="false"></tocitem>
     <tocitem target="reference/uninstall-node-ssh" text="uninstall-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/unset" text="unset" expand="false"></tocitem>
@@ -341,7 +329,6 @@
     <tocitem target="reference/update-node-ssh" text="update-node-ssh" expand="false"></tocitem>
     <tocitem target="reference/update-password-alias" text="update-password-alias" expand="false"></tocitem>
     <tocitem target="reference/uptime" text="uptime" expand="false"></tocitem>
-    <tocitem target="reference/validate-dcom" text="validate-dcom" expand="false"></tocitem>
     <tocitem target="reference/validate-multicast" text="validate-multicast" expand="false"></tocitem>
     <tocitem target="reference/verify-domain-xml" text="verify-domain-xml" expand="false"></tocitem>
     <tocitem target="reference/version" text="version" expand="false"></tocitem>

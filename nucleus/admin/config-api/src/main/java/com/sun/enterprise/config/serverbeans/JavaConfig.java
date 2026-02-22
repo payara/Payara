@@ -62,10 +62,6 @@ import org.glassfish.quality.ToDo;
  * Java Runtime environment configuration
  */
 @Configured
-@RestRedirects({
- @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-profiler"),
- @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-profiler")
-})
 public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
 
     /**
@@ -334,23 +330,6 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      * @throws PropertyVetoException
      */
     void setEnvClasspathIgnored(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the profiler property.
-     *
-     * @return possible object is
-     *         {@link Profiler }
-     */
-    @Element
-    Profiler getProfiler();
-
-    /**
-     * Sets the value of the profiler property.
-     *
-     * @param value allowed object is {@link Profiler }
-     * @throws PropertyVetoException
-     */
-    void setProfiler(Profiler value) throws PropertyVetoException;
     
     /**
      * Properties as per {@link PropertyBag}

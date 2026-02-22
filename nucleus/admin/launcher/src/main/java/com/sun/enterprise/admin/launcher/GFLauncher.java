@@ -81,7 +81,6 @@ public abstract class GFLauncher {
     private Map<String, String> asenvProps;
     private JavaConfig javaConfig;
     private JvmOptions jvmOptions;
-    private Profiler profiler;
     private Map<String, String> sysPropsFromXml;
     private String javaExe;
     private String classpath;
@@ -199,7 +198,7 @@ public abstract class GFLauncher {
             asenvProps.put(JAVA_ROOT_PROPERTY, jhome);
         }
         setJavaExecutable();
-        setupProfilerAndJvmOptions(parser);
+        setupJvmOptions(parser);
         setupUpgradeSecurity();
 
         Map<String, String> realmprops = parser.getAdminRealmProperties();
@@ -679,7 +678,7 @@ public abstract class GFLauncher {
         if (jvmOptions != null)
             addIgnoreNull(cmdLine, jvmOptions.toStringArray());
 
-        GFLauncherNativeHelper nativeHelper = new GFLauncherNativeHelper(info, javaConfig, jvmOptions, profiler);
+        GFLauncherNativeHelper nativeHelper = new GFLauncherNativeHelper(info, javaConfig, jvmOptions);
         addIgnoreNull(cmdLine, nativeHelper.getCommands());
         addIgnoreNull(cmdLine, getMainClass());
 
@@ -789,14 +788,12 @@ public abstract class GFLauncher {
         all.put(SystemPropertyConstants.SERVER_NAME, getInfo().getInstanceName());
         all.putAll(sysPropsFromXml);
         all.putAll(jvmOptions.getCombinedMap());
-        all.putAll(profiler.getConfig());
         TokenResolver resolver = new TokenResolver(all);
         resolver.resolve(jvmOptions.xProps);
         resolver.resolve(jvmOptions.xxProps);
         resolver.resolve(jvmOptions.plainProps);
         resolver.resolve(jvmOptions.sysProps);
         resolver.resolve(javaConfig.getMap());
-        resolver.resolve(profiler.getConfig());
         resolver.resolve(debugOptions);
         //resolver.resolve(sysPropsFromXml);
         logFilename = resolver.resolve(logFilename);
@@ -822,7 +819,6 @@ public abstract class GFLauncher {
         List<File> sysCP = javaConfig.getSystemClasspath();
         List<File> prefixCP = javaConfig.getPrefixClasspath();
         List<File> suffixCP = javaConfig.getSuffixClasspath();
-        List<File> profilerCP = profiler.getClasspath();
         List<File> extCP = Collections.singletonList(
                 new File(info.getInstanceRootDir(), "lib/ext/*")
         );
@@ -831,7 +827,6 @@ public abstract class GFLauncher {
         List<File> all = new ArrayList<File>();
         all.addAll(extCP);
         all.addAll(prefixCP);
-        all.addAll(profilerCP);
         all.addAll(mainCP);
         all.addAll(sysCP);
         all.addAll(envCP);
@@ -871,14 +866,9 @@ public abstract class GFLauncher {
         return Collections.emptyList();
     }
 
-    private void setupProfilerAndJvmOptions(MiniXmlParser parser) throws MiniXmlParserException, GFLauncherException {
-        // add JVM options from Profiler *last* so they override config's
+    private void setupJvmOptions(MiniXmlParser parser) throws MiniXmlParserException, GFLauncherException {
         // JVM options
 
-        profiler = new Profiler(
-                parser.getProfilerConfig(),
-                parser.getProfilerJvmOptions(),
-                parser.getProfilerSystemProperties());
 
         Optional<JDK.Version> jdkVersion = getConfiguredJdkVersion(javaExe);
         List<String> rawJvmOptions = parser.getJvmOptions()
@@ -887,9 +877,6 @@ public abstract class GFLauncher {
                 .map(option -> option.option)
                 .collect(Collectors.toList());
         rawJvmOptions.addAll(getSpecialSystemProperties());
-        if (profiler.isEnabled()) {
-            rawJvmOptions.addAll(profiler.getJvmOptions());
-        }
         jvmOptions = new JvmOptions(rawJvmOptions);
         if (info.isDropInterruptedCommands()) {
             jvmOptions.sysProps.put(SystemPropertyConstants.DROP_INTERRUPTED_COMMANDS, Boolean.TRUE.toString());

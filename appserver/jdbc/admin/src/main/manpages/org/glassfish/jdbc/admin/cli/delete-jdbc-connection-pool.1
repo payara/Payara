@@ -7,7 +7,6 @@ NAME
 SYNOPSIS
            delete-jdbc-connection-pool [--help]
            [--cascade={false|true}]
-           [--target target]
            jdbc_connection_pool_id
 
 DESCRIPTION
@@ -27,13 +26,6 @@ OPTIONS
            false, the deletion of pool fails if any resources are associated
            with the pool. Resources must be deleted explicitly or the option
            must be set to true. The default value is false.
-
-       --target
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
 
 OPERANDS
        jdbc_connection_pool_id

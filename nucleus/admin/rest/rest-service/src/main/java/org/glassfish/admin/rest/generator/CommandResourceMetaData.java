@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
+
 package org.glassfish.admin.rest.generator;
 
 import java.lang.reflect.Method;
@@ -256,9 +258,7 @@ public class CommandResourceMetaData {
         {"IiopListener", "create-ssl", "POST", "create-ssl", "Create", "id=$parent", "type=iiop-listener"}, // Not used? IiopListener not in nucleus
         {"IiopService", "create-ssl", "POST", "create-ssl", "Create", "type=iiop-service"}, // Not used? IiopListener not in nucleus
         {"LbConfig", "create-http-listener", "POST", "create-http-listener", "create-http-listener"},
-        {"LbConfig", "delete-http-listener", "POST", "delete-http-listener", "delete-http-listener"},
-        {"ListApplication", "create-lifecycle-module", "POST", "create-lifecycle-module", "Create Lifecycle Module"}, // TODO: ListApplication not found
-        {"ListApplication", "delete-lifecycle-module", "DELETE", "delete-lifecycle-module", "Delete Lifecycle Module"},};
+        {"LbConfig", "delete-http-listener", "POST", "delete-http-listener", "delete-http-listener"}};
     private static final String[][] configBeanCustomResources = {
         // ConfigBean, Custom Resource Class, path
         {"Cluster", "SystemPropertiesCliResource", "system-properties"},

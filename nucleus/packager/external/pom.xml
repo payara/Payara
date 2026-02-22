@@ -52,7 +52,7 @@
     <parent>
       <groupId>fish.payara.server</groupId>
       <artifactId>payara-nucleus-parent</artifactId>
-      <version>7.2026.2-SNAPSHOT</version>
+      <version>7.2026.3-SNAPSHOT</version>
       <relativePath>../../pom.xml</relativePath>
     </parent>
     
@@ -66,7 +66,6 @@
         <module>ldapbp</module>
         <module>vboxjws</module>
         <module>trilead-ssh2</module>
-        <module>j-interop</module>
     	<module>antlr</module>
         <module>opentracing-repackaged</module>
         <module>opentelemetry-repackaged</module>

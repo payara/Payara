@@ -209,10 +209,7 @@ public class WSServletContextListener implements ServletContextListener {
                 rmbuilder.sequenceInactivityTimeout(Long.parseLong(rxConfig.getInactivityTimeout().trim()));
 
             }
-            if (endpoint.getHttpResponseBufferSize() != null) {
-                rmbuilder.destinationBufferQuota(Long.parseLong(endpoint.getHttpResponseBufferSize().trim()));
 
-            }
             if (rxConfig.getBaseRetransmissionInterval() != null) {
                 rmbuilder.messageRetransmissionInterval(Long.parseLong(rxConfig.getBaseRetransmissionInterval().trim()));
             }
@@ -224,24 +221,12 @@ public class WSServletContextListener implements ServletContextListener {
             if (rxConfig.getAcknowledgementInterval() != null) {
                 rmbuilder.acknowledgementTransmissionInterval(Long.parseLong(rxConfig.getAcknowledgementInterval().trim()));
             }
-            if (rxConfig.getSequenceExpiration() != null) {
-                logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
-                        new Object[]{endpoint.getEndpointName(), "<sequence-expiration>"});
-            }
+
             if (rxConfig.getBufferRetryCount() != null) {
                 rmbuilder.maxMessageRetransmissionCount(Long.parseLong(rxConfig.getBufferRetryCount().trim()));
             }
-            if (rxConfig.getBufferRetryDelay() != null) {
-                logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
-                        new Object[]{endpoint.getEndpointName(), "<buffer-retry-delay>"});
-            }
 
             wsFeatures.add(rmbuilder.build());
-        } else {
-            if (endpoint.getHttpResponseBufferSize() != null) {
-                logger.log(Level.WARNING, LogUtils.CONFIGURATION_UNSUPPORTED_IN_WLSWS,
-                        new Object[]{endpoint.getEndpointName(), "<http-response-buffersize>"});
-            }
         }
 
         if (wsFeatures.size() > 0) {

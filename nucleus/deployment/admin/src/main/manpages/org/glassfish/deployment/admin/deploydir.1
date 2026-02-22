@@ -168,7 +168,7 @@ OPTIONS
            module descriptor such as web.xml.
 
        --runtimealtdd
-           Deploys the application using a GlassFish Server runtime deployment
+           Deploys the application using a Payara Server runtime deployment
            descriptor that resides outside of the application archive. Specify
            an absolute path or a relative path to the alternate deployment
            descriptor file. The alternate deployment descriptor overrides the
@@ -176,10 +176,11 @@ OPTIONS
            example, for an EAR, the --runtimealtdd option overrides
            glassfish-application.xml. For a standalone module, the
            --runtimealtdd option overrides the top-level module descriptor
-           such as glassfish-web.xml. Applies to GlassFish Server deployment
-           descriptors only (glassfish-*.xml); the name of the alternate
-           deployment descriptor file must begin with glassfish-. Does not
-           apply to sun-*.xml deployment descriptors, which are deprecated.
+           such as payara-web.xml. Applies to payara-web.xml and GlassFish Server
+           deployment descriptors only (glassfish-*.xml); the name of the
+           alternate deployment descriptor file must be payara-web.xml or begin
+           with glassfish-. Does not apply to sun-*.xml deployment descriptors,
+           which are deprecated.
 
        --deploymentorder
            Specifies the deployment order of the application. This is useful
