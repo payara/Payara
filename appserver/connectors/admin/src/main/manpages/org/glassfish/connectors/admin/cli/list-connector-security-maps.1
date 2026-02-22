@@ -6,7 +6,7 @@ NAME
 
 SYNOPSIS
            list-connector-security-maps [--help] [--securitymap securitymap]
-           [--verbose={false|true}] [--target target]
+           [--verbose={false|true}]
            pool-name
 
 DESCRIPTION
@@ -30,13 +30,6 @@ OPTIONS
        --verbose
            If set to true, returns a list including the identity, principals,
            and security name. The default is false.
-
-       --target
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
 
 OPERANDS
        pool-name

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -77,9 +78,6 @@ import static org.glassfish.connectors.admin.cli.CLIConstants.SM.*;
 public class CreateConnectorSecurityMap extends ConnectorSecurityMap implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateConnectorSecurityMap.class);
-
-    @Param(optional = true, obsolete = true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Param(name = SM_POOL_NAME)
     private String poolName;

@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
+
 /**
  *
  * @author anilam
@@ -305,70 +306,6 @@ public class ApplicationHandlers {
                     AppUtil.doesAppContainsResources(appName, moduleList));
         } catch (NullPointerException e) {
             handlerCtx.setOutputValue("appScopedResExists", false);
-        }
-    }
-
-    @Handler(id = "gf.getLifecyclesInfo",
-        input = {
-            @HandlerInput(name = "children", type = List.class, required=true)},
-        output = {
-            @HandlerOutput(name = NAME_RESULT, type = java.util.List.class)})
-
-    public static void getLifecyclesInfo(HandlerContext handlerCtx) {
-        List<Map<String, Object>> children = (List<Map<String, Object>>) handlerCtx.getInputValue("children");
-        List<Map<String, Object>> result = new ArrayList<>();
-        String prefix =  GuiUtil.getSessionValue(REST_URL) + PATH_APPLICATIONS_APPLICATION;
-        if (children == null){
-            handlerCtx.setOutputValue(NAME_RESULT, result);
-            return;
-        }
-        for(Map<String, Object> oneChild : children){
-            Map<String, Object> oneRow = new HashMap<>();
-            try{
-                String name = (String) oneChild.get("message");
-                String encodedName = URLEncoder.encode(name, "UTF-8");
-                oneRow.put("name", name);
-                oneRow.put("encodedName", encodedName);
-                oneRow.put("selected", false);
-                oneRow.put("loadOrder", RestUtil.getPropValue(prefix+encodedName, "load-order", handlerCtx));
-                oneRow.put("enableURL", DeployUtil.getTargetEnableInfo(name, true, true));
-                result.add(oneRow);
-            }catch(Exception ex){
-                GuiUtil.getLogger().info(GuiUtil.getCommonMessage("log.error.getLifecyclesInfo") + ex.getLocalizedMessage());
-                if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-                    ex.printStackTrace();
-                }
-            }
-        }
-        handlerCtx.setOutputValue(NAME_RESULT, result);
-    }
-
-
-
-    @Handler(id = "gf.deleteLifecycle",
-        input = {
-            @HandlerInput(name = "selectedList", type = List.class, required=true)})
-
-    public static void deleteLifecycle(HandlerContext handlerCtx) {
-        List<Map<String, Object>> selectedList = (List<Map<String, Object>>) handlerCtx.getInputValue("selectedList");
-        String endpoint = GuiUtil.getSessionValue(REST_URL) + "/applications/application/delete-lifecycle-module" ;
-        Map<String, Object> attrs = new HashMap<>();
-        try{
-            for(Map<String, Object> oneRow: selectedList){
-                String name = (String) oneRow.get("name");
-                String encodedName = URLEncoder.encode(name, "UTF-8");
-                attrs.put("id", encodedName);
-                //delete all application-ref first
-                List<Map<String, Object>> appRefs = DeployUtil.getRefEndpoints(name, "application-ref");
-                for(Map<String, Object>  oneRef:  appRefs){
-                    attrs.put("target", oneRef.get("targetName"));
-                    RestUtil.restRequest((String)oneRef.get("endpoint"), attrs, "DELETE", null, false);
-                }
-                attrs.put("target", "domain");
-                RestUtil.restRequest( endpoint, attrs, "POST", handlerCtx, false);
-            }
-        }catch(Exception ex){
-            GuiUtil.prepareException(handlerCtx, ex);
         }
     }
 

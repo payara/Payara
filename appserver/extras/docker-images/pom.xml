@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>docker-images</artifactId>
     <packaging>pom</packaging>
@@ -88,7 +88,7 @@
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.48.0</version>
+                    <version>0.48.1</version>
                     <extensions>true</extensions>
                     <configuration>
                         <verbose>true</verbose>

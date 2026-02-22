@@ -55,12 +55,6 @@ public interface RuntimeTagNames extends TagNames {
     public final static String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
     public final static String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
 
-    public final static String WLS_EJB_RUNTIME_TAG = "weblogic-ejb-jar";
-    public final static String WLS_APPCLIENT_RUNTIME_TAG = "weblogic-application-client";
-    public final static String WLS_APPLICATION_RUNTIME_TAG = "weblogic-application";
-    public final static String WLS_WEB_RUNTIME_TAG = "weblogic-web-app";
-    public final static String WLS_CONNECTOR_RUNTIME_TAG = "weblogic-connector";
-
     public final static String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
     public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
     public final static String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
@@ -349,10 +343,4 @@ public interface RuntimeTagNames extends TagNames {
     public final static String VENDOR = "vendor";
     public final static String JNLP_DOC = "jnlp-doc";
     // also uses CONTEXT_ROOT defined above in the application-related section
-
-
-    // Weblogic specific
-    public static final String RESOURCE_DESCRIPTION = "resource-description";
-    public static final String RESOURCE_ENV_DESCRIPTION = "resource-env-description";
-    public static final String EJB_REFERENCE_DESCRIPTION = "ejb-reference-description";
 }

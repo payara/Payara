@@ -36,11 +36,11 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
 
     <properties>
-      <playwright.version>1.57.0</playwright.version>
+      <playwright.version>1.58.0</playwright.version>
     </properties>
 
 
