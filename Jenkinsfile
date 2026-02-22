@@ -32,7 +32,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded,jakarta-staging \
+                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded \
                     -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                     -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
                     -Djavadoc.skip -Dsource.skip"""
@@ -69,7 +69,7 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
-                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall,jakarta-staging \
+                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
                         -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara7/glassfish\" \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \

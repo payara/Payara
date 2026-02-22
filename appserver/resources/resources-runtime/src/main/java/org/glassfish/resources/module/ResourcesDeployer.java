@@ -131,9 +131,7 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     private static Map<String, Application> preservedApps = new HashMap<String, Application>();
 
     private final static Logger _logger = LogDomains.getLogger(ResourcesDeployer.class, LogDomains.RSR_LOGGER);
-
-    private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
-    private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
+    
     private static final String PAYARA_RESOURCES_XML_META_INF = "META-INF/payara-resources.xml";
     private static final String PAYARA_RESOURCES_XML_WEB_INF = "WEB-INF/payara-resources.xml";
 
@@ -197,9 +195,9 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                                              List<org.glassfish.resources.api.Resource> connectorResources,
                                              List<org.glassfish.resources.api.Resource> nonConnectorResources,
                                              Map<org.glassfish.resources.api.Resource, ResourcesXMLParser> resourceXmlParsers) {
-        String processedFilename = "glassfish-resources.xml";
+        String processedFilename = "payara-resources.xml";
         try {
-            if (ResourceUtil.hasGlassfishResourcesXML(archive, locator) || ResourceUtil.hasPayaraResourcesXML(archive, locator)) {
+            if (ResourceUtil.hasPayaraResourcesXML(archive, locator)) {
                 Map<String, Map<String, List>> appScopedResources = new HashMap<String, Map<String, List>>();
                 Map<String, String> fileNames = new HashMap<String, String>();
                 //using appName as it is possible that "deploy --name=APPNAME" will
@@ -253,11 +251,11 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     
     private void processArchive(DeploymentContext dc) {
 
-        String processedFilename = "glassfish-resources.xml";
+        String processedFilename = "payara-resources.xml";
         try {
             ReadableArchive archive = dc.getSource();
 
-            if (ResourceUtil.hasGlassfishResourcesXML(archive, locator) || ResourceUtil.hasPayaraResourcesXML(archive, locator)) {
+            if (ResourceUtil.hasPayaraResourcesXML(archive, locator)) {
 
                 Map<String,Map<String, List>> appScopedResources = new HashMap<>();
                 Map<String, List<String>> jndiNames = new HashMap<>();
@@ -742,16 +740,6 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
                 }
                 fileNames.put(actualArchiveName, fileName);
             }
-            //Look for top-level META-INF/glassfish-resources.xml
-            if(archive.exists(RESOURCES_XML_META_INF)){
-                String archivePath = archive.getURI().getPath();
-                String fileName = archivePath + RESOURCES_XML_META_INF;
-                if(_logger.isLoggable(Level.FINEST)){
-                    _logger.finest("GlassFish-Resources Deployer - fileName : " + fileName +
-                            " - parent : " + archive.getName());
-                }
-                fileNames.put(actualArchiveName, fileName);
-            }
 
             //Look for sub-module level META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
             // and also for payara-resources.xml
@@ -792,21 +780,6 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
             }
             if (_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, "Payara-Resources Deployer - fileName : {0} - parent : {1}", new Object[]{fileName, archive.getName()});
-            }
-
-            fileNames.put(actualArchiveName, fileName);
-        }
-        if(ResourceUtil.hasGlassfishResourcesXML(archive, locator)){
-            String archivePath = archive.getURI().getPath();
-            String fileName ;
-            if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)){
-                fileName = archivePath +  RESOURCES_XML_WEB_INF;
-            }else{
-                fileName = archivePath + RESOURCES_XML_META_INF;
-            }
-            if(_logger.isLoggable(Level.FINEST)){
-                _logger.finest("GlassFish-Resources Deployer - fileName : " + fileName +
-                        " - parent : " + archive.getName());
             }
 
             fileNames.put(actualArchiveName, fileName);

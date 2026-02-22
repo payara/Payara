@@ -50,7 +50,7 @@ import java.util.List;
 import java.beans.PropertyVetoException;
 import java.util.stream.Collectors;
 
-/** Factored out the list of jvm-options from at least two other interfaces that have them: java-config and profiler.
+/** Factored out the list of jvm-options from at least two other interfaces that have them: java-config.
  *  Similar to {@link PropertyBag}
  */
 public interface JvmOptionBag extends ConfigBeanProxy {

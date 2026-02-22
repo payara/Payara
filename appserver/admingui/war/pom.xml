@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.3-SNAPSHOT</version>
     </parent>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
@@ -85,13 +85,13 @@
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <warSourceExcludes>WEB-INF/sun-web.xml</warSourceExcludes>
+                    <warSourceExcludes>WEB-INF/payara-web.xml</warSourceExcludes>
                     <webResources>
                         <resource>
                             <directory>src/main/webapp</directory>
                             <filtering>true</filtering>
                             <includes>
-                                <include>WEB-INF/sun-web.xml</include>
+                                <include>WEB-INF/payara-web.xml</include>
                             </includes>
                         </resource>
                         <resource>

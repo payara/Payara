@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates.] -->
+<!-- Portions Copyright [2019-2026] [Payara Foundation and/or its affiliates.] -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
@@ -88,10 +88,6 @@
             if ("#{oneNode.type}=SSH"){
                 mapPut(map="#{oneNode}" key="hasPing" value="#{true}");
                 mapPut(map="#{oneNode}" key="cmd" value="ping-node-ssh");
-            }
-            if ("#{oneNode.type}=DCOM"){
-                mapPut(map="#{oneNode}" key="hasPing" value="#{true}");
-                mapPut(map="#{oneNode}" key="cmd" value="ping-node-dcom");
             }
          }
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncs.msg.JS.confirmDeleteNodes}");

@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2020-2026] [Payara Foundation and/or its affiliates]
 -->
 
 #include "/cluster/shared/handlers.inc"
@@ -88,7 +88,6 @@
             setPageSessionAttribute(key="showSSH" value="#{false}");
             if ("#{pageSession.valueMap['type']}=SSH"){
                    setPageSessionAttribute(key="showSSH" value="#{true}")
-                   setPageSessionAttribute(key="showDCOM" value="#{false}")
                    setPageSessionAttribute(key="showCONFIG" value="#{false}")
                    setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
                    setPageSessionAttribute(key="showInstalldirConfig" value="#{false}");
@@ -108,7 +107,6 @@
             }
             if ("#{pageSession.valueMap['type']}=CONFIG"){
                    setPageSessionAttribute(key="showSSH" value="#{false}")
-                   setPageSessionAttribute(key="showDCOM" value="#{false}")
                    setPageSessionAttribute(key="showCONFIG" value="#{true}")
                    setPageSessionAttribute(key="showInstalldirSSH" value="#{false}");
                    setPageSessionAttribute(key="showInstalldirConfig" value="#{true}");
@@ -116,22 +114,8 @@
                    setPageSessionAttribute(key="showInstallOp" value="#{false}");
                    setPageSessionAttribute(key="isTemp" value="#{false}");
             }
-            if ("#{pageSession.valueMap['type']}=DCOM"){
-                   setPageSessionAttribute(key="showSSH" value="#{false}")
-                   setPageSessionAttribute(key="showDCOM" value="#{true}")
-                   setPageSessionAttribute(key="showCONFIG" value="#{false}")
-                   setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
-                   setPageSessionAttribute(key="showInstalldirConfig" value="#{false}");
-                   setPageSessionAttribute(key="showInstalldirDocker" value="#{false}");
-                   setPageSessionAttribute(key="showInstallOp" value="#{true}");
-                   if ("#{pageSession.valueMap['validateDcom']}"){
-                        setPageSessionAttribute(key="showTestdir" value="#{true}");
-                   }
-                   setPageSessionAttribute(key="isTemp" value="#{false}");
-            }
             if ("#{pageSession.valueMap['type']}=DOCKER"){
                 setPageSessionAttribute(key="showSSH" value="#{false}")
-                setPageSessionAttribute(key="showDCOM" value="#{false}")
                 setPageSessionAttribute(key="showCONFIG" value="#{false}")
                 setPageSessionAttribute(key="showDOCKER" value="#{true}")
                 setPageSessionAttribute(key="showInstalldirSSH" value="#{false}");
@@ -142,7 +126,6 @@
             }
             if ("#{pageSession.valueMap['type']}=TEMP"){
                 setPageSessionAttribute(key="showSSH" value="#{false}")
-                setPageSessionAttribute(key="showDCOM" value="#{false}")
                  setPageSessionAttribute(key="showCONFIG" value="#{false}")
                  setPageSessionAttribute(key="showDOCKER" value="#{false}")
                  setPageSessionAttribute(key="showInstalldirSSH" value="#{false}");
@@ -169,8 +152,8 @@
             </sun:property>
 
             <sun:property id="typeProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.type}" helpText="$resource{i18ncs.node.typeHelp}" rendered="#{!pageSession.isTemp}" visible="#{!pageSession.isTemp}">
-                <sun:dropDown id="type" labels={"SSH" "DCOM" "CONFIG" "DOCKER"}  selected="#{pageSession.valueMap['type']}"
-                              onChange="javascript:showSection(this.value, '#{pageSession.sshConnectorSectionId}', '#{pageSession.dcomSectionId}', '#{pageSession.dockerSectionId}',
+                <sun:dropDown id="type" labels={"SSH" "CONFIG" "DOCKER"}  selected="#{pageSession.valueMap['type']}"
+                              onChange="javascript:showSection(this.value, '#{pageSession.sshConnectorSectionId}', '#{pageSession.dockerSectionId}',
                                         '#{pageSession.installdirSshId}', '#{pageSession.installdirConfigId}', '#{pageSession.installdirDockerId}',
                                         '#{pageSession.installProp}', '#{pageSession.archProp}');">
                 <!afterCreate
@@ -339,80 +322,6 @@
                         getClientId(component="$this{component}" clientId="#{pageSession.keyfilePropId}");
                     />
                 <sun:textField id="Keyfile" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.node.Keyfile']}" text="#{pageSession.valueMap['sshkeyfile']}" />
-            </sun:property>
-
-        </sun:propertySheetSection>
-
-
-        <!-- =============================== DCOM ====================== -->
-
-        <sun:propertySheetSection id="dcomSection" visible="#{pageSession.showDCOM}" label="$resource{i18ncs.node.DcomSection}" >
-            <!afterCreate
-                getClientId(component="$this{component}" clientId="#{pageSession.dcomSectionId}");
-            />
-            <sun:property id="force"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.force}" helpText="$resource{i18ncs.node.forceHelp}">
-                <sun:checkbox id="force" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['winForce']}" selectedValue="true" />
-            </sun:property>
-
-            <sun:property id="validate"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.validateDcom}" helpText="$resource{i18ncs.node.validateDcomHelp}">
-                <sun:checkbox id="validate"  selected="#{pageSession.valueMap['validateDcom']}" label="$resource{i18n.common.Enabled}" selectedValue="true"
-                      onChange="showTestDir('#{pageSession.validateId}', '#{pageSession.testdirId}');">
-                    <!afterCreate
-                        getClientId(component="$this{component}" clientId="#{pageSession.validateId}");
-                    />
-                </sun:checkbox>
-            </sun:property>
-
-            <sun:property id="testDir"  visible="#{pageSession.showTestdir}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.remotetestdir}" helpText="$resource{i18ncs.node.remotetestdirHelp}">
-                <sun:textField id="testDir" text="#{pageSession.valueMap['remotetestdir']}" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.dirPath']}"  />
-                <!afterCreate
-                    getClientId(component="$this{component}" clientId="#{pageSession.testdirId}");
-                />
-            </sun:property>
-
-            <sun:property id="winDomain"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.windowDomain}" helpText="$resource{i18ncs.node.windowDomainHelp}">
-                <sun:textField id="winDomain" text="#{pageSession.valueMap['windowsdomain']}" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.node.windowDomain']}"  />
-            </sun:property>
-            <sun:property id="winUser"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.windowUser}" helpText="$resource{i18ncs.node.windowUserHelp}">
-                <sun:textField id="winUser" text="#{pageSession.valueMap['windowsuser']}" columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.node.windowUser']}"  />
-            </sun:property>
-
-            <sun:property id="winPsSelected" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.selectWinPasswordSelect}" helpText="$resource{i18ncs.node.selectWinPasswordSelectHelp}">
-                <sun:dropDown id="winPsSelected" labels={"$resource{i18ncs.node.textPassword}", "$resource{i18ncs.node.usePasswordAlias}" } values={"2", "3"}
-                      selected="#{pageSession.winPsSelected}"
-                      onChange="showPswdSection(this.value, '#{pageSession.winPs1PropId}', '#{pageSession.winPswdAliasPropId}');"
-                 >
-                <!afterCreate
-                    getClientId(component="$this{component}" clientId="#{pageSession.winPsSelectId}");
-                />
-                </sun:dropDown>
-            </sun:property>
-
-            <sun:property id="winPswdTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.winUserPassword}" helpText="$resource{i18ncs.node.winUserPasswordHelp}" >
-                <!afterCreate
-                        getClientId(component="$this{component}" clientId="#{pageSession.winPs1PropId}");
-                    />
-                <sun:passwordField id="winPswdText" name="winPassword" text="#{pageSession.winPswdText}" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.server.NewPassword']}"  >
-                     <!afterCreate
-                        getClientId(component="$this{component}" clientId="#{pageSession.winPs1Id}");
-                    />
-                </sun:passwordField>
-            </sun:property>
-
-
-            <sun:property id="winPswdAlias" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.node.passwordAlias}" helpText="$resource{i18ncs.node.passwordAliasHelp}">
-                <!afterCreate
-                    getClientId(component="$this{component}" clientId="#{pageSession.winPswdAliasPropId}");
-                />
-                <sun:dropDown id="winPswdAlias" labels="#{pageSession.listOfAliases}" selected="#{pageSession.winPswdAlias}" >
-                    <!beforeCreate
-                        setAttribute(key="doEscape" value="true");
-                        gfr.getPswdAliases();
-                    />
-                    <!afterCreate
-                        getClientId(component="$this{component}" clientId="#{pageSession.winPswdAliasId}");
-                    />
-                </sun:dropDown>
             </sun:property>
 
         </sun:propertySheetSection>

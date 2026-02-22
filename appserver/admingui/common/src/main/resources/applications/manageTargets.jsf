@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or affiliates -->
 
 <!-- applications/manageTargets.jsf -->
 
@@ -63,10 +64,6 @@
             if("#{pageSession.forApp}"){
                 setPageSessionAttribute(key="titleHelp", value="$resource{i18n.manageApplicationTargets.PageTitleHelp}");
                 setPageSessionAttribute(key="helpKey", value="$resource{help_common.manageApplicationTarget}");
-            }
-            if("#{pageSession.forApp}=false"){
-                setPageSessionAttribute(key="titleHelp", value="$resource{i18n.manageLifecycleTargets.PageTitleHelp}");
-                setPageSessionAttribute(key="helpKey", value="$resource{help_common.manageLifecycleTarget}");
             }
         />
     </event>

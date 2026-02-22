@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
+
 package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
@@ -65,28 +67,6 @@ public class ClusterTest extends RestTestBase {
         deleteCluster(clusterName);
     }
 
-    @Test
-    public void testListLifecycleModules() {
-        final String clusterName = "cluster_" + generateRandomString();
-        Map<String, String> newCluster = new HashMap<String, String>() {
-            {
-                put("id", clusterName);
-            }
-        };
-
-        Response response = post(URL_CLUSTER, newCluster);
-        checkStatusForSuccess(response);
-
-        response = get(URL_CLUSTER + "/" + clusterName + "/list-lifecycle-modules");
-        checkStatusForSuccess(response);
-
-        response = delete(URL_CLUSTER + "/" + clusterName); // + "/delete-cluster");
-        checkStatusForSuccess(response);
-
-        response = get(URL_CLUSTER + "/" + clusterName);
-        checkStatusForFailure(response);
-
-    }
 
     public String createCluster() {
         final String clusterName = "cluster_" + generateRandomString();
