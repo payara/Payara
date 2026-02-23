@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
+// Portions Copyright 2018-2025 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.sniffer;
 
@@ -52,7 +52,10 @@ import jakarta.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import jakarta.inject.Singleton;
 
+import java.util.ArrayList;
 import java.util.List;
+
+
 
 /**
  * Implementation of the Sniffer for the web container.
@@ -125,7 +128,17 @@ public class WebSniffer  extends GenericSniffer {
         return true;
     }
     
-    private static final List<String> deploymentConfigurationPaths = List.of("WEB-INF/payara-web.xml");
+    private static final List<String> deploymentConfigurationPaths = 
+            initDeploymentConfigurationPaths();
+    
+    private static List<String> initDeploymentConfigurationPaths() {
+        final List<String> result = new ArrayList<String>();
+        result.add("WEB-INF/web.xml");
+        result.add("WEB-INF/sun-web.xml");
+        result.add("WEB-INF/glassfish-web.xml");
+        result.add("WEB-INF/payara-web.xml");
+        return result;
+    }
     
     /**
      * Returns the web-oriented descriptor paths that might exist in a web

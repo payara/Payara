@@ -85,13 +85,13 @@
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
-                    <warSourceExcludes>WEB-INF/payara-web.xml</warSourceExcludes>
+                    <warSourceExcludes>WEB-INF/sun-web.xml</warSourceExcludes>
                     <webResources>
                         <resource>
                             <directory>src/main/webapp</directory>
                             <filtering>true</filtering>
                             <includes>
-                                <include>WEB-INF/payara-web.xml</include>
+                                <include>WEB-INF/sun-web.xml</include>
                             </includes>
                         </resource>
                         <resource>

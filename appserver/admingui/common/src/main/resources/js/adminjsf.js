@@ -1999,7 +1999,7 @@ admingui.deploy = {
             var component = obj.document.getElementById(contextRootId);
             if (component != null) {
                 // context root can handle null as default
-                component.placeholder = appName + ' (or as per payara-web.xml)';
+                component.placeholder = appName + ' (or as per glassfish-web.xml)';
             }
         }
     },

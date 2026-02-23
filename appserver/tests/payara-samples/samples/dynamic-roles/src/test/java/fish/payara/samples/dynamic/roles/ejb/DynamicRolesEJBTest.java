@@ -87,7 +87,7 @@ public class DynamicRolesEJBTest {
         return ShrinkWrap.create(WebArchive.class, "DynamicRolesEJBTest.war")
                 .addPackage(DynamicRolesEJBTest.class.getPackage())
                 .addPackage(AuthoritiesConstants.class.getPackage())
-                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/payara-web.xml"))
+                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/glassfish-web.xml"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 

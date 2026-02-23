@@ -64,7 +64,7 @@ public class DualSessionsIT {
 
     public static WebArchive createClusterJsp() {
         WebArchive archive = ShrinkWrap.create(WebArchive.class, "clusterjsp.war")
-                .addAsWebInfResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/WEB-INF/payara-web.xml"))
+                .addAsWebInfResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/WEB-INF/sun-web.xml"))
                 .addAsWebInfResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/WEB-INF/web.xml"))
                 .addAsWebResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/HaJsp.jsp"))
                 .addAsWebResource(new File("src/test/resources/clusterjsp/clusterjsp-war/web/ClearSession.jsp"))

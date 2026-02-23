@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2026] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.resources.connector;
@@ -60,12 +60,16 @@ import java.util.List;
  * Sniffer to detect glassfish-resources.xml in standalone archives
  * @author Jagadish Ramu
  */
-@Deprecated
+@Service(name = ResourceConstants.GF_RESOURCES_MODULE)
 public class ResourcesSniffer extends GenericSniffer {
 //TODO ASR package name change ?
 
     final String[] containerNames = {"org.glassfish.resources.module.ResourcesContainer"};
     @Inject ServiceLocator locator;
+
+    public ResourcesSniffer() {
+        super(ResourceConstants.GF_RESOURCES_MODULE, ResourceConstants.GF_RESOURCES_LOCATION, null);
+    }
     
     //For Payara Resources sniffer
     protected ResourcesSniffer(String containerName, String appStigma) {
@@ -81,7 +85,8 @@ public class ResourcesSniffer extends GenericSniffer {
      */
     @Override
     public boolean handles(ReadableArchive archive) {
-        return false;
+        return ResourceUtil.hasGlassfishResourcesXML(archive, locator)
+                && archive.getParentArchive() == null;
     }
 
     /**
@@ -127,5 +132,24 @@ public class ResourcesSniffer extends GenericSniffer {
             return true;
         }
         return false;
+    }
+
+    private static final List<String> deploymentConfigurationPaths =
+            initDeploymentConfigurationPaths();
+
+    private static List<String> initDeploymentConfigurationPaths() {
+        final List<String> result = new ArrayList<String>();
+        result.add(ResourceConstants.GF_RESOURCES_LOCATION);
+        return result;
+    }
+
+    /**
+     * Returns the descriptor paths that might exist in a connector app.
+     *
+     * @return list of the deployment descriptor paths
+     */
+    @Override
+    protected List<String> getDeploymentConfigurationPaths() {
+        return deploymentConfigurationPaths;
     }
 }
