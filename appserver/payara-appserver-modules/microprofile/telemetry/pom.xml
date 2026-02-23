@@ -94,6 +94,10 @@
             <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+        </dependency>
+        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
         </dependency>
@@ -113,6 +117,11 @@
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.core</groupId>
+            <artifactId>telemetry-bootstrap</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
