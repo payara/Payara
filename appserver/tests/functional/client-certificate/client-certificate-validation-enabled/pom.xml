@@ -79,7 +79,7 @@
                             <executable>keytool</executable>
                             <arguments>
                                 <argument>-genkeypair</argument>
-                                <argument>-alias</argument><argument>client-certificate-expired</argument>
+                                <argument>-alias</argument><argument>client-certificate-validation-enabled-expired</argument>
                                 <argument>-keyalg</argument><argument>RSA</argument>
                                 <argument>-keysize</argument><argument>2048</argument>
                                 <argument>-sigalg</argument><argument>SHA256withRSA</argument>
@@ -126,7 +126,7 @@
                             <executable>keytool</executable>
                             <arguments>
                                 <argument>-genkeypair</argument>
-                                <argument>-alias</argument><argument>client-certificate-valid</argument>
+                                <argument>-alias</argument><argument>client-certificate-validation-enabled-valid</argument>
                                 <argument>-validity</argument><argument>365</argument>
                                 <argument>-keystore</argument><argument>${project.build.directory}${file.separator}valid-keystore.jks</argument>
                                 <argument>-storepass</argument><argument>changeit</argument>

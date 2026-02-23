@@ -41,7 +41,7 @@ public class ClientCertValidationDisabledTest extends BaseClientCertTest {
     @RunAsClient
     public void testWithExpiredCertificate() throws Exception {
         String certPath = new File("target", "expired-keystore.p12").getAbsolutePath();
-        String certAlias = "client-expired";
+        String certAlias = "client-certificate-validation-disabled";
 
         LOGGER.info("\n--- Starting Client Certificate Validation Disabled Test ---");
         LOGGER.info("Property 'certificate-validation' should be 'false' at the server level.");

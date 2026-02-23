@@ -80,7 +80,7 @@
                             <arguments>
                                 <argument>-genkeypair</argument>
                                 <argument>-alias</argument>
-                                <argument>client-expired</argument>
+                                <argument>client-certificate-validation-disabled</argument>
                                 <argument>-keyalg</argument>
                                 <argument>RSA</argument>
                                 <argument>-keysize</argument>

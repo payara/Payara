@@ -76,10 +76,8 @@ import static org.junit.Assert.fail;
 public class ClientCertValidationEnabledTest extends BaseClientCertTest {
 
     private static final Logger LOGGER = Logger.getLogger(ClientCertValidationEnabledTest.class.getName());
-
     private static final String LOCALHOST_URL = "https://localhost:8181/security/secure/hello";
     private static final String EXPECTED_VALIDATION_ERROR = "Certificate Validation Failed via API";
-
     private static String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains",
             System.getProperty("payara.domain.name")).toString();
     private static int nextLogLineNumber;
@@ -101,7 +99,7 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
     @RunAsClient
     public void testWithExpiredCertificate() throws Exception {
         String certPath = new File("target", "expired-keystore.jks").getAbsolutePath();
-        String certAlias = "client-certificate-expired";
+        String certAlias = "client-certificate-validation-enabled-expired";
         performTest(certPath, certAlias, 401, true);
     }
 
@@ -109,7 +107,7 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
     @RunAsClient
     public void testWithValidCertificate() throws Exception {
         String certPath = new File("target", "valid-keystore.jks").getAbsolutePath();
-        String certAlias = "client-certificate-valid";
+        String certAlias = "client-certificate-validation-enabled-valid";
         performTest(certPath, certAlias, 200, false);
     }
 
@@ -117,7 +115,7 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
     protected void assertCertificate(String alias, X509Certificate cert) {
         try {
             cert.checkValidity();
-            if (alias.equals("client-certificate-expired")) {
+            if (alias.equals("client-certificate-validation-enabled-expired")) {
                 fail("Certificate 'Not After' should be in the past in order to test expired certificates.");
             }
             LOGGER.info("Status: ✓ VALID");
@@ -153,8 +151,6 @@ public class ClientCertValidationEnabledTest extends BaseClientCertTest {
 
         sendRequest(certPath, certAlias, new URI(LOCALHOST_URL), response -> assertResponse(response, expectedStatusCode));
 
-        String domainDir = Paths.get(System.getProperty("payara.home"), "glassfish", "domains",
-                System.getProperty("payara.domain.name")).toString();
         LOGGER.info("Checking Server Logs in: " + domainDir);
 
         // Verify the certificate validation failure was logged by the API
