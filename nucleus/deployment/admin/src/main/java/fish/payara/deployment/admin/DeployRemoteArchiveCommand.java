@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,7 +41,6 @@
 package fish.payara.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Server;
 import fish.payara.deployment.util.GAVConvertor;
 import fish.payara.deployment.util.JavaArchiveUtils;
@@ -83,12 +82,9 @@ import java.util.logging.Logger;
 @Service(name="deploy-remote-archive")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "deploy-remote-archive"),
-    @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST, path = "deploy-remote-archive", params = {
-        @RestParam(name = "target", value = "$parent")
-    }),
     @RestEndpoint(configBean = Server.class, opType = RestEndpoint.OpType.POST, path = "deploy-remote-archive", params = {
         @RestParam(name = "target", value = "$parent")
     })

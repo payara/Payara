@@ -407,13 +407,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     deploymentParams.target = validateAndGetTargetName(appName, server.getName());
                     deploymentParams.origin = DeployCommandParameters.Origin.load;
                     deploymentParams.command = DeployCommandParameters.Command.startup_server;
-                    if (domain.isAppReferencedByPaaSTarget(appName)) {
-                        if (server.isDas()) {
-                            // for loading PaaS application on DAS
-                            // we set it to the real PaaS target
-                            deploymentParams.target = deployment.getDefaultTarget(appName, deploymentParams.origin, deploymentParams._classicstyle);
-                        }
-                    }
 
                     archive = archiveFactoryProvider.get().openArchive(sourceFile, deploymentParams);
 

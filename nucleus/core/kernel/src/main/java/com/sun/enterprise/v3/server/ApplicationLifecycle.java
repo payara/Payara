@@ -1489,23 +1489,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                         }
                     }
 
-                    Cluster cluster = domain.getClusterNamed(target);
-                    if (cluster != null) {
-                        // adding the application-ref element to the cluster
-                        // and instances
-                        ConfigBeanProxy cluster_w = t.enroll(cluster);
-                        ApplicationRef appRef = cluster_w.createChild(ApplicationRef.class);
-                        setAppRefAttributes(appRef, deployParams);
-                        ((Cluster)cluster_w).getApplicationRef().add(appRef);
-
-                        for (Server svr : cluster.getInstances() ) {
-                            ConfigBeanProxy svr_w = t.enroll(svr);
-                            ApplicationRef appRef2 = svr_w.createChild(ApplicationRef.class);
-                            setAppRefAttributes(appRef2, deployParams);
-                            ((Server)svr_w).getApplicationRef().add(appRef2);
-                        }
-                    }
-
                     DeploymentGroup dg = domain.getDeploymentGroupNamed(target);
                     if (dg != null) {
                         ConfigBeanProxy dg_w = t.enroll(dg);
@@ -1742,33 +1725,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                             }
                         }
 
-                        Cluster cluster = dmn.getClusterNamed(target);
-                        if (cluster != null) {
-                            // remove the application-ref from cluster
-                            ConfigBeanProxy cluster_w = t.enroll(cluster);
-                            for (ApplicationRef appRef :
-                                cluster.getApplicationRef()) {
-                                if (appRef.getRef().equals(appName)) {
-                                    ((Cluster)cluster_w).getApplicationRef().remove(
-                                            appRef);
-                                        break;
-                                }
-                            }
-
-                            // remove the application-ref from cluster instances
-                            for (Server svr : cluster.getInstances() ) {
-                                ConfigBeanProxy svr_w = t.enroll(svr);
-                                for (ApplicationRef appRef :
-                                    svr.getApplicationRef()) {
-                                    if (appRef.getRef().equals(appName)) {
-                                        ((Server)svr_w).getApplicationRef(
-                                           ).remove(appRef);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
                         DeploymentGroup dg = dmn.getDeploymentGroupNamed(target);
                         if (dg != null) {
                             // remove the application-ref from cluster
@@ -1858,31 +1814,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                                     ConfigBeanProxy appRef_w = t.enroll(appRef);
                                     ((ApplicationRef)appRef_w).setEnabled(String.valueOf(enabled));
                                     break;
-                                }
-                            }
-                            updateClusterAppRefWithInstanceUpdate(t, servr, appName, enabled);
-                        }
-                        Cluster cluster = dmn.getClusterNamed(target);
-                        if (cluster != null) {
-                            // update the application-ref from cluster
-                            for (ApplicationRef appRef :
-                                cluster.getApplicationRef()) {
-                                if (appRef.getRef().equals(appName)) {
-                                    ConfigBeanProxy appRef_w = t.enroll(appRef);
-                                    ((ApplicationRef)appRef_w).setEnabled(String.valueOf(enabled));
-                                    break;
-                                }
-                            }
-
-                            // update the application-ref from cluster instances
-                            for (Server svr : cluster.getInstances() ) {
-                                for (ApplicationRef appRef :
-                                    svr.getApplicationRef()) {
-                                    if (appRef.getRef().equals(appName)) {
-                                        ConfigBeanProxy appRef_w = t.enroll(appRef);
-                                        ((ApplicationRef)appRef_w).setEnabled(String.valueOf(enabled));
-                                        break;
-                                    }
                                 }
                             }
                         }
@@ -2044,61 +1975,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public DeploymentContextBuilder getBuilder(Logger logger, OpsParams params, ActionReport report) {
         return new DeploymentContextBuidlerImpl(logger, params, report);
-    }
-
-    /**
-     * Updates the "enabled" setting of the cluster's app ref for the
-     * given app if a change to the "enabled" setting of the app ref on one of
-     * the cluster's instances implies a cluster-level change.
-     * <p>
-     * If the app is enabled on any single instance in a cluster
-     * then the cluster state needs to be enabled.  If
-     * the app is disabled on all instances in the cluster
-     * then the cluster state should be disabled.  This method makes sure the
-     * cluster-level app ref enabled state is correct, given the current values
-     * of the app refs on the cluster's instances combined with the new value
-     * for the specified instance.
-     *
-     * @param t current config Transaction in progress
-     * @param servr the Server for which the app ref has been enabled or disabled
-     * @param appName the name of the app whose app ref has been enabled or disabled
-     * @param isNewInstanceAppRefStateEnabled whether the new instance app ref state is enabled (false if disabled)
-     */
-    private void updateClusterAppRefWithInstanceUpdate(
-            final Transaction t,
-            final Server servr,
-            final String appName,
-            final boolean isNewInstanceAppRefStateEnabled)
-                throws TransactionFailure, PropertyVetoException {
-        final Cluster clusterContainingInstance = servr.getCluster();
-        if (clusterContainingInstance != null) {
-            /*
-             * Update the cluster state also if needed.
-             */
-            boolean isAppRefEnabledOnAnyClusterInstance = false;
-            for (Server inst : clusterContainingInstance.getInstances()) {
-                /*
-                 * The app ref for the server just changed above
-                 * still has its old state when fetched using
-                 * inst.getApplicationRef(appName).  So when we
-                 * encounter the same server in the list of
-                 * cluster instances, use the "enabled" value --
-                 * which we just used above to update the app ref
-                 * for the targeted instance -- below when
-                 * we need to consider the "enabled" value for the
-                 * just-changed instance.
-                 */
-                isAppRefEnabledOnAnyClusterInstance |= (
-                        servr.getName().equals(inst.getName())
-                            ? isNewInstanceAppRefStateEnabled
-                            : Boolean.parseBoolean(inst.getApplicationRef(appName).getEnabled()));
-            }
-            final ApplicationRef clusterAppRef =
-                    clusterContainingInstance.getApplicationRef(appName);
-            if (Boolean.parseBoolean(clusterAppRef.getEnabled()) != isAppRefEnabledOnAnyClusterInstance) {
-                t.enroll(clusterAppRef).setEnabled(String.valueOf(isAppRefEnabledOnAnyClusterInstance));
-            }
-        }
     }
 
     // cannot put it on the builder itself since the builder is an official API.
@@ -2430,22 +2306,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         if (referencedTargets.size() > 1) {
             if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
                 throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
-            }
-        }
-    }
-
-    @Override
-    public void validateSpecifiedTarget(String target) {
-        if (env.isDas()) {
-            if (target == null) {
-                // we only validate the specified target
-                return;
-            }
-            Cluster cluster = domain.getClusterNamed(target);
-            if (cluster != null) {
-                if (cluster.isVirtual()) {
-                    throw new IllegalArgumentException(localStrings.getLocalString("cannot_specify_managed_target", "Cannot specify target {0} for the operation. Target {0} is a managed target.", target));
-                }
             }
         }
     }

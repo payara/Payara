@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 /**
  * Service to configure the {@link HealthCheckServiceConfiguration} of the {@link Target}.
  *
- * Updating the service configuration also updates the {@link LogNotifierConfiguration} accordingly.
+ * Updating the service configuration also updates the {@link fish.payara.nucleus.notification.log.LogNotifierConfiguration} accordingly.
  *
  * @author Jan Bernitt
  * @since 5.191
@@ -88,7 +88,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure")
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST,

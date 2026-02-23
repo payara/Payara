@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -138,10 +138,9 @@ reference. Valid values are<br></p>
 <p>Removes the resource reference from the default server instance
 <code>server</code> and is the default value.</p>
 </dd>
-<dt class="hdlist1">cluster_name</dt>
+<dt class="hdlist1"><code>deployment_group</code></dt>
 <dd>
-<p>Removes the resource reference from every server instance in the
-cluster.</p>
+<p>Removes the resource reference for every server instance in the deployment group</p>
 </dd>
 <dt class="hdlist1">instance_name</dt>
 <dd>
@@ -175,7 +174,7 @@ instance.</p>
 </div>
 <div class="paragraph">
 <p>This example removes a reference to the JMS destination resource
-<code>jms/Topic</code> on the cluster <code>cluster1</code>.</p>
+<code>jms/Topic</code> on the deployment group <code>cluster1</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">

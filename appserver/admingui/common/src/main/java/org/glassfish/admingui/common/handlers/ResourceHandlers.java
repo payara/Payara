@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.common.handlers;
 
@@ -75,7 +76,7 @@ public class ResourceHandlers {
             @HandlerOutput(name = "result", type = List.class)})
     public static void getResourceRealStatus(HandlerContext handlerCtx) {
         List<Map> rows = (List) handlerCtx.getInputValue("rows");
-        Map<String, String> targetsMap = new HashMap<String, String>();
+        Map<String, String> targetsMap = new HashMap<>();
         for (Map oneRow : rows) {
             try {
                 String name = (String) oneRow.get("name");
@@ -85,15 +86,10 @@ public class ResourceHandlers {
                     continue; //The resource is only created on domain, no source-ref exists.
                 }
                 String enabledStr = DeployUtil.getTargetEnableInfo(encodedName, false, false);
-                List<String> targetUrls = new ArrayList<String>();
+                List<String> targetUrls = new ArrayList<>();
                 for (String target : targets) {
-                    if (TargetUtil.isCluster(target)) {
-                        targetsMap.put(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + target, target);
-                        targetUrls.add(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + target);
-                    } else {
-                        targetsMap.put(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + target, target);
-                        targetUrls.add(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + target);
-                    }
+                    targetsMap.put(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + target, target);
+                    targetUrls.add(GuiUtil.getSessionValue("REST_URL") + "/servers/server/" + target);
                 }
                 oneRow.put("targetUrls", targetUrls);
                 oneRow.put("targetsMap", targetsMap);

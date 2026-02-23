@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 -->
 
 <!-- applications/targetListing.jsf -->
@@ -138,25 +138,23 @@
             //To get the targets of a resource in tabular form
             setAttribute(key="listOfRows" value={});
              foreach(var="targetName" list="#{pageSession.targetList}") {
-                 setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
-                 gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isCluster");
-                 if ("!#{requestScope.isCluster}") {
-                     setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
-                     gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isDG");       
-                     if("!#{requestScope.isDG}") {
-                        setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
-                        gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isServer");
-                        py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedName}" selectedTarget="#{pageSession.selectedTargetList}");
-                        py.isInstanceInDeploymentGroupWithResource(selectedTarget="#{pageSession.selectedTargetList}" target="#{requestScope.targetName}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
-                        if ("!#{requestScope.isServer}") {
-                            setAttribute(key="endpoint" value="");
-                        } 
-                        
-                        if ("#{requestScope.isInstancePresentInDeployemntGroup}"){
-                            setAttribute(key="endpoint" value="");
-                        }
+
+                setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/deployment-groups/deployment-group/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isDG");
+                if("!#{requestScope.isDG}") {
+                    setAttribute(key="endpoint" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedName}");
+                    gf.checkIfEndPointExist(endpoint="#{endpoint}" exists="isServer");
+                    py.getAllSelectedTarget(targetList="#{pageSession.targetList}" resourceName="#{pageSession.encodedName}" selectedTarget="#{pageSession.selectedTargetList}");
+                    py.isInstanceInDeploymentGroupWithResource(selectedTarget="#{pageSession.selectedTargetList}" target="#{requestScope.targetName}" resourceName="#{pageSession.encodedName}" isPresent="isInstancePresentInDeployemntGroup");
+                    if ("!#{requestScope.isServer}") {
+                        setAttribute(key="endpoint" value="");
                     }
-                 }
+                        
+                    if ("#{requestScope.isInstancePresentInDeployemntGroup}"){
+                        setAttribute(key="endpoint" value="");
+                    }
+                }
+
                  if ("#{endpoint}") {
                      gf.getEntityAttrs(endpoint="#{endpoint}" valueMap="#{requestScope.attrs}");
                      if ("#{requestScope.attrs.enabled}=true") {

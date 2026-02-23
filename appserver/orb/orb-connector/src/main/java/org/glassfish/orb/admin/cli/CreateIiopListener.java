@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright 2017-2026 Payara Foundation and/or affiliates
  */
 
 package org.glassfish.orb.admin.cli;
@@ -83,8 +83,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @PerLookup
 @I18n("create.iiop.listener")
 @ExecuteOn(value={RuntimeType.DAS,RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.CLUSTER,CommandTarget.CONFIG,
-    CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE }
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE }
 )
 public class CreateIiopListener implements AdminCommand {
 

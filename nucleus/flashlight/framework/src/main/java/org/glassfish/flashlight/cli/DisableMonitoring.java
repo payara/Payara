@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.flashlight.cli;
 
@@ -68,7 +69,7 @@ import jakarta.inject.Inject;
 @PerLookup
 @I18n("disable.monitoring")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.POST, 

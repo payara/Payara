@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- resourceNode/resourceEditPageButtons.inc -->
 
@@ -134,9 +135,6 @@
                         gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}", exists="#{requestScope.isServer}");
                         if (#{requestScope.isServer}){
                             setAttribute(key="endp" value="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref");
-                        }
-                        if (!#{requestScope.isServer}){
-                            setAttribute(key="endp" value="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref");
                         }
                         createMap(result="#{requestScope.refsMap}")
                         mapPut(map="#{requestScope.refsMap}" key="id" value="#{pageSession.valueMap['name']}")

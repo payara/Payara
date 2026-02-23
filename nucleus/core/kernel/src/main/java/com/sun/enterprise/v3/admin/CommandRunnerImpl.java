@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -46,7 +46,6 @@ import com.sun.enterprise.admin.util.CachedCommandModel;
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.admin.util.CommandSecurityChecker;
 import com.sun.enterprise.admin.util.InstanceStateService;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.universal.collections.ManifestUtils;
 import com.sun.enterprise.universal.glassfish.AdminCommandResponse;
@@ -82,7 +81,6 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.MultiMap;
 import org.jvnet.hk2.config.InjectionManager;
 import org.jvnet.hk2.config.InjectionResolver;
-import org.jvnet.hk2.config.MessageInterpolatorImpl;
 import org.jvnet.hk2.config.UnsatisfiedDependencyException;
 
 import jakarta.inject.Inject;
@@ -1167,10 +1165,10 @@ public class CommandRunnerImpl implements CommandRunner {
         CommandRunnerProgressHelper progressHelper =
                 new CommandRunnerProgressHelper(command, model.getCommandName(), job, inv.progressStatusChild);
 
-        // If this glassfish installation does not have stand alone instances / clusters at all, then
+        // If this glassfish installation does not have standalone instances at all, then
         // lets not even look Supplemental command and such. A small optimization
         boolean doReplication = false;
-        if ((domain.getServers().getServer().size() > 1) || (!domain.getClusters().getCluster().isEmpty())) {
+        if (domain.getServers().getServer().size() > 1) {
             doReplication = true;
         } else {
             logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.devmode",
@@ -1370,7 +1368,6 @@ public class CommandRunnerImpl implements CommandRunner {
                     if (targetTypesAllowed.isEmpty()) {
                         targetTypesAllowed.add(CommandTarget.DAS);
                         targetTypesAllowed.add(CommandTarget.STANDALONE_INSTANCE);
-                        targetTypesAllowed.add(CommandTarget.CLUSTER);
                         targetTypesAllowed.add(CommandTarget.CONFIG);
                         targetTypesAllowed.add(CommandTarget.DEPLOYMENT_GROUP);
                     }
@@ -1394,7 +1391,6 @@ public class CommandRunnerImpl implements CommandRunner {
                     //Is there a server or a cluster or a config with given name ?
                     if ((!CommandTarget.DOMAIN.isValid(habitat, targetName))
                             && (domain.getServerNamed(targetName) == null)
-                            && (domain.getClusterNamed(targetName) == null)
                             && (domain.getConfigNamed(targetName) == null)
                             && (domain.getDeploymentGroupNamed(targetName) == null)) {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -1421,17 +1417,6 @@ public class CommandRunnerImpl implements CommandRunner {
                         report.setMessage(adminStrings.getLocalString("commandrunner.executor.invalidtargettype",
                                 "Target {0} is not a supported type. Command {1} supports these types of targets only : {2}",
                                 targetName, model.getCommandName(), validTypes.toString()));
-                        return;
-                    }
-                    //If target is a clustered instance and the allowed types does not allow operations on clustered
-                    //instance, return error
-                    if ((CommandTarget.CLUSTERED_INSTANCE.isValid(habitat, targetName))
-                            && (!targetTypesAllowed.contains(CommandTarget.CLUSTERED_INSTANCE))) {
-                        Cluster c = domain.getClusterForInstance(targetName);
-                        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        report.setMessage(adminStrings.getLocalString("commandrunner.executor.instanceopnotallowed",
-                                "The {0} command is not allowed on instance {1} because it is part of cluster {2}",
-                                model.getCommandName(), targetName, c.getName()));
                         return;
                     }
                     logger.fine(adminStrings.getLocalString("dynamicreconfiguration.diagnostics.replicationvalidationdone",

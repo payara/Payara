@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 /*
  * CommonHandlers.java
@@ -549,7 +549,7 @@ public class CommonHandlers {
         @HandlerOutput(name="onlyDAS", type=Boolean.class)}
     )
     public static void onlyDas(HandlerContext handlerCtx){
-        boolean onlyDAS = TargetUtil.getClusters().isEmpty() && TargetUtil.getStandaloneInstances().isEmpty();
+        boolean onlyDAS = TargetUtil.getStandaloneInstances().isEmpty();
         handlerCtx.setOutputValue("onlyDAS", onlyDAS);
     }
 
@@ -593,24 +593,6 @@ public class CommonHandlers {
         }
         handlerCtx.setOutputValue("result", result);
     }
-
-
-    
-    /**
-     *	<p> This handler checks if particular feature is supported  </p>
-     *
-     *  <p> Output value: "supportCluster" -- Type: <code>Boolean</code>/</p>
-     *  <p> Output value: "supportHADB" -- Type: <code>Boolean</code>/</p>
-     *	@param	handlerCtx	The HandlerContext.
-     */
-//    @Handler(id="checkSupport",
-//    output={
-//        @HandlerOutput(name="supportCluster", type=Boolean.class),
-//        @HandlerOutput(name="supportHADB", type=Boolean.class)})
-//        public static void checkSupport(HandlerContext handlerCtx) {
-//            handlerCtx.setOutputValue("supportCluster", false);
-//            handlerCtx.setOutputValue("supportHADB", false);
-//    }
 
     /**
      *	<p> This handler allows the "partialRequest" flag to be set.  This

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.admin.AdminCommandContext;
@@ -63,7 +63,7 @@ import org.glassfish.hk2.api.PerLookup;
 @PerLookup
 @I18n("deploydir.command")
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 public class DeployDirCommand extends DeployCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeployDirCommand.class);

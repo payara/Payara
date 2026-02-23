@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jta.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
@@ -70,18 +69,11 @@ import org.glassfish.api.admin.RuntimeType;
 
 
 @Service(name = "unfreeze-transaction-service")
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @ExecuteOn(RuntimeType.INSTANCE)
 @PerLookup
 @I18n("unfreeze.transaction.service")
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="unfreeze-transaction-service", 
-        description="Unfreeze Transaction Service",
-        params={
-            @RestParam(name="id", value="$parent")
-        }),
     @RestEndpoint(configBean=Server.class,
         opType=RestEndpoint.OpType.POST, 
         path="unfreeze-transaction-service", 

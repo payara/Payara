@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.module;
 
@@ -68,7 +68,6 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.DelegatingClassLoader;
-import org.glassfish.internal.api.Target;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.resources.listener.ApplicationScopedResourcesManager;
@@ -421,23 +420,6 @@ public class ConnectorDeployer extends JavaEEDeployer<ConnectorContainer, Connec
             if (server.isResourceRefExists(jndiName)) {
                 // delete ResourceRef for Server
                 server.deleteResourceRef(jndiName);
-            }
-        } else {
-            Cluster cluster = domain.getClusterNamed(target);
-            if(cluster != null){
-                if (cluster.isResourceRefExists(jndiName)) {
-                    // delete ResourceRef of Cluster
-                    cluster.deleteResourceRef(jndiName);
-
-                    // delete ResourceRef for all instances of Cluster
-                    Target tgt = habitat.getService(Target.class);
-                    List<Server> instances = tgt.getInstances(target);
-                    for (Server svr : instances) {
-                        if (svr.isResourceRefExists(jndiName)) {
-                            svr.deleteResourceRef(jndiName);
-                        }
-                    }
-                }
             }
         }
     }

@@ -70,7 +70,7 @@ import jakarta.inject.Inject;
  * List Resource Adapter Configs command
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @Service(name="list-resource-adapter-configs")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

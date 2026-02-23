@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
@@ -75,7 +75,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * Create System Properties Command
  * 
  * Adds or updates one or more system properties of the domain, configuration, 
- * cluster, or server instance
+ * or server instance
  * 
  * Usage: create-system-properties [--terse=false] [--echo=false] [--interactive=true] 
  * [--host localhost] [--port 4848|4849] [--secure|-s=true] [--user admin_user] 
@@ -87,8 +87,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name="create-system-properties")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType(value={CommandTarget.CLUSTER, 
-CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTERED_INSTANCE})
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE})
 @I18n("create.system.properties")
 public class CreateSystemProperties implements AdminCommand, AdminCommandSecurity.Preauthorization,
         AdminCommandSecurity.AccessCheckProvider {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
@@ -73,7 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.jvm.options")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.GET, 

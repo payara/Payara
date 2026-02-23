@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.security.services.commands;
 
@@ -100,7 +100,7 @@ import org.jvnet.hk2.config.types.Property;
 @Service(name="configure-ldap-for-admin")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.POST,

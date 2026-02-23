@@ -2,7 +2,7 @@ create-system-property(1)  asadmin Utility Subcommands  create-system-property(1
 
 NAME
        create-system-property - adds or updates a single system property
-       of the domain, configuration, cluster, or server instance
+       of the domain, configuration, or server instance
 
 SYNOPSIS
            create-system-property [--help]
@@ -35,7 +35,7 @@ OPTIONS
 
 OPERANDS
        target
-           The valid targets for this subcommand are instance, cluster,
+           The valid targets for this subcommand are instance,
            configuration, domain, and server. Server is the default option.
            Valid values are:
 
@@ -49,10 +49,6 @@ OPERANDS
 
            configuration_name
                Creates the property in the specified configuration.
-
-           cluster_name
-               Creates the property on all server instances in the specified
-               cluster.
 
            instance_name
                Creates the property on a specified server instance.

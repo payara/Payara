@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.internal.deployment;
 
@@ -293,8 +293,6 @@ public interface Deployment {
         boolean isRedeploy);
 
     void validateUndeploymentTarget(String target, String name);
-
-    void validateSpecifiedTarget(String target);
 
     boolean isAppEnabled(Application app);
 

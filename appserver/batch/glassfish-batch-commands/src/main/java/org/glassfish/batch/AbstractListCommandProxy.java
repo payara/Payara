@@ -37,22 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.batch;
 
-import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Target;
 
 import jakarta.inject.Inject;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Command to list batch jobs info
@@ -67,12 +63,6 @@ public abstract class AbstractListCommandProxy
 
     @Inject
     protected ServiceLocator serviceLocator;
-
-    @Inject
-    protected Target targetUtil;
-
-    @Inject
-    protected Logger logger;
 
     @Param(name = "terse", optional=true, defaultValue="false", shortName="t")
     protected boolean isTerse = false;
@@ -100,31 +90,22 @@ public abstract class AbstractListCommandProxy
             actionReport.setExtraProperties(extraProperties);
         }
 
-        ActionReport subReport = null;
+        ActionReport subReport;
         if (! preInvoke(context, actionReport)) {
             commandsExitCode = ActionReport.ExitCode.FAILURE;
             return;
         }
 
-        if (targetUtil.isCluster(target)) {
-            for (Server serverInst : targetUtil.getInstances(target)) {
-                try {
-                    subReport = executeInternalCommand(context, serverInst.getName());
-                    break;
-                } catch (Throwable ex) {
-                    logger.log(Level.INFO, "Got exception: " + ex.toString());
-                }
-            }
-        } else if (target.equals("server")) {
+        if (target.equals("server")) {
             subReport = executeInternalCommand(context, target);
         } else {
             subReport = executeInternalCommand(context, target);
         }
 
         if (subReport != null) {
-            if (subReport.getExtraProperties() != null && subReport.getExtraProperties().size() > 0)
+            if (subReport.getExtraProperties() != null && subReport.getExtraProperties().size() > 0) {
                 postInvoke(context, subReport);
-            else {
+            } else {
                 if (subReport.getSubActionsReport() != null && subReport.getSubActionsReport().size() > 0
                         && subReport.getSubActionsReport().get(0).getExtraProperties() != null) {
                     postInvoke(context, subReport.getSubActionsReport().get(0));

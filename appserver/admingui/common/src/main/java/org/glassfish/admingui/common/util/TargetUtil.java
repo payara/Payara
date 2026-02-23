@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.common.util;
 
@@ -56,13 +56,6 @@ import org.xml.sax.SAXException;
  * @author anilam
  */
 public class TargetUtil {
-
-    public static boolean isCluster(String name){
-        if (GuiUtil.isEmpty(name)){
-            return false;
-        }
-        return getClusters().contains(name);
-    }
 
     public static boolean isInstance(String name){
         if (GuiUtil.isEmpty(name)){
@@ -116,19 +109,6 @@ public class TargetUtil {
         return dgs;
     }
 
-    public static List<String> getClusters(){
-        List<String> clusters = new ArrayList<>();
-        try{
-            clusters.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster").keySet());
-        }catch (Exception ex){
-            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getClusters"), ex.getLocalizedMessage()});
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
-                ex.printStackTrace();
-            }
-        }
-        return clusters;
-    }
-
     public static List<String> getInstances() {
         List<String> instances = new ArrayList<>();
         try{
@@ -144,11 +124,11 @@ public class TargetUtil {
 
     public static List<String> getConfigs() {
         List<String> config = new ArrayList<>();
-        try{
+        try {
             config.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/configs/config").keySet());
-        }catch (Exception ex){
-            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getClusters"), ex.getLocalizedMessage()});
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+        } catch (Exception ex) {
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getConfigs"), ex.getLocalizedMessage()});
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
             }
         }
@@ -170,37 +150,25 @@ public class TargetUtil {
         return instances;
     }
 
-    public static List<String> getClusteredInstances(String cluster) {
-        List<String> instances = new ArrayList<>();
+    public static String getTargetEndpoint(String target) {
         try {
-            instances.addAll(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL") + "/clusters/cluster/" + cluster + "/server-ref").keySet());
-        } catch (Exception ex) {
-            GuiUtil.getLogger().severe(ex.getMessage());
-        }
-        return instances;
-    }
-
-    public static String getTargetEndpoint(String target){
-        try{
             String encodedName = URLEncoder.encode(target, "UTF-8");
-            String endpoint = (String)GuiUtil.getSessionValue("REST_URL");
-            if (target.equals("server")){
+            String endpoint = (String) GuiUtil.getSessionValue("REST_URL");
+            if (target.equals("server")) {
                 endpoint = endpoint + "/servers/server/server";
-            }else{
-                List<String> clusters = TargetUtil.getClusters();
+            } else {
                 List<String> dgs = TargetUtil.getDeploymentGroups();
-                if (clusters.contains(target)){
-                    endpoint = endpoint + "/clusters/cluster/" + encodedName;
-                }else if (dgs.contains(target)) {
+                if (dgs.contains(target)) {
                     endpoint = endpoint + "/deployment-groups/deployment-group/" + encodedName;
-                 }else{
+                } else {
                     endpoint = endpoint + "/servers/server/" + encodedName;
                 }
             }
             return endpoint;
-        }catch(Exception ex){
-            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getTargetEndpoint"), ex.getLocalizedMessage()});
-            if (GuiUtil.getLogger().isLoggable(Level.FINE)){
+        } catch (Exception ex) {
+            GuiUtil.getLogger().log(Level.INFO, "{0}{1}", new Object[]{GuiUtil.getCommonMessage("log.error.getTargetEndpoint"),
+                    ex.getLocalizedMessage()});
+            if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
             }
             return "";
@@ -231,13 +199,8 @@ public class TargetUtil {
     public static Collection<String> getHostNames(String target) {
         Set<String> hostNames = new HashSet<>();
         hostNames.toArray();
-        List<String> clusters = TargetUtil.getClusters();
         List<String> instances = new ArrayList<>();
-        if (clusters.contains(target)){
-             instances = getClusteredInstances(target);
-        } else {
-            instances.add(target);
-        }
+        instances.add(target);
 
         for (String instance : instances) {
             String hostName = null;

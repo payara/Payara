@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.config.support;
 
@@ -100,7 +100,6 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
     @Override
     public void postConstruct() {
         upgradeConfigElements();
-        upgradeServerElements();
     }
 
     private void upgradeConfigElements() {
@@ -126,17 +125,11 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
                             debugPort = DEFAULT_JAVA_DEBUGGER_PORT;
                         }
 
-                        ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
-
-                            @Override
-                            public Object run(SystemPropertyBag config) throws PropertyVetoException, TransactionFailure {
-
-                                createSystemProperty(config, ADMIN, adminPort);
-                                createSystemProperty(config, OSGI, osgiPort);
-                                createSystemProperty(config, DEBUG, debugPort);
-
-                                return null;
-                            }
+                        ConfigSupport.apply((SingleConfigCode<SystemPropertyBag>) config -> {
+                            createSystemProperty(config, ADMIN, adminPort);
+                            createSystemProperty(config, OSGI, osgiPort);
+                            createSystemProperty(config, DEBUG, debugPort);
+                            return null;
                         }, c);
                     }
 
@@ -145,85 +138,6 @@ public class SystemPropertyUpgrade implements ConfigurationUpgrade, PostConstruc
                 Logger.getAnonymousLogger().log(Level.SEVERE, Strings.get("SystemPropertyUpgrade.Failure", c), e);
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    private void upgradeServerElements() {
-        //TODO Do this per node host - we can reuse port #s if they are on different hosts
-        int incr = 0;
-        for (Cluster c : domain.getClusters().getCluster()) {
-            for (Server s : c.getInstances()) {
-                incr = createServerSystemProperty(s, incr);
-            }
-        }
-    }
-
-    private int createServerSystemProperty(Server s, int incr) {
-        try {
-            if (!s.getName().equals(DAS)) {
-                SystemPropertyBag bag = s;
-                if (bag.getSystemProperty(HTTP) != null) {
-                    final String httpVal = bag.getSystemProperty(HTTP).getValue();
-                    if (httpVal != null) {
-                        PREFIX = httpVal.substring(0, httpVal.length() - 5);
-
-                        String configAdminSP = null;
-                        String configOsgiSP = null;
-                        String configDebugSP = null;
-                        for (SystemProperty sp : s.getConfig().getSystemProperty()) {
-                            if (sp.getName().equals(ADMIN)) {
-                                configAdminSP = sp.getValue();
-                            }
-                            if (sp.getName().equals(OSGI)) {
-                                configOsgiSP = sp.getValue();
-                            }
-                            if (sp.getName().equals(DEBUG)) {
-                                configDebugSP = sp.getValue();
-                            }
-                        }
-                        int baseAdmin;
-                        if (configAdminSP == null) {
-                            baseAdmin = DEFAULT_ADMIN_PORT;
-                        } else {
-                            baseAdmin = Integer.parseInt(configAdminSP);
-                        }
-                        int baseOsgi;
-                        if (configOsgiSP == null) {
-                            baseOsgi = DEFAULT_OSGI_SHELL_TELNET_PORT;
-                        } else {
-                            baseOsgi = Integer.parseInt(configOsgiSP);
-                        }
-                        int baseDebug;
-                        if (configDebugSP == null) {
-                            baseDebug = DEFAULT_JAVA_DEBUGGER_PORT;
-                        } else {
-                            baseDebug = Integer.parseInt(configDebugSP);
-                        }
-                        incr++;
-                        final int adminPort = baseAdmin + incr;
-                        final int osgiPort = baseOsgi + incr;
-                        final int debugPort = baseDebug + incr;
-
-                        ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
-
-                            @Override
-                            public Object run(SystemPropertyBag config) throws PropertyVetoException, TransactionFailure {
-
-                                createSystemProperty(config, ADMIN, adminPort);
-                                createSystemProperty(config, OSGI, osgiPort);
-                                createSystemProperty(config, DEBUG, debugPort);
-
-                                return null;
-                            }
-                        }, s);
-                    }
-                }
-            }
-            return incr;
-        } catch (Exception e) {
-            Logger.getAnonymousLogger().log(Level.SEVERE,
-                    Strings.get("SystemPropertyUpgrade.Failure", s), e);
-            throw new RuntimeException(e);
         }
     }
 

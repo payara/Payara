@@ -38,14 +38,12 @@
  * holder.
  */
 // Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
-
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
@@ -102,9 +100,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("delete.application.ref.command")
 @ExecuteOn(value={RuntimeType.DAS, RuntimeType.INSTANCE})
 @PerLookup
-@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.DELETE, path="delete-application-ref"),
     @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.DELETE, path="delete-application-ref")
 })
 public class DeleteApplicationRefCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {

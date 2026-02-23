@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.universal.xml;
 
@@ -207,7 +207,7 @@ public class MiniXmlParser {
     }
 
     /**
-     * Gets the log file name for instances and clusters
+     * Gets the log file name for instances
      *
      * loggingConfig will return an IOException if there is no
      * logging properties file.
@@ -380,7 +380,6 @@ public class MiniXmlParser {
             Logger.getLogger(MiniXmlParser.class.getName()).log(
                     Level.FINE, strings.get("secondpass"));
         }
-        finalTouches();
     }
 
     private void createParser() throws FileNotFoundException, XMLStreamException {
@@ -424,7 +423,7 @@ public class MiniXmlParser {
         skipRoot("domain");
         OUTER:
         while (true) {
-            skipTo("servers", PROPERTY, CLUSTERS, SYSTEM_PROPERTY);
+            skipTo("servers", PROPERTY, SYSTEM_PROPERTY);
             String name = parser.getLocalName();
             if (null == name) {
                 parseDomainProperty(); // maybe it is the domain name?
@@ -432,9 +431,6 @@ public class MiniXmlParser {
                 switch (name) {
                     case "servers":
                         break OUTER;
-                    case CLUSTERS:
-                        parseClusters();
-                        break;
                     case SYSTEM_PROPERTY:
                         parseSystemProperty(SysPropsHandler.Type.DOMAIN);
                         break;
@@ -470,14 +466,11 @@ public class MiniXmlParser {
         // <property name="administrative.domain.name" value="domain1"/>
         // also have to handle system-property at the domain level
         while (true) {
-            skipTo("configs", PROPERTY, CLUSTERS, SYSTEM_PROPERTY);
+            skipTo("configs", PROPERTY, SYSTEM_PROPERTY);
             String name = parser.getLocalName();
             if ("configs".equals(name)) {
                 break;
-            }
-            if (CLUSTERS.equals(name))
-                parseClusters();
-            else if (SYSTEM_PROPERTY.equals(name)) {
+            } else if (SYSTEM_PROPERTY.equals(name)) {
                 parseSystemProperty(SysPropsHandler.Type.DOMAIN);
             } else {
                 parseDomainProperty(); // maybe it is the domain name?
@@ -720,7 +713,7 @@ public class MiniXmlParser {
      * The cursor will be pointing at the START_ELEMENT of name1 or name2 when it returns note that skipTree must be
      * called.  Otherwise we could be fooled by a sub-element with the same name as an outer element
      *
-     * @param nameArgs An array of eligible element names to skip to
+     * @param namesArgs An array of eligible element names to skip to
      * @throws XMLStreamException
      */
     private void skipTo(final String... namesArgs) throws XMLStreamException, EndDocumentException {
@@ -798,20 +791,17 @@ public class MiniXmlParser {
 
     private void findOtherStuff() {
         try {
-            // find the domain name and/or clusters, if it is there
+            // find the domain name if it is there
             // If we bump into the domain end tag first -- no sweat
             //
             // notice how everything is MUCH more difficult to understand because
             // we are going through domain.xml in one long relentless sweep and
             // we can't back up!
 
-            while (skipToButNotPast("domain", PROPERTY, CLUSTERS, SYSTEM_PROPERTY,"secure-admin")) {
+            while (skipToButNotPast("domain", PROPERTY, SYSTEM_PROPERTY,"secure-admin")) {
                 String name = parser.getLocalName();
                 if (null != name)
                     switch (name) {
-                    case CLUSTERS:
-                        parseClusters();
-                        break;
                     case SYSTEM_PROPERTY:
                         parseSystemProperty(SysPropsHandler.Type.DOMAIN);
                         break;
@@ -1086,65 +1076,6 @@ public class MiniXmlParser {
         return map;
     }
 
-    // clusters is short and sweet.  Just parse the whole thing first -- and then do
-    // the logic of finding our server in it and picking out sysprops...
-    private void parseClusters() throws XMLStreamException, EndDocumentException {
-        // cursor ==> clusters
-        // if there is more than one clusters element (!weird!) only use the last one
-        clusters = new ArrayList<ParsedCluster>();
-
-        while (skipToButNotPast(CLUSTERS, "cluster")) {
-            // cursor ==> "cluster"
-            ParsedCluster pc = new ParsedCluster(parseAttributes().get("name"));
-            clusters.add(pc);
-            parseCluster(pc);
-        }
-    }
-
-    /*
-     * the cluster element has one server-ref for each server in the cluster.
-     * cluster has an attribute for the config-ref which is the same as in the server element
-     * that would make this MUCH simpler - compare server's config-ref with this
-     * cluster's config-ref.  If they match -- then the server belongs to this cluster
-     * But we can't depend on it because of the nature of this serial parser.  I.e.
-     * we may not yet have seen the server element.  BUT we are given the server name
-     * in the constructor -- so we ALWAYS have that.  So we check the more complex
-     * server-ref's
-     */
-    private void parseCluster(ParsedCluster pc) throws XMLStreamException, EndDocumentException {
-        // cursor --> cluster element
-        while (skipToButNotPast("cluster", SYSTEM_PROPERTY, "server-ref")) {
-            String name = parser.getLocalName();
-            if (SYSTEM_PROPERTY.equals(name)) {
-                // NOT parseSystemProperty() because this might not be "our" cluster
-                // finalTouches() will add the correct system-property's
-                parseProperty(pc.sysProps);
-            }
-            else if ("server-ref".equals(name)) {
-                Map<String, String> atts = parseAttributes();
-                // atts is guaranteed to be non-null
-                String sname = atts.get("ref");
-                if (GFLauncherUtils.ok(sname))
-                    pc.serverNames.add(sname);
-            }
-        }
-    }
-
-    // add any cluster system props to the data structure...
-    private void finalTouches() {
-        if (clusters == null)
-            return;
-
-        for (ParsedCluster pc : clusters) {
-            Map<String, String> props = pc.getMySysProps(serverName);
-
-            if (props != null) {
-                sysProps.add(SysPropsHandler.Type.CLUSTER, props);
-                break;  // done!!
-            }
-        }
-    }
-
     // this is so we can return from arbitrarily nested calls
 
     private static class EndDocumentException extends Exception {
@@ -1154,7 +1085,6 @@ public class MiniXmlParser {
 
     private static final String DEFAULT_ADMIN_VS_ID = "__asadmin";
     private static final String DEFAULT_VS_ID = "server";
-    private static final String CLUSTERS = "clusters";
     private static final String INVALID = "invalid";
     private static final String PROPERTY = "property";
     private static final String SYSTEM_PROPERTY = "system-property";
@@ -1183,6 +1113,5 @@ public class MiniXmlParser {
     private boolean sawDefaultConfig;
     private boolean sawConfig;
     private SysPropsHandler sysProps = new SysPropsHandler();
-    private List<ParsedCluster> clusters = null;
     private boolean secureAdminEnabled = false;
 }

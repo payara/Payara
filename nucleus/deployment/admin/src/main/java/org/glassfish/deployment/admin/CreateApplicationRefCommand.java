@@ -38,7 +38,6 @@
  * holder.
  */
 // Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
-
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -110,9 +109,8 @@ import org.glassfish.deployment.versioning.VersioningService;
 @I18n("create.application.ref.command")
 @ExecuteOn(value={RuntimeType.DAS})
 @PerLookup
-@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value={CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,opType=RestEndpoint.OpType.POST, path="create-application-ref"),
     @RestEndpoint(configBean=Server.class,opType=RestEndpoint.OpType.POST, path="create-application-ref")
 })
 public class CreateApplicationRefCommand implements AdminCommand, AdminCommandSecurity.AccessCheckProvider {

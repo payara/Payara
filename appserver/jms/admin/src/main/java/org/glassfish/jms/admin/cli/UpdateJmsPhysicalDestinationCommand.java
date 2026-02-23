@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package org.glassfish.jms.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -70,15 +70,8 @@ import org.glassfish.hk2.api.PerLookup;
 @Service(name = "__update-jmsdest")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="__update-jmsdest", 
-        description="Update JMS Destination",
-        params={
-            @RestParam(name="target", value="$parent")
-        }),
     @RestEndpoint(configBean=Server.class,
         opType=RestEndpoint.OpType.POST, 
         path="__update-jmsdest", 

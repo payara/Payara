@@ -75,7 +75,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @PerLookup
 @I18n("create.threadpool")
 @org.glassfish.api.admin.ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 
 public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Preauthorization {
 

@@ -1,18 +1,18 @@
 create-instance(1)        asadmin Utility Subcommands       create-instance(1)
 
 NAME
-       create-instance - creates a GlassFish Server instance
+       create-instance - creates a Payara Server instance
 
 SYNOPSIS
            create-instance [--help] --node node-name
-           [--config config-name | --cluster cluster-name]
+           [--config config-name] [--deploymentgroup group-name]
            [--lbenabled={true|false}]
            [--portbase=port-number] [--checkports={true|false}]
            [--systemproperties (name=value)[:name=value]* ]
            instance-name
 
 DESCRIPTION
-       The create-instance subcommand creates a GlassFish Server instance.
+       The create-instance subcommand creates a Payara Server instance.
        This subcommand requires the secure shell (SSH) to be configured on the host
        where the domain administration server (DAS) is running and on the host
        that is represented by the node where the instance is to reside.
@@ -30,13 +30,13 @@ DESCRIPTION
 
        You may run this command from any host that can contact the DAS.
 
-       A GlassFish Server instance is a single Virtual Machine for the Java
+       A Payara Server instance is a single Virtual Machine for the Java
        platform (Java Virtual Machine or JVM machine) on a single node in
-       which GlassFish Server is running. A node defines the host where the
-       GlassFish Server instance resides. The JVM machine must be compatible
+       which Payara Server is running. A node defines the host where the
+       Payara Server instance resides. The JVM machine must be compatible
        with the Java Platform, Enterprise Edition (Java EE).
 
-       A GlassFish Server instance requires a reference to the following
+       A Payara Server instance requires a reference to the following
        items:
 
        *   The node that defines the host where the instance resides. The node
@@ -45,43 +45,40 @@ DESCRIPTION
        *   The named configuration that defines the configuration of the
            instance. The configuration can be specified in the command to
            create the instance, but is not required. If no configuration is
-           specified for an instance that is not joining a cluster, the
-           subcommand creates a configuration for the instance. An instance
-           that is joining a cluster receives its configuration from its
-           parent cluster.
+           specified for an instance, the
+           subcommand creates a configuration for the instance.
 
-       Each GlassFish Server instance is one of the following types of
+       Each Payara Server instance is one of the following types of
        instance:
 
        Standalone instance
            A standalone instance does not share its configuration with any
-           other instances or clusters. A standalone instance is created if
+           other instances. A standalone instance is created if
            either of the following conditions is met:
 
-           *   No configuration or cluster is specified in the command to
+           *   No configuration is specified in the command to
                create the instance.
 
            *   A configuration that is not referenced by any other instances
-               or clusters is specified in the command to create the instance.
+               is specified in the command to create the instance.
 
-           When no configuration or cluster is specified, a copy of the
+           When no configuration is specified, a copy of the
            default-config configuration is created for the instance. The name
            of this configuration is instance-name-config, where instance-name
            represents the name of an unclustered server instance.
 
        Shared instance
-           A shared instance shares its configuration with other instances or
-           clusters. A shared instance is created if a configuration that is
-           referenced by other instances or clusters is specified in the
+           A shared instance shares its configuration with other instances.
+           A shared instance is created if a configuration that is
+           referenced by other instances is specified in the
            command to create the instance.
 
        Clustered instance
-           A clustered instance inherits its configuration from the cluster to
-           which the instance belongs and shares its configuration with other
-           instances in the cluster. A clustered instance is created if a
-           cluster is specified in the command to create the instance.
+           A clustered instance is an instance within a deployment group.
+           A clustered instance is created if a deployment group is specified in
+           the command to create the instance.
 
-           Any instance that is not part of a cluster is considered an
+           Any instance that is not part of a deployment group is considered an
            unclustered server instance. Therefore, standalone instances and
            shared instances are unclustered server instances.
 
@@ -113,18 +110,11 @@ OPTIONS
            server-config. Specifying the --config option creates a shared
            instance.
 
-           The --config option and the --cluster option are mutually
-           exclusive. If both options are omitted, a standalone instance is
+           If the --config option is omitted, a standalone instance config is
            created.
 
-       --cluster
-           Specifies the cluster from which the instance inherits its
-           configuration. Specifying the --cluster option creates a clustered
-           instance.
-
-           The --config option and the --cluster option are mutually
-           exclusive. If both options are omitted, a standalone instance is
-           created.
+       --deploymentgroup
+           Specifies the deployment group the instance will join.
 
        --lbenabled
            Specifies whether the instance is enabled for load balancing.
@@ -181,7 +171,7 @@ OPTIONS
            Defines system properties for the instance. These properties
            override property definitions for port settings in the instance's
            configuration. Predefined port settings must be overridden if, for
-           example, two clustered instances reside on the same host. In this
+           example, two instances reside on the same host. In this
            situation, port settings for one instance must be overridden
            because both instances share the same configuration.
 
@@ -278,15 +268,15 @@ OPERANDS
                *   Underscore
 
            *   The name must be unique in the domain and must not be the name
-               of another GlassFish Server instance, a cluster, a named
+               of another Payara Server instance, a deployment group, a named
                configuration, or a node.
 
            *   The name must not be domain, server, or any other keyword that
-               is reserved by GlassFish Server.
+               is reserved by Payara Server.
 
 EXAMPLES
-       Example 1, Creating a Standalone GlassFish Server Instance
-           This example creates the standalone GlassFish Server instance
+       Example 1, Creating a Standalone Payara Server Instance
+           This example creates the standalone Payara Server instance
            pmdsainst in the domain domain1 on the local host.
 
                asadmin> create-instance --node localhost-domain1 pmdsainst
@@ -302,9 +292,9 @@ EXAMPLES
 
                Command create-instance executed successfully.
 
-       Example 2, Creating a Standalone GlassFish Server Instance With Custom
+       Example 2, Creating a Standalone Payara Server Instance With Custom
        Port Assignments
-           This example creates the standalone GlassFish Server instance
+           This example creates the standalone Payara Server instance
            pmdcpinst in the domain domain1 on the local host. Custom port
            numbers are assigned to the following ports:
 
@@ -333,8 +323,8 @@ EXAMPLES
 
                Command create-instance executed successfully.
 
-       Example 3, Creating a Shared GlassFish Server Instance
-           This example creates the shared GlassFish Server instance
+       Example 3, Creating a Shared Payara Server Instance
+           This example creates the shared Payara Server instance
            pmdsharedinst1 in the domain domain1 on the local host. The shared
            configuration of this instance is pmdsharedconfig.
 
@@ -352,12 +342,12 @@ EXAMPLES
 
                Command create-instance executed successfully.
 
-       Example 4, Creating a Clustered GlassFish Server Instance
-           This example creates the clustered GlassFish Server instance
+       Example 4, Creating a Clustered Payara Server Instance
+           This example creates the Payara Server instance
            pmdinst1 in the domain domain1 on the local host. The instance is a
-           member of the cluster pmdclust1.
+           member of the deployment group pmdclust1.
 
-               asadmin> create-instance --node localhost-domain1 --cluster pmdclust pmdinst1
+               asadmin> create-instance --node localhost-domain1 --deploymentgroup pmdclust1 pmdinst1
                Port Assignments for server instance pmdinst1:
                JMX_SYSTEM_CONNECTOR_PORT=28686
                JMS_PROVIDER_PORT=27676

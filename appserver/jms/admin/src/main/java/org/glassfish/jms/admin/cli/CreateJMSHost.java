@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -58,7 +59,6 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.config.serverbeans.*;
 import java.util.Properties;
-import java.beans.PropertyVetoException;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
@@ -79,11 +79,10 @@ import jakarta.inject.Named;
 @PerLookup
 @I18n("create.jms.host")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class CreateJMSHost implements AdminCommand {
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSHost.class);
-    //[target target] [mqhost localhost] [mqport 7676] [mquser admin] [mqpassword admin] jms_host_name
 
     @Param(name="mqHost", alias="host", defaultValue="localhost")
     String mqhost;
@@ -112,9 +111,6 @@ public class CreateJMSHost implements AdminCommand {
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
 
-    /*@Inject
-    Configs configs;*/
-
     @Inject
     CommandRunner commandRunner;
 
@@ -130,83 +126,69 @@ public class CreateJMSHost implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         Config targetConfig = domain.getConfigNamed(target);
-        if (targetConfig != null)
+        if (targetConfig != null) {
             config = targetConfig;
+        }
         
         Server targetServer = domain.getServerNamed(target);
-        //String configRef = targetServer.getConfigRef();
         if (targetServer!=null) {
            config = domain.getConfigNamed(targetServer.getConfigRef());
         }
-        com.sun.enterprise.config.serverbeans.Cluster cluster =domain.getClusterNamed(target);
-        if (cluster!=null) {
-            config = domain.getConfigNamed(cluster.getConfigRef());
-        }
 
         if (jmsHostName == null) {
-            report.setMessage(localStrings.getLocalString("create.jms.host.noJmsHost",
-                            "No JMS Host name specified."));
+            report.setMessage(localStrings.getLocalString("create.jms.host.noJmsHost", "No JMS Host name specified."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        JmsService jmsservice = config.getExtensionByType(JmsService.class);
-        /*for (Config c : configs.getConfig()) {
-
-               if(configRef.equals(c.getName()))
-                     jmsservice = c.getJmsService();
-            }*/
+        JmsService jmsService = config.getExtensionByType(JmsService.class);
 
         // ensure we don't already have one of this name before creating it.
-        for (JmsHost jmsHost : jmsservice.getJmsHost()) {
-                if (jmsHostName.equals(jmsHost.getName())) {
-                    if (force) {
-                        ActionReport deleteReport = report.addSubActionsReport();
-                        ParameterMap parameters = new ParameterMap();
-                         parameters.set("DEFAULT", jmsHostName);
-                         parameters.set("target", target);
-                        commandRunner.getCommandInvocation("delete-jms-host", deleteReport, context.getSubject()).parameters(parameters).execute();
-                        if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
-                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            return;
-                        }
-                        break;
-                    } else {
-                        report.setMessage(localStrings.getLocalString("create.jms.host.duplicate",
-                                "A JMS Host named {0} already exists.", jmsHostName));
+        for (JmsHost jmsHost : jmsService.getJmsHost()) {
+            if (jmsHostName.equals(jmsHost.getName())) {
+                if (force) {
+                    ActionReport deleteReport = report.addSubActionsReport();
+                    ParameterMap parameters = new ParameterMap();
+                    parameters.set("DEFAULT", jmsHostName);
+                    parameters.set("target", target);
+                    commandRunner.getCommandInvocation("delete-jms-host", deleteReport, context.getSubject()).parameters(parameters).execute();
+                    if (ActionReport.ExitCode.FAILURE.equals(deleteReport.getActionExitCode())) {
                         report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         return;
                     }
+                    break;
+                } else {
+                    report.setMessage(localStrings.getLocalString("create.jms.host.duplicate",
+                            "A JMS Host named {0} already exists.", jmsHostName));
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
                 }
             }
+        }
 
         try {
-            ConfigSupport.apply(new SingleConfigCode<JmsService>() {
-                public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
-
-                    JmsHost jmsHost = param.createChild(JmsHost.class); //TODO: need a way to create a JmsHost instance
-                    jmsHost.setAdminPassword(mqpassword);
-                    jmsHost.setAdminUserName(mquser);
-                    jmsHost.setName(jmsHostName);
-                    jmsHost.setHost(mqhost);
-                    jmsHost.setPort(mqport);
-		    if(props != null)
-		    {
-		    	for (Map.Entry e: props.entrySet()){
-				Property prop = jmsHost.createChild(Property.class);
-				prop.setName((String)e.getKey());
-				prop.setValue((String)e.getValue());
-				jmsHost.getProperty().add(prop);
-			}
-		    }
-                    param.getJmsHost().add(jmsHost);
-
-                    return jmsHost;
+            ConfigSupport.apply((SingleConfigCode<JmsService>) jmsServiceConfigCode -> {
+                JmsHost jmsHost = jmsServiceConfigCode.createChild(JmsHost.class); //TODO: need a way to create a JmsHost instance
+                jmsHost.setAdminPassword(mqpassword);
+                jmsHost.setAdminUserName(mquser);
+                jmsHost.setName(jmsHostName);
+                jmsHost.setHost(mqhost);
+                jmsHost.setPort(mqport);
+                if (props != null) {
+                    for (Map.Entry e : props.entrySet()) {
+                        Property prop = jmsHost.createChild(Property.class);
+                        prop.setName((String) e.getKey());
+                        prop.setValue((String) e.getValue());
+                        jmsHost.getProperty().add(prop);
+                    }
                 }
-            }, jmsservice);
-        } catch(TransactionFailure tfe) {
+                jmsServiceConfigCode.getJmsHost().add(jmsHost);
+
+                return jmsHost;
+            }, jmsService);
+        } catch (TransactionFailure tfe) {
             report.setMessage(localStrings.getLocalString("create.jms.host.fail",
-                            "Unable to create jms host {0}.", jmsHostName) +
-                            " " + tfe.getLocalizedMessage());
+                    "Unable to create jms host {0}.", jmsHostName) +
+                    " " + tfe.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
         }

@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -152,10 +152,6 @@ the default value.</p>
 <dd>
 <p>Creates the listener for the named configuration.</p>
 </dd>
-<dt class="hdlist1">cluster_name</dt>
-<dd>
-<p>Creates the listener for every server instance in the cluster.</p>
-</dd>
 <dt class="hdlist1">stand-alone_instance_name</dt>
 <dd>
 <p>Creates the listener for a particular standalone server instance.</p>
@@ -198,35 +194,6 @@ Command create-iiop-listener executed successfully.</code></pre>
 </div>
 <div class="paragraph">
 <p><a id="GSRFM486"></a><a id="sthref290"></a></p>
-</div>
-<div class="paragraph">
-<p>Example 2   Creating an IIOP Listener with a Target Cluster</p>
-</div>
-<div class="paragraph">
-<p>The following command creates an IIOP listener named <code>iiop_listener_2</code>
-for the cluster <code>mycluster</code>. It uses the target option.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-iiop-listener --listeneraddress 0.0.0.0 --iiopport 1401
---target mycluster iiop_listener_2
-Command create-iiop-listener executed successfully.</code></pre>
-</div>
-</div>
-<div id="sthref291" class="paragraph">
-<p>Exit Status</p>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">0</dt>
-<dd>
-<p>command executed successfully</p>
-</dd>
-<dt class="hdlist1">1</dt>
-<dd>
-<p>error in executing the command</p>
-</dd>
-</dl>
 </div>
 <div id="sthref292" class="paragraph">
 <p>See Also</p>

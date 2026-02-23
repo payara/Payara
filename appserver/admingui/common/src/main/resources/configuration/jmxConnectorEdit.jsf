@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- common/configuration/adminService.jsf -->
 
@@ -115,9 +116,6 @@
             <!-- For Cluster profile only
             //<sun:property id="AcceptProp" rendered="#{isNodeAgent}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.nodeAgent.acceptLabel}" helpText="$resource{i18n.nodeAgent.acceptHelp}" >
                 //<sun:checkbox label="$resource{i18n.desc.Enabled}" selected="#{requestScope.accept}" />
-            //</sun:property>
-            //<sun:property id="clientHostname" rendered="#{supportCluster}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.edJmxConnector.clientHostLabel}" helpText="$resource{i18n.edJmxConnector.clientHostLabelHelp}" >
-               //<sun:textField id="clientHostname" styleClass="required" columns="$int{40}" text="#{requestScope.clientHostname}" required="#{true}" />
             //</sun:property>
             -->
     </sun:propertySheetSection>

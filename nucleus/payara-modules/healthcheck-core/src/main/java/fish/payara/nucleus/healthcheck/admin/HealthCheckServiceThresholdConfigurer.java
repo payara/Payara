@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2016-2025 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2026 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -19,7 +19,6 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
@@ -61,7 +60,7 @@ import jakarta.validation.constraints.Min;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure.service.threshold")
 @ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = HealthCheckServiceConfiguration.class,
                 opType = RestEndpoint.OpType.POST,

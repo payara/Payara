@@ -38,15 +38,13 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016-2017] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 -->
 
 <ui:event type="initPage">
     setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
-    if(!$session{supportCluster}) {
-        if (!$pageSession{configName}) {
-            setPageSessionAttribute(key="configName" value="server-config");
-        }
+    if (!$pageSession{configName}) {
+        setPageSessionAttribute(key="configName" value="server-config");
     }
     getPluginIdFromViewId(viewId="#{facesContext.viewRoot.viewId}", pluginId="#{pluginId}");
 </ui:event>
@@ -57,14 +55,9 @@
     </ui:event>
     <ui:event type="beforeEncode">
         <!-- Set request-scoped restart flag to compare w/ session -->
-        if (!$session{supportCluster}) {
-            gf.restRequest(endpoint="#{sessionScope.REST_URL}/_get-restart-required", method="get", result="#{requestScope.result}");
-            setSessionAttribute(key="restartRequired", value="#{requestScope.result.data.extraProperties.entity.restartRequired}");
-            setSessionAttribute(key="unprocessedChanges", value="#{requestScope.result.data.extraProperties.entity.unprocessedChanges}");
-        }
-        if($session{supportCluster}) {
-            setSessionAttribute(key="restartRequired" value="$boolean{false}");
-        }
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/_get-restart-required", method="get", result="#{requestScope.result}");
+        setSessionAttribute(key="restartRequired", value="#{requestScope.result.data.extraProperties.entity.restartRequired}");
+        setSessionAttribute(key="unprocessedChanges", value="#{requestScope.result.data.extraProperties.entity.unprocessedChanges}");
 
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/asadmin-recorder-enabled", method="get", result="#{requestScope.result}");
         setPageSessionAttribute(key="asadminRecorderEnabled", value="#{requestScope.result.data.extraProperties.asadminRecorderEnabled}");

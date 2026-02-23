@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2019-2026 Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <sc:subMenu value="Deploy" id="deployMenu">
 <sc:menuItem value="Web Application" url="#{request.contextPath}/web/webApp/upload.jsf?appType=webApp" />
@@ -115,7 +115,6 @@
     </sc:subMenu>
     <sc:menuItem value="Management Rules" url="#{request.contextPath}/layouttest.jsf?page=Management+Rules" />
 <!--
-    <sc:menuItem value="Clusters" url="#{request.contextPath}/layouttest.jsf?page=Clusters" />
     <sc:menuItem value="Web Services" url="#{request.contextPath}/layouttest.jsf?page=Web+Services" />
     <sc:menuItem value="HTTP Load Balancers" url="#{request.contextPath}/layouttest.jsf?page=HTTP+Load+Balancers" />
     <sc:menuItem value="Stand-Alone Instances" url="#{request.contextPath}/layouttest.jsf?page=Stand-Alone Instances" />

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.enterprise.iiop.impl;
 
@@ -52,8 +52,13 @@ import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.orb.ORB;
 import com.sun.corba.ee.impl.folb.InitialGroupInfoService;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.logging.LogDomains;
 
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.orb.admin.config.IiopListener;
 import org.glassfish.orb.admin.config.Orb;
 import org.glassfish.orb.admin.config.IiopService;
@@ -62,6 +67,8 @@ import com.sun.enterprise.config.serverbeans.SslClientConfig;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.hk2.api.ServiceLocator;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -207,7 +214,6 @@ public final class GlassFishORBManager {
 
     private ProcessType processType;
 
-    private IiopFolbGmsClient gmsClient;
     private static boolean disableSSLCheck;
 
     /**
@@ -244,10 +250,6 @@ public final class GlassFishORBManager {
         }
 
         return result;
-    }
-
-    public boolean isClusterActive() {
-        return gmsClient != null && gmsClient.isGMSAvailable();
     }
 
     /**
@@ -409,52 +411,6 @@ public final class GlassFishORBManager {
         );
     }
 
-    /**
-     * Set the ORB properties for IIOP failover and load balancing.
-     */
-    private void setFOLBProperties(Properties orbInitProperties) {
-
-        orbInitProperties.put(ORBConstants.RFM_PROPERTY, "dummy");
-
-        orbInitProperties.put(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY,
-                IIOP_SSL_SOCKET_FACTORY_CLASS);
-
-        // ClientGroupManager.
-        // Registers itself as
-        //   ORBInitializer (that registers ClientRequestInterceptor)
-        //   IIOPPrimaryToContactInfo
-        //   IORToSocketInfo
-        orbInitProperties.setProperty(
-                ORBConstants.USER_CONFIGURATOR_PREFIX
-                        + "com.sun.corba.ee.impl.folb.ClientGroupManager",
-                "dummy");
-
-        // This configurator registers the CSIv2SSLTaggedComponentHandler
-        orbInitProperties.setProperty(
-                ORBConstants.USER_CONFIGURATOR_PREFIX
-                        + CSIv2SSLTaggedComponentHandlerImpl.class.getName(), "dummy");
-
-
-        if (processType.isServer()) {
-            gmsClient = new IiopFolbGmsClient(services);
-
-            if (gmsClient.isGMSAvailable()) {
-                fineLog("GMS available and enabled - doing EE initialization");
-
-                // Register ServerGroupManager.
-                // Causes it to register itself as an ORBInitializer
-                // that then registers it as
-                // IOR and ServerRequest Interceptors.
-                orbInitProperties.setProperty(
-                        ORBConstants.USER_CONFIGURATOR_PREFIX
-                                + "com.sun.corba.ee.impl.folb.ServerGroupManager",
-                        "dummy");
-
-                fineLog("Did EE property initialization");
-            }
-        }
-    }
-
     private void initORB(Properties props) {
         try {
             if (logger.isLoggable(Level.FINE)) {
@@ -472,7 +428,9 @@ public final class GlassFishORBManager {
             orbInitProperties.put(ORBConstants.USER_CONFIGURATOR_PREFIX
                     + PEORB_CONFIG_CLASS, "dummy");
 
-            setFOLBProperties(orbInitProperties);
+            orbInitProperties.put(ORBConstants.RFM_PROPERTY, "dummy");
+            orbInitProperties.put(ORBConstants.SOCKET_FACTORY_CLASS_PROPERTY,
+                    IIOP_SSL_SOCKET_FACTORY_CLASS);
 
             // Standard OMG Properties.
             String orbDefaultServerId = DEFAULT_SERVER_ID;
@@ -621,11 +579,6 @@ public final class GlassFishORBManager {
             }
 
             if (processType.isServer()) {
-                // This MUST happen before new InitialGroupInfoService,
-                // or the ServerGroupManager will get initialized before the
-                // GIS is available.
-                gmsClient.setORB(orb);
-
                 // J2EEServer's persistent server port is same as ORBInitialPort.
                 orbInitialPort = getORBInitialPort();
 
@@ -968,6 +921,17 @@ public final class GlassFishORBManager {
     }
 
     String getIIOPEndpoints() {
-        return gmsClient.getIIOPEndpoints();
+        StringBuilder sb = new StringBuilder();
+        for (IiopListener iiopListener : iiopListeners) {
+            sb.append(iiopListener.getAddress());
+            sb.append(":");
+            sb.append(iiopListener.getPort());
+            sb.append(",");
+        }
+        // Strip the final comma
+        if (sb.length() > 0) {
+            sb.deleteCharAt((sb.length() - 1));
+        }
+        return sb.toString();
     }
 }

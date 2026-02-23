@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2024-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resourcebase.resources.util;
 
@@ -90,21 +90,18 @@ public class BindableResourcesHelper {
     public boolean resourceExists(String jndiName, String target) {
         boolean exists = false;
         Domain domain = habitat.getService(Domain.class);
-       if(target.equals(DOMAIN)){
+       if (target.equals(DOMAIN)) {
             //if target is "domain", as long as the resource is present in "resources" section,
             //it is valid.
             exists = true;
-        }else if(habitat.<ConfigBeansUtilities>getService(ConfigBeansUtilities.class).getServerNamed(target) != null){
-            Server server = habitat.<ConfigBeansUtilities>getService(ConfigBeansUtilities.class).getServerNamed(target);
+        } else if (habitat.getService(ConfigBeansUtilities.class).getServerNamed(target) != null){
+            Server server = habitat.getService(ConfigBeansUtilities.class).getServerNamed(target);
             exists = server.isResourceRefExists(jndiName);
-        }else if (domain.getClusterNamed(target) != null){
-            Cluster cluster = domain.getClusterNamed(target);
-            exists = cluster.isResourceRefExists(jndiName);
-        }else{
+        } else {
             //if target is "CONFIG", as long as the resource is present in "resources" section,
             //it is valid.
-            for(Config config : domain.getConfigs().getConfig()){
-                if(config.getName().equals(target)){
+            for (Config config : domain.getConfigs().getConfig()) {
+                if (config.getName().equals(target)) {
                     exists = true;
                     break;
                 }

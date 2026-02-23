@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.core.jws;
 
@@ -398,23 +399,16 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
     }
 
     /**
-     * Returns the expression "-targetserver=host:port[,...]" representing the
+     * Returns the expression "host:port[,...]" representing the
      * currently-active ORBs to which the ACC could attempt to bootstrap.
+     * The preceding "-targetserver=" gets added by the constructor of
+     * {@link ACCArgQueryParams}
      * @return
      */
     private String targetServerSetting(final Properties props) {
-        String result = null;
-        try {
-            result = orbFactory.getIIOPEndpoints();
-        } catch (NullPointerException npe) {
-            /*
-             * orbFactory.getIIOPEndpoints is supposed to return a valid
-             * answer whether this server is in a cluster or not.  A bug
-             * causes it to throw a NullPointerException in the non-cluster case.
-             * So catch that and use the configured listener for this server.
-             *
-             * Find the IIOP listener with the default listener ID.
-             */
+        String result = orbFactory.getIIOPEndpoints();
+        if (result == null || result.isEmpty()) {
+            // Find the IIOP listener with the default listener ID.
             String port = null;
             for (IiopListener listener : iiopService.getIiopListener()) {
                 if (listener.getId().equals(DEFAULT_ORB_LISTENER_ID)) {
@@ -424,6 +418,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
             }
             result = props.getProperty("request.host") + ":" + port;
         }
+
         return result;
     }
 

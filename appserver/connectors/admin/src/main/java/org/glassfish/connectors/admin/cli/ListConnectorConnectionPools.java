@@ -65,7 +65,7 @@ import jakarta.inject.Inject;
  * List Connector Connection Pools command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @Service(name="list-connector-connection-pools")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

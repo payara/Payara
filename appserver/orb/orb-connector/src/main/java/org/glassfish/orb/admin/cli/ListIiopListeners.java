@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.orb.admin.cli;
 
@@ -78,9 +79,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.iiop.listeners")
 @ExecuteOn(value={RuntimeType.DAS})
-@TargetType(value={CommandTarget.CLUSTER,CommandTarget.CONFIG,
-    CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,
-    CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DOMAIN }
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN }
 )
 @RestEndpoints({
     @RestEndpoint(configBean=IiopService.class,

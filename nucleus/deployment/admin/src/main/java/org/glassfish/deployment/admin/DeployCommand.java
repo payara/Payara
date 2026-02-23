@@ -107,12 +107,9 @@ import org.jvnet.hk2.config.Transaction;
 @I18n("deploy.command")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType(value = {CommandTarget.DOMAIN, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Applications.class, opType = RestEndpoint.OpType.POST, path = "deploy"),
-    @RestEndpoint(configBean = Cluster.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
-        @RestParam(name = "target", value = "$parent")
-    }),
     @RestEndpoint(configBean = DeploymentGroup.class, opType = RestEndpoint.OpType.POST, path = "deploy", params = {
         @RestParam(name = "target", value = "$parent")
     }),
@@ -255,9 +252,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
         expansionDir = null;
         deploymentContext = null;
         try(SpanSequence span = structuredTracing.startSequence(DeploymentTracing.AppStage.VALIDATE_TARGET, "command")) {
-
-            deployment.validateSpecifiedTarget(target);
-
             span.start(DeploymentTracing.AppStage.OPENING_ARCHIVE, "ArchiveHandler");
 
             archiveHandler = deployment.getArchiveHandler(archive, type);

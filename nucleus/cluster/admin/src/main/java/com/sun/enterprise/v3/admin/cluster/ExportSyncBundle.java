@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -76,8 +76,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
@@ -131,10 +129,6 @@ public class ExportSyncBundle implements AdminCommand {
     private Servers servers;
 
     @Inject
-    @Optional
-    private Clusters clusters;
-
-    @Inject
     private ServerSynchronizer serverSynchronizer;
 
     @Inject
@@ -147,7 +141,6 @@ public class ExportSyncBundle implements AdminCommand {
     private Logger logger;
     private Payload.Outbound payload;
     private Server instance;
-    private Cluster cluster;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -258,13 +251,6 @@ public class ExportSyncBundle implements AdminCommand {
             serverSynchronizer.synchronize(instance, syncRequest, payload, report, logger);
         }
 
-        if (cluster != null) { // Use one of the clustered instances
-            List<Server> clusterInstances = cluster.getInstances();
-            if (clusterInstances != null && !clusterInstances.isEmpty()) {
-                serverSynchronizer.synchronize(clusterInstances.get(0), syncRequest, payload, report, logger);
-            }
-        }
-
         // Synchronize() will be set to FAILURE if there were problems
         return !hasError();
     }
@@ -283,18 +269,8 @@ public class ExportSyncBundle implements AdminCommand {
             instance = servers.getServer(clusterInstance);
         }
 
-        if (clusters != null) {
-            cluster = clusters.getCluster(clusterInstance);
-            if (cluster != null) {
-                List<Server> clusterInstances = cluster.getInstances();
-                if (clusterInstances == null || clusterInstances.isEmpty()) {
-                    setError(Strings.get("sync.empty_cluster", clusterInstance));
-                    return false;
-                }
-            }
-        }
-        if (instance == null && cluster == null) {
-            setError(Strings.get("sync.unknown.instanceOrCluster", clusterInstance));
+        if (instance == null) {
+            setError(Strings.get("sync.unknown.instance", clusterInstance));
             return false;
         }
 

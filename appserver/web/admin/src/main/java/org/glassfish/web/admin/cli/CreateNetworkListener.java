@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
  */
 
 package org.glassfish.web.admin.cli;
@@ -46,7 +46,6 @@ import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -88,7 +87,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 @I18n("create.network.listener")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})  
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 public class CreateNetworkListener implements AdminCommand {
 
     private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();

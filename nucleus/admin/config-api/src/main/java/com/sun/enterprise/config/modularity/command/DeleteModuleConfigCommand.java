@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.modularity.command;
 
@@ -93,8 +93,7 @@ import java.util.logging.Logger;
  *
  * @author Masoud Kalali
  */
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTER,
-        CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN})
 @ExecuteOn(RuntimeType.ALL)
 @Service(name = "delete-module-config")
 @PerLookup

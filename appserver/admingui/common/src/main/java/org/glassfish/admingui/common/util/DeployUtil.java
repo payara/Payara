@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 /*
  * DeploymentHandler.java
@@ -69,15 +69,11 @@ public class DeployUtil {
     static public boolean reloadApplication(String appName, List<String> targets, HandlerContext handlerCtx){
         try{
             String decodedName = URLDecoder.decode(appName, "UTF-8");
-            List<String> clusters =  TargetUtil.getClusters();
             List<String> dgs =  TargetUtil.getDeploymentGroups();
-            String clusterEndpoint = GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/";
             String serverEndpoint = GuiUtil.getSessionValue("REST_URL")+"/servers/server/";
             for(String targetName : targets){
                 String endpoint ;
-                if (clusters.contains(targetName)){
-                    endpoint = clusterEndpoint + targetName + "/application-ref/" + decodedName ;
-                }else if (dgs.contains(targetName)) {
+                if (dgs.contains(targetName)) {
                     // do nothing as it will also be picked up for the server
                     continue;
                 }else{
@@ -104,15 +100,6 @@ public class DeployUtil {
     static public List<String> getApplicationTarget(String appName, String ref){
         List<String> targets = new ArrayList<>();
         try{
-            //check if any cluster has this application-ref
-            List<String> clusters = TargetUtil.getClusters();
-            for(String oneCluster:  clusters){
-                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/"+ref).keySet());
-
-                if (appRefs.contains(appName)){
-                    targets.add(oneCluster);
-                }
-            }
             List<String> servers = TargetUtil.getStandaloneInstances();
             servers.add("server");
             for(String oneServer:  servers){
@@ -143,17 +130,6 @@ public class DeployUtil {
         List<Map<String, Object>> endpoints = new ArrayList<>();
         try{
             String encodedName = URLEncoder.encode(name, "UTF-8");
-            //check if any cluster has this application-ref
-            List<String> clusters = TargetUtil.getClusters();
-            for(String oneCluster:  clusters){
-                List<String> appRefs = new ArrayList<>(RestUtil.getChildMap(GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/"+ref).keySet());
-                if (appRefs.contains(name)){
-                    Map<String, Object> aMap = new HashMap<>();
-                    aMap.put("endpoint", GuiUtil.getSessionValue("REST_URL")+"/clusters/cluster/"+oneCluster+"/" + ref + "/" + encodedName);
-                    aMap.put("targetName", oneCluster);
-                    endpoints.add(aMap);
-                }
-            }
             List<String> servers = TargetUtil.getStandaloneInstances();
             servers.add("server");
             for(String oneServer:  servers){
@@ -177,18 +153,16 @@ public class DeployUtil {
 
     public static String getTargetEnableInfo(String appName, boolean useImage, boolean isApp){
         String prefix = (String) GuiUtil.getSessionValue("REST_URL");
-        List<String> clusters = TargetUtil.getClusters();
         List<String> standalone = TargetUtil.getStandaloneInstances();
         List<String> deploymentGroup = TargetUtil.getDeploymentGroups();
         String enabled = "true";
         int numEnabled = 0;
-        int numDisabled = 0;
         int numTargets = 0;
         String ref = "application-ref";
         if (!isApp) {
             ref = "resource-ref";
         }
-        if (clusters.isEmpty() && standalone.isEmpty()){
+        if (standalone.isEmpty()){
             //just return Enabled or not.
             enabled = (String)RestUtil.getAttributesMap(prefix  +"/servers/server/server/"+ref+"/"+appName).get("enabled");
             //for DAS only system, there should always be application-ref created for DAS. However, for the case where the application is
@@ -214,11 +188,7 @@ public class DeployUtil {
        
         for (String oneTarget : targetList) {
             Boolean isValidTarget = false;
-            if (clusters.contains(oneTarget)) {
-                enabled = (String) RestUtil.getAttributesMap(prefix + "/clusters/cluster/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
-                numTargets++;
-                isValidTarget = true;
-            } else if (standalone.contains(oneTarget) && !instancesInDeploymentGroup.contains(oneTarget)) {
+            if (standalone.contains(oneTarget) && !instancesInDeploymentGroup.contains(oneTarget)) {
                 enabled = (String) RestUtil.getAttributesMap(prefix + "/servers/server/" + oneTarget + "/" + ref + "/" + appName).get("enabled");
                 numTargets++;
                 isValidTarget = true;
@@ -231,23 +201,12 @@ public class DeployUtil {
             if (isValidTarget) {
                 if (Boolean.parseBoolean(enabled)) {
                     numEnabled++;
-                } else {
-                    numDisabled++;
                 }
             }
         }
-                
-        /*
-        if (numEnabled == numTargets){
-            return GuiUtil.getMessage("deploy.allEnabled");
-        }
-        if (numDisabled == numTargets){
-            return GuiUtil.getMessage("deploy.allDisabled");
-        }
-         */
+
         return (numTargets==0) ?  GuiUtil.getMessage("deploy.noTarget") :
                 GuiUtil.getMessage("deploy.someEnabled", new String[]{""+numEnabled, ""+numTargets });
-        
     }
 
 }

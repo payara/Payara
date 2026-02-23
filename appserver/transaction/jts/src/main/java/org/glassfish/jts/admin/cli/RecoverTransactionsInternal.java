@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jts.admin.cli;
 
@@ -59,7 +60,7 @@ import com.sun.jts.CosTransactions.Configuration;
 import java.util.logging.Level;
 
 @Service(name = "_recover-transactions-internal")
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE})
+@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE})
 @ExecuteOn(RuntimeType.INSTANCE)
 @PerLookup
 public class RecoverTransactionsInternal extends RecoverTransactionsBase implements AdminCommand {

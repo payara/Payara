@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -68,7 +69,7 @@ import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 
 @Service
-public class JMSConfigListener implements ConfigListener{
+public class JMSConfigListener implements ConfigListener {
     // Injecting @Configured type triggers the corresponding change
     // events to be sent to this instance
 
@@ -86,8 +87,7 @@ public class JMSConfigListener implements ConfigListener{
     private static final Logger _logger = JMSLoggerInfo.getLogger();
 
     // String Manager for Localization
-    private static StringManager sm
-        = StringManager.getManager(JMSConfigListener.class);
+    private static StringManager sm = StringManager.getManager(JMSConfigListener.class);
 
     public void setActiveResourceAdapter(ActiveJmsResourceAdapter aresourceAdapter) {
         this.aresourceAdapter = aresourceAdapter;
@@ -106,154 +106,121 @@ public class JMSConfigListener implements ConfigListener{
         String jmsProviderPort = null;
         ServerContext serverContext = Globals.get(ServerContext.class);
         Server thisServer = domain.getServerNamed(serverContext.getInstanceName());
-        //if(thisServer.isDas() || thisServer.getCluster() == null)
-        {
-          //  _logger.log(Level.FINE,"JMSConfigListerner server is either das or a stand-alone instance - hence ignoring");
-            //return null;
-        }
-        for (int i=0; i< events.length; i++) {
-        //for (PropertyChangeEvent event : events) {
+        for (int i = 0; i < events.length; i++) {
             PropertyChangeEvent event = events[i];
             String eventName = event.getPropertyName();
             Object oldValue = event.getOldValue();
             Object newValue = event.getNewValue();
 
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "In JMSConfigListener " + eventName + oldValue + newValue);
-        }
-        if (oldValue != null && oldValue.equals(newValue)) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Event " + eventName
-                            + " did not change existing value of " + oldValue);
+                _logger.log(Level.FINE, "In JMSConfigListener " + eventName + oldValue + newValue);
             }
-            continue;
-        }
-
-        if(event.getSource().toString().indexOf("connectors.jms.config.JmsService") != -1) {
-             boolean notifyFlag = true;
-             if (oldValue != null && newValue == null && "jms-host".equals(event.getPropertyName())) {
-                JmsHost jmsHost = (JmsHost) oldValue;
-                String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
-                ActiveJmsResourceAdapter adapter = Globals.get(ActiveJmsResourceAdapter.class);
-                if (adapter.getGrizzlyListeners().contains(name)) {
-                    GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
-                    synchronized (adapter.getGrizzlyListeners()) {
-                        if (_logger.isLoggable(Level.FINE)) {
-                            _logger.log(Level.FINE, "Stopping Grizzly proxy " + name);
-                        }
-                        grizzlyService.removeNetworkProxy(name);
-                        adapter.getGrizzlyListeners().remove(name);
-                    }
-                    notifyFlag = false;
+            if (oldValue != null && oldValue.equals(newValue)) {
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "Event " + eventName + " did not change existing value of " + oldValue);
                 }
+                continue;
             }
-            if (notifyFlag) {
-                UnprocessedChangeEvent uchangeEvent = new UnprocessedChangeEvent(event, "restart required");
-                unprocessedEvents.add(uchangeEvent);
-            }
-        }
-        else if(event.getSource().toString().indexOf("connectors.jms.config.JmsHost") != -1) {
-            if (oldValue == null && newValue != null && "name".equals(event.getPropertyName())) {
-                JmsProviderLifecycle lifecycle = Globals.get(JmsProviderLifecycle.class);
-                JmsHost jmsHost = (JmsHost) event.getSource();
-                if (ActiveJmsResourceAdapter.EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
+
+            if (event.getSource().toString().indexOf("connectors.jms.config.JmsService") != -1) {
+                boolean notifyFlag = true;
+                if (oldValue != null && newValue == null && "jms-host".equals(event.getPropertyName())) {
+                    JmsHost jmsHost = (JmsHost) oldValue;
+                    String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
                     ActiveJmsResourceAdapter adapter = Globals.get(ActiveJmsResourceAdapter.class);
-                    if (!adapter.getDoBind()) {
-                        if (Boolean.valueOf(jmsHost.getLazyInit())) {
-                            String host = null;
-                            if (jmsHost.getHost() != null && "localhost".equals(jmsHost.getHost())) {
-                                host = "0.0.0.0";
-                            } else {
-                                host = jmsHost.getHost();
+                    if (adapter.getGrizzlyListeners().contains(name)) {
+                        GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
+                        synchronized (adapter.getGrizzlyListeners()) {
+                            if (_logger.isLoggable(Level.FINE)) {
+                                _logger.log(Level.FINE, "Stopping Grizzly proxy " + name);
                             }
-                            try {
-                                GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
-                                NetworkListener dummy = new DummyNetworkListener();
-                                dummy.setPort(jmsHost.getPort());
-                                dummy.setAddress(host);
-                                dummy.setType("proxy");
-                                dummy.setProtocol(ActiveJmsResourceAdapter.JMS_SERVICE);
-                                dummy.setTransport("tcp");
-                                String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
-                                dummy.setName(name);
-                                synchronized (adapter.getGrizzlyListeners()) {
-                                    if (_logger.isLoggable(Level.FINE)) {
-                                        _logger.log(Level.FINE, "Starting Grizzly proxy " + name + " on port " + jmsHost.getPort());
-                                    }
-                                    grizzlyService.createNetworkProxy(dummy);
-                                    adapter.getGrizzlyListeners().add(name);
+                            grizzlyService.removeNetworkProxy(name);
+                            adapter.getGrizzlyListeners().remove(name);
+                        }
+                        notifyFlag = false;
+                    }
+                }
+                if (notifyFlag) {
+                    UnprocessedChangeEvent uchangeEvent = new UnprocessedChangeEvent(event, "restart required");
+                    unprocessedEvents.add(uchangeEvent);
+                }
+            } else if (event.getSource().toString().indexOf("connectors.jms.config.JmsHost") != -1) {
+                if (oldValue == null && newValue != null && "name".equals(event.getPropertyName())) {
+                    JmsProviderLifecycle lifecycle = Globals.get(JmsProviderLifecycle.class);
+                    JmsHost jmsHost = (JmsHost) event.getSource();
+                    if (ActiveJmsResourceAdapter.EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
+                        ActiveJmsResourceAdapter adapter = Globals.get(ActiveJmsResourceAdapter.class);
+                        if (!adapter.getDoBind()) {
+                            if (Boolean.valueOf(jmsHost.getLazyInit())) {
+                                String host = null;
+                                if (jmsHost.getHost() != null && "localhost".equals(jmsHost.getHost())) {
+                                    host = "0.0.0.0";
+                                } else {
+                                    host = jmsHost.getHost();
                                 }
-                                return unprocessedEvents.size() > 0 ? new UnprocessedChangeEvents(unprocessedEvents) : null;
-                            } catch (Exception e) {
-                                LogHelper.log(_logger, Level.WARNING, JMSLoggerInfo.GRIZZLY_START_FAILURE, e);
+                                try {
+                                    GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
+                                    NetworkListener dummy = new DummyNetworkListener();
+                                    dummy.setPort(jmsHost.getPort());
+                                    dummy.setAddress(host);
+                                    dummy.setType("proxy");
+                                    dummy.setProtocol(ActiveJmsResourceAdapter.JMS_SERVICE);
+                                    dummy.setTransport("tcp");
+                                    String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
+                                    dummy.setName(name);
+                                    synchronized (adapter.getGrizzlyListeners()) {
+                                        if (_logger.isLoggable(Level.FINE)) {
+                                            _logger.log(Level.FINE, "Starting Grizzly proxy " + name + " on port " + jmsHost.getPort());
+                                        }
+                                        grizzlyService.createNetworkProxy(dummy);
+                                        adapter.getGrizzlyListeners().add(name);
+                                    }
+                                    return unprocessedEvents.size() > 0 ? new UnprocessedChangeEvents(unprocessedEvents) : null;
+                                } catch (Exception e) {
+                                    LogHelper.log(_logger, Level.WARNING, JMSLoggerInfo.GRIZZLY_START_FAILURE, e);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        if ("JMS_PROVIDER_PORT".equals(newValue)){
-            //The value is in the next event
-            PropertyChangeEvent nextevent = events[i+1] ;
-            jmsProviderPort = (String) nextevent.getNewValue();
-        }
-        if(event.getSource() instanceof JmsService ) {
-           if (eventName.equals(ServerTags.MASTER_BROKER)) {
-                     String oldMB = oldValue != null ? oldValue.toString() : null;
-                     String newMB = newValue != null ? newValue.toString(): null;
-
-             if (_logger.isLoggable(Level.FINE)) {
-                 _logger.log(Level.FINE, "Got JmsService Master Broker change event "
-                     + event.getSource() + " "
-                     + eventName + " " + oldMB + " " + newMB);
-             }
-
-             if (newMB != null) {
-                 Server newMBServer = domain.getServerNamed(newMB);
-                 if(newMBServer != null)
-                 {
-                     Node node = domain.getNodeNamed(newMBServer.getNodeRef());
-                     String newMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(newMBServer);
-                     if(newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsService).getPort();
-                     String newMasterBrokerHost = node.getNodeHost();
-                     aresourceAdapter.setMasterBroker(newMasterBrokerHost + ":" + newMasterBrokerPort);
-                 }
-             }
+            if ("JMS_PROVIDER_PORT".equals(newValue)) {
+                //The value is in the next event
+                PropertyChangeEvent nextevent = events[i+1] ;
+                jmsProviderPort = (String) nextevent.getNewValue();
             }
-        }   if (eventName.equals(ServerTags.SERVER_REF)){
-                //if(event instanceof ServerRef){
-                    String oldServerRef = oldValue != null ? oldValue.toString() : null;
-                    String newServerRef = newValue != null ? newValue.toString(): null;
-                    if(oldServerRef  != null && newServerRef == null && !thisServer.isDas()) {//instance has been deleted
-                        if (_logger.isLoggable(Level.FINE)) {
-                            _logger.log(Level.FINE, "Got Cluster change event for server_ref"
-                                + event.getSource() + " "
-                            + eventName + " " + oldServerRef + " " + null);
-                        }
-                        String url = getBrokerList();
-                        aresourceAdapter.setClusterBrokerList(url);
-                        break;
-                   }//
-             } // else skip
+            if (eventName.equals(ServerTags.SERVER_REF)) {
+                String oldServerRef = oldValue != null ? oldValue.toString() : null;
+                String newServerRef = newValue != null ? newValue.toString() : null;
+                if (oldServerRef != null && newServerRef == null && !thisServer.isDas()) {//instance has been deleted
+                    if (_logger.isLoggable(Level.FINE)) {
+                        _logger.log(Level.FINE, "Got Cluster change event for server_ref" + event.getSource() + " "
+                                + eventName + " " + oldServerRef + " " + null);
+                    }
+                    String url = getBrokerList();
+                    aresourceAdapter.setClusterBrokerList(url);
+                    break;
+                }
+            } // else skip
             if (event.getSource() instanceof Server) {
-               if (_logger.isLoggable(Level.FINE)) {
-                   _logger.log(Level.FINE, "In JMSConfigListener - recieved cluster event " + event.getSource());
-               }
-               Server changedServer = (Server) event.getSource();
-               if (thisServer.isDas())return null;
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "In JMSConfigListener - received cluster event " + event.getSource());
+                }
+                Server changedServer = (Server) event.getSource();
+                if (thisServer.isDas()) return null;
 
-               if(jmsProviderPort != null){
+                if (jmsProviderPort != null) {
                     String nodeName = changedServer.getNodeRef();
                     String nodeHost = null;
 
-                   if(nodeName != null)
-                      nodeHost = domain.getNodeNamed(nodeName).getNodeHost();
-                   String url = getBrokerList();
-                   url = url + ",mq://" + nodeHost + ":" + jmsProviderPort;
-                   aresourceAdapter.setClusterBrokerList(url);
-                   break;
-               }
+                    if (nodeName != null)
+                        nodeHost = domain.getNodeNamed(nodeName).getNodeHost();
+                    String url = getBrokerList();
+                    url = url + ",mq://" + nodeHost + ":" + jmsProviderPort;
+                    aresourceAdapter.setClusterBrokerList(url);
+                    break;
+                }
 
             }
 
@@ -272,20 +239,4 @@ public class JMSConfigListener implements ConfigListener{
         }
         return addressList.toString();
     }
-     private JmsHost getDefaultJmsHost(JmsService jmsService){
-
-            JmsHost jmsHost = null;
-                String defaultJmsHostName = jmsService.getDefaultJmsHost();
-                List <JmsHost> jmsHostsList = jmsService.getJmsHost();
-
-                for (int i=0; i < jmsHostsList.size(); i ++)
-                {
-                   JmsHost tmpJmsHost = (JmsHost) jmsHostsList.get(i);
-                   if (tmpJmsHost != null && tmpJmsHost.getName().equals(defaultJmsHostName))
-                         jmsHost = tmpJmsHost;
-                }
-            if (jmsHost == null && jmsHostsList.size() >0)
-                jmsHost = jmsHostsList.get(0);
-            return jmsHost;
-          }
 }

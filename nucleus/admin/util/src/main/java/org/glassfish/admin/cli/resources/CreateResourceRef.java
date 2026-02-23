@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package org.glassfish.admin.cli.resources;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import java.beans.PropertyVetoException;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -52,11 +51,8 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.Descriptor;
-import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -77,7 +73,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
  * @author Jennifer Chou, Jagadish Ramu
  *
  */
-@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @RestEndpoints({
         @RestEndpoint(configBean=Resources.class,
                 opType=RestEndpoint.OpType.POST,
@@ -173,14 +169,6 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         }
         try {
             createResourceRef();
-            // create new ResourceRef for all instances of Cluster, if it's a cluster
-            if (refContainer instanceof Cluster && isElegibleResource(refName)) {
-                Target tgt = locator.getService(Target.class);
-                List<Server> instances = tgt.getInstances(target);
-                for (Server server : instances) {
-                    server.createResourceRef(enabled.toString(), refName);
-                }
-            }
             // create new ResourceRef for all instances of DeploymentGroup, if it's a DeploymentGroup
             if (refContainer instanceof DeploymentGroup && isElegibleResource(refName)) {
                 DeploymentGroup deploymentGroup = (DeploymentGroup) refContainer;
@@ -217,18 +205,13 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     }
     
     private void createResourceRef() throws TransactionFailure {
-        ConfigSupport.apply(new SingleConfigCode<RefContainer>() {
-
-                @Override
-                public Object run(RefContainer param) throws PropertyVetoException, TransactionFailure {
-
-                    ResourceRef newResourceRef = param.createChild(ResourceRef.class);
-                    newResourceRef.setEnabled(enabled.toString());
-                    newResourceRef.setRef(refName);
-                    param.getResourceRef().add(newResourceRef);
-                    return newResourceRef;
-                }
-            }, refContainer);
+        ConfigSupport.apply((SingleConfigCode<RefContainer>) param -> {
+            ResourceRef newResourceRef = param.createChild(ResourceRef.class);
+            newResourceRef.setEnabled(enabled.toString());
+            newResourceRef.setRef(refName);
+            param.getResourceRef().add(newResourceRef);
+            return newResourceRef;
+        }, refContainer);
     }
     
     private RefContainer chooseRefContainer(final AdminCommandContext context) {
@@ -243,12 +226,9 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
         }
 
         if (commandName != null) {
-            List<ServiceHandle<?>> serviceHandles = locator.getAllServiceHandles(new Filter() {
-                @Override
-                public boolean matches(Descriptor arg0) {
-                    String name = arg0.getName();
-                    return name != null && name.equals(commandName);
-                }
+            List<ServiceHandle<?>> serviceHandles = locator.getAllServiceHandles(arg0 -> {
+                String name = arg0.getName();
+                return name != null && name.equals(commandName);
             });
             for (ServiceHandle<?> handle : serviceHandles) {
                 ActiveDescriptor<?> descriptor = handle.getActiveDescriptor();
@@ -277,11 +257,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             if (server != null) {
                 return server;
             }
-            DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
-            if (deploymentGroup != null) {
-                return deploymentGroup;
-            }
-            return domain.getClusterNamed(target);
+            return domain.getDeploymentGroupNamed(target);
         } else {
             report.setMessage(LOCAL_STRINGS.getLocalString("create.resource.ref.failed",
                     "Resource ref {0} creation failed", refName));
@@ -308,7 +284,7 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
     }
 
     private boolean validateTarget(String target, CommandTarget targets[]) {
-        List<String> validTarget = new ArrayList<String>();
+        List<String> validTarget = new ArrayList<>();
 
         for (CommandTarget commandTarget : targets) {
             validTarget.add(commandTarget.name());
@@ -320,12 +296,8 @@ public class CreateResourceRef implements AdminCommand, AdminCommandSecurity.Pre
             return validTarget.contains(CommandTarget.DAS.name());
         } else if (domain.getConfigNamed(target) != null) {
             return validTarget.contains(CommandTarget.CONFIG.name());
-        } else if (domain.getClusterNamed(target) != null) {
-            return validTarget.contains(CommandTarget.CLUSTER.name());
         } else if (domain.getServerNamed(target) != null) {
             return validTarget.contains(CommandTarget.STANDALONE_INSTANCE.name());
-        } else if (domain.getClusterForInstance(target) != null) {
-            return validTarget.contains(CommandTarget.CLUSTERED_INSTANCE.name());
         } else if (domain.getNodeNamed(target) != null) {
             return validTarget.contains(CommandTarget.NODE.name());
         } else if (domain.getDeploymentGroupNamed(target) != null) {

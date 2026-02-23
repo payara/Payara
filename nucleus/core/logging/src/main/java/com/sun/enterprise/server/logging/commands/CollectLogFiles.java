@@ -37,12 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Server;
@@ -50,6 +49,7 @@ import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilterForInstance;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -126,7 +126,7 @@ public class CollectLogFiles implements AdminCommand {
         if (targetServer != null && targetServer.isDas()) {
 
             // This loop if target instance is DAS
-            String logFileDetails = "";
+            String logFileDetails;
             String zipFile = "";
 
             try {
@@ -145,15 +145,12 @@ public class CollectLogFiles implements AdminCommand {
 
             try {
 
-                String sourceDir = "";
-
                 String instanceRoot = env.getInstanceRoot().toString();
                 if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
                     logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
 
-                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
-
+                String sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report, targetServer.getName());
             } catch (Exception ex) {
                 final String errorMsg = localStrings.getLocalString(
@@ -203,7 +200,6 @@ public class CollectLogFiles implements AdminCommand {
             String serverNode = targetServer.getNodeRef();
             Node node = domain.getNodes().getNode(serverNode);
             String zipFile = "";
-            File targetDir = null;
 
             String logFileDetails = "";
             try {
@@ -218,7 +214,7 @@ public class CollectLogFiles implements AdminCommand {
                 return;
             }
 
-            targetDir = makingDirectoryOnDas(targetServer.getName(), report);
+            File targetDir = makingDirectoryOnDas(targetServer.getName(), report);
 
             try {
                 if (node.isLocal()) {
@@ -293,14 +289,12 @@ public class CollectLogFiles implements AdminCommand {
             targetDir = makingDirectoryOnDas(SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME, report);
 
             try {
-                String sourceDir = "";
                 String instanceRoot = env.getInstanceRoot().toString();
                 if (logFileDetails.contains("${com.sun.aas.instanceRoot}")) {
                     logFileDetails = logFileDetails.replace("${com.sun.aas.instanceRoot}", instanceRoot);
                 }
 
-                sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
-
+                String sourceDir = logFileDetails.substring(0, logFileDetails.lastIndexOf(File.separator));
                 copyLogFilesForLocalhost(sourceDir, targetDir.getAbsolutePath(), report,
                         SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME);
             } catch (Exception ex) {
@@ -313,10 +307,8 @@ public class CollectLogFiles implements AdminCommand {
             }
             /******************************************************/
 
-
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
-
-            List<Server> instances = cluster.getInstances();
+            DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
+            List<Server> instances = deploymentGroup.getInstances();
 
             int instanceCount = 0;
             int errorCount = 0;
@@ -365,6 +357,7 @@ public class CollectLogFiles implements AdminCommand {
                     finalMessage += successMsg + "\n";
                 }
             }
+
             report.setMessage(finalMessage);
 
             if (instanceCount != errorCount) {
@@ -557,12 +550,7 @@ public class CollectLogFiles implements AdminCommand {
         String logFileDetailsForServer = "";
         String targetConfigName = "";
 
-        Cluster clusterForInstance = targetServer.getCluster();
-        if (clusterForInstance != null) {
-            targetConfigName = clusterForInstance.getConfigRef();
-        } else {
-            targetConfigName = targetServer.getConfigRef();
-        }
+        targetConfigName = targetServer.getConfigRef();
 
         logFileDetailsForServer = loggingConfigFactory.provide(targetConfigName).getLoggingFileDetails();
 

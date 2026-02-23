@@ -70,7 +70,7 @@ import org.jvnet.hk2.config.ConfigBean;
  * List Connector Security Maps
  *
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @Service(name="list-connector-security-maps")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.common.util;
 
@@ -1033,10 +1033,8 @@ public class RestUtil {
             "sshpassword", /* create-node-ssh , setup-ssh , update-node, update-node-ssh */
             "windowspassword", /* create-node-dcom, validate-dcom, update-node-dcom,  */
             "dbpassword", /* jms-availability-service */
-            "jmsdbpassword", /* configure-jms-cluster */
             "password", /* change-admin-password */
             "newpassword", /* change-admin-password */
-            "jmsdbpassword", /* configure-jms-cluster */
             "mappedpassword", /* create-connector-security-map, update-connector-security-map */
             "userpassword", /* create-file-user , update-file-user */
             "aliaspassword" /* create-password-alias , update-password-alias */);

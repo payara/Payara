@@ -68,7 +68,7 @@ import jakarta.inject.Inject;
  * List JDBC Connection Pools command
  * 
  */
-@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
+@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG })
 @Service(name="list-jdbc-connection-pools")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.universal.xml;
 
@@ -78,7 +78,6 @@ public class MiniXmlParserTest {
     private static File monitoringFalse;
     private static File monitoringTrue;
     private static File monitoringNone;
-    private static File clusters1;
     private static File manysysprops;
 
     @BeforeClass
@@ -104,14 +103,11 @@ public class MiniXmlParserTest {
                 MiniXmlParserTest.class.getClassLoader().getResource("monitoringFalse.xml").getPath());
         monitoringTrue = new File(MiniXmlParserTest.class.getClassLoader().getResource("monitoringTrue.xml").getPath());
         monitoringNone = new File(MiniXmlParserTest.class.getClassLoader().getResource("monitoringNone.xml").getPath());
-        clusters1 = new File(MiniXmlParserTest.class.getClassLoader().getResource("clusters1.xml").getPath());
         manysysprops = new File(MiniXmlParserTest.class.getClassLoader().getResource("manysysprops.xml").getPath());
         assertTrue(wrongOrder.exists());
         assertTrue(rightOrder.exists());
         assertTrue(noconfig.exists());
         assertTrue(noDomainName.exists());
-        assertTrue(clusters1.exists());
-        assertTrue(clusters1.length() > 100);
         assertTrue(manysysprops.exists());
         assertTrue(manysysprops.length() > 100);
 
@@ -434,19 +430,11 @@ public class MiniXmlParserTest {
 
     }
 
-    @Test
-    public void testClusterParsing() throws MiniXmlParserException {
-        
-        MiniXmlParser instance = new MiniXmlParser(clusters1, "i1");
-
-    }
-
     /*
      * the xml has 4 special system-properties.  We check here that they override
      * each other properly...
     <system-property name="shouldbeserver" value="domain"></system-property>
     <system-property name="shouldbeconfig" value="domain"></system-property>
-    <system-property name="shouldbecluster" value="domain"></system-property>
     <system-property name="shouldbedomain" value="domain"></system-property>
      */
     @Test
@@ -457,7 +445,6 @@ public class MiniXmlParserTest {
         assertTrue(sp.size() >= 4);
         String ser = sp.get("shouldbeserver");
         String con = sp.get("shouldbeconfig");
-        String clu = sp.get("shouldbecluster");
         String dom = sp.get("shouldbedomain");
         String jun = sp.get("shouldbejunk");
 
@@ -468,7 +455,6 @@ public class MiniXmlParserTest {
         assertNull(jun);
         assertEquals(ser, "server");
         assertEquals(con, "config");
-        assertEquals(clu, "cluster");
         assertEquals(dom, "domain");
 
     }

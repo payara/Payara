@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -76,7 +76,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
  *
  * @author Jennifer Chou, Jagadish Ramu 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
+@TargetType(value={CommandTarget.DAS,CommandTarget.CONFIG, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DEPLOYMENT_GROUP })
 @ExecuteOn(RuntimeType.ALL)
 @Service(name=AOR_CREATE_COMMAND_NAME)
 @PerLookup

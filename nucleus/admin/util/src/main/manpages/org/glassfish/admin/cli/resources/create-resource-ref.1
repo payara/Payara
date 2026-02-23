@@ -54,9 +54,9 @@ OPTIONS
                Creates the resource reference for the default server instance.
                This is the default target.
 
-           cluster_name
+           deployment_group
                Creates the resource reference for every server instance in the
-               cluster.
+               deployment group.
 
            instance_name
                Creates the resource reference for the named unclustered server
@@ -74,7 +74,7 @@ OPERANDS
 EXAMPLES
        Example 1, Creating a Reference to a JMS Destination Resource
            This example creates a reference to the JMS destination resource
-           jms/Topic on the cluster Cluster1.
+           jms/Topic on the deployment group Cluster1.
 
                asadmin> create-resource-ref --target Cluster1 jms/Topic
                resource-ref jms/Topic created successfully.

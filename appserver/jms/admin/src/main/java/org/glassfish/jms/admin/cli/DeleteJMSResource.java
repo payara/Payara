@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -69,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @I18n("delete.jms.resource")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.DOMAIN, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = Resources.class,
     opType = RestEndpoint.OpType.DELETE,

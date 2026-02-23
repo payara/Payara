@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+//Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
@@ -76,15 +76,8 @@ import org.glassfish.api.admin.*;
 @PerLookup
 @I18n("create.jms.dest")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="create-jmsdest", 
-        description="Create JMS Destination",
-        params={
-            @RestParam(name="target", value="$parent")
-        }),
     @RestEndpoint(configBean=Server.class,
         opType=RestEndpoint.OpType.POST, 
         path="create-jmsdest", 

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -110,9 +110,7 @@ public class JdbcTest extends BaseSeleniumTestClass {
         final String description = "devtest test jdbc resource - " + jndiName;
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
        
         clickAndWait("treeForm:tree:resources:JDBC:jdbcResources:jdbcResources_link", TRIGGER_JDBC_RESOURCES);
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_JDBC_RESOURCE);
@@ -229,9 +227,6 @@ public class JdbcTest extends BaseSeleniumTestClass {
         if (targetType.equals(MonitoringTest.TARGET_STANDALONE_TYPE)) {
             StandaloneTest instanceTest = new StandaloneTest();
             instanceTest.createStandAloneInstance(target);
-        } else if (targetType.equals(MonitoringTest.TARGET_CLUSTER_TYPE)) {
-            ClusterTest clusterTest = new ClusterTest();
-            clusterTest.createCluster(target);
         }
         clickAndWait("treeForm:tree:resources:JDBC:jdbcResources:jdbcResources_link", TRIGGER_JDBC_RESOURCES);
         clickAndWait("propertyForm:resourcesTable:topActionsGroup1:newButton", TRIGGER_NEW_JDBC_RESOURCE);
@@ -240,9 +235,6 @@ public class JdbcTest extends BaseSeleniumTestClass {
         setFieldValue("form:propertySheet:propertSectionTextField:descProp:desc", description);
 
         if (targetType.equals(MonitoringTest.TARGET_STANDALONE_TYPE)) {
-            addSelectSelection("form:targetSection:targetSectionId:addRemoveProp:commonAddRemove_available", target);
-            pressButton("form:targetSection:targetSectionId:addRemoveProp:commonAddRemove:commonAddRemove_addButton");
-        } else if (targetType.equals(MonitoringTest.TARGET_CLUSTER_TYPE)) {
             addSelectSelection("form:targetSection:targetSectionId:addRemoveProp:commonAddRemove_available", target);
             pressButton("form:targetSection:targetSectionId:addRemoveProp:commonAddRemove:commonAddRemove_addButton");
         }
@@ -261,10 +253,6 @@ public class JdbcTest extends BaseSeleniumTestClass {
             clickAndWait("treeForm:tree:standaloneTreeNode:standaloneTreeNode_link", StandaloneTest.TRIGGER_INSTANCES_PAGE);
             deleteRow("propertyForm:instancesTable:topActionsGroup1:button1", "propertyForm:instancesTable", target);
             assertFalse(tableContainsRow("propertyForm:instancesTable", "col1", target));
-        } else if (targetType.equals(MonitoringTest.TARGET_CLUSTER_TYPE)) {
-            clickAndWait("treeForm:tree:clusterTreeNode:clusterTreeNode_link", ClusterTest.TRIGGER_CLUSTER_PAGE);
-            deleteRow("propertyForm:clustersTable:topActionsGroup1:button1", "propertyForm:clustersTable", target);
-            assertFalse(tableContainsRow("propertyForm:clustersTable", "col1", target));
         }
     }
 }

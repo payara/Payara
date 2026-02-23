@@ -1,7 +1,7 @@
 <!--
 
     Copyright (c) 2005, 2018 Oracle and/or its affiliates. All rights reserved.
-    Portions Copyright &#169; [2017-2020] Payara Foundation and/or affiliates.
+    Portions Copyright &#169; 2017-2026 Payara Foundation and/or its affiliates.
 
     This program and the accompanying materials are made available under the
     terms of the Eclipse Public License v. 2.0, which is available at
@@ -16,7 +16,6 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
 
 <p><a id="ref-uploaddev" name="ref-uploaddev"></a><a id="GHCOM00077" name="GHCOM00077"></a></p>
 
@@ -68,8 +67,8 @@
 </dd>
 <dt>Targets</dt>
 <dd>
-<p>Clusters and standalone instances to which to deploy the application or module. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
-<p>This option is displayed only if clusters or standalone instances have been created in the domain.</p>
+<p>Deployment groups and standalone instances to which to deploy the application or module. Move desired targets to the Selected Targets column using the Add and Add All buttons. Move any unneeded targets to the Available Targets column using the Remove and Remove All buttons.</p>
+<p>This option is displayed only if deployment groups or standalone instances have been created in the domain.</p>
 </dd>
 </dl>
 <p>Additional options for the various application types are described in the following sections.</p>
@@ -106,7 +105,7 @@
 <dt>Virtual Servers</dt>
 <dd>
 <p>The virtual servers associated with this application.</p>
-<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If deployment groups or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
 </dd>
 <dt>Status</dt>
 <dd>
@@ -115,7 +114,7 @@
 <dt>Availability</dt>
 <dd>
 <p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
-<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+<p>This option appears if deployment groups or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
 </dd>
 <dt>Precompile JSPs</dt>
 <dd>
@@ -170,7 +169,7 @@
 <dt>Virtual Servers</dt>
 <dd>
 <p>The virtual servers associated with this application.</p>
-<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If deployment groups or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
 </dd>
 <dt>Status</dt>
 <dd>
@@ -179,7 +178,7 @@
 <dt>Availability</dt>
 <dd>
 <p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
-<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+<p>This option appears if deployment groups or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
 </dd>
 <dt>Java Web Start</dt>
 <dd>
@@ -315,7 +314,7 @@
 <dt>Availability</dt>
 <dd>
 <p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
-<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+<p>This option appears if deployment groups or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
 </dd>
 <dt>Run Verifier</dt>
 <dd>
@@ -371,7 +370,7 @@
 <dt>Virtual Servers</dt>
 <dd>
 <p>The virtual servers associated with this application.</p>
-<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If clusters or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
+<p>The Virtual Servers option appears if only the default server instance, <code>server</code>, exists. If deployment groups or other standalone server instances exist, you can select virtual servers after deployment. Go to the Edit Application page, select the Target tab, and select Manage Virtual Servers for the desired target.</p>
 </dd>
 <dt>Status</dt>
 <dd>
@@ -380,7 +379,7 @@
 <dt>Availability</dt>
 <dd>
 <p>If the Enabled checkbox is selected, high-availability is enabled for web sessions and for stateful session bean (SFSB) checkpointing and potentially passivation. If set to false (default) all web session saving and SFSB checkpointing is disabled for the specified application, web application, or EJB module. If set to true, the specified application or module is enabled for high-availability. Set this option to true only if high availability is configured and enabled at higher levels, such as the server and container levels.</p>
-<p>This option appears if clusters or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
+<p>This option appears if deployment groups or standalone server instances aside from the default server instance (<code>server</code>) exist.</p>
 </dd>
 <dt>OSGI Type</dt>
 <dd>

@@ -37,17 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2014-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.batch;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
@@ -71,7 +69,7 @@ import java.util.*;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.runtime.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,

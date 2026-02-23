@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -156,10 +156,9 @@ reference. Valid targets are as follows:<br></p>
 <p>Creates the resource reference for the default server instance. This
 is the default target.</p>
 </dd>
-<dt class="hdlist1">cluster_name</dt>
+<dt class="hdlist1"><code>deployment_group</code></dt>
 <dd>
-<p>Creates the resource reference for every server instance in the
-cluster.</p>
+<p>Creates the resource reference for every server instance in the deployment group</p>
 </dd>
 <dt class="hdlist1">instance_name</dt>
 <dd>
@@ -199,7 +198,7 @@ default is <code>true</code>.</p>
 </div>
 <div class="paragraph">
 <p>This example creates a reference to the JMS destination resource
-<code>jms/Topic</code> on the cluster <code>Cluster1</code>.</p>
+<code>jms/Topic</code> on the deployment group <code>Cluster1</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">

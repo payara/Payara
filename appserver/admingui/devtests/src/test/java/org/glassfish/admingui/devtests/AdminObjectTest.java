@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package org.glassfish.admingui.devtests;
 
 import static org.junit.Assert.assertTrue;
@@ -55,9 +56,7 @@ public class AdminObjectTest extends BaseSeleniumTestClass {
         final String description = "Admin Object Resource - " + resName;
 
         StandaloneTest standaloneTest = new StandaloneTest();
-        ClusterTest clusterTest = new ClusterTest();
         standaloneTest.deleteAllStandaloneInstances();
-        clusterTest.deleteAllClusters();
 
         //Go to Admin Object Resources Page.
         clickAndWait("treeForm:tree:resources:Connectors:adminObjectResources:adminObjectResources_link", TRIGGER_ADMIN_OBJECT_RESOURCES);

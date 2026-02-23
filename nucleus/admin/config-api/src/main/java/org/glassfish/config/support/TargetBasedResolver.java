@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.config.support;
 
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Cluster;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -78,9 +77,6 @@ public class TargetBasedResolver implements CrudResolver {
     public <T extends ConfigBeanProxy> T resolve(AdminCommandContext context, Class<T> type) {
         try {
             ConfigBeanProxy proxy = getTarget(Config.class, type);
-            if (proxy==null) {
-                proxy=getTarget(Cluster.class, type);
-            }
             if (proxy==null) {
                 proxy=getTarget(Server.class, type);
             }

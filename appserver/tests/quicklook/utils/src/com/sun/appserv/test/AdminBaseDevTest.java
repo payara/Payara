@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 /**
  * This is the same class as the one in v2/appserv-tests/devtests/admin/cli/src/admin.
@@ -137,16 +138,6 @@ public abstract class AdminBaseDevTest extends BaseDevTest {
 
     void stopDomain() {
         report(getTestName() + "-stop-def-domain" + startstops++, asadmin("stop-domain"));
-    }
-
-    final boolean verifyNoClusters() {
-        AsadminReturn ret = asadminWithOutput("list-clusters");
-        String s = (ret.out == null) ? "" : ret.out.trim();
-
-        System.out.println("WARNING!!!!  Work-around for ISSUE 12320 !!!!!!!!");
-
-        // hack -- if there are no clusters than there is no output
-        return s.toLowerCase().endsWith("list-clusters");
     }
 
     final boolean verifyNoInstances() {
