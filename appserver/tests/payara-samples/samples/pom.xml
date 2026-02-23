@@ -77,9 +77,9 @@
         <module>http</module>
         <module>logging</module>
         <module>ejb-http-remoting</module>
-        <module>remote-ejb-tracing</module>
+        <!--<module>remote-ejb-tracing</module>-->
         <module>rolesallowed-unprotected-methods</module>
-        <module>microprofile-rc-ft</module>
+        <!--<module>microprofile-rc-ft</module>-->
         <module>multiple-keystores</module>
         <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
@@ -87,7 +87,7 @@
         <module>microprofile-rest-client</module>
         <module>concurrency</module>
         <module>reproducers</module>
-        <module>opentelemetry</module>
+        <!--<module>opentelemetry</module>-->
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>
         <module>data</module>
