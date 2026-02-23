@@ -40,12 +40,18 @@
 package fish.payara.telemetry.service;
 
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
 import jakarta.annotation.PostConstruct;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.Rank;
@@ -53,45 +59,58 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.*;
+
 @Service(name = "telemetry-runtime-config-service")
 @RunLevel(InitRunLevel.VAL)
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
 public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemetryBootstrapFactoryService {
     
-    private OpenTelemetry runtimeSdk = null;
+    private OpenTelemetrySdk runtimeSdk = null;
     
-    private static final String OTEL_PROPERTIES_PREFIX = "otel";
-    private static final String OTEL_SYSTEM_PROPERTY_NAME = "otel.sdk.disabled";
-    private static final String OTEL_ENVIRONMENT_PROPERTY_NAME = "OTEL_SDK_DISABLED";
+    private OpenTelemetrySdk noopInstance = null;
 
     @PostConstruct
     public void init() {
-        runtimeSdk = createTelemetryRuntimeInstance();
+        createTelemetryRuntimeInstance();
     }
 
     @Override
-    public OpenTelemetry createTelemetryRuntimeInstance() {
-        if (!isOtelEnabled()) {
+    public void createTelemetryRuntimeInstance() {
+        if (!isRuntimeOtelEnabled()) {
             // need to read otel properties
             final Map<String, String> props = new HashMap<>(readOtelProperties());
-            return AutoConfiguredOpenTelemetrySdk.builder().setServiceClassLoader(Thread.currentThread().getContextClassLoader())
+            runtimeSdk = AutoConfiguredOpenTelemetrySdk.builder()
+                    //Need to provide custom Resources to start impl
+                    .addResourceCustomizer(provideDefaultResourceCustomizer(!isRuntimeOtelEnabled()))
+                    //Need to provide properties read from the system and env
+                    .addPropertiesCustomizer(p -> props)
+                    .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                     .disableShutdownHook()
-                    .addPropertiesSupplier(() -> props).build().getOpenTelemetrySdk();
+                    .setResultAsGlobal()
+                    .build().getOpenTelemetrySdk();
+        } else {
+            noopInstance = OpenTelemetrySdk.builder().build();
         }
-        return runtimeSdk;
     }
 
     @Override
-    public OpenTelemetry getAvailableReference() {
-        return runtimeSdk;
+    public Optional<OpenTelemetrySdk> getAvailableRuntimeReference() {
+        return Optional.ofNullable(runtimeSdk);
     }
 
-    private boolean isOtelEnabled() {
-        if (System.getProperty("otel.sdk.disabled") != null) {
+    @Override
+    public Optional<OpenTelemetrySdk> getAvailableNoopReference() {
+        return Optional.ofNullable(noopInstance);
+    }
+
+    @Override
+    public boolean isRuntimeOtelEnabled() {
+        if (System.getProperty(OTEL_SYSTEM_PROPERTY_NAME) != null) {
             return !"false".equalsIgnoreCase(System.getProperty(OTEL_SYSTEM_PROPERTY_NAME, "true"));
         }
 
-        if (System.getenv("OTEL_SDK_DISABLED") != null) {
+        if (System.getenv(OTEL_ENVIRONMENT_PROPERTY_NAME) != null) {
             return !"false".equalsIgnoreCase(System.getenv(OTEL_ENVIRONMENT_PROPERTY_NAME));
         }
         return true;
@@ -110,6 +129,34 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         props.putAll(environmentOtelPropsAvailable);
         return props;
     }
-
-
+    
+    private BiFunction<? super Resource, ConfigProperties, ?extends Resource> provideDefaultResourceCustomizer(boolean runtimeOtelEnabled) {
+        return (Resource resource, ConfigProperties configProperties) -> {
+            try {
+                return this.createDefaultResources(resource, configProperties, runtimeOtelEnabled).build();
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+    
+    private ResourceBuilder createDefaultResources(Resource resource, ConfigProperties configProperties, boolean runtimeOtelEnabled) throws UnknownHostException {
+        ResourceBuilder builder = resource.toBuilder();
+        builder.put(OTEL_SERVICE_NAME, PAYARA_OTEL_RUNTIME_INSTANCE_NAME);
+        builder.put("service.name", PAYARA_OTEL_RUNTIME_INSTANCE_NAME);
+        //indicating metrics exporter as none to prevent warning from logs
+        builder.put(OTEL_METRICS_EXPORTER, "none");
+        //set semantic attribute for OS name and version
+        builder.put("os.name", System.getProperty("os.name"));
+        builder.put("os.version", System.getProperty("os.version"));
+        //set semantic attribute for host information
+        builder.put("host.name", InetAddress.getLocalHost().getHostName());
+        builder.put("host.arch", System.getProperty("os.arch"));
+        //set semantic attribute for jvm information
+        builder.put("jvm.name", System.getProperty("java.vm.name"));
+        builder.put("jvm.vendor", System.getProperty("java.vendor"));
+        builder.put("jvm.version", System.getProperty("java.version"));
+        return builder;
+    }
+    
 }

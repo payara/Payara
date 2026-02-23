@@ -39,16 +39,12 @@
  */
 package fish.payara.telemetry.service;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import java.util.Optional;
+public class PayaraTelemetryConstants {
 
-public interface PayaraTelemetryBootstrapFactoryService {
-    
-    public void createTelemetryRuntimeInstance();
-    
-    public Optional<OpenTelemetrySdk> getAvailableRuntimeReference();
-    
-    public Optional<OpenTelemetrySdk> getAvailableNoopReference();
-    
-    public boolean isRuntimeOtelEnabled();
+    public static final String OTEL_PROPERTIES_PREFIX = "otel";
+    public static final String OTEL_SYSTEM_PROPERTY_NAME = "otel.sdk.disabled";
+    public static final String OTEL_ENVIRONMENT_PROPERTY_NAME = "OTEL_SDK_DISABLED";
+    public static final String OTEL_SERVICE_NAME = "otel.service.name";
+    public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
+    public static final String PAYARA_OTEL_RUNTIME_INSTANCE_NAME = "fish.payara.otel.runtime.intance";
 }

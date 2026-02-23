@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package fish.payara.opentracing;
 
+import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,7 @@ import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
@@ -89,6 +91,8 @@ public class OpenTelemetryService implements EventListener {
     private static final Map<String, OpenTelemetryAppInfo> appTelemetries = new ConcurrentHashMap<>();
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryService.class.getName());
+
+    private PayaraTelemetryBootstrapFactoryServiceImpl payaraTelemetryBootstrapFactoryServiceImpl;
 
     @Inject
     Events events;
@@ -131,6 +135,7 @@ public class OpenTelemetryService implements EventListener {
             logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
+        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
         if(openTelemetry == null) {
             GlobalOpenTelemetry.set(new GlobalTelemetry());
@@ -230,9 +235,14 @@ public class OpenTelemetryService implements EventListener {
         if (applicationName == null) {
             return Optional.empty();
         }
-        OpenTelemetryAppInfo appInfo = appTelemetries.get(applicationName);
-        if (appInfo == null) {
-            return Optional.empty();
+        OpenTelemetryAppInfo appInfo = null;
+        if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().isPresent()) {
+            appInfo = new OpenTelemetryAppInfo(payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().get());
+        } else {
+            appInfo = appTelemetries.get(applicationName);
+            if (appInfo == null) {
+                return Optional.empty();
+            }
         }
         return Optional.ofNullable(getter.apply(appInfo));
     }
@@ -283,8 +293,12 @@ public class OpenTelemetryService implements EventListener {
             }
         } else {
             // noop
-            return OpenTelemetrySdk.builder().build();
+            if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableNoopReference().isPresent()) {
+                return payaraTelemetryBootstrapFactoryServiceImpl.getAvailableNoopReference().get();
+            } 
         }
+        //noop
+        return OpenTelemetrySdk.builder().build();
     }
 
     private boolean isOtelEnabled(Map<String, String> configProperties) {
