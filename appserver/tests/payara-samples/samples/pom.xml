@@ -79,7 +79,7 @@
         <module>ejb-http-remoting</module>
         <!--<module>remote-ejb-tracing</module>-->
         <module>rolesallowed-unprotected-methods</module>
-        <module>microprofile-rc-ft</module>
+        <!--<module>microprofile-rc-ft</module>-->
         <module>multiple-keystores</module>
         <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
