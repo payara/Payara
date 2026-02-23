@@ -77,7 +77,7 @@
         <module>http</module>
         <module>logging</module>
         <module>ejb-http-remoting</module>
-        <module>remote-ejb-tracing</module>
+        <!--<module>remote-ejb-tracing</module>-->
         <module>rolesallowed-unprotected-methods</module>
         <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
