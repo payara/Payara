@@ -547,7 +547,7 @@ pipeline {
                     steps {
                         script {
                             // Try using branch parameter instead for PR builds
-                            def specificBranchCommitOrTag = "PR-${env.PR_ID}"
+                            def specificBranchCommitOrTag = env.BRANCH_NAME
                             
                             // First build the build job and capture its build number
                             def buildJob = build job: 'Build/Build', wait: true,
