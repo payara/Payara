@@ -87,7 +87,7 @@
         <module>microprofile-rest-client</module>
         <module>concurrency</module>
         <module>reproducers</module>
-        <module>opentelemetry</module>
+        <!--<module>opentelemetry</module>-->
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>
         <module>data</module>
