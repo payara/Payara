@@ -21,26 +21,10 @@ pipeline {
             steps {
                 script {
                     pom = readMavenPom file: 'pom.xml'
-                    
-                    // Extract PR ID from git branch or environment
-                    def prId = env.CHANGE_ID ?: sh(script: 'git rev-parse --abbrev-ref HEAD | sed "s/.*pr-\\([0-9]*\\).*/\\1/" || echo "unknown"', returnStdout: true).trim()
-                    if (prId == "unknown") {
-                        // Try to get PR ID from git log or commit message
-                        prId = sh(script: 'git log --oneline -1 | grep -o "Merge pull request #[0-9]*" | grep -o "[0-9]*" || echo "unknown"', returnStdout: true).trim()
-                    }
-                    
-                    payaraBuildNumber = "PR${prId}#${currentBuild.number}"
-                    DOMAIN_NAME = "test-domain"
-                    
-                    // Get current git commit ID for Build job
-                    env.GIT_COMMIT_ID = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    env.PR_ID = prId
-                    
+
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
-                    echo "Git commit ID is ${env.GIT_COMMIT_ID}"
-                    echo "Checked out PR-${prId}"
               }
             }
         }
@@ -566,7 +550,7 @@ pipeline {
                             build job: 'Miscellaneous/Run-EE7-Samples',
                                 parameters: [
                                     string(name: 'payaraBuildNumber', value: "${buildId}"),
-                                    string(name: 'buildProject', value: "Build/GrabArtifactsFromMaven"),
+                                    string(name: 'buildProject', value: "Build/Build"),
                                     string(name: 'repoOrg', value: 'Payara'),
                                     string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
                                     string(name: 'jdkChoice', value: 'zulu-21'),
