@@ -207,5 +207,82 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>payara-server-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>start-payara-server-for-config</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerStart}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>start-domain</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>enable-client-auth</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipConfig}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>set</argument>
+                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>assign-certificate-realm-group</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipConfig}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>set</argument>
+                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+
+                            <!-- Start Domain to apply configuration -->
+                            <execution>
+                                <id>restart-payara-for-config</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${skipServerRestart}</skip>
+                                    <executable>${payara.asadmin}</executable>
+                                    <arguments>
+                                        <argument>${serverRestartCommand}</argument>
+                                        <argument>${payara.domain.name}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
