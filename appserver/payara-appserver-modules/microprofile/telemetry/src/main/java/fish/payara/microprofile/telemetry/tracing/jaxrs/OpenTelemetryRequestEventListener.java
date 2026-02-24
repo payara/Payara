@@ -206,13 +206,14 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
         // Create a Span and instrument it with details about the request
         var queryParam = requestContext.getRequestUri().getQuery() == null
-                ? "" : "?" + requestContext.getRequestUri().getQuery();
+                ? null : requestContext.getRequestUri().getQuery();
         final SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
                 .setSpanKind(SpanKind.SERVER)
                 .setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, requestContext.getMethod())
                 .setAttribute(UrlAttributes.URL_FULL, requestContext.getRequestUri().toString())
-                .setAttribute(UrlAttributes.URL_PATH.toString() + UrlAttributes.URL_QUERY,
-                        requestContext.getUriInfo().getRequestUri().getPath() + queryParam)
+                .setAttribute(UrlAttributes.URL_PATH,
+                        requestContext.getUriInfo().getRequestUri().getPath())
+                .setAttribute(UrlAttributes.URL_QUERY, queryParam)
                 .setAttribute(UrlAttributes.URL_SCHEME, requestContext.getRequestUri().getScheme())
                 .setAttribute(ServerAttributes.SERVER_ADDRESS, requestContext.getRequestUri().getHost())
                 .setAttribute(HttpAttributes.HTTP_ROUTE, openTracingHelper.getHttpRoute(requestContext, resourceInfo))
