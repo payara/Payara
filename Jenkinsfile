@@ -3,6 +3,7 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
+def buildId
 pipeline {
     agent {
         label 'general-purpose'
@@ -48,7 +49,7 @@ pipeline {
                             booleanParam(name: 'skipTests', value: false),
                             string(name: 'multiThread', value: '1')
                         ]
-                    def buildId = buildJob.getNumber()
+                    buildId = buildJob.getNumber()
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
             }
@@ -75,7 +76,7 @@ pipeline {
                     }
                 }
                 always {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara7/glassfish/logs/server.log'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/server.log', fingerprint: true
                 }
             }
         }
