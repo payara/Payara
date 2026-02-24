@@ -56,21 +56,16 @@ pipeline {
             post {
                 success{
                     // Get and stash artifacts from the Build job
-                    copyArtifacts projectName: 'Build/Build', 
-                        filter: 'appserver/distributions/payara/target/payara.zip',
-                        selector: specific("${buildId}"),
-                        target: 'appserver/distributions/payara/target/'
-                    copyArtifacts projectName: 'Build/Build', 
-                        filter: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar',
-                        selector: specific("${buildId}"),
-                        target: 'appserver/extras/payara-micro/payara-micro-distribution/target/'
+                    copyArtifacts projectName: 'Build/Build',
+                        filter: 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip',
+                        selector: specific("${buildId}")
                     
-                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
-                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
-                    stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
-                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true
-                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true
-                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true
+                    archiveArtifacts artifacts: 'payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'payara-micro.jar', fingerprint: true
+                    stash name: 'payara-target', includes: 'payara.zip,payara-web.zip', allowEmpty: true
+                    stash name: 'payara-micro', includes: 'payara-micro.jar', allowEmpty: true
+                    stash name: 'payara-embedded-all', includes: 'payara-embedded-all.jar', allowEmpty: true
+                    stash name: 'payara-embedded-web', includes: 'payara-embedded-web.jar', allowEmpty: true
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
