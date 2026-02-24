@@ -40,12 +40,19 @@
 package fish.payara.opentracing;
 
 import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.resources.ResourceBuilder;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +84,8 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
+
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.*;
 
 /**
  * Manages per-application OpenTelemetry SDK instances as well as export to
@@ -274,8 +283,9 @@ public class OpenTelemetryService implements EventListener {
             addDefault(props, "otel.metrics.exporter", "none");
             try {
                 return AutoConfiguredOpenTelemetrySdk.builder()
+                        .addPropertiesCustomizer(p -> props)
+                        .addResourceCustomizer(provideDefaultResourceCustomizer(props))
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-                        .disableShutdownHook()
                         .addTracerProviderCustomizer((builder, config) -> {
                           if (isPayaraTracingEnabled()) {
                               return builder.addSpanProcessor(new PayaraRequestTracingProcessor(locator.getService(RequestTracingService.class)));
@@ -283,7 +293,7 @@ public class OpenTelemetryService implements EventListener {
                               return builder;
                           }
                         })
-                        .addPropertiesSupplier(() -> props)
+                        .disableShutdownHook()
                         .build().getOpenTelemetrySdk();
             } catch (ConfigurationException ce) {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
@@ -299,6 +309,43 @@ public class OpenTelemetryService implements EventListener {
         }
         //noop
         return OpenTelemetrySdk.builder().build();
+    }
+
+    private BiFunction<? super Resource, ConfigProperties, ?extends Resource> provideDefaultResourceCustomizer(HashMap<String, String> readProperties) {
+        return (Resource resource, ConfigProperties configProperties) -> {
+            try {
+                return this.createDefaultResources(resource, configProperties, readProperties).build();
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    private ResourceBuilder createDefaultResources(Resource resource, ConfigProperties configProperties, HashMap<String, String> readProperties) throws UnknownHostException {
+        ResourceBuilder builder = resource.toBuilder();
+        builder.put(OTEL_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
+        builder.put(ATTRIBUTE_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
+        builder.put(OTEL_METRICS_EXPORTER, readProperties.get(OTEL_METRICS_EXPORTER));
+        if (readProperties.containsKey(OTEL_RESOURCE_ATTRIBUTES)) {
+            String properties = readProperties.get(OTEL_RESOURCE_ATTRIBUTES);
+            processProperties(builder, properties);
+            builder.put(OTEL_RESOURCE_ATTRIBUTES, readProperties.get(OTEL_RESOURCE_ATTRIBUTES));
+        }
+        builder.put(OTEL_TRACES_EXPORTER, readProperties.get(OTEL_TRACES_EXPORTER));
+        return builder;
+    }
+    
+    public void processProperties(ResourceBuilder builder, String properties) {
+        if(properties != null) {
+            String[] multipleProps = properties.split(",");
+            for (String p: multipleProps) {
+                String shorText = p.trim();
+                String key = shorText.substring(0, shorText.indexOf("="));
+                String value = shorText.substring(shorText.indexOf("=") + 1);
+                builder.put(key, value);
+            }
+        }
+        
     }
 
     private boolean isOtelEnabled(Map<String, String> configProperties) {

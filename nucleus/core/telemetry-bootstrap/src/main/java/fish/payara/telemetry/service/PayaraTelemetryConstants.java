@@ -45,6 +45,9 @@ public class PayaraTelemetryConstants {
     public static final String OTEL_SYSTEM_PROPERTY_NAME = "otel.sdk.disabled";
     public static final String OTEL_ENVIRONMENT_PROPERTY_NAME = "OTEL_SDK_DISABLED";
     public static final String OTEL_SERVICE_NAME = "otel.service.name";
+    public static final String ATTRIBUTE_SERVICE_NAME = "service.name";
     public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
+    public static final String OTEL_TRACES_EXPORTER = "otel.traces.exporter";
+    public static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
     public static final String PAYARA_OTEL_RUNTIME_INSTANCE_NAME = "fish.payara.otel.runtime.intance";
 }
