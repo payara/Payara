@@ -32,14 +32,37 @@ pipeline {
         stage('Build') {
             steps {
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                    -Djavadoc.skip -Dsource.skip"""
+                // Try using branch parameter instead for PR builds
+                def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                def repoOrg = env.CHANGE_FORK ?: 'Payara'
+
+
+                // First build the build job and capture its build number
+                def buildJob = build job: 'Build/Build', wait: true,
+                    parameters: [
+                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                        string(name: 'repoOrg', value: repoOrg),
+                        string(name: 'jdkVer', value: 'zulu-21'),
+                        string(name: 'stream', value: 'Community'),
+                        string(name: 'profiles', value: 'BuildEmbedded'),
+                        booleanParam(name: 'skipTests', value: false),
+                        string(name: 'multiThread', value: '1')
+                    ]
+                def buildId = buildJob.getNumber()
                 echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
             }
             post {
                 success{
+                    // Get and stash artifacts from the Build job
+                    copyArtifacts projectName: 'Build/Build', 
+                        filter: 'appserver/distributions/payara/target/payara.zip',
+                        selector: specific("${buildId}"),
+                        target: 'appserver/distributions/payara/target/'
+                    copyArtifacts projectName: 'Build/Build', 
+                        filter: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar',
+                        selector: specific("${buildId}"),
+                        target: 'appserver/extras/payara-micro/payara-micro-distribution/target/'
+                    
                     archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
                     archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
                     stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
