@@ -31,25 +31,26 @@ pipeline {
         }
         stage('Build') {
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                // Try using branch parameter instead for PR builds
-                def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
-                def repoOrg = env.CHANGE_FORK ?: 'Payara'
+                script {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    // Try using branch parameter instead for PR builds
+                    def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                    def repoOrg = env.CHANGE_FORK ?: 'Payara'
 
-
-                // First build the build job and capture its build number
-                def buildJob = build job: 'Build/Build', wait: true,
-                    parameters: [
-                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                        string(name: 'repoOrg', value: repoOrg),
-                        string(name: 'jdkVer', value: 'zulu-21'),
-                        string(name: 'stream', value: 'Community'),
-                        string(name: 'profiles', value: 'BuildEmbedded'),
-                        booleanParam(name: 'skipTests', value: false),
-                        string(name: 'multiThread', value: '1')
-                    ]
-                def buildId = buildJob.getNumber()
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    // First build the build job and capture its build number
+                    def buildJob = build job: 'Build/Build', wait: true,
+                        parameters: [
+                            string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                            string(name: 'repoOrg', value: repoOrg),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'stream', value: 'Community'),
+                            string(name: 'profiles', value: 'BuildEmbedded'),
+                            booleanParam(name: 'skipTests', value: false),
+                            string(name: 'multiThread', value: '1')
+                        ]
+                    def buildId = buildJob.getNumber()
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
             }
             post {
                 success{
