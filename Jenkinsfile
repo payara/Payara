@@ -8,6 +8,9 @@ pipeline {
     agent {
         label 'general-purpose'
     }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '14'))
+    }
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
