@@ -654,6 +654,8 @@ void makeDomain() {
 void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     unstash name: 'payara-target'
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Extract payara.zip  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    sh 'unzip -q payara.zip || true'
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     dir('/home/ubuntu/.m2/repository/'){
         unstash name: 'payara-m2-repository'
