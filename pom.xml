@@ -630,8 +630,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
-                        <source>${javase.version}</source>
-                        <target>${javase.version}</target>
+                        <release>${javase.version}</release>
                         <excludes>
                             <exclude>**/.ade_path/**</exclude>
                         </excludes>
