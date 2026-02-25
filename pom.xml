@@ -331,7 +331,7 @@
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
         <concurrent-api.version>3.1.1</concurrent-api.version>
-        <jaxws-api.version>4.0.2</jaxws-api.version>
+        <jaxws-api.version>4.0.3</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
         <stax2-api.version>4.2.2</stax2-api.version>
