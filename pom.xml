@@ -638,6 +638,7 @@
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
+                        <proc>full</proc>
                     </configuration>
                 </plugin>
                 <plugin>
