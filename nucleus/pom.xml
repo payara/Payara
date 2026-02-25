@@ -101,7 +101,7 @@
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>5.1.0</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.1.0</gmbal.version>
+        <gmbal.version>4.1.1</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.21.0</commons-io.version>
