@@ -45,6 +45,7 @@ import jakarta.data.repository.Delete;
 import jakarta.data.repository.Find;
 import jakarta.data.repository.Insert;
 import jakarta.data.repository.Query;
+import jakarta.data.repository.Repository;
 import jakarta.data.repository.Save;
 import jakarta.data.repository.Update;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -94,6 +95,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private Class<T> repository;
     private BeanManager beanManager;
     private JakartaDataExtension jakartaDataExtension;
+    private String dataStore;
     private Set<Type> beanTypes = null;
     private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
     private Map<Class<?>, EntityMetadata> mapOfMetaData = new HashMap<>();
@@ -111,12 +113,17 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         this.beanManager = beanManager;
         this.jakartaDataExtension = jakartaDataExtension;
         this.beanTypes = Set.of(instance);
+        Repository repositoryAnnotation = instance.getAnnotation(Repository.class);
+        if (repositoryAnnotation != null) {
+            String ds = repositoryAnnotation.dataStore();
+            this.dataStore = Repository.DEFAULT_DATA_STORE.equals(ds) ? null : ds;
+        }
         processQueriesForEntity();
     }
 
     @Override
     public T produce(CreationalContext<T> creationalContext) {
-        RepositoryImpl<?> handler = new RepositoryImpl<>(repository, queriesForEntity, jakartaDataExtension.getApplicationName());
+        RepositoryImpl<?> handler = new RepositoryImpl<>(repository, queriesForEntity, jakartaDataExtension.getApplicationName(), dataStore);
         return (T) Proxy.newProxyInstance(repository.getClassLoader(), new Class[]{repository},
                 handler);
     }
@@ -355,7 +362,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             }
         }
         QueryData dataForQuery = new QueryData(repository, method, declaredEntityClass, entityParamType,
-                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName()));
+                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName(), this.dataStore));
 
         try {
             evaluateDataQuery(dataForQuery, method);
