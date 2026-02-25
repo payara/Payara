@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging;
 
@@ -57,7 +57,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class LogEventListenerTest {
 
-    private static final String FILE_SEP = File.pathSeparator;
+    private static final String FILE_SEP = File.separator;
 
     private static final String USER_DIR = System.getProperty("user.dir");
 
