@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-/*Portions Copyright 2016-2023 Payara Foundation and/or its affiliates
+/*Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 /*
  * Common utility
  */
@@ -2648,7 +2648,10 @@ admingui.ajax = {
                 }
             } else {
                 // Don't ping b/c this is from the header and therefor is a ping
-                faces.ajax.request(src, null,
+                faces.ajax.request(src,
+                {
+                    type: 'click',
+                },
                 {
                     execute: 'execButton',
                     render: 'execResp',
