@@ -61,12 +61,14 @@ import jakarta.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -110,33 +112,33 @@ public class QueryOperationUtility {
         Map<Integer, String> patternSelectPositions = new LinkedHashMap<>();
         Map<Integer, String> patternDeletePositions;
         Map<Integer, String> patternUpdatePositions;
-        Map<String, Set<String>> queryMapping = null;
+        Map.Entry<String, Set<String>> queryMappingEntry = null;
         if (queryAnnotation != null) {
             if (!mappedQuery.isEmpty()) {
                 if (deletePredicate.test(firstChar)) {
                     patternDeletePositions = preprocessQueryString(mappedQuery, deleteQueryPatterns);
-                    queryMapping = processQuery(mappedQuery, patternDeletePositions, dataForQuery);
+                    queryMappingEntry = processQuery(mappedQuery, patternDeletePositions, queryMetadata.getDeclaredEntityClass());
                 } else if (updatePredicate.test(firstChar)) {
                     patternUpdatePositions = preprocessQueryString(mappedQuery, updateQueryPatterns);
-                    queryMapping = processQuery(mappedQuery, patternUpdatePositions, dataForQuery);
+                    queryMappingEntry = processQuery(mappedQuery, patternUpdatePositions, queryMetadata.getDeclaredEntityClass());
                 } else {
                     patternSelectPositions = preprocessQueryString(mappedQuery, selectQueryPatterns);
-                    queryMapping = processQuery(mappedQuery, patternSelectPositions, dataForQuery);
+                    queryMappingEntry = processQuery(mappedQuery, patternSelectPositions, queryMetadata.getDeclaredEntityClass());
                 }
+                dataForQuery.setQueryString(queryMappingEntry.getKey());
             }
         }
 
         Object objectToReturn = null;
         if (!evaluatePages) {
-            for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
-                String query = entry.getKey();
+                String query = queryMappingEntry.getKey();
                 List<Sort<?>> sortList = dataParameter.sortList();
                 if (!sortList.isEmpty()) {
                     query = handleSort(dataForQuery, sortList, query, false, false, false);
                 }
                 jakarta.persistence.Query q = entityManager.createQuery(query);
-                validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
-                if (!entry.getValue().isEmpty()) {
+                validateParameters(dataForQuery, queryMappingEntry.getValue(), queryAnnotation.value());
+                if (!queryMappingEntry.getValue().isEmpty()) {
                     Object[] params = dataForQuery.getJpqlParameters().toArray();
                     for (int i = 0; i < params.length; i++) {
                         q.setParameter((String) params[i], args[i]);
@@ -166,11 +168,8 @@ public class QueryOperationUtility {
                 } else {
                     objectToReturn = processReturnType(queryMetadata, q.getResultList());
                 }
-            }
         } else {
-            for (Map.Entry<String, Set<String>> entry : queryMapping.entrySet()) {
-                validateParameters(dataForQuery, entry.getValue(), queryAnnotation.value());
-            }
+            validateParameters(dataForQuery, queryMappingEntry.getValue(), queryAnnotation.value());
             objectToReturn = processPagination(entityManager, dataForQuery, args,
                     method, new StringBuilder(dataForQuery.getQueryString()),
                     patternSelectPositions.containsValue("WHERE"), patternSelectPositions.containsValue("ORDER"), dataParameter);
@@ -188,8 +187,8 @@ public class QueryOperationUtility {
         return mappedQuery;
     }
 
-    public static Map<String, Set<String>> processQuery(String queryString,
-                                                        Map<Integer, String> patternPositions, QueryData dataForQuery) {
+    public static Map.Entry<String, Set<String>> processQuery(String queryString,
+                                                        Map<Integer, String> patternPositions, Class<?> entityClass) {
         int querySize = queryString.length();
         int startIndex = 0;
         Set<String> parameters = new HashSet<>();
@@ -210,7 +209,7 @@ public class QueryOperationUtility {
                     && queryString.regionMatches(true, startIndex, patternPositions.get(startIndex), 0, patternPositions.get(startIndex).length())
                     && !Character.isJavaIdentifierPart(queryString.charAt(startIndex + patternPositions.get(startIndex).length()))) {
                 addQueryPart(queryBuilder, patternPositions.get(startIndex),
-                        queryString, dataForQuery.getQueryMetadata().getDeclaredEntityClass(), patternPositions);
+                        queryString, entityClass, patternPositions);
                 startIndex += patternPositions.get(startIndex).length();
                 continue;
             } else if (Character.isJavaIdentifierStart(queryCharacter)) {
@@ -244,10 +243,7 @@ public class QueryOperationUtility {
             }
         }
 
-        Map<String, Set<String>> queryMapping = new LinkedHashMap<>();
-        queryMapping.put(queryBuilder.toString(), parameters);
-        dataForQuery.setQueryString(queryBuilder.toString());
-        return queryMapping;
+        return new AbstractMap.SimpleEntry<>(queryBuilder.toString(), parameters);
     }
 
     public static Map<Integer, String> preprocessQueryString(String queryString, List<String> patterns) {
