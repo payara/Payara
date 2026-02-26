@@ -356,8 +356,9 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         }
 
         try {
-            if (declaredEntityClass == null) {
-                declaredEntityClass = evaluateDataQuery(method);
+            Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
+            if (entityTypeInMethod != null) {
+                declaredEntityClass = entityTypeInMethod;
             }
 
             queries.add(new QueryMetadata(
