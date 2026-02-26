@@ -360,6 +360,14 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             if (entityTypeInMethod != null) {
                 declaredEntityClass = entityTypeInMethod;
             }
+            else if (declaredEntityClass == null) {
+                throw new MappingException(
+                        String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                        "Either extend a repository interface with entity type parameters or " +
+                                        "ensure entity type is determinable from method signature.",
+                                method.getName(), method.getDeclaringClass().getName())
+                );
+            }
 
             queries.add(new QueryMetadata(
                     repository, method, declaredEntityClass, entityParamType,
@@ -369,30 +377,6 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         catch (MappingException e) {
             logger.warning(e.getMessage());
         }
-    }
-
-    private Class<?> evaluateDataQuery(Method method) {
-        Class<?> entityType = findEntityTypeInMethod(method);
-        if (entityType != null) {
-            return entityType;
-        }
-        Class<?> declaringClass = method.getDeclaringClass();
-        Method[] allMethods = declaringClass.getMethods();
-        for (Method interfaceMethod : allMethods) {
-            if (interfaceMethod.equals(method)) {
-                continue;
-            }
-            entityType = findEntityTypeInMethod(interfaceMethod);
-            if (entityType != null) {
-                return entityType;
-            }
-        }
-        throw new MappingException(
-                String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                "Either extend a repository interface with entity type parameters or " +
-                                "ensure entity type is determinable from method signature.",
-                        method.getName(), declaringClass.getName())
-        );
     }
 
     @Override
