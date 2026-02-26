@@ -70,8 +70,9 @@ public class MultipleDataStoreTest {
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "multiple-datastore-test.war")
-                .addPackages(true, "fish.payara.samples.data.entity")
-                .addPackages(true, "fish.payara.samples.data.repo")
+                .addClass(Product.class)
+                .addClass(ProductsFirstPU.class)
+                .addClass(ProductsSecondPU.class)
                 .addAsResource(new StringAsset(MULTI_PU_PERSISTENCE_XML), "META-INF/persistence.xml")
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
