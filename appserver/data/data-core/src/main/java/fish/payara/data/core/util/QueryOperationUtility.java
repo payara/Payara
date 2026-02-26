@@ -131,43 +131,43 @@ public class QueryOperationUtility {
 
         Object objectToReturn = null;
         if (!evaluatePages) {
-                String query = queryMappingEntry.getKey();
-                List<Sort<?>> sortList = dataParameter.sortList();
-                if (!sortList.isEmpty()) {
-                    query = handleSort(dataForQuery, sortList, query, false, false, false);
+            String query = queryMappingEntry.getKey();
+            List<Sort<?>> sortList = dataParameter.sortList();
+            if (!sortList.isEmpty()) {
+                query = handleSort(dataForQuery, sortList, query, false, false, false);
+            }
+            jakarta.persistence.Query q = entityManager.createQuery(query);
+            validateParameters(dataForQuery, queryMappingEntry.getValue(), queryAnnotation.value());
+            if (!queryMappingEntry.getValue().isEmpty()) {
+                Object[] params = dataForQuery.getJpqlParameters().toArray();
+                for (int i = 0; i < params.length; i++) {
+                    q.setParameter((String) params[i], args[i]);
                 }
-                jakarta.persistence.Query q = entityManager.createQuery(query);
-                validateParameters(dataForQuery, queryMappingEntry.getValue(), queryAnnotation.value());
-                if (!queryMappingEntry.getValue().isEmpty()) {
-                    Object[] params = dataForQuery.getJpqlParameters().toArray();
-                    for (int i = 0; i < params.length; i++) {
-                        q.setParameter((String) params[i], args[i]);
+            } else {
+                for (int i = 1; args != null && i <= args.length; i++) {
+                    if (!excludeParameter(args[i - 1])) {
+                        q.setParameter(i, args[i - 1]);
                     }
-                } else {
-                    for (int i = 1; args != null && i <= args.length; i++) {
-                        if (!excludeParameter(args[i - 1])) {
-                            q.setParameter(i, args[i - 1]);
-                        }
-                    }
                 }
-                Limit limit = dataParameter.limit();
-                if (limit != null) {
-                    q.setFirstResult((int) (limit.startAt() - 1));
-                    q.setMaxResults(limit.maxResults());
-                }
+            }
+            Limit limit = dataParameter.limit();
+            if (limit != null) {
+                q.setFirstResult((int) (limit.startAt() - 1));
+                q.setMaxResults(limit.maxResults());
+            }
 
-                if (deletePredicate.test(firstChar) || updatePredicate.test(firstChar)) {
-                    startTransactionAndJoin(transactionManager, entityManager, dataForQuery);
-                    int deleteReturn = q.executeUpdate();
-                    endTransaction(transactionManager, entityManager, dataForQuery);
+            if (deletePredicate.test(firstChar) || updatePredicate.test(firstChar)) {
+                startTransactionAndJoin(transactionManager, entityManager, dataForQuery);
+                int deleteReturn = q.executeUpdate();
+                endTransaction(transactionManager, entityManager, dataForQuery);
 
-                    // Clear cache for the affected entity after UPDATE/DELETE
-                    clearCache(entityManager, queryMetadata.getDeclaredEntityClass());
+                // Clear cache for the affected entity after UPDATE/DELETE
+                clearCache(entityManager, queryMetadata.getDeclaredEntityClass());
 
-                    return processReturnQueryUpdate(method, deleteReturn);
-                } else {
-                    objectToReturn = processReturnType(queryMetadata, q.getResultList());
-                }
+                return processReturnQueryUpdate(method, deleteReturn);
+            } else {
+                objectToReturn = processReturnType(queryMetadata, q.getResultList());
+            }
         } else {
             validateParameters(dataForQuery, queryMappingEntry.getValue(), queryAnnotation.value());
             objectToReturn = processPagination(entityManager, dataForQuery, args,
