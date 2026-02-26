@@ -91,7 +91,7 @@ import static fish.payara.data.core.cdi.extension.DynamicInterfaceDataProducer.i
  */
 public class DataCommonOperationUtility {
 
-    private static final String PERSISTENCE_UNIT_NAME_PROPERTY = "jakarta.persistence.unitName";
+    private static final String EMF_NAME_KEY = EntityManagerFactory.class.toString() + "_nameMap";
 
     public static Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
             || Void.class.equals(returnType);
@@ -163,38 +163,22 @@ public class DataCommonOperationUtility {
         }
 
         if (dataStore != null && !dataStore.isEmpty()) {
-            List<EntityManagerFactory> matched = factoryList.stream()
-                    .filter(factory -> dataStoreMatchesPersistenceUnit(factory, dataStore))
-                    .toList();
-
-            if (matched.size() == 1) {
-                return matched.getFirst().createEntityManager();
+            @SuppressWarnings("unchecked")
+            Map<String, EntityManagerFactory> emfNameMap = applicationInfo.getTransientAppMetaData(EMF_NAME_KEY, Map.class);
+            if (emfNameMap != null && emfNameMap.containsKey(dataStore)) {
+                return emfNameMap.get(dataStore).createEntityManager();
             }
 
-            if (matched.isEmpty()) {
-                throw new AmbiguousPersistenceUnitException(String.format(
-                        "For the application '%s', no persistence unit found matching dataStore '%s'. "
-                                + "Ensure the @Repository(dataStore) value matches a persistence unit name defined in persistence.xml.",
-                        applicationName, dataStore));
-            }
+            throw new AmbiguousPersistenceUnitException(String.format(
+                    "For the application '%s', no persistence unit found matching dataStore '%s'. "
+                            + "Ensure the @Repository(dataStore) value matches a persistence unit name defined in persistence.xml.",
+                    applicationName, dataStore));
         }
 
         throw new AmbiguousPersistenceUnitException(String.format(
                 "For the application '%s', multiple persistence units are defined. "
                         + "Use @Repository(dataStore = \"<persistence-unit-name>\") to specify which persistence unit to use.",
                 applicationName));
-    }
-
-    private static boolean dataStoreMatchesPersistenceUnit(EntityManagerFactory factory, String dataStore) {
-        Map<String, Object> properties = factory.getProperties();
-        if (properties == null || properties.isEmpty()) {
-            return false;
-        }
-        Object unitName = properties.get(PERSISTENCE_UNIT_NAME_PROPERTY);
-        if (unitName instanceof String name) {
-            return dataStore.equals(name);
-        }
-        return false;
     }
 
     public static ApplicationRegistry getRegistry() {
