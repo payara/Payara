@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) 2018-2025 Payara Foundation and/or affiliates
+Copyright (c) 2018-2026 Payara Foundation and/or affiliates
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -66,7 +66,7 @@ holder.
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>opentracing-adapter</artifactId>
+            <artifactId>opentelemetry-tracing-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
