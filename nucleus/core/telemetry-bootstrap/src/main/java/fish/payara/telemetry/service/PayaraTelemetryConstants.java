@@ -39,6 +39,9 @@
  */
 package fish.payara.telemetry.service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class PayaraTelemetryConstants {
 
     public static final String OTEL_PROPERTIES_PREFIX = "otel";
@@ -48,6 +51,63 @@ public class PayaraTelemetryConstants {
     public static final String ATTRIBUTE_SERVICE_NAME = "service.name";
     public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
     public static final String OTEL_TRACES_EXPORTER = "otel.traces.exporter";
+    public static final String OTEL_LOGS_EXPORTER = "otel.logs.exporter";
+    public static final String OTEL_PROPAGATORS = "otel.propagators";
     public static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
+    public static final String OTEL_BSP_SCHEDULE_DELAY= "otel.bsp.schedule.delay";
+    public static final String OTEL_BSP_MAX_QUEUE = "otel.bsp.max.queue.size";
+    public static final String OTEL_BSP_MAX_EXPORT_BATCH_SIZE = "otel.bsp.max.export.batch.size";
+    public static final String OTEL_BSP_EXPORT_TIMEOUT = "otel.bsp.export.timeout";
+    public static final String OTEL_TRACES_SAMPLER = "otel.traces.sampler";
+    public static final String OTEL_TRACES_SAMPLER_ARG ="otel.traces.sampler.arg";
+    public static final String OTEL_EXPORTER_OTLP_PROTOCOL = "otel.exporter.otlp.protocol";
+    public static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
+    public static final String OTEL_EXPORTER_OTLP_CERTIFICATE = "otel.exporter.otlp.certificate";
+    public static final String OTEL_EXPORTER_OTLP_CLIENT_KEY = "otel.exporter.otlp.client.key";
+    public static final String OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE = "otel.exporter.otlp.client.certificate";
+    public static final String OTEL_EXPORTER_OTLP_HEADERS = "otel.exporter.otlp.headers";
+    public static final String OTEL_EXPORTER_OTLP_COMPRESSION = "otel.exporter.otlp.compression";
+    public static final String OTEL_EXPORTER_OTLP_TIMEOUT = "otel.exporter.otlp.timeout";
+    public static final String OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE = "otel.exporter.otlp.metrics.temporality.preference";
+    public static final String OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION = "otel.exporter.otlp.metrics.default.histogram.aggregation";
+    public static final String OTEL_METRICS_EXEMPLAR_FILTER = "otel.metrics.exemplar.filter";
+    public static final String OTEL_METRIC_EXPORT_INTERVAL = "otel.metric.export.interval";
+    public static final String OTEL_BLRP_SCHEDULE_DELAY = "otel.blrp.schedule.delay";
+    public static final String OTEL_BLRP_MAX_QUEUE_SIZE = "otel.blrp.max.queue.size";
+    public static final String OTEL_BLRP_MAX_EXPORT_BATCH_SIZE = "otel.blrp.max.export.batch.size";
+    public static final String OTEL_BLRP_EXPORT_TIMEOUT = "otel.blrp.export.timeout";
     public static final String PAYARA_OTEL_RUNTIME_INSTANCE_NAME = "fish.payara.otel.runtime.intance";
+    public static final Set<String> otelProperties;
+    
+    static {
+        otelProperties = new HashSet<>();
+        otelProperties.add(OTEL_SERVICE_NAME);
+        otelProperties.add(OTEL_METRICS_EXPORTER);
+        otelProperties.add(OTEL_TRACES_EXPORTER);
+        otelProperties.add(OTEL_LOGS_EXPORTER);
+        otelProperties.add(OTEL_PROPAGATORS);
+        otelProperties.add(OTEL_RESOURCE_ATTRIBUTES);
+        otelProperties.add(OTEL_BSP_SCHEDULE_DELAY);
+        otelProperties.add(OTEL_BSP_MAX_QUEUE);
+        otelProperties.add(OTEL_BSP_MAX_EXPORT_BATCH_SIZE);
+        otelProperties.add(OTEL_BSP_EXPORT_TIMEOUT);
+        otelProperties.add(OTEL_TRACES_SAMPLER);
+        otelProperties.add(OTEL_TRACES_SAMPLER_ARG);
+        otelProperties.add(OTEL_EXPORTER_OTLP_PROTOCOL);
+        otelProperties.add(OTEL_EXPORTER_OTLP_ENDPOINT);
+        otelProperties.add(OTEL_EXPORTER_OTLP_CERTIFICATE);
+        otelProperties.add(OTEL_EXPORTER_OTLP_CLIENT_KEY);
+        otelProperties.add(OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE);
+        otelProperties.add(OTEL_EXPORTER_OTLP_HEADERS);
+        otelProperties.add(OTEL_EXPORTER_OTLP_COMPRESSION);
+        otelProperties.add(OTEL_EXPORTER_OTLP_TIMEOUT);
+        otelProperties.add(OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE);
+        otelProperties.add(OTEL_EXPORTER_OTLP_METRICS_DEFAULT_HISTOGRAM_AGGREGATION);
+        otelProperties.add(OTEL_METRICS_EXEMPLAR_FILTER);
+        otelProperties.add(OTEL_METRIC_EXPORT_INTERVAL);
+        otelProperties.add(OTEL_BLRP_SCHEDULE_DELAY);
+        otelProperties.add(OTEL_BLRP_MAX_QUEUE_SIZE);
+        otelProperties.add(OTEL_BLRP_MAX_EXPORT_BATCH_SIZE);
+        otelProperties.add(OTEL_BLRP_EXPORT_TIMEOUT);       
+    }
 }
