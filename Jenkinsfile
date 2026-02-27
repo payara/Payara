@@ -3,9 +3,13 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
+def buildId
 pipeline {
     agent {
         label 'general-purpose'
+    }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '14'))
     }
     environment {
         MP_METRICS_TAGS='tier=integration'
@@ -31,27 +35,40 @@ pipeline {
         }
         stage('Build') {
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                    -Djavadoc.skip -Dsource.skip"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                script {
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Fetching Build Job Artifacts  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    // Try using branch parameter instead for PR builds
+                    def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                    def repoOrg = env.CHANGE_FORK ?: 'Payara'
+
+                    // buildId = buildJob.getNumber()
+                    buildId = "189"
+                    echo '*#*#*#*#*#*#*#*#*#*#*#*#    Fetched Build Job Artifacts   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                }
             }
             post {
                 success{
-                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
-                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
-                    stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
-                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true
-                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true
-                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true
+                    // Get and stash artifacts from the Build job
+                    copyArtifacts projectName: 'Build/Build',
+                        filter: 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip',
+                        selector: specific("${buildId}"),
+                        target: 'artifacts/'
+
+                    archiveArtifacts artifacts: 'artifacts/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'artifacts/payara-micro.jar', fingerprint: true
+                    stash name: 'payara-target', includes: 'artifacts/payara.zip', allowEmpty: true
+                    stash name: 'payara-web', includes: 'artifacts/payara-web.zip', allowEmpty: true
+                    stash name: 'payara-bom', includes: 'artifacts/payara-bom.pom', allowEmpty: true
+                    stash name: 'payara-micro', includes: 'artifacts/payara-micro.jar', allowEmpty: true
+                    stash name: 'payara-embedded-all', includes: 'artifacts/payara-embedded-all.jar', allowEmpty: true
+                    stash name: 'payara-embedded-web', includes: 'artifacts/payara-embedded-web.jar', allowEmpty: true
+
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
                 }
                 always {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara7/glassfish/logs/server.log'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/server.log', fingerprint: true
                 }
             }
         }
@@ -65,12 +82,13 @@ pipeline {
                         retry(3)
                     }
                     steps {
+                        setupArtifactsAndM2()
                         setupDomain()
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
                         sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
-                        -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara7/glassfish\" \
+                        -Dglassfish.home=\"${pwd()}/payara7/glassfish\" \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -96,6 +114,7 @@ pipeline {
                          retry(3)
                     }
                      steps {
+                         setupArtifactsAndM2()
                          setupDomain()
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
@@ -129,6 +148,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -136,7 +156,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -166,6 +186,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -173,7 +194,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -203,6 +224,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -210,7 +232,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -240,6 +262,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -247,7 +270,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -277,6 +300,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -284,7 +308,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -314,6 +338,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -321,9 +346,13 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drepository.1.id=payara-nexus-snapshots \
+                        -Drepository.1.url=https://nexus.dev.payara.fish/repository/payara-snapshots \
+                        -Drepository.1.releases.enabled=false \
+                        -Drepository.1.snapshots.enabled=true \
                         -Ppayara-server-remote,full \
                         -f MicroProfile-OpenAPI"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -351,6 +380,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -358,7 +388,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -388,6 +418,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -395,7 +426,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -425,6 +456,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/MicroProfile-TCK-Runners.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -432,7 +464,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -462,6 +494,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -497,6 +530,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -535,6 +569,7 @@ pipeline {
                             userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
+                        setupArtifactsAndM2()
                         setupDomain()
                         updatePomPayaraVersion("${pom.version}")
 
@@ -565,7 +600,7 @@ pipeline {
                         retry(3)
                     }
                     steps {
-                        setupM2RepositoryOnly()
+                        setupArtifactsAndM2()
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash Micro and Embedded *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         unstash name: 'payara-micro'
                         unstash name: 'payara-embedded-all'
@@ -602,7 +637,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         setupDomain()
                         sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
-                        --asadmin ${pwd()}/appserver/distributions/payara/target/stage/payara7/bin/asadmin"""
+                        --asadmin ${pwd()}/payara7/bin/asadmin"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
@@ -622,7 +657,7 @@ pipeline {
 
 void makeDomain() {
     script{
-        ASADMIN = "./appserver/distributions/payara/target/stage/payara7/bin/asadmin"
+        ASADMIN = "./payara7/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
@@ -631,10 +666,11 @@ void makeDomain() {
 void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     unstash name: 'payara-target'
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Extract payara.zip  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    sh 'unzip -q artifacts/payara.zip -d . || true'
+    sh 'ls -la'
+    sh 'ls -la payara7'
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    dir('/home/ubuntu/.m2/repository/'){
-        unstash name: 'payara-m2-repository'
-    }
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
@@ -646,6 +682,76 @@ void setupM2RepositoryOnly() {
     dir('/home/ubuntu/.m2/repository/'){
         unstash name: 'payara-m2-repository'
     }
+}
+
+void setupArtifactsAndM2() {
+    // Read pom to get version information
+    def pom = readMavenPom file: 'pom.xml'
+    echo "Using Payara version: ${pom.version}"
+    
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash all artifacts  *#*#*#*#*#**#*#*#*#*#*#*#*#*#*#'
+    echo '=== Starting artifact unstashing process ==='
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+    dir('/home/ubuntu/.m2/repository/'){
+            unstash name: 'payara-m2-repository'
+        }
+    
+    echo 'Unstaking payara-target...'
+    unstash name: 'payara-target'
+    echo '✓ payara-target unstashed successfully'
+    
+    echo 'Unstaking payara-web...'
+    unstash name: 'payara-web'
+    echo '✓ payara-web unstashed successfully'
+    
+    echo 'Unstaking payara-bom...'
+    unstash name: 'payara-bom'
+    echo '✓ payara-bom unstashed successfully'
+    
+    echo 'Unstaking payara-micro...'
+    unstash name: 'payara-micro'
+    echo '✓ payara-micro unstashed successfully'
+    
+    echo 'Unstaking payara-embedded-all...'
+    unstash name: 'payara-embedded-all'
+    echo '✓ payara-embedded-all unstashed successfully'
+    
+    echo 'Unstaking payara-embedded-web...'
+    unstash name: 'payara-embedded-web'
+    echo '✓ payara-embedded-web unstashed successfully'
+    
+    echo '=== All artifacts unstashed ==='
+
+    sh 'ls -la'
+    sh 'ls -la artifacts/'
+
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Install artifacts to Maven local repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+    echo '=== Starting Maven installation process ==='
+    
+    echo 'Installing payara-bom.pom...'
+    sh "cd artifacts && mvn install:install-file -DgroupId=fish.payara.api -DartifactId=payara-bom -Dversion=${pom.version} -Dpackaging=pom -Dfile=payara-bom.pom"
+    echo '✓ payara-bom.pom installed successfully'
+    
+    echo 'Installing payara-embedded-all.jar...'
+    sh "cd artifacts && mvn install:install-file -Dfile=payara-embedded-all.jar -DgroupId=fish.payara.extras -DartifactId=payara-embedded-all -Dversion=${pom.version} -Dpackaging=jar"
+    echo '✓ payara-embedded-all.jar installed successfully'
+    
+    echo 'Installing payara-embedded-web.jar...'
+    sh "cd artifacts && mvn install:install-file -Dfile=payara-embedded-web.jar -DgroupId=fish.payara.extras -DartifactId=payara-embedded-web -Dversion=${pom.version} -Dpackaging=jar"
+    echo '✓ payara-embedded-web.jar installed successfully'
+    
+    echo 'Installing payara-micro.jar...'
+    sh "cd artifacts && mvn install:install-file -Dfile=payara-micro.jar -DgroupId=fish.payara.extras -DartifactId=payara-micro -Dversion=${pom.version} -Dpackaging=jar"
+    echo '✓ payara-micro.jar installed successfully'
+    
+    echo 'Installing payara.zip...'
+    sh "cd artifacts && mvn install:install-file -Dfile=payara.zip -DgroupId=fish.payara.distributions -DartifactId=payara -Dversion=${pom.version} -Dpackaging=zip"
+    echo '✓ payara.zip installed successfully'
+    
+    echo 'Installing payara-web.zip...'
+    sh "cd artifacts && mvn install:install-file -Dfile=payara-web.zip -DgroupId=fish.payara.distributions -DartifactId=payara-web -Dversion=${pom.version} -Dpackaging=zip"
+    echo '✓ payara-web.zip installed successfully'
 }
 
 void processReportAndStopDomain() {
@@ -664,7 +770,7 @@ void stopDomain() {
 }
 
 void saveLogsAndCleanup(String logArchiveName) {
-    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
+    zip archive: true, dir: "./payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
@@ -672,5 +778,6 @@ void saveLogsAndCleanup(String logArchiveName) {
 
 void updatePomPayaraVersion(String payaraVersion) {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Updating pom.xml payara.version property for Shrinkwrap resolver  *#*#*#*#*#*#*#*#*#*#*#*#'
+    echo "Setting payara.version to: ${payaraVersion}"
     sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
 }
