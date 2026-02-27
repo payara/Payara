@@ -41,18 +41,8 @@ pipeline {
                     def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
                     def repoOrg = env.CHANGE_FORK ?: 'Payara'
 
-                    // First build the build job and capture its build number
-                    def buildJob = build job: 'Build/Build', wait: true,
-                        parameters: [
-                            string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                            string(name: 'repoOrg', value: repoOrg),
-                            string(name: 'jdkVer', value: 'zulu-21'),
-                            string(name: 'stream', value: 'Community'),
-                            string(name: 'profiles', value: 'BuildEmbedded'),
-                            booleanParam(name: 'skipTests', value: false),
-                            string(name: 'multiThread', value: '1')
-                        ]
-                    buildId = buildJob.getNumber()
+                    // buildId = buildJob.getNumber()
+                    buildId = "189"
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
             }
@@ -61,14 +51,26 @@ pipeline {
                     // Get and stash artifacts from the Build job
                     copyArtifacts projectName: 'Build/Build',
                         filter: 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip',
-                        selector: specific("${buildId}")
-                    
-                    archiveArtifacts artifacts: 'payara.zip', fingerprint: true
-                    archiveArtifacts artifacts: 'payara-micro.jar', fingerprint: true
-                    stash name: 'payara-target', includes: 'payara.zip,payara-web.zip', allowEmpty: true
-                    stash name: 'payara-micro', includes: 'payara-micro.jar', allowEmpty: true
-                    stash name: 'payara-embedded-all', includes: 'payara-embedded-all.jar', allowEmpty: true
-                    stash name: 'payara-embedded-web', includes: 'payara-embedded-web.jar', allowEmpty: true
+                        selector: specific("${buildId}"),
+                        target: 'artifacts/'
+
+                    archiveArtifacts artifacts: 'artifacts/payara.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'artifacts/payara-micro.jar', fingerprint: true
+                    stash name: 'payara-target', includes: 'artifacts/payara.zip,artifacts/payara-web.zip', allowEmpty: true
+                    stash name: 'payara-bom', includes: 'artifacts/payara-bom.pom', allowEmpty: true
+                    stash name: 'payara-micro', includes: 'artifacts/payara-micro.jar', allowEmpty: true
+                    stash name: 'payara-embedded-all', includes: 'artifacts/payara-embedded-all.jar', allowEmpty: true
+                    stash name: 'payara-embedded-web', includes: 'artifacts/payara-embedded-web.jar', allowEmpty: true
+
+                    script {
+                     sh "ls -la "
+                     sh "ls -la artifacts/"
+                     sh "mvn install:install-file -Dfile=payara-bom.pom -DgroupId=fish.payara -DartifactId=payara-bom -Dversion=${pom.version} -Dpackaging=pom -f artifacts/payara-bom.pom"
+                     sh "cd artifacts && mvn install:install-file -Dfile=payara-embedded-all.jar -DgroupId=fish.payara.extras -DartifactId=payara-embedded-all -Dversion=${pom.version} -Dpackaging=jar"
+                     sh "cd artifacts && mvn install:install-file -Dfile=payara-embedded-web.jar -DgroupId=fish.payara.extras -DartifactId=payara-embedded-web -Dversion=${pom.version} -Dpackaging=jar"
+                     sh "cd artifacts && mvn install:install-file -Dfile=payara-micro.jar -DgroupId=fish.payara.extras -DartifactId=payara-micro -Dversion=${pom.version} -Dpackaging=jar"
+                  }
+
                     dir('/home/ubuntu/.m2/repository/'){
                         stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
                     }
@@ -93,7 +95,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
                         sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
-                        -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara7/glassfish\" \
+                        -Dglassfish.home=\"${pwd()}/payara7/glassfish\" \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -159,7 +161,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -196,7 +198,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -233,7 +235,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -270,7 +272,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -307,7 +309,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -344,9 +346,13 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
+                        -Drepository.1.id=payara-nexus-snapshots \
+                        -Drepository.1.url=https://nexus.dev.payara.fish/repository/payara-snapshots \
+                        -Drepository.1.releases.enabled=false \
+                        -Drepository.1.snapshots.enabled=true \
                         -Ppayara-server-remote,full \
                         -f MicroProfile-OpenAPI"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -381,7 +387,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -418,7 +424,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -455,7 +461,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/appserver/distributions/payara/target/stage/payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -625,7 +631,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         setupDomain()
                         sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
-                        --asadmin ${pwd()}/appserver/distributions/payara/target/stage/payara7/bin/asadmin"""
+                        --asadmin ${pwd()}/payara7/bin/asadmin"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
@@ -645,7 +651,7 @@ pipeline {
 
 void makeDomain() {
     script{
-        ASADMIN = "./appserver/distributions/payara/target/stage/payara7/bin/asadmin"
+        ASADMIN = "./payara7/bin/asadmin"
         DOMAIN_NAME = "test-domain"
     }
     sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
@@ -655,7 +661,9 @@ void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash distributions  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     unstash name: 'payara-target'
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Extract payara.zip  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    sh 'unzip -q payara.zip || true'
+    sh 'unzip -q artifacts/payara.zip -d . || true'
+    sh 'ls -la'
+    sh 'ls -la payara7'
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Unstash maven repository  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     dir('/home/ubuntu/.m2/repository/'){
         unstash name: 'payara-m2-repository'
@@ -689,7 +697,7 @@ void stopDomain() {
 }
 
 void saveLogsAndCleanup(String logArchiveName) {
-    zip archive: true, dir: "appserver/distributions/payara/target/stage/payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
+    zip archive: true, dir: "./payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
     sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
