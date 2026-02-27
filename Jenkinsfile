@@ -730,7 +730,7 @@ void setupArtifactsAndM2() {
     echo '=== Starting Maven installation process ==='
     
     echo 'Installing payara-bom.pom...'
-    sh "cd artifacts && mvn install:install-file -Dfile=payara-bom.pom -DpomFile=payara-bom.pom -DgroupId=fish.payara.api -DartifactId=payara-bom -Dversion=${pom.version} -Dpackaging=pom"
+    sh "cd artifacts && mvn install:install-file -DgroupId=fish.payara.api -DartifactId=payara-bom -Dversion=${pom.version} -Dpackaging=pom -Dfile=payara-bom.pom"
     echo '✓ payara-bom.pom installed successfully'
     
     echo 'Installing payara-embedded-all.jar...'
