@@ -91,7 +91,7 @@ import static fish.payara.data.core.cdi.extension.DynamicInterfaceDataProducer.i
  */
 public class DataCommonOperationUtility {
 
-    private static final String PERSISTENCE_UNIT_ENABLED_PROPERTY = "fish.payara.data.usePU";
+    private static final String EMF_NAME_KEY = EntityManagerFactory.class.toString() + "_nameMap";
 
     public static Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
             || Void.class.equals(returnType);
@@ -150,31 +150,35 @@ public class DataCommonOperationUtility {
     }
 
     public static EntityManager getEntityManager(String applicationName) {
+        return getEntityManager(applicationName, null);
+    }
+
+    public static EntityManager getEntityManager(String applicationName, String dataStore) {
         ApplicationRegistry applicationRegistry = getRegistry();
         ApplicationInfo applicationInfo = applicationRegistry.get(applicationName);
         List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
+
         if (factoryList.size() == 1) {
-            EntityManagerFactory factory = factoryList.getFirst();
-            return factory.createEntityManager();
+            return factoryList.getFirst().createEntityManager();
         }
 
-        List<EntityManagerFactory> result = factoryList.stream().filter(factory -> {
-            Map<String, Object> properties = factory.getProperties();
-            if (properties == null || properties.isEmpty()) {
-                return false;
+        if (dataStore != null && !dataStore.isEmpty()) {
+            @SuppressWarnings("unchecked")
+            Map<String, EntityManagerFactory> emfNameMap = applicationInfo.getTransientAppMetaData(EMF_NAME_KEY, Map.class);
+            if (emfNameMap != null && emfNameMap.containsKey(dataStore)) {
+                return emfNameMap.get(dataStore).createEntityManager();
             }
-            if (!properties.containsKey(PERSISTENCE_UNIT_ENABLED_PROPERTY)) {
-                return false;
-            }
-            return Boolean.parseBoolean((String) properties.get(PERSISTENCE_UNIT_ENABLED_PROPERTY));
-        }).toList();
 
-        if (result.size() == 1) {
-            EntityManagerFactory factory = result.getFirst();
-            return factory.createEntityManager();
+            throw new AmbiguousPersistenceUnitException(String.format(
+                    "For the application '%s', no persistence unit found matching dataStore '%s'. "
+                            + "Ensure the @Repository(dataStore) value matches a persistence unit name defined in persistence.xml.",
+                    applicationName, dataStore));
         }
 
-        throw new AmbiguousPersistenceUnitException(String.format("For the application '%s', specify a single persistence unit for Jakarta Data by setting the property '%s' to 'true' in its persistence.xml.", applicationName, PERSISTENCE_UNIT_ENABLED_PROPERTY));
+        throw new AmbiguousPersistenceUnitException(String.format(
+                "For the application '%s', multiple persistence units are defined. "
+                        + "Use @Repository(dataStore = \"<persistence-unit-name>\") to specify which persistence unit to use.",
+                applicationName));
     }
 
     public static ApplicationRegistry getRegistry() {
@@ -183,7 +187,7 @@ public class DataCommonOperationUtility {
     }
 
     public static EntityMetadata preprocesEntityMetadata(Class<?> repository, Map<Class<?>, EntityMetadata> mapOfMetaData, Class<?> declaredEntityClass,
-                                                         Method method, String applicationName) {
+                                                         Method method, String applicationName, String dataStore) {
         if (declaredEntityClass == null) {
             declaredEntityClass = findEntityTypeInMethod(method);
         }
@@ -191,7 +195,7 @@ public class DataCommonOperationUtility {
         if (mapOfMetaData != null && mapOfMetaData.containsKey(declaredEntityClass)) {
             return mapOfMetaData.get(declaredEntityClass);
         }
-        EntityManager entityManager = getEntityManager(applicationName);
+        EntityManager entityManager = getEntityManager(applicationName, dataStore);
         Metamodel metamodel = entityManager.getMetamodel();
         try {
             for (EntityType<?> entityType : metamodel.getEntities()) {

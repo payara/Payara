@@ -109,13 +109,15 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final Class<T> repositoryInterface;
     private final Map<Method, QueryData> queries = new HashMap<>();
     private final String applicationName;
+    private final String dataStore;
     private TransactionManager transactionManager;
     private EntityManager em;
     private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
 
-    public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName) {
+    public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryData>> queriesPerEntityClass, String applicationName, String dataStore) {
         this.repositoryInterface = repositoryInterface;
         this.applicationName = applicationName;
+        this.dataStore = dataStore;
 
         Map<Method, QueryData> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
                 .flatMap(List::stream).collect(Collectors.toMap(QueryData::getMethod, Function.identity()));
@@ -177,13 +179,13 @@ public class RepositoryImpl<T> implements InvocationHandler {
                 case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
                 case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
                 case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args,
-                        dataForQuery, getEntityManager(this.applicationName));
+                        dataForQuery, getEntityManager(this.applicationName, this.dataStore));
                 case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args,
-                        dataForQuery, getEntityManager(this.applicationName), getTransactionManager());
+                        dataForQuery, getEntityManager(this.applicationName, this.dataStore), getTransactionManager());
                 case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args,
-                        dataForQuery, getEntityManager(this.applicationName));
+                        dataForQuery, getEntityManager(this.applicationName, this.dataStore));
                 case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args,
-                        dataForQuery, getEntityManager(this.applicationName));
+                        dataForQuery, getEntityManager(this.applicationName, this.dataStore));
                 default ->
                         throw new UnsupportedOperationException("QueryType " + dataForQuery.getQueryType() + " not supported.");
             }
@@ -206,7 +208,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
         if (parameterAnnotations.length > 0) {
             Object returnObject = FindOperationUtility.processFindByOperation(
-                    args, getEntityManager(this.applicationName),
+                    args, getEntityManager(this.applicationName, this.dataStore),
                     dataForQuery, dataParameter, evaluatePages);
 
             if (returnObject instanceof List<?>) {
@@ -219,7 +221,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
             // For "findAll" operations
             Object result = FindOperationUtility.processFindAllOperation(
                     dataForQuery.getDeclaredEntityClass(),
-                    getEntityManager(this.applicationName),
+                    getEntityManager(this.applicationName, this.dataStore),
                     extractOrderByClause(dataForQuery.getMethod()),
                     dataForQuery,
                     dataParameter
@@ -281,7 +283,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
         Object arg = args[0] instanceof Stream ? ((Stream<?>) args[0]).sequential().collect(Collectors.toList()) : args[0];
 
         if (dataForQuery.getEntityParamType().isArray()) {
-            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
+            return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName, this.dataStore), dataForQuery);
         } else if (arg instanceof Iterable toIterate) {
             results = new ArrayList<>();
             startTransactionAndJoin(transactionManager, em, dataForQuery);
@@ -339,7 +341,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
         try {
             if (dataForQuery.getEntityParamType().isArray()) { //insert multiple entities from array reference
-                return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName), dataForQuery);
+                return processInsertAndSaveOperationForArray(args, getTransactionManager(), getEntityManager(this.applicationName, this.dataStore), dataForQuery);
             } else if (arg instanceof Iterable toIterate) {  //insert multiple entities from list reference
                 results = new ArrayList<>();
                 startTransactionAndJoin(transactionManager, em, dataForQuery);
@@ -632,7 +634,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     public Object processQueryOperation(Object[] args, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException, NotSupportedException {
         DataParameter dataParameter = extractDataParameter(args);
         return QueryOperationUtility.processQueryOperation(args, dataForQuery,
-                getEntityManager(this.applicationName), getTransactionManager(), dataParameter);
+                getEntityManager(this.applicationName, this.dataStore), getTransactionManager(), dataParameter);
     }
 
     public TransactionManager getTransactionManager() {
@@ -648,7 +650,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
     public void startTransactionComponents() {
         transactionManager = getTransactionManager();
-        em = getEntityManager(this.applicationName);
+        em = getEntityManager(this.applicationName, this.dataStore);
     }
     
 }
