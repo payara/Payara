@@ -58,7 +58,7 @@ import java.util.logging.Logger;
 
 import static fish.payara.ejb.opentracing.OpenTracingIiopInterceptorFactory.OPENTRACING_IIOP_ID;
 import static fish.payara.opentracing.OpenTracingService.PAYARA_CORBA_RMI_TRACER_NAME;
-import fish.payara.opentracing.ScopeManager;
+
 import io.opentracing.Span;
 
 /**
