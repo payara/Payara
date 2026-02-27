@@ -94,7 +94,7 @@ public class DeleteOperationUtility {
                 }
 
                 if (attributeValue != null) {
-                    attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
+                    attributeValue = preprocessAttributeName(dataForQuery.getQueryMetadata().getEntityMetadata(), attributeValue);
                 }
                 builder.append("o.").append(attributeValue).append("=?").append(queryPosition);
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,47 +37,51 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.data.core.util;
+package fish.payara.data.core.cdi.extension;
 
-import fish.payara.data.core.cdi.extension.QueryData;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.TransactionManager;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
-import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
-import static fish.payara.data.core.util.DataCommonOperationUtility.processReturnType;
-import static fish.payara.data.core.util.DataCommonOperationUtility.startTransactionAndJoin;
+import java.lang.reflect.Method;
 
 /**
- * Utility class to process Insert and Save operations
+ * This class represent the immutable structure of a query to be utilised at runtime
  */
-public class InsertAndSaveOperationUtility {
+public class QueryMetadata {
+    protected Class<?> repositoryInterface;
+    protected Method method;
+    protected Class<?> entityParamType;
+    protected Class<?> declaredEntityClass;
+    protected QueryType queryType;
+    protected EntityMetadata entityMetadata;
 
+    public QueryMetadata(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
+        this.repositoryInterface = repositoryInterface;
+        this.method = method;
+        this.declaredEntityClass = declaredEntityClass;
+        this.entityParamType = entityParamType;
+        this.queryType = queryType;
+        this.entityMetadata = entityMetadata;
+    }
 
-    public static Object processInsertAndSaveOperationForArray(Object[] args, TransactionManager tm,
-                                                       EntityManager em, QueryData dataForQuery) throws SystemException,
-            NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        int length = Array.getLength(args[0]);
-        List<Object> results = null;
-        results = new ArrayList<>(length);
-        startTransactionAndJoin(tm, em, dataForQuery);
-        for (int i = 0; i < length; i++) {
-            em.persist(Array.get(args[0], i));
-            results.add(Array.get(args[0], i));
-        }
-        endTransaction(tm, em, dataForQuery);
+    public Class<?> getRepositoryInterface() {
+        return repositoryInterface;
+    }
 
-        if (!results.isEmpty()) {
-            return processReturnType(dataForQuery.getQueryMetadata(), results);
-        }
+    public Method getMethod() {
+        return method;
+    }
 
-        return null;
+    public Class<?> getEntityParamType() {
+        return entityParamType;
+    }
+
+    public QueryType getQueryType() {
+        return queryType;
+    }
+
+    public Class<?> getDeclaredEntityClass() {
+        return declaredEntityClass;
+    }
+
+    public EntityMetadata getEntityMetadata() {
+        return entityMetadata;
     }
 }
