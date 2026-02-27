@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2021-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -182,13 +182,13 @@ public class LoggingExclusionTest {
         LogHelper.log(LOGGER, Level.SEVERE, TEST_MESSAGE_ID,
                 new Exception(TEST_EXCEPTION_MESSAGE), TEST_CONF_FILE);
         String[] expectedContentsUDF = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, VERSION_ID, LOGGER_NAME, "_ThreadID=1", "_ThreadName=main", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, VERSION_ID, LOGGER_NAME, "_ThreadID=", "_ThreadName=main", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsODL = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, VERSION_ID, LOGGER_NAME, "_ThreadID=1", "_ThreadName=main", TIME_MILLIS_2, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, VERSION_ID, LOGGER_NAME, "_ThreadID=", "_ThreadName=main", TIME_MILLIS_2, TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsJSON = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, VERSION_ID, LOGGER_NAME, "\"ThreadID\":\"1\",\"ThreadName\":\"main\"", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, VERSION_ID, LOGGER_NAME, "\"ThreadID\":\"", "\",\"ThreadName\":\"main\"", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
         };
 
         validateLogContents(ULF_LOG, expectedContentsUDF, new String[]{});
@@ -204,13 +204,13 @@ public class LoggingExclusionTest {
         LogHelper.log(LOGGER, Level.SEVERE, TEST_MESSAGE_ID,
                 new Exception(TEST_EXCEPTION_MESSAGE), TEST_CONF_FILE);
         String[] expectedContentsULF = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, "_ThreadID=1", "_ThreadName=main", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, "_ThreadID=", "_ThreadName=main", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsODL = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, "_ThreadID=1", "_ThreadName=main", TIME_MILLIS_2, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, "_ThreadID=", "_ThreadName=main", TIME_MILLIS_2, TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsJSON = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, "\"ThreadID\":\"1\",\"ThreadName\":\"main\"", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, "\"ThreadID\":\"" ,"\",\"ThreadName\":\"main\"", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
         };
 
         String[] notExpectedContents = new String[]{
@@ -255,13 +255,13 @@ public class LoggingExclusionTest {
                 new Exception(TEST_EXCEPTION_MESSAGE), TEST_CONF_FILE);
 
         String[] expectedContentsULF = new String[]{
-                CURRENT_YEAR, LOGGER_NAME, LEVEL, "_ThreadID=1", "_ThreadName=main", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LOGGER_NAME, LEVEL, "_ThreadID=", "_ThreadName=main", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsODL = new String[]{
-                CURRENT_YEAR, LOGGER_NAME, LEVEL, "_ThreadID=1", "_ThreadName=main", TIME_MILLIS_2, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LOGGER_NAME, LEVEL, "_ThreadID=", "_ThreadName=main", TIME_MILLIS_2, TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsJSON = new String[]{
-                CURRENT_YEAR, LOGGER_NAME, LEVEL, "\"ThreadID\":\"1\",\"ThreadName\":\"main\"", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LOGGER_NAME, LEVEL, "\"ThreadID\":\"", "\",\"ThreadName\":\"main\"", TIME_MILLIS_1, TEST_EXCEPTION_MESSAGE
         };
         String[] notExpectedContents = new String[]{
                 LEVEL_VALUE
@@ -281,10 +281,10 @@ public class LoggingExclusionTest {
         LogHelper.log(LOGGER, Level.SEVERE, TEST_MESSAGE_ID,
                 new Exception(TEST_EXCEPTION_MESSAGE), TEST_CONF_FILE);
         String[] expectedContents = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, VERSION_ID, "_ThreadID=1", "_ThreadName=main", TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, VERSION_ID, "_ThreadID=", "_ThreadName=main", TEST_EXCEPTION_MESSAGE
         };
         String[] expectedContentsJSON = new String[]{
-                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, VERSION_ID, "\"ThreadID\":\"1\",\"ThreadName\":\"main\"", TEST_EXCEPTION_MESSAGE
+                CURRENT_YEAR, LEVEL, LEVEL_VALUE, LOGGER_NAME, VERSION_ID, "\"ThreadID\":\"", "\",\"ThreadName\":\"main\"", TEST_EXCEPTION_MESSAGE
         };
 
         String[] notExpectedContents_UFLJSON = new String[]{
