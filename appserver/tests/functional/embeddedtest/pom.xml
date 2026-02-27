@@ -43,6 +43,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <parent>
+        <groupId>fish.payara.server.internal.tests</groupId>
+        <artifactId>payara-tests</artifactId>
+        <version>7.2026.3-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
     <groupId>fish.payara.extras</groupId>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>payara-embedded-test</artifactId>
@@ -50,9 +57,6 @@
     <version>7.2026.3-SNAPSHOT</version>
 
     <properties>
-        <!-- https://maven.apache.org/general.html#encoding-warning -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>21</maven.compiler.release>
         <payara.profile>all</payara.profile>
         <payara.version>${project.version}</payara.version>
         <jarlocation>${project.basedir}/lib/payara-embedded-${payara.profile}-${payara.version}.jar</jarlocation>
@@ -78,14 +82,6 @@
     
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
-                <configuration>
-                    <release>${maven.compiler.release}</release>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
