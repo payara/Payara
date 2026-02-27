@@ -35,36 +35,36 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class MultipleDataStoreTest {
 
-    private static final String MULTI_PU_PERSISTENCE_XML =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<persistence xmlns=\"https://jakarta.ee/xml/ns/persistence\"\n" +
-            "             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "             xsi:schemaLocation=\"https://jakarta.ee/xml/ns/persistence\n" +
-            "             https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd\"\n" +
-            "             version=\"3.1\">\n" +
-            "  <persistence-unit name=\"firstPU\" transaction-type=\"JTA\">\n" +
-            "    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>\n" +
-            "    <jta-data-source>jdbc/__default</jta-data-source>\n" +
-            "    <exclude-unlisted-classes>false</exclude-unlisted-classes>\n" +
-            "    <properties>\n" +
-            "      <property name=\"eclipselink.ddl-generation\" value=\"drop-and-create-tables\"/>\n" +
-            "      <property name=\"eclipselink.logging.level\" value=\"FINE\"/>\n" +
-            "      <property name=\"jakarta.persistence.schema-generation.database.action\" value=\"drop-and-create\"/>\n" +
-            "      <property name=\"jakarta.persistence.validation.mode\" value=\"NONE\"/>\n" +
-            "    </properties>\n" +
-            "  </persistence-unit>\n" +
-            "  <persistence-unit name=\"secondPU\" transaction-type=\"JTA\">\n" +
-            "    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>\n" +
-            "    <jta-data-source>jdbc/__default</jta-data-source>\n" +
-            "    <exclude-unlisted-classes>false</exclude-unlisted-classes>\n" +
-            "    <properties>\n" +
-            "      <property name=\"eclipselink.ddl-generation\" value=\"drop-and-create-tables\"/>\n" +
-            "      <property name=\"eclipselink.logging.level\" value=\"FINE\"/>\n" +
-            "      <property name=\"jakarta.persistence.schema-generation.database.action\" value=\"drop-and-create\"/>\n" +
-            "      <property name=\"jakarta.persistence.validation.mode\" value=\"NONE\"/>\n" +
-            "    </properties>\n" +
-            "  </persistence-unit>\n" +
-            "</persistence>";
+    private static final String MULTI_PU_PERSISTENCE_XML = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                         https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+                         version="3.1">
+              <persistence-unit name="firstPU" transaction-type="JTA">
+                <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+                <jta-data-source>jdbc/__default</jta-data-source>
+                <exclude-unlisted-classes>false</exclude-unlisted-classes>
+                <properties>
+                  <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+                  <property name="eclipselink.logging.level" value="FINE"/>
+                  <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+                  <property name="jakarta.persistence.validation.mode" value="NONE"/>
+                </properties>
+              </persistence-unit>
+              <persistence-unit name="secondPU" transaction-type="JTA">
+                <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+                <jta-data-source>jdbc/__default</jta-data-source>
+                <exclude-unlisted-classes>false</exclude-unlisted-classes>
+                <properties>
+                  <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+                  <property name="eclipselink.logging.level" value="FINE"/>
+                  <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+                  <property name="jakarta.persistence.validation.mode" value="NONE"/>
+                </properties>
+              </persistence-unit>
+            </persistence>""";
 
     @Deployment
     public static WebArchive createDeployment() {
