@@ -284,7 +284,7 @@ public class OpenTelemetryService implements EventListener {
             try {
                 return AutoConfiguredOpenTelemetrySdk.builder()
                         .addPropertiesCustomizer(p -> props)
-                        .addResourceCustomizer(provideDefaultResourceCustomizer(props))
+                        .addResourceCustomizer(provideResourceCustomizer(props))
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                         .addTracerProviderCustomizer((builder, config) -> {
                           if (isPayaraTracingEnabled()) {
@@ -311,17 +311,17 @@ public class OpenTelemetryService implements EventListener {
         return OpenTelemetrySdk.builder().build();
     }
 
-    private BiFunction<? super Resource, ConfigProperties, ?extends Resource> provideDefaultResourceCustomizer(HashMap<String, String> readProperties) {
+    private BiFunction<? super Resource, ConfigProperties, ?extends Resource> provideResourceCustomizer(HashMap<String, String> readProperties) {
         return (Resource resource, ConfigProperties configProperties) -> {
             try {
-                return this.createDefaultResources(resource, configProperties, readProperties).build();
+                return this.createResources(resource, configProperties, readProperties).build();
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
             }
         };
     }
 
-    private ResourceBuilder createDefaultResources(Resource resource, ConfigProperties configProperties, HashMap<String, String> readProperties) throws UnknownHostException {
+    private ResourceBuilder createResources(Resource resource, ConfigProperties configProperties, HashMap<String, String> readProperties) throws UnknownHostException {
         ResourceBuilder builder = resource.toBuilder();
         builder.put(OTEL_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
         builder.put(ATTRIBUTE_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
@@ -345,7 +345,6 @@ public class OpenTelemetryService implements EventListener {
                 builder.put(key, value);
             }
         }
-        
     }
 
     private boolean isOtelEnabled(Map<String, String> configProperties) {
