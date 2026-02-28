@@ -47,6 +47,7 @@ import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.i18n.StringManager;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
+import org.glassfish.common.util.InstanceCounter;
 import org.glassfish.hk2.api.PreDestroy;
 
 import java.io.*;
@@ -131,6 +132,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
     //holder for declared and ee permissions
     private final PermsHolder permissionsHolder;
+    private final InstanceCounter instanceCounter = new InstanceCounter(this);
 
     /**
      * Constructor.
