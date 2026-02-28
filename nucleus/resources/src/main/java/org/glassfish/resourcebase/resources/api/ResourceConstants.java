@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resourcebase.resources.api;
 
@@ -112,6 +112,12 @@ public interface ResourceConstants {
      * Represents the payara-resources.xml handling module name / type for standalone application
      */
     public static final String PY_RESOURCES_MODULE = "payara-resources";
+
+    /**
+     * Represents the location where glassfish-resources.xml will be present in an archive
+     */
+    @Deprecated
+    public static final String GF_RESOURCES_LOCATION ="META-INF/glassfish-resources.xml";
     
     /**
      * Represents the location where glassfish-resources.xml will be present in an archive
