@@ -47,12 +47,15 @@ import com.sun.enterprise.security.integration.PermsHolder;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.i18n.StringManager;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
+import org.glassfish.common.util.InstanceCounter;
 import org.glassfish.hk2.api.PreDestroy;
 
 import java.io.*;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import org.glassfish.hk2.utilities.CleanerFactory;
+
+import java.lang.ref.Cleaner;
 import java.lang.ref.WeakReference;
 import java.net.*;
 import java.nio.file.Path;
@@ -60,7 +63,6 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -70,11 +72,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import org.glassfish.common.util.InstanceCounter;
 
 /**
- * Class loader used by the ejbs of an application or stand alone module.
- *
+ * Class loader used by the EJBs of an application or standalone module.
  * This class loader also keeps cache of not found classes and resources.
  * </xmp>
  *
@@ -125,9 +125,6 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
     private volatile String doneSnapshot;
 
     private boolean mustLoadInThisStackFrame;
-
-    /** streams opened by this loader */
-    private final List<SentinelInputStream> streams = new CopyOnWriteArrayList<>();
 
     private final ArrayList<ClassFileTransformer> transformers = new ArrayList<>(1);
 
@@ -214,8 +211,6 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             for (URLEntry u : this.urlSet) {
                 u.close();
             }
-
-            closeOpenStreams();
 
             // clears out the tables
             // Clear all values.  Because fields are 'final' (for thread safety), cannot null them
@@ -906,7 +901,6 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
          */
         public ProtectedJarFile(File file) throws IOException {
             super(file, true, OPEN_READ, RUNTIME_VERSION);
-            registerCloseEvent();
         }
 
         /**
@@ -942,15 +936,6 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             super.close();
         }
 
-        public final void registerCloseEvent() {
-            CleanerFactory.create().register(this, () -> {
-                try {
-                    reallyClose();
-                } catch (IOException ex) {
-                    _logger.log(Level.WARNING, null, ex);
-                }
-            });
-        }
     }
 
     /**
@@ -978,6 +963,33 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
             ensure thread visibility by making it 'volatile'  */
         volatile ProtectionDomain pd = null;
 
+        private Cleaner.Cleanable cleanable;
+
+        static class CleanableURLEntryState implements Runnable {
+
+            private final ProtectedJarFile zip;
+            private final URL source;
+            private final Logger logger;
+
+            CleanableURLEntryState(ProtectedJarFile zip, URL source, Logger logger) {
+                this.zip = zip;
+                this.source = source;
+                this.logger = logger;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    zip.reallyClose();
+                } catch (IOException ioe) {
+                    logger.log(Level.INFO,
+                            CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, source),
+                            ioe);
+                }
+            }
+
+        }
+
         URLEntry(URL url) throws IOException {
             source = url;
             init();
@@ -990,6 +1002,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
                 if (isJar) {
                     zip = new ProtectedJarFile(file);
+                    this.cleanable = CleanerFactory.create().register(this, new CleanableURLEntryState(zip, source, _logger));
                     // negative lookups in jar are cheap
                     presenceCheck = (any) -> true;
                 } else {
@@ -1034,8 +1047,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
             boolean tf = false;
 
-            if (obj instanceof URLEntry) {
-                URLEntry e = (URLEntry) obj;
+            if (obj instanceof URLEntry e) {
                 try {
  	 	            //try comparing URIs
  	 	            if (source.toURI().equals(e.source.toURI())) {
@@ -1068,34 +1080,13 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
         }
 
         public void close() {
-            if (zip != null) {
-                try {
-                    zip.reallyClose();
-                } catch (IOException ioe) {
-                    _logger.log(Level.INFO,
-                            CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, source),
-                            ioe);
-                }
+            if (this.cleanable != null) {
+                this.cleanable.clean();
             }
             if (!isJar) {
                 DirWatcher.unregister(file.toPath());
             }
         }
-    }
-
-    /**
-     *Closes any streams that remain open, logging a warning for each.
-     *<p>
-     *This method should be invoked when the loader will no longer be used
-     *and the app will no longer explicitly close any streams it may have opened.
-     * Must be synchnronized to (a) avoid race condition checking 'streams'.
-     */
-    private synchronized void closeOpenStreams() {
-        SentinelInputStream[] toClose = streams.toArray(new SentinelInputStream[0]);
-        for (SentinelInputStream s : toClose) {
-            s.closeWithWarning();
-        }
-        streams.clear();
     }
 
     /**
@@ -1106,10 +1097,51 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
      * @author tjquinn
      */
     protected static final class SentinelInputStream extends FilterInputStream {
-        private volatile boolean closed = false;
-        private volatile Throwable throwable;
-        private final WeakReference<ASURLClassLoader> loader;
 
+        private final CleanableSentinelInputStreamState state;
+        private final Cleaner.Cleanable cleanable;
+
+        static class CleanableSentinelInputStreamState implements Runnable {
+
+            private boolean closed = false;
+            private final Throwable throwable;
+            private final InputStream in;
+
+            CleanableSentinelInputStreamState(final InputStream in) {
+                this.in = in;
+                this.throwable = new Throwable();
+            }
+
+            @Override
+            public void run() {
+                if ( closed ) {
+                    return;
+                }
+                try {
+                    in.close();
+                } catch (IOException ioe) {
+                    _logger.log(Level.WARNING, CULoggerInfo.exceptionClosingStream, ioe);
+                }
+
+                report(this.throwable);
+            }
+
+            /**
+             * Report "left-overs"!
+             */
+            private void report(Throwable localThrowable) {
+                _logger.log(Level.WARNING, CULoggerInfo.inputStreamFinalized, localThrowable);
+            }
+
+            public boolean isClosed() {
+                return closed;
+            }
+
+            public void setClosed(boolean closed) {
+                this.closed = closed;
+            }
+
+        }
         /**
          * Constructs new FilteredInputStream which reports InputStreams not closed properly.
          * When the garbage collector runs the cleaner.  If the stream is still open this class will
@@ -1119,10 +1151,8 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
          */
         protected SentinelInputStream(ASURLClassLoader loader, final InputStream in) {
             super(in);
-            throwable = new Throwable();
-            this.loader = new WeakReference<>(loader);
-            loader.streams.add(this);
-            registerStopEvent();
+            this.state = new CleanableSentinelInputStreamState(in);
+            this.cleanable = CleanerFactory.create().register(this, state);
         }
 
         /**
@@ -1130,57 +1160,15 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
          */
         @Override
         public void close() throws IOException {
-            _close();
-        }
-
-        /**
-         * Callback invoked by Garbage Collector. If underlying InputStream was not closed properly,
-         * the stack trace of the constructor will be logged!
-         *
-         * 'closed' is 'volatile', but it's a race condition to check it and how this code
-         * relates to _close() is unclear.
-         */
-        public final void registerStopEvent() {
-            CleanerFactory.create().register(this, () -> closeWithWarning());
-        }
-
-        private synchronized void _close() throws IOException {
-            if ( closed ) {
+            if ( state.isClosed() ) {
                 return;
             }
             // race condition with above check, but should have no harmful effects
-
-            closed = true;
-            throwable = null;
-            if (loader.get() != null) {
-                loader.get().streams.remove(this);
-            }
+            state.setClosed(true);
+            this.cleanable.clean(); // just to unregister runnable
             super.close();
         }
 
-        private void closeWithWarning() {
-            if ( closed ) {
-                return;
-            }
-            
-            // stores the internal Throwable as it will be set to null in the _close method
-            Throwable localThrowable = this.throwable;
-            
-            try {
-                _close();
-            } catch (IOException ioe) {
-                _logger.log(Level.WARNING, CULoggerInfo.exceptionClosingStream, ioe);
-            }
-            
-            report(localThrowable);
-        }
-
-        /**
-         * Report "left-overs"!
-         */
-        private void report(Throwable localThrowable) {
-            _logger.log(Level.WARNING, CULoggerInfo.inputStreamFinalized, localThrowable);
-        }
     }
     /**
      * To properly close streams obtained through URL.getResource().getStream():
