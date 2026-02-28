@@ -48,6 +48,7 @@ public class PayaraTelemetryConstants {
     public static final String ATTRIBUTE_SERVICE_NAME = "service.name";
     public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";
     public static final String OTEL_TRACES_EXPORTER = "otel.traces.exporter";
+    public static final String OTEL_LOGS_EXPORTER = "otel.logs.exporter";
     public static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
     public static final String PAYARA_OTEL_RUNTIME_INSTANCE_NAME = "fish.payara.otel.runtime.intance";
 }

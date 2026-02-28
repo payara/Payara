@@ -331,6 +331,11 @@ public class OpenTelemetryService implements EventListener {
             processProperties(builder, properties);
             builder.put(OTEL_RESOURCE_ATTRIBUTES, readProperties.get(OTEL_RESOURCE_ATTRIBUTES));
         }
+        if (readProperties.containsKey(OTEL_LOGS_EXPORTER)) {
+            builder.put(OTEL_LOGS_EXPORTER, readProperties.get(OTEL_LOGS_EXPORTER));
+        } else {
+            builder.put(OTEL_LOGS_EXPORTER, "none");
+        }
         builder.put(OTEL_TRACES_EXPORTER, readProperties.get(OTEL_TRACES_EXPORTER));
         return builder;
     }
