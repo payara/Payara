@@ -521,6 +521,7 @@ pipeline {
                         }
                     }
                 }
+               
                 stage('EE7 Tests') {
                     agent {
                         label 'general-purpose'
@@ -528,35 +529,39 @@ pipeline {
                     options {
                         retry(3)
                     }
-                    steps{
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee7-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    steps {
+                        script {
+                            // Try using branch parameter instead for PR builds
+                            def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                            def repoOrg = env.CHANGE_FORK ?: 'Payara'
+                            
+                            // First build the build job and capture its build number
+                            def buildJob = build job: 'Build/Build', wait: true,
+                                parameters: [
+                                    string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                                    string(name: 'repoOrg', value: repoOrg),
+                                    string(name: 'jdkVer', value: 'zulu-21'),
+                                    string(name: 'stream', value: 'Community'),
+                                    string(name: 'profiles', value: 'BuildEmbedded'),
+                                    booleanParam(name: 'skipTests', value: false),
+                                    string(name: 'multiThread', value: '1')
+                                ]
+                            def buildId = buildJob.getNumber()
 
-                        setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -B -V -ff -e clean install --strict-checksums \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} \
-                        -Dsurefire.rerunFailingTestsCount=2 \
-                        -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Ppayara-server-remote,stable"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee7-samples-log.zip'
+                            // Now use the build job's ID for EE7 tests
+                            build job: 'Miscellaneous/Run-EE7-Samples',
+                                parameters: [
+                                    string(name: 'payaraBuildNumber', value: "${buildId}"),
+                                    string(name: 'buildProject', value: "Build/Build"),
+                                    string(name: 'repoOrg', value: 'Payara'),
+                                    string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                                    string(name: 'jdkChoice', value: 'zulu-21'),
+                                    string(name: 'arquillianProfile', value: 'payara-server-remote')
+                                ]
                         }
                     }
                 }
+
                 stage('Payara Functional Tests') {
                     agent {
                         label 'general-purpose'
