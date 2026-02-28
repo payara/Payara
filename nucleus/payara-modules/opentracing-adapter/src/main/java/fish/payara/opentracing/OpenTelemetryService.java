@@ -43,12 +43,14 @@ import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -321,15 +323,15 @@ public class OpenTelemetryService implements EventListener {
 
     private ResourceBuilder createResources(Resource resource, ConfigProperties configProperties, HashMap<String, String> readProperties) throws UnknownHostException {
         ResourceBuilder builder = resource.toBuilder();
-        for (String otelProperty : otelProperties) {
-            builder.put(otelProperty, readProperties.get(otelProperty));
-        }
+        builder.put(OTEL_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
         builder.put(ATTRIBUTE_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
+        builder.put(OTEL_METRICS_EXPORTER, readProperties.get(OTEL_METRICS_EXPORTER));
         if (readProperties.containsKey(OTEL_RESOURCE_ATTRIBUTES)) {
             String properties = readProperties.get(OTEL_RESOURCE_ATTRIBUTES);
             processProperties(builder, properties);
             builder.put(OTEL_RESOURCE_ATTRIBUTES, readProperties.get(OTEL_RESOURCE_ATTRIBUTES));
         }
+        builder.put(OTEL_TRACES_EXPORTER, readProperties.get(OTEL_TRACES_EXPORTER));
         return builder;
     }
     
