@@ -46,7 +46,7 @@
         <version>7.2026.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>opentelemetry-tracing-starter</artifactId>
+    <artifactId>opentracing-adapter</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>OpenTracing Adapter Service</name>
