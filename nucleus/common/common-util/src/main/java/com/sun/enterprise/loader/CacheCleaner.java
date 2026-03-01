@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2024-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2024-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,6 +50,7 @@ public class CacheCleaner {
     public static void clearCaches(ClassLoader classLoader) {
         clearOmniFacesCache(classLoader);
         clearJNACache(classLoader);
+        clearSLF4jCache(classLoader);
         while (classLoader != null) {
             clearJaxRSCache(classLoader);
             classLoader = classLoader.getParent();
@@ -98,6 +99,19 @@ public class CacheCleaner {
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "Error clearing JNA cache", e);
+        }
+    }
+
+    private static void clearSLF4jCache(ClassLoader classLoader) {
+        try {
+            Class<?> slf4jLoggerFactory = CachingReflectionUtil
+                    .getClass("org.slf4j.LoggerFactory", classLoader);
+            if (checkClassLoader(slf4jLoggerFactory)) {
+                CachingReflectionUtil.getField(slf4jLoggerFactory, "PROVIDER", true)
+                        .set(null, null);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error clearing SLF4J cache", e);
         }
     }
 
