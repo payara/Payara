@@ -336,7 +336,7 @@ Used in: ejb
 bean-pool is a root element containing the bean pool properties. Used
 for stateless session bean, entity bean, and message-driven bean pools.
 -->
-<!ELEMENT bean-pool (steady-pool-size?, resize-quantity?, max-pool-size?, pool-idle-timeout-in-seconds?, max-wait-time-in-millis?)>
+<!ELEMENT bean-pool (steady-pool-size?, resize-quantity?, max-pool-size?, pool-idle-timeout-in-seconds?)>
 
 <!--
 steady-pool-size specified the initial and minimum number of beans that must be maintained in the pool. 
@@ -379,12 +379,6 @@ Specifies the timeout for transactions started by the container. This value must
 Specifes the thread pool that will be used to process any invocation on this ejb
 -->
 <!ELEMENT use-thread-pool-id (#PCDATA)>
-
-<!--
-Specifies the maximum time that the caller is willing to wait to get a bean from the pool.
-Wait time is infinite, if the value specified is 0. Deprecated.
--->
-<!ELEMENT max-wait-time-in-millis (#PCDATA)>
 
 <!--
 refresh-period-in-seconds specifies the rate at which the read-only-bean must be refreshed 
