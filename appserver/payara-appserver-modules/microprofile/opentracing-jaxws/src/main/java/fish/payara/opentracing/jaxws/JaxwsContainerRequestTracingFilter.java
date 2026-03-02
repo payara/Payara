@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -46,7 +46,16 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
 
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.propagation.TextMap;
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import jakarta.enterprise.inject.spi.BeanManager;
@@ -64,17 +73,23 @@ import jakarta.xml.soap.SOAPException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.opentracing.Traced;
+import io.opentracing.Tracer;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.webservices.monitoring.MonitorContext;
 import org.glassfish.webservices.monitoring.MonitorFilter;
 import org.jvnet.hk2.annotations.Service;
+
+import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
+import static io.opentracing.tag.Tags.*;
+import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static java.util.Collections.list;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
 import static jakarta.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
 import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
 import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
+import static java.util.Collections.singletonMap;
+import static java.util.logging.Level.*;
 
 
 @Service(name = "jaxws-opentracing-filter")
@@ -103,7 +118,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
             // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
             // pattern and a traced annotation set to true (via annotation or config override)
-           /* if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
+            if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
 
                 // Get the application's tracer instance
                 Tracer tracer = getTracer();
@@ -111,7 +126,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
 
                 // Create a Span and instrument it with details about the request
-                SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
+                Tracer.SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
                         .withTag(SPAN_KIND.getKey(), SPAN_KIND_SERVER)
                         .withTag(HTTP_METHOD.getKey(), httpRequest.getMethod())
                         .withTag(HTTP_URL.getKey(),  httpRequest.getRequestURL().toString())
@@ -133,7 +148,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 // Start the span and continue on to the targeted method
                 Scope scope = tracer.activateSpan(spanBuilder.start());
                 httpRequest.setAttribute(Scope.class.getName(), scope);
-            } */
+            } 
         }
     }
 
@@ -150,7 +165,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
                 // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
                 // pattern and a traced annotation set to true (via annotation or config override)
-                /*if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
+                if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
                     Span activeSpan = getTracer().scopeManager().activeSpan();
                     if (activeSpan == null) {
                         return;
@@ -184,7 +199,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                             }
                         }
                     }
-                }*/
+                }
             }
         } finally {
             // If there's an attached error on the response, log the exception
@@ -390,9 +405,9 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         return null;
     }
 
-    /*private Tracer getTracer() {
+    private Tracer getTracer() {
         return openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
-    }*/
+    }
 
     private MultivaluedMap<String, String> getHeaders(HttpServletRequest httpRequest) {
 
@@ -408,7 +423,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
     /**
      * Class used for converting a MultivaluedMap from Headers to a TextMap, to allow it to be extracted from the Tracer.
      */
-    /*private class MultivaluedMapToTextMap implements TextMap {
+    private class MultivaluedMapToTextMap implements TextMap {
 
         private final MultivaluedMap<String, String> map;
 
@@ -427,7 +442,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
             map.add(key, value);
         }
 
-    }*/
+    }
 
     /**
      * Helper Class used for iterating over the MultivaluedMapToTextMap class.
@@ -435,7 +450,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
      * @param <K> The map key class
      * @param <V> The map value class
      */
-    /*private class MultivaluedMapIterator<K, V> implements Iterator<Map.Entry<K, V>> {
+    private class MultivaluedMapIterator<K, V> implements Iterator<Map.Entry<K, V>> {
 
         private final Iterator<Map.Entry<K, List<V>>> mapIterator;
 
@@ -474,6 +489,6 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
             throw new UnsupportedOperationException();
         }
 
-    }*/
+    }
 
 }
