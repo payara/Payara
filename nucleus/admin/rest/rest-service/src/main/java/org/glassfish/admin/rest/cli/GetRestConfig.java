@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.cli;
 
@@ -86,7 +86,7 @@ public class GetRestConfig implements AdminCommand {
 
 
         if (restConfig == null) {
-            report.setMessage("debug=false, indentLevel=-1, showHiddenCommands=false, wadlGeneration=false, logOutput=false, logInput=false, showDeprecatedItems=false, sessionTokenTimeout=30");
+            report.setMessage("debug=false, indentLevel=-1, showHiddenCommands=false, wadlGeneration=false, logOutput=false, logInput=false, showDeprecatedItems=false");
 
             report.getTopMessagePart().addProperty("debug", "false");
             report.getTopMessagePart().addProperty("indentLevel", "-1");
@@ -95,11 +95,10 @@ public class GetRestConfig implements AdminCommand {
             report.getTopMessagePart().addProperty("wadlGeneration", "" + "false");
             report.getTopMessagePart().addProperty("logOutput", "" + "false");
             report.getTopMessagePart().addProperty("logInput", "" + "false");
-            report.getTopMessagePart().addProperty("sessionTokenTimeout", "30");
 
         } else {
             report.setMessage("debug=" + restConfig.getDebug() + ", indentLevel=" + restConfig.getIndentLevel() + ", showHiddenCommands=" + restConfig.getShowHiddenCommands() + ", wadlGeneration=" + restConfig.getWadlGeneration() + ", logOutput=" + restConfig.getLogOutput()
-                    + ", logInput=" + restConfig.getLogInput() + ", sessionTokenTimeout=" + restConfig.getSessionTokenTimeout());
+                    + ", logInput=" + restConfig.getLogInput());
 
             report.getTopMessagePart().addProperty("debug", restConfig.getDebug());
             report.getTopMessagePart().addProperty("indentLevel", restConfig.getIndentLevel());
@@ -108,7 +107,6 @@ public class GetRestConfig implements AdminCommand {
             report.getTopMessagePart().addProperty("wadlGeneration", restConfig.getWadlGeneration());
             report.getTopMessagePart().addProperty("logOutput", restConfig.getLogOutput());
             report.getTopMessagePart().addProperty("logInput", restConfig.getLogInput());
-            report.getTopMessagePart().addProperty("sessionTokenTimeout", "" + restConfig.getSessionTokenTimeout());
         }
 
 

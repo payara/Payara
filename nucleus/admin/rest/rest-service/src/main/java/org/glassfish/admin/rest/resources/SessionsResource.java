@@ -38,11 +38,16 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.resources;
 
 import java.util.HashMap;
+
+import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.DasConfig;
+import com.sun.enterprise.config.serverbeans.Domain;
 import jakarta.inject.Inject;
 import javax.security.auth.Subject;
 import jakarta.ws.rs.Consumes;
@@ -60,9 +65,10 @@ import static jakarta.ws.rs.core.Response.Status.UNAUTHORIZED;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
-import org.glassfish.admin.restconnector.RestConfig;
 import org.glassfish.common.util.admin.RestSessionManager;
 import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.RemoteAdminAccessException;
 import org.glassfish.jersey.internal.util.collection.Ref;
 
@@ -78,6 +84,8 @@ public class SessionsResource extends AbstractResource {
     @Inject
     private Ref<Request> request;
 
+    private static volatile DasConfig dasConfig = null;
+
     /**
      * Get a new session with GlassFish Rest service
      * If a request lands here when authentication has been turned on => it has been authenticated.
@@ -90,8 +98,6 @@ public class SessionsResource extends AbstractResource {
         if (data == null) {
             data = new HashMap<String, String>();
         }
-        final RestConfig restConfig = ResourceUtil.getRestConfig(locatorBridge.getRemoteLocator());
-
         Response.ResponseBuilder responseBuilder = Response.status(UNAUTHORIZED);
         RestActionReporter ar = new RestActionReporter();
         Request grizzlyRequest = request.get();
@@ -124,7 +130,7 @@ public class SessionsResource extends AbstractResource {
             if (username != null) {
                 ar.getExtraProperties().put("username", username);
             }
-            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest.getRemoteAddr(), subject, chooseTimeout(restConfig)));
+            ar.getExtraProperties().put("token", sessionManager.createSession(grizzlyRequest.getRemoteAddr(), subject, chooseTimeout(getDASConfig(locatorBridge.getRemoteLocator()))));
 
         } else {
             if ( ! responseErrorStatusSet) {
@@ -135,10 +141,10 @@ public class SessionsResource extends AbstractResource {
         return responseBuilder.entity(new ActionReportResult(ar)).build();
     }
 
-    private int chooseTimeout(final RestConfig restConfig) {
+    private int chooseTimeout(final DasConfig dasConfig) {
         int inactiveSessionLifeTime = 30 /*mins*/;
-        if (restConfig != null) {
-            inactiveSessionLifeTime = Integer.parseInt(restConfig.getSessionTokenTimeout());
+        if (dasConfig != null) {
+            inactiveSessionLifeTime = Integer.parseInt(dasConfig.getAdminSessionTimeoutInMinutes());
         }
         return inactiveSessionLifeTime;
     }
@@ -146,5 +152,36 @@ public class SessionsResource extends AbstractResource {
     @Path("{sessionId}/")
     public SessionResource getSessionResource(@PathParam("sessionId")String sessionId) {
         return new SessionResource(sessionManager, sessionId, requestHeaders, uriInfo);
+    }
+
+    private static DasConfig getDASConfig(ServiceLocator habitat) {
+        if (dasConfig == null) {
+            synchronized (SessionsResource.class) {
+                if (dasConfig == null) {
+                    if (habitat == null) {
+                        return null;
+                    }
+
+                    Domain domain = Globals.getDefaultBaseServiceLocator().getService(Domain.class);
+                    if (domain == null) {
+                        return null;
+                    }
+
+                    Config config = domain.getConfigNamed("server-config");
+                    if (config == null) {
+                        return null;
+                    }
+
+                    AdminService adminService = config.getAdminService();
+                    if (adminService == null) {
+                        return null;
+                    }
+
+                    dasConfig = adminService.getDasConfig();
+                }
+            }
+        }
+
+        return dasConfig;
     }
 }
