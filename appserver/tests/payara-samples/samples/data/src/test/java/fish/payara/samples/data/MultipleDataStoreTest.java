@@ -162,7 +162,7 @@ public class MultipleDataStoreTest {
 
         utx.begin();
         productsFirst.save(electronics);
-        productsFirst.save(furniture);
+        productsSecond.save(furniture);
         utx.commit();
 
         List<Product> electronicsFound = productsFirst.findByCategory("Electronics");
