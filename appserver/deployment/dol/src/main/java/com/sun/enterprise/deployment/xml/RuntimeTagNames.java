@@ -221,7 +221,6 @@ public interface RuntimeTagNames extends TagNames {
     public static final String POOL_RESIZE_QUANTITY = "resize-quantity";
     public static final String MAX_POOL_SIZE = "max-pool-size";
     public static final String POOL_IDLE_TIMEOUT_IN_SECONDS = "pool-idle-timeout-in-seconds";
-    public static final String MAX_WAIT_TIME_IN_MILLIS = "max-wait-time-in-millis";
 
     // BEAN-CACHE related
     public static final String BEAN_CACHE = "bean-cache";
