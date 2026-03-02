@@ -33,6 +33,7 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!--
   XML DTD for Sun Application Server specific EJB jar module 
@@ -294,19 +295,13 @@ This contains the fully qualified class name of the generated EJBLocalHome impl 
 <!--
 This contains the bean cache properties. Used only for entity beans and stateful session beans
 -->
-<!ELEMENT bean-cache (max-cache-size?, resize-quantity?, is-cache-overflow-allowed?, cache-idle-timeout-in-seconds?, removal-timeout-in-seconds?, victim-selection-policy?)>
+<!ELEMENT bean-cache (max-cache-size?, resize-quantity?, cache-idle-timeout-in-seconds?, removal-timeout-in-seconds?, victim-selection-policy?)>
 
 <!--
 max-cache-size defines the maximum number of beans in the cache. Should be greater than 1.
 Default is 512.
 -->
 <!ELEMENT max-cache-size (#PCDATA)>
-
-<!--
-is-cache-overflow-allowed is a boolean which indicates if the cache size is a hard limit or not. 
-Default is true i.e there is no hard limit. max-cache-size is a hint to the cache implementation.
--->
-<!ELEMENT is-cache-overflow-allowed (#PCDATA)>
 
 <!--
 cache-idle-timeout-in-seconds specifies the maximum time that a stateful session bean or 

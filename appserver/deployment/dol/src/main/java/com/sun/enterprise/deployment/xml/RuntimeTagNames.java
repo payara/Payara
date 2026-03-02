@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.xml;
 
@@ -227,7 +227,6 @@ public interface RuntimeTagNames extends TagNames {
     public static final String BEAN_CACHE = "bean-cache";
     public static final String MAX_CACHE_SIZE = "max-cache-size";
     public static final String RESIZE_QUANTITY = "resize-quantity";
-    public static final String IS_CACHE_OVERFLOW_ALLOWED = "is-cache-overflow-allowed";
     public static final String CACHE_IDLE_TIMEOUT_IN_SECONDS = "cache-idle-timeout-in-seconds";
     public static final String REMOVAL_TIMEOUT_IN_SECONDS = "removal-timeout-in-seconds";
     public static final String VICTIM_SELECTION_POLICY = "victim-selection-policy";
