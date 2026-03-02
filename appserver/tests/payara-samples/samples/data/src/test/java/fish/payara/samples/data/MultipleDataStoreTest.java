@@ -55,9 +55,12 @@ public class MultipleDataStoreTest {
               </persistence-unit>
               <persistence-unit name="secondPU" transaction-type="JTA">
                 <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-                <jta-data-source>jdbc/__default</jta-data-source>
                 <exclude-unlisted-classes>false</exclude-unlisted-classes>
                 <properties>
+                  <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+                  <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:secondPU;DB_CLOSE_DELAY=-1"/>
+                  <property name="jakarta.persistence.jdbc.user" value="sa"/>
+                  <property name="jakarta.persistence.jdbc.password" value=""/>
                   <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
                   <property name="eclipselink.logging.level" value="FINE"/>
                   <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
