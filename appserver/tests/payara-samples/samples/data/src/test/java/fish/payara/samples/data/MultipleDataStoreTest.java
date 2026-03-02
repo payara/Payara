@@ -99,6 +99,7 @@ public class MultipleDataStoreTest {
     public void setUp() throws Exception {
         utx.begin();
         emFirst.createQuery("DELETE FROM Product").executeUpdate();
+        emSecond.createQuery("DELETE FROM Product").executeUpdate();
         utx.commit();
     }
 
