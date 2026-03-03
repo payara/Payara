@@ -346,10 +346,6 @@ pipeline {
                         -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Drepository.1.id=payara-nexus-snapshots \
-                        -Drepository.1.url=https://nexus.dev.payara.fish/repository/payara-snapshots \
-                        -Drepository.1.releases.enabled=false \
-                        -Drepository.1.snapshots.enabled=true \
                         -Ppayara-server-remote,full \
                         -f MicroProfile-OpenAPI"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
