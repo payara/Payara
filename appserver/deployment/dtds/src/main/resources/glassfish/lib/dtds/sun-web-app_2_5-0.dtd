@@ -33,6 +33,7 @@ If you wish your version of this file to be governed by only the CDDL or
  only if the new code is made subject to such option by the copyright
  holder.
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!--
   XML DTD for Sun Application Server specific Java EE web
@@ -50,7 +51,7 @@ If you wish your version of this file to be governed by only the CDDL or
 <!ELEMENT sun-web-app (context-root?, security-role-mapping*, servlet*, idempotent-url-pattern*, session-config?,
                        ejb-ref*, resource-ref*, resource-env-ref*,  service-ref*,
                        message-destination-ref*, cache?, class-loader?,
-                       jsp-config?, locale-charset-info?, parameter-encoding?,
+                       jsp-config?, parameter-encoding?,
                        property*, message-destination*, webservice-description*)>
 <!ATTLIST sun-web-app error-url CDATA ""
                       httpservlet-security-provider CDATA #IMPLIED>
@@ -328,14 +329,6 @@ value element specifies the applicable value and a matching expression for a con
                        dynamic-reload-interval CDATA #IMPLIED >
 
 <!ELEMENT jsp-config (property*)>
-
-<!ELEMENT locale-charset-info (locale-charset-map+, parameter-encoding?)>
-<!ATTLIST locale-charset-info default-locale CDATA #IMPLIED>
-
-<!ELEMENT locale-charset-map (description?)>
-<!ATTLIST locale-charset-map locale  CDATA  #REQUIRED
-                             agent   CDATA  #IMPLIED
-                             charset CDATA  #REQUIRED>
 
 <!ELEMENT parameter-encoding EMPTY>
 <!ATTLIST parameter-encoding form-hint-field CDATA #IMPLIED

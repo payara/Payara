@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -143,8 +143,6 @@ import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebComponentDescriptorImpl;
 import org.glassfish.web.deployment.descriptor.WebResourceCollectionImpl;
 import org.glassfish.web.deployment.runtime.CookieProperties;
-import org.glassfish.web.deployment.runtime.LocaleCharsetInfo;
-import org.glassfish.web.deployment.runtime.LocaleCharsetMap;
 import org.glassfish.web.deployment.runtime.SessionConfig;
 import org.glassfish.web.deployment.runtime.SessionManager;
 import org.glassfish.web.deployment.runtime.SessionProperties;
@@ -206,9 +204,6 @@ public class WebModule extends PwcWebModule implements Context {
 
     // Object containing sun-web.xml information
     private SunWebAppImpl iasBean = null;
-
-    //locale-charset-info tag from sun-web.xml
-    private LocaleCharsetMap[] _lcMap = null;
 
     /**
      * Is the default-web.xml parsed?
@@ -362,112 +357,11 @@ public class WebModule extends PwcWebModule implements Context {
                                                 SunWebApp.DEFAULT_CHARSET);
         }
 
-        LocaleCharsetInfo lcinfo = iasBean.getLocaleCharsetInfo();
-        if (lcinfo != null) {
-            if (lcinfo.getAttributeValue(
-                            LocaleCharsetInfo.DEFAULT_LOCALE) != null) {
-               logger.warning(LogFacade.DEFAULT_LOCALE_DEPRECATED);
-            }
-            /*
-             * <parameter-encoding> subelem of <sun-web-app> takes precedence
-             * over that of <locale-charset-info>
-             */
-            if (lcinfo.isParameterEncoding()
-                    && !iasBean.isParameterEncoding()) {
-                formHintField = lcinfo.getAttributeValue(
-                                        LocaleCharsetInfo.PARAMETER_ENCODING,
-                                        LocaleCharsetInfo.FORM_HINT_FIELD);
-                defaultCharset = lcinfo.getAttributeValue(
-                                        LocaleCharsetInfo.PARAMETER_ENCODING,
-                                        LocaleCharsetInfo.DEFAULT_CHARSET);
-            }
-            _lcMap = lcinfo.getLocaleCharsetMap();
-        }
 
 		if (defaultCharset != null) {
 			setRequestCharacterEncoding(defaultCharset);
 			setResponseCharacterEncoding(defaultCharset);
 		}
-    }
-
-    /**
-     * return locale-charset-map
-     */
-    public LocaleCharsetMap[] getLocaleCharsetMap() {
-        return _lcMap;
-    }
-
-    /**
-     * Returns true if this web module specifies a locale-charset-map in its
-     * sun-web.xml, false otherwise.
-     *
-     * @return true if this web module specifies a locale-charset-map in its
-     * sun-web.xml, false otherwise
-     */
-    @Override
-    public boolean hasLocaleToCharsetMapping() {
-        LocaleCharsetMap[] locCharsetMap = getLocaleCharsetMap();
-        return (locCharsetMap != null && locCharsetMap.length > 0);
-    }
-
-    /**
-     * Matches the given request locales against the charsets specified in
-     * the locale-charset-map of this web module's sun-web.xml, and returns
-     * the first matching charset.
-     *
-     * @param locales Request locales
-     *
-     * @return First matching charset, or null if this web module does not
-     * specify any locale-charset-map in its sun-web.xml, or no match was
-     * found
-     */
-    @Override
-    public String mapLocalesToCharset(Enumeration locales) {
-
-        String encoding = null;
-
-        LocaleCharsetMap[] locCharsetMap = getLocaleCharsetMap();
-        if (locCharsetMap != null && locCharsetMap.length > 0) {
-            /*
-             * Check to see if there is a match between the request
-             * locales (in preference order) and the locales in the
-             * locale-charset-map.
-             */
-            boolean matchFound = false;
-            while (locales.hasMoreElements() && !matchFound) {
-                Locale reqLoc = (Locale) locales.nextElement();
-                for (int i=0; i<locCharsetMap.length && !matchFound; i++) {
-                    String language = locCharsetMap[i].getAttributeValue(
-                                                LocaleCharsetMap.LOCALE);
-                    if (language == null || "".equals(language)) {
-                        continue;
-                    }
-                    String country = null;
-                    int index = language.indexOf('_');
-                    if (index != -1) {
-                        country = language.substring(index+1);
-                        language = language.substring(0, index);
-                    }
-                    Locale mapLoc = null;
-                    if (country != null) {
-                        mapLoc = new Locale(language, country);
-                    } else {
-                        mapLoc = new Locale(language);
-                    }
-                    if (mapLoc.equals(reqLoc)) {
-                        /*
-                         * Match found. Get the charset to which the
-                         * matched locale maps.
-                         */
-                        encoding = locCharsetMap[i].getAttributeValue(
-                                                    LocaleCharsetMap.CHARSET);
-                        matchFound = true;
-                    }
-                }
-            }
-        }
-
-        return encoding;
     }
 
     /**

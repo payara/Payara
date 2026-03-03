@@ -37,17 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.pwc;
 
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
-import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardWrapper;
-
-import java.util.Enumeration;
 
 /**
  * Class representing a web module (servlet context).
@@ -384,29 +382,4 @@ public abstract class PwcWebModule extends StandardContext {
     public String[] getCacheControls() {
         return cacheControls;
     }
-
-
-    /**
-     * Returns true if this web module specifies a locale-charset-map in its
-     * sun-web.xml, false otherwise.
-     *
-     * @return true if this web module specifies a locale-charset-map in its
-     * sun-web.xml, false otherwise
-     */
-    public abstract boolean hasLocaleToCharsetMapping();
-
-
-    /**
-     * Matches the given request locales against the charsets specified in
-     * the locale-charset-map of this web module's sun-web.xml, and returns
-     * the first matching charset.
-     *
-     * @param locales Request locales
-     *
-     * @return First matching charset, or null if this web module does not
-     * specify any locale-charset-map in its sun-web.xml, or no match was
-     * found
-     */
-    public abstract String mapLocalesToCharset(Enumeration locales);
-
 }

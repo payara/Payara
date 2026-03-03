@@ -273,16 +273,10 @@ public interface RuntimeTagNames extends TagNames {
     public static final String COOKIE_PROPERTIES = "cookie-properties";
     public static final String CONSTRAINT_FIELD = "constraint-field";
     public static final String CONSTRAINT_FIELD_VALUE = "constraint-field-value";
-    public static final String LOCALE_CHARSET_INFO = "locale-charset-info";
-    public static final String DEFAULT_LOCALE = "default-locale";
     public static final String DEFAULT_HELPER = "default-helper";
-    public static final String LOCALE = "locale";
     public static final String MAX_ENTRIES = "max-entries";
     public static final String TIMEOUT_IN_SECONDS = "timeout-in-seconds";
     public static final String ENABLED = "enabled";
-    public static final String AGENT = "agent";
-    public static final String CHARSET = "charset";
-    public static final String LOCALE_CHARSET_MAP = "locale-charset-map";
     public static final String PARAMETER_ENCODING = "parameter-encoding";
     public static final String FORM_HINT_FIELD = "form-hint-field";
     public static final String DEFAULT_CHARSET = "default-charset";
