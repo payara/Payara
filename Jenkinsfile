@@ -55,8 +55,7 @@ pipeline {
                         booleanParam(name: 'archiveMavenRepository', value: true)
                     ]
 
-                    buildId = buildJob.number
-                    echo "Build number is ${buildId}"
+                    buildId = buildJob.getNumber().toString()
                 }
             }
         }
