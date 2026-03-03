@@ -498,6 +498,7 @@ public class FindOperationUtility {
         String prefixForParams = dataForQuery.getJpqlParameters().isEmpty() ? "?" : ":cursor";
         boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
         StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
         for (int i = 0; i < orders.size(); i++) {
             cursorQuery.append(i == 0 ? "(" : " OR (");
             int paramCount = getParamCount(dataForQuery, args);
@@ -506,7 +507,6 @@ public class FindOperationUtility {
                 String propertyName = sort.property();
                 boolean asc = sort.isAscending();
                 boolean lower = sort.ignoreCase();
-                QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
                 if (lower) {
                     cursorQuery.append(k == 0 ? "LOWER(" : " AND LOWER(");
                     appendAttribute(propertyName, cursorQuery, queryMetadata.getQueryType(), rootAlias);
