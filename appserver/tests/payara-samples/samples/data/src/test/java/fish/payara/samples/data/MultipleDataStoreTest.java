@@ -1,8 +1,9 @@
 package fish.payara.samples.data;
 
 import fish.payara.samples.data.entity.Product;
-import fish.payara.samples.data.repo.ProductsFirstPU;
-import fish.payara.samples.data.repo.ProductsSecondPU;
+import fish.payara.samples.data.repo.AbstractProducts;
+import jakarta.data.repository.BasicRepository;
+import jakarta.data.repository.Repository;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -19,8 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -73,6 +74,7 @@ public class MultipleDataStoreTest {
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "multiple-datastore-test.war")
                 .addClass(Product.class)
+                .addClass(AbstractProducts.class)
                 .addClass(ProductsFirstPU.class)
                 .addClass(ProductsSecondPU.class)
                 .addAsResource(new StringAsset(MULTI_PU_PERSISTENCE_XML), "META-INF/persistence.xml")
@@ -94,6 +96,12 @@ public class MultipleDataStoreTest {
 
     @Inject
     private ProductsSecondPU productsSecond;
+
+    private AbstractProducts isolatedRepository;
+    private AbstractProducts targetedRepository;
+
+    private final Supplier<Product> ELECTRONIC_PRODUCT = () -> Product.of(UUID.randomUUID(), "Phone", "Electronics");
+    private final Supplier<Product> NOT_ELECTRONIC_PRODUCT = () -> Product.of(UUID.randomUUID(), "Table", "Furniture");
 
     @Before
     public void setUp() throws Exception {
@@ -121,104 +129,102 @@ public class MultipleDataStoreTest {
     }
 
     /**
-     * Test basic CRUD operations through the first persistence unit repository.
-     */
-    @Test
-    public void testSaveAndFindViaFirstPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Laptop", "Electronics");
-
-        utx.begin();
-        productsFirst.save(product);
-        utx.commit();
-
-        var found = productsFirst.findById(product.id);
-        assertTrue("Product should be found via firstPU repository", found.isPresent());
-        assertEquals("Laptop", found.get().name);
-    }
-
-    /**
-     * Test basic CRUD operations through the second persistence unit repository.
-     */
-    @Test
-    public void testSaveAndFindViaSecondPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Desk", "Furniture");
-
-        utx.begin();
-        productsSecond.save(product);
-        utx.commit();
-
-        var found = productsSecond.findById(product.id);
-        assertTrue("Product should be found via secondPU repository", found.isPresent());
-        assertEquals("Desk", found.get().name);
-    }
-
-    /**
-     * Test query-by-method-name operations through both repositories.
-     */
-    @Test
-    public void testQueryByMethodNameWithBothPUs() throws Exception {
-        Product electronics = Product.of(UUID.randomUUID(), "Phone", "Electronics");
-        Product furniture = Product.of(UUID.randomUUID(), "Chair", "Furniture");
-
-        utx.begin();
-        productsFirst.save(electronics);
-        productsSecond.save(furniture);
-        utx.commit();
-
-        List<Product> electronicsFound = productsFirst.findByCategory("Electronics");
-        assertEquals("Should find 1 electronics product via firstPU", 1, electronicsFound.size());
-        assertEquals("Phone", electronicsFound.get(0).name);
-
-        List<Product> furnitureFound = productsSecond.findByCategory("Furniture");
-        assertEquals("Should find 1 furniture product via secondPU", 1, furnitureFound.size());
-        assertEquals("Chair", furnitureFound.get(0).name);
-    }
-
-    /**
-     * Test count operations through the first PU repository.
-     */
-    @Test
-    public void testCountViaFirstPU() throws Exception {
-        utx.begin();
-        productsFirst.save(Product.of(UUID.randomUUID(), "Monitor", "Electronics");
-        productsFirst.save(Product.of(UUID.randomUUID(), "Keyboard", "Electronics");
-        productsFirst.save(Product.of(UUID.randomUUID(), "Table", "Furniture");
-        utx.commit();
-
-        long count = productsFirst.countByCategory("Electronics");
-        assertEquals("Should count 2 electronics products via firstPU", 2, count);
-    }
-
-    /**
      * Test existence check through the second PU repository.
      */
     @Test
-    public void testExistsViaSecondPU() throws Exception {
+    public void testRepository() throws Exception {
+        targetedRepository = productsFirst;
+        isolatedRepository = productsSecond;
+
+        doTestRepository();
+
+        targetedRepository = productsSecond;
+        isolatedRepository = productsFirst;
+
+        doTestRepository();
+    }
+
+    private void doTestRepository() throws Exception {
+        Product product = ELECTRONIC_PRODUCT.get();
+
+        // Test @Save and verify with @Find and "existsByName" (method name based query)
+        saveProductAndAssertExists(product);
+
+        // Test "findByCategory" and "countByCategory" (method name based query)
+        assertElectronicProductsByCategory();
+
+        saveProductAndAssertExists(NOT_ELECTRONIC_PRODUCT.get());
+
+        // Repeat to ensure count is unaffected
+        assertElectronicProductsByCategory();
+
+        // Test @Delete and verify with @Find
+        deleteProductAndAssertExists(product);
+    }
+
+    private void saveProductAndAssertExists(Product product) throws Exception {
         utx.begin();
-        productsSecond.save(Product.of(UUID.randomUUID(), "Sofa", "Furniture"));
+        targetedRepository.save(product);
         utx.commit();
 
-        assertTrue("Sofa should exist via secondPU", productsSecond.existsByName("Sofa"));
-        assertFalse("NonExistent should not exist via secondPU", productsSecond.existsByName("NonExistent"));
+        assertFindById(targetedRepository, product);
+        assertNotFindById(isolatedRepository, product);
+
+        assertExistsByName(targetedRepository, product);
+        assertNotExistByName(isolatedRepository, product);
+    }
+
+    private void deleteProductAndAssertExists(Product product) throws Exception {
+        utx.begin();
+        targetedRepository.deleteById(product.id);
+        utx.commit();
+
+        assertNotFindById(targetedRepository, product);
+        assertNotExistByName(targetedRepository, product);
+    }
+
+    private void assertElectronicProductsByCategory() {
+        assertElectronicProductsByCategory(targetedRepository, 1);
+        assertElectronicProductsByCategory(isolatedRepository, 0);
+    }
+
+    private void assertFindById(BasicRepository<Product, UUID> repository, Product product) {
+        var found = repository.findById(product.id);
+        assertTrue("Product should be found via " + repository.getClass(), found.isPresent());
+        assertEquals(product.name, found.get().name);
+    }
+
+    private void assertNotFindById(BasicRepository<Product, UUID> repository, Product product) {
+        var found = repository.findById(product.id);
+        assertFalse("Product should not be found via " + repository.getClass(), found.isPresent());
+    }
+
+    private void assertExistsByName(AbstractProducts repository, Product product) {
+        assertTrue(product.name + " should exist via " + repository.getClass(), repository.existsByName(product.name));
+    }
+
+    private void assertNotExistByName(AbstractProducts repository, Product product) {
+        assertFalse(product.name + " should not exist via " + repository.getClass(), repository.existsByName(product.name));
+    }
+
+    private void assertElectronicProductsByCategory(AbstractProducts repository, int expected) {
+        assertEquals(
+                "Should find " + expected + " electronic products via " + repository.getClass(),
+                expected, repository.findByCategory("Electronics").size());
+        assertEquals(
+                "Should count " + expected + " electronic products via " + repository.getClass(),
+                expected, repository.countByCategory("Electronics"));
     }
 
     /**
-     * Test delete operations through a specific PU repository.
+     * Repository bound to the "firstPU" persistence unit via dataStore.
      */
-    @Test
-    public void testDeleteViaFirstPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Webcam", "Electronics");
+    @Repository(dataStore = "firstPU")
+    private interface ProductsFirstPU extends AbstractProducts {}
 
-        utx.begin();
-        productsFirst.save(product);
-        utx.commit();
-
-        assertTrue("Product should exist before delete", productsFirst.findById(product.id).isPresent());
-
-        utx.begin();
-        productsFirst.deleteById(product.id);
-        utx.commit();
-
-        assertFalse("Product should not exist after delete", productsFirst.findById(product.id).isPresent());
-    }
+    /**
+     * Repository bound to the "secondPU" persistence unit via dataStore.
+     */
+    @Repository(dataStore = "secondPU")
+    private interface ProductsSecondPU extends AbstractProducts {}
 }
