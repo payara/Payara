@@ -41,6 +41,7 @@ package fish.payara.samples.data;
 
 import fish.payara.samples.data.entity.Product;
 import fish.payara.samples.data.repo.AbstractProducts;
+import jakarta.annotation.sql.DataSourceDefinition;
 import jakarta.data.repository.BasicRepository;
 import jakarta.data.repository.Repository;
 import jakarta.inject.Inject;
@@ -72,6 +73,13 @@ import static org.junit.Assert.*;
  * and verifies that @Repository(dataStore = "...") correctly resolves each repository
  * to the appropriate persistence unit.
  */
+@DataSourceDefinition(
+        name = "java:app/jdbc/secondPU",
+        className = "org.h2.jdbcx.JdbcDataSource",
+        url = "jdbc:h2:mem:secondPU;DB_CLOSE_DELAY=-1",
+        user = "sa",
+        password = "sa"
+)
 @RunWith(Arquillian.class)
 public class MultipleDataStoreTest {
 
@@ -95,7 +103,7 @@ public class MultipleDataStoreTest {
               </persistence-unit>
               <persistence-unit name="secondPU" transaction-type="JTA">
                 <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-                <jta-data-source>jdbc/secondPU</jta-data-source>
+                <jta-data-source>java:app/jdbc/secondPU</jta-data-source>
                 <exclude-unlisted-classes>false</exclude-unlisted-classes>
                 <properties>
                   <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
@@ -106,22 +114,6 @@ public class MultipleDataStoreTest {
               </persistence-unit>
             </persistence>""";
 
-    private static final String GLASSFISH_RESOURCES_XML = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <!DOCTYPE resources PUBLIC
-                "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN"
-                "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
-            <resources>
-              <jdbc-connection-pool name="secondPU-pool"
-                                    datasource-classname="org.h2.jdbcx.JdbcDataSource"
-                                    res-type="javax.sql.DataSource">
-                <property name="URL" value="jdbc:h2:mem:secondPU;DB_CLOSE_DELAY=-1"/>
-                <property name="User" value="sa"/>
-                <property name="Password" value="sa"/>
-              </jdbc-connection-pool>
-              <jdbc-resource pool-name="secondPU-pool" jndi-name="jdbc/secondPU"/>
-            </resources>""";
-
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "multiple-datastore-test.war")
@@ -130,7 +122,6 @@ public class MultipleDataStoreTest {
                 .addClass(ProductsFirstPU.class)
                 .addClass(ProductsSecondPU.class)
                 .addAsResource(new StringAsset(MULTI_PU_PERSISTENCE_XML), "META-INF/persistence.xml")
-                .addAsWebInfResource(new StringAsset(GLASSFISH_RESOURCES_XML), "glassfish-resources.xml")
                 .addAsWebInfResource("WEB-INF/web.xml", "web.xml")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
