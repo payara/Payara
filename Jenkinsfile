@@ -37,27 +37,26 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Fetching Build Job Artifacts  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    // Try using branch parameter instead for PR builds
+                    echo 'Fetching Build Job Artifacts'
+
                     def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
                     def repoOrg = env.CHANGE_FORK ?: 'Payara'
 
-                    // First build the build job and capture its build number
-                    def buildJob = build job: 'Build/Build', wait: true,
-                        parameters: [
-                            string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                            string(name: 'repoOrg', value: repoOrg),
-                            string(name: 'jdkVer', value: 'zulu-21'),
-                            string(name: 'stream', value: 'Community'),
-                            string(name: 'profiles', value: 'BuildEmbedded'),
-                            booleanParam(name: 'skipTests', value: false),
-                            string(name: 'multiThread', value: '1'),
-                            booleanParam(name: 'archiveMavenRepository', value: true)
-                        ]
-                    buildId = buildJob.getNumber()
-                    echo "Build number is ${buildId}"
+                    def buildJob = build job: 'Build/Build',
+                    wait: true,
+                    parameters: [
+                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                        string(name: 'repoOrg', value: repoOrg),
+                        string(name: 'jdkVer', value: 'zulu-21'),
+                        string(name: 'stream', value: 'Community'),
+                        string(name: 'profiles', value: 'BuildEmbedded'),
+                        booleanParam(name: 'skipTests', value: false),
+                        string(name: 'multiThread', value: '1'),
+                        booleanParam(name: 'archiveMavenRepository', value: true)
+                    ]
 
-                    echo '*#*#*#*#*#*#*#*#*#*#*#*#    Fetched Build Job Artifacts   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    def buildId = buildJob.number
+                    echo "Build number is ${buildId}"
                 }
             }
         }
@@ -97,7 +96,7 @@ pipeline {
                         }
                     }
                 }
-                 stage('Payara Samples Tests') {
+                stage('Payara Samples Tests') {
                      agent {
                          label 'general-purpose'
                     }
@@ -226,7 +225,7 @@ pipeline {
                         sh """mvn -B -V -ff -e clean verify --strict-checksums \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
-                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}payara7" \
+                        -Dpayara_domain=${DOMAIN_NAME} -Dpayara.home="${pwd()}/payara7" \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -Ppayara-server-remote,full \
@@ -657,7 +656,7 @@ void processPayaraArtifacts(String buildId) {
      target: 'artifacts/')
 
     // If Maven repository is included, restore it
-    if (includeMavenRepo && fileExists('artifacts/maven-repository.zip')) {
+    if (fileExists('artifacts/maven-repository.zip')) {
         echo "Restoring Maven repository"
         sh 'unzip -o artifacts/maven-repository.zip -d ~/.m2/repository'
         echo "Maven repository restored to ~/.m2/repository"
