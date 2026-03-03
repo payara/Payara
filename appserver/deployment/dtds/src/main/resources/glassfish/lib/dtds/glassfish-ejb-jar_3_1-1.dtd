@@ -64,7 +64,7 @@ System unique object id. Automatically generated and updated at deployment/redep
 <!--
 This is the root element describing all the runtime of an ejb-jar in the application.
 -->
-<!ELEMENT enterprise-beans (name?, unique-id?, ejb*, pm-descriptors?, cmp-resource?,
+<!ELEMENT enterprise-beans (name?, unique-id?, ejb*, cmp-resource?,
 	message-destination*, webservice-description*, property*, webservice-default-login-config?)>
 
 <!--
@@ -579,52 +579,6 @@ named element at glassfish-application.xml, it can apply to all the enclosed
 ejb modules. Allowed values are true and false. Default will be false.
  -->
 <!ELEMENT pass-by-reference (#PCDATA)>
-
-<!--
-PM descriptors contain one or more pm descriptors, but only one of them must
-be in use at any given time. If not specified, the Sun CMP is used.
--->
-<!ELEMENT pm-descriptors ( pm-descriptor+, pm-inuse)>
-
-<!--
-pm-descriptor describes the pluggable vendor implementation for the CMP 
-support of the CMP entity beans in this module.
--->
-<!ELEMENT pm-descriptor ( pm-identifier, pm-version, pm-config?, pm-class-generator?, pm-mapping-factory?)>
-
-<!--
-pm-identifier element identifies the vendor who provides the CMP implementation
--->
-<!ELEMENT pm-identifier (#PCDATA)>
-
-<!--
-pm-version further specifies which version of PM vendor product to be used
--->
-<!ELEMENT pm-version (#PCDATA)>
-
-<!--
-pm-config specifies the vendor specific config file to be used
--->
-<!ELEMENT pm-config (#PCDATA)>
-
-<!--
-pm-class-generator specifies the vendor specific class generator to be used
-at the module deploymant time. This is the name of the class specific to this 
-vendor.
--->
-<!ELEMENT pm-class-generator (#PCDATA)>
-
-<!--
-pm-mapping-factory specifies the vendor specific mapping factory
-This is the name of the class specific to a vendor.
--->
-<!ELEMENT pm-mapping-factory (#PCDATA)>
-
-<!--
-pm-inuse specifies which CMP vendor is used.
--->
-<!ELEMENT pm-inuse (pm-identifier, pm-version)>
-
 
 <!--
 This holds the runtime configuration properties of the message-driven bean 
