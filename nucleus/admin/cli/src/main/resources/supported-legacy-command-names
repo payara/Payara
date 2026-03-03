@@ -12,7 +12,6 @@ start-domain L
 stop-domain L
 list-domains L
 deploy R
-deploydir R
 undeploy R
 list-components R
 list-sub-components R
