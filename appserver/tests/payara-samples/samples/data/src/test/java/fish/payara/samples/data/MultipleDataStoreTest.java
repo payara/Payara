@@ -19,7 +19,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -122,8 +121,7 @@ public class MultipleDataStoreTest {
      */
     @Test
     public void testSaveAndFindViaFirstPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Laptop", "Electronics",
-                BigDecimal.valueOf(999.99), true);
+        Product product = Product.of(UUID.randomUUID(), "Laptop", "Electronics");
 
         utx.begin();
         productsFirst.save(product);
@@ -139,8 +137,7 @@ public class MultipleDataStoreTest {
      */
     @Test
     public void testSaveAndFindViaSecondPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Desk", "Furniture",
-                BigDecimal.valueOf(299.50), true);
+        Product product = Product.of(UUID.randomUUID(), "Desk", "Furniture");
 
         utx.begin();
         productsSecond.save(product);
@@ -156,10 +153,8 @@ public class MultipleDataStoreTest {
      */
     @Test
     public void testQueryByMethodNameWithBothPUs() throws Exception {
-        Product electronics = Product.of(UUID.randomUUID(), "Phone", "Electronics",
-                BigDecimal.valueOf(699.00), true);
-        Product furniture = Product.of(UUID.randomUUID(), "Chair", "Furniture",
-                BigDecimal.valueOf(150.00), true);
+        Product electronics = Product.of(UUID.randomUUID(), "Phone", "Electronics");
+        Product furniture = Product.of(UUID.randomUUID(), "Chair", "Furniture");
 
         utx.begin();
         productsFirst.save(electronics);
@@ -181,12 +176,9 @@ public class MultipleDataStoreTest {
     @Test
     public void testCountViaFirstPU() throws Exception {
         utx.begin();
-        productsFirst.save(Product.of(UUID.randomUUID(), "Monitor", "Electronics",
-                BigDecimal.valueOf(450.00), true));
-        productsFirst.save(Product.of(UUID.randomUUID(), "Keyboard", "Electronics",
-                BigDecimal.valueOf(79.99), true));
-        productsFirst.save(Product.of(UUID.randomUUID(), "Table", "Furniture",
-                BigDecimal.valueOf(200.00), true));
+        productsFirst.save(Product.of(UUID.randomUUID(), "Monitor", "Electronics");
+        productsFirst.save(Product.of(UUID.randomUUID(), "Keyboard", "Electronics");
+        productsFirst.save(Product.of(UUID.randomUUID(), "Table", "Furniture");
         utx.commit();
 
         long count = productsFirst.countByCategory("Electronics");
@@ -199,8 +191,7 @@ public class MultipleDataStoreTest {
     @Test
     public void testExistsViaSecondPU() throws Exception {
         utx.begin();
-        productsSecond.save(Product.of(UUID.randomUUID(), "Sofa", "Furniture",
-                BigDecimal.valueOf(800.00), true));
+        productsSecond.save(Product.of(UUID.randomUUID(), "Sofa", "Furniture"));
         utx.commit();
 
         assertTrue("Sofa should exist via secondPU", productsSecond.existsByName("Sofa"));
@@ -212,8 +203,7 @@ public class MultipleDataStoreTest {
      */
     @Test
     public void testDeleteViaFirstPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Webcam", "Electronics",
-                BigDecimal.valueOf(59.99), true);
+        Product product = Product.of(UUID.randomUUID(), "Webcam", "Electronics");
 
         utx.begin();
         productsFirst.save(product);

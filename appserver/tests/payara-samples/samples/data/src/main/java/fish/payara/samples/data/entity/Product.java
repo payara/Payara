@@ -17,18 +17,11 @@ public class Product {
 
     public String category;
 
-    @Column(precision = 19, scale = 2)
-    public BigDecimal price;
-
-    public boolean available;
-
-    public static Product of(UUID id, String name, String category, BigDecimal price, boolean available) {
+    public static Product of(UUID id, String name, String category) {
         Product p = new Product();
         p.id = id;
         p.name = name;
         p.category = category;
-        p.price = price;
-        p.available = available;
         return p;
     }
 

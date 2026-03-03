@@ -16,7 +16,5 @@ public interface ProductsFirstPU extends BasicRepository<Product, UUID> {
 
     List<Product> findByCategory(String category);
 
-    List<Product> findByAvailable(boolean available);
-
     long countByCategory(String category);
 }

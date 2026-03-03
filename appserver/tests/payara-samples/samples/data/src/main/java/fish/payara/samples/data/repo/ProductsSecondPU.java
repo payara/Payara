@@ -16,7 +16,5 @@ public interface ProductsSecondPU extends BasicRepository<Product, UUID> {
 
     List<Product> findByCategory(String category);
 
-    List<Product> findByAvailable(boolean available);
-
     boolean existsByName(String name);
 }
