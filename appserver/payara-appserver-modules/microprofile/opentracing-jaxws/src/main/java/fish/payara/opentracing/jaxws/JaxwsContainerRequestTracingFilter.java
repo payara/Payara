@@ -81,7 +81,13 @@ import org.glassfish.webservices.monitoring.MonitorFilter;
 import org.jvnet.hk2.annotations.Service;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
-import static io.opentracing.tag.Tags.*;
+import static io.opentracing.tag.Tags.COMPONENT;
+import static io.opentracing.tag.Tags.ERROR;
+import static io.opentracing.tag.Tags.HTTP_METHOD;
+import static io.opentracing.tag.Tags.HTTP_STATUS;
+import static io.opentracing.tag.Tags.HTTP_URL;
+import static io.opentracing.tag.Tags.SPAN_KIND;
+import static io.opentracing.tag.Tags.SPAN_KIND_SERVER;
 import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static java.util.Collections.list;
@@ -89,7 +95,10 @@ import static jakarta.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
 import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
 import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
 import static java.util.Collections.singletonMap;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
 
 
 @Service(name = "jaxws-opentracing-filter")
