@@ -45,12 +45,12 @@ import java.lang.reflect.Method;
  * This class represent the immutable structure of a query to be utilised at runtime
  */
 public class QueryMetadata {
-    protected Class<?> repositoryInterface;
-    protected Method method;
-    protected Class<?> entityParamType;
-    protected Class<?> declaredEntityClass;
-    protected QueryType queryType;
-    protected EntityMetadata entityMetadata;
+    private final Class<?> repositoryInterface;
+    private final Method method;
+    private final Class<?> entityParamType;
+    private final Class<?> declaredEntityClass;
+    private final QueryType queryType;
+    private final EntityMetadata entityMetadata;
 
     public QueryMetadata(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
         this.repositoryInterface = repositoryInterface;
