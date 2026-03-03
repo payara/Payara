@@ -204,17 +204,6 @@ public interface RuntimeTagNames extends TagNames {
     public static final String DATABASE_VENDOR_NAME = "database-vendor-name";
     public static final String SCHEMA_GENERATOR_PROPERTIES = "schema-generator-properties";
 
-
-    // PM-DESCRIPTORS related
-    public static final String PM_DESCRIPTORS = "pm-descriptors";
-    public static final String PM_DESCRIPTOR = "pm-descriptor";
-    public static final String PM_IDENTIFIER = "pm-identifier";
-    public static final String PM_VERSION = "pm-version";
-    public static final String PM_CONFIG = "pm-config";
-    public static final String PM_CLASS_GENERATOR = "pm-class-generator";
-    public static final String PM_MAPPING_FACTORY = "pm-mapping-factory";
-    public static final String PM_INUSE = "pm-inuse";
-
     // BEAN-POOL related
     public static final String BEAN_POOL = "bean-pool";
     public static final String STEADY_POOL_SIZE = "steady-pool-size";
