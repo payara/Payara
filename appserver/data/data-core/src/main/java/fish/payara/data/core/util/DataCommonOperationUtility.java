@@ -78,6 +78,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.glassfish.internal.api.Globals;
@@ -149,24 +150,22 @@ public class DataCommonOperationUtility {
         return results.get(0);
     }
 
-    public static EntityManager getEntityManager(String applicationName) {
-        return getEntityManager(applicationName, null);
-    }
-
-    public static EntityManager getEntityManager(String applicationName, String dataStore) {
+    public static Supplier<EntityManager> getEntityManagerSupplier(String applicationName, String dataStore) {
         ApplicationRegistry applicationRegistry = getRegistry();
         ApplicationInfo applicationInfo = applicationRegistry.get(applicationName);
         List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
 
         if (factoryList.size() == 1) {
-            return factoryList.getFirst().createEntityManager();
+            EntityManagerFactory entityManagerFactory = factoryList.getFirst();
+            return () -> entityManagerFactory.createEntityManager();
         }
 
         if (dataStore != null && !dataStore.isEmpty()) {
             @SuppressWarnings("unchecked")
             Map<String, EntityManagerFactory> emfNameMap = applicationInfo.getTransientAppMetaData(EMF_NAME_KEY, Map.class);
             if (emfNameMap != null && emfNameMap.containsKey(dataStore)) {
-                return emfNameMap.get(dataStore).createEntityManager();
+                EntityManagerFactory entityManagerFactory = emfNameMap.get(dataStore);
+                return () -> entityManagerFactory.createEntityManager();
             }
 
             throw new AmbiguousPersistenceUnitException(String.format(
@@ -195,7 +194,7 @@ public class DataCommonOperationUtility {
         if (mapOfMetaData != null && mapOfMetaData.containsKey(declaredEntityClass)) {
             return mapOfMetaData.get(declaredEntityClass);
         }
-        EntityManager entityManager = getEntityManager(applicationName, dataStore);
+        EntityManager entityManager = getEntityManagerSupplier(applicationName, dataStore).get();
         Metamodel metamodel = entityManager.getMetamodel();
         try {
             for (EntityType<?> entityType : metamodel.getEntities()) {
