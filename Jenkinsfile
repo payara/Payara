@@ -647,7 +647,7 @@ void updatePomPayaraVersion(String payaraVersion) {
     sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
 }
 
-def processPayaraArtifacts(String buildId, boolean includeMavenRepo = false) {
+void processPayaraArtifacts(String buildId, boolean includeMavenRepo = false) {
     // Grab Payara artifact from given job
     echo "Grabbing artifacts from Build/Build: ${buildId}"
 
