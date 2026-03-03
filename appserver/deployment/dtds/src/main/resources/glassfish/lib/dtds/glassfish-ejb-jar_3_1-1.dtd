@@ -93,7 +93,7 @@ Additional properties applicable to a message-driven bean:
                cmp?, principal?, mdb-connection-factory?, jms-durable-subscription-name?, 
                jms-max-messages-load?, ior-security-config?, is-read-only-bean?, clustered-bean?, clustered-key-name?, clustered-lock-type?, clustered-attach-postconstruct?, clustered-detach-predestroy?,
                refresh-period-in-seconds?, commit-option?, cmt-timeout-in-seconds?, use-thread-pool-id?, gen-classes?, 
-               bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpointed-methods?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
+               bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
 
 <!-- 
 This attribute is only applicable for stateful session bean 
@@ -366,23 +366,6 @@ Possible values are FIFO | LRU | NRU. Default is NRU, which is actually
 pseudo-random selection policy.
 -->
 <!ELEMENT victim-selection-policy (#PCDATA)>
-
-<!--
-Support backward compatibility with AS7.1
-Now deprecated in 8.1 and later releases 
-Use checkpoint-at-end-of-method element instead
-
-The methods should be separated by semicolons. 
-The param list should separated by commas.  
-All method param types should be full qualified.
-Variable name is allowed for the param type.
-No return type or exception type.
-Example:
-foo(java.lang.String, a.b.c d); bar(java.lang.String s)
-
-Used in: ejb
--->
-<!ELEMENT checkpointed-methods (#PCDATA)>
 
 <!--
 The equivalent element of checkpointed-methods for 8.1 and later releases

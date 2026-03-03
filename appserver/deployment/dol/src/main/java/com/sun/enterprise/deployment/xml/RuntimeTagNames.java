@@ -241,9 +241,6 @@ public interface RuntimeTagNames extends TagNames {
     // flush-at-end-of-method
     public static final String FLUSH_AT_END_OF_METHOD =
         "flush-at-end-of-method";
-    // checkpointed-methods, support backward compatibility with 7.1
-    public static final String CHECKPOINTED_METHODS =
-        "checkpointed-methods";
     // checkpoint-at-end-of-method, equivalent element of
     // checkpointed-methods in 8.1 and later releases
     public static final String CHECKPOINT_AT_END_OF_METHOD =
