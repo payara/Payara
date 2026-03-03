@@ -105,7 +105,7 @@ pipeline {
                          retry(3)
                     }
                      steps {
-                         processPayaraArtifacts(buildId, true)
+                         processPayaraArtifacts(buildId)
                          setupDomain()
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
@@ -547,7 +547,7 @@ pipeline {
                         retry(3)
                     }
                     steps {
-                        processPayaraArtifacts(buildId, true)
+                        processPayaraArtifacts(buildId)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
@@ -644,16 +644,12 @@ void updatePomPayaraVersion(String payaraVersion) {
     sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
 }
 
-void processPayaraArtifacts(String buildId, boolean includeMavenRepo = false) {
+void processPayaraArtifacts(String buildId) {
     // Grab Payara artifact from given job
     echo "Grabbing artifacts from Build/Build: ${buildId}"
 
     // Determine filter based on whether we need Maven repository
-    def artifactFilter = 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip'
-
-    if (includeMavenRepo) {
-        artifactFilter += ',maven-repository.zip'
-    }
+    def artifactFilter = 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip,maven-repository.zip'
 
     copyArtifacts(projectName: "Build/Build",
      selector: specific("${buildId}"),
