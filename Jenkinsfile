@@ -104,7 +104,7 @@ pipeline {
                     }
                      steps {
 
-                         processPayaraArtifacts(buildId)
+                         processPayaraArtifacts(buildId, true)
                          setupDomain()
 
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -547,7 +547,7 @@ pipeline {
                         retry(3)
                     }
                     steps {
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, true)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
@@ -644,12 +644,15 @@ void updatePomPayaraVersion(String payaraVersion) {
     sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
 }
 
-void processPayaraArtifacts(String buildId) {
+void processPayaraArtifacts(String buildId, boolean restoreMavenRepo = false) {
     // Grab Payara artifact from given job
     echo "Grabbing artifacts from Build/Build: ${buildId}"
 
     // Determine filter based on whether we need Maven repository
-    def artifactFilter = 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip,maven-repository.zip'
+    def artifactFilter = 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip'
+    if (restoreMavenRepo) {
+        artifactFilter += ',maven-repository.zip'
+    }
 
     copyArtifacts(projectName: "Build/Build",
      selector: specific("${buildId}"),
@@ -657,7 +660,7 @@ void processPayaraArtifacts(String buildId) {
      target: 'artifacts/')
 
     // If Maven repository is included, restore it
-    if (fileExists('artifacts/maven-repository.zip')) {
+    if (restoreMavenRepo && fileExists('artifacts/maven-repository.zip')) {
         echo "Restoring Maven repository"
         sh 'unzip -o artifacts/maven-repository.zip -d ~/.m2/repository'
         echo "Maven repository restored to ~/.m2/repository"
