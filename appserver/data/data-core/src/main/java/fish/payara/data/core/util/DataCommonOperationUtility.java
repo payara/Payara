@@ -185,8 +185,8 @@ public class DataCommonOperationUtility {
         return registry;
     }
 
-    public static EntityMetadata preprocesEntityMetadata(Class<?> repository, Map<Class<?>, EntityMetadata> mapOfMetaData, Class<?> declaredEntityClass,
-                                                         Method method, String applicationName, String dataStore) {
+    public static EntityMetadata preprocesEntityMetadata(Map<Class<?>, EntityMetadata> mapOfMetaData, EntityManager entityManager, Class<?> declaredEntityClass,
+                                                         Method method) {
         if (declaredEntityClass == null) {
             declaredEntityClass = findEntityTypeInMethod(method);
         }
@@ -194,7 +194,6 @@ public class DataCommonOperationUtility {
         if (mapOfMetaData != null && mapOfMetaData.containsKey(declaredEntityClass)) {
             return mapOfMetaData.get(declaredEntityClass);
         }
-        EntityManager entityManager = getEntityManagerSupplier(applicationName, dataStore).get();
         Metamodel metamodel = entityManager.getMetamodel();
         try {
             for (EntityType<?> entityType : metamodel.getEntities()) {
