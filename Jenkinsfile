@@ -103,10 +103,10 @@ pipeline {
                          retry(3)
                     }
                      steps {
-                        script {
-                            processPayaraArtifacts(buildId)
-                            setupDomain()
-                        }
+
+                         processPayaraArtifacts(buildId)
+                         setupDomain()
+
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
                          -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
