@@ -487,34 +487,18 @@ pipeline {
                     options {
                         retry(3)
                     }
-                    steps{
-                        processPayaraArtifacts(buildId)
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/patched-src-javaee8-samples.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                        setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh "mvn -B -V -ff -e clean install --strict-checksums -Dsurefire.useFile=false \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -Dsurefire.rerunFailingTestsCount=2 \
-                        -Dfailsafe.rerunFailingTestsCount=2 \
-                        -Ppayara-server-remote,stable"
+                    steps {
+                       echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                       build job: 'Miscellaneous/Run-EE8-Samples',
+                           parameters: [
+                               string(name: 'payaraBuildNumber', value: "${buildId}"),
+                               string(name: 'buildProject', value: "Build/Build"),
+                               string(name: 'repoOrg', value: 'Payara'),
+                               string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                               string(name: 'jdkChoice', value: 'zulu-21'),
+                               string(name: 'arquillianProfile', value: 'payara-server-remote')
+                           ]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'ee8-samples-log.zip'
-                        }
                     }
                 }
                 stage('CargoTracker Tests') {
@@ -524,37 +508,18 @@ pipeline {
                     options {
                         retry(3)
                     }
-                    steps{
-                        processPayaraArtifacts(buildId)
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
-                            branches: [[name: "*/Payara7"]],
-                            userRemoteConfigs: [[url: "https://github.com/payara/cargoTracker.git"]]]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checked out cargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                        setupDomain()
-                        updatePomPayaraVersion("${pom.version}")
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Cleaning CargoTracker Database in /tmp  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh "rm -rf /tmp/cargo*"
-
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh  """mvn -B -V -ff -e clean verify --strict-checksums -Dsurefire.useFile=false \
-                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                         -Djavax.xml.accessExternalSchema=all \
-                         -Dsurefire.rerunFailingTestsCount=2 \
-                         -Dfailsafe.rerunFailingTestsCount=2 \
-                         -Ppayara-server-remote -DtrimStackTrace=false"""
+                    steps {
+                       echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running CargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                       build job: 'Miscellaneous/Run-CargoTracker',
+                           parameters: [
+                               string(name: 'payaraBuildNumber', value: "${buildId}"),
+                               string(name: 'buildProject', value: "Build/Build"),
+                               string(name: 'repoOrg', value: 'Payara'),
+                               string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                               string(name: 'jdkChoice', value: 'zulu-21'),
+                               string(name: 'arquillianProfile', value: 'payara-server-remote')
+                           ]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        always {
-                            processReportAndStopDomain()
-                        }
-                        cleanup {
-                            saveLogsAndCleanup 'cargotracker-log.zip'
-                        }
                     }
                 }
                 stage('EE7 Tests') {
