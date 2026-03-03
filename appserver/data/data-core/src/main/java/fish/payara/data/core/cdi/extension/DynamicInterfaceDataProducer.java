@@ -59,6 +59,7 @@ import jakarta.enterprise.inject.spi.PassivationCapable;
 import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.Table;
 
 import java.lang.annotation.Annotation;
@@ -80,6 +81,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static fish.payara.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
+import static fish.payara.data.core.util.DataCommonOperationUtility.getEntityManagerSupplier;
 import static fish.payara.data.core.util.DataCommonOperationUtility.preprocesEntityMetadata;
 
 /**
@@ -177,6 +179,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         logger.info("Processing query for entity class: " + repository);
         //get entity type
         Class<?> declaredEntityClass = getEntityType(this.repository);
+        EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get();
         logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
         for (Method method : this.repository.getMethods()) {
             logger.info("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
@@ -186,7 +189,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             }
             Class<?> entityParamType = null;
             entityParamType = getEntityParamClass(method);
-            addQueries(repository, declaredEntityClass, entityParamType, method);
+            addQueries(entityManager, repository, declaredEntityClass, entityParamType, method);
         }
     }
 
@@ -333,7 +336,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @param entityParamType
      * @param method
      */
-    public void addQueries(Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
+    private void addQueries(EntityManager entityManager, Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
         List<QueryData> queries;
         queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
         QueryType queryType = null;
@@ -362,7 +365,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             }
         }
         QueryData dataForQuery = new QueryData(repository, method, declaredEntityClass, entityParamType,
-                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName(), this.dataStore));
+                queryType, preprocesEntityMetadata(mapOfMetaData, entityManager, declaredEntityClass, method));
 
         try {
             evaluateDataQuery(dataForQuery, method);

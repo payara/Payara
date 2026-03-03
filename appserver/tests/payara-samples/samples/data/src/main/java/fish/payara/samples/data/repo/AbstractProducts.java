@@ -37,35 +37,18 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.samples.data.entity;
+package fish.payara.samples.data.repo;
 
-import java.math.BigDecimal;
+import fish.payara.samples.data.entity.Product;
+import jakarta.data.repository.BasicRepository;
+
+import java.util.List;
 import java.util.UUID;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "Product")
-public class Product {
-    @Id
-    public UUID id;
+public interface AbstractProducts extends BasicRepository<Product, UUID> {
+    List<Product> findByCategory(String category);
 
-    public String name;
+    boolean existsByName(String name);
 
-    public String category;
-
-    public static Product of(UUID id, String name, String category) {
-        Product p = new Product();
-        p.id = id;
-        p.name = name;
-        p.category = category;
-        return p;
-    }
-
-    @Override
-    public String toString() {
-        return "Product@" + Integer.toHexString(hashCode()) + ":" + id + ":" + name + ":" + category;
-    }
+    long countByCategory(String category);
 }

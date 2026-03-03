@@ -1,8 +1,48 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ *    Copyright (c) [2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ *     The contents of this file are subject to the terms of either the GNU
+ *     General Public License Version 2 only ("GPL") or the Common Development
+ *     and Distribution License("CDDL") (collectively, the "License").  You
+ *     may not use this file except in compliance with the License.  You can
+ *     obtain a copy of the License at
+ *     https://github.com/payara/Payara/blob/main/LICENSE.txt
+ *     See the License for the specific
+ *     language governing permissions and limitations under the License.
+ *
+ *     When distributing the software, include this License Header Notice in each
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+ *
+ *     GPL Classpath Exception:
+ *     The Payara Foundation designates this particular file as subject to the "Classpath"
+ *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *     file that accompanied this code.
+ *
+ *     Modifications:
+ *     If applicable, add the following below the License Header, with the fields
+ *     enclosed by brackets [] replaced by your own identifying information:
+ *     "Portions Copyright [year] [name of copyright owner]"
+ *
+ *     Contributor(s):
+ *     If you wish your version of this file to be governed by only the CDDL or
+ *     only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *     elects to include this software in this distribution under the [CDDL or GPL
+ *     Version 2] license."  If you don't indicate a single choice of license, a
+ *     recipient has the option to distribute your version of this file under
+ *     either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *     its licensees as provided above.  However, if you add GPL Version 2 code
+ *     and therefore, elected the GPL Version 2 license, then the option applies
+ *     only if the new code is made subject to such option by the copyright
+ *     holder.
+ */
 package fish.payara.samples.data;
 
 import fish.payara.samples.data.entity.Product;
-import fish.payara.samples.data.repo.ProductsFirstPU;
-import fish.payara.samples.data.repo.ProductsSecondPU;
+import fish.payara.samples.data.repo.AbstractProducts;
+import jakarta.data.repository.BasicRepository;
+import jakarta.data.repository.Repository;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -19,9 +59,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -36,41 +75,45 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class MultipleDataStoreTest {
 
-    private static final String MULTI_PU_PERSISTENCE_XML =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<persistence xmlns=\"https://jakarta.ee/xml/ns/persistence\"\n" +
-            "             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "             xsi:schemaLocation=\"https://jakarta.ee/xml/ns/persistence\n" +
-            "             https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd\"\n" +
-            "             version=\"3.1\">\n" +
-            "  <persistence-unit name=\"firstPU\" transaction-type=\"JTA\">\n" +
-            "    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>\n" +
-            "    <jta-data-source>jdbc/__default</jta-data-source>\n" +
-            "    <exclude-unlisted-classes>false</exclude-unlisted-classes>\n" +
-            "    <properties>\n" +
-            "      <property name=\"eclipselink.ddl-generation\" value=\"drop-and-create-tables\"/>\n" +
-            "      <property name=\"eclipselink.logging.level\" value=\"FINE\"/>\n" +
-            "      <property name=\"jakarta.persistence.schema-generation.database.action\" value=\"drop-and-create\"/>\n" +
-            "      <property name=\"jakarta.persistence.validation.mode\" value=\"NONE\"/>\n" +
-            "    </properties>\n" +
-            "  </persistence-unit>\n" +
-            "  <persistence-unit name=\"secondPU\" transaction-type=\"JTA\">\n" +
-            "    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>\n" +
-            "    <jta-data-source>jdbc/__default</jta-data-source>\n" +
-            "    <exclude-unlisted-classes>false</exclude-unlisted-classes>\n" +
-            "    <properties>\n" +
-            "      <property name=\"eclipselink.ddl-generation\" value=\"drop-and-create-tables\"/>\n" +
-            "      <property name=\"eclipselink.logging.level\" value=\"FINE\"/>\n" +
-            "      <property name=\"jakarta.persistence.schema-generation.database.action\" value=\"drop-and-create\"/>\n" +
-            "      <property name=\"jakarta.persistence.validation.mode\" value=\"NONE\"/>\n" +
-            "    </properties>\n" +
-            "  </persistence-unit>\n" +
-            "</persistence>";
+    private static final String MULTI_PU_PERSISTENCE_XML = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                         xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                         https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
+                         version="3.1">
+              <persistence-unit name="firstPU" transaction-type="JTA">
+                <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+                <jta-data-source>jdbc/__default</jta-data-source>
+                <exclude-unlisted-classes>false</exclude-unlisted-classes>
+                <properties>
+                  <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+                  <property name="eclipselink.logging.level" value="FINE"/>
+                  <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+                  <property name="jakarta.persistence.validation.mode" value="NONE"/>
+                </properties>
+              </persistence-unit>
+              <persistence-unit name="secondPU" transaction-type="JTA">
+                <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+                <exclude-unlisted-classes>false</exclude-unlisted-classes>
+                <properties>
+                  <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+                  <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:secondPU;DB_CLOSE_DELAY=-1"/>
+                  <property name="jakarta.persistence.jdbc.user" value="sa"/>
+                  <property name="jakarta.persistence.jdbc.password" value=""/>
+                  <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+                  <property name="eclipselink.logging.level" value="FINE"/>
+                  <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+                  <property name="jakarta.persistence.validation.mode" value="NONE"/>
+                </properties>
+              </persistence-unit>
+            </persistence>""";
 
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "multiple-datastore-test.war")
                 .addClass(Product.class)
+                .addClass(AbstractProducts.class)
                 .addClass(ProductsFirstPU.class)
                 .addClass(ProductsSecondPU.class)
                 .addAsResource(new StringAsset(MULTI_PU_PERSISTENCE_XML), "META-INF/persistence.xml")
@@ -93,10 +136,17 @@ public class MultipleDataStoreTest {
     @Inject
     private ProductsSecondPU productsSecond;
 
+    private AbstractProducts isolatedRepository;
+    private AbstractProducts targetedRepository;
+
+    private final Supplier<Product> ELECTRONIC_PRODUCT = () -> Product.of(UUID.randomUUID(), "Phone", "Electronics");
+    private final Supplier<Product> NOT_ELECTRONIC_PRODUCT = () -> Product.of(UUID.randomUUID(), "Table", "Furniture");
+
     @Before
     public void setUp() throws Exception {
         utx.begin();
         emFirst.createQuery("DELETE FROM Product").executeUpdate();
+        emSecond.createQuery("DELETE FROM Product").executeUpdate();
         utx.commit();
     }
 
@@ -118,113 +168,102 @@ public class MultipleDataStoreTest {
     }
 
     /**
-     * Test basic CRUD operations through the first persistence unit repository.
-     */
-    @Test
-    public void testSaveAndFindViaFirstPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Laptop", "Electronics",
-                BigDecimal.valueOf(999.99), true);
-
-        utx.begin();
-        productsFirst.save(product);
-        utx.commit();
-
-        var found = productsFirst.findById(product.id);
-        assertTrue("Product should be found via firstPU repository", found.isPresent());
-        assertEquals("Laptop", found.get().name);
-    }
-
-    /**
-     * Test basic CRUD operations through the second persistence unit repository.
-     */
-    @Test
-    public void testSaveAndFindViaSecondPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Desk", "Furniture",
-                BigDecimal.valueOf(299.50), true);
-
-        utx.begin();
-        productsSecond.save(product);
-        utx.commit();
-
-        var found = productsSecond.findById(product.id);
-        assertTrue("Product should be found via secondPU repository", found.isPresent());
-        assertEquals("Desk", found.get().name);
-    }
-
-    /**
-     * Test query-by-method-name operations through both repositories.
-     */
-    @Test
-    public void testQueryByMethodNameWithBothPUs() throws Exception {
-        Product electronics = Product.of(UUID.randomUUID(), "Phone", "Electronics",
-                BigDecimal.valueOf(699.00), true);
-        Product furniture = Product.of(UUID.randomUUID(), "Chair", "Furniture",
-                BigDecimal.valueOf(150.00), true);
-
-        utx.begin();
-        productsFirst.save(electronics);
-        productsFirst.save(furniture);
-        utx.commit();
-
-        List<Product> electronicsFound = productsFirst.findByCategory("Electronics");
-        assertEquals("Should find 1 electronics product via firstPU", 1, electronicsFound.size());
-        assertEquals("Phone", electronicsFound.get(0).name);
-
-        List<Product> furnitureFound = productsSecond.findByCategory("Furniture");
-        assertEquals("Should find 1 furniture product via secondPU", 1, furnitureFound.size());
-        assertEquals("Chair", furnitureFound.get(0).name);
-    }
-
-    /**
-     * Test count operations through the first PU repository.
-     */
-    @Test
-    public void testCountViaFirstPU() throws Exception {
-        utx.begin();
-        productsFirst.save(Product.of(UUID.randomUUID(), "Monitor", "Electronics",
-                BigDecimal.valueOf(450.00), true));
-        productsFirst.save(Product.of(UUID.randomUUID(), "Keyboard", "Electronics",
-                BigDecimal.valueOf(79.99), true));
-        productsFirst.save(Product.of(UUID.randomUUID(), "Table", "Furniture",
-                BigDecimal.valueOf(200.00), true));
-        utx.commit();
-
-        long count = productsFirst.countByCategory("Electronics");
-        assertEquals("Should count 2 electronics products via firstPU", 2, count);
-    }
-
-    /**
      * Test existence check through the second PU repository.
      */
     @Test
-    public void testExistsViaSecondPU() throws Exception {
+    public void testRepository() throws Exception {
+        targetedRepository = productsFirst;
+        isolatedRepository = productsSecond;
+
+        doTestRepository();
+
+        targetedRepository = productsSecond;
+        isolatedRepository = productsFirst;
+
+        doTestRepository();
+    }
+
+    private void doTestRepository() throws Exception {
+        Product product = ELECTRONIC_PRODUCT.get();
+
+        // Test @Save and verify with @Find and "existsByName" (method name based query)
+        saveProductAndAssertExists(product);
+
+        // Test "findByCategory" and "countByCategory" (method name based query)
+        assertElectronicProductsByCategory();
+
+        saveProductAndAssertExists(NOT_ELECTRONIC_PRODUCT.get());
+
+        // Repeat to ensure count is unaffected
+        assertElectronicProductsByCategory();
+
+        // Test @Delete and verify with @Find
+        deleteProductAndAssertExists(product);
+    }
+
+    private void saveProductAndAssertExists(Product product) throws Exception {
         utx.begin();
-        productsSecond.save(Product.of(UUID.randomUUID(), "Sofa", "Furniture",
-                BigDecimal.valueOf(800.00), true));
+        targetedRepository.save(product);
         utx.commit();
 
-        assertTrue("Sofa should exist via secondPU", productsSecond.existsByName("Sofa"));
-        assertFalse("NonExistent should not exist via secondPU", productsSecond.existsByName("NonExistent"));
+        assertFindById(targetedRepository, product);
+        assertNotFindById(isolatedRepository, product);
+
+        assertExistsByName(targetedRepository, product);
+        assertNotExistByName(isolatedRepository, product);
+    }
+
+    private void deleteProductAndAssertExists(Product product) throws Exception {
+        utx.begin();
+        targetedRepository.deleteById(product.id);
+        utx.commit();
+
+        assertNotFindById(targetedRepository, product);
+        assertNotExistByName(targetedRepository, product);
+    }
+
+    private void assertElectronicProductsByCategory() {
+        assertElectronicProductsByCategory(targetedRepository, 1);
+        assertElectronicProductsByCategory(isolatedRepository, 0);
+    }
+
+    private void assertFindById(BasicRepository<Product, UUID> repository, Product product) {
+        var found = repository.findById(product.id);
+        assertTrue("Product should be found via " + repository.getClass(), found.isPresent());
+        assertEquals(product.name, found.get().name);
+    }
+
+    private void assertNotFindById(BasicRepository<Product, UUID> repository, Product product) {
+        var found = repository.findById(product.id);
+        assertFalse("Product should not be found via " + repository.getClass(), found.isPresent());
+    }
+
+    private void assertExistsByName(AbstractProducts repository, Product product) {
+        assertTrue(product.name + " should exist via " + repository.getClass(), repository.existsByName(product.name));
+    }
+
+    private void assertNotExistByName(AbstractProducts repository, Product product) {
+        assertFalse(product.name + " should not exist via " + repository.getClass(), repository.existsByName(product.name));
+    }
+
+    private void assertElectronicProductsByCategory(AbstractProducts repository, int expected) {
+        assertEquals(
+                "Should find " + expected + " electronic products via " + repository.getClass(),
+                expected, repository.findByCategory("Electronics").size());
+        assertEquals(
+                "Should count " + expected + " electronic products via " + repository.getClass(),
+                expected, repository.countByCategory("Electronics"));
     }
 
     /**
-     * Test delete operations through a specific PU repository.
+     * Repository bound to the "firstPU" persistence unit via dataStore.
      */
-    @Test
-    public void testDeleteViaFirstPU() throws Exception {
-        Product product = Product.of(UUID.randomUUID(), "Webcam", "Electronics",
-                BigDecimal.valueOf(59.99), true);
+    @Repository(dataStore = "firstPU")
+    private interface ProductsFirstPU extends AbstractProducts {}
 
-        utx.begin();
-        productsFirst.save(product);
-        utx.commit();
-
-        assertTrue("Product should exist before delete", productsFirst.findById(product.id).isPresent());
-
-        utx.begin();
-        productsFirst.deleteById(product.id);
-        utx.commit();
-
-        assertFalse("Product should not exist after delete", productsFirst.findById(product.id).isPresent());
-    }
+    /**
+     * Repository bound to the "secondPU" persistence unit via dataStore.
+     */
+    @Repository(dataStore = "secondPU")
+    private interface ProductsSecondPU extends AbstractProducts {}
 }
