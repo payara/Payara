@@ -97,8 +97,6 @@ public class CreateHttpListener implements AdminCommand {
     String listenerPort;
     @Param(name = "listenerPortRange", alias = "listenerportrange", optional = true)
     String listenerPortRange;
-    @Param(name = "defaultvs", optional = true)
-    String defaultVS;
     @Param(name = "default-virtual-server", optional = true)
     String defaultVirtualServer;
     @Param(name = "servername", optional = true)
@@ -268,17 +266,10 @@ public class CreateHttpListener implements AdminCommand {
     }
 
     private boolean verifyDefaultVirtualServer(ActionReport report) {
-        if (defaultVS == null && defaultVirtualServer == null) {
+        if (defaultVirtualServer == null) {
             report.setMessage(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_BLANK));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
-        }
-        if (defaultVS != null && defaultVirtualServer != null && !defaultVS.equals(defaultVirtualServer)) {
-            report.setMessage(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_BOTH_PARAMS));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return false;
-        } else if (defaultVirtualServer == null && defaultVS != null) {
-            defaultVirtualServer = defaultVS;
         }
         //no need to check the other things (e.g. id) for uniqueness
         // ensure that the specified default virtual server exists

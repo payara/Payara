@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package test.admin;
 
@@ -69,22 +70,6 @@ public class WebtierTests extends BaseAsadminTest {
             String CMD = "create-http-listener";
             Map<String, String> options = getCreateOptions();
             String operand = LISTENER_NAME;
-            String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
-            //Reporter.log("url: " + up);
-            Manifest man = super.invokeURLAndGetManifest(up);
-            String ec = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.EXIT_CODE);
-            GeneralUtils.handleManifestFailure(man);
-        }
-    }
-
-    @Test(groups = {"pulse"}, dependsOnMethods = {"ensureDeletedListenerDoesNotExist"})
-    public void createListenerWithOldParam() {
-        String operand = LISTENER_NAME + "2";
-        if (!getListeners().contains(operand)) {
-            String CMD = "create-http-listener";
-            Map<String, String> options = getCreateOptions();
-            options.put("defaultvs", options.get("default-virtual-server"));
-				options.remove("default-virtual-server");
             String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
             //Reporter.log("url: " + up);
             Manifest man = super.invokeURLAndGetManifest(up);

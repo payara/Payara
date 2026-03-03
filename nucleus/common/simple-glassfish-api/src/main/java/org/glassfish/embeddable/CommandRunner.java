@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.embeddable;
 
@@ -71,7 +72,7 @@ public interface CommandRunner {
      * <pre>
      *      commandRunner.run("create-http-listener", "--listenerport", "9090",
      *                                       "--listeneraddress", "0.0.0.0",
-     *                                       "--defaultvs", "server",
+     *                                       "--default-virtual-server", "server",
      *                                       "--securityenabled", "false",
      *                                       "listener_id", "my-http-listener-1");
      *
@@ -81,7 +82,7 @@ public interface CommandRunner {
      * <pre>
      *      commandRunner.run("create-http-listener", "--listenerport=9090",
      *                                       "--listeneraddress=0.0.0.0",
-     *                                       "--defaultvs=server",
+     *                                       "--default-virtual-server=server",
      *                                       "--securityenabled=false",
      *                                       "listener_id=my-http-listener-1");
      *
