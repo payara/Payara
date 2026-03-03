@@ -903,24 +903,6 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     /**
-     * Adds the given valve to this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to add
-     */
-    public void addAdHocValve(GlassFishValve valve) {
-        adHocPipeline.addValve(valve);
-    }
-
-    /**
-     * Removes the given valve from this web module's ad-hoc pipeline.
-     *
-     * @param valve The valve to remove
-     */
-    public void removeAdHocValve(GlassFishValve valve) {
-        adHocPipeline.removeValve(valve);
-    }
-
-    /**
      * Gets this web module's ad-hoc pipeline.
      *
      * @return This web module's ad-hoc pipeline
@@ -1056,28 +1038,8 @@ public class WebModule extends PwcWebModule implements Context {
             return;
         }
 
-        if (propName.startsWith("valve_")) {
-            addValve(propValue);
-        } else if (propName.startsWith("listener_")) {
+        if (propName.startsWith("listener_")) {
             addCatalinaListener(propValue);
-        }
-    }
-
-    /**
-     * Instantiates a <tt>Valve</tt> from the given <tt>className</tt>
-     * and adds it to the <tt>Pipeline</tt> of this WebModule.
-     *
-     * @param className the fully qualified class name of the <tt>Valve</tt>
-     */
-    protected void addValve(String className) {
-        Object valve = loadInstance(className);
-        if (valve instanceof Valve) {
-            super.addValve((Valve) valve);
-        } else if (valve instanceof GlassFishValve) {
-            super.addValve((GlassFishValve) valve);
-        } else {
-            logger.log(Level.WARNING, LogFacade.VALVE_CLASS_NAME_NO_VALVE,
-                       className);
         }
     }
 
@@ -1457,8 +1419,7 @@ public class WebModule extends PwcWebModule implements Context {
             parseAlternateDocBase(name, value);
         } else if(CACHE_TTL_APP_PROPERTY.equalsIgnoreCase(name)) {
             setCacheTTL(Integer.parseInt(value));
-        } else if(name.startsWith("valve_") ||
-            name.startsWith("listener_") ||
+        } else if(name.startsWith("listener_") ||
             name.startsWith("send-error_")) {
             // do nothing; these properties are dealt with
             // in configureCatalinaProperties()

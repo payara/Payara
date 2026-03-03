@@ -180,15 +180,6 @@ HTTP/1.1 401 MY-401-REASON
 &lt;property name="redirect_1" 
   value="from=/dummy url-prefix=http://etude"/&gt;
 </pre></dd>
-<dt><code>valve_</code><i>n</i></dt>
-<dd>
-<p>Specifies a fully qualified class name of a custom valve, where <i>n</i> is a positive integer that allows specification of more than one. The valve class must implement the <code>org.apache.catalina.Valve</code> interface from Tomcat or previous Payara Server releases, or the <code>org.glassfish.web.valve.GlassFishValve</code> interface from the current Payara Server release. For example:</p>
-<pre>
-&lt;property name="valve_1"
-value="org.glassfish.extension.Valve"/&gt;
-</pre>
-<p>You can set this property for a specific web application.</p>
-</dd>
 <dt><code>listener_</code><i>n</i></dt>
 <dd>
 <p>Specifies a fully qualified class name of a custom Catalina listener, where <i>n</i> is a positive integer that allows specification of more than one. The listener class must implement the <code>org.apache.catalina.ContainerListener</code> or <code>org.apache.catalina.LifecycleListener</code> interface. For example:</p>
