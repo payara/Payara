@@ -38,26 +38,23 @@ pipeline {
                 script {
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Fetching Build Job Artifacts  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     // Try using branch parameter instead for PR builds
-//                     def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
-//                     def repoOrg = env.CHANGE_FORK ?: 'Payara'
-//                     def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
-//                     def repoOrg = env.CHANGE_FORK ?: 'Payara'
-//
-//
-//                     // First build the build job and capture its build number
-//                     def buildJob = build job: 'Build/Build', wait: true,
-//                         parameters: [
-//                             string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-//                             string(name: 'repoOrg', value: repoOrg),
-//                             string(name: 'jdkVer', value: 'zulu-21'),
-//                             string(name: 'stream', value: 'Community'),
-//                             string(name: 'profiles', value: 'BuildEmbedded'),
-//                             booleanParam(name: 'skipTests', value: false),
-//                             string(name: 'multiThread', value: '1')
-//                         ]
-//                     def buildId = buildJob.getNumber()
+                    def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                    def repoOrg = env.CHANGE_FORK ?: 'Payara'
 
-                    buildId = "189"
+                    // First build the build job and capture its build number
+                    def buildJob = build job: 'Build/Build', wait: true,
+                        parameters: [
+                            string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                            string(name: 'repoOrg', value: repoOrg),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'stream', value: 'Community'),
+                            string(name: 'profiles', value: 'BuildEmbedded'),
+                            booleanParam(name: 'skipTests', value: false),
+                            string(name: 'multiThread', value: '1'),
+                            booleanParam(name: 'archiveMavenRepository', value: true)
+                        ]
+                    def buildId = buildJob.getNumber()
+
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#    Fetched Build Job Artifacts   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
             }
@@ -106,7 +103,7 @@ pipeline {
                          retry(3)
                     }
                      steps {
-                         processPayaraArtifacts(buildId)
+                         processPayaraArtifacts(buildId, true)
                          setupDomain()
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                          sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
@@ -588,7 +585,7 @@ pipeline {
                         retry(3)
                     }
                     steps {
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, true)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """mvn -V -B -ff clean install --strict-checksums \
@@ -685,13 +682,28 @@ void updatePomPayaraVersion(String payaraVersion) {
     sh script: "sed -i \"s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g\" pom.xml", label: "Update pom.xml payara.version property"
 }
 
-def processPayaraArtifacts(String buildId) {
+def processPayaraArtifacts(String buildId, boolean includeMavenRepo = false) {
     // Grab Payara artifact from given job
     echo "Grabbing artifacts from Build/Build: ${buildId}"
+
+    // Determine filter based on whether we need Maven repository
+    def artifactFilter = 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip'
+
+    if (includeMavenRepo) {
+        artifactFilter += ',maven-repository.zip'
+    }
+
     copyArtifacts(projectName: "Build/Build",
      selector: specific("${buildId}"),
-     filter: 'payara-bom.pom,payara-embedded-all.jar,payara-embedded-web.jar,payara-micro.jar,payara-web.zip,payara.zip',
+     filter: artifactFilter,
      target: 'artifacts/')
+
+    // If Maven repository is included, restore it
+    if (includeMavenRepo && fileExists('artifacts/maven-repository.zip')) {
+        echo "Restoring Maven repository"
+        sh 'unzip -o artifacts/maven-repository.zip -d ~/.m2/repository'
+        echo "Maven repository restored to ~/.m2/repository"
+    }
 
     def payaraHome = "${env.WORKSPACE}/payara7"
     echo "payaraHome = ${payaraHome}"
@@ -732,7 +744,6 @@ def extractPayara() {
     if (!fileExists('payara7')) {
         echo 'Extracting payara.zip...'
         sh 'unzip -q artifacts/payara.zip -d .'
-        sh 'ls -la payara7'
     } else {
         echo 'payara7 directory already exists'
     }
