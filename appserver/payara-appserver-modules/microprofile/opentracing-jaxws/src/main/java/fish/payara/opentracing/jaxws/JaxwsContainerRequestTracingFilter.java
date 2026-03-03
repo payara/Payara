@@ -436,6 +436,11 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
         private final MultivaluedMap<String, String> map;
 
+        /**
+         * Initialises this object with the MultivaluedMap to wrap.
+         *
+         * @param map The MultivaluedMap to convert to a TextMap
+         */
         public MultivaluedMapToTextMap(MultivaluedMap<String, String> map) {
             this.map = map;
         }
@@ -466,7 +471,12 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
         private Map.Entry<K, List<V>> mapEntry;
         private Iterator<V> mapEntryIterator;
 
-      
+
+        /**
+         * Initialise the iterator to use on this map.
+         *
+         * @param multiValuesEntrySet The map to initialise the iterator from.
+         */
         public MultivaluedMapIterator(Set<Map.Entry<K, List<V>>> multiValuesEntrySet) {
             this.mapIterator = multiValuesEntrySet.iterator();
         }
