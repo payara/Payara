@@ -4,6 +4,7 @@ def pom
 def DOMAIN_NAME
 def payaraBuildNumber
 def buildId
+
 pipeline {
     agent {
         label 'general-purpose'
@@ -53,6 +54,7 @@ pipeline {
                             string(name: 'multiThread', value: '1'),
                             booleanParam(name: 'archiveMavenRepository', value: true)
                         ]
+                    buildId = buildJob.getNumber()
 
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#    Fetched Build Job Artifacts   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
