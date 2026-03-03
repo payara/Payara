@@ -81,7 +81,7 @@ Additional properties applicable to a message-driven bean:
                cmp?, principal?, mdb-connection-factory?, jms-durable-subscription-name?, 
                jms-max-messages-load?, ior-security-config?, is-read-only-bean?, 
                refresh-period-in-seconds?, commit-option?, gen-classes?, 
-               bean-pool?, bean-cache?, checkpointed-methods?)>
+               bean-pool?, bean-cache?)>
 <!ATTLIST ejb availability-enabled CDATA #IMPLIED>
 <!--
 The text in this element matches the display name of the ejb to which it refers.
@@ -231,8 +231,6 @@ Possible values are FIFO | LRU | NRU. Default is NRU, which is actually
 pseudo-random selection policy.
 -->
 <!ELEMENT victim-selection-policy (#PCDATA)>
-
-<!ELEMENT checkpointed-methods (#PCDATA)>
 
 <!--
 bean-pool is a root element containing the bean pool properties. Used only for stateless session 
