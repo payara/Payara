@@ -53,7 +53,6 @@ pipeline {
                             string(name: 'multiThread', value: '1'),
                             booleanParam(name: 'archiveMavenRepository', value: true)
                         ]
-                    def buildId = buildJob.getNumber()
 
                     echo '*#*#*#*#*#*#*#*#*#*#*#*#    Fetched Build Job Artifacts   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                 }
