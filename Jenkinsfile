@@ -71,7 +71,7 @@ pipeline {
                     }
                     steps {
 
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         setupDomain()
 
@@ -132,7 +132,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -171,7 +171,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -210,8 +210,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                    steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -250,7 +249,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -289,7 +288,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -328,7 +327,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -371,7 +370,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -410,7 +409,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
@@ -449,7 +448,7 @@ pipeline {
                         retry(3)
                     }
                     steps{
-                        processPayaraArtifacts(buildId)
+                        processPayaraArtifacts(buildId, false)
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Checking out MP TCK Runners  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         checkout changelog: false, poll: false, scm: [$class: 'GitSCM',
