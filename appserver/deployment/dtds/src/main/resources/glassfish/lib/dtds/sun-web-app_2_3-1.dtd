@@ -33,6 +33,7 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 
 <!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
@@ -41,7 +42,7 @@
 <!ELEMENT sun-web-app (security-role-mapping*, servlet*, session-config?,
                        resource-env-ref*, resource-ref*,
                        ejb-ref*, cache?, class-loader?,
-                       jsp-config?, locale-charset-info?, property*)>
+                       jsp-config?, property*)>
 
 <!ELEMENT security-role-mapping (role-name, (principal-name | group-name)+)>
 <!ELEMENT role-name (#PCDATA)>
@@ -244,14 +245,6 @@ value element specifies the applicable value and a matching expression for a con
                        delegate %boolean; 'false'>
 
 <!ELEMENT jsp-config (property*)>
-
-<!ELEMENT locale-charset-info (locale-charset-map+, parameter-encoding?)>
-<!ATTLIST locale-charset-info default-locale CDATA #REQUIRED>
-
-<!ELEMENT locale-charset-map (description?)>
-<!ATTLIST locale-charset-map locale  CDATA  #REQUIRED
-                             agent   CDATA  #IMPLIED
-                             charset CDATA  #REQUIRED>
 
 <!ELEMENT parameter-encoding EMPTY>
 <!ATTLIST parameter-encoding form-hint-field CDATA #REQUIRED>
