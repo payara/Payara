@@ -39,9 +39,9 @@
  */
 package fish.payara.samples.data;
 
+import fish.payara.samples.CliCommands;
 import fish.payara.samples.data.entity.Product;
 import fish.payara.samples.data.repo.AbstractProducts;
-import jakarta.annotation.sql.DataSourceDefinition;
 import jakarta.data.repository.BasicRepository;
 import jakarta.data.repository.Repository;
 import jakarta.inject.Inject;
@@ -56,7 +56,9 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,15 +75,26 @@ import static org.junit.Assert.*;
  * and verifies that @Repository(dataStore = "...") correctly resolves each repository
  * to the appropriate persistence unit.
  */
-@DataSourceDefinition(
-        name = "java:app/jdbc/secondPU",
-        className = "org.h2.jdbcx.JdbcDataSource",
-        url = "jdbc:h2:mem:secondPU;DB_CLOSE_DELAY=-1",
-        user = "sa",
-        password = "sa"
-)
 @RunWith(Arquillian.class)
 public class MultipleDataStoreTest {
+
+    @BeforeClass
+    public static void createJdbcResource() {
+        CliCommands.payaraGlassFish("create-jdbc-connection-pool",
+                "--datasourceclassname", "org.h2.jdbcx.JdbcDataSource",
+                "--restype", "javax.sql.DataSource",
+                "--property", "URL=jdbc\\:h2\\:mem\\:secondPU\\;DB_CLOSE_DELAY\\=-1:User=sa:Password=sa",
+                "secondPU-pool");
+        CliCommands.payaraGlassFish("create-jdbc-resource",
+                "--connectionpoolid", "secondPU-pool",
+                "jdbc/secondPU");
+    }
+
+    @AfterClass
+    public static void deleteJdbcResource() {
+        CliCommands.payaraGlassFish("delete-jdbc-resource", "jdbc/secondPU");
+        CliCommands.payaraGlassFish("delete-jdbc-connection-pool", "secondPU-pool");
+    }
 
     private static final String MULTI_PU_PERSISTENCE_XML = """
             <?xml version="1.0" encoding="UTF-8"?>
@@ -103,7 +116,7 @@ public class MultipleDataStoreTest {
               </persistence-unit>
               <persistence-unit name="secondPU" transaction-type="JTA">
                 <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-                <jta-data-source>java:app/jdbc/secondPU</jta-data-source>
+                <jta-data-source>jdbc/secondPU</jta-data-source>
                 <exclude-unlisted-classes>false</exclude-unlisted-classes>
                 <properties>
                   <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
@@ -197,13 +210,15 @@ public class MultipleDataStoreTest {
         // Test "findByCategory" and "countByCategory" (method name based query)
         assertElectronicProductsByCategory();
 
-        saveProductAndAssertExists(NOT_ELECTRONIC_PRODUCT.get());
+        Product notElectronic = NOT_ELECTRONIC_PRODUCT.get();
+        saveProductAndAssertExists(notElectronic);
 
         // Repeat to ensure count is unaffected
         assertElectronicProductsByCategory();
 
         // Test @Delete and verify with @Find
         deleteProductAndAssertExists(product);
+        deleteProductAndAssertExists(notElectronic);
     }
 
     private void saveProductAndAssertExists(Product product) throws Exception {
