@@ -51,7 +51,6 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -79,6 +78,7 @@ import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.web.loader.LogFacade;
 import org.glassfish.web.loader.WebappClassLoader;
@@ -105,6 +105,7 @@ import com.sun.enterprise.util.StringUtils;
 @Service(name= WarDetector.ARCHIVE_TYPE)
 public class WarHandler extends AbstractArchiveHandler {
 
+    private static final String GLASSFISH_WEB_XML = "WEB-INF/glassfish-web.xml";
     private static final String PAYARA_WEB_XML = "WEB-INF/payara-web.xml";
     @Deprecated
     private static final String SUN_WEB_XML = "WEB-INF/sun-web.xml";
@@ -135,7 +136,9 @@ public class WarHandler extends AbstractArchiveHandler {
         try {
             WebXmlParser webXmlParser = getWebXmlParser(archive, Application.createApplication());
             versionIdentifierValue = webXmlParser.getVersionIdentifier();
-        } catch (XMLStreamException | IOException e) {
+        } catch (XMLStreamException e) {
+            logger.log(Level.SEVERE, e.getMessage());
+        } catch (IOException e) {
             logger.log(Level.SEVERE, e.getMessage());
         }
         return versionIdentifierValue;
@@ -216,8 +219,27 @@ public class WarHandler extends AbstractArchiveHandler {
 
     protected WebXmlParser getWebXmlParser(ReadableArchive archive, Application application)
             throws XMLStreamException, IOException {
-        
-        return new PayaraWebXmlParser(archive, application);
+
+        WebXmlParser webXmlParser = null;
+        File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        if (runtimeAltDDFile != null && "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) && runtimeAltDDFile.isFile()) {
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
+            logger.warning("The glassfish-web.xml file is deprecated and support will be removed in a future release."
+                + " It is recommended to use payara-web.xml instead.");
+        } else if (archive.exists(PAYARA_WEB_XML)){
+            webXmlParser = new PayaraWebXmlParser(archive, application);
+        } else if (archive.exists(GLASSFISH_WEB_XML)) {
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
+            logger.warning("The glassfish-web.xml file is deprecated and support will be removed in a future release."
+                + " It is recommended to use payara-web.xml instead.");
+        } else if (archive.exists(SUN_WEB_XML)) {
+            webXmlParser = new SunWebXmlParser(archive, application);
+            logger.warning("The sun-web.xml file is deprecated and support will be removed in a future release."
+                + " It is recommended to use payara-web.xml instead.");
+        } else { // default
+            webXmlParser = new GlassFishWebXmlParser(archive, application);
+        }
+        return webXmlParser;
     }
 
     protected void configureLoaderAttributes(WebappClassLoader cloader,
@@ -493,7 +515,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
         public abstract String getCookieSameSiteValue();
     }
-    
+
     @Deprecated
     protected class SunWebXmlParser extends WebXmlParser {
         //XXX need to compute the default delegate depending on the version of dtd
@@ -624,7 +646,26 @@ public class WarHandler extends AbstractArchiveHandler {
         protected void readCookieConfig() throws XMLStreamException {}
     }
 
-    protected class PayaraWebXmlParser extends SunWebXmlParser {
+    @Deprecated
+    protected class GlassFishWebXmlParser extends SunWebXmlParser {
+        GlassFishWebXmlParser(ReadableArchive archive, Application application)
+                throws XMLStreamException, IOException {
+
+            super(archive, application);
+        }
+
+        @Override
+        protected String getXmlFileName() {
+            return GLASSFISH_WEB_XML;
+        }
+
+        @Override
+        protected String getRootElementName() {
+            return "glassfish-web-app";
+        }
+    }
+    
+    protected class PayaraWebXmlParser extends GlassFishWebXmlParser {
         private String cookieSameSiteValue;
 
         PayaraWebXmlParser(ReadableArchive archive, Application application)
