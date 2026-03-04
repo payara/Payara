@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resources.module;
 
@@ -132,7 +132,9 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
 
     private final static Logger _logger = LogDomains.getLogger(ResourcesDeployer.class, LogDomains.RSR_LOGGER);
 
+    @Deprecated
     private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
+    @Deprecated
     private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
     private static final String PAYARA_RESOURCES_XML_META_INF = "META-INF/payara-resources.xml";
     private static final String PAYARA_RESOURCES_XML_WEB_INF = "WEB-INF/payara-resources.xml";

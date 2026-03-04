@@ -56,7 +56,7 @@
     <sun:head title="$resource{i18n.helpWindowTitle}" debug="false" parseOnLoad="false">
 	<sun:link url="/resource/common/help/help.css" />
 	<sun:script url="/resource/common/js/adminjsf.js" />
-	<h:outputScript name="jsf.js" library="jakarta.faces" target="head" />
+	<h:outputScript name="faces.js" library="jakarta.faces" target="head" />
     </sun:head>
     <sun:body id="bodyTag" style="display:none;" onLoad="admingui.help.fixTreeOnclick(document.getElementById('tocTree')); admingui.help.fixTreeOnclick(document.getElementById('indexTree')); admingui.help.loadHelpPageFromContextRef('#{pageSession.contextRef}', 'helpContent'); document.getElementById('bodyTag').style.display='block';">
 	"<div id="menuContent" class="helpMenuBox">
