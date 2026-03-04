@@ -10,7 +10,7 @@ pipeline {
         label 'general-purpose'
     }
     options {
-        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '14'))
+        buildDiscarder(logRotator(numToKeepStr: '5', daysToKeepStr: '14'))
     }
     environment {
         MP_METRICS_TAGS='tier=integration'
@@ -608,12 +608,10 @@ void makeDomain() {
 
 void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up domain  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    sh 'ls -la'
-    sh 'ls -la payara7'
-    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     makeDomain()
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database || true"
+    echo '*#*#*#*#*#*#*#*#*#*#*#*#  Domain setup complete  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 }
 
 void processReportAndStopDomain() {
@@ -696,9 +694,6 @@ void processPayaraArtifacts(String buildId, boolean restoreMavenRepo = false) {
         sed -i "s/payara\\.version>.*<\\/payara\\.version>/payara\\.version>${payaraVersion}<\\/payara\\.version>/g" pom.xml
     """
     sh updatePayaraVersionScript
-
-    archiveArtifacts artifacts: 'artifacts/payara.zip', fingerprint: true
-    archiveArtifacts artifacts: 'artifacts/payara-micro.jar', fingerprint: true
 }
 
 def extractPayara() {
