@@ -1,8 +1,9 @@
 /*
+ *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- *  Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
- * 
+ *
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
  *  and Distribution License("CDDL") (collectively, the "License").  You
@@ -11,23 +12,20 @@
  *  https://github.com/payara/Payara/blob/main/LICENSE.txt
  *  See the License for the specific
  *  language governing permissions and limitations under the License.
- * 
- *  When distributing the software, include this License Header Notice in each
- *  file and include the License.
- * 
+ *
  *  When distributing the software, include this License Header Notice in each
  *  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
- * 
+ *
  *  GPL Classpath Exception:
  *  The Payara Foundation designates this particular file as subject to the "Classpath"
  *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  *  file that accompanied this code.
- * 
+ *
  *  Modifications:
  *  If applicable, add the following below the License Header, with the fields
  *  enclosed by brackets [] replaced by your own identifying information:
  *  "Portions Copyright [year] [name of copyright owner]"
- * 
+ *
  *  Contributor(s):
  *  If you wish your version of this file to be governed by only the CDDL or
  *  only the GPL Version 2, indicate your decision by adding "[Contributor]
@@ -40,56 +38,45 @@
  *  only if the new code is made subject to such option by the copyright
  *  holder.
  *
- * This file incorporates work covered by the following copyright and
- * permission notice:
- *
- * Copyright 2016-2018 The OpenTracing Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
  */
+
 package fish.payara.opentracing;
 
-import io.opentracing.Span;
+import java.util.UUID;
 
-/**
- * Implementation of Scope from OpenTracing.
- * 
- * @author jonathan coustick
- * @since 5.183
- */
-@Deprecated
-public class OpenTracingScope implements io.opentracing.Scope {
+import org.junit.Test;
 
-    private final Span currentSpan;
-    private final OpenTracingScope previouslyActiveScope;
-    private final ScopeManager scopeManager;
+import static org.junit.Assert.assertEquals;
 
-    OpenTracingScope(ScopeManager scopeManager, Span spanToActivate) {
-        this.scopeManager = scopeManager;
-        this.currentSpan = spanToActivate;
-        previouslyActiveScope = (OpenTracingScope) scopeManager.activeScope();
-        scopeManager.activeScope.set(this);
+public class OpenTelemetryTraceConversionTest {
+    @Test
+    public void testLargeNegativeNumber() {
+        long result = PayaraRequestTracingProcessor.parseUnsignedHex("bf0cf4c8ddd9ae8b", 0, 0);
+        assertEquals(0xbf0cf4c8ddd9ae8bL, result);
+        result = PayaraRequestTracingProcessor.parseUnsignedHex("bf0cf4c8ddd9ae8bbf0cf4c8ddd9ae8b", 16, 0);
+        assertEquals(0xbf0cf4c8ddd9ae8bL, result);
     }
 
-    @Override
-    public void close() {
-        if (scopeManager.activeScope.get() != this) {
-            // This shouldn't happen if users call methods in the expected order. Bail out.
-            return;
-        }
-
-        scopeManager.activeScope.set(previouslyActiveScope);
+    // Long.parseLong will not parse longs that would translate to negative ones
+    @Test(expected = NumberFormatException.class)
+    public void testStandardParser() {
+        long result = Long.parseLong("bf0cf4c8ddd9ae8b", 16);
+        assertEquals(0xbf0cf4c8ddd9ae8bL, result);
     }
 
-    Span span() {
-        return currentSpan;
+    @Test
+    public void testShorterTraceId() {
+        test(0,0, "0");
+        test(0,0, "00");
+        test(0,0, "0000000000000000");
+        test(0,0, "00000000000000000");
+        test(1, 0,"10000000000000000");
+        test(0, 0, "");
+        // long input gets truncated at 32 characters
+        test(0x1234_1234_1234_1234L, 0xABCD_ABCD_ABCD_ABCDL, "1234123412341234abcdabcdabcdabcde");
+    }
+
+    private void test(long high, long low, String input) {
+        assertEquals(new UUID(high, low), PayaraRequestTracingProcessor.parseTraceId(input));
     }
 }

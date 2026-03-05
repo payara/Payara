@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016-2025 Payara Foundation. All rights reserved.
+ Copyright (c) 2016-2026 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -37,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>opentracing-adapter</artifactId>
+            <artifactId>opentelemetry-tracing-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

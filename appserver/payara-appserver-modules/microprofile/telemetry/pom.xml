@@ -65,7 +65,7 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>opentracing-adapter</artifactId>
+            <artifactId>opentelemetry-tracing-starter</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
