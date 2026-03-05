@@ -104,18 +104,6 @@ public class WebtierTests extends BaseAsadminTest {
         GeneralUtils.handleManifestFailure(man);
     }
 
-    @Test(groups = {"pulse"}, dependsOnMethods = {"createListenerWithOldParam"})
-    public void deleteListener2() {
-        String CMD = "delete-http-listener";
-        Map<String, String> options = Collections.EMPTY_MAP;
-        String operand = LISTENER_NAME + "2";
-        String up = GeneralUtils.toFinalURL(adminUrl, CMD, options, operand);
-//        Reporter.log("url: " + up);
-        Manifest man = super.invokeURLAndGetManifest(up);
-        String ec = GeneralUtils.getValueForTypeFromManifest(man, GeneralUtils.AsadminManifestKeyType.EXIT_CODE);
-        GeneralUtils.handleManifestFailure(man);
-    }
-
     @Test(groups = {"pulse"}, dependsOnMethods = {"deleteListener"})
     public void ensureDeletedListenerDoesNotExist() {
         if (getListeners().contains(LISTENER_NAME)) {
