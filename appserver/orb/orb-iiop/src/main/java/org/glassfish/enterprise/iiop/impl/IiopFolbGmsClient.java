@@ -398,7 +398,7 @@ public class IiopFolbGmsClient implements ClusterListener {
                     fineLog("getAllClusterInstanceInfo: serverConfig {0}", serverConfig.getName());
 
                     if (serverConfig != null) {
-                        result.put(server.getName(), getClusterInstanceInfo(myServer, myConfig, false));
+                        result.put(server.getName(), getClusterInstanceInfo(server, myConfig, false));
                     }
                 }
             }
