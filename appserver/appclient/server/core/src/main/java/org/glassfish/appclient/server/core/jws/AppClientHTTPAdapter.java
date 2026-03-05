@@ -399,8 +399,10 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
     }
 
     /**
-     * Returns the expression "-targetserver=host:port[,...]" representing the
+     * Returns the expression "host:port[,...]" representing the
      * currently-active ORBs to which the ACC could attempt to bootstrap.
+     * The preceding "-targetserver=" gets added by the constructor of
+     * {@link ACCArgQueryParams}
      * @return
      */
     private String targetServerSetting(final Properties props) {
