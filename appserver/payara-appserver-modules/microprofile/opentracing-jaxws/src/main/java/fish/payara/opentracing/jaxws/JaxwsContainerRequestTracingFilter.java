@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2018-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,15 +44,12 @@ import com.sun.xml.ws.api.message.Packet;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import fish.payara.opentracing.ScopeManager;
+
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
 import io.opentracing.propagation.TextMap;
-
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
@@ -76,6 +73,7 @@ import jakarta.xml.soap.SOAPException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.opentracing.Traced;
+import io.opentracing.Tracer;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.webservices.monitoring.MonitorContext;
@@ -90,17 +88,17 @@ import static io.opentracing.tag.Tags.HTTP_STATUS;
 import static io.opentracing.tag.Tags.HTTP_URL;
 import static io.opentracing.tag.Tags.SPAN_KIND;
 import static io.opentracing.tag.Tags.SPAN_KIND_SERVER;
+import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
+import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static java.util.Collections.list;
+import static jakarta.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
 import static java.util.Collections.singletonMap;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
-import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
-import static jakarta.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
-import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
-import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
 
 
 @Service(name = "jaxws-opentracing-filter")
@@ -137,7 +135,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
 
                 // Create a Span and instrument it with details about the request
-                SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
+                Tracer.SpanBuilder spanBuilder = tracer.buildSpan(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
                         .withTag(SPAN_KIND.getKey(), SPAN_KIND_SERVER)
                         .withTag(HTTP_METHOD.getKey(), httpRequest.getMethod())
                         .withTag(HTTP_URL.getKey(),  httpRequest.getRequestURL().toString())
@@ -159,7 +157,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
                 // Start the span and continue on to the targeted method
                 Scope scope = tracer.activateSpan(spanBuilder.start());
                 httpRequest.setAttribute(Scope.class.getName(), scope);
-            }
+            } 
         }
     }
 
@@ -472,6 +470,7 @@ public class JaxwsContainerRequestTracingFilter implements MonitorFilter {
 
         private Map.Entry<K, List<V>> mapEntry;
         private Iterator<V> mapEntryIterator;
+
 
         /**
          * Initialise the iterator to use on this map.
