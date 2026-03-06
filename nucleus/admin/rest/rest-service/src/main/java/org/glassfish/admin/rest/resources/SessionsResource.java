@@ -157,28 +157,30 @@ public class SessionsResource extends AbstractResource {
     private static DasConfig getDASConfig(ServiceLocator habitat) {
         if (dasConfig == null) {
             synchronized (SessionsResource.class) {
-                if (dasConfig == null) {
-                    if (habitat == null) {
-                        return null;
-                    }
-
-                    Domain domain = Globals.getDefaultBaseServiceLocator().getService(Domain.class);
-                    if (domain == null) {
-                        return null;
-                    }
-
-                    Config config = domain.getConfigNamed("server-config");
-                    if (config == null) {
-                        return null;
-                    }
-
-                    AdminService adminService = config.getAdminService();
-                    if (adminService == null) {
-                        return null;
-                    }
-
-                    dasConfig = adminService.getDasConfig();
+                if (dasConfig != null) {
+                    return dasConfig;
                 }
+
+                if (habitat == null) {
+                    return null;
+                }
+
+                Domain domain = Globals.getDefaultBaseServiceLocator().getService(Domain.class);
+                if (domain == null) {
+                    return null;
+                }
+
+                Config config = domain.getConfigNamed("server-config");
+                if (config == null) {
+                    return null;
+                }
+
+                AdminService adminService = config.getAdminService();
+                if (adminService == null) {
+                    return null;
+                }
+
+                dasConfig = adminService.getDasConfig();
             }
         }
 
