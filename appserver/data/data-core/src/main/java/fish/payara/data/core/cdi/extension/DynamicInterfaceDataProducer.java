@@ -45,6 +45,7 @@ import jakarta.data.repository.Delete;
 import jakarta.data.repository.Find;
 import jakarta.data.repository.Insert;
 import jakarta.data.repository.Query;
+import jakarta.data.repository.Repository;
 import jakarta.data.repository.Save;
 import jakarta.data.repository.Update;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -58,6 +59,7 @@ import jakarta.enterprise.inject.spi.PassivationCapable;
 import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.Table;
 
 import java.lang.annotation.Annotation;
@@ -79,6 +81,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import static fish.payara.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
+import static fish.payara.data.core.util.DataCommonOperationUtility.getEntityManagerSupplier;
 import static fish.payara.data.core.util.DataCommonOperationUtility.preprocesEntityMetadata;
 
 /**
@@ -94,8 +97,9 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private Class<T> repository;
     private BeanManager beanManager;
     private JakartaDataExtension jakartaDataExtension;
+    private String dataStore;
     private Set<Type> beanTypes = null;
-    private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
+    private Map<Class<?>, List<QueryMetadata>> queriesForEntity = new HashMap<>();
     private Map<Class<?>, EntityMetadata> mapOfMetaData = new HashMap<>();
     private Predicate<Method> methodAnnotationValidationPredicate = method -> method.getParameterCount() == 1 &&
             !method.isDefault() && (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
@@ -111,12 +115,17 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         this.beanManager = beanManager;
         this.jakartaDataExtension = jakartaDataExtension;
         this.beanTypes = Set.of(instance);
+        Repository repositoryAnnotation = instance.getAnnotation(Repository.class);
+        if (repositoryAnnotation != null) {
+            String ds = repositoryAnnotation.dataStore();
+            this.dataStore = Repository.DEFAULT_DATA_STORE.equals(ds) ? null : ds;
+        }
         processQueriesForEntity();
     }
 
     @Override
     public T produce(CreationalContext<T> creationalContext) {
-        RepositoryImpl<?> handler = new RepositoryImpl<>(repository, queriesForEntity, jakartaDataExtension.getApplicationName());
+        RepositoryImpl<?> handler = new RepositoryImpl<>(repository, queriesForEntity, jakartaDataExtension.getApplicationName(), dataStore);
         return (T) Proxy.newProxyInstance(repository.getClassLoader(), new Class[]{repository},
                 handler);
     }
@@ -170,6 +179,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         logger.info("Processing query for entity class: " + repository);
         //get entity type
         Class<?> declaredEntityClass = getEntityType(this.repository);
+        EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get();
         logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
         for (Method method : this.repository.getMethods()) {
             logger.info("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
@@ -179,7 +189,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             }
             Class<?> entityParamType = null;
             entityParamType = getEntityParamClass(method);
-            addQueries(repository, declaredEntityClass, entityParamType, method);
+            addQueries(entityManager, repository, declaredEntityClass, entityParamType, method);
         }
     }
 
@@ -326,8 +336,8 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @param entityParamType
      * @param method
      */
-    public void addQueries(Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
-        List<QueryData> queries;
+    private void addQueries(EntityManager entityManager, Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
+        List<QueryMetadata> queries;
         queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
         QueryType queryType = null;
         if (method.isAnnotationPresent(Save.class)) {
@@ -354,42 +364,27 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 queryType = QueryType.FIND_BY_NAME;
             }
         }
-        QueryData dataForQuery = new QueryData(repository, method, declaredEntityClass, entityParamType,
-                queryType, preprocesEntityMetadata(repository, mapOfMetaData, declaredEntityClass, method, this.jakartaDataExtension.getApplicationName()));
 
         try {
-            evaluateDataQuery(dataForQuery, method);
-            queries.add(dataForQuery);
-        } catch (MappingException e) {
-            logger.warning(e.getMessage());
-        }
-    }
+            Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
+            if (entityTypeInMethod != null) {
+                declaredEntityClass = entityTypeInMethod;
+            }
+            else if (declaredEntityClass == null) {
+                throw new MappingException(
+                        String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                        "Either extend a repository interface with entity type parameters or " +
+                                        "ensure entity type is determinable from method signature.",
+                                method.getName(), method.getDeclaringClass().getName())
+                );
+            }
 
-    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
-        if (dataForQuery.getDeclaredEntityClass() == null) {
-            Class<?> entityType = findEntityTypeInMethod(method);
-            if (entityType != null) {
-                dataForQuery.setDeclaredEntityClass(entityType);
-                return;
-            }
-            Class<?> declaringClass = method.getDeclaringClass();
-            Method[] allMethods = declaringClass.getMethods();
-            for (Method interfaceMethod : allMethods) {
-                if (interfaceMethod.equals(method)) {
-                    continue;
-                }
-                entityType = findEntityTypeInMethod(interfaceMethod);
-                if (entityType != null) {
-                    dataForQuery.setDeclaredEntityClass(entityType);
-                    return;
-                }
-            }
-            throw new MappingException(
-                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                    "Either extend a repository interface with entity type parameters or " +
-                                    "ensure entity type is determinable from method signature.",
-                            method.getName(), declaringClass.getName())
-            );
+            queries.add(new QueryMetadata(
+                    repository, method, declaredEntityClass, entityParamType,
+                    queryType, preprocesEntityMetadata(mapOfMetaData, entityManager, declaredEntityClass, method)));
+        }
+        catch (MappingException e) {
+            logger.warning(e.getMessage());
         }
     }
 
