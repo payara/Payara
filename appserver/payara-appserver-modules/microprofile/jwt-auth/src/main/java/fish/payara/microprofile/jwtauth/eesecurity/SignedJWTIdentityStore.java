@@ -48,6 +48,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.jwt.config.Names;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Arrays;
@@ -149,12 +150,12 @@ public class SignedJWTIdentityStore implements IdentityStore {
     }
 
     public static Optional<Properties> readVendorProperties() {
-        URL mpJwtResource = currentThread().getContextClassLoader().getResource("/payara-mp-jwt.properties");
+        URL mpJwtResource = currentThread().getContextClassLoader().getResource("payara-mp-jwt.properties");
         Properties properties = null;
         if (mpJwtResource != null) {
-            try {
-                properties = new Properties();
-                properties.load(mpJwtResource.openStream());
+            properties = new Properties();
+            try (InputStream is = mpJwtResource.openStream()) {
+                properties.load(is);
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to load Vendor properties from resource file", e);
             }
