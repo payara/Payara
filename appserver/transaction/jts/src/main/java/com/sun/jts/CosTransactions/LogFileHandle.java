@@ -151,8 +151,8 @@ class LogFileHandle {
     /**
      * Instance information.
      */
-    CleanableFileHandleState state = new CleanableFileHandleState();
-    Cleaner.Cleanable cleanable = null;
+    private CleanableFileHandleState state = new CleanableFileHandleState();
+    private Cleaner.Cleanable cleanable = null;
 
     static {
         dsyncProp = System.getProperty(DSYNC_PROPERTY);
@@ -162,7 +162,7 @@ class LogFileHandle {
         }
     }
 
-    static class CleanableFileHandleState implements Runnable {
+    private static class CleanableFileHandleState implements Runnable {
 
         private RandomAccessFile fhandle = null;
         private FileDescriptor   fd      = null;
