@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -118,15 +118,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  * @version
  */
 public class DOLUtils {
-    /** The system property to control the precedence between GF DD
-     // and WLS DD when they are both present. When this property is
-     // set to true, GF DD will have higher precedence over WLS DD. */
-    private static final String GFDD_OVER_WLSDD = "gfdd.over.wlsdd";
 
-    /** The system property to control whether we should just ignore
-     // WLS DD. When this property is set to true, WLS DD will be ignored.*/
-    private static final String IGNORE_WLSDD = "ignore.wlsdd";
-    
     public final static String W3C_XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
     public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";
 
@@ -382,31 +374,26 @@ public class DOLUtils {
     // this list does not take consideration of what runtime files are
     // present in the current archive */
     private static List<ConfigurationDeploymentDescriptorFile> sortConfigurationDDFiles(List<ConfigurationDeploymentDescriptorFile> ddFiles, ArchiveType archiveType, ReadableArchive archive) {
-        ConfigurationDeploymentDescriptorFile wlsConfDD = null;
         ConfigurationDeploymentDescriptorFile payaraConfDD = null;
         ConfigurationDeploymentDescriptorFile gfConfDD = null;
         ConfigurationDeploymentDescriptorFile sunConfDD = null;
-        
         for (ConfigurationDeploymentDescriptorFile ddFile : ddFiles) {
             ddFile.setArchiveType(archiveType);
             String ddPath = ddFile.getDeploymentDescriptorPath();
-            boolean isWebXML = ddPath.contains("-web.xml");
-            
-            if (ddPath.contains(DescriptorConstants.WLS) && !isWebXML) {
-                wlsConfDD = ddFile;
-            } else if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX)) {
+            if (ddPath.contains(DescriptorConstants.PAYARA_PREFIX)){
                 payaraConfDD = ddFile;
-            } else if (ddPath.contains(DescriptorConstants.GF_PREFIX) && !isWebXML) {
+            } else if (ddPath.contains(DescriptorConstants.GF_PREFIX)) {
                 gfConfDD = ddFile;
-            } else if (ddPath.contains(DescriptorConstants.S1AS_PREFIX) && !isWebXML) {
+            } else if (ddPath.contains(DescriptorConstants.S1AS_PREFIX)) {
                 sunConfDD = ddFile;
             }
         }
-        
         List<ConfigurationDeploymentDescriptorFile> sortedConfDDFiles = new ArrayList<>();
+
         // if there is external runtime alternate deployment descriptor
         // specified, just use that
-        File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+        File runtimeAltDDFile = archive.getArchiveMetaData(
+            DeploymentProperties.RUNTIME_ALT_DD, File.class);
         if (runtimeAltDDFile != null && runtimeAltDDFile.exists() && runtimeAltDDFile.isFile()) {
             String runtimeAltDDPath = runtimeAltDDFile.getPath();
             validateRuntimeAltDDPath(runtimeAltDDPath);
@@ -422,38 +409,11 @@ public class DOLUtils {
         // sort the deployment descriptor files by precedence order
         // when they are present in the same archive
 
-        if (Boolean.valueOf(System.getProperty(GFDD_OVER_WLSDD))) {
-            // if this property set, it means we need to make GF deployment
-            // descriptors higher precedence then weblogic
-            if (payaraConfDD != null){
-                sortedConfDDFiles.add(payaraConfDD);
-            }
-            if (gfConfDD != null) {
-                sortedConfDDFiles.add(gfConfDD);
-            }
-            if (wlsConfDD != null) {
-                sortedConfDDFiles.add(wlsConfDD);
-            }
-        } else if (Boolean.valueOf(System.getProperty(IGNORE_WLSDD))) {
-            // if this property set, it means we need to ignore
-            // WLS deployment descriptors
-            if (gfConfDD != null) {
-                sortedConfDDFiles.add(gfConfDD);
-            }
-            if (payaraConfDD != null){
-                sortedConfDDFiles.add(payaraConfDD);
-            }
-        } else  {
-            // the default will be WLS DD has higher precedence
-            if (wlsConfDD != null) {
-                sortedConfDDFiles.add(wlsConfDD);
-            }
-            if (payaraConfDD != null){
-                sortedConfDDFiles.add(payaraConfDD);
-            }
-            if (gfConfDD != null) {
-                sortedConfDDFiles.add(gfConfDD);
-            }
+        if (payaraConfDD != null){
+            sortedConfDDFiles.add(payaraConfDD);
+        }
+        if (gfConfDD != null) {
+            sortedConfDDFiles.add(gfConfDD);
         }
 
         if (sunConfDD != null) {

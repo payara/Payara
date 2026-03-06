@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,47 +37,35 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.data.core.util;
+package fish.payara.samples.data.entity;
 
-import fish.payara.data.core.cdi.extension.QueryData;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.TransactionManager;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.UUID;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import static fish.payara.data.core.util.DataCommonOperationUtility.endTransaction;
-import static fish.payara.data.core.util.DataCommonOperationUtility.processReturnType;
-import static fish.payara.data.core.util.DataCommonOperationUtility.startTransactionAndJoin;
+@Entity
+@Table(name = "Product")
+public class Product {
+    @Id
+    public UUID id;
 
-/**
- * Utility class to process Insert and Save operations
- */
-public class InsertAndSaveOperationUtility {
+    public String name;
 
+    public String category;
 
-    public static Object processInsertAndSaveOperationForArray(Object[] args, TransactionManager tm,
-                                                       EntityManager em, QueryData dataForQuery) throws SystemException,
-            NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException {
-        int length = Array.getLength(args[0]);
-        List<Object> results = null;
-        results = new ArrayList<>(length);
-        startTransactionAndJoin(tm, em, dataForQuery);
-        for (int i = 0; i < length; i++) {
-            em.persist(Array.get(args[0], i));
-            results.add(Array.get(args[0], i));
-        }
-        endTransaction(tm, em, dataForQuery);
+    public static Product of(UUID id, String name, String category) {
+        Product p = new Product();
+        p.id = id;
+        p.name = name;
+        p.category = category;
+        return p;
+    }
 
-        if (!results.isEmpty()) {
-            return processReturnType(dataForQuery.getQueryMetadata(), results);
-        }
-
-        return null;
+    @Override
+    public String toString() {
+        return "Product@" + Integer.toHexString(hashCode()) + ":" + id + ":" + name + ":" + category;
     }
 }
