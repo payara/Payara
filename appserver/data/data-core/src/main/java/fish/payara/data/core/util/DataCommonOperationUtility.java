@@ -41,6 +41,7 @@ package fish.payara.data.core.util;
 
 import fish.payara.data.core.cdi.extension.EntityMetadata;
 import fish.payara.data.core.cdi.extension.QueryData;
+import fish.payara.data.core.cdi.extension.QueryMetadata;
 import jakarta.data.Limit;
 import jakarta.data.Order;
 import jakarta.data.Sort;
@@ -78,6 +79,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.glassfish.internal.api.Globals;
@@ -91,7 +93,7 @@ import static fish.payara.data.core.cdi.extension.DynamicInterfaceDataProducer.i
  */
 public class DataCommonOperationUtility {
 
-    private static final String PERSISTENCE_UNIT_ENABLED_PROPERTY = "fish.payara.data.usePU";
+    private static final String EMF_NAME_KEY = EntityManagerFactory.class.toString() + "_nameMap";
 
     public static Predicate<Class<?>> evaluateReturnTypeVoidPredicate = returnType -> void.class.equals(returnType)
             || Void.class.equals(returnType);
@@ -99,7 +101,7 @@ public class DataCommonOperationUtility {
     public static final Predicate<Method> paginationPredicate = m -> Page.class.equals(m.getReturnType()) ||
             CursoredPage.class.equals(m.getReturnType());
 
-    public static Object processReturnType(QueryData dataForQuery, List<Object> results) {
+    public static Object processReturnType(QueryMetadata dataForQuery, List<Object> results) {
         Class<?> returnType = dataForQuery.getMethod().getReturnType();
 
         if (evaluateReturnTypeVoidPredicate.test(returnType)) {
@@ -149,32 +151,34 @@ public class DataCommonOperationUtility {
         return results.get(0);
     }
 
-    public static EntityManager getEntityManager(String applicationName) {
+    public static Supplier<EntityManager> getEntityManagerSupplier(String applicationName, String dataStore) {
         ApplicationRegistry applicationRegistry = getRegistry();
         ApplicationInfo applicationInfo = applicationRegistry.get(applicationName);
         List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
+
         if (factoryList.size() == 1) {
-            EntityManagerFactory factory = factoryList.getFirst();
-            return factory.createEntityManager();
+            EntityManagerFactory entityManagerFactory = factoryList.getFirst();
+            return () -> entityManagerFactory.createEntityManager();
         }
 
-        List<EntityManagerFactory> result = factoryList.stream().filter(factory -> {
-            Map<String, Object> properties = factory.getProperties();
-            if (properties == null || properties.isEmpty()) {
-                return false;
+        if (dataStore != null && !dataStore.isEmpty()) {
+            @SuppressWarnings("unchecked")
+            Map<String, EntityManagerFactory> emfNameMap = applicationInfo.getTransientAppMetaData(EMF_NAME_KEY, Map.class);
+            if (emfNameMap != null && emfNameMap.containsKey(dataStore)) {
+                EntityManagerFactory entityManagerFactory = emfNameMap.get(dataStore);
+                return () -> entityManagerFactory.createEntityManager();
             }
-            if (!properties.containsKey(PERSISTENCE_UNIT_ENABLED_PROPERTY)) {
-                return false;
-            }
-            return Boolean.parseBoolean((String) properties.get(PERSISTENCE_UNIT_ENABLED_PROPERTY));
-        }).toList();
 
-        if (result.size() == 1) {
-            EntityManagerFactory factory = result.getFirst();
-            return factory.createEntityManager();
+            throw new AmbiguousPersistenceUnitException(String.format(
+                    "For the application '%s', no persistence unit found matching dataStore '%s'. "
+                            + "Ensure the @Repository(dataStore) value matches a persistence unit name defined in persistence.xml.",
+                    applicationName, dataStore));
         }
 
-        throw new AmbiguousPersistenceUnitException(String.format("For the application '%s', specify a single persistence unit for Jakarta Data by setting the property '%s' to 'true' in its persistence.xml.", applicationName, PERSISTENCE_UNIT_ENABLED_PROPERTY));
+        throw new AmbiguousPersistenceUnitException(String.format(
+                "For the application '%s', multiple persistence units are defined. "
+                        + "Use @Repository(dataStore = \"<persistence-unit-name>\") to specify which persistence unit to use.",
+                applicationName));
     }
 
     public static ApplicationRegistry getRegistry() {
@@ -182,8 +186,8 @@ public class DataCommonOperationUtility {
         return registry;
     }
 
-    public static EntityMetadata preprocesEntityMetadata(Class<?> repository, Map<Class<?>, EntityMetadata> mapOfMetaData, Class<?> declaredEntityClass,
-                                                         Method method, String applicationName) {
+    public static EntityMetadata preprocesEntityMetadata(Map<Class<?>, EntityMetadata> mapOfMetaData, EntityManager entityManager, Class<?> declaredEntityClass,
+                                                         Method method) {
         if (declaredEntityClass == null) {
             declaredEntityClass = findEntityTypeInMethod(method);
         }
@@ -191,7 +195,6 @@ public class DataCommonOperationUtility {
         if (mapOfMetaData != null && mapOfMetaData.containsKey(declaredEntityClass)) {
             return mapOfMetaData.get(declaredEntityClass);
         }
-        EntityManager entityManager = getEntityManager(applicationName);
         Metamodel metamodel = entityManager.getMetamodel();
         try {
             for (EntityType<?> entityType : metamodel.getEntities()) {
@@ -328,11 +331,11 @@ public class DataCommonOperationUtility {
         }
     }
 
-    public static Object[] getCursorValues(Object entity, List<Sort<?>> sorts, QueryData queryData) {
+    public static Object[] getCursorValues(Object entity, List<Sort<?>> sorts, QueryMetadata queryMetadata) {
         ArrayList<Object> cursorValues = new ArrayList<>();
         for (Sort<?> sort : sorts)
             try {
-                Member member = queryData.getEntityMetadata().getAttributeAccessors().get(sort.property());
+                Member member = queryMetadata.getEntityMetadata().getAttributeAccessors().get(sort.property());
                 Object value = entity;
 
                 if (member instanceof Method) {
@@ -372,7 +375,7 @@ public class DataCommonOperationUtility {
         if (upper.contains(" ORDER BY ")) {
             throw new IllegalArgumentException("The query cannot contain multiple ORDER BY keywords : '" + sortedQuery + "'");
         }
-        EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
+        EntityMetadata entityMetadata = dataForQuery.getQueryMetadata().getEntityMetadata();
         StringBuilder sortCriteria = new StringBuilder(" ORDER BY ");
         boolean firstItem = true;
         for (Sort<?> sort : sortList) {
