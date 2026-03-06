@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -245,7 +245,13 @@ public class PayaraCluster implements MembershipListener, EventListener {
             message.append("Instances: {").append(NL);
             for (Member member : members) {
                 String name = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
+                if (name == null) {
+                    name =  member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+                }
                 String group = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                if (group == null) {
+                    name =  member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                }
                 message.append(" DataGrid: ").append(dataGridName);
                 if (group != null) {
                     message.append(" Instance Group: ").append(group);

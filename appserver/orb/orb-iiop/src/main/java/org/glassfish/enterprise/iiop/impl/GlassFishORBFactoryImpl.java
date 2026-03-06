@@ -139,6 +139,6 @@ public class GlassFishORBFactoryImpl implements GlassFishORBFactory, PostConstru
     
     @Override
     public boolean isClusterActive() {
-        return false;
+    	return gfORBManager.isClusterActive();
     }
 }
