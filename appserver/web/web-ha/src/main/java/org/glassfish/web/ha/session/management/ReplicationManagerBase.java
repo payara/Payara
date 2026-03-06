@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.ha.session.management;
 
@@ -108,6 +108,12 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
         if(_logger.isLoggable(Level.FINE)) {
             _logger.fine("in findSession: version=" + version);
         }
+
+        if (isRelaxCacheVersionSemantics() && version == null) {
+            _logger.fine("Relaxed cache version semantics enabled and version is null, treating as version 0");
+            version = "0";
+        }
+
         if(!this.isSessionIdValid(id) || version == null) {
             return null;
         }
