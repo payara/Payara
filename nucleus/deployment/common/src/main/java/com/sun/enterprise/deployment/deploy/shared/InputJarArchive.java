@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] Payara Foundation and/or affiliates
+// Portions Copyright [2022-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.deploy.shared;
 
@@ -209,7 +209,7 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
     }
 
     /**
-     * @return and @see java.util.Enumeration of entries in this abstract
+     * @return an @see java.util.Enumeration of entries in this abstract
      * archive, providing the list of embedded archive to not count their
      * entries as part of this archive
      */
