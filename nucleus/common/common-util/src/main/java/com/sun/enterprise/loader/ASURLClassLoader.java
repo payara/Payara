@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- // Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+ // Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -967,7 +967,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
         static class CleanableURLEntryState implements Runnable {
 
-            private final ProtectedJarFile zip;
+            private ProtectedJarFile zip;
             private final URL source;
             private final Logger logger;
 
@@ -979,12 +979,17 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
             @Override
             public void run() {
+                if (zip == null) {
+                    return;
+                }
                 try {
                     zip.reallyClose();
                 } catch (IOException ioe) {
                     logger.log(Level.INFO,
                             CULoggerInfo.getString(CULoggerInfo.exceptionClosingURLEntry, source),
                             ioe);
+                } finally {
+                    zip = null;
                 }
             }
 
@@ -1103,7 +1108,7 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
 
         static class CleanableSentinelInputStreamState implements Runnable {
 
-            private boolean closed = false;
+            private volatile boolean closed = false;
             private final Throwable throwable;
             private final InputStream in;
 
