@@ -43,6 +43,7 @@
 package org.glassfish.admin.rest.resources;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
@@ -161,26 +162,15 @@ public class SessionsResource extends AbstractResource {
                     return dasConfig;
                 }
 
-                if (habitat == null) {
-                    return null;
-                }
-
-                Domain domain = Globals.getDefaultBaseServiceLocator().getService(Domain.class);
-                if (domain == null) {
-                    return null;
-                }
-
-                Config config = domain.getConfigNamed("server-config");
-                if (config == null) {
-                    return null;
-                }
-
-                AdminService adminService = config.getAdminService();
-                if (adminService == null) {
-                    return null;
-                }
-
-                dasConfig = adminService.getDasConfig();
+                Optional.ofNullable(habitat).map(
+                        serviceLocator -> Globals.getDefaultBaseServiceLocator().getService(Domain.class)
+                    ).map(
+                            domain -> domain.getConfigNamed("server-config")
+                    ).map(
+                            Config::getAdminService
+                    ).map(
+                            AdminService::getDasConfig
+                    ).ifPresent(config -> dasConfig = config);
             }
         }
 
