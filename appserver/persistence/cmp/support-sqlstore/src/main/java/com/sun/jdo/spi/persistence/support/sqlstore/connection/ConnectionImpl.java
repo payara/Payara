@@ -55,6 +55,7 @@ import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
 import org.glassfish.hk2.utilities.CleanerFactory;
 
 
+import java.lang.ref.Cleaner;
 import java.sql.*;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -69,17 +70,17 @@ public class ConnectionImpl implements Connection, Linkable {
     /*
 	 * The associated JDBC Connection.
 	 */
-    private Connection connection;
+    private final Connection connection;
 
     /*
 	 * The datasource url; e.g. "jdbc:oracle:oci7:@ABYSS_ORACLE".
 	 */
-    private String url;
+    private final String url;
 
     /*
 	 * User name.
 	 */
-    private String userName;
+    private final String userName;
 
     /*
 	 * Previous ConnectionImpl in a chain.
@@ -121,8 +122,29 @@ public class ConnectionImpl implements Connection, Linkable {
     /**
      * The logger
      */
-    private static Logger logger = LogHelperSQLStore.getLogger();
+    private static final Logger logger = LogHelperSQLStore.getLogger();
 
+    private final Cleaner.Cleanable cleanable;
+
+    static class CleanableConnectionState implements Runnable {
+
+        private final Connection connection;
+        private final Logger logger;
+
+        CleanableConnectionState(Connection connection, Logger logger) {
+            this.connection = connection;
+            this.logger = logger;
+        }
+
+        @Override
+        public void run() {
+            try {
+                this.connection.close();
+                this.logger.finest("sqlstore.connectionimpl.finalize"); // NOI18N
+            } catch (SQLException se) {
+            }
+        }
+    }
 
     /**
      * Create a new ConnectionImpl object and keep a reference to
@@ -141,9 +163,8 @@ public class ConnectionImpl implements Connection, Linkable {
         this.pooled = false;
         this.transaction = null;
         this.freePending = false;
-        //		this.resource = null;
         this.connectionManager = connMgr;
-        registerCloseEvent();
+        this.cleanable = CleanerFactory.create().register(this, new CleanableConnectionState(this.connection, logger));
     }
 
     //----------------------------------------------------------------------
@@ -341,11 +362,7 @@ public class ConnectionImpl implements Connection, Linkable {
      * becomes available
      */
     protected void release() {
-        try {
-            this.connection.close();
-        } catch (SQLException se) {
-            // ignore
-        }
+        this.cleanable.clean();
         logger.finest("sqlstore.connectionimpl.close.connrelease"); // NOI18N
     }
 
@@ -871,16 +888,6 @@ public class ConnectionImpl implements Connection, Linkable {
                 "  Tran = " + strTran + "\n"; // NOI18N
 
         return buffer;
-    }
-
-    public final void registerCloseEvent() {
-        CleanerFactory.create().register(this, () -> {
-            try {
-                this.connection.close();
-                logger.finest("sqlstore.connectionimpl.finalize"); // NOI18N
-            } catch (SQLException se) {
-            }
-        });
     }
 
     public void setSchema(String schema) throws SQLException {
