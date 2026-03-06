@@ -811,6 +811,14 @@ public class ConnectionManager {
 
         @Override
         public void run() {
+            try {
+                this.shutdown();
+            } catch (SQLException e) {
+                // ignoring it.
+            }
+        }
+
+        public void shutdown() throws SQLException {
             this.shutDownPending = true;
 
             if (this.pooling) {
@@ -824,15 +832,10 @@ public class ConnectionManager {
                         conn != null;
                         conn = (ConnectionImpl) conn.getNext()
                 ) {
-                    try {
-                        conn.close();
-                    } catch (SQLException e) {
-                        // ignore it
-                    }
+                    conn.close();
                 }
                 this.freeList = null;
             }
-
         }
 
         public boolean isShutDownPending() {
@@ -1552,7 +1555,7 @@ public class ConnectionManager {
      *
      */
     public synchronized void shutDown() throws SQLException {
-        this.cleanable.clean();
+        this.state.shutdown();
     }
 
     // ----------- Public Methods to get and set properties --------------
