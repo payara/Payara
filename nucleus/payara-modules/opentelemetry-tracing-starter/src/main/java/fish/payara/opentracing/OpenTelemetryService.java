@@ -277,8 +277,14 @@ public class OpenTelemetryService implements EventListener {
 
         if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
             var props = new HashMap<>(configProperties != null ? configProperties : Map.of());
-            addDefault(props, "otel.service.name", applicationName);
-            addDefault(props, "otel.metrics.exporter", "none");
+            addDefault(props, OTEL_SERVICE_NAME, applicationName);
+            addDefault(props, OTEL_METRICS_EXPORTER, "none");
+            if (!props.containsKey(OTEL_LOGS_EXPORTER)) {
+                addDefault(props, OTEL_LOGS_EXPORTER, "none");
+            }
+            if (!props.containsKey(OTEL_TRACES_EXPORTER)) {
+                addDefault(props, OTEL_TRACES_EXPORTER, "none");
+            }
             try {
                 return AutoConfiguredOpenTelemetrySdk.builder()
                         .addPropertiesCustomizer(p -> props)
@@ -329,6 +335,12 @@ public class OpenTelemetryService implements EventListener {
             String properties = readProperties.get(OTEL_RESOURCE_ATTRIBUTES);
             processProperties(builder, properties);
             builder.put(OTEL_RESOURCE_ATTRIBUTES, readProperties.get(OTEL_RESOURCE_ATTRIBUTES));
+        }
+        if (!readProperties.containsKey(OTEL_LOGS_EXPORTER)) {
+            builder.put(OTEL_LOGS_EXPORTER, "none");
+        }
+        if (!readProperties.containsKey(OTEL_TRACES_EXPORTER)) {
+           builder.put(OTEL_TRACES_EXPORTER, "none"); 
         }
         return builder;
     }

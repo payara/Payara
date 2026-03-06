@@ -130,7 +130,7 @@ public class UniformLogFormatter extends AnsiColorFormatter implements LogEventB
     private boolean multiLineMode;
 
     private static final String INDENT = "  ";
-
+    
     // Account for instances of (Formatter) Class.forName(formatter).newInstance();
     public UniformLogFormatter() {
         this(null);
