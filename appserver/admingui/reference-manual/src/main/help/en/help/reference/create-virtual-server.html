@@ -438,32 +438,6 @@ value="from=/dummy url-prefix=http://etude"/&gt;</code></pre>
 <dl>
 <dt class="hdlist1"></dt>
 <dd>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">`valve_`n</dt>
-<dd>
-<p>Specifies a fully qualified class name of a custom valve, where n is
-a positive integer that allows specification of more than one. The
-valve class must implement the <code>org.apache.catalina.Valve</code> interface
-from Tomcat or previous \{product---name} releases, or the
-<code>org.glassfish.web.valve.GlassFishValve</code> interface from the current
-\{product---name} release. For example:<br></p>
-</dd>
-</dl>
-</div>
-</dd>
-</dl>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">&lt;property name="valve_1"
-   value="org.glassfish.extension.Valve"/&gt;</code></pre>
-</div>
-</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"></dt>
-<dd>
 <p>You can set this property for a specific web application. For
 details, see "<a href="../application-deployment-guide/dd-elements.html#GSDPG00161">glassfish-web-app</a>" in GlassFish
 Server Open Source Edition Application Deployment Guide.</p>

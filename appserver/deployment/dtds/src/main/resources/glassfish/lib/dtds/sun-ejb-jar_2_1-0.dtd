@@ -33,6 +33,7 @@
  only if the new code is made subject to such option by the copyright
  holder.
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!--
   XML DTD for Sun Application Server specific EJB jar module 
@@ -53,7 +54,7 @@ System unique object id. Automatically generated and updated at deployment/redep
 <!--
 This is the root element describing all the runtime of an ejb-jar in the application.
 -->
-<!ELEMENT enterprise-beans (name?, unique-id?, ejb*, pm-descriptors?, cmp-resource?,
+<!ELEMENT enterprise-beans (name?, unique-id?, ejb*, cmp-resource?,
 	message-destination*, webservice-description*)>
 
 <!--
@@ -245,19 +246,13 @@ This contains the fully qualified class name of the generated EJBLocalHome impl 
 <!--
 This contains the bean cache properties. Used only for entity beans and stateful session beans
 -->
-<!ELEMENT bean-cache (max-cache-size?, resize-quantity?, is-cache-overflow-allowed?, cache-idle-timeout-in-seconds?, removal-timeout-in-seconds?, victim-selection-policy?)>
+<!ELEMENT bean-cache (max-cache-size?, resize-quantity?, cache-idle-timeout-in-seconds?, removal-timeout-in-seconds?, victim-selection-policy?)>
 
 <!--
 max-cache-size defines the maximum number of beans in the cache. Should be greater than 1.
 Default is 512.
 -->
 <!ELEMENT max-cache-size (#PCDATA)>
-
-<!--
-is-cache-overflow-allowed is a boolean which indicates if the cache size is a hard limit or not. 
-Default is true i.e there is no hard limit. max-cache-size is a hint to the cache implementation.
--->
-<!ELEMENT is-cache-overflow-allowed (#PCDATA)>
 
 <!--
 cache-idle-timeout-in-seconds specifies the maximum time that a stateful session bean or 
@@ -287,7 +282,7 @@ pseudo-random selection policy.
 bean-pool is a root element containing the bean pool properties. Used
 for stateless session bean, entity bean, and message-driven bean pools.
 -->
-<!ELEMENT bean-pool (steady-pool-size?, resize-quantity?, max-pool-size?, pool-idle-timeout-in-seconds?, max-wait-time-in-millis?)>
+<!ELEMENT bean-pool (steady-pool-size?, resize-quantity?, max-pool-size?, pool-idle-timeout-in-seconds?)>
 
 <!--
 steady-pool-size specified the initial and minimum number of beans that must be maintained in the pool. 
@@ -331,11 +326,6 @@ Specifes the thread pool that will be used to process any invocation on this ejb
 -->
 <!ELEMENT use-thread-pool-id (#PCDATA)>
 
-<!--
-Specifies the maximum time that the caller is willing to wait to get a bean from the pool.
-Wait time is infinite, if the value specified is 0. Deprecated.
--->
-<!ELEMENT max-wait-time-in-millis (#PCDATA)>
 
 <!--
 refresh-period-in-seconds specifies the rate at which the read-only-bean must be refreshed 
@@ -492,52 +482,6 @@ named element at sun-application.xml, it can apply to all the enclosed ejb
 modules. Allowed values are true and false. Default will be false.
  -->
 <!ELEMENT pass-by-reference (#PCDATA)>
-
-<!--
-PM descriptors contain one or more pm descriptors, but only one of them must
-be in use at any given time. If not specified, the Sun CMP is used.
--->
-<!ELEMENT pm-descriptors ( pm-descriptor+, pm-inuse)>
-
-<!--
-pm-descriptor describes the pluggable vendor implementation for the CMP 
-support of the CMP entity beans in this module.
--->
-<!ELEMENT pm-descriptor ( pm-identifier, pm-version, pm-config?, pm-class-generator, pm-mapping-factory?)>
-
-<!--
-pm-identifier element identifies the vendor who provides the CMP implementation
--->
-<!ELEMENT pm-identifier (#PCDATA)>
-
-<!--
-pm-version further specifies which version of PM vendor product to be used
--->
-<!ELEMENT pm-version (#PCDATA)>
-
-<!--
-pm-config specifies the vendor specific config file to be used
--->
-<!ELEMENT pm-config (#PCDATA)>
-
-<!--
-pm-class-generator specifies the vendor specific class generator to be used
-at the module deploymant time. This is the name of the class specific to this 
-vendor.
--->
-<!ELEMENT pm-class-generator (#PCDATA)>
-
-<!--
-pm-mapping-factory specifies the vendor specific mapping factory
-This is the name of the class specific to a vendor.
--->
-<!ELEMENT pm-mapping-factory (#PCDATA)>
-
-<!--
-pm-inuse specifies which CMP vendor is used.
--->
-<!ELEMENT pm-inuse (pm-identifier, pm-version)>
-
 
 <!--
 This holds the runtime configuration properties of the message-driven bean 

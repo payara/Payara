@@ -2,7 +2,7 @@
 
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common Development
@@ -57,12 +57,12 @@ holder.
                 method="GET" result="#{requestScope.resp}");      
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.healthcheckConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");       
-        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historicalTraceEnabled"});
+        setPageSessionAttribute(key="convertToFalseList", value={"enabled", "dynamic", "historical-trace-enabled"});
         py.getHistoricHealthcheckMessages(parentEndpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}", result="#{requestScope.historic}");
         if (#{pageSession.valueMap['enabled']}=true) {
             setPageSessionAttribute(key="enabledSelected", value="true");
         }
-        if (#{pageSession.valueMap['historicalTraceEnabled']}=true) {
+        if (#{pageSession.valueMap['historical-trace-enabled']}=true) {
             setPageSessionAttribute(key="historicalTraceEnabledSelected", value="true");
         }
 
@@ -90,14 +90,14 @@ holder.
                         onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
-                    mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="enableNotifiers" value="#{pageSession.notifierEnabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
-                    mapPut(map="#{pageSession.valueMap}" key="historicalTraceEnabled"
+                    mapPut(map="#{pageSession.valueMap}" key="historical-trace-enabled"
                             value="#{pageSession.historicalTraceEnabledSelected}");
                     convertArrayToCommaString(array="#{pageSession.enabledNotifiersArr}", commaString="#{requestScope.commaSeparatedNotifiers}");
                     mapPut(map="#{pageSession.valueMap}" key="setNotifiers" value="#{requestScope.commaSeparatedNotifiers}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/healthcheck-configure" 
+                    gf.updateEntity(endpoint="#{sessionScope.HEALTHCHECK_CONFIG_URL}/set-healthcheck-configuration"
                             attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
@@ -127,13 +127,13 @@ holder.
                       label="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreSizeLabel}"  
                       helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreSizeLabelHelpText}">
             <sun:textField id="historicalTraceStoreSizeField" columns="$int{40}" maxLength="250" styleClass="integer"
-                           text="#{pageSession.valueMap['historicalTraceStoreSize']}"/>
+                           text="#{pageSession.valueMap['historical-trace-store-size']}"/>
         </sun:property>
         <sun:property id="historicalTraceStoreTimeoutProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"
                       label="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreTimeoutLabel}"
                       helpText="$resource{i18nhx.healthcheck.configuration.historicalTraceStoreTimeoutLabelHelpText}">
             <sun:textField id="historicalTraceStoreTimeoutField" columns="$int{40}" maxLength="250"
-                           text="#{pageSession.valueMap['historicalTraceStoreTimeout']}"/>
+                           text="#{pageSession.valueMap['historical-trace-store-timeout']}"/>
         </sun:property>
     </sun:propertySheetSection>
 
