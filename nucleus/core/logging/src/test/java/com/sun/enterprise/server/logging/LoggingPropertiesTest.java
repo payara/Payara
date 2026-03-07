@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,7 +85,7 @@ public class LoggingPropertiesTest {
 
     @Before
     public void initialise() throws IOException, NoSuchFieldException, IllegalAccessException {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         loggingFile = tempLoggingfolder.newFile("logging.properties");
         loggingConfigImpl = new LoggingConfigImpl(loggingFile.getParentFile(), loggingFile.getParentFile());
         Field fileMonitoringField = loggingConfigImpl.getClass().getDeclaredField("fileMonitoring");
