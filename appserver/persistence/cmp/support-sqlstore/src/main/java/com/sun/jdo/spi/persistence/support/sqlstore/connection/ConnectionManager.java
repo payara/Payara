@@ -56,7 +56,6 @@ import com.sun.jdo.spi.persistence.support.sqlstore.LogHelperSQLStore;
 import org.glassfish.hk2.utilities.CleanerFactory;
 
 
-import java.lang.ref.Cleaner;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -336,8 +335,6 @@ public class ConnectionManager {
     private transient ConnectionImpl freeConn = null;
 
     private final CleanableConnectionManagerState state = new CleanableConnectionManagerState();
-
-    private final Cleaner.Cleanable cleanable;
 
     /**
      * The logger
@@ -906,7 +903,7 @@ public class ConnectionManager {
         this.msInterval = 0;
         this.busyList = null;
         this.xactConnections = null;
-        this.cleanable = CleanerFactory.create().register(this, state);
+        CleanerFactory.create().register(this, state);
     }
 
     // --------------- Overloaded Constructors -----------------
