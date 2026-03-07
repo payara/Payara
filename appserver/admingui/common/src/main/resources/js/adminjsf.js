@@ -42,6 +42,16 @@
  * Common utility
  */
 
+/* Load dependencies eagerly to prevent issues with loading them asynchrnously later.
+ */
+require(['webui/suntheme/field']);
+require(['webui/suntheme/dropDown']);
+require(['webui/suntheme/upload']);
+require(['webui/suntheme/jumpDropDown']);
+require(['webui/suntheme/hyperlink']);
+require(['webui/suntheme/props']);
+
+
 /* To work around a timing issue where for Firefox 2.0.0.3 on Mac OS X
  * We need to put in a little delay before returning the var
  */
@@ -115,24 +125,23 @@ function getField(theForm, fieldName) {
     return null;
 }
 
-// in case modules are not loaded, return temporary object with empty, but existing data
-function createFakeText(id) {
-    return {
-        id,
-        value: "FAKE"
-    };
-}
-
 // FIXME: suntheme should not be used -- prevents theme from changing
 function getTextElement(componentName) {
+
+    var el;
+
     require(['webui/suntheme/field'], function (field) {
-        var el = field.getInputElement(componentName);
-        if (el === null) {
-            el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
+        if(field === "undefined"){
+            return  document.getElementById(componentName);
         }
-        return el;
+
+        var el = field.getInputElement(componentName);
     });
-    return createFakeText(componentName);
+
+    if (el == null) {
+        el = document.getElementById(componentName); // This may get too deep inside WS, but it should work as a fall back
+    }
+    return el;
 }
 
 function getSelectElement(componentName) {
