@@ -826,15 +826,27 @@ public class ConnectionManager {
                 this.connectionBlocking = false;
                 this.pooling = false;
                 this.initialized = false;
+                SQLException sqlException = null;
                 for
                 (
                         conn = (ConnectionImpl) this.freeList.getHead();
                         conn != null;
                         conn = (ConnectionImpl) conn.getNext()
                 ) {
-                    conn.close();
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        if (sqlException == null) {
+                            sqlException = e;
+                        } else {
+                            sqlException.addSuppressed(e);
+                        }
+                    }
                 }
                 this.freeList = null;
+                if (sqlException != null) {
+                    throw sqlException;
+                }
             }
         }
 
