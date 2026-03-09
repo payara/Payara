@@ -99,7 +99,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private JakartaDataExtension jakartaDataExtension;
     private String dataStore;
     private Set<Type> beanTypes = null;
-    private Map<Class<?>, List<QueryMetadata>> queriesForEntity = new HashMap<>();
+    private Map<Class<?>, List<QueryData>> queriesForEntity = new HashMap<>();
     private Map<Class<?>, EntityMetadata> mapOfMetaData = new HashMap<>();
     private Predicate<Method> methodAnnotationValidationPredicate = method -> method.getParameterCount() == 1 &&
             !method.isDefault() && (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Update.class)
@@ -337,7 +337,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @param method
      */
     private void addQueries(EntityManager entityManager, Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
-        List<QueryMetadata> queries;
+        List<QueryData> queries;
         queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
         QueryType queryType = null;
         if (method.isAnnotationPresent(Save.class)) {
@@ -364,27 +364,42 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 queryType = QueryType.FIND_BY_NAME;
             }
         }
+        QueryData dataForQuery = new QueryData(repository, method, declaredEntityClass, entityParamType,
+                queryType, preprocesEntityMetadata(mapOfMetaData, entityManager, declaredEntityClass, method));
 
         try {
-            Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
-            if (entityTypeInMethod != null) {
-                declaredEntityClass = entityTypeInMethod;
-            }
-            else if (declaredEntityClass == null) {
-                throw new MappingException(
-                        String.format("Could not determine primary entity type for repository method '%s' in %s. " +
-                                        "Either extend a repository interface with entity type parameters or " +
-                                        "ensure entity type is determinable from method signature.",
-                                method.getName(), method.getDeclaringClass().getName())
-                );
-            }
-
-            queries.add(new QueryMetadata(
-                    repository, method, declaredEntityClass, entityParamType,
-                    queryType, preprocesEntityMetadata(mapOfMetaData, entityManager, declaredEntityClass, method)));
-        }
-        catch (MappingException e) {
+            evaluateDataQuery(dataForQuery, method);
+            queries.add(dataForQuery);
+        } catch (MappingException e) {
             logger.warning(e.getMessage());
+        }
+    }
+
+    private void evaluateDataQuery(QueryData dataForQuery, Method method) {
+        if (dataForQuery.getDeclaredEntityClass() == null) {
+            Class<?> entityType = findEntityTypeInMethod(method);
+            if (entityType != null) {
+                dataForQuery.setDeclaredEntityClass(entityType);
+                return;
+            }
+            Class<?> declaringClass = method.getDeclaringClass();
+            Method[] allMethods = declaringClass.getMethods();
+            for (Method interfaceMethod : allMethods) {
+                if (interfaceMethod.equals(method)) {
+                    continue;
+                }
+                entityType = findEntityTypeInMethod(interfaceMethod);
+                if (entityType != null) {
+                    dataForQuery.setDeclaredEntityClass(entityType);
+                    return;
+                }
+            }
+            throw new MappingException(
+                    String.format("Could not determine primary entity type for repository method '%s' in %s. " +
+                                    "Either extend a repository interface with entity type parameters or " +
+                                    "ensure entity type is determinable from method signature.",
+                            method.getName(), declaringClass.getName())
+            );
         }
     }
 

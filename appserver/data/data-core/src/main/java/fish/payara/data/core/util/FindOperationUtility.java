@@ -43,7 +43,6 @@ import fish.payara.data.core.cdi.extension.CursoredPageImpl;
 import fish.payara.data.core.cdi.extension.EntityMetadata;
 import fish.payara.data.core.cdi.extension.PageImpl;
 import fish.payara.data.core.cdi.extension.QueryData;
-import fish.payara.data.core.cdi.extension.QueryMetadata;
 import fish.payara.data.core.cdi.extension.QueryType;
 import jakarta.data.Limit;
 import jakarta.data.Order;
@@ -77,15 +76,14 @@ public class FindOperationUtility {
     public static Object processFindAllOperation(Class<?> entityClass, EntityManager em, String orderByClause,
                                                  QueryData dataForQuery, DataParameter dataParameter) {
         final boolean ADD_DISTINCT_CLAUSE = true;
-        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
-        String qlString = createBaseFindQuery(entityClass, orderByClause, queryMetadata.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
+        String qlString = createBaseFindQuery(entityClass, orderByClause, dataForQuery.getEntityMetadata(), ADD_DISTINCT_CLAUSE);
         List<Sort<?>> sortList = dataParameter.sortList();
         if (!sortList.isEmpty()) {
             qlString = handleSort(dataForQuery, sortList, qlString, true, false, false);
         }
         Query query = em.createQuery(qlString);
         verifyLimit(dataParameter.limit(), query);
-        Class<?> returnType = queryMetadata.getMethod().getReturnType();
+        Class<?> returnType = dataForQuery.getMethod().getReturnType();
         if (List.class.isAssignableFrom(returnType)) {
             return query.getResultList();
         } else if (Stream.class.isAssignableFrom(returnType)) {
@@ -98,12 +96,11 @@ public class FindOperationUtility {
     public static Object processFindByOperation(Object[] args, EntityManager em, QueryData dataForQuery,
                                                 DataParameter dataParameter, boolean evaluatePages) {
         StringBuilder builder = new StringBuilder();
-        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
-        builder.append(createBaseFindQuery(queryMetadata.getDeclaredEntityClass(),
-                null, queryMetadata.getEntityMetadata()));
+        builder.append(createBaseFindQuery(dataForQuery.getDeclaredEntityClass(),
+                null, dataForQuery.getEntityMetadata()));
 
-        Annotation[][] parameterAnnotations = queryMetadata.getMethod().getParameterAnnotations();
-        Parameter[] parameters = queryMetadata.getMethod().getParameters();
+        Annotation[][] parameterAnnotations = dataForQuery.getMethod().getParameterAnnotations();
+        Parameter[] parameters = dataForQuery.getMethod().getParameters();
         int queryPosition = 1;
         boolean hasWhere = false;
 
@@ -123,7 +120,7 @@ public class FindOperationUtility {
                         attributeValue = ((By) annotation).value();
                         // Handle special case for id(this)
                         if ("id(this)".equals(attributeValue)) {
-                            attributeValue = EntityIntrospectionUtil.getIdFieldName(queryMetadata.getDeclaredEntityClass());
+                            attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
                         }
                         foundBy = true;
                         break;
@@ -140,23 +137,23 @@ public class FindOperationUtility {
                     // Try to infer by type
                     attributeValue = inferAttributeNameByType(
                             parameters[i].getType(),
-                            queryMetadata.getDeclaredEntityClass()
+                            dataForQuery.getDeclaredEntityClass()
                     );
 
                     // If still null, try to infer from method name
                     if (attributeValue == null) {
                         attributeValue = inferAttributeFromMethodName(
-                                queryMetadata.getMethod().getName(),
+                                dataForQuery.getMethod().getName(),
                                 i,
                                 parameters[i].getType(),
-                                queryMetadata.getDeclaredEntityClass()
+                                dataForQuery.getDeclaredEntityClass()
                         );
                     }
 
                     // For methods like findById without @By, use ID field
                     if (attributeValue == null && parameters.length == 1 &&
-                            !queryMetadata.getMethod().isAnnotationPresent(Find.class)) {
-                        attributeValue = EntityIntrospectionUtil.getIdFieldName(queryMetadata.getDeclaredEntityClass());
+                            !dataForQuery.getMethod().isAnnotationPresent(Find.class)) {
+                        attributeValue = EntityIntrospectionUtil.getIdFieldName(dataForQuery.getDeclaredEntityClass());
                     }
                 }
             }
@@ -165,13 +162,13 @@ public class FindOperationUtility {
             if (attributeValue == null) {
                 throw new MappingException(
                         "Cannot determine attribute name for parameter " + i +
-                                " of method " + queryMetadata.getMethod().getName() +
+                                " of method " + dataForQuery.getMethod().getName() +
                                 ". Consider using @By annotation or compiling with -parameters flag."
                 );
             }
 
             // Preprocess attribute name if needed
-            attributeValue = preprocessAttributeName(queryMetadata.getEntityMetadata(), attributeValue);
+            attributeValue = preprocessAttributeName(dataForQuery.getEntityMetadata(), attributeValue);
 
             // Build WHERE clause
             if (!hasWhere) {
@@ -193,11 +190,11 @@ public class FindOperationUtility {
 
         // Process pagination or execute query
         if (evaluatePages) {
-            return processPagination(em, dataForQuery, args, queryMetadata.getMethod(), builder, hasWhere, false, dataParameter);
+            return processPagination(em, dataForQuery, args, dataForQuery.getMethod(), builder, hasWhere, false, dataParameter);
         } else {
             if (dataParameter.sortList() != null && !dataParameter.sortList().isEmpty()) {
                 handleSort(dataForQuery, dataParameter.sortList(), builder,
-                        queryMetadata.getQueryType() == QueryType.FIND, false,
+                        dataForQuery.getQueryType() == QueryType.FIND, false,
                         false, null);
                 dataForQuery.setQueryString(builder.toString());
             }
@@ -309,8 +306,7 @@ public class FindOperationUtility {
         boolean forward = pageRequest == null || pageRequest.mode() != PageRequest.Mode.CURSOR_PREVIOUS;
 
         boolean isCursoredPage = CursoredPage.class.equals(method.getReturnType());
-        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
-        if (isCursoredPage && queryMetadata.getQueryType() != QueryType.FIND) {
+        if (isCursoredPage && dataForQuery.getQueryType() != QueryType.FIND) {
             //here to adapt query for Cursored mode
             preprocessQueryForCursoredMode(dataForQuery);
             builder = new StringBuilder(dataForQuery.getQueryString());
@@ -322,7 +318,7 @@ public class FindOperationUtility {
         }
 
         handleSort(dataForQuery, sortList, builder,
-                queryMetadata.getQueryType() == QueryType.FIND, true, forward, rootAlias);
+                dataForQuery.getQueryType() == QueryType.FIND, true, forward, rootAlias);
         dataForQuery.setQueryString(builder.toString());
         dataForQuery.setOrders(sortList);
 
@@ -361,24 +357,23 @@ public class FindOperationUtility {
     public static void createCountQuery(QueryData dataForQuery, boolean hasWhere, boolean hasOrder,
                                         int wherePosition, int orderPosition) {
         StringBuilder builder = new StringBuilder();
-        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
-        if (queryMetadata.getQueryType().equals(QueryType.FIND)) {
+        if (dataForQuery.getQueryType().equals(QueryType.FIND)) {
             builder.append("SELECT COUNT(").append("o").append(") FROM ")
-                    .append(getSingleEntityName(queryMetadata.getDeclaredEntityClass().getName())).append(" o");
-        } else if (queryMetadata.getQueryType().equals(QueryType.QUERY)) {
+                    .append(getSingleEntityName(dataForQuery.getDeclaredEntityClass().getName())).append(" o");
+        } else if (dataForQuery.getQueryType().equals(QueryType.QUERY)) {
             builder.append("SELECT COUNT(").append("this").append(") FROM ")
-                    .append(getSingleEntityName(queryMetadata.getDeclaredEntityClass().getName()));
+                    .append(getSingleEntityName(dataForQuery.getDeclaredEntityClass().getName()));
         }
 
-        if (hasWhere && queryMetadata.getQueryType().equals(QueryType.FIND)) {
+        if (hasWhere && dataForQuery.getQueryType().equals(QueryType.FIND)) {
             if (wherePosition >= 0) {
                 builder.append(" WHERE").append(dataForQuery.getQueryString().substring(wherePosition + 5));
             } else {
                 builder.append(" WHERE");
             }
-        } else if (hasWhere && !hasOrder && queryMetadata.getQueryType().equals(QueryType.QUERY)) {
+        } else if (hasWhere && !hasOrder && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
             builder.append(" WHERE ").append(dataForQuery.getQueryString().substring(wherePosition + 5));
-        } else if (hasWhere && hasOrder && queryMetadata.getQueryType().equals(QueryType.QUERY)) {
+        } else if (hasWhere && hasOrder && dataForQuery.getQueryType().equals(QueryType.QUERY)) {
             builder.append(" WHERE ").append(dataForQuery.getQueryString().substring(wherePosition + 5, orderPosition));
         }
         dataForQuery.setCountQueryString(builder.toString());
@@ -498,7 +493,6 @@ public class FindOperationUtility {
         String prefixForParams = dataForQuery.getJpqlParameters().isEmpty() ? "?" : ":cursor";
         boolean hasWhere = dataForQuery.getQueryString().contains("WHERE");
         StringBuilder cursorQuery = new StringBuilder().append(hasWhere ? " AND (" : " WHERE (");
-        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
         for (int i = 0; i < orders.size(); i++) {
             cursorQuery.append(i == 0 ? "(" : " OR (");
             int paramCount = getParamCount(dataForQuery, args);
@@ -509,7 +503,7 @@ public class FindOperationUtility {
                 boolean lower = sort.ignoreCase();
                 if (lower) {
                     cursorQuery.append(k == 0 ? "LOWER(" : " AND LOWER(");
-                    appendAttribute(propertyName, cursorQuery, queryMetadata.getQueryType(), rootAlias);
+                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType(), rootAlias);
                     cursorQuery.append(')');
                     if (forward) {
                         cursorQuery.append(k < i ? '=' : (asc ? '>' : '<'));
@@ -520,7 +514,7 @@ public class FindOperationUtility {
                     cursorQuery.append("LOWER(").append(prefixForParams).append(paramCount).append(')');
                 } else {
                     cursorQuery.append(k == 0 ? "" : " AND ");
-                    appendAttribute(propertyName, cursorQuery, queryMetadata.getQueryType(), rootAlias);
+                    appendAttribute(propertyName, cursorQuery, dataForQuery.getQueryType(), rootAlias);
                     if (forward) {
                         cursorQuery.append(k < i ? '=' : (asc ? '>' : '<'));
                     } else {
@@ -542,7 +536,7 @@ public class FindOperationUtility {
     }
 
     public static int getParamCount(QueryData dataForQuery, Object[] args) {
-        int paramCount = dataForQuery.getJpqlParameters().size();
+        int paramCount = dataForQuery.getJpqlParameters().isEmpty() ? dataForQuery.getParamIndex() : dataForQuery.getJpqlParameters().size();
         if (paramCount == 0) {
             for (int i = 0; i < args.length; i++) {
                 if (!excludeParameter(args[i])) {
