@@ -179,17 +179,18 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         logger.info("Processing query for entity class: " + repository);
         //get entity type
         Class<?> declaredEntityClass = getEntityType(this.repository);
-        EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get();
         logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
-        for (Method method : this.repository.getMethods()) {
-            logger.info("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
-            //skip if method is default 
-            if (method.isDefault()) {
-                continue;
+        try (EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get()) {
+            for (Method method : this.repository.getMethods()) {
+                logger.info("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
+                //skip if method is default
+                if (method.isDefault()) {
+                    continue;
+                }
+                Class<?> entityParamType = null;
+                entityParamType = getEntityParamClass(method);
+                addQueries(entityManager, repository, declaredEntityClass, entityParamType, method);
             }
-            Class<?> entityParamType = null;
-            entityParamType = getEntityParamClass(method);
-            addQueries(entityManager, repository, declaredEntityClass, entityParamType, method);
         }
     }
 
