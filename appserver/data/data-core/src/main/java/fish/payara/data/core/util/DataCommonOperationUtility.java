@@ -196,57 +196,49 @@ public class DataCommonOperationUtility {
             return mapOfMetaData.get(declaredEntityClass);
         }
         Metamodel metamodel = entityManager.getMetamodel();
-        try {
-            for (EntityType<?> entityType : metamodel.getEntities()) {
-                Map<String, String> attributeNames = new HashMap<>();
-                Map<String, Member> attributeAccessors = new HashMap<>();
-                Map<String, Class<?>> attributeTypes = new HashMap<>();
-                Class<?> idType = null;
+        for (EntityType<?> entityType : metamodel.getEntities()) {
+            Map<String, String> attributeNames = new HashMap<>();
+            Map<String, Member> attributeAccessors = new HashMap<>();
+            Map<String, Class<?>> attributeTypes = new HashMap<>();
+            Class<?> idType = null;
 
-                Class<?> entityClassType = entityType.getJavaType();
-                if (!entityClassType.equals(declaredEntityClass)) {
-                    continue;
+            Class<?> entityClassType = entityType.getJavaType();
+            if (!entityClassType.equals(declaredEntityClass)) {
+                continue;
+            }
+
+            for (Attribute<?, ?> attribute : entityType.getAttributes()) {
+                String attributeName = attribute.getName();
+                Attribute.PersistentAttributeType persistentAttributeType = attribute.getPersistentAttributeType();
+                switch (persistentAttributeType) {
+                    case BASIC, ONE_TO_ONE, ONE_TO_MANY, MANY_TO_MANY, ELEMENT_COLLECTION, MANY_TO_ONE,
+                         EMBEDDED -> {
+                    }
+                    default -> {
+                        throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
+                    }
                 }
 
-                for (Attribute<?, ?> attribute : entityType.getAttributes()) {
-                    String attributeName = attribute.getName();
-                    Attribute.PersistentAttributeType persistentAttributeType = attribute.getPersistentAttributeType();
-                    switch (persistentAttributeType) {
-                        case BASIC, ONE_TO_ONE, ONE_TO_MANY, MANY_TO_MANY, ELEMENT_COLLECTION, MANY_TO_ONE,
-                             EMBEDDED -> {
-                        }
-                        default -> {
-                            throw new IllegalArgumentException("Unsupported attribute type: " + persistentAttributeType);
-                        }
-                    }
+                Member accessor = attribute.getJavaMember();
+                attributeNames.put(attributeName.toLowerCase(), attributeName);
+                attributeAccessors.put(attributeName, accessor);
+                attributeTypes.put(attributeName, attribute.getJavaType());
 
-                    Member accessor = attribute.getJavaMember();
-                    attributeNames.put(attributeName.toLowerCase(), attributeName);
-                    attributeAccessors.put(attributeName, accessor);
-                    attributeTypes.put(attributeName, attribute.getJavaType());
+                SingularAttribute<?, ?> singularAttribute = attribute instanceof SingularAttribute ? (SingularAttribute<?, ?>) attribute : null;
 
-                    SingularAttribute<?, ?> singularAttribute = attribute instanceof SingularAttribute ? (SingularAttribute<?, ?>) attribute : null;
-
-                    if (singularAttribute != null && singularAttribute.isId()) {
-                        attributeNames.put(By.ID, attributeName);
-                        idType = singularAttribute.getJavaType();
-                    }
-
+                if (singularAttribute != null && singularAttribute.isId()) {
+                    attributeNames.put(By.ID, attributeName);
+                    idType = singularAttribute.getJavaType();
                 }
 
-                EntityMetadata entityMetadata = new EntityMetadata(entityClassType.getName(), entityClassType, attributeNames, attributeTypes, attributeAccessors, idType);
-
-                mapOfMetaData.computeIfAbsent(entityClassType, key -> entityMetadata);
-
-                return entityMetadata;
             }
-        } finally {
-            if (entityManager != null) {
-                entityManager.close();
-            }
+
+            EntityMetadata entityMetadata = new EntityMetadata(entityClassType.getName(), entityClassType, attributeNames, attributeTypes, attributeAccessors, idType);
+
+            mapOfMetaData.computeIfAbsent(entityClassType, key -> entityMetadata);
+
+            return entityMetadata;
         }
-
-
         return null;
     }
 
