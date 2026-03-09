@@ -257,7 +257,7 @@ public class ConnectionImpl implements Connection, Linkable {
         try {
             this.connection.commit();
             if (this.freePending) {
-                if (this.connectionManager.shutDownPending) {
+                if (this.connectionManager.isShutdownPending()) {
                     try {
                         this.connection.close();
                         logger.finest("sqlstore.connectionimpl.commit"); // NOI18N
@@ -266,7 +266,7 @@ public class ConnectionImpl implements Connection, Linkable {
                     }
                 } else {
                     this.freePending = false;
-                    this.connectionManager.freeList.insertAtTail(this);
+                    this.connectionManager.insertFreeListTail(this);
                 }
             }
             if (EJBHelper.isManaged()) {
@@ -284,12 +284,12 @@ public class ConnectionImpl implements Connection, Linkable {
         try {
             this.connection.rollback();
             if (this.freePending) {
-                if (this.connectionManager.shutDownPending) {
+                if (this.connectionManager.isShutdownPending()) {
                     this.connection.close();
                     logger.finest("sqlstore.connectionimpl.rollback.close"); // NOI18N
                 } else {
                     this.freePending = false;
-                    this.connectionManager.freeList.insertAtTail(this);
+                    this.connectionManager.insertFreeListTail(this);
                 }
             }
             if (EJBHelper.isManaged()) {
@@ -329,8 +329,8 @@ public class ConnectionImpl implements Connection, Linkable {
                 if (debug) {
                     logger.finest("sqlstore.connectionimpl.close.freepending"); // NOI18N
                 }
-            } else if ((conn.getPooled() == true) && (conn.connectionManager.shutDownPending == false)) {
-                conn.connectionManager.freeList.insertAtTail((Linkable) conn);
+            } else if ((conn.getPooled() == true) && (!conn.connectionManager.isShutdownPending())) {
+                conn.connectionManager.insertFreeListTail(conn);
                 if (debug) {
                     logger.finest("sqlstore.connectionimpl.close.putfreelist"); // NOI18N
                 }
