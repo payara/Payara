@@ -42,21 +42,20 @@ pipeline {
                     def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
                     def repoOrg = env.CHANGE_FORK ?: 'Payara'
 
-                    //def buildJob = build job: 'Build/Build',
-                    //wait: true,
-                    //parameters: [
-                    //    string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                    //    string(name: 'repoOrg', value: repoOrg),
-                    //    string(name: 'jdkVer', value: 'zulu-21'),
-                    //    string(name: 'stream', value: 'Community'),
-                    //    string(name: 'profiles', value: 'BuildEmbedded'),
-                    //    booleanParam(name: 'skipTests', value: false),
-                    //    string(name: 'multiThread', value: '1'),
-                    //    booleanParam(name: 'archiveMavenRepository', value: true)
-                    //]
+                    def buildJob = build job: 'Build/Build',
+                    wait: true,
+                    parameters: [
+                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                        string(name: 'repoOrg', value: repoOrg),
+                        string(name: 'jdkVer', value: 'zulu-21'),
+                        string(name: 'stream', value: 'Community'),
+                        string(name: 'profiles', value: 'BuildEmbedded'),
+                        booleanParam(name: 'skipTests', value: false),
+                        string(name: 'multiThread', value: '1'),
+                        booleanParam(name: 'archiveMavenRepository', value: true)
+                    ]
 
-                    //buildId = buildJob.getNumber().toString()
-                    buildId = "288"
+                    buildId = buildJob.getNumber().toString()
                 }
             }
         }
