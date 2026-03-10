@@ -1,26 +1,26 @@
 {
   "schemas": {
     "Category": {
-      "type": "object",
+      "type": ["object"],
       "properties": {
         "id": {
-          "type": "integer",
+          "type": ["integer"],
           "format": "int64"
         },
         "name": {
-          "type": "string"
+          "type": ["string"]
         }
       }
     },
     "Tag": {
-      "type": "object",
+      "type": ["object"],
       "properties": {
         "id": {
-          "type": "integer",
+          "type": ["integer"],
           "format": "int64"
         },
         "name": {
-          "type": "string"
+          "type": ["string"]
         }
       }
     }
@@ -32,7 +32,7 @@
       "description": "number of items to skip",
       "required": true,
       "schema": {
-        "type": "integer",
+        "type": ["integer"],
         "format": "int32"
       }
     },
@@ -42,7 +42,7 @@
       "description": "max records to return",
       "required": true,
       "schema" : {
-        "type": "integer",
+        "type": ["integer"],
         "format": "int32"
       }
     }

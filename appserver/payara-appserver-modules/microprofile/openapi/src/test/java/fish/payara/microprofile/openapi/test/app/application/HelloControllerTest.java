@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ public class HelloControllerTest extends OpenApiApplicationTest {
         assertEquals("sayHello", sayHello.get("operationId").textValue());
         JsonNode schema = path(sayHello, "responses.default.content.*/*.schema");
         assertNotNull(schema);
-        assertEquals("string", schema.get("type").textValue());
+        assertEquals("string", schema.get("type").get(0).textValue());
     }
 
     @Path("/welcome")
@@ -99,6 +99,6 @@ public class HelloControllerTest extends OpenApiApplicationTest {
         assertEquals("sayWelcome", sayWelcome.get("operationId").textValue());
         JsonNode schema = path(sayWelcome, "responses.default.content.*/*.schema");
         assertNotNull(schema);
-        assertEquals("string", schema.get("type").textValue());
+        assertEquals("string", schema.get("type").get(0).textValue());
     }
 }
