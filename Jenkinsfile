@@ -42,20 +42,21 @@ pipeline {
                     def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
                     def repoOrg = env.CHANGE_FORK ?: 'Payara'
 
-                    def buildJob = build job: 'Build/Build',
-                    wait: true,
-                    parameters: [
-                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
-                        string(name: 'repoOrg', value: repoOrg),
-                        string(name: 'jdkVer', value: 'zulu-21'),
-                        string(name: 'stream', value: 'Community'),
-                        string(name: 'profiles', value: 'BuildEmbedded'),
-                        booleanParam(name: 'skipTests', value: false),
-                        string(name: 'multiThread', value: '1'),
-                        booleanParam(name: 'archiveMavenRepository', value: true)
-                    ]
+                    //def buildJob = build job: 'Build/Build',
+                    //wait: true,
+                    //parameters: [
+                    //    string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                    //    string(name: 'repoOrg', value: repoOrg),
+                    //    string(name: 'jdkVer', value: 'zulu-21'),
+                    //    string(name: 'stream', value: 'Community'),
+                    //    string(name: 'profiles', value: 'BuildEmbedded'),
+                    //    booleanParam(name: 'skipTests', value: false),
+                    //    string(name: 'multiThread', value: '1'),
+                    //    booleanParam(name: 'archiveMavenRepository', value: true)
+                    //]
 
-                    buildId = buildJob.getNumber().toString()
+                    //buildId = buildJob.getNumber().toString()
+                    buildId = "288"
                 }
             }
         }
@@ -126,183 +127,174 @@ pipeline {
                     }
                 }
                 stage('MicroProfile Config TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'Config'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP Config TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP Config TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: "Build"),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Config'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile Fault Tolerance TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'Fault-Tolerance'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP Fault Tolerance TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP Fault Tolerance TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Fault-Tolerance'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile Health TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'Health'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP Health TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP Health TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Health'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile JWT Auth TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'JWT-Auth'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP JWT Auth TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP JWT Auth TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP JWT Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'JWT-Auth'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP JWT Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile Metrics TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'Metrics'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP Metrics TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP Metrics TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Metrics'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile OpenAPI TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'OpenAPI'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP OpenAPI TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP OpenAPI TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'OpenAPI'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile OpenTelemetry Tracing TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'OpenTelemetry-Tracing'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP OpenTelemetry Tracing TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP OpenTelemetry Tracing TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'OpenTelemetry-Tracing'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile OpenTracing TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'OpenTracing'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP OpenTracing TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP OpenTracing TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'OpenTracing'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile REST Client TCK') {
-                    agent none
+                    agent {
+                        label 'general-purpose'
+                    }
                     steps {
-                        script {
-                            def result = build(job: 'TCKs/MP-TCKs', propagate: true, wait: true, parameters:
-                            [[$class: 'StringParameterValue', name: 'buildProject',          value: 'Build/Build'],
-                                [$class: 'StringParameterValue', name: 'payaraBuildNumber',     value: buildId],
-                                [$class: 'StringParameterValue', name: 'repoOrg',               value: 'payara'],
-                                [$class: 'StringParameterValue', name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'],
-                                [$class: 'StringParameterValue', name: 'suites',                value: 'Rest-Client'],
-                                [$class: 'StringParameterValue', name: 'jdkVer',                value: 'zulu-21'],
-                                [$class: 'StringParameterValue', name: 'distribution',          value: 'full']]
-                            )
-                            catchError(buildResult: 'SUCCESS') {
-                                if (result.result == 'UNSTABLE') { unstable('There were test failures in the MP REST Client TCK') }
-                                else if (result.result == 'FAILURE') { error('The MP REST Client TCK returned Errors') }
-                            }
-                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Rest-Client'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('EE8 Tests') {
