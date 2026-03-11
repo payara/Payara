@@ -78,24 +78,16 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.omnifaces</groupId>
-                <artifactId>antlr-maven-plugin</artifactId>
-                <configuration>
-                    <grammars>JQL.g, Semantic.g, Optimizer.g, CodeGeneration.g</grammars>
-                    <!--
-                       <diagnostic>true</diagnostic>
-                       <debug>true</debug>
-                       <trace>true</trace>
-                       <traceLexer>true</traceLexer>
-                       <traceParser>true</traceParser>
-                       <traceTreeParser>true</traceTreeParser>
-                    -->
-                </configuration>
+                <groupId>org.glassfish.build</groupId>
+                <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>antlr</goal>
                         </goals>
+                        <configuration>
+                            <grammars>JQL.g, Semantic.g, Optimizer.g, CodeGeneration.g</grammars>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -116,12 +108,6 @@
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>antlr-repackaged</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency> 
-        <!-- We depend on repackaged antlr, but antlr-maven-plugin checks for this dependency to be present -->
-            <groupId>antlr</groupId>
-            <artifactId>antlr</artifactId>
-            <optional>true</optional> <!-- This ensures that antlr:antlr does not get packaged -->
         </dependency>
         <dependency>
             <groupId>jakarta.transaction</groupId>
