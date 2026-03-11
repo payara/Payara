@@ -60,6 +60,7 @@ import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.Table;
 
 import java.lang.annotation.Annotation;
@@ -78,6 +79,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static fish.payara.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
@@ -109,6 +112,12 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
 
     private Predicate<Class<?>> classValidationParameter = clazz -> clazz != null
             && !clazz.isPrimitive() && !clazz.isInterface();
+
+    // Matches entity name after FROM (for SELECT/DELETE) or after UPDATE
+    // Examples: "DELETE FROM Coordinate WHERE ...", "UPDATE Employee SET ...", "FROM Box WHERE ..."
+    private static final Pattern JPQL_ENTITY_PATTERN = Pattern.compile(
+            "(?:DELETE\\s+FROM|UPDATE|FROM)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+            Pattern.CASE_INSENSITIVE);
 
     DynamicInterfaceDataProducer(Class<?> instance, BeanManager beanManager, JakartaDataExtension jakartaDataExtension) {
         this.repository = (Class<T>) instance;
@@ -225,6 +234,34 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 return entityType;
             }
         }
+        return null;
+    }
+
+    /**
+     * Resolves the entity type from a @Query JPQL string by extracting the entity name
+     * and matching it against the JPA metamodel.
+     *
+     * @param method the repository method annotated with @Query
+     * @param entityManager the entity manager to access the metamodel
+     * @return the entity class, or null if not resolvable
+     */
+    private Class<?> resolveEntityTypeFromJpql(Method method, EntityManager entityManager) {
+        Query queryAnnotation = method.getAnnotation(Query.class);
+        if (queryAnnotation == null) {
+            return null;
+        }
+        String jpql = queryAnnotation.value().trim();
+        Matcher matcher = JPQL_ENTITY_PATTERN.matcher(jpql);
+        if (!matcher.find()) {
+            return null;
+        }
+        String entityName = matcher.group(1);
+        for (EntityType<?> entityType : entityManager.getMetamodel().getEntities()) {
+            if (entityType.getName().equals(entityName)) {
+                return entityType.getJavaType();
+            }
+        }
+        logger.warning("Entity name '" + entityName + "' from @Query JPQL not found in metamodel for method " + method.getName());
         return null;
     }
 
@@ -370,8 +407,18 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
             if (entityTypeInMethod != null) {
                 declaredEntityClass = entityTypeInMethod;
-            }
-            else if (declaredEntityClass == null) {
+            } else if (queryType == QueryType.QUERY) {
+                // For @Query methods, parse the JPQL string to resolve the entity type
+                Class<?> entityFromJpql = resolveEntityTypeFromJpql(method, entityManager);
+                if (entityFromJpql != null) {
+                    declaredEntityClass = entityFromJpql;
+                } else if (declaredEntityClass == null) {
+                    throw new MappingException(
+                            String.format("Could not determine entity type for @Query method '%s' in %s. " +
+                                            "The JPQL query does not contain a recognizable entity name.",
+                                    method.getName(), method.getDeclaringClass().getName()));
+                }
+            } else if (declaredEntityClass == null) {
                 throw new MappingException(
                         String.format("Could not determine primary entity type for repository method '%s' in %s. " +
                                         "Either extend a repository interface with entity type parameters or " +
