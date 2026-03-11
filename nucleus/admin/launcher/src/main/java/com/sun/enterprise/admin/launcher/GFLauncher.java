@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -53,7 +53,6 @@ import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -97,8 +96,6 @@ public abstract class GFLauncher {
     private Process process;
     private ProcessStreamDrainer psd;
     private boolean logFilenameWasFixed = false;
-    private boolean needsAutoUpgrade = false;
-    private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
     
@@ -199,7 +196,6 @@ public abstract class GFLauncher {
         }
         setJavaExecutable();
         setupJvmOptions(parser);
-        setupUpgradeSecurity();
 
         Map<String, String> realmprops = parser.getAdminRealmProperties();
         if (realmprops != null) {
@@ -212,7 +208,6 @@ public abstract class GFLauncher {
 
         secureAdminEnabled = parser.getSecureAdminEnabled();
 
-        renameOsgiCache();
         setupMonitoring(parser);
         sysPropsFromXml = parser.getSystemProperties();
         asenvProps.put(INSTANCE_ROOT_PROPERTY, getInfo().getInstanceRootDir().getPath());
@@ -228,9 +223,6 @@ public abstract class GFLauncher {
         setCommandLine();
         logCommandLine();
         checkJDKVersion();
-        // if no <network-config> element, we need to upgrade this domain
-        needsAutoUpgrade = !parser.hasNetworkConfig();
-        needsManualUpgrade = !parser.hasDefaultConfig();
         setupCalledByClients = true;
     }
     
@@ -333,25 +325,7 @@ public abstract class GFLauncher {
         return debugPort >= 0 && debugSuspend;
     }
 
-    /**
-     * Does this domain need to be automatically upgraded before it can be
-     * started?
-     *
-     * @return true if the domain needs to be upgraded first
-     */
-    public final boolean needsAutoUpgrade() {
-        return needsAutoUpgrade;
-    }
 
-    /**
-     * Does this domain need to be manually upgraded before it can be started?
-     *
-     * @return true if the domain needs to be upgraded first
-     */
-    public final boolean needsManualUpgrade() {
-        return needsManualUpgrade;
-    }
-    
     ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     //////     ALL private and package-private below   ////////////////////////
@@ -922,58 +896,6 @@ public abstract class GFLauncher {
             GFLauncherLogger.fine(GFLauncherLogger.DEFAULT_JVM_OPTION, 
                     PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_PROPERTY,
                     PayaraDefaultJvmOptions.GRIZZLY_DEFAULT_MEMORY_MANAGER_VALUE);
-        }
-    }
-
-    private void setupUpgradeSecurity() throws GFLauncherException {
-        // If this is an upgrade and the security manager is on,
-        // copy the current server.policy file to the domain
-        // before the upgrade.
-        if (info.isUpgrade()
-                && jvmOptions.sysProps.containsKey("java.security.manager")) {
-
-            GFLauncherLogger.info(GFLauncherLogger.COPY_SERVER_POLICY);
-
-            File source = new File(new File(new File(info.installDir, "lib"),
-                    "templates"), "server.policy");
-            File target = new File(info.getConfigDir(), "server.policy");
-
-            try {
-                FileUtils.copyFile(source, target);
-            }
-            catch (IOException ioe) {
-                // the actual error is wrapped differently depending on
-                // whether the problem was with the source or target
-                Throwable cause = ioe.getCause() == null ? ioe : ioe.getCause();
-                throw new GFLauncherException(STRINGS.get(
-                        "COPY_SERVER_POLICY_error", cause.getMessage()));
-            }
-        }
-    }
-
-    /**
-     * Because of some issues in GlassFish OSGi launcher, a server updated from
-     * version 3.0.x to 3.1 won't start if a OSGi cache directory populated with
-     * 3.0.x modules is used. So, as a work around, we rename the cache
-     * directory when upgrade path is used. See GLASSFISH-15772 for more
-     * details.
-     *
-     * @throws GFLauncherException if it fails to rename the cache directory
-     */
-    private void renameOsgiCache() throws GFLauncherException {
-        if (info.isUpgrade()) {
-            File osgiCacheDir = new File(info.getDomainRootDir(),
-                    "osgi-cache");
-            File backupOsgiCacheDir = new File(info.getDomainRootDir(),
-                    "osgi-cache-" + System.currentTimeMillis());
-            if (osgiCacheDir.exists() && !backupOsgiCacheDir.exists()) {
-                if (!FileUtils.renameFile(osgiCacheDir, backupOsgiCacheDir)) {
-                    throw new GFLauncherException(STRINGS.get("rename_osgi_cache_failed", osgiCacheDir, backupOsgiCacheDir));
-                }
-                else {
-                    GFLauncherLogger.fine("rename_osgi_cache_succeeded", osgiCacheDir, backupOsgiCacheDir);
-                }
-            }
         }
     }
 
