@@ -188,10 +188,6 @@ public class DataCommonOperationUtility {
 
     public static EntityMetadata preprocesEntityMetadata(Map<Class<?>, EntityMetadata> mapOfMetaData, EntityManager entityManager, Class<?> declaredEntityClass,
                                                          Method method) {
-        if (declaredEntityClass == null) {
-            declaredEntityClass = findEntityTypeInMethod(method);
-        }
-
         if (mapOfMetaData != null && mapOfMetaData.containsKey(declaredEntityClass)) {
             return mapOfMetaData.get(declaredEntityClass);
         }
