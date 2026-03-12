@@ -58,10 +58,8 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.inject.spi.PassivationCapable;
 import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.EntityType;
-import jakarta.persistence.Table;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -69,8 +67,6 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -188,6 +184,10 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         logger.info("Processing query for entity class: " + repository);
         //get entity type
         Class<?> declaredEntityClass = getEntityType(this.repository);
+        // If entity type is not declared via generics, infer it from lifecycle method parameters
+        if (declaredEntityClass == null) {
+            declaredEntityClass = inferEntityTypeFromLifecycleMethods(this.repository);
+        }
         logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
         try (EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get()) {
             for (Method method : this.repository.getMethods()) {
@@ -210,11 +210,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
      * @return the entity class used of the operation
      */
     private Class<?> getEntityType(Class<?> repositoryInterface) {
-        Class<?> entityType = getEntityTypeFromGenerics(repositoryInterface);
-        if (entityType != null) {
-            return entityType;
-        }
-        return inferEntityTypeFromMethods(repositoryInterface);
+        return getEntityTypeFromGenerics(repositoryInterface);
     }
 
     private Class<?> getEntityTypeFromGenerics(Class<?> repositoryInterface) {
@@ -265,73 +261,29 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         return null;
     }
 
-    private Class<?> inferEntityTypeFromMethods(Class<?> repositoryInterface) {
-        logger.info("Inferring entity type from methods");
+    /**
+     * Infers the primary entity type by inspecting lifecycle method ({@code @Insert}, {@code @Save},
+     * {@code @Update}, {@code @Delete}) parameters. This handles repositories that do not declare
+     * their entity type via generic type parameters but whose entity type can be determined from
+     * the parameter types of their lifecycle methods, as required by the Jakarta Data specification.
+     *
+     * @param repositoryInterface the repository interface to inspect
+     * @return the inferred entity class, or null if not determinable
+     */
+    private Class<?> inferEntityTypeFromLifecycleMethods(Class<?> repositoryInterface) {
         for (Method method : repositoryInterface.getMethods()) {
-            if (isRepositoryMethodCandidate(method)) {
-                Class<?> entityType = findEntityTypeInMethodSignature(method);
+            if (method.isDefault()) {
+                continue;
+            }
+            if (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Save.class)
+                    || method.isAnnotationPresent(Update.class) || method.isAnnotationPresent(Delete.class)) {
+                Class<?> entityType = findEntityTypeInMethod(method);
                 if (entityType != null) {
-                    logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
                     return entityType;
                 }
             }
         }
         return null;
-    }
-
-    private boolean isRepositoryMethodCandidate(Method method) {
-        if (method.isAnnotationPresent(Insert.class) ||
-                method.isAnnotationPresent(Save.class) ||
-                method.isAnnotationPresent(Update.class) ||
-                method.isAnnotationPresent(Delete.class) ||
-                method.isAnnotationPresent(Find.class)) {
-            return true;
-        }
-        String methodName = method.getName();
-        return methodName.startsWith("find") ||
-                methodName.startsWith("delete") ||
-                methodName.startsWith("count") ||
-                methodName.startsWith("exists");
-    }
-
-    private Class<?> findEntityTypeInMethodSignature(Method method) {
-        Class<?> returnType = method.getReturnType();
-        if (isEntityCandidate(returnType)) {
-            return returnType;
-        }
-
-        if (returnType.isArray()) {
-            Class<?> componentType = returnType.getComponentType();
-            if (isEntityCandidate(componentType)) {
-                return componentType;
-            }
-        }
-
-        Type genericReturnType = method.getGenericReturnType();
-        if (genericReturnType instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType) genericReturnType;
-            Type[] args = paramType.getActualTypeArguments();
-            if (args.length > 0 && args[0] instanceof Class) {
-                Class<?> argClass = (Class<?>) args[0];
-                if (isEntityCandidate(argClass)) {
-                    return argClass;
-                }
-            }
-        }
-        Class<?> entityClass = findEntityTypeInMethod(method);
-        if (isEntityCandidate(entityClass)) {
-            return entityClass;
-        }
-        return null;
-    }
-
-    public static boolean isEntityCandidate(Class<?> clazz) {
-        if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
-                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class) ||
-                clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class)) {
-            return false;
-        }
-        return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
     }
 
     public Class<?> getEntityParamClass(Method method) {

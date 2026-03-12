@@ -82,11 +82,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
-import static fish.payara.data.core.cdi.extension.DynamicInterfaceDataProducer.isEntityCandidate;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Class for common utility methods
@@ -281,6 +284,15 @@ public class DataCommonOperationUtility {
         return null;
     }
     
+    public static boolean isEntityCandidate(Class<?> clazz) {
+        if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
+                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class) ||
+                clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class)) {
+            return false;
+        }
+        return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
+    }
+
     public static Class<?> evaluateReturnEntity(Class<?> cl) {
         if (isEntityCandidate(cl)) {
             return cl;
