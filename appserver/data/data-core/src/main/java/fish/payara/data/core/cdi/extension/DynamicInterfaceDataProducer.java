@@ -261,7 +261,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 return entityType.getJavaType();
             }
         }
-        logger.warning("Entity name '" + entityName + "' from @Query JPQL not found in metamodel for method " + method.getName());
+        logger.warning("@Query on method " + method.getName() + " references an entity named '" + entityName + "' which does not exist in the metamodel");
         return null;
     }
 
