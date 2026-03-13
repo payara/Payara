@@ -183,7 +183,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private void processQueriesForEntity() {
         logger.info("Processing query for entity class: " + repository);
         //get entity type
-        Class<?> declaredEntityClass = getEntityType(this.repository);
+        Class<?> declaredEntityClass = getEntityTypeFromGenerics(this.repository);
         // If entity type is not declared via generics, infer it from lifecycle method parameters
         if (declaredEntityClass == null) {
             declaredEntityClass = inferEntityTypeFromLifecycleMethods(this.repository);
@@ -201,16 +201,6 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 addQueries(entityManager, repository, declaredEntityClass, entityParamType, method);
             }
         }
-    }
-
-    /**
-     * This method review all the interfaces implemented by this class and get the entity type mapped
-     *
-     * @param repositoryInterface This is the interface class from the application
-     * @return the entity class used of the operation
-     */
-    private Class<?> getEntityType(Class<?> repositoryInterface) {
-        return getEntityTypeFromGenerics(repositoryInterface);
     }
 
     private Class<?> getEntityTypeFromGenerics(Class<?> repositoryInterface) {
