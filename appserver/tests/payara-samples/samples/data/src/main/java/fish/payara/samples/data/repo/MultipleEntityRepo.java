@@ -66,9 +66,6 @@ public interface MultipleEntityRepo { // Do not add a primary entity type.
     @Insert
     Box[] addAll(Box... boxes);
 
-    @Query("DELETE FROM Box")
-    long removeAll();
-
     // Methods for Coordinate entity:
 
     @Insert
@@ -79,7 +76,4 @@ public interface MultipleEntityRepo { // Do not add a primary entity type.
 
     @Query("DELETE WHERE name = ?1")
     long deletePrimaryEntityType(String name);
-
-    @Query("WHERE id = ?1")
-    Optional<Coordinate> withUUID(UUID id);
 }
