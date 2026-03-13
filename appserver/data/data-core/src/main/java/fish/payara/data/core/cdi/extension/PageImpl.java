@@ -43,6 +43,8 @@ import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +73,7 @@ public class PageImpl<T> implements Page<T> {
         this.pageRequest = pageRequest;
         this.entityManager = em;
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getQueryMetadata().getDeclaredEntityClass());
+        TypedQuery<T> query = (TypedQuery<T>) createQueryForResultType(em, queryData);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -213,5 +215,25 @@ public class PageImpl<T> implements Page<T> {
         return "Page:" + this.pageRequest.page() +
                 " From Entity:" + this.queryData.getQueryMetadata().getDeclaredEntityClass().getName() +
                 " page size:" + this.pageRequest.size();
+    }
+
+    private static jakarta.persistence.Query createQueryForResultType(EntityManager em, QueryData queryData) {
+        Class<?> entityClass = queryData.getQueryMetadata().getDeclaredEntityClass();
+        Class<?> resultElementType = resolveResultElementType(queryData.getQueryMetadata().getMethod());
+        if (resultElementType != null && !resultElementType.equals(entityClass)) {
+            return em.createQuery(queryData.getQueryString());
+        }
+        return em.createQuery(queryData.getQueryString(), entityClass);
+    }
+
+    static Class<?> resolveResultElementType(java.lang.reflect.Method method) {
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType paramType) {
+            Type[] typeArgs = paramType.getActualTypeArguments();
+            if (typeArgs.length > 0 && typeArgs[0] instanceof Class<?> cls) {
+                return cls;
+            }
+        }
+        return null;
     }
 }

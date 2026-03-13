@@ -44,6 +44,8 @@ import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -80,7 +82,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
         String sql = cursor.isEmpty() ? queryData.getQueryString() : isForward ? queryData.getQueryNext() : queryData.getQueryPrevious();
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(sql, queryData.getQueryMetadata().getDeclaredEntityClass());
+        TypedQuery<T> query = (TypedQuery<T>) createQueryForResultType(em, sql, queryData);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -248,5 +250,25 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
                 "page=" + pageRequest.page() +
                 ", pageRequest=" + pageRequest +
                 ", from Entity=" + queryData.getQueryMetadata().getDeclaredEntityClass().getName();
+    }
+
+    private static jakarta.persistence.Query createQueryForResultType(EntityManager em, String sql, QueryData queryData) {
+        Class<?> entityClass = queryData.getQueryMetadata().getDeclaredEntityClass();
+        Class<?> resultElementType = resolveResultElementType(queryData.getQueryMetadata().getMethod());
+        if (resultElementType != null && !resultElementType.equals(entityClass)) {
+            return em.createQuery(sql);
+        }
+        return em.createQuery(sql, entityClass);
+    }
+
+    static Class<?> resolveResultElementType(java.lang.reflect.Method method) {
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType paramType) {
+            Type[] typeArgs = paramType.getActualTypeArguments();
+            if (typeArgs.length > 0 && typeArgs[0] instanceof Class<?> cls) {
+                return cls;
+            }
+        }
+        return null;
     }
 }
