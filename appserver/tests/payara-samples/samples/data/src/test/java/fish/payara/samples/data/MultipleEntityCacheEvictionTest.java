@@ -226,4 +226,33 @@ public class MultipleEntityCacheEvictionTest {
         assertNotNull("Box BX1 should still exist", em.find(Box.class, "BX1"));
         utx.commit();
     }
+
+    @Test
+    public void testQueryWithoutEntityNameReference() throws Exception {
+        // 1. Insert Box entities via the repository
+        Box box1 = Box.of("B1", "TestBox1", "desc1", 10, 10, 10, "CARDBOARD", "RED", true);
+        Box box2 = Box.of("B2", "TestBox2", "desc2", 20, 20, 20, "WOOD", "BLUE", false);
+
+        utx.begin();
+        multipleEntityRepo.addAll(box1, box2);
+        utx.commit();
+
+        utx.begin();
+        em.find(Box.class, "B1");
+        utx.commit();
+
+        // 2. Verify Box (B1) is in the cache
+        assertTrue("Box B1 should be in cache", cache.contains(Box.class, "B1"));
+
+        // 3. Execute @Query("DELETE WHERE name = ?1")
+        utx.begin();
+        long deleted = multipleEntityRepo.deletePrimaryEntityType(box1.name);
+        utx.commit();
+
+        // 4. Verify only one Box is deleted
+        assertEquals("Should delete 1 Box (B1)", 1, deleted);
+
+        assertFalse("Box B1 should not NOT be in cache",
+                cache.contains(Box.class, "B1"));
+    }
 }

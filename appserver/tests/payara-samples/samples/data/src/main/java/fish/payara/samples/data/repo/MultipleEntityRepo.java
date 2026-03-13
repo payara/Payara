@@ -77,6 +77,9 @@ public interface MultipleEntityRepo { // Do not add a primary entity type.
     @Query("DELETE FROM Coordinate WHERE x > 0.0d AND y > 0.0f")
     long deleteIfPositive();
 
+    @Query("DELETE WHERE name = ?1")
+    long deletePrimaryEntityType(String name);
+
     @Query("WHERE id = ?1")
     Optional<Coordinate> withUUID(UUID id);
 }
