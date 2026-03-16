@@ -140,9 +140,6 @@ public class RoundRobinPolicy {
     @LogMessageInfo(message = "Unknown host: {0} Exception thrown : {1}")
     public static final String UNKNOWN_HOST = "AS-ORB-00005";
 
-    @LogMessageInfo(message = "Using JNDI Provider URL {0}")
-    public static final String NO_ENDPOINTS_SELECTED_PROVIDER = "AS-ORB-00006";
-
     @LogMessageInfo(message = "Exception : {0} thrown for bad provider URL String: {1}")
     public static final String PROVIDER_EXCEPTION = "AS-ORB-00007";
 
@@ -309,7 +306,7 @@ public class RoundRobinPolicy {
             try {
                 final IiopUrl providerURL = new IiopUrl(providerURLString);
                 final List<String> newList = getAddressPortList(providerURL);
-                logger.log(Level.INFO, NO_ENDPOINTS_SELECTED_PROVIDER, providerURLString);
+                logger.log(Level.INFO, "Using JNDI Provider URL {0}", providerURLString);
                 return newList;
             } catch (MalformedURLException me) {
                 logger.log(Level.WARNING, PROVIDER_EXCEPTION, new Object[] { me, providerURLString });

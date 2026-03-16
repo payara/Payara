@@ -537,7 +537,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
                 if (Integer.valueOf(iiopListener.getPort()) == socket.getLocalPort()) {
                     // Check for the property globally before checking on the specific listener, giving precedence to the
                     // new property
-                    if (System.getProperty(SO_KEEPALIVE) == null || Boolean.getBoolean(SO_KEEPALIVE)) {
+                    if (Boolean.getBoolean(SO_KEEPALIVE)) {
                         // Check if the property has been set on the listener
                         if (soKeepAlivePropertyPresentOnIiopListener(iiopListener)) {
                             // Check if we should override the global value
@@ -595,15 +595,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
      * @return True if the SO_KEEPALIVE property is enabled on the IIOP listener
      */
     private boolean soKeepAlivePropertyEnabledOnIiopListener(IiopListener iiopListener) {
-        boolean soKeepAliveEnabledOnListener = false;
-
-        // If the new property isn't present and the deprecated one is set to true, or if the new property is set to
-        // true, then register SO_KEEPALIVE as enabled on the listener
-        if (iiopListener.getPropertyValue(SO_KEEPALIVE) == null || Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE))) {
-            soKeepAliveEnabledOnListener = true;
-        }
-
-        return soKeepAliveEnabledOnListener;
+        return Boolean.parseBoolean(iiopListener.getPropertyValue(SO_KEEPALIVE));
     }
 
     /**
