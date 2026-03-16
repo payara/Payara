@@ -82,7 +82,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
         String sql = cursor.isEmpty() ? queryData.getQueryString() : isForward ? queryData.getQueryNext() : queryData.getQueryPrevious();
 
-        TypedQuery<T> query = (TypedQuery<T>) createQueryForResultType(em, sql, queryData);
+        jakarta.persistence.Query query = createQueryForResultType(em, sql, queryData);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -104,7 +104,9 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
 
-        results = query.getResultList();
+        @SuppressWarnings("unchecked")
+        List<T> queryResults = query.getResultList();
+        results = queryResults;
         if (!isForward && !results.isEmpty()) {
             if (results.size() > pageRequest.size()) {
                 results = results.subList(0, pageRequest.size());

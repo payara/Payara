@@ -73,7 +73,7 @@ public class PageImpl<T> implements Page<T> {
         this.pageRequest = pageRequest;
         this.entityManager = em;
 
-        TypedQuery<T> query = (TypedQuery<T>) createQueryForResultType(em, queryData);
+        jakarta.persistence.Query query = createQueryForResultType(em, queryData);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -88,7 +88,9 @@ public class PageImpl<T> implements Page<T> {
         }
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + (pageRequest.size() == Integer.MAX_VALUE ? 0 : 1));
-        results = query.getResultList();
+        @SuppressWarnings("unchecked")
+        List<T> queryResults = query.getResultList();
+        results = queryResults;
         if (pageRequest.requestTotal()) {
             totalElements();
         }
