@@ -77,9 +77,7 @@ public class BaseProcessor implements OASProcessor {
 
         // Set the OpenAPI version if it hasn't been set
         if (api.getOpenapi() == null) {
-            // FIXME: change to 3.1.0 when MP TCK is upgraded
-            // api.setOpenapi("3.1.0");
-            api.setOpenapi("4.1");
+            api.setOpenapi("3.1.0");
         }
 
         // Set the info if it hasn't been set
