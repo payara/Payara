@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -175,8 +175,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
             descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds(Integer.parseInt(value));
         } else if (RuntimeTagNames.USE_THREAD_POOL_ID.equals(qName)) {
             descriptor.getIASEjbExtraDescriptors().setUseThreadPoolId(value);
-        } else if (RuntimeTagNames.CHECKPOINTED_METHODS.equals(qName)) {
-            descriptor.getIASEjbExtraDescriptors().setCheckpointedMethods(value);
         } else if(RuntimeTagNames.PER_REQUEST_LOAD_BALANCING.equals(qName)) {
             descriptor.getIASEjbExtraDescriptors().setPerRequestLoadBalancing(Boolean.valueOf(value));
         } else if(RuntimeTagNames.PAYARA_CLUSTERED_BEAN.equals(qName)) {
@@ -231,9 +229,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 
     @Override
     public boolean endElement(XMLElement element) {
-        if(RuntimeTagNames.EJB.equals(element.getQName())) {
-            descriptor.getIASEjbExtraDescriptors().parseCheckpointedMethods(descriptor);
-        }
         return super.endElement(element);
     }
     
@@ -371,7 +366,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 	    flushNode.writeDescriptor(ejbNode, RuntimeTagNames.FLUSH_AT_END_OF_METHOD, flushMethodDesc);
 	}
 
-        // checkpointed-methods
         // checkpoint-at-end-of-method
         CheckpointAtEndOfMethodDescriptor checkpointMethodDesc = ejbDescriptor.getIASEjbExtraDescriptors().getCheckpointAtEndOfMethodDescriptor();
         if (checkpointMethodDesc!=null) {

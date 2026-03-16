@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 /*
  * This generated bean class Ejb matches the DTD element ejb
@@ -67,7 +68,6 @@ import com.sun.enterprise.deployment.util.DOLUtils;
  * isReadOnlyBean
  * refreshPeriodInSeconds
  * commitOption
- * checkpointedMethods
  * passByReference
  * BeanPoolDescriptor
  * BeanCacheDescriptor
@@ -123,8 +123,6 @@ public class IASEjbExtraDescriptors extends RuntimeDescriptor {
 
     private CheckpointAtEndOfMethodDescriptor checkpointMethodDescriptor = null;
 
-    private String checkpointedMethods = null;
-
     /**
      * This contains the pass-by-reference property.
      */
@@ -156,13 +154,6 @@ public class IASEjbExtraDescriptors extends RuntimeDescriptor {
      * per-request load balancing is not enabled.
      */
     private Boolean perRequestLoadBalancing;
-
-    // contants used to parse the checkpointedMethods 
-    private final static String METHODS_DELIM = ";";
-    private final static String PARAMS_DELIM = ",";
-    private final static String LEFT_PAREN = "(";
-    private final static String RIGHT_PAREN = ")";
-    private final static String PARAM_DELIM = " ";
 
     /** 
      * Default constructor. 
@@ -239,22 +230,6 @@ public class IASEjbExtraDescriptors extends RuntimeDescriptor {
     public void setCheckpointAtEndOfMethodDescriptor(
         CheckpointAtEndOfMethodDescriptor checkpointMethodDescriptor) {
         this.checkpointMethodDescriptor = checkpointMethodDescriptor;
-    }
-
-     /**
-      * Getter for property checkpointedMethods
-      * @return Value of property checkpointedMethods
-      */
-    public String getCheckpointedMethods() {
-        return checkpointedMethods;
-    }
-
-    /**
-     * Setter for property checkpointedMethods
-     * @param checkpointedMethods New value of checkpointed methods.
-     */
-    public void setCheckpointedMethods(String checkpointedMethods) {
-        this.checkpointedMethods = checkpointedMethods;
     }
 
     /** 
@@ -467,103 +442,4 @@ public class IASEjbExtraDescriptors extends RuntimeDescriptor {
     public void setPerRequestLoadBalancing(Boolean perRequestLoadBalancing) {
         this.perRequestLoadBalancing = perRequestLoadBalancing;
     }
-
-     /**
-      * Parse checkpointed-methods element and save its values in
-      * CheckpointAtEndOfMethodDescriptor
-      *
-      * The methods should be separated by semicolons. 
-      * The param list should separated by commas.  
-      * All method param types should be full qualified.
-      * Variable name is allowed for the param type.
-      * No return type or exception type.
-      *
-      * Example:
-      * foo(java.lang.String,  a.b.c d); bar(java.lang.String s)
-      * 
-      */
-    public void parseCheckpointedMethods(EjbDescriptor ejbDesc) {
-        if (checkpointedMethods == null || 
-            checkpointedMethods.trim().length() == 0) {
-            return;
-        }
-        if (checkpointMethodDescriptor == null) {
-            checkpointMethodDescriptor = 
-                new CheckpointAtEndOfMethodDescriptor();
-            setCheckpointAtEndOfMethodDescriptor(checkpointMethodDescriptor);
-            checkpointMethodDescriptor.setEjbDescriptor(ejbDesc);
-        }
-        StringTokenizer methodsTokenizer = 
-            new StringTokenizer(checkpointedMethods, METHODS_DELIM);
-        while (methodsTokenizer.hasMoreTokens()) {
-            // process each method
-            String method = methodsTokenizer.nextToken().trim();
-            if (method.length() == 0) {
-                continue;
-            }
-            MethodDescriptor methodDescriptor = 
-                parseCheckpointedMethod(method);
-            if (methodDescriptor != null) {
-                checkpointMethodDescriptor.getMethodDescriptors().add(
-                    methodDescriptor);
-            }
-        }
-    }
-
-
-    // parse the given method string into a MethodDescriptor
-    private MethodDescriptor parseCheckpointedMethod (String method) {
-        String methodName, methodParams;
-        ArrayList paramTypeList = new ArrayList();
-        try {
-            if ( method.indexOf(LEFT_PAREN) != -1 && 
-                method.indexOf(RIGHT_PAREN) != -1 ) { 
-                int pos = method.indexOf(LEFT_PAREN);
-                int pos2 = method.indexOf(RIGHT_PAREN);
-                // retrieve the method name
-                methodName = method.substring(0, pos).trim(); 
-                // retrieve the parameter list
-                if (pos < pos2-1) {
-                    methodParams = method.substring(pos+1, pos2).trim();
-                    StringTokenizer paramsTokenizer = 
-                        new StringTokenizer(methodParams, PARAMS_DELIM);
-                    while (paramsTokenizer.hasMoreTokens()) {
-                        // process each param
-                        String param = paramsTokenizer.nextToken().trim();
-                        if (param.length() == 0) {
-                            continue;
-                        }
-                        StringTokenizer paramTokenizer = 
-                            new StringTokenizer(param, PARAM_DELIM);
-                        while (paramTokenizer.hasMoreTokens()) {
-                            String paramType = 
-                                paramTokenizer.nextToken().trim();
-                            if (paramType.length() != 0) {
-                                paramTypeList.add(paramType);
-                                // only interested in the first token
-                                break;   
-                            }
-                        }
-                    }
-                }
-                if (paramTypeList.size() > 0) {
-                    String[] paramTypeArray = (String[])paramTypeList.toArray(
-                        new String[paramTypeList.size()]);
-                    return new MethodDescriptor(methodName, null, 
-                        paramTypeArray, null);
-                } else {
-                    return new MethodDescriptor(methodName, null, null, null);
-                }               
-            } else {
-                DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment_badformat_checkpointedmethods", new Object[] {method});
-                return null;
-            }
-        } catch (Exception e) {
-            // any parsing exception indicates it is not a well-formed
-            // string, we will just print warning and return null
-            DOLUtils.getDefaultLogger().log(Level.WARNING, "enterprise.deployment_badformat_checkpointedmethods", new Object[] {method});
-            DOLUtils.getDefaultLogger().log(Level.WARNING, e.getMessage(), e);
-            return null;
-        }     
-    }        
 }
