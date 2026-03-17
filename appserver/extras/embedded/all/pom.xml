@@ -397,13 +397,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>opentracing-jaxws-package</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
 
         <!-- Healthcheck Package -->
         <dependency>

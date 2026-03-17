@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime;
 
@@ -71,8 +71,7 @@ import java.util.logging.Logger;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import io.opentracing.Tracer.SpanBuilder;
+
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +82,6 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -308,10 +306,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
 
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            startConcurrentContextSpan(invocation, handle);
-        }
-
         if (stuckThreads != null) {
             stuckThreads.registerThread(Thread.currentThread().threadId());
         }
@@ -326,39 +320,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
                 Collections.EMPTY_LIST, restorers);
-    }
-
-    private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
-        Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-
-        // Start a trace in the request tracing system
-        SpanBuilder builder = tracer.buildSpan("executeConcurrentContext");
-
-        // Check for propagated span
-        if (handle.getParentTraceContext() != null) {
-            builder.asChildOf(handle.getParentTraceContext());
-
-            // Check for the presence of a propagated parent operation name
-            StreamSupport.stream(handle.getParentTraceContext().baggageItems().spliterator(), false)
-                    .filter(e -> "operation.name".equals(e.getKey()))
-                    .forEach(e -> builder.withTag("Parent Operation Name", e.getValue()));
-        }
-
-        if (invocation != null) {
-            builder.withTag("App Name", invocation.getAppName())
-                    .withTag("Component ID", invocation.getComponentId())
-                    .withTag("Module Name", invocation.getModuleName());
-
-            Object instance = invocation.getInstance();
-            if (instance != null) {
-                builder.withTag("Class Name", instance.getClass().getName());
-            }
-        }
-
-        builder.withTag("Thread Name", Thread.currentThread().getName());
-
-        tracer.activateSpan(builder.start());
     }
 
     @Override

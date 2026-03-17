@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) [2018-2026] Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,7 @@ import java.util.UUID;
  * @author jonathan coustick
  * @since 5.183
  */
-public class RequestTraceSpanContext implements Serializable, io.opentracing.SpanContext {
+public class RequestTraceSpanContext implements Serializable {
 
     private static final long serialVersionUID = 20180803L;
 
@@ -80,12 +80,6 @@ public class RequestTraceSpanContext implements Serializable, io.opentracing.Spa
         baggageItems = new HashMap<>();
     }
 
-    public RequestTraceSpanContext(UUID traceId, UUID parentId, Map<String, String> baggageItems) {
-        spanId = parentId;
-        this.traceId = traceId;
-        this.baggageItems = new HashMap<>(baggageItems);
-    }
-
     public UUID getSpanId() {
         return spanId;
     }
@@ -97,17 +91,7 @@ public class RequestTraceSpanContext implements Serializable, io.opentracing.Spa
     public void setTraceId(UUID traceId) {
         this.traceId = traceId;
     }
-
-    @Override
-    public String toTraceId() {
-        return traceId.toString();
-    }
-
-    @Override
-    public String toSpanId() {
-        return spanId.toString();
-    }
-
+    
     public void addBaggageItem(String name, String value) {
         if (value != null) {
             // Escape any quotes
@@ -119,11 +103,6 @@ public class RequestTraceSpanContext implements Serializable, io.opentracing.Spa
 
     public Map<String, String> getBaggageItems() {
         return baggageItems;
-    }
-
-    @Override
-    public Iterable<Map.Entry<String, String>> baggageItems() {
-        return getBaggageItems().entrySet();
     }
 
 }

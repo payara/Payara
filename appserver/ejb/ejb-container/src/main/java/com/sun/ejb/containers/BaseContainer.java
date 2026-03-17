@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -90,8 +90,6 @@ import fish.payara.cluster.DistributedLockType;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.AccessLocalException;
@@ -4096,24 +4094,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void addEjbMethodTraceLog(CallFlowInfo info, boolean callEnter) {
         if (openTracingService.isEnabled()) {
-            Tracer tracer = openTracingService.getTracer(openTracingService.getApplicationName(invocationManager));
             RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(info, callEnter);
-
-            if (tracer != null) {
-                Span span = tracer.activeSpan();
-
-                if (span != null) {
-                    span.log(spanLog.getTimeMillis(), spanLog.getLogEntries());
-                } else {
-                    // Traces started in the pre-OpenTracing style won't have an active span, so just attempt to add as
-                    // is to thread local trace if there is one
-                    requestTracingService.addSpanLog(spanLog);
-                }
-            } else {
-                // If we couldn't get a tracer here, it's because we couldn't get a name from the invocation manager.
-                // In such a case, just try to add the span log to the currently active thread local request trace
-                requestTracingService.addSpanLog(spanLog);
-            }
+            requestTracingService.addSpanLog(spanLog);
         }
     }
 

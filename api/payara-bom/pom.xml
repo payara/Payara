@@ -181,11 +181,6 @@
                 <version>${microprofile-config.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-api</artifactId>
-                <version>${microprofile-opentracing.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-api</artifactId>
                 <version>${microprofile-fault-tolerance.version}</version>
@@ -631,25 +626,6 @@
                 <version>${opentelemetry-sdk-extension-incubator.version}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-api</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-util</artifactId>
-                <version>${opentracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-noop</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
             <!-- Implementations -->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>

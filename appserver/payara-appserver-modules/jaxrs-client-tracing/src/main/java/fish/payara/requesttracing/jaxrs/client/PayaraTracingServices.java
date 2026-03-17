@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2020 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package fish.payara.requesttracing.jaxrs.client;
 
 import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.trace.Tracer;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -49,7 +50,6 @@ import org.glassfish.internal.deployment.Deployment;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
 
 /**
  * This is a class hiding internal mechanism of lookup of HK2 services. The
@@ -161,7 +161,8 @@ public final class PayaraTracingServices {
         if (applicationName == null || !isTracingAvailable()) {
             return null;
         }
-        return openTracingService.getTracer(applicationName);
+        //return openTracingService.getTracer(applicationName);
+        return null;
     }
 
     /**

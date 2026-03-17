@@ -55,15 +55,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.semconv.HttpAttributes;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -1558,12 +1559,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
 
                         Tracer tracer = openTracing.getTracer(applicationName);
-                        if (tracer != null && tracer.activeSpan() != null && response.isCommitted()) {
+                        if (tracer != null && response.isCommitted()) {
                             // If response is not committed, it is likely async
-                            tracer.activeSpan().setTag(
-                                    Tags.HTTP_STATUS.getKey(),
-                                    ((HttpServletResponse) response).getStatus());
-                            tracer.activeSpan().finish();
+                            SpanBuilder spanBuilder = tracer.spanBuilder(applicationName);
+                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus());
                         }
                         // TODO: clear OpenTelemetry context once we move to natively using it.
 

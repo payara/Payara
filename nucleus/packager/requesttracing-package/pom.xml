@@ -42,11 +42,6 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>opentracing-repackaged</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>opentelemetry-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>

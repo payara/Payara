@@ -250,11 +250,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.corba</groupId>
             <artifactId>rmic</artifactId>
         </dependency>

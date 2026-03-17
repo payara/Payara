@@ -112,7 +112,7 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
 
         // ***** OpenTracing Instrumentation *****
         // Check if we should trace this client call
-        if (openTelemetryService != null && openTelemetryService.isEnabled() && shouldTrace(requestContext)) {
+        if (openTelemetryService != null && openTelemetryService.isEnabled()) {
             // Get or create the tracer instance for this application
             final Tracer tracer = payaraTracingServices.getActiveTracer();
 
