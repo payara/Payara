@@ -65,7 +65,7 @@ public abstract class OpenApiBuilderTest {
         info.setTitle("title");
         info.setVersion("version");
         document.setInfo(info);
-        document.setOpenapi("4.1");
+        document.setOpenapi("3.1.0");
         setupBaseDocument(document);
     }
 
