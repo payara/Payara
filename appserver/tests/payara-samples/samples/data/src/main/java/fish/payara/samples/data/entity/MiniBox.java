@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,39 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.samples.data.repo;
+package fish.payara.samples.data.entity;
 
-import fish.payara.samples.data.entity.Coordinate;
-import fish.payara.samples.data.entity.MiniBox;
-import jakarta.data.repository.Insert;
-import jakarta.data.repository.Query;
-import jakarta.data.repository.Repository;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
- * Repository with multiple entity types and no primary entity type parameter.
- *
- * <p>The entity type for {@link #deleteIfPositive()} can only be determined by
- * parsing the JPQL query string — it is Coordinate, not MiniBox. Our implementation
- * previously inferred MiniBox from {@link #addAll(MiniBox...)} which was wrong.</p>
- *
- * <p>Related issue: FISH-13049</p>
+ * Minimal cacheable entity used in multi-entity repository tests.
  */
-@Repository
-public interface MultipleEntityRepo { // Do not add a primary entity type.
+@Entity
+@Cacheable
+public class MiniBox {
 
-    // Methods for MiniBox entity:
+    @Id
+    public String code;
 
-    @Insert
-    MiniBox[] addAll(MiniBox... boxes);
+    public String name;
 
-    // Methods for Coordinate entity:
+    public MiniBox() {}
 
-    @Insert
-    Coordinate create(Coordinate c);
+    public MiniBox(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
 
-    @Query("DELETE FROM Coordinate WHERE x > 0.0d AND y > 0.0f")
-    long deleteIfPositive();
-
-    @Query("DELETE WHERE name = ?1")
-    long deletePrimaryEntityType(String name);
+    public static MiniBox of(String code, String name) {
+        return new MiniBox(code, name);
+    }
 }

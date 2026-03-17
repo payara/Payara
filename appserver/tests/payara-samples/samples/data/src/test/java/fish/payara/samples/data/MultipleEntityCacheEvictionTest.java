@@ -39,8 +39,8 @@
  */
 package fish.payara.samples.data;
 
-import fish.payara.samples.data.entity.Box;
 import fish.payara.samples.data.entity.Coordinate;
+import fish.payara.samples.data.entity.MiniBox;
 import fish.payara.samples.data.repo.MultipleEntityRepo;
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
@@ -67,12 +67,8 @@ import static org.junit.Assert.*;
  *
  * <p>Bug (FISH-13049): When a {@code @Repository} has no primary entity type and
  * contains methods for different entities, the entity type for {@code @Query}
- * methods is wrongly inferred from other method signatures instead of the JPQL
- * query string. This causes cache eviction to target the wrong entity type.</p>
- *
- * <p>Example: {@code MultipleEntityRepo#deleteIfPositive()} has JPQL
- * {@code DELETE FROM Coordinate WHERE ...} but the implementation resolves its
- * entity type as {@code Box} (inferred from {@code addAll(Box...)}).</p>
+ * methods was wrongly inferred from other method signatures instead of the JPQL
+ * query string. This caused cache eviction to target the wrong entity type.</p>
  */
 @RunWith(Arquillian.class)
 public class MultipleEntityCacheEvictionTest {
@@ -104,7 +100,7 @@ public class MultipleEntityCacheEvictionTest {
 
         utx.begin();
         em.createQuery("DELETE FROM Coordinate").executeUpdate();
-        em.createQuery("DELETE FROM Box").executeUpdate();
+        em.createQuery("DELETE FROM MiniBox").executeUpdate();
         utx.commit();
 
         cache.evictAll();
@@ -112,25 +108,13 @@ public class MultipleEntityCacheEvictionTest {
 
     /**
      * FISH-13049: Verifies that a @Query DELETE targeting Coordinate does NOT
-     * evict Box entities from the cache.
-     *
-     * <p>The repository method {@code deleteIfPositive()} has JPQL:
-     * {@code DELETE FROM Coordinate WHERE x > 0.0d AND y > 0.0f}
-     * Its entity type should be Coordinate, resolved from the JPQL query.
-     * However, the current implementation wrongly resolves it as Box (inferred
-     * from the {@code addAll(Box...)} method), causing Box cache entries to be
-     * evicted instead of Coordinate entries.</p>
-     *
-     * <p>This test will FAIL until FISH-13049 is fixed.</p>
+     * evict MiniBox entities from the cache.
      */
     @Test
     public void testQueryDeleteEvictsCorrectEntityType() throws Exception {
-        // 1. Insert Box entities via the repository
-        Box box1 = Box.of("B1", "TestBox1", "desc1", 10, 10, 10, "CARDBOARD", "RED", true);
-        Box box2 = Box.of("B2", "TestBox2", "desc2", 20, 20, 20, "WOOD", "BLUE", false);
-
+        // 1. Insert MiniBox entities via the repository
         utx.begin();
-        multipleEntityRepo.addAll(box1, box2);
+        multipleEntityRepo.addAll(MiniBox.of("B1", "TestBox1"), MiniBox.of("B2", "TestBox2"));
         utx.commit();
 
         // 2. Insert Coordinate entities via the repository
@@ -144,15 +128,15 @@ public class MultipleEntityCacheEvictionTest {
 
         // 3. Load all entities into L2 cache
         utx.begin();
-        em.find(Box.class, "B1");
-        em.find(Box.class, "B2");
+        em.find(MiniBox.class, "B1");
+        em.find(MiniBox.class, "B2");
         em.find(Coordinate.class, c1Id);
         em.find(Coordinate.class, c2Id);
         utx.commit();
 
         // 4. Verify all are in cache
-        assertTrue("Box B1 should be in cache", cache.contains(Box.class, "B1"));
-        assertTrue("Box B2 should be in cache", cache.contains(Box.class, "B2"));
+        assertTrue("MiniBox B1 should be in cache", cache.contains(MiniBox.class, "B1"));
+        assertTrue("MiniBox B2 should be in cache", cache.contains(MiniBox.class, "B2"));
         assertTrue("Coordinate C1 should be in cache", cache.contains(Coordinate.class, c1Id));
         assertTrue("Coordinate C2 should be in cache", cache.contains(Coordinate.class, c2Id));
 
@@ -163,29 +147,20 @@ public class MultipleEntityCacheEvictionTest {
 
         assertEquals("Should delete 1 coordinate (C1)", 1, deleted);
 
-        // 6. CRITICAL ASSERTIONS:
-        // Coordinate cache should be evicted (correct entity type from JPQL)
+        // 6. Coordinate cache should be evicted (correct entity type from JPQL)
         assertFalse("Coordinate C1 (deleted) should NOT be in cache",
                 cache.contains(Coordinate.class, c1Id));
 
-        // Box cache should NOT be evicted — they are unrelated to this query!
-        // BUG: Current implementation evicts Box instead of Coordinate because
-        // it resolves entity type as Box (from addAll method) instead of
-        // parsing the JPQL to find Coordinate.
-        assertTrue("Box B1 should STILL be in cache (unrelated to Coordinate delete)",
-                cache.contains(Box.class, "B1"));
-        assertTrue("Box B2 should STILL be in cache (unrelated to Coordinate delete)",
-                cache.contains(Box.class, "B2"));
+        // MiniBox cache should NOT be evicted — they are unrelated to this query
+        assertTrue("MiniBox B1 should STILL be in cache (unrelated to Coordinate delete)",
+                cache.contains(MiniBox.class, "B1"));
+        assertTrue("MiniBox B2 should STILL be in cache (unrelated to Coordinate delete)",
+                cache.contains(MiniBox.class, "B2"));
     }
 
     /**
-     * FISH-13049 supplementary: Verifies that the @Query method actually
-     * executes the JPQL against the correct entity (Coordinate, not Box).
-     *
-     * <p>If the entity type is wrongly resolved as Box, the JPQL query
-     * {@code DELETE FROM Coordinate WHERE x > 0.0d AND y > 0.0f} might still
-     * execute correctly against the database (since it's raw JPQL), but the
-     * cache eviction will target Box instead of Coordinate.</p>
+     * FISH-13049: Verifies that the @Query DELETE actually deletes the correct
+     * Coordinate rows and leaves MiniBox untouched.
      */
     @Test
     public void testQueryDeleteActuallyDeletesCoordinates() throws Exception {
@@ -202,10 +177,9 @@ public class MultipleEntityCacheEvictionTest {
         multipleEntityRepo.create(Coordinate.of(p4, 2.0, -1.0f));    // negative y: should NOT be deleted
         utx.commit();
 
-        // Also insert a Box — should remain untouched
+        // Also insert a MiniBox — should remain untouched
         utx.begin();
-        multipleEntityRepo.addAll(
-                Box.of("BX1", "SafeBox", "safe", 5, 5, 5, "METAL", "BLACK", true));
+        multipleEntityRepo.addAll(MiniBox.of("BX1", "SafeBox"));
         utx.commit();
 
         // Execute the @Query DELETE
@@ -222,37 +196,39 @@ public class MultipleEntityCacheEvictionTest {
         assertNotNull("P3 should still exist (negative x)", em.find(Coordinate.class, p3));
         assertNotNull("P4 should still exist (negative y)", em.find(Coordinate.class, p4));
 
-        // Verify Box is untouched
-        assertNotNull("Box BX1 should still exist", em.find(Box.class, "BX1"));
+        // Verify MiniBox is untouched
+        assertNotNull("MiniBox BX1 should still exist", em.find(MiniBox.class, "BX1"));
         utx.commit();
     }
 
+    /**
+     * FISH-13049: Verifies that a @Query without an explicit entity name in the
+     * JDQL (e.g. "DELETE WHERE name = ?1") resolves the primary entity type
+     * inferred from lifecycle methods.
+     */
     @Test
     public void testQueryWithoutEntityNameReference() throws Exception {
-        // 1. Insert Box entities via the repository
-        Box box1 = Box.of("B1", "TestBox1", "desc1", 10, 10, 10, "CARDBOARD", "RED", true);
-        Box box2 = Box.of("B2", "TestBox2", "desc2", 20, 20, 20, "WOOD", "BLUE", false);
-
+        // 1. Insert MiniBox entities via the repository
         utx.begin();
-        multipleEntityRepo.addAll(box1, box2);
+        multipleEntityRepo.addAll(MiniBox.of("B1", "TestBox1"), MiniBox.of("B2", "TestBox2"));
         utx.commit();
 
         utx.begin();
-        em.find(Box.class, "B1");
+        em.find(MiniBox.class, "B1");
         utx.commit();
 
-        // 2. Verify Box (B1) is in the cache
-        assertTrue("Box B1 should be in cache", cache.contains(Box.class, "B1"));
+        // 2. Verify MiniBox (B1) is in the cache
+        assertTrue("MiniBox B1 should be in cache", cache.contains(MiniBox.class, "B1"));
 
         // 3. Execute @Query("DELETE WHERE name = ?1")
         utx.begin();
-        long deleted = multipleEntityRepo.deletePrimaryEntityType(box1.name);
+        long deleted = multipleEntityRepo.deletePrimaryEntityType("TestBox1");
         utx.commit();
 
-        // 4. Verify only one Box is deleted
-        assertEquals("Should delete 1 Box (B1)", 1, deleted);
+        // 4. Verify only one MiniBox is deleted
+        assertEquals("Should delete 1 MiniBox (B1)", 1, deleted);
 
-        assertFalse("Box B1 should not NOT be in cache",
-                cache.contains(Box.class, "B1"));
+        assertFalse("MiniBox B1 should NOT be in cache",
+                cache.contains(MiniBox.class, "B1"));
     }
 }

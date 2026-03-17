@@ -1,6 +1,5 @@
 package fish.payara.samples.data.entity;
 
-import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -12,7 +11,6 @@ import jakarta.persistence.Column;
  */
 @Entity
 @Table(name = "boxes")
-@Cacheable
 public class Box {
 
     /**
