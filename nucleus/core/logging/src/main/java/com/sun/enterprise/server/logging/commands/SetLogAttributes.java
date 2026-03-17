@@ -160,8 +160,7 @@ public class SetLogAttributes implements AdminCommand {
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
-        "fish.payara.deprecated.jsonlogformatter.underscoreprefix"};
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 

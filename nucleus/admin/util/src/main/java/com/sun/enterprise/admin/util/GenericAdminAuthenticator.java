@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or it's affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or it's affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -463,9 +463,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             }
         }
 
-        String realm = as.getSystemJmxConnector().getAuthRealmName(); //yes, for backward compatibility;
-        if (realm == null)
-            realm = as.getAuthRealmName();
+        String realm = as.getAuthRealmName();
 
         try {
             return loginAsAdmin(user, new String(password), realm, host);

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -99,27 +99,6 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException
      */
     void setId(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the httpListeners property.
-     *
-     * Comma-separated list of http-listener id(s), Required only for a Virtual Server that is not the default virtual
-     * server.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute
-    @Deprecated
-    String getHttpListeners();
-
-    /**
-     * Sets the value of the httpListeners property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    @Deprecated
-    void setHttpListeners(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the httpListeners property.
