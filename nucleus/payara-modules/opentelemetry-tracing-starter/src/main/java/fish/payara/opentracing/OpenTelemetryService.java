@@ -340,7 +340,7 @@ public class OpenTelemetryService implements EventListener {
             builder.put(OTEL_LOGS_EXPORTER, "none");
         }
         if (!readProperties.containsKey(OTEL_TRACES_EXPORTER)) {
-           builder.put(OTEL_TRACES_EXPORTER, "none"); 
+            builder.put(OTEL_TRACES_EXPORTER, "none");
         }
         return builder;
     }
