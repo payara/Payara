@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2019] [Payara Foundation and/or its affiliates.]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.util;
 
@@ -149,9 +149,6 @@ public class SystemPropertyConstants {
     /** name of the server instance key */
     public static final String SERVER_NAME = "com.sun.aas.instanceName";
 
-    /** name of the server's cluster */
-    public static final String CLUSTER_NAME = "com.sun.aas.clusterName";
-
     /** name of the HADB location property **/
     public static final String HADB_ROOT_PROPERTY = "com.sun.aas.hadbRoot";
 
@@ -213,7 +210,6 @@ public class SystemPropertyConstants {
     public static final String DOCROOT_PROPERTY = "docroot";
     public static final String ACCESSLOG_PROPERTY = "accesslog";
     public static final String DEFAULT_SERVER_SOCKET_ADDRESS = "0.0.0.0";
-    public static final String CLUSTER_AWARE_FEATURE_FACTORY_CLASS = "com.sun.enterprise.ee.server.pluggable.EEPluggableFeatureImpl";
     public static final String DROP_INTERRUPTED_COMMANDS = "org.glassfish.job-manager.drop-interrupted-commands";
 
     /** Name of the default config that determines the configuration for the instances */
