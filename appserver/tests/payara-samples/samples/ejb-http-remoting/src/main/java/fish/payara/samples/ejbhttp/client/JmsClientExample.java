@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,7 @@ public enum JmsClientExample {
 
     JmsClientExample(int version) {
         Hashtable<String, Object> environment = new Hashtable<>();
-        environment.put(INITIAL_CONTEXT_FACTORY, "fish.payara.ejb.rest.client.RemoteEJBContextFactory");
+        environment.put(INITIAL_CONTEXT_FACTORY, "fish.payara.ejb.http.client.RemoteEJBContextFactory");
         environment.put(RemoteEJBContextFactory.JAXRS_CLIENT_PROTOCOL_VERSION, version);
         try {
             // Prepare Client locally
