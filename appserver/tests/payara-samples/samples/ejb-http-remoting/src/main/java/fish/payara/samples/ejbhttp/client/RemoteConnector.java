@@ -52,7 +52,6 @@ import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 
 public enum RemoteConnector {
-    JSON_V0(SerializationType.JSON, 0),
     JSON_V1(SerializationType.JSON, 1),
     JAVA_V1(SerializationType.JAVA, 1);
 

@@ -57,7 +57,6 @@ import static fish.payara.ejb.http.client.adapter.ClientAdapterCustomizer.custom
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 
 public enum JmsClientExample {
-    JSON_V0(0),
     JSON_V1(1);
 
     private final InitialContext context;
