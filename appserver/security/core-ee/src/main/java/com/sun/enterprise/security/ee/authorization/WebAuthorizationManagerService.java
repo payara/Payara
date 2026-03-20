@@ -46,7 +46,6 @@ import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
 import com.sun.enterprise.security.audit.AuditManager;
 import org.glassfish.exousia.modules.def.DefaultPolicy;
 import org.glassfish.exousia.modules.def.DefaultPolicyFactory;
@@ -72,7 +71,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.security.CodeSource;
 import java.security.Permission;
 import java.security.Principal;
-import java.security.ProtectionDomain;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -138,13 +136,6 @@ public class WebAuthorizationManagerService {
     // to which this class delegates all authorization queries.
     protected Policy policy = PolicyProvider.getInstance();
 
-    protected PolicyConfigurationFactory policyConfigurationFactory;
-    protected PolicyConfiguration policyConfiguration;
-    protected CodeSource codesource;
-
-    // protection domain cache
-    private final Map<Set<Principal>, ProtectionDomain> protectionDomainCache = Collections.synchronizedMap(new WeakHashMap<>());
-
     // Permissions tied to unchecked permission cache, and used
     // to determine if the effective policy is grant all
     // WebUserData and WebResource permisions.
@@ -154,8 +145,6 @@ public class WebAuthorizationManagerService {
     // Unchecked permission cache used by the CachedPermissions defined above.
     private PermissionCache uncheckedPermissionCache;
 
-    // ProbeProvider
-    private final WebSecurityDeployerProbeProvider probeProvider = new WebSecurityDeployerProbeProvider();
     private boolean register = true;
 
     private static final ThreadLocal<HttpServletRequest> currentRequest = new ThreadLocal<>();
