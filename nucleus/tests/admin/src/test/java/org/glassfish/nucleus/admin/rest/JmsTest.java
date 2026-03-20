@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 package org.glassfish.nucleus.admin.rest;
 
 import java.io.UnsupportedEncodingException;
@@ -186,37 +187,6 @@ public class JmsTest extends RestTestBase {
         assertEquals(consumerFlowLimit, entity.get("ConsumerFlowLimit"));
 
         deleteJmsPhysicalDestination(destName, URL_SEVER_JMS_DEST);
-    }
-
-    @Test(enabled=false)
-    public void testJmsPhysicalDestionationsWithClusters() {
-        final String destName = "jmsDest" + generateRandomString();
-        ClusterTest ct = getTestClass(ClusterTest.class);
-        final String clusterName = ct.createCluster();
-        ct.createClusterInstance(clusterName, "in1_"+clusterName);
-        ct.startCluster(clusterName);
-        final String endpoint = "/domain/clusters/cluster/" + clusterName;
-        try {
-            
-            createJmsPhysicalDestination(destName, "topic", endpoint);
-            final HashMap<String, String> newDest = new HashMap<String, String>() {
-                {
-                    put("id", destName);
-                    put("desttype", DEST_TYPE);
-                }
-            };
-
-            Response response = get(endpoint + "/__get-jmsdest", newDest);
-            checkStatusForSuccess(response);
-
-            response = get(URL_SEVER_JMS_DEST + "/__get-jmsdest", newDest);
-            checkStatusForFailure(response);
-        }
-        finally {
-            deleteJmsPhysicalDestination(destName, endpoint);
-            ct.stopCluster(clusterName);
-            ct.deleteCluster(clusterName);
-        }
     }
 
     @Test(enabled=false)
