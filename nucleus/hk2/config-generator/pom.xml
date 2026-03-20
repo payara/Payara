@@ -98,7 +98,7 @@
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>codemodel</artifactId>
-            <version>4.0.6</version>
+            <version>4.0.7</version>
         </dependency>
         <dependency>
             <groupId>jakarta.annotation</groupId>
