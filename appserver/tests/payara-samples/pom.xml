@@ -76,7 +76,7 @@
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
-        <arquillian.version>1.10.0.Final</arquillian.version>
+        <arquillian.version>1.10.1.Final</arquillian.version>
     </properties>
 
     <modules>
