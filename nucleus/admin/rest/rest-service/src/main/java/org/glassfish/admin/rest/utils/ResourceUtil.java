@@ -1184,7 +1184,7 @@ public class ResourceUtil {
     }
 
     /**
-     * Creates a new rearranged map of JVM options. Options {@code target} and {@code profiler} are forwarded 1:1. All
+     * Creates a new rearranged map of JVM options. Options {@code target} are forwarded 1:1. All
      * other options are joined in the result map for key {@code id} and are separated by semi-colon.
      *
      * An input key may include a value. In such case key and value are divided by an equals sign: {@code key=value}. In
@@ -1201,7 +1201,7 @@ public class ResourceUtil {
      * @param removeVersioning set {@code true} to erase any JVM version prefix from the keys, {@code false} to keep
      *                         keys as they are.
      * @return a map where most options are joined into one expression for key {@code id}. If existing {@code target}
-     *         and {@code profiler} keys are kept same as in input map.
+     *          keys are kept same as in input map.
      */
     public static Map<String, String> processJvmOptions(Map<String, String> jvmOptions, boolean removeVersioning) {
         Map<String, String> results = new HashMap<>();
@@ -1209,7 +1209,7 @@ public class ResourceUtil {
         String sep = "";
         for (Map.Entry<String, String> option : jvmOptions.entrySet()) {
             String key = option.getKey();
-            if ("target".equals(key) || "profiler".equals(key)) {
+            if ("target".equals(key)) {
                 results.put(key, option.getValue());
             } else if (key != null && !key.trim().isEmpty()) {
                 int endOfKey = key.indexOf('=');

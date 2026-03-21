@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -558,30 +558,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
         @Param(name="config", optional=true)
         String configRef=null;
 
-        @Param(optional = true,obsolete=true)
-        String hosts=null;
-
-        @Param(optional = true,obsolete=true)
-        String haagentport;
-
-        @Param(optional = true,obsolete=true)
-        String haadminpassword=null;
-
-        @Param(optional = true,obsolete=true)
-        String haadminpasswordfile=null;
-
-        @Param(optional = true,obsolete=true)
-        String devicesize=null;
-
-        @Param(optional = true,obsolete=true)
-        String haproperty=null;
-
-        @Param(optional = true,obsolete=true)
-        String autohadb=null;
-
-        @Param(optional = true,obsolete=true)
-        String portbase=null;
-
         @Inject
         ServiceLocator habitat;
 
@@ -783,20 +759,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
                     instance.getApplicationRef().add(newAppRef);
                 }
             }
-
-            if (hosts!=null ||
-                    haagentport!=null ||
-                    haadminpassword!=null ||
-                    haadminpasswordfile!=null ||
-                    devicesize!=null ||
-                    haproperty!=null ||
-                    autohadb!=null ||
-                    portbase!=null
-                    ) {
-               context.getActionReport().setActionExitCode(ActionReport.ExitCode.WARNING);
-               context.getActionReport().setMessage("Obsolete options used.");
-            }
-
         }
 
     private String generateHeartbeatPort() {
@@ -822,13 +784,6 @@ public interface Cluster extends ConfigBeanProxy, PropertyBag, Named, SystemProp
     @Service
     @PerLookup
     class DeleteDecorator implements DeletionDecorator<Clusters, Cluster> {
-
-        @Param(name="nodeagent", optional=true,obsolete=true)
-        String nodeagent;
-
-        // for backward compatibility, ignored.
-        @Param(name="autohadboverride", optional=true,obsolete=true)
-        String autohadboverride;
 
         @Inject
         private Domain domain;

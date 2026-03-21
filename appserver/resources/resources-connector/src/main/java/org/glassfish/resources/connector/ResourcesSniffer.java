@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
  */
 
 package org.glassfish.resources.connector;
@@ -61,6 +61,7 @@ import java.util.List;
  * @author Jagadish Ramu
  */
 @Service(name = ResourceConstants.GF_RESOURCES_MODULE)
+@Deprecated
 public class ResourcesSniffer extends GenericSniffer {
 //TODO ASR package name change ?
 

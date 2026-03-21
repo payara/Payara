@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 4 Servlet 3.0//EN" "https://docs.payara.fish/schemas/payara-web-app_4.dtd">
+<payara-web-app>
+
+    <security-role-mapping>
+        <role-name>payaraAdmin</role-name>
+        <group-name>payaraAdmin</group-name>
+    </security-role-mapping>
+    
+        <security-role-mapping>
+        <role-name>payaraUser</role-name>
+        <group-name>payaraUser</group-name>
+    </security-role-mapping>
+
+    <parameter-encoding default-charset="UTF-8" />
+
+</payara-web-app>

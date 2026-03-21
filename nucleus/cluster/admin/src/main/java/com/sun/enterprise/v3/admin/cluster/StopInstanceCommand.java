@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -50,8 +50,6 @@ import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.v3.admin.StopServer;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -60,7 +58,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
-import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
@@ -138,7 +135,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     private Server instance;
     File pidFile = null;
     SFTPClient ftpClient = null;
-    private WindowsRemoteFile wrf;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -244,19 +240,8 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                     ftpClient.close();
                 }
             }
-        } else if (node.getType().equals("DCOM")) {
-            DcomInfo info;
-            try {
-                info = new DcomInfo(node);
-                String path = info.getRemoteNodeRootDirectory() + "\\config\\pid";
-                wrf = new WindowsRemoteFile(info.getCredentials(), path);
-                if (wrf.exists())
-                    errorMessage = pollForRealDeath("DCOM");
-
-            } catch (WindowsException ex) {
-                //could not get to other host
-            }
         }
+        
         if (errorMessage != null) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(errorMessage);
@@ -389,10 +374,8 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
                 } else if (mode.equals("SSH")) {
                     if (!ftpClient.exists(pidFile.toString()))
                         return null;
-                } else if (mode.equals("DCOM")) {
-                    if (wrf == null || !wrf.exists())
-                        return null;
                 }
+                
                 // Fairly long interval between tries because checking over
                 // SSH is expensive.
                 Thread.sleep(5000);

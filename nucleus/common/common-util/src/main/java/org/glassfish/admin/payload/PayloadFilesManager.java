@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.glassfish.hk2.utilities.CleanerFactory;
+
+import java.lang.ref.Cleaner;
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -290,16 +292,22 @@ public abstract class PayloadFilesManager {
      */
     public static class Temp extends PayloadFilesManager {
 
-//        /*
-//         * regex to match colons and backslashes on Windows and slashes on non-Windows
-//         */
-//        private static final String DIR_PATH_TO_FLAT_NAME_PATTERN = (File.separatorChar == '\\') ?
-//                "[:\\\\]" : "/";
+        private final Cleaner.Cleanable cleanable;
 
-        private boolean isCleanedUp = false;
+        static class CleanableTempPayloadFilesManagerState implements Runnable {
 
-//        /** maps payload part name paths (excluding name and type) to temp file subdirs */
-//        private Map<String,File> pathToTempSubdir = new HashMap<String,File>();
+            private final File targetDir;
+
+            CleanableTempPayloadFilesManagerState(File targetDir) {
+                this.targetDir = targetDir;
+            }
+
+            @Override
+            public void run() {
+                FileUtils.whack(this.targetDir);
+            }
+
+        }
 
         public Temp(final File parentDir, final ActionReport report,
                 final Logger logger) throws IOException {
@@ -308,7 +316,8 @@ public abstract class PayloadFilesManager {
                       logger),
                   report,
                   logger);
-            registerCleanupEvent();
+            CleanableTempPayloadFilesManagerState state = new CleanableTempPayloadFilesManagerState(super.targetDir);
+            this.cleanable = CleanerFactory.create().register(this, state);
         }
         /**
          * Creates a new PayloadFilesManager for temporary files.
@@ -333,16 +342,7 @@ public abstract class PayloadFilesManager {
          * Deletes the temporary files created by this temp PayloadFilesManager.
          */
         public void cleanup() {
-            if ( ! isCleanedUp) {
-                FileUtils.whack(super.targetDir);
-                isCleanedUp = true;
-            }
-        }
-
-        public final void registerCleanupEvent() {
-            CleanerFactory.create().register(this, () -> {
-                cleanup();
-            });
+            this.cleanable.clean();
         }
 
         @Override

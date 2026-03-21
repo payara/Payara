@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+//Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 package org.glassfish.javaee.core.deployment;
 
 import com.sun.enterprise.config.serverbeans.Application;
@@ -140,13 +140,6 @@ public class ListSubComponentsCommand implements AdminCommand {
         }
 
         Application application = applications.getApplication(applicationName);
-
-        if (application.isLifecycleModule()) {
-            if (!terse) {
-                part.setMessage(localStrings.getLocalString("listsubcomponents.no.elements.to.list", "Nothing to List."));
-            }
-            return;
-        }
 
         ApplicationInfo appInfo = appRegistry.get(applicationName);
         if (appInfo == null) {

@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2025] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <!-- Generated from default-domain.xml.template -->
 <!-- Avoid manual edits of this file. Run "asadmin verify-domain-xml" otherwise.-->
@@ -57,11 +57,6 @@
       <!-- System Web Module - DO NOT DELETE! -->
     </web-module>
     <web-module availability-enabled="false" context-root="/__wstx-services" directory-deployed="true" enabled="true" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" name="WSTXServices" object-type="system-all"/>
-    <lifecycle-module class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar" enabled="true" is-failure-fatal="false" name="JBIFramework" object-type="system-all">
-      <description>"JBI Framework LifecycleModule"</description>
-      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi"/>
-    </lifecycle-module>
-    <lifecycle-module class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" enabled="true" is-failure-fatal="false" name="WSTCPConnectorLCModule" object-type="system-all"/>
   </applications>
   <resources>
       <jdbc-resource enabled="true" jndi-name="jdbc/__TimerPool" object-type="system-admin" pool-name="__TimerPool"/>

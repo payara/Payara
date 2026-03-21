@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 package org.glassfish.cluster.ssh.connect;
 
 import java.io.*;
@@ -50,8 +51,6 @@ import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
-import org.glassfish.cluster.ssh.launcher.SSHLauncher;
-import org.glassfish.cluster.ssh.connect.NodeRunnerSsh;
 import org.glassfish.common.util.admin.AuthTokenManager;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -81,16 +80,6 @@ public class NodeRunner {
         if (node.getType() == null)
             return false;
         return node.getType().equals("SSH");
-    }
-
-    public boolean isDcomNode(Node node) {
-
-        if (node == null) {
-            throw new IllegalArgumentException("Node is null");
-        }
-        if (node.getType() == null)
-            return false;
-        return node.getType().equals("DCOM");
     }
 
     /**
@@ -227,13 +216,7 @@ public class NodeRunner {
             return result;
         }
 
-        if ("DCOM".equals(type)) {
-            NodeRunnerDcom nrd = new NodeRunnerDcom(logger);
-            nrd.runAdminCommandOnRemoteNode(node, output, args, stdinLines);
-            return determineStatus(args, output);
-        }
-
-        throw new UnsupportedOperationException("Node is not of type SSH or DCOM");
+        throw new UnsupportedOperationException("Node is not of type SSH");
     }
 
     private void trace(String s) {

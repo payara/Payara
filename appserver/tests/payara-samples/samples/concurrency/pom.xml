@@ -45,7 +45,7 @@
     <parent>
         <artifactId>payara-samples-profiled-tests</artifactId>
         <groupId>fish.payara.samples</groupId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>concurrency</artifactId>
@@ -57,7 +57,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <junit-jupiter.version>5.14.2</junit-jupiter.version>
+        <junit-jupiter.version>5.14.3</junit-jupiter.version>
         <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
         <jakarta-concurrent.version>3.0.4</jakarta-concurrent.version>
     </properties>
@@ -132,11 +132,11 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.15.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
+                <version>3.5.5</version>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
