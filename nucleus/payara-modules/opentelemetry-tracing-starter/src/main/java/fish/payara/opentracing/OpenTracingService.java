@@ -40,9 +40,8 @@
 package fish.payara.opentracing;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentracing.Tracer;
-import io.opentracing.noop.NoopTracerFactory;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.interceptor.InvocationContext;
@@ -102,15 +101,11 @@ public class OpenTracingService implements EventListener {
 
     @Override
     public void event(Event<?> event) {
-
         // Listen for application unloaded events (happens during undeployment), so that we remove the tracer instance
         // registered to that application (if there is one)
         if (event.is(Deployment.APPLICATION_UNLOADED)) {
             ApplicationInfo info = (ApplicationInfo) event.hook();
-            Tracer tracer = tracers.remove(info.getName());
-            if (tracer != null) {
-                tracer.close();
-            }
+            tracers.remove(info.getName());
         }
     }
 
@@ -145,7 +140,7 @@ public class OpenTracingService implements EventListener {
             }
             // create default implementation (env / system property based) for the application
             otel.ensureAppInitialized(appName, null);
-            return otel.getSdkDependency(applicationName, () -> tracers.remove(applicationName)).map(OpenTracingShim::createTracerShim).orElse(NoopTracerFactory.create());
+            return (Tracer) otel.getSdkDependency(applicationName, () -> tracers.remove(applicationName)).map(op -> op.getTracer(applicationName)).orElse(OpenTelemetry.noop().getTracer(applicationName));
         });
 
         return tracer;

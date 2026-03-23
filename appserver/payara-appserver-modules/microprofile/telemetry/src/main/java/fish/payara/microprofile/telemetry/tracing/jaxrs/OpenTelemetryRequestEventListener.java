@@ -56,15 +56,12 @@ import io.opentelemetry.semconv.UrlAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import java.net.URI;
-import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,10 +107,6 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
             if (requestEvent.getType() == RequestEvent.Type.REQUEST_MATCHED) {
                 final ContainerRequest requestContext = requestEvent.getContainerRequest();
-                if (!openTracingHelper.canTrace(resourceInfo, requestContext)) {
-                    LOG.finest(() -> "canTrace(...) returned false, nothing to do.");
-                    return;
-                }
                 final String operationName = openTracingHelper.determineOperationName(resourceInfo, requestContext);
                 onIncomingRequest(requestEvent, operationName);
                 return;

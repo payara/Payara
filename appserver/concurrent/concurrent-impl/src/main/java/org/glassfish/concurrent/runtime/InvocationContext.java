@@ -37,15 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2018-2026] [Payara Foundation and/or its affiliates.]
 
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.SpanContext;
-import io.opentracing.Tracer;
 import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -57,10 +53,6 @@ import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.List;
 
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-
 public class InvocationContext implements ContextHandle {
     static final long serialVersionUID = 5642415011655486579L;
 
@@ -71,8 +63,7 @@ public class InvocationContext implements ContextHandle {
 
     private List<ThreadContextSnapshot> threadContextSnapshots;
     private List<ThreadContextRestorer> threadContextRestorers;
-
-    private transient SpanContext parentTraceContext;
+    
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
             boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
@@ -83,30 +74,8 @@ public class InvocationContext implements ContextHandle {
         this.useTransactionOfExecutionThread = useTransactionOfExecutionThread;
         this.threadContextSnapshots = threadContextSnapshots;
         this.threadContextRestorers = threadContextRestorers;
-        saveTracingContext();
     }
-
-    private void saveTracingContext() {
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
-        
-        if (serviceLocator != null) {
-            RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
-            OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-            
-            // Check that there's actually a trace running
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()
-                    && requestTracing.isTraceInProgress() && openTracing != null) {
-                
-                Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                        serviceLocator.getService(InvocationManager.class)));
-                
-                var currentSpan = tracer.activeSpan();
-                if (currentSpan != null) {
-                    this.parentTraceContext = currentSpan.context();
-                }
-            }   
-        }    
-    }
+    
     
     public ComponentInvocation getInvocation() {
         return invocation;
@@ -122,10 +91,6 @@ public class InvocationContext implements ContextHandle {
 
     public boolean isUseTransactionOfExecutionThread() {
         return useTransactionOfExecutionThread;
-    }
-    
-    SpanContext getParentTraceContext() {
-        return parentTraceContext;
     }
 
     public List<ThreadContextSnapshot> getThreadContextSnapshots() {

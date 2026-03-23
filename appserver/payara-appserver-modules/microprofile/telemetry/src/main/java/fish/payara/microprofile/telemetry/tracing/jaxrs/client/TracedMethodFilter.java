@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package fish.payara.microprofile.telemetry.tracing.jaxrs.client;
 
+import io.opentelemetry.api.trace.Tracer;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HEAD;
@@ -49,13 +50,11 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.client.ClientRequestContext;
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.opentracing.Traced;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -106,15 +105,9 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
     }
 
     private static boolean determineClassDefault(Config config, Class<?> clientClass) {
-        // Priorities:
-        // 1. Config value of <className>/Traced/value
-        // 2. Class' @Traced annotation value
-        // 3. true
 
         return Optional.ofNullable(config)
-                .flatMap(cfg -> cfg.getOptionalValue(classOverrideProperty(clientClass), boolean.class))
-                .orElseGet(() -> tracedAnnotationValue(clientClass::getAnnotation)
-                        .orElse(true));
+                .flatMap(cfg -> cfg.getOptionalValue(classOverrideProperty(clientClass), boolean.class)).orElse(true);
     }
 
     private static Optional<Boolean> determineMethodValue(Config config, Class<?> clientClass, Method method) {
@@ -123,7 +116,7 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
         // (3. class default)
         Optional<Boolean> configValue = Optional.ofNullable(config)
                 .flatMap(cfg -> cfg.getOptionalValue(methodOverrideProperty(clientClass, method), boolean.class));
-        return configValue.isPresent() ? configValue : tracedAnnotationValue(method::getAnnotation);
+        return configValue.isPresent() ? configValue : Optional.of(false);
     }
 
     private static String getHttpMethodName(Method method) {
@@ -139,17 +132,13 @@ class TracedMethodFilter implements Predicate<ClientRequestContext> {
 
         return null;
     }
+    
     private static String classOverrideProperty(Class<?> clientClass) {
-        return clientClass.getCanonicalName() + "/" + Traced.class.getSimpleName() + "/value";
+        return clientClass.getCanonicalName() + "/" + Tracer.class.getSimpleName() + "/value";
     }
-
-
-    private static String methodOverrideProperty(Class<?> clientClass, Method method) {
-        return clientClass.getCanonicalName() + "/" + method.getName() + "/" + Traced.class.getSimpleName() + "/value";
-    }
-
-    private static Optional<Boolean> tracedAnnotationValue(Function<Class<Traced>, Traced> annotationSource) {
-        return Optional.ofNullable(annotationSource.apply(Traced.class)).map(Traced::value);
+    
+   private static String methodOverrideProperty(Class<?> clientClass, Method method) {
+        return clientClass.getCanonicalName() + "/" + method.getName() + "/" + Tracer.class.getSimpleName() + "/value";
     }
 
 }
