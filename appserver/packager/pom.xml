@@ -159,7 +159,6 @@
         <module>environment-warning</module>
         <module>payara-rest-endpoints</module>
         <module>cdi-auth-roles</module>
-        <module>yubikey-authentication</module>
         <module>docker</module>
         <module>microprofile-package</module>
         <module>opentracing-jaxws-package</module>

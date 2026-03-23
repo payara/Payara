@@ -63,7 +63,6 @@
         <module>payara-rest-endpoints</module>
         <module>cdi-auth-roles</module>
         <module>jaxrs-client-tracing</module>
-        <module>yubikey-authentication</module>
         <module>microprofile</module>
         <module>healthcheck-checker</module>
         <module>healthcheck-metrics</module>
