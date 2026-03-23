@@ -99,7 +99,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from::addTag);
-        // TODO: Add new properties
+        
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
@@ -377,8 +377,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     }
 
     @Override
-    public OpenAPI clone()
-            throws CloneNotSupportedException {
+    public OpenAPI clone() throws CloneNotSupportedException {
         OpenAPI clonedObj = new OpenAPIImpl();
         clonedObj.setOpenapi(this.openapi);
         clonedObj.setInfo(this.info);
@@ -389,6 +388,8 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         clonedObj.setPaths(new PathsImpl(this.paths.getPathItems()));
         clonedObj.setComponents(this.components);
         clonedObj.setExtensions(this.extensions);
+        clonedObj.setWebhooks(this.webhooks);
+        clonedObj.setJsonSchemaDialect(this.jsonSchemaDialect);
         ((OpenAPIImpl) clonedObj).setEndpoints(new TreeMap<>(this.getEndpoints()));
         return clonedObj;
     }
