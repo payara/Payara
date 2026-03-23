@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *  
- *  Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *  
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -91,7 +91,7 @@ public class ExternalSchemaWithProducesTest extends OpenApiApplicationTest {
     public void externalSchemaExampleIsRendere() {
         JsonNode nameProperties = JsonUtils.path(getOpenAPIJson(), "components.schemas.Teacher.properties.name");
         Assert.assertNotNull(nameProperties);
-        Assert.assertEquals("string", nameProperties.get("type").textValue());
+        Assert.assertEquals("string", nameProperties.get("type").get(0).textValue());
         Assert.assertEquals("the teacher name", nameProperties.get("description").textValue());
         Assert.assertEquals("Trunchbull", nameProperties.get("example").textValue());
     }

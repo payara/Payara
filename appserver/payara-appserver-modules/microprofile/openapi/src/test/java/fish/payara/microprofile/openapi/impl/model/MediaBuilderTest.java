@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,8 @@ package fish.payara.microprofile.openapi.impl.model;
 import com.fasterxml.jackson.databind.JsonNode;
 import static fish.payara.microprofile.openapi.test.util.JsonUtils.path;
 import java.math.BigDecimal;
+import java.util.List;
+
 import static org.eclipse.microprofile.openapi.OASFactory.createAPIResponse;
 import static org.eclipse.microprofile.openapi.OASFactory.createContent;
 import static org.eclipse.microprofile.openapi.OASFactory.createDiscriminator;
@@ -52,6 +54,8 @@ import static org.eclipse.microprofile.openapi.OASFactory.createHeader;
 import static org.eclipse.microprofile.openapi.OASFactory.createMediaType;
 import static org.eclipse.microprofile.openapi.OASFactory.createSchema;
 import static org.eclipse.microprofile.openapi.OASFactory.createXML;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Encoding;
@@ -65,15 +69,15 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
- * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.media.*}.
+ * Checks the JSON rendering of {@link fish.payara.microprofile.openapi.impl.model.media}.
  */
 public class MediaBuilderTest extends OpenApiBuilderTest {
 
     @Override
     protected void setupBaseDocument(OpenAPI document) {
         document.getComponents().addSchema("SimpleMap", createSchema()
-                .type(SchemaType.OBJECT)
-                .additionalPropertiesSchema(createSchema().type(SchemaType.STRING)));
+                .type(List.of(SchemaType.OBJECT))
+                .additionalPropertiesSchema(createSchema().type(List.of(SchemaType.STRING))));
 
         XML xml = createXML()
                 .name("name")
@@ -120,9 +124,9 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
                 .title("title")
                 .multipleOf(BigDecimal.ONE)
                 .maximum(BigDecimal.ONE)
-                .exclusiveMaximum(true)
+                .exclusiveMaximum(BigDecimal.ONE)
                 .minimum(BigDecimal.ONE)
-                .exclusiveMinimum(true)
+                .exclusiveMinimum(BigDecimal.ONE)
                 .maxLength(10)
                 .minLength(1)
                 .pattern("pattern")
@@ -133,12 +137,12 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
                 .minProperties(3)
                 .addRequired("required1")
                 .addRequired("required2")
-                .type(SchemaType.NUMBER)
+                .type(List.of(SchemaType.NUMBER))
                 .not(createSchema().ref("not"))
                 .addProperty("property1", createSchema().ref("property1"))
                 .description("description")
                 .format("format")
-                .nullable(true)
+                //.nullable(true)
                 .readOnly(true)
                 .writeOnly(true)
                 .example("example")
@@ -164,10 +168,12 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
     public void simpleMapSchemaHasExpectedFields() {
         JsonNode mapEntry = path(getOpenAPIJson(), "components.schemas.SimpleMap");
         assertNotNull(mapEntry);
-        assertEquals("object", mapEntry.get("type").textValue());
+        assertTrue(mapEntry.get("type").isArray());
+        assertEquals("object", mapEntry.get("type").get(0).textValue());
         JsonNode additionalProperties = mapEntry.get("additionalProperties");
         assertNotNull(additionalProperties);
-        assertEquals("string", additionalProperties.get("type").textValue());
+        assertTrue(additionalProperties.get("type").isArray());
+        assertEquals("string", additionalProperties.get("type").get(0).textValue());
     }
 
     @Test
@@ -236,9 +242,9 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
         assertEquals("title", schema.get("title").textValue());
         assertEquals(BigDecimal.ONE, schema.get("multipleOf").decimalValue());
         assertEquals(BigDecimal.ONE, schema.get("maximum").decimalValue());
-        assertTrue(schema.get("exclusiveMaximum").booleanValue());
+        assertEquals(BigDecimal.ONE, schema.get("exclusiveMaximum").decimalValue());
         assertEquals(BigDecimal.ONE, schema.get("minimum").decimalValue());
-        assertTrue(schema.get("exclusiveMinimum").booleanValue());
+        assertEquals(BigDecimal.ONE, schema.get("exclusiveMinimum").decimalValue());
         assertEquals(10, schema.get("maxLength").intValue());
         assertEquals(1, schema.get("minLength").intValue());
         assertEquals("pattern", schema.get("pattern").textValue());
@@ -252,13 +258,12 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
         assertEquals(2, required.size());
         assertEquals("required1", required.get(0).textValue());
         assertEquals("required2", required.get(1).textValue());
-        assertEquals("number", schema.get("type").textValue());
+        assertEquals("number", schema.get("type").get(0).textValue());
         assertTrue(schema.get("not").isObject());
         assertTrue(schema.get("properties").isObject());
         assertTrue(schema.get("properties").get("property1").isObject());
         assertEquals("description", schema.get("description").textValue());
         assertEquals("format", schema.get("format").textValue());
-        assertTrue(schema.get("nullable").booleanValue());
         assertTrue(schema.get("readOnly").booleanValue());
         assertTrue(schema.get("writeOnly").booleanValue());
         assertEquals("example", schema.get("example").textValue());
