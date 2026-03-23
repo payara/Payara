@@ -1,8 +1,18 @@
 version: 2
+
+registries:
+  payara-private-nexus:
+    type: maven-repository
+    url: https://nexus.dev.payara.fish/repository/payara-enterprise-artifacts-private
+    username: ${{secrets.PAYARA_NEXUS_USERNAME}}
+    password: ${{secrets.PAYARA_NEXUS_PASSWORD}}
+
 updates:
   # Configuration for Maven
   - package-ecosystem: "maven"
     directory: "/" # Location of package manifests
+    registries:
+      - payara-private-nexus
     schedule:
       interval: "daily"
     open-pull-requests-limit: 5
