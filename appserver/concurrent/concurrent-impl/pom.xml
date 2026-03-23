@@ -150,10 +150,6 @@
             <artifactId>opentelemetry-tracing-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

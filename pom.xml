@@ -328,7 +328,6 @@
         <json.bind-api.version>3.0.1</json.bind-api.version>
         <jakarta-persistence-api.version>3.2.0</jakarta-persistence-api.version>
         <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
-        <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
         <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
@@ -339,7 +338,6 @@
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <exousia.version>3.0.1</exousia.version>
-        <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.8-payara-1</hazelcast.version>
