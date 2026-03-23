@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -336,9 +336,9 @@ public enum NodeType implements Iterable<Field> {
             .addField("title", string)
             .addField("multipleOf", number)
             .addField("maximum", number)
-            .addField("exclusiveMaximum", bool)
+            .addField("exclusiveMaximum", number)
             .addField("minimum", number)
-            .addField("exclusiveMinimum", bool)
+            .addField("exclusiveMinimum", number)
             .addField("maxLength", number)
             .addField("minLength", number)
             .addField("pattern", string)
@@ -349,7 +349,7 @@ public enum NodeType implements Iterable<Field> {
             .addField("minProperties", number)
             .addField("required", string).array()
             .addField("enum").array()
-            .addField("type", string)
+            .addField("type", string).array()
             .addField("allOf", Schema, Reference).array()
             .addField("oneOf", Schema, Reference).array()
             .addField("anyOf", Schema, Reference).array()
@@ -360,7 +360,6 @@ public enum NodeType implements Iterable<Field> {
             .addField("description", string)
             .addField("format", string)
             .addField("default")
-            .addField("nullable",bool)
             .addField("discriminator", Discriminator)
             .addField("readOnly", bool)
             .addField("writeOnly", bool)

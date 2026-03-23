@@ -60,6 +60,7 @@ import java.util.Set;
 import org.eclipse.microprofile.openapi.models.Components;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
+import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.info.Info;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
@@ -79,6 +80,8 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     protected Paths paths = new PathsImpl();
     protected Map<String, Set<String>> endpoints = createOrderedMap();
     protected Components components = new ComponentsImpl();
+    protected Map<String, PathItem> webhooks = createOrderedMap();
+    protected String jsonSchemaDialect;
 
     private ApiContext context;
 
@@ -97,6 +100,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         extractAnnotations(annotation, context, "tags", TagImpl::createInstance, from::addTag);
+        // TODO: Add new properties
         AnnotationModel components = annotation.getValue("components", AnnotationModel.class);
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
@@ -245,6 +249,44 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
     @Override
     public void setPaths(Paths paths) {
         this.paths = paths;
+    }
+
+    @Override
+    public Map<String, PathItem> getWebhooks() {
+        return webhooks;
+    }
+
+    @Override
+    public void setWebhooks(Map<String, PathItem> webhooks) {
+        this.webhooks = createOrderedMap(webhooks);
+    }
+
+    @Override
+    public OpenAPI addWebhook(String key, PathItem webhook) {
+        if (webhook != null) {
+            if (webhooks == null) {
+                webhooks = createOrderedMap();
+            }
+            webhooks.put(key, webhook);
+        }
+        return this;
+    }
+
+    @Override
+    public void removeWebhook(String key) {
+        if (webhooks != null) {
+            webhooks.remove(key);
+        }
+    }
+
+    @Override
+    public String getJsonSchemaDialect() {
+        return jsonSchemaDialect;
+    }
+
+    @Override
+    public void setJsonSchemaDialect(String jsonSchemaDialect) {
+        this.jsonSchemaDialect = jsonSchemaDialect;
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,8 @@ import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
+import java.util.List;
+
 /**
  * In response to {@link https://github.com/payara/Payara/issues/3724} this tests checks that using a {@link OASFilter}
  * to add a {@link Schema} with additional properties is successful.
@@ -74,14 +76,14 @@ public class OASFilterTest extends OpenApiApplicationTest {
 
         private static Schema createMapKey() {
             return createObject(Schema.class)
-                    .type(SchemaType.OBJECT)
-                    .additionalPropertiesSchema(createObject(Schema.class).type(SchemaType.STRING));
+                    .type(List.of(SchemaType.OBJECT))
+                    .additionalPropertiesSchema(createObject(Schema.class).type(List.of(SchemaType.STRING)));
         }
     }
 
     @Test
     public void additionalPropertiesAreAddedByFilter() {
         ObjectNode openAPI = getOpenAPIJson();
-        assertEquals("string", JsonUtils.path(openAPI, "components.schemas.SimpleMap.additionalProperties.type").textValue());
+        assertEquals("string", JsonUtils.path(openAPI, "components.schemas.SimpleMap.additionalProperties.type").get(0).textValue());
     }
 }

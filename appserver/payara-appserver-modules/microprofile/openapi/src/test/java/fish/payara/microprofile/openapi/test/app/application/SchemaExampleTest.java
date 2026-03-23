@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -99,7 +99,7 @@ public class SchemaExampleTest extends OpenApiApplicationTest {
     public void fieldSchemaExampleIsRendered() {
         JsonNode passwordProperties = JsonUtils.path(getOpenAPIJson(), "components.schemas.User.properties.password");
         assertNotNull(passwordProperties);
-        assertEquals("string", passwordProperties.get("type").textValue());
+        assertEquals("string", passwordProperties.get("type").get(0).textValue());
         assertEquals("bobSm37", passwordProperties.get("example").textValue());
     }
 

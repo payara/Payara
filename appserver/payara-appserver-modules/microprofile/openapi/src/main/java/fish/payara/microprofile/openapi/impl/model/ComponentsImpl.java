@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.microprofile.openapi.models.Components;
+import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
 import org.eclipse.microprofile.openapi.models.examples.Example;
 import org.eclipse.microprofile.openapi.models.headers.Header;
@@ -81,6 +82,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
     protected Map<String, SecurityScheme> securitySchemes = createOrderedMap();
     protected Map<String, Link> links = createOrderedMap();
     protected Map<String, Callback> callbacks = createOrderedMap();
+    protected Map<String, PathItem> pathItems = createOrderedMap();
 
     public static Components createInstance(AnnotationModel annotation, ApiContext context) {
         Components from = new ComponentsImpl();
@@ -93,6 +95,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
         extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from::addSecurityScheme);
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
+        // TODO: Add pathItems
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
         return from;
     }
@@ -346,6 +349,34 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
     public void removeCallback(String key) {
         if (callbacks != null) {
             callbacks.remove(key);
+        }
+    }
+
+    @Override
+    public Map<String, PathItem> getPathItems() {
+        return pathItems;
+    }
+
+    @Override
+    public void setPathItems(Map<String, PathItem> pathItems) {
+        this.pathItems = createOrderedMap(pathItems);
+    }
+
+    @Override
+    public Components addPathItem(String key, PathItem pathItem) {
+        if (pathItem != null) {
+            if (pathItems == null) {
+                pathItems = createOrderedMap();
+            }
+            pathItems.put(key, pathItem);
+        }
+        return this;
+    }
+
+    @Override
+    public void removePathItem(String key) {
+        if (pathItems != null) {
+            pathItems.remove(key);
         }
     }
 
