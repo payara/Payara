@@ -170,6 +170,12 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         builder.put("jvm.name", System.getProperty("java.vm.name"));
         builder.put("jvm.vendor", System.getProperty("java.vendor"));
         builder.put("jvm.version", System.getProperty("java.version"));
+        if (configProperties.getString(PayaraTelemetryConstants.OTEL_LOGS_EXPORTER) == null) {
+            builder.put(OTEL_LOGS_EXPORTER, "none");
+        }
+        if (configProperties.getString(OTEL_TRACES_EXPORTER) == null) {
+            builder.put(OTEL_TRACES_EXPORTER, "none");
+        }
         return builder;
     }
     
