@@ -85,6 +85,17 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         if (!isRuntimeOtelEnabled()) {
             // need to read otel properties
             final Map<String, String> props = new HashMap<>(readOtelProperties());
+            
+            if (!props.containsKey(OTEL_LOGS_EXPORTER)) {
+                props.put(OTEL_LOGS_EXPORTER, "none");
+            }
+            if (!props.containsKey(OTEL_TRACES_EXPORTER)) {
+                props.put(OTEL_TRACES_EXPORTER, "none");
+            }
+            if (!props.containsKey(OTEL_METRICS_EXPORTER)) {
+                props.put(OTEL_METRICS_EXPORTER, "none");
+            }
+            
             runtimeSdk = AutoConfiguredOpenTelemetrySdk.builder()
                     //Need to provide custom Resources to start impl
                     .addResourceCustomizer(provideDefaultResourceCustomizer(!isRuntimeOtelEnabled()))
@@ -159,7 +170,9 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         builder.put(OTEL_SERVICE_NAME, PAYARA_OTEL_RUNTIME_INSTANCE_NAME);
         builder.put("service.name", PAYARA_OTEL_RUNTIME_INSTANCE_NAME);
         //indicating metrics exporter as none to prevent warning from logs
-        builder.put(OTEL_METRICS_EXPORTER, "none");
+        if (configProperties.getString(PayaraTelemetryConstants.OTEL_METRICS_EXPORTER) == null) {
+            builder.put(OTEL_METRICS_EXPORTER, "none");
+        }
         //set semantic attribute for OS name and version
         builder.put("os.name", System.getProperty("os.name"));
         builder.put("os.version", System.getProperty("os.version"));
