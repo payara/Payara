@@ -90,8 +90,6 @@ public class CreateVirtualServer implements AdminCommand {
 
     @Param(name = "hosts", defaultValue = "${com.sun.aas.hostName}")
     String hosts;
-    @Param(name = "httplisteners", optional = true)
-    String httpListeners;
     @Param(name = "networklisteners", optional = true)
     String networkListeners;
     @Param(name = "defaultwebmodule", optional = true)
@@ -127,15 +125,6 @@ public class CreateVirtualServer implements AdminCommand {
             config = newConfig;
         }
         final ActionReport report = context.getActionReport();
-        if (networkListeners != null && httpListeners != null) {
-            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_VIRTUAL_SERVER_BOTH_HTTP_NETWORK), virtualServerId));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        //use the listener parameter provided by the user.
-        if (networkListeners == null) {
-            networkListeners = httpListeners;
-        }
         HttpService httpService = config.getHttpService();
         // ensure we don't already have one of this name
         for (VirtualServer virtualServer : httpService.getVirtualServer()) {
@@ -159,24 +148,15 @@ public class CreateVirtualServer implements AdminCommand {
                     newVirtualServer.setState(state);
                     newVirtualServer.setLogFile(logFile);
                     // 1. add properties
-                    // 2. check if the access-log and docroot properties have
-                    //    been specified. We will use with default 
-                    //    values if the properties have not been specified.
                     if (properties != null) {
                         for (Map.Entry entry : properties.entrySet()) {
                             String pn = (String) entry.getKey();
                             String pv = (String)entry.getValue();
+                            Property property = newVirtualServer.createChild(Property.class);
+                            property.setName(pn);
+                            property.setValue(pv);
+                            newVirtualServer.getProperty().add(property);
 
-                            if ("docroot".equals(pn)) {
-                                docroot = pv;
-                            } else if ("accesslog".equals(pn)) {
-                                accessLog = pv;
-                            } else {
-                                Property property = newVirtualServer.createChild(Property.class);
-                                property.setName(pn);
-                                property.setValue(pv);
-                                newVirtualServer.getProperty().add(property);
-                            }
                         }
                     }
 

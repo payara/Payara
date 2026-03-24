@@ -45,12 +45,8 @@ package org.glassfish.config.support;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
-import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.config.ConfigurationCleanup;
-import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.server.ServerEnvironmentImpl;
@@ -83,8 +79,6 @@ import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
  */
 public abstract class DomainXml implements Populator {
 
-    @Inject
-    StartupContext context;
     @Inject
     protected ServiceLocator habitat;
     @Inject
@@ -122,29 +116,6 @@ public abstract class DomainXml implements Populator {
             throw new ConfigPopulatorException(LOCAL_STRINGS.getLocalString("ConfigParsingFailed", "Failed to parse domain.xml"), e);
         }
 
-        // run the upgrades...
-        if ("upgrade".equals(context.getPlatformMainServiceName())) {
-            upgrade();
-        }
-
-        // run the cleanup.
-        for (ServiceHandle<?> cc : habitat.getAllServiceHandles(ConfigurationCleanup.class)) {
-            try {
-                cc.getService(); // run the upgrade
-                lr = new LogRecord(Level.FINE, successfulCleanupWith + cc.getClass());
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-            } catch (Exception e) {
-                lr = new LogRecord(Level.FINE, e.toString() + e);
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-
-                lr = new LogRecord(Level.SEVERE, cc.getClass() + cleaningDomainXmlFailed + e);
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-            }
-        }
-
         decorate();
     }
 
@@ -160,27 +131,6 @@ public abstract class DomainXml implements Populator {
         ServiceLocatorUtilities.addOneConstant(habitat, server, ServerEnvironment.DEFAULT_INSTANCE_NAME, Server.class);
 
         server.getConfig().addIndex(habitat, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-    }
-
-    protected void upgrade() {
-
-        // run the upgrades...
-        for (ServiceHandle<?> cu : habitat.getAllServiceHandles(ConfigurationUpgrade.class)) {
-            try {
-                cu.getService(); // run the upgrade
-                LogRecord lr = new LogRecord(Level.FINE, successfulUpgrade + cu.getClass());
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-            } catch (Exception e) {
-                LogRecord lr = new LogRecord(Level.FINE, e.toString() + e);
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-
-                lr = new LogRecord(Level.SEVERE, cu.getClass() + failedUpgrade + e);
-                lr.setLoggerName(getClass().getName());
-                EarlyLogHandler.earlyMessages.add(lr);
-            }
-        }
     }
 
     /**

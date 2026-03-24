@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
            create-http-listener [--help] --listeneraddress address
            --listenerport listener-port
-           {--default-virtual-server | --defaultvs} virtual-server
+           {--default-virtual-server} virtual-server
            [--servername server-name]
            [--acceptorthreads acceptor-threads]
            [--securityenabled={false|true}]
@@ -57,9 +57,8 @@ OPTIONS
            requires superuser privileges. Configuring an SSL listen socket to
            listen on port 443 is recommended.
 
-       --default-virtual-server, --defaultvs
+       --default-virtual-server
            The ID attribute of the default virtual server for this listener.
-           The --defaultvs option is deprecated.
 
        --servername
            Tells the server what to put in the host name section of any URLs
@@ -109,7 +108,7 @@ EXAMPLES
            and is not enabled at runtime:
 
                asadmin> create-http-listener --listeneraddress 0.0.0.0 --listenerport 7272
-               --defaultvs server --servername host1.sun.com --acceptorthreads 100
+               --default-virtual-server server --servername host1.sun.com --acceptorthreads 100
                --securityenabled=false --enabled=false sampleListener
                Command create-http-listener executed successfully.
 

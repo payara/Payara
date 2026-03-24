@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,21 +38,65 @@
  * holder.
  */
 
-package org.glassfish.api.admin.config;
+package com.sun.enterprise.deployment.io;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.deployment.archive.ArchiveType;
+
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 /**
- * Contract called on startup right after the configuration has been read
- * (and potentially upgraded) but before the startup services.
- * 
- * This hook is particularly useful to clean up configuration from left
- * over config elements that may have not been synchronized correctly due
- * to various sync optimizations.
+ * Repository of descriptors
+ * This class will evolve to provide a comprhensive list of
+ * descriptors for any given type of j2ee application or
+ * stand-alone module.
  *
- * @author Jerome Dochez
+ * @author Sreenivas Munnangi
  */
-@Contract
-public class ConfigurationCleanup {
-    // this is a tag interface, rely on postConstruct to do real work.
+
+public class DescriptorList {
+
+	private final static String [] earList = {
+		DescriptorConstants.APPLICATION_DD_ENTRY,
+		DescriptorConstants.S1AS_APPLICATION_DD_ENTRY
+	};
+
+	private final static String [] ejbList = {
+		DescriptorConstants.EJB_DD_ENTRY,
+		DescriptorConstants.S1AS_EJB_DD_ENTRY,
+		DescriptorConstants.S1AS_CMP_MAPPING_DD_ENTRY,
+		DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY
+	};
+
+	private final static String [] warList = {
+		DescriptorConstants.WEB_DD_ENTRY,
+		DescriptorConstants.S1AS_WEB_DD_ENTRY,
+		DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY,
+		DescriptorConstants.JAXRPC_JAR_ENTRY
+	};
+
+	private final static String [] rarList = {
+		DescriptorConstants.RAR_DD_ENTRY,
+		DescriptorConstants.S1AS_RAR_DD_ENTRY
+	};
+
+	private final static String [] carList = {
+		DescriptorConstants.APP_CLIENT_DD_ENTRY,
+		DescriptorConstants.S1AS_APP_CLIENT_DD_ENTRY
+	};
+
+	public final static String [] getDescriptorsList (ArchiveType moduleType) {
+		if (moduleType == null) return null;
+		if (moduleType.equals(DOLUtils.earType())) {
+			return (String[])earList.clone();
+		} else if (moduleType.equals(DOLUtils.ejbType())) {
+			return (String[])ejbList.clone();
+		} else if (moduleType.equals(DOLUtils.warType())) {
+			return (String[])warList.clone();
+		} else if (moduleType.equals(DOLUtils.rarType())) {
+			return (String[])rarList.clone();
+		} else if (moduleType.equals(DOLUtils.carType())) {
+			return (String[])carList.clone();
+		}
+		return null;
+	}
 }

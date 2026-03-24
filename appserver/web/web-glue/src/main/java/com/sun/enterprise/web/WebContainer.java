@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -1154,10 +1154,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
         String virtualServerId = vsBean.getId();
 
-        String docroot = vsBean.getPropertyValue("docroot");
-        if (docroot == null) {
-            docroot = vsBean.getDocroot();
-        }
+        String docroot = vsBean.getDocroot();
 
         validateDocroot(docroot, virtualServerId, vsBean.getDefaultWebModule());
 
@@ -1770,7 +1767,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
        processWebBundleDescriptor(virtualServer, webModule, webModuleConfig, displayContextPath);
        processWebAppClassLoader(webModule, webModuleConfig);
 
-        // set i18n info from locale-charset-info tag in sun-web.xml
         webModule.setI18nInfo();
         if (webBundleDescriptor != null) {
             final boolean isSystem = webModuleConfig.isSystemObjectType();
@@ -2528,10 +2524,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         virtualServer.configureAliases();
 
         // support both docroot property and attribute
-        String docroot = vsBean.getPropertyValue("docroot");
-        if (docroot == null) {
-            docroot = vsBean.getDocroot();
-        }
+        String docroot = vsBean.getDocroot();
+
         if (docroot != null) {
             // Only update docroot if it is modified
             if (!virtualServer.getDocRoot().getAbsolutePath().equals(docroot)) {
@@ -2701,10 +2695,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             updateAlternateDocroot(virtualServer);
         } else if ("setCacheControl".equals(name)) {
             virtualServer.configureCacheControl(value);
-        } else if (ACCESS_LOGGING_ENABLED.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
-        } else if (ACCESS_LOG_PROPERTY.equals(name)) {
-            virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_WRITE_INTERVAL_PROPERTY.equals(name)) {
             virtualServer.reconfigureAccessLog(globalAccessLogBufferSize, globalAccessLogWriteInterval, serviceLocator, domain, globalAccessLoggingEnabled, globalAccessLogPrefix);
         } else if (ACCESS_LOG_BUFFER_SIZE_PROPERTY.equals(name)) {
@@ -2715,8 +2705,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             virtualServer.configureRemoteHostFilterValve();
         } else if ("allowRemoteAddress".equals(name) || "denyRemoteAddress".equals(name)) {
             virtualServer.configureRemoteAddressFilterValve();
-        } else if (SSO_ENABLED.equals(name)) {
-            virtualServer.configureSingleSignOn(globalSSOEnabled, webContainerFeatureFactory, isSsoFailoverEnabled());
         } else if ("authRealm".equals(name)) {
             virtualServer.configureAuthRealm(securityService);
         } else if (name.startsWith("send-error")) {

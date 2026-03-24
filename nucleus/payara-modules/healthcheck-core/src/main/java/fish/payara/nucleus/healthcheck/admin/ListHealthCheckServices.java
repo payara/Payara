@@ -39,8 +39,12 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import jakarta.inject.Inject;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -52,10 +56,13 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+
+import java.util.List;
 
 /**
  * Admin command to list the names of all available health check services.
@@ -77,12 +84,40 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 })
 public class ListHealthCheckServices implements AdminCommand {
 
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(ListHealthCheckServices.class);
+    final static String[] serviceHeaders = {"Name", "Description"};
+
     @Inject
     ServiceLocator habitat;
 
     @Override
     public void execute(AdminCommandContext context) {
-        // just forward to the old command until it is replaced
-        habitat.getService(HealthCheckServiceLister.class).execute(context);
+
+        ColumnFormatter serviceListerColumnFormatter = new ColumnFormatter(serviceHeaders);
+
+        final ActionReport report = context.getActionReport();
+        List<ServiceHandle<BaseHealthCheck>> allServiceHandles = habitat.getAllServiceHandles(BaseHealthCheck.class);
+
+        if (allServiceHandles.isEmpty()) {
+            report.appendMessage(strings.getLocalString("healthcheck.list.services.warning",
+                    "No registered health check service found."));
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(strings.getLocalString("healthcheck.list.services.availability.info",
+                    "Available Health Check Services") + ":\n");
+            for (ServiceHandle<BaseHealthCheck> serviceHandle : allServiceHandles) {
+
+                Object values[] = new Object[2];
+                values[0] = serviceHandle.getActiveDescriptor().getName();
+                values[1] = serviceHandle.getService().resolveDescription();
+                serviceListerColumnFormatter.addRow(values);
+            }
+
+            sb.append(serviceListerColumnFormatter);
+            report.setMessage(sb.toString());
+            report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+        }
     }
 }
+

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,18 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples.data.entity;
 
-package org.glassfish.api.admin.config;
-
-import org.jvnet.hk2.annotations.Contract;
+import jakarta.persistence.Cacheable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
- * Contract for services which want to perform some upgrade on the application server configuration
- *
- * @author Jerome Dochez
+ * Minimal cacheable entity used in multi-entity repository tests.
  */
-@Contract
-public interface ConfigurationUpgrade {
-    // this is a tag contract, implementation should just implement a postConstruct method
-    // to perform upgrade on injected configuration data
+@Entity
+@Cacheable
+public class MiniBox {
+
+    @Id
+    public String code;
+
+    public String name;
+
+    public MiniBox() {}
+
+    public MiniBox(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
+
+    public static MiniBox of(String code, String name) {
+        return new MiniBox(code, name);
+    }
 }

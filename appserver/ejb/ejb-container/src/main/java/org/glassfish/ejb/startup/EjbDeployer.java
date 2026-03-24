@@ -159,16 +159,6 @@ public class EjbDeployer extends JavaEEDeployer<EjbContainerStarter, EjbApplicat
 
     @Override
     public void postConstruct() {
-        Properties arguments = startupContext.getArguments();
-        if (arguments != null) {
-            boolean isUpgrade = Boolean.valueOf(arguments.getProperty("-upgrade"));
-            if (isUpgrade) {
-                // we don't want to register this listener for the upgrade
-                // start up
-                return;
-            }
-        }
-
         events.register(this);
     }
 

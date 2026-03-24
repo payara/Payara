@@ -89,7 +89,7 @@
 <dt><code>securePagesWithPragma</code></dt>
 <dd>
 <p>Set this property to <code>false</code> to ensure that for all web applications on this virtual server file downloads using SSL work properly in Internet Explorer.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>payara-web.xml</code> file.</p>
+<p>Individual web applications may override this setting by using the <code>payara-web-app</code> element of the <code>payara-web.xml</code> file.</p>
 <p>The default value is <code>true</code>.</p>
 </dd>
 <dt><code>alternatedocroot_</code><i>n</i></dt>
@@ -117,7 +117,7 @@
    value="from=/jpg/* dir=/src/images"/&gt;
 </pre>
 <p>The <code>value</code> of each alternate docroot has two components: The first component, <code>from</code>, specifies the alternate docroot's URI pattern, and the second component, <code>dir</code>, specifies the alternate docroot's physical location (directory). Spaces are allowed in the <code>dir</code> component.</p>
-<p>Individual web applications may override this setting by using the <code>sun-web-app</code> element of the <code>payara-web.xml</code> file.</p>
+<p>Individual web applications may override this setting by using the <code>payara-web-app</code> element of the <code>payara-web.xml</code> file.</p>
 </dd>
 <dt><code>contextXmlDefault</code></dt>
 <dd>
@@ -125,12 +125,12 @@
 </dd>
 <dt><code>allowLinking</code></dt>
 <dd>
-<p>If <code>true</code>, resources that are symbolic links will be served for all web applications deployed on this virtual server. Individual web applications may override this setting by using the <code>sun-web-app</code> property <code>allowLinking</code> in the <code>payara-web.xml</code> file:</p>
+<p>If <code>true</code>, resources that are symbolic links will be served for all web applications deployed on this virtual server. Individual web applications may override this setting by using the <code>payara-web-app</code> property <code>allowLinking</code> in the <code>payara-web.xml</code> file:</p>
 <pre>
-&lt;sun-web-app&gt;
+&lt;payara-web-app&gt;
    &lt;property name="allowLinking" 
       value="{true|false}"/&gt;
-&lt;/sun-web-app&gt;
+&lt;/payara-web-app&gt;
 </pre>
 <p>The default value is <code>false</code>.</p>
 
@@ -180,15 +180,6 @@ HTTP/1.1 401 MY-401-REASON
 &lt;property name="redirect_1" 
   value="from=/dummy url-prefix=http://etude"/&gt;
 </pre></dd>
-<dt><code>valve_</code><i>n</i></dt>
-<dd>
-<p>Specifies a fully qualified class name of a custom valve, where <i>n</i> is a positive integer that allows specification of more than one. The valve class must implement the <code>org.apache.catalina.Valve</code> interface from Tomcat or previous Payara Server releases, or the <code>org.glassfish.web.valve.GlassFishValve</code> interface from the current Payara Server release. For example:</p>
-<pre>
-&lt;property name="valve_1"
-value="org.glassfish.extension.Valve"/&gt;
-</pre>
-<p>You can set this property for a specific web application.</p>
-</dd>
 <dt><code>listener_</code><i>n</i></dt>
 <dd>
 <p>Specifies a fully qualified class name of a custom Catalina listener, where <i>n</i> is a positive integer that allows specification of more than one. The listener class must implement the <code>org.apache.catalina.ContainerListener</code> or <code>org.apache.catalina.LifecycleListener</code> interface. For example:</p>

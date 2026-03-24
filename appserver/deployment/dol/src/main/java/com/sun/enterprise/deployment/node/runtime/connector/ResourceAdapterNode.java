@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.runtime.connector;
 
@@ -112,10 +113,6 @@ public class ResourceAdapterNode extends RuntimeDescriptorNode {
 	    descriptor.setAttributeValue(ResourceAdapter.STEADY_POOL_SIZE, value);
 	    return true;
 	}
-	if (attributeName.getQName().equals(RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS)) {
-	    descriptor.setAttributeValue(ResourceAdapter.MAX_WAIT_TIME_IN_MILLIS, value);
-	    return true;
-	}
 	if (attributeName.getQName().equals(RuntimeTagNames.IDLE_TIMEOUT_IN_SECONDS)) {
 	    descriptor.setAttributeValue(ResourceAdapter.IDLE_TIMEOUT_IN_SECONDS, value);
 	    return true;
@@ -137,7 +134,6 @@ public class ResourceAdapterNode extends RuntimeDescriptorNode {
 	setAttribute(raNode, RuntimeTagNames.JNDI_NAME, (String) descriptor.getValue(ResourceAdapter.JNDI_NAME));
 	setAttribute(raNode, RuntimeTagNames.MAX_POOL_SIZE, (String) descriptor.getValue(ResourceAdapter.MAX_POOL_SIZE));
 	setAttribute(raNode, RuntimeTagNames.STEADY_POOL_SIZE, (String) descriptor.getValue(ResourceAdapter.STEADY_POOL_SIZE));
-	setAttribute(raNode, RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS, (String) descriptor.getValue(ResourceAdapter.MAX_WAIT_TIME_IN_MILLIS));
 	setAttribute(raNode, RuntimeTagNames.IDLE_TIMEOUT_IN_SECONDS, (String) descriptor.getValue(ResourceAdapter.IDLE_TIMEOUT_IN_SECONDS));
 
 	// properties...
