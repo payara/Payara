@@ -98,9 +98,9 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
             
             runtimeSdk = AutoConfiguredOpenTelemetrySdk.builder()
                     //Need to provide custom Resources to start impl
+                    .addPropertiesCustomizer(p -> props)
                     .addResourceCustomizer(provideDefaultResourceCustomizer(!isRuntimeOtelEnabled()))
                     //Need to provide properties read from the system and env
-                    .addPropertiesCustomizer(p -> props)
                     .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                     .disableShutdownHook()
                     .setResultAsGlobal()
