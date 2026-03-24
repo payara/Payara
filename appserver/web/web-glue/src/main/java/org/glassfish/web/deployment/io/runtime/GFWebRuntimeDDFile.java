@@ -37,45 +37,59 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.servermgmt;
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
+package org.glassfish.web.deployment.io.runtime;
 
-import com.sun.enterprise.util.SystemPropertyConstants;
-import java.io.File;
-import java.util.logging.Level;
-import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.glassfish.hk2.api.PostConstruct;
+import static com.sun.enterprise.deployment.io.DescriptorConstants.GF_WEB_JAR_ENTRY;
+import static org.glassfish.web.sniffer.WarType.ARCHIVE_TYPE;
+
+import java.util.List;
+import java.util.Map;
+
+import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.web.sniffer.WarType;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
+import org.glassfish.web.deployment.node.runtime.gf.GFWebBundleRuntimeNode;
 import org.jvnet.hk2.annotations.Service;
 
-import static com.sun.enterprise.admin.servermgmt.SLogger.*;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.io.ConfigurationDeploymentDescriptorFileFor;
+import com.sun.enterprise.deployment.node.RootXMLNode;
 
 /**
- * Startup service to update the filesystem from v2 to the v3 format
- *
- * @author Joe Di Pol
+ * This class is responsible for handling the XML configuration information for the Glassfish Web Container
  */
+@ConfigurationDeploymentDescriptorFileFor(ARCHIVE_TYPE)
 @Service
-public class UpgradeFilesystem implements ConfigurationUpgrade, PostConstruct {
+@PerLookup
+@Deprecated
+public class GFWebRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
+    /**
+     * @return the location of the DeploymentDescriptor file for a particular type of J2EE Archive
+     */
     @Override
-    public void postConstruct() {
-        upgradeFilesystem();
+    public String getDeploymentDescriptorPath() {
+        return GF_WEB_JAR_ENTRY;
     }
 
-    private void upgradeFilesystem() {
-
-        // Rename nodeagents to nodes
-        String installDir = System.getProperty(
-                SystemPropertyConstants.INSTALL_ROOT_PROPERTY);
-
-        File agentsDir = new File(installDir, "nodeagents");
-        File nodesDir = new File(installDir, "nodes");
-
-        // Only do this if nodeagents exists and nodes does not
-        if (agentsDir.exists() && !nodesDir.exists()) {
-            getLogger().log(Level.INFO, RENAME_CERT_FILE, new Object[]{agentsDir.getPath(), nodesDir.getPath()});
-            if (!agentsDir.renameTo(nodesDir)) {
-                getLogger().log(Level.SEVERE, BAD_RENAME_CERT_FILE, new Object[]{agentsDir.getPath(), nodesDir.getPath()});
-            }
+    /**
+     * @return a RootXMLNode responsible for handling the deployment descriptors associated with this J2EE module
+     *
+     * @param descriptor the descriptor for which we need the node
+     */
+    @Override
+    public RootXMLNode getRootXMLNode(Descriptor descriptor) {
+        if (descriptor instanceof WebBundleDescriptorImpl) {
+            return new GFWebBundleRuntimeNode((WebBundleDescriptorImpl) descriptor);
         }
+        
+        return null;
+    }
+
+    @Override
+    public void registerBundle(Map<String, Class<?>> registerMap, Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
+        registerMap.put(GFWebBundleRuntimeNode.registerBundle(publicIDToDTD, versionUpgrades), GFWebBundleRuntimeNode.class);
     }
 }

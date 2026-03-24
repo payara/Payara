@@ -1064,10 +1064,7 @@ public class CommandRunnerImpl implements CommandRunner {
      * Check if the variable, "skipParamValidation" is defined in the command
      * class.  If defined and set to true, then parameter validation will be
      * skipped from that command.
-     * This is used mostly for command referencing.  For example the
-     * list-applications command references list-components command and you
-     * don't want to define the same params from the class that implements
-     * list-components.
+     * This is used mostly for command referencing.
      *
      * @param command - AdminCommand class
      * @return true if to skip param validation, else return false.

@@ -37,21 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2023-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2023-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.pwc.connector.coyote;
 
-import com.sun.enterprise.web.EmbeddedWebContainer;
 import com.sun.enterprise.web.pwc.PwcWebModule;
 import com.sun.enterprise.web.session.WebSessionCookieConfig;
 import com.sun.enterprise.web.session.WebSessionCookieConfig.CookieSecureType;
-import jakarta.inject.Inject;
 import org.apache.catalina.Context;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.glassfish.grizzly.http.server.Constants;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.LogFacade;
 
 import jakarta.servlet.http.Cookie;
@@ -64,8 +60,6 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.grizzly.config.dom.Http;
 
 /**
  * Customized version of the Tomcat 5 CoyoteRequest
@@ -123,8 +117,7 @@ public class PwcCoyoteRequest extends Request {
      * Return the character encoding for this Request.
      *
      * If there is no request charset specified in the request, determines and
-     * sets the request charset using the locale-charset-info,
-     * locale-charset-map, and parameter-encoding elements provided in the
+     * sets the request charset using the parameter-encoding elements provided in the
      * sun-web.xml.
      */
     @Override
@@ -182,8 +175,8 @@ public class PwcCoyoteRequest extends Request {
             
 
     /**
-     * Determines and sets the request charset using the locale-charset-info,
-     * locale-charset-map, and parameter-encoding elements provided in the
+     * Determines and sets the request charset using the
+     * parameter-encoding elements provided in the
      * sun-web.xml.
      *
      * @return true if a request encoding has been determined and set,
@@ -202,9 +195,6 @@ public class PwcCoyoteRequest extends Request {
         String encoding = getFormHintFieldEncoding(wm);
         if (encoding == null) {
             encoding = wm.getDefaultCharset();
-            if (encoding == null && wm.hasLocaleToCharsetMapping()) {
-                encoding = wm.mapLocalesToCharset(getLocales());
-            }
         }
 
         if (encoding != null) {

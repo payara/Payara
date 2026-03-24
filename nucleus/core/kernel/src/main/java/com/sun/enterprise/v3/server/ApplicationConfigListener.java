@@ -189,16 +189,6 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
     }
 
     public void postConstruct() {
-        Properties arguments = startupContext.getArguments(); 
-        if (arguments != null) {
-            boolean isUpgrade = Boolean.valueOf(
-                arguments.getProperty(UPGRADE_PARAM));  
-            if (isUpgrade) {
-                // we don't want to register this listener for the upgrade
-                // start up
-                return;
-            }
-        }
         transactions.addTransactionsListener(this);
     }
 

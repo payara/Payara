@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
@@ -58,7 +58,6 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.config.LegacyConfigurationUpgrade;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -456,7 +455,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             try {
                 config.apply(changes);
                 success(context, targetName, value);
-                runLegacyChecks(context);
             } catch (TransactionFailure transactionFailure) {
                 //fail(context, "Could not change the attributes: " +
                 //        transactionFailure.getMessage(), transactionFailure);
@@ -549,7 +547,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     }
 
     private boolean replicatePropertyChange(AdminCommandContext context, SetOperation op, String targetName) {
-        runLegacyChecks(context);
         return replicatePropertyChangeWithoutLegacyChecks(context, op, targetName);
     }
 
@@ -747,14 +744,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             }
         }
         return true;
-    }
-
-    private void runLegacyChecks(AdminCommandContext context) {
-        final Collection<LegacyConfigurationUpgrade> list = habitat.<LegacyConfigurationUpgrade>getAllServices(LegacyConfigurationUpgrade.class
-        );
-        for (LegacyConfigurationUpgrade upgrade : list) {
-            upgrade.execute(context);
-        }
     }
 
     /**

@@ -93,7 +93,7 @@ public class MigrateTimers implements AdminCommand {
     private static final Logger logger =
         LogDomains.getLogger(MigrateTimers.class, LogDomains.EJB_LOGGER);
 
-    @Param(name = "target", optional = true, alias="destination",
+    @Param(name = "target", optional = true,
         defaultValue=SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     public String target;
 

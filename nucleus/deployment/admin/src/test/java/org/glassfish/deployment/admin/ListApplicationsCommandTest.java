@@ -64,10 +64,10 @@ import java.util.Properties;
 
 
 /**
- * junit test to test ListComponentsCommand class
+ * junit test to test ListApplicationsCommand class
  */
-public class ListComponentsCommandTest {
-    private ListComponentsCommand lcc = null;
+public class ListApplicationsCommandTest {
+    private ListApplicationsCommand lac = null;
 
     @Test
     public void isApplicationOfThisTypeTest() {
@@ -75,18 +75,18 @@ public class ListComponentsCommandTest {
             ApplicationTest app = new ApplicationTest();
             Engine eng = new EngineTest();
             eng.setSniffer("web");
-            List<Engine> engines = new ArrayList<Engine>();
+            List<Engine> engines = new ArrayList<>();
             engines.add(eng);
-            List<Module> modules = new ArrayList<Module>();
+            List<Module> modules = new ArrayList<>();
             ModuleTest aModule = new ModuleTest();
             aModule.setEngines(engines);
             modules.add(aModule);
             app.setModules(modules);
         
-            boolean ret = lcc.isApplicationOfThisType(app, "web");
-            assertTrue("test app with sniffer engine=web", true==lcc.isApplicationOfThisType(app, "web"));
+            boolean ret = lac.isApplicationOfThisType(app, "web");
+            assertTrue("test app with sniffer engine=web", true== lac.isApplicationOfThisType(app, "web"));
             //negative testcase
-            assertFalse("test app with sniffer engine=web", true==lcc.isApplicationOfThisType(app, "ejb"));
+            assertFalse("test app with sniffer engine=web", true== lac.isApplicationOfThisType(app, "ejb"));
         }
         catch (Exception ex) {
             //ignore exception
@@ -110,7 +110,7 @@ public class ListComponentsCommandTest {
             aModule.setEngines(engines);
             modules.add(aModule);
             app.setModules(modules);
-            String snifferEngines = lcc.getSnifferEngines(app.getModule().get(0), true);
+            String snifferEngines = lac.getSnifferEngines(app.getModule().get(0), true);
             assertEquals("compare all sniffer engines", "<web, security>",
                         snifferEngines);
         }
@@ -122,7 +122,7 @@ public class ListComponentsCommandTest {
 
     @Before
     public void setup() {
-        lcc = new ListComponentsCommand();
+        lac = new ListApplicationsCommand();
     }
 
     public class RandomConfig implements ConfigBeanProxy {

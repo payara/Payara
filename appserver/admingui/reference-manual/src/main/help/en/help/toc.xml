@@ -201,7 +201,6 @@
     <tocitem target="reference/list-batch-job-steps" text="list-batch-job-steps" expand="false"></tocitem>
     <tocitem target="reference/list-batch-runtime-configuration" text="list-batch-runtime-configuration" expand="false"></tocitem>
     <tocitem target="reference/list-commands" text="list-commands" expand="false"></tocitem>
-    <tocitem target="reference/list-components" text="list-components" expand="false"></tocitem>
     <tocitem target="reference/list-configs" text="list-configs" expand="false"></tocitem>
     <tocitem target="reference/list-connector-connection-pools" text="list-connector-connection-pools" expand="false"></tocitem>
     <tocitem target="reference/list-connector-resources" text="list-connector-resources" expand="false"></tocitem>

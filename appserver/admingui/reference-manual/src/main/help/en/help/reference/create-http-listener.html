@@ -81,7 +81,7 @@
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] create-http-listener [--help]
 --listeneraddress address
 --listenerport listener-port
-{--default-virtual-server | --defaultvs} virtual-server
+{--default-virtual-server} virtual-server
 [--servername server-name]
 [--acceptorthreads acceptor-threads]
 [--securityenabled={false|true}]
@@ -158,10 +158,8 @@ requires superuser privileges. Configuring an SSL listen socket to
 listen on port 443 is recommended.</p>
 </dd>
 <dt class="hdlist1"><code>--default-virtual-server</code></dt>
-<dt class="hdlist1"><code>--defaultvs</code></dt>
 <dd>
-<p>The ID attribute of the default virtual server for this listener. The
-<code>--defaultvs</code> option is deprecated.</p>
+<p>The ID attribute of the default virtual server for this listener.</p>
 </dd>
 <dt class="hdlist1"><code>--servername</code></dt>
 <dd>
@@ -242,7 +240,7 @@ is not enabled at runtime:</p>
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; create-http-listener --listeneraddress 0.0.0.0 --listenerport 7272
---defaultvs server --servername host1.sun.com --acceptorthreads 100
+--default-virtual-server server --servername host1.sun.com --acceptorthreads 100
 --securityenabled=false --enabled=false sampleListener
 Command create-http-listener executed successfully.</code></pre>
 </div>

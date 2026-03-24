@@ -80,7 +80,7 @@ import org.glassfish.api.admin.RestParam;
 })
 public class RecoverTransactions extends RecoverTransactionsBase implements AdminCommand {
 
-    @Param(name="target", alias = "destination", optional = true)
+    @Param(name="target", optional = true)
     String destinationServer;
 
     @Inject 

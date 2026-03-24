@@ -75,7 +75,7 @@ public class InsertAndSaveOperationUtility {
         endTransaction(tm, em, dataForQuery);
 
         if (!results.isEmpty()) {
-            return processReturnType(dataForQuery, results);
+            return processReturnType(dataForQuery.getQueryMetadata(), results);
         }
 
         return null;

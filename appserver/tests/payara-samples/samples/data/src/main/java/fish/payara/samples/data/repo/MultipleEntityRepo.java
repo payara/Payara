@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,48 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples.data.repo;
 
-package org.glassfish.ejb.deployment.node.runtime;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import com.sun.enterprise.deployment.node.runtime.RuntimeDescriptorNode;
-import com.sun.enterprise.deployment.xml.RuntimeTagNames;
-import org.glassfish.ejb.deployment.descriptor.runtime.PersistenceManagerInUse;
-import org.w3c.dom.Node;
+import fish.payara.samples.data.entity.Coordinate;
+import fish.payara.samples.data.entity.MiniBox;
+import jakarta.data.repository.Insert;
+import jakarta.data.repository.Query;
+import jakarta.data.repository.Repository;
 
 /**
- * This node handles the pm-inuse runtime xml element
+ * Repository with multiple entity types and no primary entity type parameter.
  *
- * @author  Jerome Dochez
- * @version 
+ * <p>The entity type for {@link #deleteIfPositive()} can only be determined by
+ * parsing the JPQL query string — it is Coordinate, not MiniBox. Our implementation
+ * previously inferred MiniBox from {@link #addAll(MiniBox...)} which was wrong.</p>
+ *
+ * <p>Related issue: FISH-13049</p>
  */
+@Repository
+public interface MultipleEntityRepo { // Do not add a primary entity type.
 
-public class PMInUseNode extends RuntimeDescriptorNode<PersistenceManagerInUse> {
+    // Methods for MiniBox entity:
 
-    private PersistenceManagerInUse descriptor;
+    @Insert
+    MiniBox[] addAll(MiniBox... boxes);
 
-    @Override
-    public PersistenceManagerInUse getDescriptor() {
-        if (descriptor == null) descriptor = new PersistenceManagerInUse();
-        return descriptor;
-    }
+    // Methods for Coordinate entity:
 
-    @Override
-    protected Map getDispatchTable() {
-        Map table = new HashMap();
-        table.put(RuntimeTagNames.PM_IDENTIFIER, "set_pm_identifier");
-        table.put(RuntimeTagNames.PM_VERSION, "set_pm_version");
-        return table;
-    }
+    @Insert
+    Coordinate create(Coordinate c);
 
+    @Query("DELETE FROM Coordinate WHERE x > 0.0d AND y > 0.0f")
+    long deleteIfPositive();
 
-    @Override
-    public Node writeDescriptor(Node parent, String nodeName, PersistenceManagerInUse descriptor) {
-        Node pmInUse = super.writeDescriptor(parent, nodeName, descriptor);
-        appendTextChild(pmInUse, RuntimeTagNames.PM_IDENTIFIER, descriptor.get_pm_identifier());
-        appendTextChild(pmInUse, RuntimeTagNames.PM_VERSION, descriptor.get_pm_version());
-        return pmInUse;
-    }
+    @Query("DELETE WHERE name = ?1")
+    long deletePrimaryEntityType(String name);
 }

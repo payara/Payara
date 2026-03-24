@@ -186,9 +186,9 @@ public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckCon
         Map<String, Object> mainExtraPropsMap = new HashMap<>();
 
         mainExtraPropsMap.put("enabled", configuration.getEnabled());
-        mainExtraPropsMap.put("historicalTraceEnabled", configuration.getHistoricalTraceEnabled());
-        mainExtraPropsMap.put("historicalTraceStoreSize", configuration.getHistoricalTraceStoreSize());
-        mainExtraPropsMap.put("historicalTraceStoreTimeout", configuration.getHistoricalTraceStoreTimeout());
+        mainExtraPropsMap.put("historical-trace-enabled", configuration.getHistoricalTraceEnabled());
+        mainExtraPropsMap.put("historical-trace-store-size", configuration.getHistoricalTraceStoreSize());
+        mainExtraPropsMap.put("historical-trace-store-timeout", configuration.getHistoricalTraceStoreTimeout());
 
         mainExtraProps.put("healthcheckConfiguration", mainExtraPropsMap);
         mainActionReport.setExtraProperties(mainExtraProps);
