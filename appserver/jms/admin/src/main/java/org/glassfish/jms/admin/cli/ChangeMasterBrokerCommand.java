@@ -37,69 +37,69 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.Cluster;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Nodes;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
+import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import jakarta.inject.Inject;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.*;
-import org.glassfish.config.support.TargetType;
-import org.glassfish.config.support.CommandTarget;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.config.serverbeans.*;
-
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
-
-import org.glassfish.internal.api.ServerContext;
-
-import java.util.List;
-import java.beans.PropertyVetoException;
-import org.jvnet.hk2.annotations.Service;
-
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
-import jakarta.inject.Inject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
+import java.util.List;
 
 
 /**
  * Change JMS Master Broker Command
  *
  */
-@Service(name="change-master-broker")
+@Service(name = "change-master-broker")
 @PerLookup
 @I18n("change.master.broker")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG, CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
-    @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.POST, 
-        path="change-master-broker", 
-        description="change-master-broker")
+        @RestEndpoint(configBean = Cluster.class,
+                opType = RestEndpoint.OpType.POST,
+                path = "change-master-broker",
+                description = "change-master-broker")
 })
 public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCommand {
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ChangeMasterBrokerCommand.class);
-    // [usemasterbroker] [availability-enabled] [dbvendor] [dbuser] [dbpassword admin] [jdbcurl] [properties props] clusterName
 
-    private static enum BrokerStatusCode {
+    private enum BrokerStatusCode {
         BAD_REQUEST(400), NOT_ALLOWED(405), UNAVAILABLE(503), PRECONDITION_FAILED(412);
 
         private int code;
 
-        private BrokerStatusCode(int c) {
+        BrokerStatusCode(int c) {
             code = c;
         }
 
@@ -108,15 +108,11 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
         }
     }
 
-    @Param (primary=true)//(name="newmasterbroker", alias="nmb", optional=false)
+    @Param(primary = true)
     String newMasterBroker;
-
-    //@Param(primary=true)
-    //String clusterName;
 
     @Inject
     CommandRunner commandRunner;
-
 
     @Inject
     Domain domain;
@@ -140,118 +136,85 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
         Server newMBServer = domain.getServerNamed(newMasterBroker);
         if (newMBServer == null) {
             report.setMessage(localStrings.getLocalString("change.master.broker.invalidServerName",
-                            "Invalid server name specified. There is no server by this name"));
+                    "Invalid server name specified. There is no server by this name"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
-        Cluster cluster = newMBServer.getCluster();//domain.getClusterNamed(clusterName);
+        Cluster cluster = newMBServer.getCluster();
 
         if (cluster == null) {
             report.setMessage(localStrings.getLocalString("change.master.broker.invalidClusterName",
-                            "The server specified is not associated with a cluster. The server assocaited with the master broker has to be a part of the cluster"));
+                    "The server specified is not associated with a cluster. The server assocaited with the master broker has to be a part of the " +
+                            "cluster"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
+        Nodes nodes = domain.getNodes();
+        config = domain.getConfigNamed(cluster.getConfigRef());
+        JmsService jmsservice = config.getExtensionByType(JmsService.class);
+        Server oldMBServer;
+        // If Master broker has been set previously using this command, use that master broker as the old MB instance
+        // Else use the first configured instance in the cluster list
+        if (jmsservice.getMasterBroker() != null) {
+            oldMBServer = domain.getServerNamed(jmsservice.getMasterBroker());
+        } else {
+            List<Server> serverList = cluster.getInstances();
+            oldMBServer = serverList.get(0);
+        }
 
-        /*if(!cluster.getName().equals(newMBServer.getCluster().getName()))
-        {
-            report.setMessage(localStrings.getLocalString("configure.jms.cluster.invalidClusterName",
-                            "{0} does not belong to the specified cluster", newMasterBroker));
+        String oldMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(oldMBServer);
+        if (oldMasterBrokerPort == null) {
+            SystemProperty sp = config.getSystemProperty("JMS_PROVIDER_PORT");
+            if (sp != null) oldMasterBrokerPort = sp.getValue();
+        }
+        if (oldMasterBrokerPort == null) oldMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
+        String oldMasterBrokerHost = nodes.getNode(oldMBServer.getNodeRef()).getNodeHost();
+
+        String newMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(newMBServer);
+        if (newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
+        String newMasterBrokerHost = nodes.getNode(newMBServer.getNodeRef()).getNodeHost();
+
+
+        String oldMasterBroker = oldMasterBrokerHost + ":" + oldMasterBrokerPort;
+        String newMasterBroker = newMasterBrokerHost + ":" + newMasterBrokerPort;
+        try {
+            CompositeData result = updateMasterBroker(oldMBServer.getName(), oldMasterBroker, newMasterBroker);
+            boolean success = ((Boolean) result.get("Success")).booleanValue();
+            if (!success) {
+                int statusCode = ((Integer) result.get("StatusCode")).intValue();
+                String detailMessage = (String) result.get("DetailMessage");
+                String msg = " " + detailMessage;
+                if (BrokerStatusCode.BAD_REQUEST.getCode() == statusCode || BrokerStatusCode.NOT_ALLOWED.getCode() == statusCode ||
+                        BrokerStatusCode.UNAVAILABLE.getCode() == statusCode || BrokerStatusCode.PRECONDITION_FAILED.getCode() == statusCode) {
+                    msg = localStrings.getLocalString("change.master.broker.errorMsg",
+                            "{0}. But it didn't affect current master broker configuration.", msg);
+                } else {
+                    msg = msg + ". " + localStrings.getLocalString("change.master.broker.otherErrorMsg",
+                            "The cluster should be shutdown and configured with the new master broker then restarts.");
+                }
+
+                report.setMessage(localStrings.getLocalString("change.master.broker.CannotChangeMB",
+                        "Unable to change master broker.{0}", msg));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        } catch (Exception e) {
+            report.setMessage(localStrings.getLocalString("change.master.broker.CannotChangeMB",
+                    "Unable to change master broker.{0}", ""));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
-        } */
-
-       Nodes nodes = domain.getNodes();
-       config = domain.getConfigNamed(cluster.getConfigRef());
-       JmsService jmsservice = config.getExtensionByType(JmsService.class);
-       Server oldMBServer = null;
-       //If Master broker has been set previously using this command, use that master broker as the old MB instance
-       //Else use the first configured instance in the cluster list
-       if(jmsservice.getMasterBroker() != null){
-            oldMBServer = domain.getServerNamed(jmsservice.getMasterBroker());
-       }else
-       {
-           List<Server> serverList = cluster.getInstances();
-           //if(serverList == null || serverList.size() == 0){
-             //report.setMessage(localStrings.getLocalString("change.master.broker.invalidCluster",
-               //             "No servers configured in cluster {0}", clusterName));
-            //report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            //return;
-           //}
-           oldMBServer = serverList.get(0);
-       }
-
-       String oldMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(oldMBServer);
-       if(oldMasterBrokerPort == null) {
-	      SystemProperty sp = config.getSystemProperty("JMS_PROVIDER_PORT");
-	      if(sp != null) oldMasterBrokerPort = sp.getValue();
-       }
-       if(oldMasterBrokerPort == null) oldMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
-       String oldMasterBrokerHost = nodes.getNode(oldMBServer.getNodeRef()).getNodeHost();
-
-       String newMasterBrokerPort = JmsRaUtil.getJMSPropertyValue(newMBServer);
-       if(newMasterBrokerPort == null) newMasterBrokerPort = getDefaultJmsHost(jmsservice).getPort();
-       String newMasterBrokerHost = nodes.getNode(newMBServer.getNodeRef()).getNodeHost();
-
-
-       String oldMasterBroker = oldMasterBrokerHost + ":" + oldMasterBrokerPort;
-       String newMasterBroker = newMasterBrokerHost + ":" + newMasterBrokerPort;
-      // System.out.println("1: IN deleteinstanceCheck supplimental oldMasterBroker = " + oldMasterBroker + " newmasterBroker " + newMasterBroker);
-       try{
-           CompositeData result = updateMasterBroker(oldMBServer.getName(), oldMasterBroker, newMasterBroker);
-           boolean success = ((Boolean) result.get("Success")).booleanValue();
-           if (!success) {
-               int statusCode = ((Integer) result.get("StatusCode")).intValue();
-               String detailMessage = (String) result.get("DetailMessage");
-               String msg = " " + detailMessage;
-               if (BrokerStatusCode.BAD_REQUEST.getCode() == statusCode || BrokerStatusCode.NOT_ALLOWED.getCode() == statusCode ||
-                   BrokerStatusCode.UNAVAILABLE.getCode() == statusCode || BrokerStatusCode.PRECONDITION_FAILED.getCode() == statusCode) {
-                   msg = localStrings.getLocalString("change.master.broker.errorMsg",
-                                                     "{0}. But it didn't affect current master broker configuration.", msg);
-               } else {
-                   msg = msg + ". " + localStrings.getLocalString("change.master.broker.otherErrorMsg",
-                                                                  "The cluster should be shutdown and configured with the new master broker then restarts.");
-               }
-
-               report.setMessage(localStrings.getLocalString("change.master.broker.CannotChangeMB",
-                                                             "Unable to change master broker.{0}", msg));
-               report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-               return;
-            }
-       }catch(Exception e){
-                      report.setMessage(localStrings.getLocalString("change.master.broker.CannotChangeMB",
-                                    "Unable to change master broker.{0}", ""));
-                            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                        return;
-                 }
+        }
 
         try {
-            /*String setCommandStr = cluster.getConfigRef() + "." + "jms-service" + "." +"master-Broker";
-            ParameterMap parameters = new ParameterMap();
-            parameters.set(setCommandStr, newMB );
-
-            ActionReport subReport = report.addSubActionsReport();
-	        commandRunner.getCommandInvocation("set", subReport, context.getSubject()).parameters(parameters).execute();
-
-              if (ActionReport.ExitCode.FAILURE.equals(subReport.getActionExitCode())){
-                    report.setMessage(localStrings.getLocalString("create.jms.resource.cannotCreateConnectionPool",
-                            "Unable to create connection pool."));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-              }*/
-
-            ConfigSupport.apply(new SingleConfigCode<JmsService>() {
-                public Object run(JmsService param) throws PropertyVetoException, TransactionFailure {
-
-                    param.setMasterBroker(newMB);
-                    return param;
-                  }
-               }, jmsservice);
-        } catch(Exception tfe) {
+            ConfigSupport.apply((SingleConfigCode<JmsService>) param -> {
+                param.setMasterBroker(newMB);
+                return param;
+            }, jmsservice);
+        } catch (Exception tfe) {
             report.setMessage(localStrings.getLocalString("change.master.broker.fail",
-                            "Unable to update the domain.xml with the new master broker") +
-                            " " + tfe.getLocalizedMessage());
+                    "Unable to update the domain.xml with the new master broker") +
+                    " " + tfe.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
         }
@@ -260,50 +223,48 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 
-   private JmsHost getDefaultJmsHost(JmsService jmsService){
+    private JmsHost getDefaultJmsHost(JmsService jmsService) {
 
-	    JmsHost jmsHost = null;
-            String defaultJmsHostName = jmsService.getDefaultJmsHost();
-            List jmsHostsList = jmsService.getJmsHost();
+        JmsHost jmsHost = null;
+        String defaultJmsHostName = jmsService.getDefaultJmsHost();
+        List jmsHostsList = jmsService.getJmsHost();
 
-            for (int i=0; i < jmsHostsList.size(); i ++)
-            {
-               JmsHost tmpJmsHost = (JmsHost) jmsHostsList.get(i);
-               if (tmpJmsHost != null && tmpJmsHost.getName().equals(defaultJmsHostName))
-                     jmsHost = tmpJmsHost;
+        for (int i = 0; i < jmsHostsList.size(); i++) {
+            JmsHost tmpJmsHost = (JmsHost) jmsHostsList.get(i);
+            if (tmpJmsHost != null && tmpJmsHost.getName().equals(defaultJmsHostName))
+                jmsHost = tmpJmsHost;
+        }
+        return jmsHost;
+    }
+
+    private CompositeData updateMasterBroker(String serverName, String oldMasterBroker, String newMasterBroker) throws Exception {
+        MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(serverName, config, serverContext, domain, connectorRuntime);
+
+        CompositeData result = null;
+        try {
+            MBeanServerConnection mbsc = mqInfo.getMQMBeanServerConnection();
+            ObjectName on = new ObjectName(
+                    CLUSTER_CONFIG_MBEAN_NAME);
+            Object[] params;
+
+            String[] signature = new String[]{
+                    "java.lang.String",
+                    "java.lang.String"};
+            params = new Object[]{oldMasterBroker, newMasterBroker};
+
+            result = (CompositeData) mbsc.invoke(on, "changeMasterBroker", params, signature);
+        } catch (Exception e) {
+            logAndHandleException(e, "admin.mbeans.rmb.error_creating_jms_dest");
+        } finally {
+            try {
+                if (mqInfo != null) {
+                    mqInfo.closeMQMBeanServerConnection();
+                }
+            } catch (Exception e) {
+                handleException(e);
             }
-	    return jmsHost;
-      }
-
-     private CompositeData updateMasterBroker(String serverName, String oldMasterBroker, String newMasterBroker) throws Exception {
-        MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(serverName, config,serverContext, domain, connectorRuntime);
-
-         //MBeanServerConnection  mbsc = getMBeanServerConnection(tgtName);
-         CompositeData result = null;
-         try {
-             MBeanServerConnection mbsc = mqInfo.getMQMBeanServerConnection();
-             ObjectName on = new ObjectName(
-                     CLUSTER_CONFIG_MBEAN_NAME);
-             Object [] params = null;
-
-             String []  signature = new String [] {
-                      "java.lang.String",
-                      "java.lang.String"};
-                        params = new Object [] {oldMasterBroker, newMasterBroker};
-
-             result = (CompositeData) mbsc.invoke(on, "changeMasterBroker", params, signature);
-         } catch (Exception e) {
-                     logAndHandleException(e, "admin.mbeans.rmb.error_creating_jms_dest");
-         } finally {
-                     try {
-                         if(mqInfo != null) {
-                             mqInfo.closeMQMBeanServerConnection();
-                         }
-                     } catch (Exception e) {
-                       handleException(e);
-                     }
-                 }
-         return result;
-     }
+        }
+        return result;
+    }
 }
 
