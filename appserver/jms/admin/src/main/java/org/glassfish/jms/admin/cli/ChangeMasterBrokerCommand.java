@@ -144,7 +144,7 @@ public class ChangeMasterBrokerCommand extends JMSDestination implements AdminCo
 
         if (cluster == null) {
             report.setMessage(localStrings.getLocalString("change.master.broker.invalidClusterName",
-                    "The server specified is not associated with a cluster. The server assocaited with the master broker has to be a part of the " +
+                    "The server specified is not associated with a cluster. The server associated with the master broker has to be a part of the " +
                             "cluster"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
