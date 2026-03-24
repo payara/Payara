@@ -40,6 +40,11 @@
 package fish.payara.telemetry.service;
 
 
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
+import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -91,6 +96,15 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
                     .build().getOpenTelemetrySdk();
         } else {
             noopInstance = OpenTelemetrySdk.builder().build();
+        }
+        
+        if (!isRuntimeOtelEnabled() && runtimeSdk != null) {
+            //provide default runtime metrics
+            Classes.registerObservers(runtimeSdk);
+            Cpu.registerObservers(runtimeSdk);
+            MemoryPools.registerObservers(runtimeSdk);
+            Threads.registerObservers(runtimeSdk);
+            GarbageCollector.registerObservers(runtimeSdk);
         }
     }
 

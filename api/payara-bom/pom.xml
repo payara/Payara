@@ -626,6 +626,12 @@
                 <version>${opentelemetry-sdk-extension-incubator.version}</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-runtime-telemetry-java8</artifactId>
+                <version>${opentelemetry-runtime-telemetry-java8.version}</version>
+                <scope>provided</scope>
+            </dependency>
             <!-- Implementations -->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
