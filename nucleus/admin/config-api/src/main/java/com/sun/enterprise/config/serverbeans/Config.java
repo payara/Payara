@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -292,22 +292,6 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
      * @param value allowed object is {@link ThreadPools }
      */
     void setThreadPools(ThreadPools value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the groupManagementService property.
-     *
-     * @return possible object is {@link GroupManagementService }
-     */
-    @Element
-    @NotNull
-    GroupManagementService getGroupManagementService();
-
-    /**
-     * Sets the value of the groupManagementService property.
-     *
-     * @param value allowed object is {@link GroupManagementService }
-     */
-    void setGroupManagementService(GroupManagementService value) throws PropertyVetoException;
 
     /**
      * Gets the value of the systemProperty property.

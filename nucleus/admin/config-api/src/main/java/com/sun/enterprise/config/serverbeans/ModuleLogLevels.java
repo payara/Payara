@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.config.serverbeans;
 
 import org.jvnet.hk2.config.Attribute;
@@ -526,22 +526,6 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
     public void setSelfManagement(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the groupManagementService property.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "INFO")
-    public String getGroupManagementService();
-
-    /**
-     * Sets the value of the groupManagementService property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setGroupManagementService(String value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the managementEvent property.
      *
      * @return possible object is {@link String }
@@ -597,7 +581,6 @@ public interface ModuleLogLevels extends ConfigBeanProxy, PropertyBag {
             moduleLevels.put("synchronization", me.getSynchronization());
             moduleLevels.put("node-agent", me.getNodeAgent());
             moduleLevels.put("self-management", me.getSelfManagement());
-            moduleLevels.put("group-management-services", me.getGroupManagementService());
             moduleLevels.put("management-event", me.getManagementEvent());
 
             return moduleLevels;
