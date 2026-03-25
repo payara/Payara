@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
@@ -69,51 +70,8 @@ public class AnnotationUtils {
     }
         return logger;        
     }
-    
-    /**
-     * Sets the logger
-     * @deprecated Since 4.1.2.172 as unused in Payara
-     * @param lg 
-     * @see #getLogger() 
-     */
-    public static void setLogger(Logger lg) {
-        logger = lg;
-    }
-      
-    /**
-     * Sets what type of things are to logged
-     * @deprecated Since 4.1.2.172 as unused in Payara
-     * @param what
-     */
-    public static void setLoggerTarget(String what) {
-        whatToLog = what;
-    }
-    
-    /**
-     * @deprecated Since 4.1.2.172 as unused in Payara
-     * @return 
-     */
-    public static String getLoggerTarget() {
-        return whatToLog;
-    }
-    
-    /**
-     * @deprecated Since 4.1.2.172, use of different {@link Logger}s is the preferred method
-     * @param what
-     * @return
-     * @see Logger#getLogger(String) 
-     */
-    public static boolean shouldLog(String what) {
-        
-        if (logger.isLoggable(Level.FINER)) {
-            if (whatToLog.contains(what)) 
-                return true;
-            if ("*".equals(whatToLog))
-                return true;
-        }
-        return false;
-    }
-    
+
+
     public static String getLocalString(String key, String defaultString, Object... arguments){
         return MessageFormat.format(defaultString, arguments);
     }

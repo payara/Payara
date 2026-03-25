@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.resource.allocator;
 
@@ -153,7 +154,7 @@ public abstract class AbstractConnectorAllocator
     }
 
     public boolean supportsReauthentication() {
-        return this.desc.supportsReauthentication();
+        return this.desc.getOutboundResourceAdapter().supportsReauthentication();
     }
 
     public boolean isTransactional() {

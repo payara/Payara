@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.startup;
 
@@ -365,8 +365,7 @@ public class Catalina extends Embedded {
 
         // When the 'engine' is found, set the parentClassLoader.
         digester.addRule("Server/Service/Engine",
-                         new SetParentClassLoaderRule(digester,
-                                                      parentClassLoader));
+                         new SetParentClassLoaderRule(parentClassLoader));
 
         long t2=System.currentTimeMillis();
         if (log.isLoggable(Level.FINE)) {
@@ -721,10 +720,9 @@ public class Catalina extends Embedded {
 
 final class SetParentClassLoaderRule extends Rule {
 
-    public SetParentClassLoaderRule(Digester digester,
-                                    ClassLoader parentClassLoader) {
+    public SetParentClassLoaderRule(ClassLoader parentClassLoader) {
 
-        super(digester);
+        super();
         this.parentClassLoader = parentClassLoader;
 
     }
