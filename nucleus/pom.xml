@@ -66,7 +66,6 @@
         <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
-        <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
@@ -91,7 +90,7 @@
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.3</classmate.version>
-        <jboss-logging.version>3.6.2.Final</jboss-logging.version>
+        <jboss-logging.version>3.6.3.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
 
@@ -135,7 +134,7 @@
         <mockito.version>5.23.0</mockito.version>
 
         <!-- Build -->
-        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20.payara-p3</glassfishbuild.version>
         <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.20</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
@@ -150,7 +149,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.3.10</kotlin-version>
+        <kotlin-version>2.3.20</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>
@@ -328,11 +327,6 @@
                     <version>${glassfishbuild.version}</version>
                 </plugin>
 
-                <plugin>
-                    <groupId>org.omnifaces</groupId>
-                    <artifactId>antlr-maven-plugin</artifactId>
-                    <version>${maven.antlr.plugin.version}</version>
-                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxws-maven-plugin</artifactId>

@@ -58,9 +58,8 @@ import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.inject.spi.PassivationCapable;
 import jakarta.enterprise.inject.spi.Producer;
 import jakarta.enterprise.inject.spi.ProducerFactory;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.Table;
+import jakarta.persistence.metamodel.EntityType;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -68,8 +67,6 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -78,6 +75,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static fish.payara.data.core.util.DataCommonOperationUtility.findEntityTypeInMethod;
@@ -109,6 +108,12 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
 
     private Predicate<Class<?>> classValidationParameter = clazz -> clazz != null
             && !clazz.isPrimitive() && !clazz.isInterface();
+
+    // Matches entity name after FROM (for SELECT/DELETE) or after UPDATE
+    // Examples: "DELETE FROM Coordinate WHERE ...", "UPDATE Employee SET ...", "FROM Box WHERE ..."
+    private static final Pattern JPQL_ENTITY_PATTERN = Pattern.compile(
+            "(?:DELETE\\s+FROM|UPDATE|FROM)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+            Pattern.CASE_INSENSITIVE);
 
     DynamicInterfaceDataProducer(Class<?> instance, BeanManager beanManager, JakartaDataExtension jakartaDataExtension) {
         this.repository = (Class<T>) instance;
@@ -178,7 +183,11 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private void processQueriesForEntity() {
         logger.info("Processing query for entity class: " + repository);
         //get entity type
-        Class<?> declaredEntityClass = getEntityType(this.repository);
+        Class<?> declaredEntityClass = getEntityTypeFromGenerics(this.repository);
+        // If entity type is not declared via generics, infer it from lifecycle method parameters
+        if (declaredEntityClass == null) {
+            declaredEntityClass = inferEntityTypeFromLifecycleMethods(this.repository);
+        }
         logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
         try (EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get()) {
             for (Method method : this.repository.getMethods()) {
@@ -192,20 +201,6 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 addQueries(entityManager, repository, declaredEntityClass, entityParamType, method);
             }
         }
-    }
-
-    /**
-     * This method review all the interfaces implemented by this class and get the entity type mapped
-     *
-     * @param repositoryInterface This is the interface class from the application
-     * @return the entity class used of the operation
-     */
-    private Class<?> getEntityType(Class<?> repositoryInterface) {
-        Class<?> entityType = getEntityTypeFromGenerics(repositoryInterface);
-        if (entityType != null) {
-            return entityType;
-        }
-        return inferEntityTypeFromMethods(repositoryInterface);
     }
 
     private Class<?> getEntityTypeFromGenerics(Class<?> repositoryInterface) {
@@ -228,73 +223,57 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         return null;
     }
 
-    private Class<?> inferEntityTypeFromMethods(Class<?> repositoryInterface) {
-        logger.info("Inferring entity type from methods");
+    /**
+     * Resolves the entity type from a @Query JPQL string by extracting the entity name
+     * and matching it against the JPA metamodel.
+     *
+     * @param method the repository method annotated with @Query
+     * @param entityManager the entity manager to access the metamodel
+     * @return the entity class, or null if not resolvable
+     */
+    private Class<?> resolveEntityTypeFromJpql(Method method, EntityManager entityManager) {
+        Query queryAnnotation = method.getAnnotation(Query.class);
+        if (queryAnnotation == null) {
+            return null;
+        }
+        String jpql = queryAnnotation.value().trim();
+        Matcher matcher = JPQL_ENTITY_PATTERN.matcher(jpql);
+        if (!matcher.find()) {
+            return null;
+        }
+        String entityName = matcher.group(1);
+        for (EntityType<?> entityType : entityManager.getMetamodel().getEntities()) {
+            if (entityType.getName().equals(entityName)) {
+                return entityType.getJavaType();
+            }
+        }
+        logger.warning("@Query on method " + method.getName() + " references an entity named '" + entityName + "' which does not exist in the metamodel");
+        return null;
+    }
+
+    /**
+     * Infers the primary entity type by inspecting lifecycle method ({@code @Insert}, {@code @Save},
+     * {@code @Update}, {@code @Delete}) parameters. This handles repositories that do not declare
+     * their entity type via generic type parameters but whose entity type can be determined from
+     * the parameter types of their lifecycle methods, as required by the Jakarta Data specification.
+     *
+     * @param repositoryInterface the repository interface to inspect
+     * @return the inferred entity class, or null if not determinable
+     */
+    private Class<?> inferEntityTypeFromLifecycleMethods(Class<?> repositoryInterface) {
         for (Method method : repositoryInterface.getMethods()) {
-            if (isRepositoryMethodCandidate(method)) {
-                Class<?> entityType = findEntityTypeInMethodSignature(method);
+            if (method.isDefault()) {
+                continue;
+            }
+            if (method.isAnnotationPresent(Insert.class) || method.isAnnotationPresent(Save.class)
+                    || method.isAnnotationPresent(Update.class) || method.isAnnotationPresent(Delete.class)) {
+                Class<?> entityType = findEntityTypeInMethod(method);
                 if (entityType != null) {
-                    logger.info("Found entity type from method " + method.getName() + ": " + entityType.getName());
                     return entityType;
                 }
             }
         }
         return null;
-    }
-
-    private boolean isRepositoryMethodCandidate(Method method) {
-        if (method.isAnnotationPresent(Insert.class) ||
-                method.isAnnotationPresent(Save.class) ||
-                method.isAnnotationPresent(Update.class) ||
-                method.isAnnotationPresent(Delete.class) ||
-                method.isAnnotationPresent(Find.class)) {
-            return true;
-        }
-        String methodName = method.getName();
-        return methodName.startsWith("find") ||
-                methodName.startsWith("delete") ||
-                methodName.startsWith("count") ||
-                methodName.startsWith("exists");
-    }
-
-    private Class<?> findEntityTypeInMethodSignature(Method method) {
-        Class<?> returnType = method.getReturnType();
-        if (isEntityCandidate(returnType)) {
-            return returnType;
-        }
-
-        if (returnType.isArray()) {
-            Class<?> componentType = returnType.getComponentType();
-            if (isEntityCandidate(componentType)) {
-                return componentType;
-            }
-        }
-
-        Type genericReturnType = method.getGenericReturnType();
-        if (genericReturnType instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType) genericReturnType;
-            Type[] args = paramType.getActualTypeArguments();
-            if (args.length > 0 && args[0] instanceof Class) {
-                Class<?> argClass = (Class<?>) args[0];
-                if (isEntityCandidate(argClass)) {
-                    return argClass;
-                }
-            }
-        }
-        Class<?> entityClass = findEntityTypeInMethod(method);
-        if (isEntityCandidate(entityClass)) {
-            return entityClass;
-        }
-        return null;
-    }
-
-    public static boolean isEntityCandidate(Class<?> clazz) {
-        if (clazz == null || clazz.isPrimitive() || clazz.equals(String.class) ||
-                clazz.equals(Object.class) || clazz.equals(Void.class) || clazz.equals(void.class) ||
-                clazz.equals(BigDecimal.class) || clazz.equals(BigInteger.class)) {
-            return false;
-        }
-        return clazz.isAnnotationPresent(Entity.class) || clazz.isAnnotationPresent(Table.class);
     }
 
     public Class<?> getEntityParamClass(Method method) {
@@ -370,8 +349,18 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
             if (entityTypeInMethod != null) {
                 declaredEntityClass = entityTypeInMethod;
-            }
-            else if (declaredEntityClass == null) {
+            } else if (queryType == QueryType.QUERY) {
+                // For @Query methods, parse the JPQL string to resolve the entity type
+                Class<?> entityFromJpql = resolveEntityTypeFromJpql(method, entityManager);
+                if (entityFromJpql != null) {
+                    declaredEntityClass = entityFromJpql;
+                } else if (declaredEntityClass == null) {
+                    throw new MappingException(
+                            String.format("Could not determine entity type for @Query method '%s' in %s. " +
+                                            "The JPQL query does not contain a recognizable entity name.",
+                                    method.getName(), method.getDeclaringClass().getName()));
+                }
+            } else if (declaredEntityClass == null) {
                 throw new MappingException(
                         String.format("Could not determine primary entity type for repository method '%s' in %s. " +
                                         "Either extend a repository interface with entity type parameters or " +

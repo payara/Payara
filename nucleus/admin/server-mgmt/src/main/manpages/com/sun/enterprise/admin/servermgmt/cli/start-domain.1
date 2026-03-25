@@ -6,7 +6,7 @@ NAME
 SYNOPSIS
            start-domain [--help]
            [--debug={true|false}] [--domaindir domain-dir]
-           [--dry-run={true|false}] [--upgrade={true|false}]
+           [--dry-run={true|false}]
            [--verbose={true|false}] [--watchdog={true|false}]
            [--timeout timeout] [--warmup={true|false}] [domain-name]
 
@@ -85,24 +85,6 @@ OPTIONS
            domain that is to be restarted. If specified, the path must be
            accessible in the file system. The default location of the domain
            root directory is as-install/domains.
-
-       --upgrade
-           Specifies whether the configuration of the domain administration
-           server (DAS) is upgraded to the current release. Normally, if the
-           subcommand detects that the configuration is from an older release
-           of GlassFish Server, the configuration is upgraded automatically
-           before being started. You should not need to use this option
-           explicitly.
-
-           Possible values are as follows:
-
-           true
-               When the domain is started, the configuration is modified to be
-               compatible with this release of GlassFish Server, and the
-               GlassFish Server process stops.
-
-           false
-               The configuration of the DAS is not updated (default).
 
        --verbose, -v
            Specifies whether detailed information about the domain is

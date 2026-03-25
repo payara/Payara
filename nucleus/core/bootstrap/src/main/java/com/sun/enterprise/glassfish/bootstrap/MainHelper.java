@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2017-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.glassfish.bootstrap;
@@ -334,15 +334,6 @@ public class MainHelper {
 
         if (ctx.getProperty(StartupContext.STARTUP_MODULE_NAME) == null) {
             ctx.setProperty(StartupContext.STARTUP_MODULE_NAME, Constants.GF_KERNEL);
-        }
-
-        // temporary hack until CLI does that for us.
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-upgrade")) {
-                if (i + 1 < args.length && !args[i + 1].equals("false")) {
-                    ctx.setProperty(StartupContext.STARTUP_MODULESTARTUP_NAME, "upgrade");
-                }
-            }
         }
 
         addRawStartupInfo(args, ctx);

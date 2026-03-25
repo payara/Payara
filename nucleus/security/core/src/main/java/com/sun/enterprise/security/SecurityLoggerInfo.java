@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2024-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import java.util.logging.Logger;
@@ -117,20 +117,6 @@ public class SecurityLoggerInfo {
             action = "Check the server logs and contact Payara Support.",
             level = "WARNING")
     public static final String copyingSecurityConfigFilesIOError = LOGMSG_PREFIX + "-01013";
-    
-    @LogMessageInfo(
-            message = "An error occurred while upgrading the security config files.",
-            cause = "Upgrade security config files from a previous version.",
-            action = "Check the server logs and contact Payara Support.",
-            level = "SEVERE")
-    public static final String securityUpgradeServiceException = LOGMSG_PREFIX + "-01014";
-    
-    @LogMessageInfo(
-            message = "Upgrade from v2 EE  to v3.1 requires manual steps. Please refer to the v3.1 Upgrade Guide for details.",
-            cause = "Upgrade security config files from a previous version.",
-            action = "Please refer to the v3.1 Upgrade Guide for details.",
-            level = "WARNING")
-    public static final String securityUpgradeServiceWarning = LOGMSG_PREFIX + "-01015";
     
     // General login processing messages: start 1050
     @LogMessageInfo(
