@@ -220,7 +220,6 @@
         <jvm-options>--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
-        <jvm-options>--add-opens=java.base/jdk.internal.vm.annotation=ALL-UNNAMED</jvm-options>
         <jvm-options>[24|]--sun-misc-unsafe-memory-access=allow</jvm-options>
         <jvm-options>[24|]--enable-native-access=ALL-UNNAMED</jvm-options>
         <jvm-options>[25|]-XX:+EnableDynamicAgentLoading</jvm-options>
@@ -460,7 +459,6 @@
         <jvm-options>--add-exports=java.naming/com.sun.jndi.ldap=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.base/java.io=ALL-UNNAMED</jvm-options>
         <jvm-options>--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED</jvm-options>
-        <jvm-options>--add-opens=java.base/jdk.internal.vm.annotation=ALL-UNNAMED</jvm-options>
         <jvm-options>[24|]--sun-misc-unsafe-memory-access=allow</jvm-options>
         <jvm-options>[24|]--enable-native-access=ALL-UNNAMED</jvm-options>
         <jvm-options>[25|]-XX:+EnableDynamicAgentLoading</jvm-options>
