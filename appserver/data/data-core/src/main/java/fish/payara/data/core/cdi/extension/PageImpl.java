@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,8 @@ import jakarta.data.page.Page;
 import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +73,7 @@ public class PageImpl<T> implements Page<T> {
         this.pageRequest = pageRequest;
         this.entityManager = em;
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(queryData.getQueryString(), queryData.getQueryMetadata().getDeclaredEntityClass());
+        jakarta.persistence.Query query = createQueryForResultType(em, queryData);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -86,7 +88,9 @@ public class PageImpl<T> implements Page<T> {
         }
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + (pageRequest.size() == Integer.MAX_VALUE ? 0 : 1));
-        results = query.getResultList();
+        @SuppressWarnings("unchecked")
+        List<T> queryResults = query.getResultList();
+        results = queryResults;
         if (pageRequest.requestTotal()) {
             totalElements();
         }
@@ -213,5 +217,25 @@ public class PageImpl<T> implements Page<T> {
         return "Page:" + this.pageRequest.page() +
                 " From Entity:" + this.queryData.getQueryMetadata().getDeclaredEntityClass().getName() +
                 " page size:" + this.pageRequest.size();
+    }
+
+    private static jakarta.persistence.Query createQueryForResultType(EntityManager em, QueryData queryData) {
+        Class<?> entityClass = queryData.getQueryMetadata().getDeclaredEntityClass();
+        Class<?> resultElementType = resolveResultElementType(queryData.getQueryMetadata().getMethod());
+        if (resultElementType != null && !resultElementType.equals(entityClass)) {
+            return em.createQuery(queryData.getQueryString());
+        }
+        return em.createQuery(queryData.getQueryString(), entityClass);
+    }
+
+    static Class<?> resolveResultElementType(java.lang.reflect.Method method) {
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType paramType) {
+            Type[] typeArgs = paramType.getActualTypeArguments();
+            if (typeArgs.length > 0 && typeArgs[0] instanceof Class<?> cls) {
+                return cls;
+            }
+        }
+        return null;
     }
 }
