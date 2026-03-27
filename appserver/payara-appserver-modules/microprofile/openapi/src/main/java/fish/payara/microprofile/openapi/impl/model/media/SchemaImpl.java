@@ -119,6 +119,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private String contentMediaType;
     private Boolean booleanSchema;
     private List<Object> examples = createList();
+    @JsonIgnore
     private Map<String, Object> values = createMap();
      
     private Schema ifSchema;
@@ -1112,6 +1113,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    @JsonAnySetter
     public Schema set(String key, Object value) {
         if (key != null) {
             if (values == null) {
