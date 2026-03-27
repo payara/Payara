@@ -48,14 +48,13 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.List;
 import java.util.Map;
 
-import fish.payara.microprofile.openapi.impl.model.ArbitraryValueHolder;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 
-public interface ExtensionsMixin extends ArbitraryValueHolder {
+public interface BaseExtensionsMixin {
 
     @JsonProperty("enum")
     void getEnumeration();
@@ -75,6 +74,7 @@ public interface ExtensionsMixin extends ArbitraryValueHolder {
     @JsonInclude(Include.ALWAYS)
     Paths getPaths();
 
+    @JsonIgnore
     Map<String, Object> getExtensions();
 
     @JsonIgnore
@@ -88,9 +88,4 @@ public interface ExtensionsMixin extends ArbitraryValueHolder {
 
     @JsonSetter
     void setRequired(List<String> required);
-
-    @Override
-    default Map<String, ?> getArbitraryValues() {
-        return getExtensions();
-    }
 }
