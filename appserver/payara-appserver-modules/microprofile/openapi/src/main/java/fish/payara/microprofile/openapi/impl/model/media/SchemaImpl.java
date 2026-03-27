@@ -39,11 +39,13 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.ArbitraryValueHolder;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
 import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
@@ -74,7 +76,7 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 
 // Never serialise the 'name' property, but allow deserialization
 @JsonIgnoreProperties(value = "name", allowSetters = true)
-public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
+public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema, ArbitraryValueHolder {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
 
@@ -1132,6 +1134,20 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @Override
     public void setAll(Map<String, ?> values) {
         this.values = createMap(values);
+    }
+
+    @Override
+    public Map<String, ?> getArbitraryValues() {
+        Map<String, Object> combinedValues = createMap();
+
+        if (getAll() != null) {
+            combinedValues.putAll(getAll());
+        }
+        if (getExtensions() != null) {
+            combinedValues.putAll(getExtensions());
+        }
+
+        return readOnlyView(combinedValues);
     }
 
     public String getImplementation() {
