@@ -48,6 +48,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
@@ -55,6 +56,7 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.connectors.inbound.ActiveInboundResourceAdapterImpl;
 import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
+import com.sun.enterprise.connectors.jms.config.JmsAvailability;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.connectors.jms.inflow.MdbContainerProps;
@@ -75,7 +77,6 @@ import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
 import com.sun.enterprise.util.JDK;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
@@ -103,6 +104,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Provider;
@@ -157,6 +161,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private static final Logger _logger = JMSLoggerInfo.getLogger();
 
     private final String SETTER = "setProperty";
+    private static final String SEPARATOR = "#";
 
     //RA Javabean properties.
     public static final String CONNECTION_URL = "ConnectionURL";
@@ -167,44 +172,54 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private static final String CLUSTERCONTAINER = "InClusteredContainer";
 
     //Lifecycle RA JavaBean properties
-    public static final String BROKERTYPE="BrokerType";
-    private static final String BROKERINSTANCENAME="BrokerInstanceName";
-    private static final String BROKERPORT="BrokerPort";
-    private static final String BROKERARGS="BrokerArgs";
-    private static final String BROKERHOMEDIR="BrokerHomeDir";
-    private static final String BROKERLIBDIR ="BrokerLibDir";
-    private static final String BROKERVARDIR="BrokerVarDir";
-    private static final String BROKERJAVADIR="BrokerJavaDir";
-    private static final String BROKERSTARTTIMEOUT="BrokerStartTimeOut";
-    public static final String ADMINUSERNAME="AdminUsername";
-    public static final String ADMINPASSWORD="AdminPassword";
-    private static final String USERNAME="UserName";
-    private static final String PASSWORD="Password";
+    public static final String BROKERTYPE = "BrokerType";
+    private static final String BROKERINSTANCENAME = "BrokerInstanceName";
+    private static final String BROKERBINDADDRESS = "BrokerBindAddress";
+    private static final String BROKERPORT = "BrokerPort";
+    private static final String BROKERARGS = "BrokerArgs";
+    private static final String BROKERHOMEDIR = "BrokerHomeDir";
+    private static final String BROKERLIBDIR = "BrokerLibDir";
+    private static final String BROKERVARDIR = "BrokerVarDir";
+    private static final String BROKERJAVADIR = "BrokerJavaDir";
+    private static final String BROKERSTARTTIMEOUT = "BrokerStartTimeOut";
+    public static final String ADMINUSERNAME = "AdminUsername";
+    public static final String ADMINPASSWORD = "AdminPassword";
+    private static final String USERNAME = "UserName";
+    private static final String PASSWORD = "Password";
     private static final String MQ_PORTMAPPER_BIND = "doBind";//"imq.portmapper.bind";
+    private static final String MASTERBROKER = "MasterBroker";
 
     //JMX properties
-    private static final String RMIREGISTRYPORT="RmiRegistryPort";
-    private static final String USEEXTERNALRMIREGISTRY="startRMIRegistry";
-    private static final int DEFAULTRMIREGISTRYPORT =7776;
-    private static final int BROKERRMIPORTOFFSET=100;
+    private static final String RMIREGISTRYPORT = "RmiRegistryPort";
+    private static final String USEEXTERNALRMIREGISTRY = "startRMIRegistry";
+    private static final int DEFAULTRMIREGISTRYPORT = 7776;
+    private static final int BROKERRMIPORTOFFSET = 100;
+
+    //Availability properties
+    private static final String CONVENTIONAL_CLUSTER__OF_PEER_BROKERS_DB_PREFIX = "imq.cluster.sharecc.persist.jdbc.";
+    private static final String ENHANCED_CLUSTER_DB_PREFIX = "imq.persist.jdbc.";
+    private static final String HAREQUIRED = "HARequired";
+    private static final String CLUSTERID = "ClusterId";
+    private static final String BROKERID = "BrokerId";
+    private static final String BROKERENABLEHA = "BrokerEnableHA";
 
     private static final String DB_HADB_PROPS = "DBProps";
 
     //Activation config properties of MQ resource adapter.
-    public static final String DESTINATION        = "destination";
-    public static final String DESTINATION_TYPE   = "destinationType";
-    private static final String SUBSCRIPTION_NAME  = "SubscriptionName";
-    private static final String CLIENT_ID          = "ClientID";
-    public static final String PHYSICAL_DESTINATION  = "Name";
-    private static final String MAXPOOLSIZE  = "EndpointPoolMaxSize";
-    private static final String MINPOOLSIZE  = "EndpointPoolSteadySize";
-    private static final String RESIZECOUNT  = "EndpointPoolResizeCount";
-    private static final String RESIZETIMEOUT  = "EndpointPoolResizeTimeout";
-    private static final String REDELIVERYCOUNT  = "EndpointExceptionRedeliveryAttempts";
-    private static final String LOWERCASE_REDELIVERYCOUNT  = "endpointExceptionRedeliveryAttempts";
-    public static final String ADDRESSLIST  = "AddressList";
-    private static final String ADRLIST_BEHAVIOUR  = "AddressListBehavior";
-    private static final String ADRLIST_ITERATIONS  = "AddressListIterations";
+    public static final String DESTINATION = "destination";
+    public static final String DESTINATION_TYPE = "destinationType";
+    private static final String SUBSCRIPTION_NAME = "SubscriptionName";
+    private static final String CLIENT_ID = "ClientID";
+    public static final String PHYSICAL_DESTINATION = "Name";
+    private static final String MAXPOOLSIZE = "EndpointPoolMaxSize";
+    private static final String MINPOOLSIZE = "EndpointPoolSteadySize";
+    private static final String RESIZECOUNT = "EndpointPoolResizeCount";
+    private static final String RESIZETIMEOUT = "EndpointPoolResizeTimeout";
+    private static final String REDELIVERYCOUNT = "EndpointExceptionRedeliveryAttempts";
+    private static final String LOWERCASE_REDELIVERYCOUNT = "endpointExceptionRedeliveryAttempts";
+    public static final String ADDRESSLIST = "AddressList";
+    private static final String ADRLIST_BEHAVIOUR = "AddressListBehavior";
+    private static final String ADRLIST_ITERATIONS = "AddressListIterations";
     public static final String JMS_SERVICE = "mq-service";
 
     //MCF properties
@@ -221,14 +236,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private boolean doBind;
 
     //Lifecycle properties
-    public static final String EMBEDDED="EMBEDDED";
-    public static final String LOCAL="LOCAL";
-    public static final String REMOTE="REMOTE";
-    public static final String DIRECT="DIRECT";
+    public static final String EMBEDDED = "EMBEDDED";
+    public static final String LOCAL = "LOCAL";
+    public static final String REMOTE = "REMOTE";
+    public static final String DIRECT = "DIRECT";
 
     // Both the properties below are hacks. These will be changed later on.
     private static final String MQRmiPort =
-        System.getProperty("com.sun.enterprise.connectors.system.MQRmiPort");
+            System.getProperty("com.sun.enterprise.connectors.system.MQRmiPort");
     private static final String DASRMIPORT = "31099";
 
     private static final String REVERT_TO_EMBEDDED_PROPERTY = "com.sun.enterprise.connectors.system.RevertToEmbedded";
@@ -240,11 +255,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     public static final String GRIZZLY_PROXY_PREFIX = "JMS_PROXY_";
 
+    private enum ClusterMode {
+        ENHANCED, CONVENTIONAL_WITH_MASTER_BROKER, CONVENTIONAL_OF_PEER_BROKERS;
+    }
+
     private Properties dbProps = null;
     private String brokerInstanceName = null;
 
     private boolean grizzlyListenerInit;
-    private final Set<String> grizzlyListeners = new HashSet<String>();
+    private final Set<String> grizzlyListeners = new HashSet<>();
 
     @Inject
     private ConnectorRuntime connectorRuntime;
@@ -335,6 +354,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
             setMdbContainerProperties();
             setJmsServiceProperties(null);
+            setClusterRABeanProperties();
+            setAvailabilityProperties();
         } else {
             setAppClientRABeanProperties();
         }
@@ -546,6 +567,181 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         }
     }
 
+    /*
+
+     * Set Availability related properties
+     * If JMS availability true set availability properties
+     * read configured pool information and set.
+     */
+
+    private void setAvailabilityProperties() throws ConnectorRuntimeException {
+        if (!isClustered()) {
+            return;
+        }
+        try {
+            Domain domain = Globals.get(Domain.class);
+            ServerContext serverContext = Globals.get(ServerContext.class);
+            Server server = domain.getServerNamed(serverContext.getInstanceName());
+
+            JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
+            if (jmsService.getType().equals(REMOTE)) {
+                // If REMOTE, the broker cluster instances already have been configured with the right properties.
+                return;
+            }
+
+            AvailabilityService as = server.getConfig().getAvailabilityService();
+            if (as == null) {
+                if (_logger.isLoggable(Level.FINE)) {
+                    logFine("Availability Service is null. Not setting AvailabilityProperties.");
+                }
+                return;
+            }
+
+            boolean useMasterBroker = true;
+            if (as.getExtensionByType(JmsAvailability.class) != null &&
+                    !MASTERBROKER.equalsIgnoreCase(as.getExtensionByType(JmsAvailability.class).getConfigStoreType())) {
+                useMasterBroker = false;
+            }
+
+            boolean isJmsAvailabilityEnabled = this.isJMSAvailabilityOn(as);
+
+            if (_logger.isLoggable(Level.FINE)) {
+                logFine("Setting AvailabilityProperties .. ");
+            }
+            if (!useMasterBroker || isJmsAvailabilityEnabled) {
+                // For conventional cluster of peer brokers and Enhanced Broker Cluster.
+                ConnectorDescriptor cd = getDescriptor();
+                String clusterName = getMQClusterName();
+                ConnectorConfigProperty envProp1 = new ConnectorConfigProperty(CLUSTERID, clusterName, "Cluster Id", "java.lang.String");
+                setProperty(cd, envProp1);
+
+                if (brokerInstanceName == null) {
+                    brokerInstanceName = getBrokerInstanceName(jmsService);
+                }
+                ConnectorConfigProperty envProp2 = new ConnectorConfigProperty(BROKERID, brokerInstanceName, "Broker Id", "java.lang.String");
+                setProperty(cd, envProp2);
+
+                //Only if JMS availability is true - Enhanced Broker Cluster only.
+                if (isJmsAvailabilityEnabled) {
+                    //Set HARequired as true - irrespective of whether it is REMOTE or LOCAL
+                    ConnectorConfigProperty envProp3 = new ConnectorConfigProperty(HAREQUIRED, "true", "HA Required", "java.lang.String");
+                    setProperty(cd, envProp3);
+                    /* The broker has a property to control whether
+                     * it starts in HA mode or not and that's represented on
+                     * the RA by BrokerEnableHA.
+                     * On the MQ Client connection side it is HARequired -
+                     * this does not control the broker, it just is a client
+                     * side requirement.
+                     * So for AS EE, if BrokerType is LOCAL or EMBEDDED,
+                     * and AS HA is enabled for JMS then both these must be
+                     * set to true. */
+
+                    ConnectorConfigProperty envProp4 = new ConnectorConfigProperty(BROKERENABLEHA, "true", "BrokerEnableHA flag",
+                            "java.lang.Boolean");
+                    setProperty(cd, envProp4);
+
+                    String nodeHostName = domain.getNodeNamed(server.getNodeRef()).getNodeHost();
+                    if (nodeHostName != null) {
+                        ConnectorConfigProperty envProp5 = new ConnectorConfigProperty(BROKERBINDADDRESS, nodeHostName,
+                                "Broker Bind Address", "java.lang.String");
+                        setProperty(cd, envProp5);
+                    }
+                    loadDBProperties(as.getExtensionByType(JmsAvailability.class), ClusterMode.ENHANCED);
+                } else {
+                    //  Conventional cluster of peer brokers
+                    JmsAvailability jmsAvailability = as.getExtensionByType(JmsAvailability.class);
+                    if ("jdbc".equals(jmsAvailability.getMessageStoreType())) {
+                        loadDBProperties(jmsAvailability, ClusterMode.ENHANCED);
+                    }
+                    loadDBProperties(jmsAvailability, ClusterMode.CONVENTIONAL_OF_PEER_BROKERS);
+                }
+            } else {
+                // Conventional cluster with master broker.
+                if ("jdbc".equals(as.getExtensionByType(JmsAvailability.class).getMessageStoreType())) {
+                    loadDBProperties(as.getExtensionByType(JmsAvailability.class), ClusterMode.CONVENTIONAL_WITH_MASTER_BROKER);
+                }
+            }
+        } catch (Exception e) {
+            throw new ConnectorRuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private void loadDBProperties(JmsAvailability jmsAvailability, ClusterMode clusterMode) {
+        /*imq.cluster.nomasterbroker=[true|false] default false
+                imq.cluster.sharecc.persist.jdbc.dbVendor
+                imq.cluster.sharecc.persist.jdbc.<dbVendor>.user
+                imq.cluster.sharecc.persist.jdbc.<dbVendor>.property.<propname>=<propval>
+                imq.cluster.sharecc.persist.jdbc.<dbVendor>.table.MQSHARECC45=<table-schema>
+
+                These broker properties, including imq.cluster.clusterid, must be set to
+                same values in all broker instances in the conventional cluster
+
+                */
+        String prefix;
+        if (ClusterMode.CONVENTIONAL_WITH_MASTER_BROKER == clusterMode) {
+            prefix = ENHANCED_CLUSTER_DB_PREFIX;
+        } else if (ClusterMode.CONVENTIONAL_OF_PEER_BROKERS == clusterMode) {
+            prefix = CONVENTIONAL_CLUSTER__OF_PEER_BROKERS_DB_PREFIX;
+        } else if (ClusterMode.ENHANCED == clusterMode) {
+            prefix = ENHANCED_CLUSTER_DB_PREFIX;
+        } else {
+            if (_logger.isLoggable(Level.FINE))
+                logFine("Unknown cluster mode: " + clusterMode.name() + ", imq DB properties are not set.");
+            return;
+        }
+        if (dbProps == null) {
+            dbProps = new Properties();
+        }
+        dbProps.setProperty("imq.cluster.clusterid", getMQClusterName());
+        dbProps.setProperty("imq.persist.store", jmsAvailability.getMessageStoreType());
+        if (ClusterMode.CONVENTIONAL_WITH_MASTER_BROKER == clusterMode) {
+            dbProps.setProperty("imq.cluster.nomasterbroker", "false");
+        } else {
+            dbProps.setProperty("imq.cluster.nomasterbroker", "true");
+        }
+        if (Boolean.valueOf(jmsAvailability.getAvailabilityEnabled()) == true || "jdbc".equals(jmsAvailability.getMessageStoreType())) {
+            dbProps.setProperty("imq.brokerid", getBrokerInstanceName(getJmsService()));
+        }
+
+        String dbVendor = jmsAvailability.getDbVendor();
+        String dbuser = jmsAvailability.getDbUsername();
+        String dbPassword = jmsAvailability.getDbPassword();
+        String dbJdbcUrl = jmsAvailability.getDbUrl();
+
+        dbProps.setProperty(prefix + "dbVendor", dbVendor);
+
+        String fullprefix = prefix + dbVendor + ".";
+        if (dbuser != null) {
+            dbProps.setProperty(fullprefix + "user", dbuser);
+        }
+        if (dbPassword != null) {
+            dbProps.setProperty(fullprefix + "password", dbPassword);
+        }
+        List dbprops = jmsAvailability.getProperty();
+
+        String propertyPrefix = fullprefix + "property.";
+
+        if (dbJdbcUrl != null) {
+            if ("h2".equals(dbVendor)) {
+                dbProps.setProperty(fullprefix + "opendburl", dbJdbcUrl);
+            } else {
+                dbProps.setProperty(propertyPrefix + "url", dbJdbcUrl);
+            }
+        }
+
+        for (Object obj : dbprops) {
+            Property prop = (Property) obj;
+            String key = prop.getName();
+            String value = prop.getValue();
+            // Don't set a prefix if the property name is already prefixed with "imq."
+            if (key.startsWith("imq.")) {
+                dbProps.setProperty(key, value);
+            } else {
+                dbProps.setProperty(propertyPrefix + key, value);
+            }
+        }
+    }
+
     /**
      * Method to perform any post RA configuration action by derivative subclasses.
      * For example, this method is used by <code>ActiveJMSResourceAdapter</code>
@@ -556,19 +752,35 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     protected void postRAConfiguration() throws ConnectorRuntimeException {
         //Set all non-supported javabean property types in the JavaBean
         try {
-            if(dbProps == null)
+            if (dbProps == null) {
                 dbProps = new Properties();
+            }
             dbProps.setProperty("imq.cluster.dynamicChangeMasterBrokerEnabled", "true");
 
             Method mthds = this.resourceadapter_.getClass().getMethod("setBrokerProps", Properties.class);
-            if (_logger.isLoggable(Level.FINE))
+            if (_logger.isLoggable(Level.FINE)) {
                 logFine("Setting property:" + DB_HADB_PROPS + "=" + dbProps.toString());
+            }
             mthds.invoke(this.resourceadapter_, dbProps);
         } catch (Exception e) {
-            ConnectorRuntimeException crex = new ConnectorRuntimeException(
-                            e.getMessage(), e);
-            throw crex;
+            throw new ConnectorRuntimeException(e.getMessage(), e);
         }
+    }
+
+    private boolean isJMSAvailabilityOn(AvailabilityService as) {
+        if (as == null) {
+            return false;
+        }
+        JmsAvailability ja = as.getExtensionByType(JmsAvailability.class);
+        boolean jmsAvailability = false;
+        /* JMS Availability  should be false if its not present in
+         * domain.xml,
+         */
+        if (ja != null) {
+            jmsAvailability = Boolean.parseBoolean(ja.getAvailabilityEnabled());
+        }
+        _logger.log(Level.FINE, "JMS availability :: " + jmsAvailability);
+        return jmsAvailability;
     }
 
 
@@ -921,6 +1133,81 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     /**
      * Sets the SE/EE specific MQ-RA bean properties
+     *
+     * @throws ConnectorRuntimeException
+     */
+    private void setClusterRABeanProperties() throws ConnectorRuntimeException {
+        ConnectorDescriptor cd = super.getDescriptor();
+        try {
+            if (isClustered()) {
+                JmsService jmsService = Globals.get(JmsService.class);
+                String val = getGroupName();
+                ConnectorConfigProperty envProp = new ConnectorConfigProperty
+                        (GROUPNAME, val, "Group Name", "java.lang.String");
+                setProperty(cd, envProp);
+                if (_logger.isLoggable(Level.FINE))
+                    logFine("CLUSTERED instance - setting groupname as" + val);
+
+                boolean inClusteredContainer = false;
+                if (jmsService.getType().equals(EMBEDDED) || jmsService.getType().equals(LOCAL))
+                    inClusteredContainer = true;
+
+                ConnectorConfigProperty envProp1 = new ConnectorConfigProperty
+                        (CLUSTERCONTAINER, Boolean.toString(inClusteredContainer), "Cluster container flag",
+                                "java.lang.Boolean");
+                setProperty(cd, envProp1);
+                if (_logger.isLoggable(Level.FINE))
+                    logFine("CLUSTERED instance - setting inclusteredcontainer as" + inClusteredContainer);
+                if (jmsService.getType().equals(REMOTE)) {
+
+                    /*
+                     * Do not set master broker for remote broker.
+                     * The RA might ignore it if we set, but we have to
+                     * be certain from our end.
+                     */
+                    return;
+                } else {
+                    if (!isDBEnabled()) {
+
+                        String masterbrkr = getMasterBroker();
+                        ConnectorConfigProperty envProp2 = new ConnectorConfigProperty
+                                (MASTERBROKER, masterbrkr, "Master  Broker",
+                                        "java.lang.String");
+                        setProperty(cd, envProp2);
+                        if (_logger.isLoggable(Level.FINE))
+                            logFine("MASTERBROKER - setting master broker val" + masterbrkr);
+                    }
+                }
+            } else {
+                if (_logger.isLoggable(Level.FINE))
+                    logFine("Instance not Clustered and hence not setting " + "groupname");
+            }
+        } catch (Exception e) {
+            ConnectorRuntimeException crex = new ConnectorRuntimeException(e.getMessage());
+            throw (ConnectorRuntimeException) crex.initCause(e);
+        }
+    }
+
+    private boolean isDBEnabled() {
+        Domain domain = Globals.get(Domain.class);
+        ServerContext serverContext = Globals.get(ServerContext.class);
+        Server server = domain.getServerNamed(serverContext.getInstanceName());
+
+        AvailabilityService as = server.getConfig().getAvailabilityService();
+
+        if (as != null) {
+            JmsAvailability jmsAvailability = as.getExtensionByType(JmsAvailability.class);
+            if (jmsAvailability.getAvailabilityEnabled() != null && Boolean.parseBoolean(jmsAvailability.getAvailabilityEnabled())) {
+                return true;
+            } else if (jmsAvailability.getConfigStoreType() != null && !"MASTERBROKER".equalsIgnoreCase(jmsAvailability.getConfigStoreType()))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Sets the SE/EE specific MQ-RA bean properties
      * @throws ConnectorRuntimeException
      */
     private void setAppClientRABeanProperties() throws ConnectorRuntimeException {
@@ -968,6 +1255,57 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setProperty(cd, envProp3);
     }
 
+    public boolean isClustered()  {
+        Domain domain = Globals.get(Domain.class);
+        DeploymentGroups deploymentGroups = domain.getDeploymentGroups();
+        if (deploymentGroups == null) {
+            return false;
+        }
+
+        List<DeploymentGroup> deploymentGroupList = deploymentGroups.getDeploymentGroup();
+        if (deploymentGroupList == null) {
+            return false;
+        }
+
+        ServerContext serverctx = Globals.get(ServerContext.class);
+        return JmsRaUtil.isServerInDeploymentGroup(deploymentGroupList, serverctx.getInstanceName());
+    }
+
+    private String getGroupName() throws Exception{
+        return getDomainName() + SEPARATOR + getDeploymentGroupName();
+    }
+
+    private String getDeploymentGroupName() {
+        ServerContext serverctx = Globals.get(ServerContext.class);
+        String instanceName = serverctx.getInstanceName();
+
+        Domain domain = Globals.get(Domain.class);
+        Server server = domain.getServerNamed(instanceName);
+
+        List<DeploymentGroup> deploymentGroupList = server.getDeploymentGroup();
+        if (deploymentGroupList == null || deploymentGroupList.isEmpty()) {
+            return null;
+        }
+        return server.getDeploymentGroup().getFirst().getName();
+    }
+
+    /*
+     * Generates an Name for the MQ Cluster associated with the
+     * application server cluster.
+     */
+    private String getMQClusterName() {
+        return convertStringToValidMQIdentifier(getDeploymentGroupName()) + "_MQ";
+    }
+
+    /**
+     * Master Broker name in the cluster, assumes the first broker in
+     * the list is the master broker , and this consistency has to
+     * be maintained in all the instances.
+     */
+    private String getMasterBroker() throws Exception {
+        return urlList.getMasterBroker(getDeploymentGroupName());
+    }
+
     //All Names passed into MQ needs to be valid Java Identifiers
     //so as of now replacing all characters that are not valid
     //java identifier components with '_'
@@ -983,6 +1321,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             }
         }
         return buf.toString();
+    }
+
+    private String getDomainName() {
+        return Globals.get(Domain.class).getName();
     }
 
     protected JmsHost getJmsHost() {
