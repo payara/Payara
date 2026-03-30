@@ -117,6 +117,11 @@ public class OpenTelemetryService implements EventListener {
         String appName = initializeCurrentApplication();
         return getTracer(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
     }
+    
+    public Meter getCurrentMeter() {
+        String appName = initializeCurrentApplication();
+        return getMeter(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
+    }
 
     public void initializeCurrentApplication(Map<String, String> otelProps) {
         initializeApplication(currentApplication(), otelProps);
