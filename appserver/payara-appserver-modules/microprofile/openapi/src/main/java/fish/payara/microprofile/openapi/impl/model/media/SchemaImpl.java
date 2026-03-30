@@ -39,6 +39,8 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -119,6 +121,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private String contentMediaType;
     private Boolean booleanSchema;
     private List<Object> examples = createList();
+    @JsonIgnore
     private Map<String, Object> values = createMap();
      
     private Schema ifSchema;
@@ -1130,6 +1133,30 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @Override
     public void setAll(Map<String, ?> values) {
         this.values = createMap(values);
+    }
+    
+    @JsonAnyGetter
+    public Map<String, Object> getArbitraryValues() {
+        Map<String, Object> combinedValues = createMap();
+
+        if (getAll() != null) {
+            combinedValues.putAll(getAll());
+        }
+        if (super.getExtensions() != null) {
+            combinedValues.putAll(super.getExtensions());
+        }
+
+        return readOnlyView(combinedValues);
+    }
+
+    @JsonAnySetter
+    public void setArbitraryValue(String key, Object value) {
+        if (key.startsWith("x-")) {
+            addExtension(key, value);
+        }
+        else {
+            set(key, value);
+        }
     }
 
     public String getImplementation() {

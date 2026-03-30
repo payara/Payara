@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,13 +51,18 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import fish.payara.microprofile.openapi.impl.model.OASFactoryResolverImpl;
-import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.ExtensionsMixin;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.ArbitraryExtensionsMixin;
+import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.BaseExtensionsMixin;
+
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.eclipse.microprofile.openapi.models.Constructible;
+import org.eclipse.microprofile.openapi.models.media.Schema;
 
 public final class ObjectMapperFactory {
+    private static final Set<Class<?>> USE_BASE_MIXIN = Set.of(Schema.class);
 
     /**
      * Private constructor to hide default public one.
@@ -100,8 +105,12 @@ public final class ObjectMapperFactory {
         }
 
         // Configure the mixins for each type
-        mapper.setMixIns(OASFactoryResolverImpl.MODEL_MAP.keySet().stream()
-                .collect(Collectors.toMap(Function.identity(), c -> ExtensionsMixin.class)));
+        mapper.setMixIns(OASFactoryResolverImpl.MODEL_MAP
+                .keySet()
+                .stream()
+                .collect(Collectors.toMap(
+                    Function.identity(),
+                    c -> USE_BASE_MIXIN.contains(c) ? BaseExtensionsMixin.class : ArbitraryExtensionsMixin.class)));
 
         mapper.registerModule(module);
 
