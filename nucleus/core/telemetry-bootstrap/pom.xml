@@ -93,7 +93,7 @@
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-runtime-telemetry-java8</artifactId>
+            <artifactId>opentelemetry-runtime-telemetry-java17</artifactId>
         </dependency>
     </dependencies>
 

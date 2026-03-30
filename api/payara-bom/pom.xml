@@ -628,8 +628,8 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
-                <artifactId>opentelemetry-runtime-telemetry-java8</artifactId>
-                <version>${opentelemetry-runtime-telemetry-java8.version}</version>
+                <artifactId>opentelemetry-runtime-telemetry-java17</artifactId>
+                <version>${opentelemetry-runtime-telemetry-java17.version}</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Implementations -->
