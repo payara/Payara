@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.noPwdCredentialProvidedError;
@@ -202,7 +202,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         // In any case, clean out state.
         _groupsList = null;
         setUsername(null);
-        setPassword(null);
         setPasswordChar(null);
         _commitSucceeded = true;
         
@@ -227,7 +226,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
             // login succeeded but overall authentication failed
             _succeeded = false;
             setUsername(null);
-            setPassword(null);
             setPasswordChar(null);
             _userPrincipal = null;
             for (int i = 0; i < _groupsList.length; i++) {
@@ -260,7 +258,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
         _succeeded = false;
         _commitSucceeded = false;
         setUsername(null);
-        setPassword(null);
         _userPrincipal = null;
         
         if (_groupsList != null) {
@@ -353,7 +350,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
 
         setUsername(passwordCredential.getUser());
         setPasswordChar(passwordCredential.getPassword());
-        setPassword(new String(passwordCredential.getPassword()));
     }
 
     /**
@@ -386,20 +382,6 @@ public abstract class BasePasswordLoginModule implements LoginModule {
      */
     private void setUsername(String username) {
         this._username = username;
-    }
-
-    /**
-     * Deprecated - password is preferred to be a char[]
-     */
-    public String getPassword() {
-        return _password;
-    }
-
-    /**
-     * Deprecated - password is preferred to be a char[]
-     */
-    private void setPassword(String password) {
-        this._password = password;
     }
 
     /**

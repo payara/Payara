@@ -214,7 +214,7 @@ public abstract class GFLauncher {
 
         debugOptions = getDebug();
         parseDebug();
-        parser.setupConfigDir(getInfo().getConfigDir(), getInfo().getInstallDir());
+        parser.setupConfigDir(getInfo().getConfigDir());
         setLogFilename(parser);
         resolveAllTokens();
         fixLogFilename();
