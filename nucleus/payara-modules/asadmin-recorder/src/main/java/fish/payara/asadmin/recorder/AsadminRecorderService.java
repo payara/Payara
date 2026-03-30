@@ -142,11 +142,11 @@ public class AsadminRecorderService implements EventListener {
     }
 
     private String formatDefaultOperand(String commandName, String operand) {
-        // Keep output unchanged except where replay fails for set escaped-dot property keys.
+        // Keep output unchanged except where replay fails for set escaped-dot property keys or values with spaces.
         if (!"set".equals(commandName) || operand == null || !operand.contains("=")) {
             return operand;
         }
-        if (operand.contains("\\.") && !(operand.startsWith("\"") && operand.endsWith("\""))) {
+        if ((operand.contains("\\.") || operand.contains(" ")) && !(operand.startsWith("\"") && operand.endsWith("\""))) {
             return "\"" + operand + "\"";
         }
         return operand;
