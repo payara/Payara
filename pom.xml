@@ -256,7 +256,7 @@
         <santuario.version>4.0.4</santuario.version>
         <woodstox.version>7.1.1</woodstox.version>
         <woodstock-jsf.version>6.0.1.payara-p1</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
+        <woodstock-jsf-suntheme.version>6.0.3.payara-p1</woodstock-jsf-suntheme.version>
         <woodstock-external.dojo.version>6.0.3</woodstock-external.dojo.version>
         <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
         <angus-activation.version>2.0.3</angus-activation.version>
