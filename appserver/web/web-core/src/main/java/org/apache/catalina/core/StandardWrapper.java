@@ -61,10 +61,16 @@ package org.apache.catalina.core;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.opentracing.OpenTracingService;
+import fish.payara.telemetry.service.PayaraTelemetryConstants;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.semconv.ErrorAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -324,6 +330,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     private boolean osgi;
 
+    private final OpenTelemetryService openTelemetryService;
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -337,6 +345,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         pipeline.setBasic(swValve);
         requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
         openTracing = getDefaultHabitat().getService(OpenTracingService.class);
+        openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
 
         // suppress PWC6117 file not found errors
         Logger jspLog = Logger.getLogger("org.glassfish.wasp.servlet.JspServlet");
@@ -1512,9 +1521,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @see Servlet#service(ServletRequest, ServletResponse)
      */
     void service(ServletRequest request, ServletResponse response, Servlet servlet) throws IOException, ServletException {
-
         InstanceSupport supp = getInstanceSupport();
-
+        long nanosStart = System.nanoTime();
+        long elapsedNanos = 0;
         try {
             supp.fireInstanceEvent(BEFORE_SERVICE_EVENT, servlet, request, response);
 
@@ -1555,6 +1564,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
                     }
                     finally {
+                        elapsedNanos = System.nanoTime() - nanosStart;
                         String applicationName = openTracing.getApplicationName(
                                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
 
@@ -1562,10 +1572,9 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         if (tracer != null && response.isCommitted()) {
                             // If response is not committed, it is likely async
                             SpanBuilder spanBuilder = tracer.spanBuilder(applicationName);
-                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus());
+                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus()); //Add process to declare an histogram
                         }
                         // TODO: clear OpenTelemetry context once we move to natively using it.
-
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
                             span.addSpanTag("ResponseStatus", Integer.toString(
                                     ((HttpServletResponse) response).getStatus()));
@@ -1577,7 +1586,23 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 }
             } else {
                 servlet.service(request, response);
+                elapsedNanos = System.nanoTime() - nanosStart;
             }
+
+            //here to add a process to get histogram
+            io.opentelemetry.context.Context ctx = io.opentelemetry.context.Context.current();
+            DoubleHistogram doubleHistogram = openTelemetryService.createMetricsHistogram(openTelemetryService.getCurrentSdk());
+            double seconds = elapsedNanos * PayaraTelemetryConstants.NANO_CONVERSION;
+            Attributes attributes =
+                    Attributes.builder()
+                            .put(HttpAttributes.HTTP_REQUEST_METHOD, ((HttpServletRequest) request).getMethod())
+                            .put(UrlAttributes.URL_SCHEME, (request.getScheme()))
+                            .put(HttpAttributes.HTTP_ROUTE, ((HttpServletRequest) request).getRequestURI())
+                            .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus())
+                            .put(ErrorAttributes.ERROR_TYPE,
+                                    ((HttpServletResponse) response).getStatus() >= 500 ?
+                                            Integer.toString(((HttpServletResponse) response).getStatus()) : "").build();
+            doubleHistogram.record(seconds, attributes, ctx);
 
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response);
         } catch (IOException | ServletException | RuntimeException | Error e) {
