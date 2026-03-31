@@ -73,9 +73,10 @@ public class HiddenTest extends OpenApiApplicationTest {
 
     @Schema
     public class User {
-
+        @Schema
         private Long id;
 
+        @Schema
         private String email;
 
         @Schema(hidden = true)
@@ -175,9 +176,8 @@ public class HiddenTest extends OpenApiApplicationTest {
     public void hiddenSchemaPropertyDoesNotCauseErrors() {
         System.out.println(getOpenAPIJson());
         JsonNode properties = JsonUtils.path(getOpenAPIJson(), "components.schemas.User.properties");
-        // TODO: Failing tests
-        //assertEquals("number", properties.get("id").get("type").textValue());
-        //assertEquals("string", properties.get("email").get("type").textValue());
+        assertEquals("number", properties.get("id").get("type").get(0).textValue());
+        assertEquals("string", properties.get("email").get("type").get(0).textValue());
         assertNull(properties.get("passwordHash"));
     }
     
