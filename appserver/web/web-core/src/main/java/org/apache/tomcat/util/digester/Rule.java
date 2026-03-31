@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -72,20 +72,6 @@ public abstract class Rule {
 
 
     // ----------------------------------------------------------- Constructors
-
-
-    /**
-     * Constructor sets the associated Digester.
-     *
-     * @param digester The digester with which this rule is associated
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. Use {@link #Rule()} instead.
-     */
-    public Rule(Digester digester) {
-
-        super();
-        setDigester(digester);
-
-    }
     
     /**
      * <p>Base constructor.

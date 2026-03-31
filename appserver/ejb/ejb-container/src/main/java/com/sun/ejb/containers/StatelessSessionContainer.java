@@ -44,7 +44,6 @@ package com.sun.ejb.containers;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.util.pool.AbstractPool;
-import com.sun.ejb.containers.util.pool.BlockingPool;
 import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
@@ -594,17 +593,6 @@ public class StatelessSessionContainer extends BaseContainer {
     @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
-    }
-
-    /**
-     * @param ctx
-     * @param instanceKey
-     * @deprecated not called and not used in Payara 5
-     */
-    @Deprecated
-    // default
-    public void activateEJB(Object ctx, Object instanceKey) {
-        // nothing to do
     }
 
     @Override

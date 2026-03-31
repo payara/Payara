@@ -38,7 +38,7 @@
  * holder.
  * 
  * 
- * Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
  */
 package org.glassfish.grizzly.config;
 
@@ -74,7 +74,6 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.ProtocolChain;
 import org.glassfish.grizzly.config.dom.ProtocolChainInstanceHandler;
 import org.glassfish.grizzly.config.dom.ProtocolFilter;
-import org.glassfish.grizzly.config.dom.SelectionKeyHandler;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
@@ -360,15 +359,6 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             transport = configureUDPTransport();
         } else {
             throw new GrizzlyConfigException("Unsupported transport type " + transportConfig.getName());
-        }
-
-        String selectorName = transportConfig.getSelectionKeyHandler();
-        if (selectorName != null) {
-            if (getSelectionKeyHandlerByName(selectorName, transportConfig) != null) {
-                if (LOGGER.isLoggable(Level.INFO)) {
-                    LOGGER.warning("Element, selection-key-handler, has been deprecated and is effectively ignored by the runtime.");
-                }
-            }
         }
 
         if (!Transport.BYTE_BUFFER_TYPE.equalsIgnoreCase(transportConfig.getByteBufferType())) {
@@ -1173,20 +1163,6 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             ssl = (Ssl) DefaultProxy.createDummyProxy(protocol, Ssl.class);
         }
         return ssl;
-    }
-
-    private static SelectionKeyHandler getSelectionKeyHandlerByName(final String name,
-                                                                    final Transport transportConfig) {
-        Transports transports = transportConfig.getParent();
-        List<SelectionKeyHandler> handlers = transports.getSelectionKeyHandler();
-        if (!handlers.isEmpty()) {
-            for (SelectionKeyHandler handler : handlers) {
-                if (handler.getName().equals(name)) {
-                    return handler;
-                }
-            }
-        }
-        return null;
     }
 
     private int getCompressionStrategyAsInt(String compressionStrategy) {

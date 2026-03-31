@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.grizzly.config.dom;
 
@@ -118,15 +118,6 @@ public interface ThreadPool extends ConfigBeanProxy, PropertyBag {
     String getName();
 
     void setName(String value);
-
-    /**
-     * This is an id for the work-queue e.g. "thread-pool-1", "thread-pool-2" etc
-     */
-    @Attribute
-    @Deprecated
-    String getThreadPoolId();
-
-    void setThreadPoolId(String value);
 
     @DuckTyped
     List<NetworkListener> findNetworkListeners();

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.universal.glassfish;
 
@@ -146,7 +146,7 @@ public class TokenResolver {
         String resolved = s;
 
         for (Token token : tokens) {
-            resolved = GFLauncherUtils.replace(resolved, token.token, token.value);
+            resolved = resolved.replace(token.token, token.value);
         }
 
         return resolved;
@@ -165,8 +165,8 @@ public class TokenResolver {
                 break;
             }
 
-            replaced = GFLauncherUtils.replace(replaced, "%", "${");
-            replaced = GFLauncherUtils.replace(replaced, "%", "}");
+            replaced = replaced.replace("%", "${");
+            replaced = replaced.replace("%", "}");
         }
         if (replaced == null) {
             return s;

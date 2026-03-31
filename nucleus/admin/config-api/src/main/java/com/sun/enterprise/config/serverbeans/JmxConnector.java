@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -53,7 +53,6 @@ import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.grizzly.config.dom.Ssl;
-import static org.glassfish.config.support.Constants.NAME_REGEX;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.quality.ToDo;
 import org.jvnet.hk2.config.*;
@@ -172,32 +171,6 @@ public interface JmxConnector extends ConfigBeanProxy, Named, PropertyBag, Paylo
      * @throws PropertyVetoException
      */
     void setAcceptAll(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the auth-realm-name property.
-     *
-     * The name of the auth-realm in this config element that represents the
-     * special administrative realm. All authentication (from administraive GUI
-     * and CLI) will be handled by this realm.
-     *
-     * Note: This is deprecated since GlassFish v3 FCS. Use similarly named attribute on admin-service. This will
-     * be used only when the admin-service attribute in missing.
-     * @return String representing the name of auth realm
-     */
-    @Deprecated
-    @Attribute
-    @NotNull
-    @Pattern(regexp=NAME_REGEX)
-    @ReferenceConstraint.RemoteKey(message="{resourceref.invalid.auth-realm-name}", type=AuthRealm.class)
-    String getAuthRealmName();
-
-    /**
-     * Sets the value of the authRealmName property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    void setAuthRealmName(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the securityEnabled property.

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.universal.xml;
 
@@ -164,14 +164,6 @@ public class MiniXmlParser {
             throw new MiniXmlParserException(strings.get(INVALID));
         }
         return iiopSslAttributes;
-    }
-
-    /**
-     * @deprecated use {@link #setupConfigDir(java.io.File)} instead
-     */
-    @Deprecated
-    public void setupConfigDir(File configDir, File installDir) {
-        loggingConfig = new LoggingConfigImpl(configDir, configDir);
     }
     
     public void setupConfigDir(File configDir) {

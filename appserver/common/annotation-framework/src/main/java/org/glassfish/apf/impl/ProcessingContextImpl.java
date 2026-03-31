@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
@@ -114,7 +114,7 @@ class ProcessingContextImpl implements ProcessingContext {
         
         if (handlers.isEmpty()) 
             return null;
-        if (AnnotationUtils.shouldLog("handler")) {
+        if (AnnotationUtils.getLogger().isLoggable(Level.FINER)) {
             AnnotationUtils.getLogger().log(Level.FINER, "Top handler is {0}", handlers.peek());
         }
         return contextType.cast(handlers.peek());
