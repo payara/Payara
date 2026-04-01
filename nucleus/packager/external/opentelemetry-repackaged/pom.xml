@@ -154,7 +154,7 @@
         <dependency>
             <groupId>org.snakeyaml</groupId>
             <artifactId>snakeyaml-engine</artifactId>
-            <version>${snakeyaml-version}</version>
+            <version>${snakeyaml.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

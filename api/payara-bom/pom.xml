@@ -943,8 +943,8 @@
             </dependency>
 
             <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
+                <groupId>org.snakeyaml</groupId>
+                <artifactId>snakeyaml-engine</artifactId>
                 <version>${snakeyaml.version}</version>
             </dependency>
             <dependency>
