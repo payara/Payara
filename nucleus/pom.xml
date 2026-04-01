@@ -849,7 +849,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>5.1-jdk8</version>
+                <version>5.2-jdk8</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>
