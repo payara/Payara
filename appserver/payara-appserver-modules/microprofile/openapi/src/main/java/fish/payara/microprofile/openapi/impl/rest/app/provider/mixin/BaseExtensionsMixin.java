@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.openapi.impl.rest.app.provider.mixin;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -48,13 +47,14 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem.HttpMethod;
 import org.eclipse.microprofile.openapi.models.Paths;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.ServerVariable;
 
-public interface ExtensionsMixin {
+public interface BaseExtensionsMixin {
 
     @JsonProperty("enum")
     void getEnumeration();
@@ -74,7 +74,7 @@ public interface ExtensionsMixin {
     @JsonInclude(Include.ALWAYS)
     Paths getPaths();
 
-    @JsonAnyGetter
+    @JsonIgnore
     Map<String, Object> getExtensions();
 
     @JsonIgnore
@@ -87,6 +87,5 @@ public interface ExtensionsMixin {
     void setVariables(Map<String, ServerVariable> variables);
 
     @JsonSetter
-    public void setRequired(List<String> required);
-
+    void setRequired(List<String> required);
 }
