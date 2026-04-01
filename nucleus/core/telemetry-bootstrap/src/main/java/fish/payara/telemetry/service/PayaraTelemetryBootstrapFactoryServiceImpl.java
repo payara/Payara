@@ -40,11 +40,7 @@
 package fish.payara.telemetry.service;
 
 
-import io.opentelemetry.instrumentation.runtimemetrics.java8.Classes;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.Cpu;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.GarbageCollector;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.MemoryPools;
-import io.opentelemetry.instrumentation.runtimemetrics.java8.Threads;
+import io.opentelemetry.instrumentation.runtimemetrics.java17.RuntimeMetrics;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -64,7 +60,14 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.*;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_ENVIRONMENT_PROPERTY_NAME;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_LOGS_EXPORTER;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_METRICS_EXPORTER;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_PROPERTIES_PREFIX;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_SERVICE_NAME;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_SYSTEM_PROPERTY_NAME;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_TRACES_EXPORTER;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.PAYARA_OTEL_RUNTIME_INSTANCE_NAME;
 
 @Service(name = "telemetry-runtime-config-service")
 @RunLevel(InitRunLevel.VAL)
@@ -95,7 +98,7 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
             if (!props.containsKey(OTEL_METRICS_EXPORTER)) {
                 props.put(OTEL_METRICS_EXPORTER, "none");
             }
-            
+
             runtimeSdk = AutoConfiguredOpenTelemetrySdk.builder()
                     //Need to provide custom Resources to start impl
                     .addPropertiesCustomizer(p -> props)
@@ -108,14 +111,9 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         } else {
             noopInstance = OpenTelemetrySdk.builder().build();
         }
-        
+
         if (!isRuntimeOtelEnabled() && runtimeSdk != null) {
-            //provide default runtime metrics
-            Classes.registerObservers(runtimeSdk);
-            Cpu.registerObservers(runtimeSdk);
-            MemoryPools.registerObservers(runtimeSdk);
-            Threads.registerObservers(runtimeSdk);
-            GarbageCollector.registerObservers(runtimeSdk);
+            RuntimeMetrics.builder(runtimeSdk).enableAllFeatures().build();
         }
     }
 
