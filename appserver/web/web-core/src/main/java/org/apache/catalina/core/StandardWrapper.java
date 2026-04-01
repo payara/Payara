@@ -1572,7 +1572,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         if (tracer != null && response.isCommitted()) {
                             // If response is not committed, it is likely async
                             SpanBuilder spanBuilder = tracer.spanBuilder(applicationName);
-                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus()); //Add process to declare an histogram
+                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus());
                         }
                         // TODO: clear OpenTelemetry context once we move to natively using it.
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
@@ -1589,7 +1589,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 elapsedNanos = System.nanoTime() - nanosStart;
             }
 
-            //here to add a process to get histogram
+            //here to add a process to get histogram and instrument http endpoints results evaluated in TCK
             io.opentelemetry.context.Context ctx = io.opentelemetry.context.Context.current();
             DoubleHistogram doubleHistogram = openTelemetryService.createMetricsHistogram(openTelemetryService.getCurrentSdk());
             double seconds = elapsedNanos * PayaraTelemetryConstants.NANO_CONVERSION;
