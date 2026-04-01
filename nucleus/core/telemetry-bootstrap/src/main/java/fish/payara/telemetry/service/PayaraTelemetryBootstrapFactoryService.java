@@ -50,5 +50,5 @@ public interface PayaraTelemetryBootstrapFactoryService {
     
     public Optional<OpenTelemetrySdk> getAvailableNoopReference();
     
-    public boolean isRuntimeOtelEnabled();
+    public boolean isRuntimeOtelDisabled();
 }
