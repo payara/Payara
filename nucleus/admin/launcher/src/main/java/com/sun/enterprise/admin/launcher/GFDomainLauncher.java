@@ -92,13 +92,3 @@ class GFDomainLauncher extends GFLauncher {
     private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain";
     private static final String BOOTSTRAP_JAR = "glassfish.jar";
 }
-
-/* sample profiler config
- * 
-       <java-config classpath-suffix="" debug-enabled="false" debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" env-classpath-ignored="true" java-home="${com.sun.aas.javaRoot}" javac-options="-g" rmic-options="-iiop -poa -alwaysgenerate -keepgenerated -g" system-classpath="">
-        <profiler classpath="c:/dev/elf/dist/elf.jar" enabled="false" name="MyProfiler" native-library-path="c:/bin">
-          <jvm-options>-Dprofiler3=foo3</jvm-options>
-          <jvm-options>-Dprofiler2=foo2</jvm-options>
-          <jvm-options>-Dprofiler1=foof</jvm-options>
-        </profiler>
- */

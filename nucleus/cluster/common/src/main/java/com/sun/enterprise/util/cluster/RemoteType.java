@@ -38,7 +38,7 @@
  *  holder.
  */
 
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2020-2026] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.util.cluster;
 
@@ -48,5 +48,5 @@ package com.sun.enterprise.util.cluster;
  * @author Byron Nevins
  */
 public enum RemoteType {
-    SSH, DCOM, CONFIG, DOCKER
+    SSH, CONFIG, DOCKER
 }

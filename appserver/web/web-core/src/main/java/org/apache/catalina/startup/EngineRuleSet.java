@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.startup;
 
@@ -137,8 +137,7 @@ public class EngineRuleSet extends RuleSetBase {
         digester.addSetProperties(prefix + "Engine");
         digester.addRule(prefix + "Engine",
                          new LifecycleListenerRule
-                         (digester,
-                          "org.apache.catalina.startup.EngineConfig",
+                         ("org.apache.catalina.startup.EngineConfig",
                           "engineConfigClass"));
         digester.addSetNext(prefix + "Engine",
                             "setContainer",

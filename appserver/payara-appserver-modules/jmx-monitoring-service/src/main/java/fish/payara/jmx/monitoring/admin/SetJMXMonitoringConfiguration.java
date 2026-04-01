@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package fish.payara.jmx.monitoring.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
-import fish.payara.admin.amx.config.AMXConfiguration;
 import fish.payara.internal.notification.NotifierUtils;
 import fish.payara.jmx.monitoring.JMXMonitoringService;
 import fish.payara.jmx.monitoring.configuration.MonitoredAttribute;
@@ -108,14 +107,6 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
 
     @Param(name = "enabled", optional = true)
     private Boolean enabled;
-
-    /**
-     *
-     * @deprecated Since 5.182. Use set-amx-enabled command instead.
-     */
-    @Deprecated
-    @Param(name = "amx", optional = true)
-    private Boolean amx;
 
     @Param(name = "logfrequency", optional = true)
     private String logfrequency;
@@ -214,17 +205,7 @@ public class SetJMXMonitoringConfiguration implements AdminCommand {
         if (null != enabled) {
             monitoringConfig.setEnabled(String.valueOf(enabled));
         }
-        if (null != amx) {
-            AMXConfiguration amxConfig = serviceLocator.getService(AMXConfiguration.class);
-            ConfigSupport.apply(new SingleConfigCode<AMXConfiguration>() {
-                @Override
-                public Object run(final AMXConfiguration amxConfigProxy) throws PropertyVetoException, TransactionFailure {
-                    amxConfigProxy.setEnabled((String.valueOf(amx)));
-                    return amxConfigProxy;
-                }
-            }, amxConfig);
-            monitoringConfig.setAmx(null);
-        }
+
         if (null != logfrequency) {
             monitoringConfig.setLogFrequency(logfrequency);
         }

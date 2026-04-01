@@ -4,7 +4,7 @@ NAME
        start-cluster - starts a cluster
 
 SYNOPSIS
-           start-cluster [--help] [--autohadboverride={true|false}]
+           start-cluster [--help]
            [--verbose={false|true}] [--timeout timeout]
            [--instancetimeout timeout] cluster-name
 
@@ -39,13 +39,6 @@ DESCRIPTION
 OPTIONS
        --help, -?
            Displays the help text for the subcommand.
-
-       --autohadboverride
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
 
        --verbose
            Specifies whether additional status information is displayed when

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.cli.remote;
 
@@ -626,9 +626,6 @@ public class RemoteCLICommand extends CLICommand {
 
             if (responseFormatType != null) {
                 rac.setResponseFormatType(responseFormatType);
-            }
-            if (userOut != null) {
-                rac.setUserOut(userOut);
             }
 
             /*

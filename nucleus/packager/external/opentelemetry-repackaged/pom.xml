@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-external</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>opentelemetry-repackaged</artifactId>
@@ -215,7 +215,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

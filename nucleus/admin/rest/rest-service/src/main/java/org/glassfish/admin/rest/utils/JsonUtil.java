@@ -38,7 +38,7 @@
  * holder.
  * 
  */
-// Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.utils;
 
@@ -149,24 +149,6 @@ public class JsonUtil {
         }
 
         return result;
-    }
-
-    /**
-     * Converts an object to a JsonValue
-     * <p>
-     * The object must be one of {@link JsonValue}, {@link Collection}, {@link Map}, {@link ResponseBody}, {@link String},
-     * {@link Integer}, {@link Long}, {@link Double}, {@link Boolean}, {@link BigInteger}, {@link BigDecimal},
-     * a class that has a REST model or an array of one of the above.
-     * @param object The object to convert
-     * @param hideConfidentialProperties
-     * @return
-     * @throws JsonException If the object cannot be converted to a JsonValue
-     * @deprecated As of 5.0, replaced by {@link #getJsonValue(Object)} as a more accurately named method
-     * with the removal of Jettison the return value is no longer JSONObject but JsonValue.
-     */
-    @Deprecated
-    public static JsonValue getJsonObject(Object object, boolean hideConfidentialProperties) throws JsonException {
-        return getJsonValue(object, hideConfidentialProperties);
     }
 
     public static JsonObject getJsonForRestModel(RestModel model, boolean hideConfidentialProperties) {

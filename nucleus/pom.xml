@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -66,11 +66,10 @@
         <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
-        <maven.antlr.plugin.version>2.4</maven.antlr.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.9.12</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.14</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -91,7 +90,7 @@
 
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.3</classmate.version>
-        <jboss-logging.version>3.6.1.Final</jboss-logging.version>
+        <jboss-logging.version>3.6.3.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.30.2-GA</javassist.version>
 
@@ -101,7 +100,7 @@
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>5.1.0</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.1.0</gmbal.version>
+        <gmbal.version>4.1.1</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.21.0</commons-io.version>
@@ -132,10 +131,10 @@
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <ha-api.version>3.1.13</ha-api.version>
-        <mockito.version>5.21.0</mockito.version>
+        <mockito.version>5.23.0</mockito.version>
 
         <!-- Build -->
-        <glassfishbuild.version>3.2.20.payara-p2</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20.payara-p3</glassfishbuild.version>
         <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.20</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
@@ -150,7 +149,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.3.0</kotlin-version>
+        <kotlin-version>2.3.20</kotlin-version>
         <snakeyaml-version>2.9</snakeyaml-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
@@ -329,11 +328,6 @@
                     <version>${glassfishbuild.version}</version>
                 </plugin>
 
-                <plugin>
-                    <groupId>org.omnifaces</groupId>
-                    <artifactId>antlr-maven-plugin</artifactId>
-                    <version>${maven.antlr.plugin.version}</version>
-                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxws-maven-plugin</artifactId>
@@ -856,7 +850,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
-                <version>5.1-jdk8</version>
+                <version>5.2-jdk8</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.annotations</groupId>

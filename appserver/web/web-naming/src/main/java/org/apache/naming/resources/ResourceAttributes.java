@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.apache.naming.resources;
 
@@ -566,17 +567,6 @@ public class ResourceAttributes implements Attributes {
         if (attributes != null)
             attributes.put(LAST_MODIFIED, new Date(lastModified));
     }
-    
-    
-    /**
-     * Set last modified date.
-     * 
-     * @param lastModified New last modified date value
-     * @deprecated
-     */
-    public void setLastModified(Date lastModified) {
-        setLastModifiedDate(lastModified);
-    }
 
 
     /**
@@ -814,19 +804,6 @@ public class ResourceAttributes implements Attributes {
         } 
         return result;
     }
-
-
-    /**
-     * Get ETag.
-     * 
-     * @param strong Ignored
-     * @return strong ETag if available, else weak ETag.
-     * @deprecated
-     */
-    public String getETag(boolean strong) {
-        return getETag();
-    }
-
 
     /**
      * Set strong ETag.

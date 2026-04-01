@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.xml;
 
@@ -54,12 +54,6 @@ public interface RuntimeTagNames extends TagNames {
     public final static String S1AS_APPLICATION_RUNTIME_TAG = "sun-application";
     public final static String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
     public final static String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
-
-    public final static String WLS_EJB_RUNTIME_TAG = "weblogic-ejb-jar";
-    public final static String WLS_APPCLIENT_RUNTIME_TAG = "weblogic-application-client";
-    public final static String WLS_APPLICATION_RUNTIME_TAG = "weblogic-application";
-    public final static String WLS_WEB_RUNTIME_TAG = "weblogic-web-app";
-    public final static String WLS_CONNECTOR_RUNTIME_TAG = "weblogic-connector";
 
     public final static String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
     public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
@@ -210,30 +204,17 @@ public interface RuntimeTagNames extends TagNames {
     public static final String DATABASE_VENDOR_NAME = "database-vendor-name";
     public static final String SCHEMA_GENERATOR_PROPERTIES = "schema-generator-properties";
 
-
-    // PM-DESCRIPTORS related
-    public static final String PM_DESCRIPTORS = "pm-descriptors";
-    public static final String PM_DESCRIPTOR = "pm-descriptor";
-    public static final String PM_IDENTIFIER = "pm-identifier";
-    public static final String PM_VERSION = "pm-version";
-    public static final String PM_CONFIG = "pm-config";
-    public static final String PM_CLASS_GENERATOR = "pm-class-generator";
-    public static final String PM_MAPPING_FACTORY = "pm-mapping-factory";
-    public static final String PM_INUSE = "pm-inuse";
-
     // BEAN-POOL related
     public static final String BEAN_POOL = "bean-pool";
     public static final String STEADY_POOL_SIZE = "steady-pool-size";
     public static final String POOL_RESIZE_QUANTITY = "resize-quantity";
     public static final String MAX_POOL_SIZE = "max-pool-size";
     public static final String POOL_IDLE_TIMEOUT_IN_SECONDS = "pool-idle-timeout-in-seconds";
-    public static final String MAX_WAIT_TIME_IN_MILLIS = "max-wait-time-in-millis";
 
     // BEAN-CACHE related
     public static final String BEAN_CACHE = "bean-cache";
     public static final String MAX_CACHE_SIZE = "max-cache-size";
     public static final String RESIZE_QUANTITY = "resize-quantity";
-    public static final String IS_CACHE_OVERFLOW_ALLOWED = "is-cache-overflow-allowed";
     public static final String CACHE_IDLE_TIMEOUT_IN_SECONDS = "cache-idle-timeout-in-seconds";
     public static final String REMOVAL_TIMEOUT_IN_SECONDS = "removal-timeout-in-seconds";
     public static final String VICTIM_SELECTION_POLICY = "victim-selection-policy";
@@ -249,9 +230,6 @@ public interface RuntimeTagNames extends TagNames {
     // flush-at-end-of-method
     public static final String FLUSH_AT_END_OF_METHOD =
         "flush-at-end-of-method";
-    // checkpointed-methods, support backward compatibility with 7.1
-    public static final String CHECKPOINTED_METHODS =
-        "checkpointed-methods";
     // checkpoint-at-end-of-method, equivalent element of
     // checkpointed-methods in 8.1 and later releases
     public static final String CHECKPOINT_AT_END_OF_METHOD =
@@ -295,16 +273,10 @@ public interface RuntimeTagNames extends TagNames {
     public static final String COOKIE_PROPERTIES = "cookie-properties";
     public static final String CONSTRAINT_FIELD = "constraint-field";
     public static final String CONSTRAINT_FIELD_VALUE = "constraint-field-value";
-    public static final String LOCALE_CHARSET_INFO = "locale-charset-info";
-    public static final String DEFAULT_LOCALE = "default-locale";
     public static final String DEFAULT_HELPER = "default-helper";
-    public static final String LOCALE = "locale";
     public static final String MAX_ENTRIES = "max-entries";
     public static final String TIMEOUT_IN_SECONDS = "timeout-in-seconds";
     public static final String ENABLED = "enabled";
-    public static final String AGENT = "agent";
-    public static final String CHARSET = "charset";
-    public static final String LOCALE_CHARSET_MAP = "locale-charset-map";
     public static final String PARAMETER_ENCODING = "parameter-encoding";
     public static final String FORM_HINT_FIELD = "form-hint-field";
     public static final String DEFAULT_CHARSET = "default-charset";
@@ -349,10 +321,4 @@ public interface RuntimeTagNames extends TagNames {
     public final static String VENDOR = "vendor";
     public final static String JNLP_DOC = "jnlp-doc";
     // also uses CONTEXT_ROOT defined above in the application-related section
-
-
-    // Weblogic specific
-    public static final String RESOURCE_DESCRIPTION = "resource-description";
-    public static final String RESOURCE_ENV_DESCRIPTION = "resource-env-description";
-    public static final String EJB_REFERENCE_DESCRIPTION = "ejb-reference-description";
 }

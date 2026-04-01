@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -130,13 +130,6 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
 
     private LogEventBroadcaster logEventBroadcasterDelegate;
 
-    /**
-     * For backwards compatibility with log format for pre-182
-     * @deprecated
-     */
-    @Deprecated
-    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
-
     // Account for instances of (Formatter) Class.forName(formatter).newInstance();
     public JSONLogFormatter() {
         this(null);
@@ -146,24 +139,6 @@ public class JSONLogFormatter extends CommonFormatter implements LogEventBroadca
         super(excludeFields);
         loggerResourceBundleTable = new HashMap<>();
         logManager = LogManager.getLogManager();
-
-        String underscorePrefix = logManager.getProperty(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
-        if (Boolean.parseBoolean(underscorePrefix)) {
-            TIMESTAMP_KEY = "_" + TIMESTAMP_KEY;
-            LOG_LEVEL_KEY = "_" + LOG_LEVEL_KEY;
-            PRODUCT_ID_KEY = "_" + PRODUCT_ID_KEY;
-            LOGGER_NAME_KEY = "_" + LOGGER_NAME_KEY;
-            EXCEPTION_KEY = "_" + EXCEPTION_KEY;
-            STACK_TRACE_KEY = "_" + STACK_TRACE_KEY;
-            // String values for thread excludable keys
-            THREAD_ID_KEY = "_" + THREAD_ID_KEY;
-            THREAD_NAME_KEY = "_" + THREAD_NAME_KEY;
-            LEVEL_VALUE_KEY = "_" + LEVEL_VALUE_KEY;
-            TIME_MILLIS_KEY = "_" + TIME_MILLIS_KEY;
-            MESSAGE_ID_KEY = "_" + MESSAGE_ID_KEY;
-            LOG_MESSAGE_KEY = "_" + LOG_MESSAGE_KEY;
-            THROWABLE_KEY = "_" + THROWABLE_KEY;
-        }
     }
 
     public JSONLogFormatter(FormatterDelegate delegate, String excludeFields) {

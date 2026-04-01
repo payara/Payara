@@ -84,9 +84,6 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
-
-    @Param(name="profiler", optional=true)
-    Boolean profiler=false;
     
     @Inject
     Target targetService;
@@ -108,16 +105,7 @@ public final class ListJvmOptions implements AdminCommand, AdminCommandSecurity.
     
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        List<JvmOption> opts;
-        if (profiler) {
-                if (jc.getProfiler() == null) {
-                    report.setMessage(lsm.getString("create.profiler.first"));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-            opts = jc.getProfiler().getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
-        } else
-            opts = jc.getJvmRawOptions().stream().map(JvmOption::new).collect(Collectors.toList());
+        List<JvmOption> opts = jc.getJvmRawOptions().stream().map(JvmOption::new).toList();
         //Collections.sort(opts); //sorting is garbled by Reporter anyway, so let's move sorting to the client side
         try {
             opts.forEach(option -> {

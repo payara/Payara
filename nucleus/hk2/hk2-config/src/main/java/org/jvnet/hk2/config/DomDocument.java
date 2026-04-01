@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.jvnet.hk2.config;
 
@@ -249,13 +250,6 @@ public class DomDocument<T extends Dom> {
             implementorsOf.add(type, models);
         }
         models.add(cm);
-    }
-
-
-    // TODO: to be removed once we make sure that no one is using it anymore
-    @Deprecated
-    public ConfigModel getModel(Class c) {
-        return buildModel(c);
     }
 
     public Dom make(ServiceLocator habitat, XMLStreamReader in, T parent, ConfigModel model) {

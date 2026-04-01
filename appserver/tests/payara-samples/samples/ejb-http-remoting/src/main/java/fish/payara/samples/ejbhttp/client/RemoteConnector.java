@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,6 @@ import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static javax.naming.Context.PROVIDER_URL;
 
 public enum RemoteConnector {
-    JSON_V0(SerializationType.JSON, 0),
     JSON_V1(SerializationType.JSON, 1),
     JAVA_V1(SerializationType.JAVA, 1);
 
@@ -64,7 +63,7 @@ public enum RemoteConnector {
         this.type = type;
         this.version = version;
         Hashtable<String, String> environment = new Hashtable<>();
-        environment.put(INITIAL_CONTEXT_FACTORY, "fish.payara.ejb.rest.client.RemoteEJBContextFactory");
+        environment.put(INITIAL_CONTEXT_FACTORY, "fish.payara.ejb.http.client.RemoteEJBContextFactory");
         environment.put(PROVIDER_URL, "http://localhost:8080/ejb-invoker");
         environment.put(RemoteEJBContextFactory.JAXRS_CLIENT_SERIALIZATION, type.toString());
         environment.put(RemoteEJBContextFactory.JAXRS_CLIENT_PROTOCOL_VERSION, String.valueOf(version));

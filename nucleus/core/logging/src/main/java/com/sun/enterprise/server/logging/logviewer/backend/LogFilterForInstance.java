@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2026] Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.server.logging.logviewer.backend;
@@ -46,9 +46,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.trilead.ssh2.SCPClient;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import com.trilead.ssh2.SFTPv3FileAttributes;
@@ -64,7 +61,6 @@ import java.util.logging.Logger;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
-import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -157,31 +153,6 @@ public class LogFilterForInstance {
                 }
             }
             sftpClient.close();
-        } else if (node.getType().equals("DCOM")) {
-
-            File logFileDirectoryOnServer = makingDirectory(domainRoot + File.separator + "logs"
-                    + File.separator + instanceName);
-
-
-            String loggingDir = getLoggingDirectoryForNode(instanceLogFileName, node, sNode, instanceName);
-
-            try {
-                DcomInfo info = new DcomInfo(node);
-                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
-
-                if (logFileName == null || logFileName.equals("")) {
-                    logFileName = "server.log";
-                }
-                WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir + File.separator + logFileName);
-
-                instanceLogFile = new File(logFileDirectoryOnServer + File.separator + logFileName);
-
-                wrf.copyTo(instanceLogFile);
-            } catch (WindowsException ex) {
-                throw new IOException("Unable to download instance log file from DCOM Instance Node");
-            }
-
-
         }
 
         return instanceLogFile;
@@ -242,29 +213,6 @@ public class LogFilterForInstance {
 
             SCPClient scpClient = sshL.getSCPClient();
             scpClient.get(remoteFileNames, tempDirectoryOnServer);
-        } else if (node.getType().equals("DCOM")) {
-
-            List instanceLogFileNames = getInstanceLogFileNames(habitat, targetServer, domain, logger, instanceName, instanceLogFileDirectory);
-
-            String sourceDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
-
-            try {
-                DcomInfo info = new DcomInfo(node);
-
-                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
-
-                for (int i = 0; i < instanceLogFileNames.size(); i++) {
-
-                    String logFileName = (String) instanceLogFileNames.get(i);
-                    WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, sourceDir + File.separator + logFileName);
-                    File instanceLogFile = new File(tempDirectoryOnServer + File.separator + logFileName);
-                    wrf.copyTo(instanceLogFile);
-                }
-            } catch (WindowsException ex) {
-                throw new IOException("Unable to download instance log file from DCOM Instance Node");
-            }
-
-
         }
     }
 
@@ -359,29 +307,6 @@ public class LogFilterForInstance {
             }
 
             sftpClient.close();
-        } else if (node.getType().equals("DCOM")) {
-
-            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDetails, node, sNode, instanceName);
-
-            try {
-                DcomInfo info = new DcomInfo(node);
-                WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
-                WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, loggingDir);
-                String[] allLogFileNames = wrf.list();
-
-                for (String allLogFileName : allLogFileNames) {
-                    File file = new File(allLogFileName);
-                    String fileName = file.getName();
-                    // code to remove . and .. file which is return
-                    if (!fileName.equals(".") && !fileName.equals("..") && fileName.contains(".log")
-                            && !fileName.contains(".log.")) {
-                        instanceLogFileNamesAsString.add(fileName);
-                    }
-                }
-            } catch (WindowsException ex) {
-                throw new IOException("Unable to get instance log file names from DCOM Instance Node");
-            }
-
         }
 
         return instanceLogFileNamesAsString;
