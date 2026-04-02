@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.admin.cli;
 
@@ -73,8 +73,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 /**
  * Command to create transport element within network-config
  *
- * Sample Usage : create-transport [--acceptorThreads no_of_acceptor_threads] [--bufferSizeBytes buff_size_bytes]
- * [--classname class_name] [--selectionKeyHandler true|false] [--displayConfiguration
+ * Sample Usage : create-transport [--acceptorThreads no_of_acceptor_threads]
+ * [--classname class_name] [--displayConfiguration
  * true|false][--maxConnectionsCount count] [--idleKeyTimeoutSeconds idle_key_timeout] [--tcpNoDelay true|false]
  * [--readTimeoutMillis read_timeout][--writeTimeoutMillis write_timeout] [--byteBufferType buff_type]
  * [--selectorPollTimeoutMillis true|false] transport_name
@@ -96,8 +96,6 @@ public class CreateTransport implements AdminCommand {
     String transportName;
     @Param(name = "acceptorthreads", alias="acceptorThreads", optional = true, defaultValue = "-1")
     String acceptorThreads;
-    @Param(name = "buffersizebytes", alias="bufferSizeBytes", optional = true, defaultValue = "8192")
-    String bufferSizeBytes;
     @Param(name = "bytebuffertype", alias="byteBufferType", optional = true, defaultValue = "HEAP")
     String byteBufferType;
     @Param(name = "classname", optional = true,
@@ -113,8 +111,6 @@ public class CreateTransport implements AdminCommand {
     String readTimeoutMillis;
     @Param(name = "writetimeoutmillis", alias="writeTimeoutMillis", optional = true, defaultValue = "30000")
     String writeTimeoutMillis;
-    @Param(name = "selectionkeyhandler", alias="selectionKeyHandler", optional = true)
-    String selectionKeyHandler;
     @Param(name = "selectorpolltimeoutmillis", alias="selectorPollTimeoutMillis", optional = true, defaultValue = "1000")
     String selectorPollTimeoutMillis;
     @Param(name = "tcpnodelay", alias="tcpNoDelay", optional = true, defaultValue = "false")
@@ -162,7 +158,6 @@ public class CreateTransport implements AdminCommand {
                     Transport newTransport = param.createChild(Transport.class);
                     newTransport.setName(transportName);
                     newTransport.setAcceptorThreads(acceptorThreads);
-                    newTransport.setBufferSizeBytes(bufferSizeBytes);
                     newTransport.setByteBufferType(byteBufferType);
                     newTransport.setClassname(className);
                     newTransport.setDisplayConfiguration(displayConfiguration.toString());
@@ -170,7 +165,6 @@ public class CreateTransport implements AdminCommand {
                     newTransport.setMaxConnectionsCount(maxConnectionsCount);
                     newTransport.setName(transportName);
                     newTransport.setReadTimeoutMillis(readTimeoutMillis);
-                    newTransport.setSelectionKeyHandler(selectionKeyHandler);
                     newTransport.setSelectorPollTimeoutMillis(
                         selectorPollTimeoutMillis);
                     newTransport.setWriteTimeoutMillis(writeTimeoutMillis);

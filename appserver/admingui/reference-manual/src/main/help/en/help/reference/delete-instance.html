@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright [2019-2026] [Payara Foundation and/or its affiliates] -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -94,8 +94,7 @@ instance-name</code></pre>
 </div>
 <div class="paragraph">
 <p>The <code>delete-instance</code> subcommand deletes a \{product---name} instance.
-This subcommand requires the Distributed Component Object Model (DCOM)
-remote protocol or secure shell (SSH) to be configured on the host where
+This subcommand requires the secure shell (SSH) to be configured on the host where
 the domain administration server (DAS) is running and on the host that
 is represented by the node where the instance resides.</p>
 </div>
@@ -107,9 +106,9 @@ is represented by the node where the instance resides.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>DCOM or SSH is not required if the instance resides on a node of type
+<p>SSH is not required if the instance resides on a node of type
 <code>CONFIG</code> that represents the local host. A node of type <code>CONFIG</code> is not
-enabled for remote communication over DCOM or SSH.</p>
+enabled for remote communication over SSH.</p>
 </div>
 </td>
 </tr>
@@ -232,8 +231,7 @@ Command delete-instance executed successfully.</code></pre>
 <a href="start-instance.html#start-instance-1"><code>start-instance</code>(1)</a>,
 <a href="start-local-instance.html#start-local-instance-1"><code>start-local-instance</code>(1)</a>,
 <a href="stop-instance.html#stop-instance-1"><code>stop-instance</code>(1)</a>,
-<a href="stop-local-instance.html#stop-local-instance-1"><code>stop-local-instance</code>(1)</a>,
-<a href="validate-dcom.html#validate-dcom-1"><code>validate-dcom</code>(1)</a></p>
+<a href="stop-local-instance.html#stop-local-instance-1"><code>stop-local-instance</code>(1)</a></p>
 </div>
 </div>
 </div>

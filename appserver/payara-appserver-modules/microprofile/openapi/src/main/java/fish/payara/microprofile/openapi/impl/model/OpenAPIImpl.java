@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.info.InfoImpl;
 import fish.payara.microprofile.openapi.impl.model.security.SecurityRequirementImpl;
@@ -394,6 +395,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         return clonedObj;
     }
 
+    @JsonIgnore
     public Map<String, Set<String>> getEndpoints() {
         return endpoints;
     }

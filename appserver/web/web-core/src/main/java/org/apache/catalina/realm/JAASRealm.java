@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019-2024] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.apache.catalina.realm;
@@ -170,14 +170,6 @@ public class JAASRealm
 
     // ------------------------------------------------------------- Properties
 
-    
-    /**
-     * setter for the appName member variable
-     * @deprecated JAAS should use the Engine ( domain ) name and webpp/host overrides
-     */
-    public void setAppName(String name) {
-        appName = name;
-    }
     
     /**
      * getter for the appName member variable

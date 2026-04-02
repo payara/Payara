@@ -38,18 +38,16 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2022-2026] [Payara Foundation and/or its affiliates]
 -->
 
 <f:verbatim>
     <script type="text/javascript">
-    function showSection(type, sshSection, dcomSection, dockerSection, sshDirId, configDirId, dockerDirId, installProp, archProp){
+    function showSection(type, sshSection, dockerSection, sshDirId, configDirId, dockerDirId, installProp, archProp){
          var sshSheet = document.getElementById(sshSection);
-         var dcomSheet = document.getElementById(dcomSection);
          var dockerSheet = document.getElementById((dockerSection));
          if (type == 'CONFIG'){
             sshSheet.style.display = 'none';
-            dcomSheet.style.display = 'none';
             dockerSheet.style.display = 'none';
             require(['webui/suntheme/common'], function (common) {
                 common.setVisible(sshDirId, false);
@@ -66,7 +64,6 @@
          }
          if (type == 'SSH'){
             sshSheet.style.display = 'block';
-            dcomSheet.style.display = 'none';
             dockerSheet.style.display = 'none';
             require(['webui/suntheme/common'], function (common) {
                 common.setVisible(sshDirId, true);
@@ -80,25 +77,8 @@
                 });
             }
          }
-         if (type == 'DCOM'){
-            sshSheet.style.display = 'none';
-            dcomSheet.style.display = 'block';
-            dockerSheet.style.display = 'none';
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(sshDirId, true);
-                common.setVisible(configDirId, false);
-                common.setVisible(dockerDirId, false);
-            });
-            if(installProp != null){
-            require(['webui/suntheme/common'], function (common) {
-                common.setVisible(installProp, true);
-                common.setVisible(archProp, true);
-            });
-            }
-         }
         if (type == 'DOCKER'){
             sshSheet.style.display = 'none';
-            dcomSheet.style.display = 'none';
             dockerSheet.style.display = 'block';
             require(['webui/suntheme/common'], function (common) {
                 common.setVisible(sshDirId, false);
@@ -215,21 +195,6 @@
                     return checkRequired(setupPswdId, '#{reqMsg}');
                  }
             return true;
-        }
-
-        if (atype == 'DCOM'){
-            if ( document.getElementById(winPsSelectId).value == '2'){
-                //empty password is not allowed.
-                return checkRequired(winPs1Id, '#{reqMsg}');
-            }
-
-            if ( document.getElementById(winPsSelectId).value == '3'){
-                //must have pswd alias specified
-                var aliascomp = document.getElementById('#{pageSession.winPswdAliasId}');
-                if (aliascomp.value=='') {
-                    return showAlert('$resource{i18ncs.msg.JS.noPasswordAlias}');
-                }
-            }
         }
         return true;
     }

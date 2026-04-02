@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -66,9 +67,6 @@ public class BeanCacheNode extends DeploymentDescriptorNode<BeanCacheDescriptor>
 
     @Override
     public void setElementValue(XMLElement element, String value) {
-	if (RuntimeTagNames.IS_CACHE_OVERFLOW_ALLOWED.equals(element.getQName())) {
-	    descriptor.setIsCacheOverflowAllowed(Boolean.valueOf(value));
-	} else 
         super.setElementValue(element, value);
     }
 
@@ -88,8 +86,7 @@ public class BeanCacheNode extends DeploymentDescriptorNode<BeanCacheDescriptor>
 	Node beanCacheNode = super.writeDescriptor(parent, nodeName, descriptor);
 	appendTextChild(beanCacheNode, RuntimeTagNames.MAX_CACHE_SIZE, descriptor.getMaxCacheSize());	
 	appendTextChild(beanCacheNode, RuntimeTagNames.RESIZE_QUANTITY, descriptor.getResizeQuantity());	
-	appendTextChild(beanCacheNode, RuntimeTagNames.IS_CACHE_OVERFLOW_ALLOWED, String.valueOf(descriptor.isIsCacheOverflowAllowed()));
-	appendTextChild(beanCacheNode, RuntimeTagNames.CACHE_IDLE_TIMEOUT_IN_SECONDS, descriptor.getCacheIdleTimeoutInSeconds());	
+	appendTextChild(beanCacheNode, RuntimeTagNames.CACHE_IDLE_TIMEOUT_IN_SECONDS, descriptor.getCacheIdleTimeoutInSeconds());
 	appendTextChild(beanCacheNode, RuntimeTagNames.REMOVAL_TIMEOUT_IN_SECONDS, descriptor.getRemovalTimeoutInSeconds());	
 	appendTextChild(beanCacheNode, RuntimeTagNames.VICTIM_SELECTION_POLICY, descriptor.getVictimSelectionPolicy());	
 	return beanCacheNode;

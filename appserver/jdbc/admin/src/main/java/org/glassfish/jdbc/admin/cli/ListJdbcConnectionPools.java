@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jdbc.admin.cli;
 
@@ -86,9 +86,6 @@ public class ListJdbcConnectionPools implements AdminCommand {
 
     @Inject
     private Domain domain;
-
-    @Param(primary = true, optional = true, alias = "targetName", obsolete = true)
-    private String target ;
 
     /**
      * Executes the command with the command parameters passed as Properties

@@ -115,17 +115,11 @@ public class GlassFishNamingBuilder implements InitialContextFactoryBuilder, Pos
                 try
                 {
                     return (InitialContextFactory) (loadClass(className).newInstance());
-                }
-                catch (Exception e) {
-                    if (className.startsWith("weblogic.jndi")) {
-                        logger.log(Level.INFO, FALL_BACK_INITIAL_CONTEXT_FACTORY,
-                                "com.sun.enterprise.naming.impl.SerialInitContextFactory");
-                    } else {
-                        NoInitialContextException ne =
-                                new NoInitialContextException("Cannot instantiate class: " + className);
-                        ne.setRootCause(e);
-                        throw ne;
-                    }
+                } catch (Exception e) {
+                    NoInitialContextException ne =
+                            new NoInitialContextException("Cannot instantiate class: " + className);
+                    ne.setRootCause(e);
+                    throw ne;
                 }
             }
         }

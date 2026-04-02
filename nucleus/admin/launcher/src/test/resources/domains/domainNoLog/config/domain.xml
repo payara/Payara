@@ -39,20 +39,13 @@
     holder.
 
 -->
-
-<!--Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]-->
+<!-- Portions Copyright 2018-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications">
   <applications>
     <web-module context-root="/web1" location="${com.sun.aas.installRoot}/lib/install/applications/adminapp/adminapp_war" directory-deployed="true" name="adminapp" object-type="system-admin"></web-module>
     <web-module context-root="" location="${com.sun.aas.installRoot}/lib/install/applications/admingui/adminGUI_war" directory-deployed="true" name="admingui" object-type="system-admin"></web-module>
     <web-module context-root="/__wstx-services" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" directory-deployed="true" name="WSTXServices" object-type="system-all"></web-module>
-    <lifecycle-module name="JBIFramework" object-type="system-all" class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar">
-      <description>"JBI Framework LifecycleModule"</description>
-      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi"></property>
-      <property name="com.sun.jbi.defaultLogLevel" value="INFO"></property>
-    </lifecycle-module>
-    <lifecycle-module name="WSTCPConnectorLCModule" object-type="system-all" class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar"></lifecycle-module>
   </applications>
   <resources>
       <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin"></jdbc-resource>

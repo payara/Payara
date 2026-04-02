@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -78,9 +78,6 @@ public class DeleteConnectorConnectionPool implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteConnectorConnectionPool.class);
-
-    private @Param(optional=true, obsolete = true)
-    String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Param(optional=true, defaultValue="false")
     private Boolean cascade;

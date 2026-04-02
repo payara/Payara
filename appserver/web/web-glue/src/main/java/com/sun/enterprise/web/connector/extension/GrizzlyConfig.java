@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web.connector.extension;
 
@@ -175,11 +175,6 @@ public class GrizzlyConfig implements MonitoringLevelListener{
             monitoringRegistry.unregisterMonitoringLevelListener(this);
         }
     }
-
-    
-    public void setLevel(MonitoringLevel level) {
-        // deprecated, ignore
-    }
     
     
     public void changeLevel(MonitoringLevel from, MonitoringLevel to,
@@ -194,12 +189,6 @@ public class GrizzlyConfig implements MonitoringLevelListener{
         String methodToInvoke = isMonitoringEnabled ? "enableMonitoring" :
             "disabledMonitoring";
         invokeGrizzly(methodToInvoke);        
-    }
-    
-    
-    public void changeLevel(MonitoringLevel from, MonitoringLevel to, 
-			    Stats handback) {
-        // deprecated, ignore
     }
 
     

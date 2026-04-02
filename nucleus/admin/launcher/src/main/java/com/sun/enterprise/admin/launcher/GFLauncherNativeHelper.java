@@ -55,19 +55,17 @@ class GFLauncherNativeHelper {
     
     private final GFLauncherInfo    info;
     private final JvmOptions        jvmOptions;
-    private final Profiler          profiler;
     private final File              installDir;
     private final File              libDir;
     private final JavaConfig        javaConfig;
     
     
-    GFLauncherNativeHelper(GFLauncherInfo info, JavaConfig javaConfig, JvmOptions jvmOptions, Profiler profiler) {
+    GFLauncherNativeHelper(GFLauncherInfo info, JavaConfig javaConfig, JvmOptions jvmOptions) {
         this.info = info;
         this.javaConfig = javaConfig;
         this.jvmOptions = jvmOptions;
-        this.profiler = profiler;
 
-        if(info == null || jvmOptions == null || profiler == null)
+        if(info == null || jvmOptions == null)
             throw new NullPointerException(
            "Null argument(s) to GFLauncherNativeHelper.GFLauncherNativeHelper");
 
@@ -81,7 +79,6 @@ class GFLauncherNativeHelper {
         String stockNativePathsString   = getStockNativePathString();
         String prefixFileString         = getPrefixString();
         String suffixFileString         = getSuffixString();
-        String profilerFileString       = getProfilerString();
         String libFileString            = libDir.getPath();
         String lib64FileString          = getLib64String();
 
@@ -93,7 +90,6 @@ class GFLauncherNativeHelper {
         sb.append(libFileString).append(PS);
         sb.append(lib64FileString).append(PS);
         sb.append(stockNativePathsString).append(PS);
-        sb.append(profilerFileString).append(PS);
         sb.append(suffixFileString);
 
         // this looks dumb but there is a lot of potential cleaning going on here
@@ -122,15 +118,6 @@ class GFLauncherNativeHelper {
 
     private String getSuffixString() {
         return javaConfig.getNativeLibrarySuffix();
-    }
-
-    private String getProfilerString() {
-        // if not enabled -- fagetaboutit
-        if(!profiler.isEnabled())
-            return "";
-
-        List<File> ff = profiler.getNativePath();
-        return GFLauncherUtils.fileListToPathString(ff);
     }
 
     private String getLib64String() {

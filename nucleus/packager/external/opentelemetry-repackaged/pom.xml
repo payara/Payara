@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.internal.packager</groupId>
         <artifactId>nucleus-external</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>opentelemetry-repackaged</artifactId>
@@ -96,13 +96,6 @@
                     <artifactId>opentelemetry-semconv</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- we will rely on transitive dependencies of our leaf ones -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-opentracing-shim</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
@@ -221,7 +214,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.1</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

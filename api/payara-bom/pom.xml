@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>7.2026.2-SNAPSHOT</version>
+        <version>7.2026.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -570,12 +570,6 @@
                 <groupId>io.opentelemetry.semconv</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
                 <version>${opentelemetry-semconv.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-opentracing-shim</artifactId>
-                <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

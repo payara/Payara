@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates.
+// Portions Copyright 2022-2026 Payara Foundation and/or its affiliates.
 
 package org.glassfish.api.event;
 
@@ -106,19 +106,6 @@ public final class EventTypes<T> {
 
     public Class<T> getHookType() {
         return hookType;
-    }
-
-    /**
-     * @param e not null
-     * @return the events hook or null in case the given event is not matching this type
-     * @deprecated Use {@link #onMatch(org.glassfish.api.event.EventListener.Event, Consumer)} instead
-     */
-    @Deprecated
-    public T getHook(EventListener.Event<T> e) {
-        if (e.is(this)) {
-            return e.hook();
-        }
-        return null;
     }
 
     /**

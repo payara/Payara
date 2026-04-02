@@ -265,21 +265,6 @@ OPTIONS
                    <property name="redirect_1"
                    value="from=/dummy url-prefix=http://etude"/>
 
-           valve_n
-               Specifies a fully qualified class name of a custom valve, where
-               n is a positive integer that allows specification of more than
-               one. The valve class must implement the
-               org.apache.catalina.Valve interface from Tomcat or previous
-               GlassFish Server releases, or the
-               org.glassfish.web.valve.GlassFishValve interface from the
-               current GlassFish Server release. For example:
-
-                   <property name="valve_1"
-                      value="org.glassfish.extension.Valve"/>
-               You can set this property for a specific web application. For
-               details, see "glassfish-web-app" in Oracle GlassFish Server
-               Application Deployment Guide.
-
            listener_n
                Specifies a fully qualified class name of a custom Catalina
                listener, where n is a positive integer that allows

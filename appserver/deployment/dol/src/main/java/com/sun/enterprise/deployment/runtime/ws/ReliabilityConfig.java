@@ -48,9 +48,7 @@ public class ReliabilityConfig {
     String baseRetransmissionInterval;
     String retransmissionExponentialBackoff;
     String acknowledgementInterval;
-    String sequenceExpiration;
     String bufferRetryCount;
-    String bufferRetryDelay;
 
     public String getInactivityTimeout() {
         return inactivityTimeout;
@@ -84,28 +82,12 @@ public class ReliabilityConfig {
         this.acknowledgementInterval = acknowledgementInterval;
     }
 
-    public String getSequenceExpiration() {
-        return sequenceExpiration;
-    }
-
-    public void setSequenceExpiration(String sequenceExpiration) {
-        this.sequenceExpiration = sequenceExpiration;
-    }
-
     public String getBufferRetryCount() {
         return bufferRetryCount;
     }
 
     public void setBufferRetryCount(String bufferRetryCount) {
         this.bufferRetryCount = bufferRetryCount;
-    }
-
-    public String getBufferRetryDelay() {
-        return bufferRetryDelay;
-    }
-
-    public void setBufferRetryDelay(String bufferRetryDelay) {
-        this.bufferRetryDelay = bufferRetryDelay;
     }
 
 }

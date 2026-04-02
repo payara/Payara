@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.api.invocation;
 
@@ -77,23 +77,6 @@ public class ComponentInvocation implements Cloneable {
      * The name of this instance
      */
     private String instanceName;
-
-    /**
-     * The deprecated ServletContext for servlet, Container for EJB
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#containerReference}.
-     * Use {@link ComponentInvocation#getContainer()} and {@link ComponentInvocation#setContainer(Object)} instead.
-     *
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    public Object container;
-
-    /**
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ComponentInvocation#jndiEnvironmentReference}.
-     * Use {@link ComponentInvocation#getJNDIEnvironment()} and {@link ComponentInvocation#setJNDIEnvironment(Object)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    public Object jndiEnvironment;
 
     private WeakReference<Object> containerReference;
 

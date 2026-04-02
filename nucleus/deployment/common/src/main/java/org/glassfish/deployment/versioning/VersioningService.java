@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.versioning;
 
@@ -309,9 +310,6 @@ public class VersioningService {
             // check if directory deployment exist
             while ( it.hasNext() ) {
                 app = (Application) it.next();
-                /*
-                 * A lifecycle module appears as an application but has a null location.
-                 */
                 if (dir.toURI().toString().equals(app.getLocation())) {
                     if(!VersioningUtils.getUntaggedName(app.getName()).equals(app.getName())){
                         return app.getName();

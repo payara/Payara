@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -87,7 +87,7 @@ import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 /**
  * Remote AdminCommand to create an instance.  This command is run only on DAS.
  *  1. Register the instance on DAS
- *  2. Create the file system on the instance node via ssh, DCOM, node agent, or other
+ *  2. Create the file system on the instance node via ssh, node agent, or other
  *  3. Bootstrap a minimal set of config files on the instance for secure admin.
  *
  * @author Jennifer Chou
@@ -613,10 +613,6 @@ public class CreateInstanceCommand implements AdminCommand {
         }
 
         if (theNode.getType().equals("SSH")) {
-            return false;
-        }
-
-        if (theNode.getType().equals("DCOM")) {
             return false;
         }
 

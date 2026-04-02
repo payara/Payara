@@ -130,11 +130,6 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         pump.start();
     }
 
-    @Deprecated
-    private void setupConnection(){
-        setupConnection("localhost");
-    }
-
     private void setupConnection(String host){
         try {
             sysLogger = new Syslog(host);
@@ -228,11 +223,6 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
     public void flush() {
 
-    }
-
-    @Deprecated
-    public void setSystemLogging(boolean systemLogging) {
-        setSystemLogging(systemLogging, "localhost");
     }
 
 

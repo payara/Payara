@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.descriptor.runtime;
 
@@ -49,7 +50,6 @@ import org.glassfish.deployment.common.Descriptor;
  */
 public class BeanCacheDescriptor extends Descriptor implements DescriptorConstants{
 
-        private Boolean isCacheOverflowAllowed;       
         private String victimSelectionPolicy;
         
         //initialized default values for class variables
@@ -77,30 +77,6 @@ public class BeanCacheDescriptor extends Descriptor implements DescriptorConstan
 
         public void setCacheIdleTimeoutInSeconds(int cacheIdleTimeoutInSeconds) {
             this.cacheIdleTimeoutInSeconds = cacheIdleTimeoutInSeconds;
-        }
-        
-        /** 
-         * Getter for property isCacheOverflowAllowed.
-         * @return Value of property isCacheOverflowAllowed.
-         */
-        public Boolean isIsCacheOverflowAllowed() {
-            return isCacheOverflowAllowed;
-        }
-        
-        /** 
-         * Setter for property isCacheOverflowAllowed.
-         * @param isCacheOverflowAllowed New value of property isCacheOverflowAllowed.
-         */
-        public void setIsCacheOverflowAllowed(boolean isCacheOverflowAllowed) {
-            this.isCacheOverflowAllowed =  Boolean.valueOf(isCacheOverflowAllowed);
-        }
-        
-        /** 
-         * Setter for property isCacheOverflowAllowed.
-         * @param isCacheOverflowAllowed New value of property isCacheOverflowAllowed.
-         */
-        public void setIsCacheOverflowAllowed(Boolean isCacheOverflowAllowed) {
-            this.isCacheOverflowAllowed =  isCacheOverflowAllowed;
         }
 
         /** 
