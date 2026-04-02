@@ -43,6 +43,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
@@ -60,10 +61,14 @@ import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFacto
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import static java.util.logging.Level.WARNING;
+
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
@@ -79,6 +84,65 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
+    private static final Map<String, GetterSetter<?>> METHODS;
+    static {
+        Map<String, GetterSetter<?>> map = new HashMap<>();
+        map.put("discriminator", new GetterSetter<>(Schema::getDiscriminator, Schema::setDiscriminator));
+        map.put("title", new GetterSetter<>(Schema::getTitle, Schema::setTitle));
+        map.put("default", new GetterSetter<>(Schema::getDefaultValue, Schema::setDefaultValue));
+        map.put("enum", new GetterSetter<>(Schema::getEnumeration, Schema::setEnumeration));
+        map.put("multipleOf", new GetterSetter<>(Schema::getMultipleOf, Schema::setMultipleOf));
+        map.put("maximum", new GetterSetter<>(Schema::getMaximum, Schema::setMaximum));
+        map.put("exclusiveMaximum", new GetterSetter<>(Schema::getExclusiveMaximum, Schema::setExclusiveMaximum));
+        map.put("minimum", new GetterSetter<>(Schema::getMinimum, Schema::setMinimum));
+        map.put("exclusiveMinimum", new GetterSetter<>(Schema::getExclusiveMinimum, Schema::setExclusiveMinimum));
+        map.put("maxLength", new GetterSetter<>(Schema::getMaxLength, Schema::setMaxLength));
+        map.put("minLength", new GetterSetter<>(Schema::getMinLength, Schema::setMinLength));
+        map.put("pattern", new GetterSetter<>(Schema::getPattern, Schema::setPattern));
+        map.put("maxItems", new GetterSetter<>(Schema::getMaxItems, Schema::setMaxItems));
+        map.put("minItems", new GetterSetter<>(Schema::getMinItems, Schema::setMinItems));
+        map.put("uniqueItems", new GetterSetter<>(Schema::getUniqueItems, Schema::setUniqueItems));
+        map.put("maxProperties", new GetterSetter<>(Schema::getMaxProperties, Schema::setMaxProperties));
+        map.put("minProperties", new GetterSetter<>(Schema::getMinProperties, Schema::setMinProperties));
+        map.put("required", new GetterSetter<>(Schema::getRequired, Schema::setRequired));
+        map.put("type", new GetterSetter<>(Schema::getType, Schema::setType));
+        map.put("not", new GetterSetter<>(Schema::getNot, Schema::setNot));
+        map.put("properties", new GetterSetter<>(Schema::getProperties, Schema::setProperties));
+        map.put("additionalProperties", new GetterSetter<>(Schema::getAdditionalPropertiesSchema, Schema::setAdditionalPropertiesSchema));
+        map.put("description", new GetterSetter<>(Schema::getDescription, Schema::setDescription));
+        map.put("format", new GetterSetter<>(Schema::getFormat, Schema::setFormat));
+        map.put("readOnly", new GetterSetter<>(Schema::getReadOnly, Schema::setReadOnly));
+        map.put("writeOnly", new GetterSetter<>(Schema::getWriteOnly, Schema::setWriteOnly));
+        map.put("example", new GetterSetter<>(Schema::getExample, Schema::setExample));
+        map.put("externalDocs", new GetterSetter<>(Schema::getExternalDocs, Schema::setExternalDocs));
+        map.put("deprecated", new GetterSetter<>(Schema::getDeprecated, Schema::setDeprecated));
+        map.put("xml", new GetterSetter<>(Schema::getXml, Schema::setXml));
+        map.put("items", new GetterSetter<>(Schema::getItems, Schema::setItems));
+        map.put("allOf", new GetterSetter<>(Schema::getAllOf, Schema::setAllOf));
+        map.put("anyOf", new GetterSetter<>(Schema::getAnyOf, Schema::setAnyOf));
+        map.put("oneOf", new GetterSetter<>(Schema::getOneOf, Schema::setOneOf));
+        map.put("$schema", new GetterSetter<>(Schema::getSchemaDialect, Schema::setSchemaDialect));
+        map.put("$comment", new GetterSetter<>(Schema::getComment, Schema::setComment));
+        map.put("if", new GetterSetter<>(Schema::getIfSchema, Schema::setIfSchema));
+        map.put("then", new GetterSetter<>(Schema::getThenSchema, Schema::setThenSchema));
+        map.put("else", new GetterSetter<>(Schema::getElseSchema, Schema::setElseSchema));
+        map.put("dependentSchemas", new GetterSetter<>(Schema::getDependentSchemas, Schema::setDependentSchemas));
+        map.put("prefixItems", new GetterSetter<>(Schema::getPrefixItems, Schema::setPrefixItems));
+        map.put("contains", new GetterSetter<>(Schema::getContains, Schema::setContains));
+        map.put("patternProperties", new GetterSetter<>(Schema::getPatternProperties, Schema::setPatternProperties));
+        map.put("propertyNames", new GetterSetter<>(Schema::getPropertyNames, Schema::setPropertyNames));
+        map.put("unevaluatedItems", new GetterSetter<>(Schema::getUnevaluatedItems, Schema::setUnevaluatedItems));
+        map.put("unevaluatedProperties", new GetterSetter<>(Schema::getUnevaluatedProperties, Schema::setUnevaluatedProperties));
+        map.put("const", new GetterSetter<>(Schema::getConstValue, Schema::setConstValue));
+        map.put("maxContains", new GetterSetter<>(Schema::getMaxContains, Schema::setMaxContains));
+        map.put("minContains", new GetterSetter<>(Schema::getMinContains, Schema::setMinContains));
+        map.put("dependentRequired", new GetterSetter<>(Schema::getDependentRequired, Schema::setDependentRequired));
+        map.put("contentEncoding", new GetterSetter<>(Schema::getContentEncoding, Schema::setContentEncoding));
+        map.put("contentMediaType", new GetterSetter<>(Schema::getContentMediaType, Schema::setContentMediaType));
+        map.put("contentSchema", new GetterSetter<>(Schema::getContentSchema, Schema::setContentSchema));
+        map.put("examples", new GetterSetter<>(Schema::getExamples, Schema::setExamples));
+        METHODS = readOnlyView(map);
+    }
 
     private Object defaultValue;
 
@@ -114,7 +178,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Object constValue;
     private Integer maxContains;
     private Integer minContains;
+    @JsonProperty(value = "$schema")
     private String schemaDialect;
+    @JsonProperty(value = "$comment")
     private String comment;
     private Map<String, List<String>> dependentRequired = createMap();
     private String contentEncoding;
@@ -1108,6 +1174,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     
     @Override
     public Object get(String key) {
+        if (METHODS.containsKey(key)) {
+            return METHODS.get(key).getter.apply(this);
+        }
+        
         if (values == null) {
             values = createMap();
         }
@@ -1117,6 +1187,11 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @Override
     public Schema set(String key, Object value) {
         if (key != null) {
+            if (METHODS.containsKey(key)) {
+                METHODS.get(key).set(this, value);
+                return this;
+            }
+            
             if (values == null) {
                 values = createMap();
             }
@@ -1339,5 +1414,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         setImplementation(schema, implementationClass, true, context);
         return schema;
     }
-
+    
+    private record GetterSetter<T> (Function<Schema, T> getter, BiConsumer<Schema, T> setter) {
+        private static final GetterSetter<Object> DEFAULT = new GetterSetter<>(schema -> null, (schema, value) -> {});
+        
+        private void set (Schema schema, Object value) {
+            setter.accept(schema, (T)value);
+        }
+    }
 }
