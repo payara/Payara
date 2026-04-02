@@ -40,6 +40,8 @@
 package fish.payara.opentracing;
 
 import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
+import fish.payara.telemetry.service.PayaraTelemetryConstants;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
@@ -83,7 +85,13 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.*;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.ATTRIBUTE_SERVICE_NAME;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_LOGS_EXPORTER;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_METRICS_EXPORTER;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_RESOURCE_ATTRIBUTES;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_SERVICE_NAME;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_TRACES_EXPORTER;
+import static fish.payara.telemetry.service.PayaraTelemetryConstants.otelProperties;
 
 /**
  * Manages per-application OpenTelemetry SDK instances as well as export to
@@ -92,7 +100,7 @@ import static fish.payara.telemetry.service.PayaraTelemetryConstants.*;
 @Service(name = "opentelemetry-service")
 public class OpenTelemetryService implements EventListener {
 
-    public static final String INSTRUMENTATION_SCOPE_NAME = "payara";
+    public static final String INSTRUMENTATION_SCOPE_NAME = "fish.payara.telemetry";
 
     // The tracer instances
     private static final Map<String, OpenTelemetryAppInfo> appTelemetries = new ConcurrentHashMap<>();
@@ -116,6 +124,11 @@ public class OpenTelemetryService implements EventListener {
     public Tracer getCurrentTracer() {
         String appName = initializeCurrentApplication();
         return getTracer(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
+    }
+    
+    public Meter getCurrentMeter() {
+        String appName = initializeCurrentApplication();
+        return getMeter(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
     }
 
     public void initializeCurrentApplication(Map<String, String> otelProps) {
@@ -169,6 +182,14 @@ public class OpenTelemetryService implements EventListener {
         if (appInfo != null) {
             appInfo.shutdown();
         }
+    }
+
+    public DoubleHistogram createMetricsHistogram(OpenTelemetry instance) {
+        return instance.getMeterProvider().get(INSTRUMENTATION_SCOPE_NAME)
+                .histogramBuilder(PayaraTelemetryConstants.HTTP_SERVER_REQUEST_DURATION_NAME)
+                .setUnit(PayaraTelemetryConstants.OTEL_SECONDS_UNIT)
+                .setDescription(PayaraTelemetryConstants.HTTP_SERVER_REQUEST_DURATION_DESC)
+                .setExplicitBucketBoundariesAdvice(PayaraTelemetryConstants.BUCKET_BOUNDARIES_LIST).build();
     }
 
     private String initializeCurrentApplication() {
