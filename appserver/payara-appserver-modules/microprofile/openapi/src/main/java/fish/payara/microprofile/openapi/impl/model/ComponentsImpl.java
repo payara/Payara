@@ -354,7 +354,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
 
     @Override
     public Map<String, PathItem> getPathItems() {
-        return pathItems;
+        return readOnlyView(pathItems);
     }
 
     @Override
@@ -475,6 +475,17 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
                     SecurityScheme newSecurity = new SecuritySchemeImpl();
                     SecuritySchemeImpl.merge(from.getSecuritySchemes().get(securitySchemeName), newSecurity, override);
                     to.addSecurityScheme(securitySchemeName, newSecurity);
+                }
+            }
+        }
+        
+        // Handle @PathItem
+        if (from.getPathItems() != null) {
+            for (String pathItemName : from.getPathItems().keySet()) {
+                if (pathItemName != null) {
+                    PathItem newItem = new PathItemImpl();
+                    PathItemImpl.merge(from.getPathItems().get(pathItemName), newItem, override);
+                    to.addPathItem(pathItemName, newItem);
                 }
             }
         }
