@@ -1009,7 +1009,7 @@ For the default file provider, the param used is: filename.
                             described above. The CLASSPATH environment variable will be added after 
                             the classpath-suffix, at the very end.
 -->
-<!ELEMENT java-config (profiler?, (jvm-options | property)*)>
+<!ELEMENT java-config ((jvm-options | property)*)>
 <!ATTLIST java-config java-home                  CDATA      #REQUIRED
                       debug-enabled              %boolean;  "false"
                       debug-options              CDATA      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"
@@ -1025,22 +1025,6 @@ For the default file provider, the param used is: filename.
 
 <!-- String value for options that will be passed to the JVM -->
 <!ELEMENT jvm-options (#PCDATA)>
-
-<!-- Profilers could be one of jprobe, optimizeit, hprof, wily and so on
-     jvm-options and property elements are used to record the settings
-     needed to get a particular profiler going. A server instance is tied
-     to a particular profiler, by the profiler element in java-config.  
-     Changing the profiler will require a server restart.
-
-     The adminstrative graphical interfaces, could list multiple supported 
-     profilers (incomplete at this point) and will populate server.xml 
-     appropriately. Admin CLI support for profilers, need not be supported. 
-  -->
-<!ELEMENT profiler ((jvm-options | property)*)>
-<!ATTLIST profiler name                CDATA     #REQUIRED
-                   classpath           CDATA     #IMPLIED
-                   native-library-path CDATA     #IMPLIED
-                   enabled             %boolean; "true">
 
 <!-- Syntax for supplying properties as name value pairs -->
 <!ELEMENT property (description?)>

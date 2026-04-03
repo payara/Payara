@@ -137,7 +137,6 @@ public class WebSniffer  extends GenericSniffer {
         result.add("WEB-INF/sun-web.xml");
         result.add("WEB-INF/glassfish-web.xml");
         result.add("WEB-INF/payara-web.xml");
-        result.add("WEB-INF/weblogic.xml");
         return result;
     }
     

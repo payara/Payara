@@ -66,7 +66,6 @@ import static org.junit.Assert.assertFalse;
  */
 @SuppressWarnings({"StaticNonFinalField"})
 public class MiniXmlParserTest {
-    private static File hasProfiler;
     private static File wrongOrder;
     private static File rightOrder;
     private static File noconfig;
@@ -93,7 +92,6 @@ public class MiniXmlParserTest {
 
         rightOrder = new File(MiniXmlParserTest.class.getClassLoader().getResource("rightorder.xml").getPath());
         noconfig = new File(MiniXmlParserTest.class.getClassLoader().getResource("noconfig.xml").getPath());
-        hasProfiler = new File(MiniXmlParserTest.class.getClassLoader().getResource("hasprofiler.xml").getPath());
         adminport = new File(MiniXmlParserTest.class.getClassLoader().getResource("adminport.xml").getPath());
         adminport2 = new File(MiniXmlParserTest.class.getClassLoader().getResource("adminport2.xml").getPath());
         noCloseRightOrder = new File(
@@ -111,7 +109,6 @@ public class MiniXmlParserTest {
         assertTrue(wrongOrder.exists());
         assertTrue(rightOrder.exists());
         assertTrue(noconfig.exists());
-        assertTrue(hasProfiler.exists());
         assertTrue(noDomainName.exists());
         assertTrue(clusters1.exists());
         assertTrue(clusters1.length() > 100);
@@ -264,44 +261,6 @@ public class MiniXmlParserTest {
             MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
             Map<String, String> sysProps = instance.getSystemProperties();
             assertEquals("valueFromServer", sysProps.get("test-prop"));
-        }
-        catch (MiniXmlParserException ex) {
-            Logger.getLogger(MiniXmlParserTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    /*
-     * Positive test case -- make sure profiler is parsed correctly
-     * here is the piece of xml it will be parsing:
-     *
-    <profiler classpath="/profiler/class/path" enabled="true" name="MyProfiler" native-library-path="/bin">
-    <jvm-options>-Dprofiler3=foo3</jvm-options>
-    <jvm-options>-Dprofiler2=foo2</jvm-options>
-    <jvm-options>-Dprofiler1=foof</jvm-options>
-    </profiler>
-     *
-     */
-    @Test
-    public void profilerParsing() {
-        
-        try {
-            MiniXmlParser instance = new MiniXmlParser(hasProfiler, "server");
-            Map<String, String> config = instance.getProfilerConfig();
-            List<String> jvm = instance.getProfilerJvmOptions();
-            Map<String, String> sysProps = instance.getProfilerSystemProperties();
-            assertEquals(3, jvm.size());
-            assertEquals("-Dprofiler3=foo3", jvm.get(0));
-            assertEquals("-Dprofiler2=foo2", jvm.get(1));
-            assertEquals("-Dprofiler1=foof", jvm.get(2));
-            assertNotNull(config);
-            assertEquals(4, config.size());
-            assertEquals("/profiler/class/path", config.get("classpath"));
-            assertEquals("MyProfiler", config.get("name"));
-            assertEquals("/bin", config.get("native-library-path"));
-            assertEquals(2, sysProps.size());
-            assertEquals("value1", sysProps.get("name1"));
-            assertEquals("value2", sysProps.get("name2"));
         }
         catch (MiniXmlParserException ex) {
             Logger.getLogger(MiniXmlParserTest.class.getName()).log(Level.SEVERE, null, ex);

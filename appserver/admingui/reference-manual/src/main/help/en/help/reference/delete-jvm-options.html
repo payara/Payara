@@ -80,7 +80,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-jvm-options [--help]
-[--target target] [--profiler={true|false}]
+[--target target]
 (jvm-option-name[=jvm-option-value]) [:jvm-option-name[=jvm-option-name]]*</code></pre>
 </div>
 </div>
@@ -90,8 +90,7 @@
 <div class="paragraph">
 <p>The <code>delete-jvm-options</code> subcommand removes one or more command-line
 options for the Java application launcher. These options are removed
-from the Java configuration <code>java—config</code> element or the profiler
-<code>profiler</code> element of the <code>domain.xml</code> file. To see the Java application
+from the Java configuration <code>java—config</code> element. To see the Java application
 launcher options that can be deleted, use the
 <a href="list-jvm-options.html#list-jvm-options-1"><code>list-jvm-options</code>(1)</a>
 subcommand.</p>
@@ -180,12 +179,6 @@ Valid values are as follows:<br></p>
 </dl>
 </div>
 </dd>
-<dt class="hdlist1"><code>--profiler</code></dt>
-<dd>
-<p>Indicates whether the Java application launcher options are for the
-profiler. The option must have been set for a profiler for this option
-to be true.</p>
-</dd>
 </dl>
 </div>
 <div id="sthref828" class="paragraph">
@@ -252,20 +245,6 @@ Command delete-jvm-options executed successfully</code></pre>
 </div>
 <div class="paragraph">
 <p><a id="GSRFM563"></a><a id="sthref831"></a></p>
-</div>
-<div class="paragraph">
-<p>Example 2   Deleting a Java Application Launcher Option From the
-Profiler</p>
-</div>
-<div class="paragraph">
-<p>This example removes a Java application launcher startup parameter for
-the profiler.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-jvm-options --profiler=true -XX:MaxPermSize=192m
-Command delete-jvm-options executed successfully.</code></pre>
-</div>
 </div>
 <div id="sthref832" class="paragraph">
 <p>Exit Status</p>

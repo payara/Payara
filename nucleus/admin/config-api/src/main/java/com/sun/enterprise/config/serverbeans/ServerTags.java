@@ -382,8 +382,6 @@ public class ServerTags  {
     public static final String JMS_AVAILABILITY = "jms-availability";
     //public static final String AVAILABILITY_ENABLED = "availability-enabled";
     public static final String MQ_STORE_POOL_NAME = "mq-store-pool-name";
-    /** Tags for Element profiler */
-    public static final String PROFILER = "profiler";
     //public static final String JVM_OPTIONS = "jvm-options";
     //public static final String NAME = "name";
     public static final String CLASSPATH = "classpath";

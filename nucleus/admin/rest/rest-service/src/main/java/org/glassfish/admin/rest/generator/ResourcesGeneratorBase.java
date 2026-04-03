@@ -466,7 +466,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     /*
      * delete-admin-object delete-audit-module delete-auth-realm delete-connector-connection-pool delete-connector-resource
      * delete-custom-resource delete-http-listener delete-iiop-listener delete-javamail-resource delete-jdbc-connection-pool
-     * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-profiler delete-resource-adapter-config
+     * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-resource-adapter-config
      * delete-resource-ref delete-system-property delete-virtual-server What is missing is: delete-jms-resource delete-jmsdest
      * delete-jndi-resource delete-message-security-provider delete-connector-security-map
      * delete-connector-work-security-map delete-node-config delete-node-ssh delete-file-user delete-password-alias
@@ -493,7 +493,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("JaccProvider", "delete-jacc-provider");
 //            put("JmsHost", "delete-jms-host");
             put("NetworkListener", "delete-network-listener");
-            put("Profiler", "delete-profiler");
             put("Protocol", "delete-protocol");
             put("ProtocolFilter", "delete-protocol-filter");
             put("ProtocolFinder", "delete-protocol-finder");
@@ -512,7 +511,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         {
             put("Application", "redeploy"); //TODO check : This row is not used
-            put("JavaConfig", "create-profiler"); // TODO check: This row is not used
             put("ListAdminObjectResource", "create-admin-object");
             put("ListApplication", "deploy");
             put("ListApplicationRef", "create-application-ref");

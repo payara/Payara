@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,8 @@ import jakarta.data.page.PageRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -80,7 +82,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         Optional<PageRequest.Cursor> cursor = this.pageRequest.cursor();
         String sql = cursor.isEmpty() ? queryData.getQueryString() : isForward ? queryData.getQueryNext() : queryData.getQueryPrevious();
 
-        TypedQuery<T> query = (TypedQuery<T>) em.createQuery(sql, queryData.getDeclaredEntityClass());
+        jakarta.persistence.Query query = createQueryForResultType(em, sql, queryData);
         if (!queryData.getJpqlParameters().isEmpty()) {
             Object[] params = queryData.getJpqlParameters().toArray();
             for (int i = 0; i < params.length; i++) {
@@ -102,7 +104,9 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         query.setFirstResult(this.processOffset());
         query.setMaxResults(pageRequest.size() + 1);
 
-        results = query.getResultList();
+        @SuppressWarnings("unchecked")
+        List<T> queryResults = query.getResultList();
+        results = queryResults;
         if (!isForward && !results.isEmpty()) {
             if (results.size() > pageRequest.size()) {
                 results = results.subList(0, pageRequest.size());
@@ -156,7 +160,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         if (hasNext()) {
             return PageRequest.afterCursor(PageRequest.Cursor
                             .forKey(getCursorValues(results.get(Math.min(pageRequest.size(), results.size()) - 1),
-                                    this.queryData.getOrders(), this.queryData)),
+                                    this.queryData.getOrders(), this.queryData.getQueryMetadata())),
                     pageRequest.page() + 1, pageRequest.size(), pageRequest.requestTotal());
         } else {
             throw new NoSuchElementException("Not an available page for cursor");
@@ -167,7 +171,7 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
     public PageRequest previousPageRequest() {
         if (hasPrevious()) {
             return PageRequest.beforeCursor(
-                    PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData)),
+                    PageRequest.Cursor.forKey(getCursorValues(results.get(0), this.queryData.getOrders(), this.queryData.getQueryMetadata())),
                     pageRequest.page() == 1 ? 1 : pageRequest.page() - 1,
                     pageRequest.size(),
                     pageRequest.requestTotal()
@@ -247,6 +251,26 @@ public class CursoredPageImpl<T> implements CursoredPage<T> {
         return "CursoredPage " +
                 "page=" + pageRequest.page() +
                 ", pageRequest=" + pageRequest +
-                ", from Entity=" + queryData.getDeclaredEntityClass().getName();
+                ", from Entity=" + queryData.getQueryMetadata().getDeclaredEntityClass().getName();
+    }
+
+    private static jakarta.persistence.Query createQueryForResultType(EntityManager em, String sql, QueryData queryData) {
+        Class<?> entityClass = queryData.getQueryMetadata().getDeclaredEntityClass();
+        Class<?> resultElementType = resolveResultElementType(queryData.getQueryMetadata().getMethod());
+        if (resultElementType != null && !resultElementType.equals(entityClass)) {
+            return em.createQuery(sql);
+        }
+        return em.createQuery(sql, entityClass);
+    }
+
+    static Class<?> resolveResultElementType(java.lang.reflect.Method method) {
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType paramType) {
+            Type[] typeArgs = paramType.getActualTypeArguments();
+            if (typeArgs.length > 0 && typeArgs[0] instanceof Class<?> cls) {
+                return cls;
+            }
+        }
+        return null;
     }
 }

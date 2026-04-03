@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.web;
 
@@ -1258,11 +1258,6 @@ public class LogFacade {
             cause = "An exception occurred during creating ObjectOutputStream",
             action = "Check the Exception for error")
     public static final String CREATE_CUSTOM_BOJECT_OUTPUT_STREAM_ERROR = PREFIX + "00223";
-
-    @LogMessageInfo(
-            message = "The default-locale attribute of locale-charset-info element is being ignored",
-            level = "WARNING")
-    public static final String DEFAULT_LOCALE_DEPRECATED = PREFIX + "00224";
 
 
     @LogMessageInfo(

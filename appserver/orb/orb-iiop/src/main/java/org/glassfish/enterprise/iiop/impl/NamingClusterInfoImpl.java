@@ -85,7 +85,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
     public static final String FAILED_TO_RESOLVE_GROUPINFOSERVICE = "AS-ORB-00001";
 
     @LogMessageInfo(
-    message = "No Endpoints selected in com.sun.appserv.iiop.endpoints property. Using {0}:{1} instead")
+    message = "Using {0}:{1}")
     public static final String NO_ENDPOINT_SELECTED = "AS-ORB-00002";
 
     private RoundRobinPolicy rrPolicy;
@@ -166,12 +166,6 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
         list.addAll( lbList ) ;
 
         if (list.isEmpty()) {
-            final String iepv = getEnvSysProperty( env, IIOP_ENDPOINTS_PROPERTY);
-            final List<String> epList = splitOnComma(iepv) ;
-            list.addAll( epList ) ;
-        }
-
-        if (list.isEmpty()) {
             final String urlValue = (String)env.get(
                     ORBLocator.JNDI_PROVIDER_URL_PROPERTY) ;
             list.addAll( rrPolicy.getEndpointForProviderURL( urlValue ) ) ;
@@ -185,7 +179,7 @@ public class NamingClusterInfoImpl implements NamingClusterInfo {
 
             if (host != null && port != null) {
                 list.addAll(rrPolicy.getAddressPortList(host, port) ) ;
-                logger.log(Level.WARNING, NO_ENDPOINT_SELECTED, new Object[]{host, port});
+                logger.log(Level.INFO, NO_ENDPOINT_SELECTED, new Object[]{host, port});
             }
         }
 

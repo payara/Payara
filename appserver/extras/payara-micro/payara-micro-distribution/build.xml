@@ -181,24 +181,6 @@
         <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/persistence-configuration"/>
         <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/security"/>
         <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/servers"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-application"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-application-client"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-connector"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-diagnostics"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-diagnostics-image"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-ejb-jar"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-interception"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-javaee"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-jms"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-pubsub"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-rdbms-jar"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-sca"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-sca-binding"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-web-app"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-webservices"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-wsee-clienthandlerchain"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-wsee-databinding"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/weblogic-wsee-standaloneclient"/>
         <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/schemas/webservice-policy-ref"/>
         <jar jarfile="${runtimedir}/dtds.jar" basedir="${runtimedir}/${install.dir.name}/glassfish/lib"
              includes="dtds/**/*"/>

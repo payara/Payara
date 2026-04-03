@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2024 Payara Foundation and/or affiliates
+// Portions Copyright 2024-2026 Payara Foundation and/or affiliates
 package com.sun.enterprise.universal.process;
 
 import java.io.*;
@@ -170,16 +170,6 @@ public final class ProcessUtils {
         if (err.length() > 0 || numDead <= 0)
             return Strings.get("ProcessUtils.killjvmerror", err, numDead);
         return null;
-    }
-
-    /**
-     * The deprecated isProcessingRunning method
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ProcessUtils#getProcessRunningState(int)}.
-     */
-    @Deprecated(forRemoval = true, since = "6.21.0")
-    public static Boolean isProcessRunning(int aPid) {
-        return false;
     }
 
     /**

@@ -176,7 +176,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String payaraNotificationLogCompressOnRotationDetail = "";
     String payaraNotificationLogFormatterDetail = "";
     
-    String payaraJsonUnderscorePrefix = "";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
@@ -215,12 +214,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY = "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.formatter";
      
     private static final String PAYARA_NOTIFICATION_NOT_USING_SEPARATE_LOG = "Payara Notification Service isn't using a separate Log File";
-    /**
-     * @deprecated for backwards compatibility pre-5.182
-     */
-    @Deprecated
-    private static final String PAYARA_JSONLOGFORMATTER_UNDERSCORE="fish.payara.deprecated.jsonlogformatter.underscoreprefix";
-    
+
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
 
@@ -1033,8 +1027,6 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         payaraNotificationLogmaxHistoryFilesDetail = props.get(PAYARA_NOTIFICATION_LOG_MAXHISTORY_FILES_PROPERTY);
         payaraNotificationLogCompressOnRotationDetail = props.get(PAYARA_NOTIFICATION_LOG_COMPRESS_ON_ROTATION_PROPERTY);
         payaraNotificationLogFormatterDetail = props.get(PAYARA_NOTIFICATION_LOG_FORMATTER_PROPERTY);
-
-        payaraJsonUnderscorePrefix = props.get(PAYARA_JSONLOGFORMATTER_UNDERSCORE);
     }
 
     private Collection<Handler> getHandlerServices(Map<String, String> props) {

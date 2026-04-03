@@ -164,7 +164,6 @@ public class AppClientSniffer extends GenericSniffer {
         result.add("META-INF/application-client.xml");
         result.add("META-INF/sun-application-client.xml");
         result.add("META-INF/glassfish-application-client.xml");
-        result.add("META-INF/weblogic-application-client.xml");
         return result;
     }
 

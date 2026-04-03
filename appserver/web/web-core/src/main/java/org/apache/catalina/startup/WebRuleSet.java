@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.startup;
 
@@ -152,12 +152,12 @@ public class WebRuleSet extends RuleSetBase {
      */
     @Override
     public void addRuleInstances(Digester digester) {
-        sessionConfig = new SetSessionConfig(digester);
-        jspConfig = new SetJspConfig(digester);
-        loginConfig = new SetLoginConfig(digester);
+        sessionConfig = new SetSessionConfig();
+        jspConfig = new SetJspConfig();
+        loginConfig = new SetLoginConfig();
         
         digester.addRule(prefix + "web-app",
-                         new SetPublicIdRule(digester, "setPublicId"));
+                         new SetPublicIdRule("setPublicId"));
 
         digester.addCallMethod(prefix + "web-app/context-param",
                                "addParameter", 2);
@@ -168,7 +168,7 @@ public class WebRuleSet extends RuleSetBase {
                                "setDisplayName", 0);
 
         digester.addRule(prefix + "web-app/distributable",
-                         new SetDistributableRule(digester));
+                         new SetDistributableRule());
 
         digester.addObjectCreate(prefix + "web-app/ejb-local-ref",
                                  "org.apache.catalina.deploy.ContextLocalEjb");
@@ -376,7 +376,7 @@ public class WebRuleSet extends RuleSetBase {
                             "org.apache.catalina.deploy.SecurityConstraint");
 
         digester.addRule(prefix + "web-app/security-constraint/auth-constraint",
-                         new SetAuthConstraintRule(digester));
+                         new SetAuthConstraintRule());
         digester.addCallMethod(prefix + "web-app/security-constraint/auth-constraint/role-name",
                                "addAuthRole", 0);
         digester.addCallMethod(prefix + "web-app/security-constraint/display-name",
@@ -400,7 +400,7 @@ public class WebRuleSet extends RuleSetBase {
                                "addSecurityRole", 0);
 
         digester.addRule(prefix + "web-app/servlet",
-                         new WrapperCreateRule(digester));
+                         new WrapperCreateRule());
         digester.addSetNext(prefix + "web-app/servlet",
                             "addChild",
                             "org.apache.catalina.Container");
@@ -494,8 +494,8 @@ public class WebRuleSet extends RuleSetBase {
  */
 final class SetLoginConfig extends Rule {
     boolean isLoginConfigSet = false;
-    public SetLoginConfig(Digester digester) {
-        super(digester);
+    public SetLoginConfig() {
+        super();
     }
 
     @Override
@@ -516,8 +516,8 @@ final class SetLoginConfig extends Rule {
  */
 final class SetJspConfig extends Rule {
     boolean isJspConfigSet = false;
-    public SetJspConfig(Digester digester) {
-        super(digester);
+    public SetJspConfig() {
+        super();
     }
 
     @Override
@@ -538,8 +538,8 @@ final class SetJspConfig extends Rule {
  */
 final class SetSessionConfig extends Rule {
     boolean isSessionConfigSet = false;
-    public SetSessionConfig(Digester digester) {
-        super(digester);
+    public SetSessionConfig() {
+        super();
     }
 
     @Override
@@ -561,8 +561,8 @@ final class SetSessionConfig extends Rule {
 
 final class SetAuthConstraintRule extends Rule {
 
-    public SetAuthConstraintRule(Digester digester) {
-        super(digester);
+    public SetAuthConstraintRule() {
+        super();
     }
 
     @Override
@@ -584,8 +584,8 @@ final class SetAuthConstraintRule extends Rule {
 
 final class SetDistributableRule extends Rule {
 
-    public SetDistributableRule(Digester digester) {
-        super(digester);
+    public SetDistributableRule() {
+        super();
     }
 
     @Override
@@ -607,8 +607,8 @@ final class SetDistributableRule extends Rule {
 
 final class SetPublicIdRule extends Rule {
 
-    public SetPublicIdRule(Digester digester, String method) {
-        super(digester);
+    public SetPublicIdRule(String method) {
+        super();
         this.method = method;
     }
 
@@ -649,8 +649,8 @@ final class SetPublicIdRule extends Rule {
 
 final class WrapperCreateRule extends Rule {
 
-    public WrapperCreateRule(Digester digester) {
-        super(digester);
+    public WrapperCreateRule() {
+        super();
     }
 
     @Override

@@ -42,24 +42,20 @@ package com.sun.enterprise.configapi.tests;
 
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
-import com.sun.enterprise.config.serverbeans.Profiler;
 import com.sun.enterprise.config.serverbeans.AdminService;
 
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.jvnet.hk2.config.AttributeChanges;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.jvnet.hk2.config.AttributeChanges;
 
 /**
  * User: Jerome Dochez
@@ -121,16 +117,6 @@ public class DirectCreationTest extends ConfigPersistence {
         }
 
         support.createAndSet(serviceBean, DasConfig.class, (List) null);
-
-        List<AttributeChanges> profilerChanges = new ArrayList<AttributeChanges>();
-        String[] values = { "-Xmx512m", "-RFtrq", "-Xmw24" };
-        ConfigSupport.MultipleAttributeChanges multipleChanges = new ConfigSupport.MultipleAttributeChanges("jvm-options", values );
-        String[] values1 = { "profile" };
-        ConfigSupport.MultipleAttributeChanges multipleChanges1 = new ConfigSupport.MultipleAttributeChanges("name", values1 );
-        profilerChanges.add(multipleChanges);
-        profilerChanges.add(multipleChanges1);
-        support.createAndSet((ConfigBean) ConfigBean.unwrap(habitat.<JavaConfig>getService(JavaConfig.class))
-                , Profiler.class, profilerChanges);
     }
 
     @Test

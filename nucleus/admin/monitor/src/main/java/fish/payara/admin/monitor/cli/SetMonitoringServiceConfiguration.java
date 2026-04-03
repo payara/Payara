@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -96,14 +96,6 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
     @Param(name = "mbeansenabled", optional = true, alias = "mbeanEnabled")
     private Boolean mbeanEnabled;
 
-    /**
-     *
-     * @deprecated Since 5.194. Use set-amx-enabled command instead.
-     */
-    @Deprecated
-    @Param(name = "amxenabled", optional = true, alias = "amxEnabled")
-    private Boolean amxEnabled;
-
     @Param(name = "dtraceenabled", optional = true, alias = "dtraceEnabled")
     private Boolean dtraceEnabled;
 
@@ -146,17 +138,6 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
                     
                     if (dtraceEnabled != null) {
                          monitoringServiceProxy.setDtraceEnabled(String.valueOf(dtraceEnabled));
-                    }
-
-                    if (amxEnabled != null) {
-                        AMXConfiguration amxConfiguration = config.getExtensionByType(AMXConfiguration.class);
-                        ConfigSupport.apply(new SingleConfigCode<AMXConfiguration>() {
-                            @Override
-                            public Object run(final AMXConfiguration amxConfigurationProxy) throws PropertyVetoException, TransactionFailure {
-                                amxConfigurationProxy.setEnabled((String.valueOf(amxEnabled)));
-                                return amxConfigurationProxy;
-                            }
-                        }, amxConfiguration);
                     }
 
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

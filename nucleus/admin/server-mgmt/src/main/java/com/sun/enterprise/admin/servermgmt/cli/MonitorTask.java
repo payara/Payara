@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.admin.servermgmt.cli;
 
 import com.sun.enterprise.admin.cli.Environment;
@@ -46,7 +47,6 @@ import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
 import java.util.TimerTask;
 import java.util.Timer;
 import java.util.logging.Logger;
-import java.io.File;
 
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -67,7 +67,7 @@ public class MonitorTask extends TimerTask {
 
     public MonitorTask(final Timer timer, final String[] remoteArgs,
             ProgramOptions programOpts, Environment env,
-            final String type, final String filter, final File fileName)
+            final String type, final String filter)
             throws CommandException, CommandValidationException {
         this.timer = timer;
         if ((type != null) && (type.length() > 0))
