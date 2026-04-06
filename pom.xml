@@ -334,7 +334,7 @@
         <jaxws-api.version>4.0.3</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <stax2-api.version>4.2.2</stax2-api.version>
+        <stax2-api.version>4.3.0</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
         <epicyro.version>3.1.1</epicyro.version>
