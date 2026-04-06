@@ -20,6 +20,12 @@ updates:
       - dependency-name: "fish.payara.*"
         update-types: ["version-update:semver-major"]
 
+      - dependency-name: "*payara-px*"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+
       # Ignore major version updates for individual dependencies within the org.eclipse.persistence group
       - dependency-name: "org.eclipse.persistence:org.eclipse.persistence.core"
         update-types: ["version-update:semver-major"]
