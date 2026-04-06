@@ -49,6 +49,8 @@ import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import com.sun.enterprise.config.serverbeans.Server;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.admingui.common.util.TargetUtil;
@@ -600,5 +602,38 @@ public class ClusterHandler {
             out = "${ALIAS=" + in + "}";
         }
         handlerCtx.setOutputValue("out", out);
+    }
+
+    @Handler(id = "gf.getDeploymentGroupForConfig",
+            input = {
+                    @HandlerInput(name = "configName", type = String.class, required = true)
+            },
+            output = {
+                    @HandlerOutput(name = "deploymentGroup", type = String.class)
+            })
+    public static void getDeploymentGroupForConfig(HandlerContext handlerCtx) {
+        String configName = (String) handlerCtx.getInputValue("configName");
+        String deploymentGroupName = null;
+        Domain domain = GuiUtil.getHabitat().getService(Domain.class);
+
+        for (Server server : domain.getServers().getServer()) {
+            if (server.getConfigRef().equals(configName)) {
+                List<DeploymentGroup> deploymentGroupList = server.getDeploymentGroup();
+                if (deploymentGroupList != null && !deploymentGroupList.isEmpty()) {
+                    deploymentGroupName = deploymentGroupList.getFirst().getName();
+                }
+
+                // Work under the assumption (for now) that we only allow instances be assigned to a single deployment
+                // group, that the config used by instance isn't shared with any other instance that isn't also in the
+                // deployment group, and that all instances in the deployment group share the same config.
+                // This means we should always break after we've found an instance with a matching config name: it's
+                // either valid by our criteria meaning the deploymentGroupName variable has been set, or not
+                break;
+            }
+        }
+
+        if (deploymentGroupName != null) {
+            handlerCtx.setOutputValue("deploymentGroup", deploymentGroupName);
+        }
     }
 }

@@ -49,6 +49,7 @@
     <tocitem target="reference/backup-domain" text="backup-domain" expand="false"></tocitem>
     <tocitem target="reference/capture-schema" text="capture-schema" expand="false"></tocitem>
     <tocitem target="reference/change-admin-password" text="change-admin-password" expand="false"></tocitem>
+    <tocitem target="reference/change-master-broker" text="change-master-broker" expand="false"></tocitem>
     <tocitem target="reference/change-master-password" text="change-master-password" expand="false"></tocitem>
     <tocitem target="reference/collect-log-files" text="collect-log-files" expand="false"></tocitem>
     <tocitem target="reference/configuration" text="configuration" expand="false"></tocitem>

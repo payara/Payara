@@ -57,6 +57,7 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.enterprise.connectors.jms.JMSLoggerInfo;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.util.StringUtils;
@@ -248,6 +249,28 @@ public class MQAddressList {
         return systemProps.get(propertyName);
     }
 
+    public String getMasterBroker(String deploymentGroupName) {
+        String masterbrk = null;
+        try {
+            JmsHost mb = getMasterJmsHostInDeploymentGroup(deploymentGroupName);
+            JmsService js = getJmsServiceForMasterBroker(deploymentGroupName);
+            MQUrl url = createUrl(mb, js);
+            masterbrk = url.toString();
+            if (logger.isLoggable(Level.FINE))
+                logger.log(Level.FINE, "Master broker obtained is " + masterbrk);
+        } catch (Exception e) {
+            LogHelper.log(logger, Level.SEVERE, JMSLoggerInfo.GET_MASTER_FAILED, e);
+        }
+        return masterbrk;
+    }
+
+    private JmsService getJmsServiceForMasterBroker(String deploymentGroupName) {
+        Domain domain = Globals.get(Domain.class);
+        DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(deploymentGroupName);
+        final Config cfg = getConfigForServer(deploymentGroup.getInstances().getFirst());
+        return cfg.getExtensionByType(JmsService.class);
+    }
+
     private Config getConfigForServer(Server server) {
         String cfgRef = server.getConfigRef();
         return getConfigByName(cfgRef);
@@ -264,6 +287,33 @@ public class MQAddressList {
             }
         }
         return null;
+    }
+
+    private JmsHost getMasterJmsHostInDeploymentGroup(String deploymentGroupName) throws Exception {
+        Domain domain = Globals.get(Domain.class);
+        DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(deploymentGroupName);
+
+        // Work under the assumption (for now) that we only allow instances be assigned to a single deployment
+        // group, that the config used by instance isn't shared with any other instance that isn't also in the
+        // deployment group, and that all instances in the deployment group share the same config.
+        Server server = deploymentGroup.getInstances().getFirst();
+        Config config = domain.getConfigNamed(server.getConfigRef());
+
+        JmsService jmsService = config.getExtensionByType(JmsService.class);
+        Server masterBrokerInstance = null;
+
+        String masterBrokerInstanceName = jmsService.getMasterBroker();
+        if (masterBrokerInstanceName != null) {
+            masterBrokerInstance = domain.getServerNamed(masterBrokerInstanceName);
+        } else {
+            masterBrokerInstance = server;
+        }
+        final JmsHost copy = getResolvedJmsHost(masterBrokerInstance);
+        if (copy != null) {
+            return copy;
+        } else {
+            throw new RuntimeException("No JMS hosts available to select as Master");
+        }
     }
 
     public DeploymentGroup getDeploymentGroupByName(String deploymentGroup) {
