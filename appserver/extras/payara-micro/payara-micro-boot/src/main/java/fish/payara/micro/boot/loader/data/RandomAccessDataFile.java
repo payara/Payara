@@ -278,10 +278,22 @@ public class RandomAccessDataFile implements RandomAccessData {
 		public void close() throws IOException {
 			this.available.acquireUninterruptibly(this.size);
 			try {
+				IOException first = null;
 				RandomAccessFile pooledFile = this.files.poll();
 				while (pooledFile != null) {
-					pooledFile.close();
+					try {
+						pooledFile.close();
+					} catch (IOException e) {
+						if (first == null) {
+							first = e;
+						} else {
+							first.addSuppressed(e);
+						}
+					}
 					pooledFile = this.files.poll();
+				}
+				if (first != null) {
+					throw first;
 				}
 			}
 			finally {
