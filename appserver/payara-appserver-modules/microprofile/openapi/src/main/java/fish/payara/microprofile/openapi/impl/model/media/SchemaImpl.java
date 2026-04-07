@@ -193,7 +193,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Schema ifSchema;
     private Schema thenSchema;
     private Schema elseSchema;
-    private Map<String, Schema> dependent;
+    private Map<String, Schema> dependent = createMap();
     private Schema contains;
     private Schema not;
     private Schema propertyNames;
@@ -205,8 +205,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private List<Schema> allOf = createList();
     private List<Schema> oneOf = createList();
 
-    private Map<String, Schema> patternProperties;
-    private Object additionalProperties;
+    private Map<String, Schema> patternProperties = createMap();
+    private Schema additionalProperties;
     private Schema items;
     @JsonIgnore
     private String implementation;
@@ -938,23 +938,30 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Map<String, Schema> getDependentSchemas() {
-        return dependent;
+        return readOnlyView(dependent);
     }
 
     @Override
     public void setDependentSchemas(Map<String, Schema> schemas) {
-        dependent = schemas;
+        dependent = createMap(schemas);
     }
 
     @Override
     public Schema addDependentSchema(String key, Schema schema) {
-        dependent.put(key, schema);
+        if (schema != null) {
+            if (dependent == null) {
+                dependent = createMap();
+            }
+            dependent.put(key, schema);
+        }
         return this;
     }
 
     @Override
     public void removeDependentSchema(String key) {
-        dependent.remove(key);
+        if (dependent != null) {
+            dependent.remove(key);
+        }
     }
 
     @Override
@@ -997,7 +1004,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Map<String, Schema> getPatternProperties() {
-        return patternProperties;
+        return readOnlyView(patternProperties);
     }
 
     @Override
@@ -1007,13 +1014,20 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     @Override
     public Schema addPatternProperty(String key, Schema schema) {
-        patternProperties.put(key, schema);
+        if (schema != null) {
+            if (patternProperties == null) {
+                patternProperties = createMap();
+            }
+            patternProperties.put(key, schema);
+        }
         return this;
     }
 
     @Override
     public void removePatternProperty(String key) {
-        patternProperties.remove(key);
+        if (patternProperties != null) {
+            patternProperties.remove(key);
+        }
     }
 
     @Override
