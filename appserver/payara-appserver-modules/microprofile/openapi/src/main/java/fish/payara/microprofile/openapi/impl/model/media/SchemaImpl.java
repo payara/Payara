@@ -671,13 +671,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @JsonIgnore
     @Override
     public Schema getAdditionalPropertiesSchema() {
-        return additionalProperties instanceof Schema ? (Schema) additionalProperties : null;
+        return additionalProperties;
     }
 
     @JsonIgnore
     @Deprecated
     public Boolean getAdditionalPropertiesBoolean() {
-        return additionalProperties instanceof Boolean ? (Boolean) additionalProperties : null;
+        return additionalProperties != null ? additionalProperties.getBooleanSchema() : null;
     }
 
     @Override
@@ -688,7 +688,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     @Override
     @Deprecated
     public void setAdditionalPropertiesBoolean(Boolean additionalProperties) {
-        this.additionalProperties = additionalProperties;
+        if (additionalProperties == null) {
+            this.additionalProperties = null;
+        }
+        else {
+            this.additionalProperties = new SchemaImpl();
+            this.additionalProperties.setBooleanSchema(additionalProperties);
+        }
     }
 
     @Override
