@@ -86,12 +86,10 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void setRef(String ref) {
-        if (!ref.startsWith("#/")) {
-            this.ref = "#/components/pathItems/" + ref;
+        if (ref != null && !ref.contains(".") && !ref.contains("/")) {
+            ref = "#/components/pathItems/" + ref;
         }
-        else {
-            this.ref = ref;
-        }
+        this.ref = ref;
     }
 
     @Override
