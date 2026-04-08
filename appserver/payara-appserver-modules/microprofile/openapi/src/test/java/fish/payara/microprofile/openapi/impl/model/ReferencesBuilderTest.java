@@ -147,15 +147,14 @@ public class ReferencesBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void pathItemReferenceHasExpectedFields() {
-        assertReference("NameRef", "paths.pathItemRef");
+        assertReference("#/components/pathItems/NameRef", "paths.pathItemRef");
         assertReference(url, "paths.pathItemUrlRef");
     }
 
     private void assertReference(String expected, String actualPath) {
-        // TODO: Disabled until TCK is resolved
-        //JsonNode actual = path(getOpenAPIJson(), actualPath);
-        //assertNotNull(actual);
-        //assertEquals("References should only have one field", 1, actual.size());
-        //assertEquals(expected, actual.get("$ref").textValue());
+        JsonNode actual = path(getOpenAPIJson(), actualPath);
+        assertNotNull(actual);
+        assertEquals("References should only have one field", 1, actual.size());
+        assertEquals(expected, actual.get("$ref").textValue());
     }
 }
