@@ -206,7 +206,8 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private List<Schema> oneOf = createList();
 
     private Map<String, Schema> patternProperties = createMap();
-    private Schema additionalProperties;
+    @JsonIgnore
+    private Schema additionalPropertiesSchema;
     private Schema items;
     @JsonIgnore
     private String implementation;
@@ -667,33 +668,43 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             this.properties.remove(key);
         }
     }
+    
+    public Object getAdditionalProperties () {
+        if (additionalPropertiesSchema == null) {
+            return null;
+        }
+        if (additionalPropertiesSchema.getBooleanSchema() != null) {
+            return additionalPropertiesSchema.getBooleanSchema();
+        }
+        return additionalPropertiesSchema;
+    }
 
     @JsonIgnore
     @Override
     public Schema getAdditionalPropertiesSchema() {
-        return additionalProperties;
+        return additionalPropertiesSchema;
     }
 
     @JsonIgnore
     @Deprecated
     public Boolean getAdditionalPropertiesBoolean() {
-        return additionalProperties != null ? additionalProperties.getBooleanSchema() : null;
+        return additionalPropertiesSchema != null ? additionalPropertiesSchema.getBooleanSchema() : null;
     }
 
     @Override
     public void setAdditionalPropertiesSchema(Schema additionalProperties) {
-        this.additionalProperties = additionalProperties;
+        this.additionalPropertiesSchema = additionalProperties;
     }
 
     @Override
     @Deprecated
     public void setAdditionalPropertiesBoolean(Boolean additionalProperties) {
         if (additionalProperties == null) {
-            this.additionalProperties = null;
+            this.additionalPropertiesSchema = null;
         }
         else {
-            this.additionalProperties = new SchemaImpl();
-            this.additionalProperties.setBooleanSchema(additionalProperties);
+            this.additionalPropertiesSchema = new SchemaImpl();
+            this.additionalPropertiesSchema.setBooleanSchema(additionalProperties);
         }
     }
 
@@ -1154,6 +1165,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         content = schema;
     }
 
+    @JsonIgnore
     @Override
     public Boolean getBooleanSchema() {
         return booleanSchema;
