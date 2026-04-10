@@ -157,8 +157,9 @@
                 <!-- Rely on the distribution to make sure it builds after the distributions -->
                 <dependency>
                     <groupId>fish.payara.distributions</groupId>
-                    <artifactId>payara</artifactId>
+                    <artifactId>${payara.server.artifact}</artifactId>
                     <type>zip</type>
+                    <scope>test</scope>
                     <optional>true</optional>
                 </dependency>
 
