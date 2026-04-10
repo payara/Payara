@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -47,13 +47,6 @@
 		<a href="delete-virtual-server.html">
 			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
 			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
-
-		<td align="left">
-		<a href="deploydir.html">
-			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
 		</a>
 		</td>
 
@@ -310,10 +303,11 @@ top-level deployment descriptor packaged in the archive. For example,
 for an EAR, the <code>--runtimealtdd</code> option overrides
 <code>glassfish-application.xml</code>. For a standalone module, the
 <code>--runtimealtdd</code> option overrides the top-level module descriptor such
-as <code>glassfish-web.xml</code>. Applies to \{product---name} deployment
-descriptors only (<code>glassfish-*.xml</code>); the name of the alternate
-deployment descriptor file must begin with <code>glassfish-</code>. Does not
-apply to <code>sun-*.xml</code> deployment descriptors, which are deprecated.</p>
+as <code>payara-web.xml</code>. Applies to <code>payara-web.xml</code> and \{product---name}
+deployment descriptors only (<code>glassfish-*.xml</code>); the name of the alternate
+deployment descriptor file must be <code>payara-web.xml</code> or begin with
+<code>glassfish-</code>. Does not apply to <code>sun-*.xml</code> deployment
+descriptors, which are deprecated.</p>
 </dd>
 <dt class="hdlist1"><code>--deploymentorder</code></dt>
 <dd>
@@ -814,7 +808,6 @@ Command deploy executed successfully</code></pre>
 </div>
 <div class="paragraph">
 <p><a href="get.html#get-1"><code>get</code>(1)</a>,
-<a href="list-components.html#list-components-1"><code>list-components</code>(1)</a>,
 <a href="redeploy.html#redeploy-1"><code>redeploy</code>(1)</a>,
 <a href="set.html#set-1"><code>set</code>(1)</a>,
 <a href="undeploy.html#undeploy-1"><code>undeploy</code>(1)</a></p>
@@ -839,13 +832,6 @@ Guide</a></p>
 		<a href="delete-virtual-server.html">
 			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
 			<span style="position:relative;top:-2px;">Previous</span>
-		</a>
-		</td>
-
-		<td align="left">
-		<a href="deploydir.html">
-			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
-			<span style="position:relative;top:-2px;">Next</span>
 		</a>
 		</td>
 

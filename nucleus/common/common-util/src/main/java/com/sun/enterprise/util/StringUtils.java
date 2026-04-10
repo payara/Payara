@@ -36,9 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2017-2019] Payara Foundation and/or affiliates
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.util;
 
 /* WBN Valentine's Day, 2000 -- place for handy String utils.
@@ -311,36 +311,6 @@ public class StringUtils {
         }
 
         return s.substring(0, 1).toUpperCase(Locale.getDefault()) + s.substring(1);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     * Replaces the first instance of a token within a string
-     * @param s The string to operate on
-     * @param token the token to be replaced
-     * @param replace the new value
-     * @return
-     * @deprecated Now part of {@link String} since JDK 1.5
-     * @see String#replace(CharSequence, CharSequence)
-     * @see String#replaceFirst(String, String)
-     */
-    public static String replace(String s, String token, String replace) {
-        if (s == null || s.length() <= 0 || token == null || token.length() <= 0) {
-            return s;
-        }
-
-        int index = s.indexOf(token);
-
-        if (index < 0) {
-            return s;
-        }
-
-        int tokenLength = token.length();
-        String ret = s.substring(0, index);
-        ret += replace;
-        ret += s.substring(index + tokenLength);
-
-        return ret;
     }
 
     ////////////////////////////////////////////////////////////////////////////

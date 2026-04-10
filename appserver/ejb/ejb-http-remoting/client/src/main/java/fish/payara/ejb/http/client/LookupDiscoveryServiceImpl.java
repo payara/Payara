@@ -42,7 +42,6 @@ package fish.payara.ejb.http.client;
 
 import javax.naming.NamingException;
 import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Link;
 import jakarta.ws.rs.core.Response;
 
@@ -52,12 +51,10 @@ import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static jakarta.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
-import static jakarta.ws.rs.core.Response.Status.OK;
 
 /**
  * Default implementation for the {@link LookupDiscoveryService} that uses HEAD request at the root {@link URI} to
- * discover options and falls back to v0 at {@code /ejb} in case no options found.
+ * discover options.
  * 
  * @author Patrik Duditš
  * @author Jan Bernitt
@@ -65,7 +62,6 @@ import static jakarta.ws.rs.core.Response.Status.OK;
 class LookupDiscoveryServiceImpl implements LookupDiscoveryService {
 
     static final String INVOKER_V1_REL = "https://payara.fish/ejb-http-invoker/v1";
-    static final String INVOKER_V0_REL = "https://payara.fish/ejb-http-invoker/v0";
 
     @Override
     public LookupDiscoveryResponse discover(Client client, URI root) throws NamingException {
@@ -89,27 +85,12 @@ class LookupDiscoveryServiceImpl implements LookupDiscoveryService {
         }
         String reasonPhrase = optionResponse.getStatusInfo().getReasonPhrase();
         if (responseFamily == CLIENT_ERROR) {
-            if (optionResponse.getStatusInfo().toEnum() == NOT_FOUND) {
-                // 5.192 does not handle /, we may try the ejb endpoint
-                return discoverV0(client, root);
-            }
             throw new NamingException("Invoker is not available at <" + root + ">: " + reasonPhrase);
         }
         if (responseFamily == SERVER_ERROR) {
             throw new NamingException("Server is not available at <" + root + ">: " + reasonPhrase);
         }
         throw new NamingException("Unexpected status of invoker root resource <" + root + ">: " + reasonPhrase);
-    }
-
-    private static LookupDiscoveryResponse discoverV0(Client client, URI resolvedRoot) throws NamingException {
-        WebTarget invokerServletTarget = client.target(resolvedRoot).path("ejb/");
-        try (Response v0response = invokerServletTarget.request().head()) {
-            if (v0response.getStatusInfo().toEnum() == OK) {
-                return new LookupDiscoveryResponse(resolvedRoot, invokerServletTarget.path("lookup"));
-            }
-            throw new NamingException("Invoker V0 not found at <" + invokerServletTarget.getUri() + ">: "
-                    + v0response.getStatusInfo().getReasonPhrase());
-        }
     }
 
     private static Response followRedirect(Client client, URI root) throws NamingException {
@@ -121,14 +102,8 @@ class LookupDiscoveryServiceImpl implements LookupDiscoveryService {
         return redirectedResponse;
     }
 
-    private static LookupDiscoveryResponse discoverLinks(Client client, URI resolvedRoot, Response optionResponse) throws NamingException {
-        Link v0Link = optionResponse.getLink(INVOKER_V0_REL);
+    private static LookupDiscoveryResponse discoverLinks(Client client, URI resolvedRoot, Response optionResponse) {
         Link v1Link = optionResponse.getLink(INVOKER_V1_REL);
-        if (v0Link == null && v1Link == null) {
-            return discoverV0(client, resolvedRoot);
-        }
-        return new LookupDiscoveryResponse(resolvedRoot,
-                v0Link == null ? null : client.target(resolvedRoot.resolve(v0Link.getUri())),
-                v1Link == null ? null : client.target(resolvedRoot.resolve(v1Link.getUri())));
+        return new LookupDiscoveryResponse(resolvedRoot, v1Link == null ? null : client.target(resolvedRoot.resolve(v1Link.getUri())));
     }
 }

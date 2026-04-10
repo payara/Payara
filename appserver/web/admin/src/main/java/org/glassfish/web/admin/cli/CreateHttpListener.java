@@ -36,9 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates] 
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
@@ -97,8 +97,6 @@ public class CreateHttpListener implements AdminCommand {
     String listenerPort;
     @Param(name = "listenerPortRange", alias = "listenerportrange", optional = true)
     String listenerPortRange;
-    @Param(name = "defaultvs", optional = true)
-    String defaultVS;
     @Param(name = "default-virtual-server", optional = true)
     String defaultVirtualServer;
     @Param(name = "servername", optional = true)
@@ -109,8 +107,7 @@ public class CreateHttpListener implements AdminCommand {
     Boolean xFrameOptions;
     @Param(name = "acceptorthreads", optional = true)
     String acceptorThreads;
-    @Param(name = "redirectport", optional = true)
-    String redirectPort;
+
     @Param(name = "securityenabled", optional = true, defaultValue = "false")
     Boolean securityEnabled;
     @Param(optional = true, defaultValue = "true")
@@ -269,17 +266,10 @@ public class CreateHttpListener implements AdminCommand {
     }
 
     private boolean verifyDefaultVirtualServer(ActionReport report) {
-        if (defaultVS == null && defaultVirtualServer == null) {
+        if (defaultVirtualServer == null) {
             report.setMessage(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_BLANK));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return false;
-        }
-        if (defaultVS != null && defaultVirtualServer != null && !defaultVS.equals(defaultVirtualServer)) {
-            report.setMessage(rb.getString(LogFacade.CREATE_HTTP_LISTENER_VS_BOTH_PARAMS));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return false;
-        } else if (defaultVirtualServer == null && defaultVS != null) {
-            defaultVirtualServer = defaultVS;
         }
         //no need to check the other things (e.g. id) for uniqueness
         // ensure that the specified default virtual server exists

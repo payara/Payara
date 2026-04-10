@@ -86,7 +86,7 @@ public class DynamicRolesCDITest {
         return ShrinkWrap.create(WebArchive.class, "DynamicRolesCDITest.war")
                 .addPackage(DynamicRolesCDITest.class.getPackage())
                 .addPackage(AuthoritiesConstants.class.getPackage())
-                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/glassfish-web.xml"))
+                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/payara-web.xml"))
                 .addAsWebInfResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
     }
 

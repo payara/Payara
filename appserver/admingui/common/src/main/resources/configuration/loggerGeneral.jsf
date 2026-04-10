@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <!-- common/configuration/loggerGeneral.jsf -->
 
@@ -115,6 +115,10 @@
 
           <sun:property id="systemLogHostProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.SystemlogHost}" helpText="$resource{i18nc.log.SystemlogHostHelp}">
                 <sun:textField id="systemLogHost" columns="$int{70}" maxLength="#{sessionScope.fieldLengths['maxLength.log.SystemLogHost']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.SyslogHandler.host']}"/>
+            </sun:property>
+
+          <sun:property id="systemLogFacilityProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.SystemlogFacility}" helpText="$resource{i18nc.log.SystemlogFacilityHelp}">
+                <sun:textField id="systemLogFacility" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.log.SystemLogFacility']}" text="#{pageSession.logAttributes['com.sun.enterprise.server.logging.SyslogHandler.facility']}"/>
             </sun:property>
           
           <sun:property id="logtoFile"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.log.LogtoFile}" helpText="$resource{i18nc.log.LogtoFileHelp}">

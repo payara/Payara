@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -874,14 +874,6 @@ public final class MessageBeanContainer extends BaseContainer implements Message
     @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
-    }
-
-    /**
-     * @deprecated not called and not used in Payara 5
-     */
-    // default
-    @Deprecated
-    public void activateEJB(Object ctx, Object instanceKey) {
     }
 
     /**

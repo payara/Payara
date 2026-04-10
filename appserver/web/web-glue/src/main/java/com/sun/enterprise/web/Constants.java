@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.web;
 
 /**
@@ -103,7 +103,6 @@ public final class Constants {
     public static final String REQUEST_START_TIME_NOTE =
         "com.sun.enterprise.web.request.startTime";
 
-    public static final String ACCESS_LOG_PROPERTY = "accesslog";
 
     public static final String ACCESS_LOG_BUFFER_SIZE_PROPERTY =
         "accessLogBufferSize";
@@ -113,9 +112,6 @@ public final class Constants {
     
     public static final String ACCESS_LOG_PREFIX = "accessLogPrefix";
 
-    public static final String ACCESS_LOGGING_ENABLED = "accessLoggingEnabled";
-
-    public static final String SSO_ENABLED = "sso-enabled";
 
     public static final String ERROR_REPORT_VALVE = "errorReportValve";
 

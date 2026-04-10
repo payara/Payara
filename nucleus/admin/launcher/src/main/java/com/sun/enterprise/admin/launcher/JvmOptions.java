@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.launcher;
 
@@ -221,21 +221,6 @@ class JvmOptions {
     private void addModuleProp(String property) {
         moduleProps.add(property);
     }
-
-    @Deprecated
-    void addJvmLogging() {
-        xxProps.put(":+UnlockDiagnosticVMOptions", null);
-        xxProps.put(":+LogVMOutput", null);
-        xxProps.put(":LogFile", "${com.sun.aas.instanceRoot}/logs/jvm.log");
-    }
-
-    @Deprecated
-    void removeJvmLogging() {
-        xxProps.remove(":+UnlockDiagnosticVMOptions");
-        xxProps.remove(":+LogVMOutput");
-        xxProps.remove(":LogFile");
-    }
-
 
     private List<String> postProcessOrdering(List<String> unsorted) {
         /*

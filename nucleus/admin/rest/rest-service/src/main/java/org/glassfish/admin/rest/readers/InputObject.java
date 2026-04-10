@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2024] Payara Foundation and/or affiliates
+// Portions Copyright 2024-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -305,27 +305,6 @@ public abstract class InputObject extends ProviderUtil {
         }
         return this;
     }
-
-
-    /**
-     * Adds all entries in a map to the current one
-     * @param key ignored
-     * @param value map to add
-     * @return this
-     * @deprecated replaced by {@link #putMap(java.util.Map)}
-     */
-    @Deprecated
-    public InputObject putMap(String key, Map value) {
-        // This method is called in case of xml input
-        //We can safely ignore key input value - we know the object we are modifying
-        //from the input url.
-        //We do not need to check for duplicate enteries - put/post of a resource
-        //modifies only the resource and not any of its child resources.
-        //Duplicate entries are possible when we have same attribute on a resource
-        //and its child/children
-        this.map.putAll(value); 
-        return this;
-    }
     
     /**
      * Adds a map to the current object
@@ -334,7 +313,7 @@ public abstract class InputObject extends ProviderUtil {
      * @see java.util.Map#putAll(java.util.Map)
      */
     public InputObject putMap(Map value) {
-        this.map.putAll(map);
+        this.map.putAll(value);
         return this;
     }
 

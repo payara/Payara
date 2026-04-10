@@ -69,7 +69,6 @@ import java.util.logging.Level;
 
 public class InstanceHandler {
     private static final String SELECTED = "selected";
-    private static final String PROFILER = "profiler";
     static final String TARGET = "target";
     static final String MAX_VERSION = "maxVersion";
     static final String MIN_VERSION = "minVersion";
@@ -125,7 +124,6 @@ public class InstanceHandler {
             @HandlerInput(name="endpoint",   type=String.class, required=true),
             @HandlerInput(name=TARGET,   type=String.class, required=true),
             @HandlerInput(name="attrs", type=Map.class, required=false),
-            @HandlerInput(name=PROFILER, type=String.class, required=true),
             @HandlerInput(name="options",   type=List.class),
             @HandlerInput(name="deleteProfileEndpoint",   type=String.class),
             @HandlerInput(name="origList",   type=List.class)
@@ -152,7 +150,6 @@ public class InstanceHandler {
                 return;
             }
             Map<String, Object> payload = new HashMap<>();
-            payload.put(PROFILER, (String)handlerCtx.getInputValue(PROFILER));
             prepareJvmOptionPayload(payload, target, newList);
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false, true);
         } catch (Exception ex) {
@@ -169,9 +166,6 @@ public class InstanceHandler {
             //result, all previous existing option is gone.
             List<Map<String, Object>> origList = (List<Map<String, Object>>) handlerCtx.getInputValue("origList");
             Map<String, Object> payload1 = new HashMap<>();
-            if (endpoint.contains(PROFILER)) {
-                payload1.put(PROFILER, "true");
-            }
             if ( (origList != null) && origList.size()>0){
                 prepareJvmOptionPayload(payload1, target, origList);
                 RestUtil.restRequest(endpoint, payload1, "POST", handlerCtx, false, false);

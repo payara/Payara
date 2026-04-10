@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
  */
 
 
@@ -218,17 +218,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     void setFileCache(FileCache value);
 
     /**
-     * The response type to be forced if the content served cannot be matched by any of the MIME mappings for
-     * extensions. Specified as a semi-colon delimited string consisting of content-type, encoding, language, charset
-     */
-    @Deprecated
-    @Attribute()
-    String getForcedResponseType();
-
-    @Deprecated
-    void setForcedResponseType(String forcedResponseType);
-
-    /**
      * The size of the buffer used by the request processing threads for reading the request data
      */
     @Attribute(defaultValue = "" + HEADER_BUFFER_LENGTH, dataType = Integer.class)
@@ -268,12 +257,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getNoCompressionUserAgents();
 
     void setNoCompressionUserAgents(String agents);
-
-    @Attribute(defaultValue = "" + RCM_SUPPORT_ENABLED, dataType = Boolean.class)
-    @Deprecated
-    String getRcmSupportEnabled();
-
-    void setRcmSupportEnabled(String enable);
 
     /**
      * if the connector is supporting non-SSL requests and a request is received for which a matching

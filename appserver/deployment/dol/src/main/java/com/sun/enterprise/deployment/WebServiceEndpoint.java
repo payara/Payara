@@ -195,9 +195,6 @@ public class WebServiceEndpoint extends Descriptor implements HandlerChainContai
     // reliability-config
     private ReliabilityConfig reliabilityConfig;
 
-    // specified in WLS DD, currently has use only in RMFeature
-    private String httpResponseBufferSize;
-
     // should debugging be allowed on this endpoint
     private String debuggingEnabled = "true";
 
@@ -448,14 +445,6 @@ public class WebServiceEndpoint extends Descriptor implements HandlerChainContai
 
     public void setReliabilityConfig(ReliabilityConfig reliabilityConfig) {
         this.reliabilityConfig = reliabilityConfig;
-    }
-
-    public String getHttpResponseBufferSize() {
-        return httpResponseBufferSize;
-    }
-
-    public void setHttpResponseBufferSize(String httpResponseBufferSize) {
-        this.httpResponseBufferSize = httpResponseBufferSize;
     }
 
     /**

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -382,8 +382,6 @@ public class ServerTags  {
     public static final String JMS_AVAILABILITY = "jms-availability";
     //public static final String AVAILABILITY_ENABLED = "availability-enabled";
     public static final String MQ_STORE_POOL_NAME = "mq-store-pool-name";
-    /** Tags for Element profiler */
-    public static final String PROFILER = "profiler";
     //public static final String JVM_OPTIONS = "jvm-options";
     //public static final String NAME = "name";
     public static final String CLASSPATH = "classpath";
@@ -683,26 +681,6 @@ public class ServerTags  {
     public static final String MANAGED_THREAD_FACTORY = "managed-thread-factory";
     public static final String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
     public static final String MANAGED_SCHEDULED_EXECUTOR_SERVICE = "managed-scheduled-executor-service";
-    /** Tags for Element security-map */
-    public static final String SECURITY_MAP = "security-map";
-    public static final String PRINCIPAL = "principal";
-    public static final String USER_GROUP = "user-group";
-    //public static final String NAME = "name"; */
-    /** Tags for Element backend-principal
-    public static final String BACKEND_PRINCIPAL = "backend-principal";
-    public static final String USER_NAME = "user-name";
-    public static final String PASSWORD = "password";
-    /** Tags for Element lifecycle-module */
-    public static final String LIFECYCLE_MODULE = "lifecycle-module";
-    //public static final String DESCRIPTION = "description";
-    //public static final String NAME = "name";
-    //public static final String CLASS_NAME = "class-name";
-    //public static final String CLASSPATH = "classpath";
-    public static final String LOAD_ORDER = "load-order";
-    public static final String IS_FAILURE_FATAL = "is-failure-fatal";
-    //public static final String OBJECT_TYPE = "object-type";
-    //public static final String ENABLED = "enabled";
-    public static final String IS_LIFECYCLE = "isLifecycle";
     public static final String LOAD_SYSTEM_APP_ON_STARTUP = 
         "load-system-app-on-startup";
     /** Tags for Element j2ee-application */

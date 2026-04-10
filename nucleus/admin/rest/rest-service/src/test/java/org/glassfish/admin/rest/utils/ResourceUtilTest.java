@@ -80,11 +80,8 @@ public class ResourceUtilTest {
         Map<String, String> processed = processJvmOptions(data, removeVersioning);
         assertEquals("before=bvalue:" + expected + ":after=avalue", processed.get("id"));
         assertEquals("thetarget", processed.get("target"));
-        // and with profiler set
-        data.put("profiler", "theprofiler");
         processed = processJvmOptions(data, removeVersioning);
         assertEquals("before=bvalue:" + expected + ":after=avalue", processed.get("id"));
-        assertEquals("theprofiler", processed.get("profiler"));
         // and with an empty key in the map
         data.put("", "empty and therefore ignored");
         data.put(null, "null and therefore ignored");

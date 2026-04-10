@@ -37,20 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests;
 
 import com.sun.enterprise.config.serverbeans.Server;
 import org.junit.Test;
-import org.junit.Before;
 import org.jvnet.hk2.config.*;
 import org.glassfish.tests.utils.Utils;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.util.List;
 import java.util.logging.Level;
 
 /**
@@ -103,31 +101,4 @@ public class AttributeRemovalTest extends ConfigApiTest {
             throw e;
         }
     }
-
-    @Test
-    public void deprecatedWrite() throws TransactionFailure {
-        final Server server = getHabitat().getService(Server.class);
-        final String value = server.getNodeRef();
-        logger.fine("node-ref is " + server.getNodeRef());
-        ConfigSupport.apply(new SingleConfigCode<Server>() {
-            @Override
-            public Object run(Server s) throws PropertyVetoException, TransactionFailure {
-                s.setNodeAgentRef(value);
-                return null;
-            }
-        }, server);
-        logger.fine("node-agent-ref is " + server.getNodeAgentRef());
-        // restore
-        ConfigSupport.apply(new SingleConfigCode<Server>() {
-            @Override
-            public Object run(Server s) throws PropertyVetoException, TransactionFailure {
-                s.setNodeAgentRef(null);
-                return null;
-            }
-        }, server);
-        logger.fine("after, node-agent-ref is " + server.getNodeAgentRef());
-
-    }
-    
-
 }

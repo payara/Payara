@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.rest.readers;
 
@@ -206,7 +207,7 @@ public class XmlInputObject extends InputObject {
                     if (!reader.nextToken().equals(GT)) {
                         throw reader.error("Misshaped tag");
                     }
-                    context.putMap(n, subContext.getMap());
+                    context.putMap(subContext.getMap());
                     return false;
 
                 // Content, between <...> and </...>
@@ -233,7 +234,7 @@ public class XmlInputObject extends InputObject {
                                        subContext.get("content") != null) {
                                     context.put(n, subContext.get("content"));
                                 } else {
-                                    context.putMap(n, subContext.getMap());
+                                    context.putMap(subContext.getMap());
                                 }
                                 return false;
                             }

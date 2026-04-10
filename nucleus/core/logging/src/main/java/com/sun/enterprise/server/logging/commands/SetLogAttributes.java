@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.server.logging.commands;
 
 import com.sun.common.util.logging.LoggingConfigFactory;
@@ -128,6 +128,7 @@ public class SetLogAttributes implements AdminCommand {
         "com.sun.enterprise.server.logging.GFFileHandler.logtoConsole",
         "com.sun.enterprise.server.logging.GFFileHandler.rotationLimitInBytes",
         "com.sun.enterprise.server.logging.SyslogHandler.host",
+        "com.sun.enterprise.server.logging.SyslogHandler.facility",
         "com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging",
         "com.sun.enterprise.server.logging.GFFileHandler.alarms",
         "java.util.logging.FileHandler.count",
@@ -159,8 +160,7 @@ public class SetLogAttributes implements AdminCommand {
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationOnDateChange",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.rotationLimitInBytes",
         "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.maxHistoryFiles",
-        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation",
-        "fish.payara.deprecated.jsonlogformatter.underscoreprefix"};
+        "fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation"};
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(SetLogLevel.class);
 

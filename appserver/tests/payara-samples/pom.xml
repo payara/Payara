@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- *    Copyright (c) [2019-2024] Payara Foundation and/or its affiliates. All rights reserved.
- *
- *    The contents of this file are subject to the terms of either the GNU
- *    General Public License Version 2 only ("GPL") or the Common Development
- *    and Distribution License("CDDL") (collectively, the "License").  You
- *    may not use this file except in compliance with the License.  You can
- *    obtain a copy of the License at
- *    https://github.com/payara/Payara/blob/main/LICENSE.txt
- *    See the License for the specific
- *    language governing permissions and limitations under the License.
- *
- *    When distributing the software, include this License Header Notice in each
- *    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
- *
- *    GPL Classpath Exception:
- *    The Payara Foundation designates this particular file as subject to the "Classpath"
- *    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
- *    file that accompanied this code.
- *
- *    Modifications:
- *    If applicable, add the following below the License Header, with the fields
- *    enclosed by brackets [] replaced by your own identifying information:
- *    "Portions Copyright [year] [name of copyright owner]"
- *
- *    Contributor(s):
- *    If you wish your version of this file to be governed by only the CDDL or
- *    only the GPL Version 2, indicate your decision by adding "[Contributor]
- *    elects to include this software in this distribution under the [CDDL or GPL
- *    Version 2] license."  If you don't indicate a single choice of license, a
- *    recipient has the option to distribute your version of this file under
- *    either the CDDL, the GPL Version 2 or to extend the choice of license to
- *    its licensees as provided above.  However, if you add GPL Version 2 code
- *    and therefore, elected the GPL Version 2 license, then the option applies
- *    only if the new code is made subject to such option by the copyright
- *    holder.
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+     Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
+
+     The contents of this file are subject to the terms of either the GNU
+     General Public License Version 2 only ("GPL") or the Common Development
+     and Distribution License("CDDL") (collectively, the "License").  You
+     may not use this file except in compliance with the License.  You can
+     obtain a copy of the License at
+     https://github.com/payara/Payara/blob/main/LICENSE.txt
+     See the License for the specific
+     language governing permissions and limitations under the License.
+
+     When distributing the software, include this License Header Notice in each
+     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+
+     GPL Classpath Exception:
+     The Payara Foundation designates this particular file as subject to the "Classpath"
+     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+     file that accompanied this code.
+
+     Modifications:
+     If applicable, add the following below the License Header, with the fields
+     enclosed by brackets [] replaced by your own identifying information:
+     "Portions Copyright [year] [name of copyright owner]"
+
+     Contributor(s):
+     If you wish your version of this file to be governed by only the CDDL or
+     only the GPL Version 2, indicate your decision by adding "[Contributor]
+     elects to include this software in this distribution under the [CDDL or GPL
+     Version 2] license."  If you don't indicate a single choice of license, a
+     recipient has the option to distribute your version of this file under
+     either the CDDL, the GPL Version 2 or to extend the choice of license to
+     its licensees as provided above.  However, if you add GPL Version 2 code
+     and therefore, elected the GPL Version 2 license, then the option applies
+     only if the new code is made subject to such option by the copyright
+     holder.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.5-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -56,14 +56,10 @@
     <name>Payara Samples - root</name>
 
     <properties>
-        <java.min.version>1.8</java.min.version>
         <maven.min.version>3.5</maven.min.version>
 
         <skipTests>false</skipTests>
         <skipConfig>${skipTests}</skipConfig> <!-- Whether to skip applying server config during pre-integration-test phase -->
-        <skipServerStart>${skipTests}</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
-        <skipServerRestart>${skipTests}</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
-        <serverRestartCommand>stop-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
         <skipTestConfigCleanup>${skipConfig}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
 
         <payara.version>${project.version}</payara.version>
@@ -78,19 +74,18 @@
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
 
-        <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
         <payara.home>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara7</payara.home>
-        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin</payara.asadmin>
         <payara.domain.name>domain1</payara.domain.name>
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
-        <smallrye-config.version>3.10.2</smallrye-config.version>
-        <smallrye-common.version>2.14.0</smallrye-common.version>
+        <smallrye-config.version>3.16.0</smallrye-config.version>
+        <smallrye-common.version>2.17.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
-        <arquillian.version>1.10.0.Final</arquillian.version>
+        <arquillian.version>1.10.1.Final</arquillian.version>
     </properties>
 
     <modules>
@@ -151,6 +146,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <payara.server.managed/>
                 <payara.directory.name>payara7</payara.directory.name>
                 <payara.containerType>SERVER</payara.containerType>
                 <skipKillZombies>true</skipKillZombies> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
@@ -161,8 +157,9 @@
                 <!-- Rely on the distribution to make sure it builds after the distributions -->
                 <dependency>
                     <groupId>fish.payara.distributions</groupId>
-                    <artifactId>payara</artifactId>
+                    <artifactId>${payara.server.artifact}</artifactId>
                     <type>zip</type>
+                    <scope>test</scope>
                     <optional>true</optional>
                 </dependency>
 
@@ -291,7 +288,7 @@
                 </os>
             </activation>
             <properties>
-                <script.extension>.bat</script.extension>
+                <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin.bat</payara.asadmin>
             </properties>
         </profile>
         <profile>
@@ -301,6 +298,7 @@
             The Payara version that's used can be set via the payara.version property.
             -->
             <properties>
+                <payara.micro.managed/>
                 <payara.containerType>MICRO</payara.containerType>
             </properties>
 
@@ -350,9 +348,7 @@
         <profile>
             <id>payara-server-remote</id>
             <properties>
-                <skipServerStart>true</skipServerStart> <!-- Whether to skip starting the server before applying config during pre-integration-test phase -->
-                <skipServerRestart>false</skipServerRestart> <!-- Whether to skip restarting the server after applying config during pre-integration-test phase -->
-                <serverRestartCommand>restart-domain</serverRestartCommand> <!-- The command to used to restart the domain during pre-integration-test phase -->
+                <payara.server.remote/>
                 <payara.containerType>SERVER</payara.containerType>
             </properties>
             <!--
@@ -375,6 +371,7 @@
             Connects to already-running micro and runs the tests
             -->
             <properties>
+                <payara.micro.remote/>
                 <payara.containerType>MICRO</payara.containerType>
             </properties>
             <dependencies>
@@ -511,13 +508,13 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.27.6</version>
+                <version>3.27.7</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.omnifaces</groupId>
                 <artifactId>omniutils</artifactId>
-                <version>0.16</version>
+                <version>0.17</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -603,8 +600,6 @@
                         <payara.debug>${payara.debug}</payara.debug>
                         <payara.version>${payara.version}</payara.version>
                         <skipConfig>${skipConfig}</skipConfig>
-                        <skipServerStart>${skipServerStart}</skipServerStart>
-                        <skipServerRestart>${skipServerRestart}</skipServerRestart>
                         <skipTestConfigCleanup>${skipTestConfigCleanup}</skipTestConfigCleanup>
                     </systemPropertyVariables>
                 </configuration>
@@ -624,15 +619,13 @@
                         <payara.debug>${payara.debug}</payara.debug>
                         <payara.version>${payara.version}</payara.version>
                         <skipConfig>${skipConfig}</skipConfig>
-                        <skipServerStart>${skipServerStart}</skipServerStart>
-                        <skipServerRestart>${skipServerRestart}</skipServerRestart>
                         <skipTestConfigCleanup>${skipTestConfigCleanup}</skipTestConfigCleanup>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.5.1</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
@@ -641,14 +634,6 @@
 
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>${java.min.version}</source>
-                        <target>${java.min.version}</target>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven.failsafe.plugin.version}</version>

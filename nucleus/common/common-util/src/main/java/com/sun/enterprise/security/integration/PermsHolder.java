@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.integration;
 
 import java.security.CodeSource;
@@ -79,10 +79,6 @@ public class PermsHolder {
 
     public void setDeclaredPermissions(PermissionCollection declaredPc) {
         declaredPermissionCollection = declaredPc;
-    }
-
-    @Deprecated
-    public void setRestrictPermissions(PermissionCollection restrictPC) {
     }
 
     public PermissionCollection getCachedPerms(CodeSource codesource) {

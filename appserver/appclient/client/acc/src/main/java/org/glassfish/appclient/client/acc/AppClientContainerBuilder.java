@@ -79,8 +79,6 @@ import org.xml.sax.SAXParseException;
  */
 public class AppClientContainerBuilder implements AppClientContainer.Builder {
 
-    private final static String ENDPOINTS_PROPERTY_NAME = "com.sun.appserv.iiop.endpoints";
-
     private static final LocalStringManager localStrings = new LocalStringManagerImpl(AppClientContainerBuilder.class);
     /** caller-specified target servers */
     private TargetServer[] targetServers;
@@ -236,11 +234,6 @@ public class AppClientContainerBuilder implements AppClientContainer.Builder {
                     targetServers[0].getAddress());
             defineIfNotDefined(GlassFishORBHelper.OMG_ORB_INIT_PORT_PROPERTY,
                     Integer.toString(targetServers[0].getPort()));
-        } else {
-            /*
-             * Currently, set a system property to specify multiple endpoints.
-             */
-            defineIfNotDefined(ENDPOINTS_PROPERTY_NAME, sb.toString());
         }
 
         if (isSSLRequired(targetServers, containerProperties)) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.jvnet.hk2.config;
 
@@ -62,44 +63,6 @@ public class IndentingXMLStreamWriter extends DelegatingXMLStreamWriter {
         super(writer);
     }
 
-    /**
-     * Return the current indent step.
-     *
-     * <p>Return the current indent step: each start tag will be
-     * indented by this number of spaces times the number of
-     * ancestors that the element has.</p>
-     *
-     * @return The number of spaces in each indentation step,
-     *         or 0 or less for no indentation.
-     * @see #setIndentStep(int)
-     *
-     * @deprecated
-     *      Only return the length of the indent string.
-     */
-    public int getIndentStep() {
-        return indentStep.length();
-    }
-
-
-    /**
-     * Set the current indent step.
-     *
-     * @param indentStep The new indent step (0 or less for no
-     *        indentation).
-     * @see #getIndentStep()
-     *
-     * @deprecated
-     *      Should use the version that takes string.
-     */
-    public void setIndentStep(int indentStep) {
-        StringBuilder s = new StringBuilder();
-        for (; indentStep > 0; indentStep--) s.append(' ');
-        setIndentStep(s.toString());
-    }
-
-    public void setIndentStep(String s) {
-        this.indentStep = s;
-    }
 
     private void onStartElement() throws XMLStreamException {
         stateStack.push(SEEN_ELEMENT);

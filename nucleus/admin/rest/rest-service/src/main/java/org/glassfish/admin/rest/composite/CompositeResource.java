@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
  */
 package org.glassfish.admin.rest.composite;
 
@@ -527,7 +527,7 @@ public abstract class CompositeResource extends AbstractResource implements Rest
         return filterModel(modelIface, unfilteredModel, getFilter(include, exclude, identityAttr));
     }
     protected <T extends RestModel> T filterModel(Class<T> modelIface, T unfilteredModel, JsonFilter filter) throws Exception {
-        JsonObject unfilteredJson = (JsonObject)JsonUtil.getJsonObject(unfilteredModel, false); // don't hide confidential properties
+        JsonObject unfilteredJson = (JsonObject)JsonUtil.getJsonValue(unfilteredModel, false); // don't hide confidential properties
         JsonObject filteredJson = filter.trim(unfilteredJson);
         T filteredModel = getTypedModel(modelIface, filteredJson);
         filteredModel.trimmed(); // TBD - remove once the conversion to the new REST style guide is completed

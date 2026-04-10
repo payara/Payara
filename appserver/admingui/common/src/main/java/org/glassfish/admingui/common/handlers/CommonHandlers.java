@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2022] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 /*
  * CommonHandlers.java
@@ -105,8 +105,7 @@ public class CommonHandlers {
         sessionMap.put("ejbSummaryView", true);
         sessionMap.put("appclientSummaryView", true);
         sessionMap.put("rarSummaryView", true);
-        sessionMap.put("lifecycleSummaryView", true);
-    
+
         sessionMap.put("adminObjectSummaryView", true);
         sessionMap.put("connectorResSummaryView", true);
         sessionMap.put("customResSummaryView", true);

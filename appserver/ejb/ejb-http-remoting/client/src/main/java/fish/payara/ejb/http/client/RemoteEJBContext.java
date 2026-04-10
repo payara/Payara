@@ -104,7 +104,7 @@ import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
  */
 class RemoteEJBContext implements Context {
 
-    private static final Logger logger = Logger.getLogger(LookupV0.class.getName());
+    private static final Logger logger = Logger.getLogger(LookupV1.class.getName());
 
     private ClientAdapter clientAdapter;
     private Hashtable<String, Object> environment;
@@ -176,10 +176,6 @@ class RemoteEJBContext implements Context {
                 logger.log(Level.INFO, "Discovered v1 at {0}", discovery.getV1lookup().getUri());
                 return new LookupV1(environment, client, discovery.getV1lookup());
             }
-            if (discovery.isV0target() && (version == null || version.intValue() == 0)) {
-                logger.log(Level.INFO, "Discovered v0 at {0}", discovery.getV0lookup().getUri());
-                return new LookupV0(environment, client.target(discovery.getResolvedRoot()), discovery.getV0lookup());
-            }
             throw new NamingException("EJB HTTP client V0 is not supported, out of ideas for now");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             throw newNamingException("Cannot access lookup endpoint at "+root, e);
@@ -194,8 +190,7 @@ class RemoteEJBContext implements Context {
         int version = versionSetting instanceof String
                 ? Integer.parseInt(versionSetting.toString())
                 : ((Number) versionSetting).intValue();
-        return version == 1 && discovery.isV1target()
-                || version == 0 && discovery.isV0target() ?  version : null;
+        return version == 1 && discovery.isV1target() ? version : null;
     }
 
     private ClientBuilder getClientBuilder() throws ClassNotFoundException, InstantiationException, IllegalAccessException {

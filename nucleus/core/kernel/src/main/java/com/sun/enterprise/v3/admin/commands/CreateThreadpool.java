@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin.commands;
 
 import java.beans.PropertyVetoException;
 
-import org.glassfish.internal.api.Target;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.I18n;
@@ -93,9 +93,6 @@ public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Prea
     @Param(name= "idletimeout", optional=true, alias="idleThreadTimeoutSeconds", defaultValue = "900")
     String idletimeout;
 
-    @Param(name="workqueues", optional=true)
-    String workqueues;
-
     @Param(name="maxqueuesize", optional=true, alias="maxQueueSize", defaultValue = "4096")
     String maxQueueSize;
 
@@ -143,10 +140,6 @@ public class CreateThreadpool implements AdminCommand, AdminCommandSecurity.Prea
 
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
-        if (workqueues != null) {
-            report.setMessage(localStrings.getLocalString("create.threadpool.deprecated.workqueues",
-                        "Deprecated Syntax: --workqueues option is deprecated for create-threadpool command."));
-        }
 
         try {
             ConfigSupport.apply(new SingleConfigCode<ThreadPools>() {

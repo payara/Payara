@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.embedded;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
@@ -198,7 +198,7 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
         }
 
         private String replaceInstanceDir(String fromInstanceDir, String keyFileName) {
-            return StringUtils.replace(keyFileName, INSTANCE_DIR_PLACEHOLDER, fromInstanceDir);
+            return keyFileName.replace(INSTANCE_DIR_PLACEHOLDER, fromInstanceDir);
 
         }
 

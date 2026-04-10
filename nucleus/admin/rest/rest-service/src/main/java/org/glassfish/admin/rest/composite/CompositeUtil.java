@@ -37,24 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+//Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
 package org.glassfish.admin.rest.composite;
 
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.admin.report.ActionReporter;
-
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonException;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.JsonValue.ValueType;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorContext;
+import jakarta.validation.ValidatorFactory;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,24 +81,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonException;
-import jakarta.json.JsonNumber;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonString;
-import jakarta.json.JsonValue;
-import jakarta.json.JsonValue.ValueType;
 import javax.security.auth.Subject;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorContext;
-import jakarta.validation.ValidatorFactory;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
@@ -99,26 +96,37 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.jersey.media.sse.EventOutput;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.MessageInterpolatorImpl;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
-import org.glassfish.hk2.utilities.BuilderHelper;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.jersey.media.sse.EventOutput;
 
-import static org.objectweb.asm.Opcodes.*;
-
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.MessageInterpolatorImpl;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_SUPER;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.GETFIELD;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.NEW;
+import static org.objectweb.asm.Opcodes.PUTFIELD;
+import static org.objectweb.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.V1_6;
 
 /**
  * @author jdlee
  */
 public class CompositeUtil {
-    private static final Map<String, Class<?>> generatedClasses = new HashMap<String, Class<?>>();
-    private static final Map<String, List<String>> modelExtensions = new HashMap<String, List<String>>();
-    private boolean extensionsLoaded = false;
+    private static final Map<String, Class<?>> generatedClasses = new HashMap<>();
+    private static final Map<String, List<String>> modelExtensions = new HashMap<>();
+    private final boolean extensionsLoaded = false;
     private static volatile Validator beanValidator = null;
     private static final LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(CompositeUtil.class);
 
@@ -146,7 +154,7 @@ public class CompositeUtil {
     public synchronized <T> T getModel(Class<T> modelIface) {
         String className = modelIface.getName() + "Impl";
         if (!generatedClasses.containsKey(className)) {
-            Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
+            Map<String, Map<String, Object>> properties = new HashMap<>();
 
             Set<Class<?>> interfaces = getModelExtensions(modelIface);
             interfaces.add(modelIface);
@@ -184,7 +192,7 @@ public class CompositeUtil {
     }
 
         public Set<Class<?>> getRestModels() {
-        Set<Class<?>>classes = new HashSet<Class<?>>();
+        Set<Class<?>>classes = new HashSet<>();
         for (ActiveDescriptor ad : Globals.getDefaultBaseServiceLocator()
                 .getDescriptors(BuilderHelper.createContractFilter(RestModel.class.getName()))) {
             try {
@@ -206,7 +214,7 @@ public class CompositeUtil {
      * @param method
      */
     public Object getResourceExtensions(Class<?> baseClass, Object data, String method) {
-        List<RestExtension> extensions = new ArrayList<RestExtension>();
+        List<RestExtension> extensions = new ArrayList<>();
 
         for (RestExtension extension : Globals.getDefaultHabitat().<RestExtension>getAllServices(RestExtension.class)) {
             if (baseClass.getName().equals(extension.getParent())) {
@@ -609,7 +617,7 @@ public class CompositeUtil {
      * @return
      */
     private Set<Class<?>> getModelExtensions(Class<?> baseModel) {
-        Set<Class<?>> exts = new HashSet<Class<?>>();
+        Set<Class<?>> exts = new HashSet<>();
 
         if (!extensionsLoaded) {
             synchronized (modelExtensions) {
@@ -678,7 +686,7 @@ public class CompositeUtil {
     }
 
     private List<Method> getSetters(Class<?> clazz) {
-        List<Method> methods = new ArrayList<Method>();
+        List<Method> methods = new ArrayList<>();
 
         for (Method method : clazz.getMethods()) {
             if (method.getName().startsWith("set")) {
@@ -704,7 +712,7 @@ public class CompositeUtil {
                 name = name.substring(3);
                 Map<String, Object> property = properties.get(name);
                 if (property == null) {
-                    property = new HashMap<String, Object>();
+                    property = new HashMap<>();
                     properties.put(name, property);
                 }
 
@@ -737,12 +745,12 @@ public class CompositeUtil {
     }
 
     private Map<String, Map<String, Object>> gatherReferencedAttributes(String bean, String attribute) {
-        Map<String, Map<String, Object>> annos = new HashMap<String, Map<String, Object>>();
+        Map<String, Map<String, Object>> annos = new HashMap<>();
         try {
             Class<?> configBeanClass = Class.forName(bean);
             Method m = configBeanClass.getMethod("get" + attribute);
             for (Annotation a : m.getAnnotations()) {
-                Map<String, Object> anno = new HashMap<String, Object>();
+                Map<String, Object> anno = new HashMap<>();
                 for (Method am : a.annotationType().getDeclaredMethods()) {
                     String methodName = am.getName();
                     Object value = am.invoke(a);
@@ -970,65 +978,15 @@ public class CompositeUtil {
 
     // TODO: This is duplicated from the generator class.
     private Class<?> defineClass(Class<?> similarClass, String className, byte[] classBytes) throws Exception {
-        byte[] byteContent = classBytes;
-        ProtectionDomain pd = similarClass.getProtectionDomain();
-
-        java.lang.reflect.Method jm = null;
-        for (java.lang.reflect.Method jm2 : ClassLoader.class.getDeclaredMethods()) {
-            if (jm2.getName().equals("defineClass") && jm2.getParameterTypes().length == 5) {
-                jm = jm2;
-                break;
-            }
-        }
-        if (jm == null) {//should never happen, makes findbug happy
-            throw new RuntimeException("cannot find method called defineclass...");
-        }
-        final java.lang.reflect.Method clM = jm;
-        try {
-            java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedExceptionAction() {
-                        @Override
-                        public java.lang.Object run() throws Exception {
-                            if (!clM.isAccessible()) {
-                                clM.setAccessible(true);
-                            }
-                            return null;
-                        }
-                    });
-
-            RestLogging.restLogger.log(Level.FINEST, "Loading bytecode for {0}", className);
-            final ClassLoader classLoader =
-                    similarClass.getClassLoader();
-            //Thread.currentThread().getContextClassLoader();
-//                    Thread.currentThread().getContextClassLoader();
-            try {
-                clM.invoke(classLoader, className, byteContent, 0, byteContent.length, pd);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            try {
-                return classLoader.loadClass(className);
-            } catch (ClassNotFoundException cnfEx) {
-                throw new RuntimeException(cnfEx);
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        RestLogging.restLogger.log(Level.FINEST, "Loading bytecode for {0}", className);
+        return MethodHandles.privateLookupIn(similarClass, MethodHandles.lookup()).defineClass(classBytes);
     }
 
     private static synchronized void initBeanValidator() {
         if (beanValidator != null) {
             return;
         }
-        ClassLoader cl = System.getSecurityManager() == null
-                ? Thread.currentThread().getContextClassLoader()
-                : AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return Thread.currentThread().getContextClassLoader();
-            }
-        });
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(Validation.class.getClassLoader());
             ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();

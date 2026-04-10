@@ -92,7 +92,7 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
 
         if (proxy.isError()) {
             result.append("<h2>").append(ar.getActionDescription()).append(" Error:</h2>")
-                    .append(proxy.getErrorMessage());
+                    .append(ResourceUtil.encodeString(proxy.getErrorMessage()));
         } else {
             final Map<String, String> childResources = (Map<String, String>) ar.getExtraProperties().get("childResources");
             final List<Map<String, String>> commands = (List<Map<String, String>>) ar.getExtraProperties().get("commands");
@@ -187,7 +187,8 @@ public class ActionReportResultHtmlProvider extends BaseProvider<ActionReportRes
 
                             }
                         } else {
-                            result.append("<li>").append(entry.getKey()).append(" : ").append(object.toString()).append(LIST_ITEM_END);
+                            result.append("<li>").append(entry.getKey()).append(" : ")
+                                    .append(ResourceUtil.encodeString(object.toString())).append(LIST_ITEM_END);
                         }
                     }
                     result.append(LIST_END);

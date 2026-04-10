@@ -66,11 +66,4 @@
 	    />        
 	</sun:tab>
 
-	<sun:tab id="profiler" immediate="true" text="$resource{i18nc.jvm.Profiler}" toolTip="$resource{i18nc.jvm.ProfilerTab}">
-	    <!command
-                setSessionAttribute(key="javaConfigTab" value="profiler");
-		gf.redirect(page="#{request.contextPath}/common/javaConfig/serverInstProfiler.jsf?configName=#{configName}");
-	    />        
-	</sun:tab>
-
 </sun:tabSet>

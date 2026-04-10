@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.ejb.containers;
 
@@ -691,15 +691,6 @@ public abstract class AbstractSingletonContainer extends BaseContainer {
     @Override
     public boolean passivateEJB(ComponentContext context) {
         return false;
-    }
-
-    /**
-     * @deprecated not called and not used in Payara 5
-     */
-    @Deprecated
-    // default
-    public void activateEJB(Object ctx, Object instanceKey) {
-        // dead code
     }
 
     @Override

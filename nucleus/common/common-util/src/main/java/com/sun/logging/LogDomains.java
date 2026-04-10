@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or affiliates
 
 package com.sun.logging;
 
@@ -60,11 +60,6 @@ public class LogDomains {
      * be accessed w/in the ias package space.
      */
     public static final String DOMAIN_ROOT = "javax.";
-
-    /**
-     * Upgrade logger name.
-     */
-    public static final String UPGRADE_LOGGER = "upgradeLogger";
 
     /**
      * PACKAGE_ROOT the prefix for the packages where logger resource bundles

@@ -87,9 +87,6 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
 
     @Param(name="target", optional=true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
     String target;
-
-    @Param(name="profiler", optional=true)
-    Boolean fromProfiler = false;
         
     @Param(name="jvm_option_name", primary=true, separator=':')
     List<String> jvmOptions;
@@ -117,16 +114,7 @@ public final class DeleteJvmOptions implements AdminCommand, AdminCommandSecurit
         final ActionReport report = context.getActionReport();
 
         try {
-            JvmOptionBag bag;
-            if (fromProfiler) {
-                if (jc.getProfiler() == null) {
-                    report.setMessage(lsm.getString("create.profiler.first"));
-                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                    return;
-                }
-                bag = jc.getProfiler();
-            } else
-                bag = jc;
+            JvmOptionBag bag = jc;
             ActionReport.MessagePart part = report.getTopMessagePart().addChild();
             deleteX(bag, jvmOptions, part);
         } catch (Exception e) {

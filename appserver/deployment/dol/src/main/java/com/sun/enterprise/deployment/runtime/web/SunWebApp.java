@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.runtime.web;
 
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
@@ -52,7 +52,6 @@ public interface SunWebApp {
     String CACHE = "Cache";
     String CLASS_LOADER = "ClassLoader";
     String JSP_CONFIG = "JspConfig";
-    String LOCALE_CHARSET_INFO = "LocaleCharsetInfo";
     String PARAMETER_ENCODING = "ParameterEncoding";
     String FORM_HINT_FIELD = "FormHintField";
     String DEFAULT_CHARSET = "DefaultCharset";

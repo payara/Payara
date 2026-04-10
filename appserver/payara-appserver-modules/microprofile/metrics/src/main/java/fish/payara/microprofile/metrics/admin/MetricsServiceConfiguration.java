@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *    Copyright (c) [2018-2019] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,16 +61,6 @@ public interface MetricsServiceConfiguration extends ConfigBeanProxy, ConfigExte
     @Attribute(defaultValue = "true", dataType = Boolean.class)
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
-
-    /**
-     * @return a Boolean value determining if the metrics service is secure or
-     * not.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getSecureMetrics();
-    @Deprecated
-    void setSecureMetrics(String value) throws PropertyVetoException;
     
     /**
      * @return a Boolean value determining if the service is dynamic or not.

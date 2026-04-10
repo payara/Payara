@@ -156,8 +156,7 @@ public class SerialInitContextFactory implements InitialContextFactory {
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, "getInitialContext: env={0}", env);
         }
-        boolean useLB = propertyIsSet(myEnv, IIOP_ENDPOINTS_PROPERTY)
-            || propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
+        boolean useLB = propertyIsSet(myEnv, LOAD_BALANCING_PROPERTY) ;
         NamingClusterInfo namingClusterInfo = null;
         boolean enableClusterUpdate = true;
         enableClusterUpdate = Boolean.parseBoolean(System.getProperty(IIOP_CLUSTER_UPDATE_PROPERTY, "true"));

@@ -43,10 +43,7 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.config.serverbeans.Node;
-import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import com.trilead.ssh2.SFTPv3FileAttributes;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -61,7 +58,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
-import org.glassfish.cluster.ssh.util.DcomInfo;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -115,28 +111,18 @@ public abstract class SecureAdminBootstrapHelper {
                     Strings.get("internal.error", "unknown type"));
         }
 
-        switch (type) {
-            case SSH:
-                return new SSHHelper(
-                        habitat,
-                        DASInstanceDir,
-                        remoteNodeDir,
-                        instance,
-                        node,
-                        logger);
-            case DCOM:
-                return new DCOMHelper(
-                        habitat,
-                        DASInstanceDir,
-                        remoteNodeDir,
-                        instance,
-                        node,
-                        logger);
-            default:
-                throw new IllegalArgumentException(
-                        Strings.get("internal.error", "A new type must have "
-                        + "been added --> unknown type: " + type.toString()));
+        if (type == RemoteType.SSH) {
+            return new SSHHelper(
+                habitat,
+                DASInstanceDir,
+                remoteNodeDir,
+                instance,
+                node,
+                logger);
         }
+        throw new IllegalArgumentException(
+            Strings.get("internal.error", "A new type must have "
+                + "been added --> unknown type: " + type.toString()));
     }
 
     /**
@@ -414,84 +400,6 @@ public abstract class SecureAdminBootstrapHelper {
             final SFTPv3FileAttributes attrs = ftpClient.stat(path);
             attrs.mtime = secondsSince_01_Jan_1970(when);
             ftpClient.setstat(path, attrs);
-        }
-    }
-
-    private static class DCOMHelper extends RemoteHelper {
-        final WindowsRemoteFileSystem wrfs;
-        final DcomInfo info;
-
-        DCOMHelper(
-                final ServiceLocator habitat,
-                final File dasInstanceDir,
-                String remoteNodeDir,
-                final String instance,
-                final Node node,
-                final Logger logger) throws BootstrapException {
-            super(habitat, dasInstanceDir, remoteNodeDir, instance, node, logger);
-            try {
-                info = new DcomInfo(node);
-                wrfs = new WindowsRemoteFileSystem(info.getHost(), info.getUser(), info.getPassword());
-            }
-            catch (WindowsException ex) {
-                throw new BootstrapException(ex);
-            }
-        }
-
-        @Override
-        protected void close() {
-            // DCOM doesn't need to do anything...
-        }
-
-        @Override
-        protected void mkdirs(String subdir) throws IOException {
-            String remoteDir = remoteInstanceDir + subdir;
-            logger.log(Level.FINE, "Trying to create directories for remote path {0}",
-                    remoteDir);
-            try {
-                WindowsRemoteFile f = new WindowsRemoteFile(wrfs, remoteDir);
-                f.mkdirs();
-
-                if (!f.exists())
-                    throw new IOException(Strings.get("no.mkdir", f.getPath()));
-            }
-            catch (WindowsException ex) {
-                throw new IOException(ex.getMessage(), ex);
-            }
-        }
-
-        @Override
-        void writeToFile(String path, InputStream content) throws IOException {
-            try {
-                WindowsRemoteFile f = new WindowsRemoteFile(wrfs, path);
-                f.copyFrom((BufferedInputStream)content);
-            }
-            catch (WindowsException ex) {
-                throw new IOException(ex.getMessage(), ex);
-            }
-        }
-
-        @Override
-        void setLastModified(String path, long when) throws IOException {
-            try {
-                WindowsRemoteFile f = new WindowsRemoteFile(wrfs, path);
-                f.setLastModified(when);
-            }
-            catch (WindowsException ex) {
-                throw new IOException(ex.getMessage(), ex);
-            }
-        }
-
-        @Override
-        protected void backdateInstanceDomainXML() throws BootstrapException {
-            final String remoteDomainXML = remoteInstanceDir + DOMAIN_XML_PATH;
-            try {
-                setLastModified(remoteDomainXML, 0);
-            }
-            catch (IOException ex) {
-                throw new BootstrapException(ex);
-            }
-            logger.log(Level.FINE, "Backdated the instance's copy of domain.xml");
         }
     }
 

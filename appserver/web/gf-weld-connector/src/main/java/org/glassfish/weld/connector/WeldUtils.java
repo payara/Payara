@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
@@ -253,10 +253,13 @@ public class WeldUtils {
         final Set<String> result = new HashSet<>();
 
         final Set<String> exclusions = new HashSet<>();
+        final Map<String, AnnotationType> warLibraryAnnotationTypes = getWarLibraryAnnotationTypes(context);
         for (final Type type : getAllTypes(context, List.of())) {
             if (!(type instanceof AnnotationType)) {
                 for (final AnnotationModel am : type.getAnnotations()) {
-                    final AnnotationType at = am.getType();
+                    final AnnotationType at = am.getType().getAnnotations().isEmpty()
+                            ? warLibraryAnnotationTypes.getOrDefault(am.getType().getName(), am.getType())
+                            : am.getType();
                     if (isCDIEnablingAnnotation(at, exclusions)) {
                         result.add(at.getName());
                     }
@@ -700,15 +703,30 @@ public class WeldUtils {
         }
 
         List<Type> allTypes = new ArrayList<>(types.getAllTypes());
-        Map<String, DeploymentUtils.WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
-        for (URI path : paths.isEmpty() ? cache.keySet().stream().map(Path::of).map(Path::toUri)
-                .collect(Collectors.toList()) : paths) {
-            var descriptor = cache.get(path.getRawPath());
-            if (descriptor != null) {
-                allTypes.addAll(descriptor.getTypes());
+        if (DeploymentUtils.useWarLibraries(context)) {
+            Map<String, DeploymentUtils.WarLibraryDescriptor> cache = DeploymentUtils.getWarLibraryCache();
+            for (URI path : paths.isEmpty() ? cache.keySet().stream().map(Path::of).map(Path::toUri)
+                                              .toList() : paths) {
+                var descriptor = cache.get(path.getRawPath());
+                if (descriptor != null) {
+                    allTypes.addAll(descriptor.getTypes());
+                }
             }
         }
         return allTypes;
+    }
+
+    private static Map<String, AnnotationType> getWarLibraryAnnotationTypes(DeploymentContext context) {
+        if (DeploymentUtils.useWarLibraries(context)) {
+            var cache = DeploymentUtils.getWarLibraryCache();
+            return cache.values().stream().map(DeploymentUtils.WarLibraryDescriptor::getTypes)
+                    .flatMap(Collection::stream)
+                    .filter(AnnotationType.class::isInstance)
+                    .map(AnnotationType.class::cast)
+                    .collect(Collectors.toMap(AnnotationType::getName,
+                            annotationType -> annotationType));
+        }
+        return Collections.emptyMap();
     }
 
     private static class LocalDefaultHandler extends DefaultHandler {

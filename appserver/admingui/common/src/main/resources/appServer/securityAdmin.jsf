@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or affiliates -->
 
 <!-- enableSecurityAdmin.jsf -->
 
@@ -106,11 +107,11 @@
             <!-- Text Field section -->
             <sun:propertySheetSection id="propertSectionTextField">
                 <sun:property id="adminAliasProp"  rendered="#{pageSession.enableSecurityAdmin}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.secureAdmin.adminalias}" helpText="$resource{i18nc.security.secureAdmin.adminaliasHelp}" >
-                    <sun:textField id="adminalias" styleClass="required" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.lifecycleModule.classname']}" text="#{pageSession.valueMap['adminalias']}"  />
+                    <sun:textField id="adminalias" styleClass="required" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.enableSecureAdmin']}" text="#{pageSession.valueMap['adminalias']}"  />
                 </sun:property>
 
                 <sun:property id="instanceAliasProp"  rendered="#{pageSession.enableSecurityAdmin}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  label="$resource{i18nc.security.secureAdmin.instancealias}" helpText="$resource{i18nc.security.secureAdmin.instancealiasHelp}" >
-                    <sun:textField id="instancealias" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.lifecycleModule.classPath']}" text="#{pageSession.valueMap['instancealias']}" />
+                    <sun:textField id="instancealias" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.enableSecureAdmin']}" text="#{pageSession.valueMap['instancealias']}" />
                 </sun:property>
 
             </sun:propertySheetSection>

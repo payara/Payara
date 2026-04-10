@@ -37,12 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright 2016-2024 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates.
 
 package com.sun.enterprise.v3.server;
 
-import fish.payara.deployment.transformer.api.JakartaNamespaceDeploymentTransformer;
 import fish.payara.nucleus.hotdeploy.HotDeployService;
 import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
@@ -403,8 +401,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
 
             span.finish();
-
-            transformApplication(context, types, tracing, span);
 
             // containers that are started are not stopped even if
             // the deployment fail, the main reason
@@ -786,61 +782,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             return null;
         }
         return new ClassloaderResourceLocatorAdapter(commonClassLoaderService.getCommonClassLoader());
-    }
-
-    private void transformApplication(ExtendedDeploymentContext context, Types types,
-            StructuredDeploymentTracing tracing, SpanSequence span) throws IOException {
-        String transformNS = System.getProperty(JakartaNamespaceDeploymentTransformer.TRANSFORM_NAMESPACE);
-
-        if (Boolean.parseBoolean(transformNS) || transformNS == null) {
-            span.start(DeploymentTracing.AppStage.TRANSFORM_ARCHIVE);
-
-            Optional<JakartaNamespaceDeploymentTransformer> jakartaNamespaceDeploymentTransformerOptional;
-            try {
-                jakartaNamespaceDeploymentTransformerOptional = ServiceLoader.load(
-                        JakartaNamespaceDeploymentTransformer.class).findFirst();
-            } catch (NoClassDefFoundError exception) {
-                // ClassNotFoundException gets thrown if we've found a service but couldn't instantiate it
-                logger.log(Level.WARNING,
-                        "Caught exception trying to instantiate a deployment transformer, skipping...",
-                        exception);
-                span.finish();
-                return;
-            }
-
-            if (!jakartaNamespaceDeploymentTransformerOptional.isPresent()) {
-                logger.log(Level.INFO, "No deployment transformer implementation found.");
-                span.finish();
-                return;
-            }
-
-            JakartaNamespaceDeploymentTransformer jakartaNamespaceDeploymentTransformerService =
-                    jakartaNamespaceDeploymentTransformerOptional.get();
-
-            if (types == null) {
-                types = getDeployableTypes(context);
-            }
-
-            if (!jakartaNamespaceDeploymentTransformerService.isJakartaEEApplication(types)) {
-                context.getSource().close();
-
-                // DeploymentException will be thrown here if this fails
-                File output = jakartaNamespaceDeploymentTransformerService.transformApplication(context);
-
-                context.getAppProps().setProperty(ServerTags.EMPTY_BEANS_XML_MODE_ALL_PROP, Boolean.TRUE.toString());
-                context.setSource((FileArchive) archiveFactory.createArchive(output));
-
-                // reset transient and module data of original deployed archive
-                context.removeTransientAppMetaData(Types.class.getName());
-                context.removeTransientAppMetaData(Parser.class.getName());
-                context.resetModuleMetaData();
-                tracing.register(context);
-
-                // Rescan for the data we just removed
-                getDeployableTypes(context);
-            }
-            span.finish();
-        }
     }
 
     private void notifyLifecycleInterceptorsBefore(final ExtendedDeploymentContext.Phase phase,
@@ -2487,13 +2428,8 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     public void validateUndeploymentTarget(String target, String name) {
         List<String> referencedTargets = domain.getAllReferencedTargetsForApplication(name);
         if (referencedTargets.size() > 1) {
-            Application app = applications.getApplication(name);
             if (!DeploymentUtils.isDomainTarget(target) && domain.getDeploymentGroupNamed(target) == null) {
-                if (app.isLifecycleModule()) {
-                    throw new IllegalArgumentException(localStrings.getLocalString("delete_lifecycle_on_multiple_targets", "Lifecycle module {0} is referenced by more than one targets. Please remove other references before attempting delete operation.", name));
-                } else {
-                    throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
-                }
+                throw new IllegalArgumentException(localStrings.getLocalString("undeploy_on_multiple_targets", "Application {0} is referenced by more than one targets. Please remove other references or specify all targets (or domain target if using asadmin command line) before attempting undeploy operation.", name));
             }
         }
     }

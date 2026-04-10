@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.cluster.SshAuthType;
 
-import org.glassfish.cluster.ssh.util.DcomUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -57,10 +56,6 @@ import com.sun.enterprise.util.net.NetUtils;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import com.sun.enterprise.universal.glassfish.TokenResolver;
-import com.sun.enterprise.util.cluster.windows.process.WindowsCredentials;
-import com.sun.enterprise.util.cluster.windows.process.WindowsRemotePinger;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
-import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import java.util.logging.Logger;
 import java.io.File;
@@ -82,7 +77,6 @@ import org.glassfish.cluster.ssh.connect.NodeRunner;
  */
 public class NodeUtils {
     public static final String NODE_DEFAULT_SSH_PORT = "22";
-    public static final String NODE_DEFAULT_DCOM_PORT = "135";
     public static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
     public static final String NODE_DEFAULT_INSTALLDIR = "${com.sun.aas.productRoot}";
     // Command line option parameter names
@@ -122,13 +116,6 @@ public class NodeUtils {
             return false;
         }
         return node.getType().equals("SSH");
-    }
-
-    public static boolean isDcomNode(Node node) {
-        if (node == null) {
-            return false;
-        }
-        return node.getType().equals("DCOM");
     }
 
     /**
@@ -313,25 +300,14 @@ public class NodeUtils {
     }
 
     /**
-     * Make sure we can make an SSH or DCOM connection using an existing node.
+     * Make sure we can make an SSH connection using an existing node.
      *
      * @param node  Node to connect to
      * @throws CommandValidationException
      */
     void pingRemoteConnection(Node node) throws CommandValidationException {
-        RemoteType type = RemoteType.valueOf(node.getType());
         validateHostName(node.getNodeHost());
-
-        switch (type) {
-            case SSH:
-                pingSSHConnection(node);
-                break;
-            case DCOM:
-                pingDcomConnection(node);
-                break;
-            default:
-                throw new CommandValidationException("Internal Error: unknown type");
-        }
+        pingSSHConnection(node);
     }
 
     /**
@@ -361,124 +337,8 @@ public class NodeUtils {
         }
     }
 
-    /**
-     * Make sure we can make a DCOM connection using an existing node.
-     * Exception...
-     * @param node  Node to connect to
-     * @throws CommandValidationException
-     */
-    private void pingDcomConnection(Node node) throws CommandValidationException {
-        try {
-            SshConnector connector = node.getSshConnector();
-            SshAuth auth = connector.getSshAuth();
-            String host = connector.getSshHost();
-
-            if (!StringUtils.ok(host)) {
-                host = node.getNodeHost();
-            }
-
-            String username = auth.getUserName();
-            String password = resolvePassword(auth.getPassword());
-            String installdir = node.getInstallDirUnixStyle();
-            String domain = node.getWindowsDomain();
-
-            if (!StringUtils.ok(domain)) {
-                domain = host;
-            }
-
-            if (!StringUtils.ok(installdir)) {
-                throw new CommandValidationException(Strings.get("dcom.no.installdir"));
-            }
-
-            pingDcomConnection(host, domain, username, password, getInstallRoot(installdir));
-        }
-        // very complicated catch copied from pingssh above...
-        catch (CommandValidationException cve) {
-            throw cve;
-        }
-        catch (Exception e) {
-            String m1 = e.getMessage();
-            String m2 = "";
-            Throwable e2 = e.getCause();
-            if (e2 != null) {
-                m2 = e2.getMessage();
-            }
-            String msg = Strings.get("ssh.bad.connect", node.getNodeHost(), "DCOM");
-            logger.warning(StringUtils.cat(": ", msg, m1, m2));
-            throw new CommandValidationException(StringUtils.cat(NL, msg, m1, m2));
-        }
-    }
-
-    /**
-     * Make sure GF is installed and available.
-     *
-     * @throws CommandValidationException
-     */
-    void pingDcomConnection(String host, String domain, String username,
-            String password, String installRoot) throws CommandValidationException {
-        // don't bother trying to connect if we have no password!
-
-        if (!StringUtils.ok(password)) {
-            throw new CommandValidationException(Strings.get("dcom.nopassword"));
-        }
-
-        // resolve password aliases
-        password = DcomUtils.resolvePassword(resolver.resolve(password));
-
-        if (NetUtils.isThisHostLocal(host)) {
-            throw new CommandValidationException(Strings.get("dcom.yes.local", host));
-        }
-
-        try {
-            installRoot = installRoot.replace('/', '\\');
-            WindowsRemoteFileSystem wrfs = new WindowsRemoteFileSystem(host, username, password);
-            WindowsRemoteFile wrf = new WindowsRemoteFile(wrfs, installRoot);
-            WindowsCredentials creds = new WindowsCredentials(host, domain, username, password);
-
-            // also looking for side-effect of Exception getting thrown...
-            if (!wrf.exists()) {
-                throw new CommandValidationException(Strings.get("dcom.no.remote.install",
-                        host, installRoot));
-            }
-
-            if (!WindowsRemotePinger.ping(installRoot, creds)) {
-                throw new CommandValidationException(Strings.get("dcom.no.connection", host));
-            }
-        }
-        catch (CommandValidationException cve) {
-            throw cve;
-        }
-        catch (Exception ex) {
-            throw new CommandValidationException(ex);
-        }
-    }
-
-    private void validateRemoteConnection(ParameterMap map) throws
-            CommandValidationException {
-        // guaranteed to either get a valid type -- or a CommandValidationException
-        RemoteType type = parseType(map);
-
-        // just too difficult to refactor now...
-        if (type == RemoteType.SSH) {
-            validateSSHConnection(map);
-        } else if (type == RemoteType.DCOM) {
-            validateDcomConnection(map);
-        }
-    }
-
-    private void validateDcomConnection(ParameterMap map) throws CommandValidationException {
-        if (Boolean.parseBoolean(map.getOne(PARAM_INSTALL))) {
-            // we don't want to insist that there is an installation - there isn't one probably!!
-            return;
-        }
-
-        String nodehost = resolver.resolve(map.getOne(PARAM_NODEHOST));
-        String installdir = resolver.resolve(map.getOne(PARAM_INSTALLDIR));
-        String user = resolver.resolve(map.getOne(PARAM_REMOTEUSER));
-        String password = map.getOne(PARAM_SSHPASSWORD);
-        String domain = nodehost;
-
-        pingDcomConnection(nodehost, domain, user, password, getInstallRoot(installdir));
+    private void validateRemoteConnection(ParameterMap map) throws CommandValidationException {
+        validateSSHConnection(map);
     }
 
     private void validateSSHConnection(ParameterMap map) throws
@@ -678,21 +538,6 @@ public class NodeUtils {
             return SshAuthType.valueOf(authType);
         } catch (Exception e) {
             throw new CommandValidationException(e);
-        }
-    }
-
-    // DCOMFIX - installroot is probably the parent of the glassfish directory
-    // DCOMFIX it would be nice to have the actual install-root of GF in the config
-    private String getInstallRoot(String installDir) {
-        // Imagine if you send in "C:\" as installDir.  THat is NOT the same as "C:" !
-        // that's why we need extra processing.
-        char[] chars = installDir.toCharArray();
-        char end = chars[chars.length - 1];
-
-        if (end != '/' && end != '\\') {
-            return installDir + "/glassfish";
-        } else {
-            return installDir + "glassfish";
         }
     }
 }

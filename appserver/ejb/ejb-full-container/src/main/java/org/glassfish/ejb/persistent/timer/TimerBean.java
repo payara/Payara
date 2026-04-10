@@ -37,13 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.persistent.timer;
 
 import java.io.Serializable;
 import java.io.IOException;
-import java.io.ObjectStreamException;
 
 import java.util.Date;
 import java.util.Collection;
@@ -697,21 +696,6 @@ public class TimerBean implements TimerLocal {
         Query q = em.createNamedQuery("deleteTimersByApplication");
         q.setParameter("applicationId", applicationId);
         return q.executeUpdate();
-    }
-
-    /**
-     * To be used to read in TimerBean.Blob and replace with TimerState.Blob
-     * on v2.x upgrade
-     */
-    public static class Blob implements Serializable {
-        private byte[] primaryKeyBytes_ = null;
-        private byte[] infoBytes_ = null;
-
-        private static final long serialVersionUID = 9167806434435988868L;
-
-        private Object readResolve() throws ObjectStreamException {
-            return new TimerState.Blob(primaryKeyBytes_, infoBytes_);
-        }
     }
 
 }

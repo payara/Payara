@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.node.runtime;
 
@@ -68,9 +69,7 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
         // we do not care about our standard DDS handles
         handlers = null;
         registerElementHandler(new XMLElement(RuntimeTagNames.EJB), 
-                               EjbNode.class);                    
-        registerElementHandler(new XMLElement(RuntimeTagNames.PM_DESCRIPTORS),
-                               PMDescriptorsNode.class);                    
+                               EjbNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.CMP_RESOURCE), 
                                CmpResourceNode.class);                    
         registerElementHandler
@@ -130,11 +129,7 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
             EjbDescriptor ejbDescriptor = (EjbDescriptor) ejbIterator.next();
             ejbNode.writeDescriptor(ejbs, RuntimeTagNames.EJB, ejbDescriptor);
         }
-        
-        // pm-descriptors?
-	PMDescriptorsNode pmsNode = new PMDescriptorsNode();
-	pmsNode.writeDescriptor(ejbs, RuntimeTagNames.PM_DESCRIPTORS, bundleDescriptor);
-        
+
         // cmpresource?
         ResourceReferenceDescriptor rrd = bundleDescriptor.getCMPResourceReference();
         if ( rrd != null ) {

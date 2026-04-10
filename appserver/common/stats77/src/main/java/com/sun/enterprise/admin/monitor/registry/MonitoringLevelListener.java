@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.monitor.registry;
 
@@ -50,28 +50,6 @@ package com.sun.enterprise.admin.monitor.registry;
  * @author  <href=mailto:shreedhar.ganapathy@sun.com>Shreedhar Ganapathy
  */
 public interface MonitoringLevelListener {
-    /**
-     * Sets the monitoring level to a new level. Values are defined by 
-     * MonitoringLevel.OFF, MonitoringLevel.LOW, and MonitoringLevel.High
-     * @param level corresponding to MonitoringLevel OFF, LOW or HIGH
-     * @deprecated
-     */
-    public void setLevel(MonitoringLevel level);
-    
-	/**
-	 * Method to convey the change in monitoring level. It is a usual practice that
-	 * various components may have <em> single instance of listener </em> to listen
-	 * to the changes in monitoring-level for various registered Stats objects. This
-	 * method gives a context for such components to be returned when it is
-	 * called.
-	 * @deprecated
-	 * @param from		the MonitoringLevel before the change
-	 * @param to		the MonitoringLevel after the change
-	 * @param handback	the Stats object that was passed to the registry during registration. It
-	 * is guaranteed that it will be unchanged by monitoring framework.
-	 */
-	public void changeLevel(MonitoringLevel from, MonitoringLevel to, 
-		org.glassfish.j2ee.statistics.Stats handback);
 
 	/**
 	 * Method to convey the change in monitoring level. The configuration

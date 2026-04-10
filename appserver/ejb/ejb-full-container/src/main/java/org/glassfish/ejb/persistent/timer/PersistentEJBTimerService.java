@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.persistent.timer;
 
@@ -1353,20 +1353,19 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
         String resourceName = getTimerResource(_ejbt);
 
         File root = _ejbContainerUtil.getServerContext().getInstallRoot();
-        boolean is_upgrade = isUpgrade(resourceName, _ejbt, root);
 
         File rootScratchDir = _ejbContainerUtil.getServerEnvironment().getApplicationStubPath();
         File appScratchFile = new File(rootScratchDir, TIMER_SERVICE_APP_NAME);
 
         // Remember the value before the file is created during deploy
-        boolean removeOldTimers = is_upgrade && !appScratchFile.exists();
+        boolean removeOldTimers = !appScratchFile.exists();
 
         boolean available = _ejbContainerUtil.getDeployment().isRegistered(TIMER_SERVICE_APP_NAME);
         if (available) {
             logger.log (Level.WARNING, "EJBTimerService had been explicitly deployed.");
         } else {
             if (resourceName != null) {
-                available = deployEJBTimerService(root, appScratchFile, resourceName, is_upgrade);
+                available = deployEJBTimerService(root, appScratchFile, resourceName);
             } else {
                 logger.log (Level.WARNING, "Cannot deploy EJBTimerService: Timer resource for target "
                         + target + " is not available");
@@ -1422,7 +1421,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
     }
 
     private static boolean deployEJBTimerService(File root, File appScratchFile,
-            String resourceName, boolean is_upgrade) {
+            String resourceName) {
         boolean deployed = false;
         logger.log (Level.INFO, "Loading EJBTimerService. Please wait.");
         File app = null;
@@ -1444,7 +1443,7 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
                 EjbContainerUtil _ejbContainerUtil = EjbContainerUtilImpl.getInstance();
                 // appScratchFile is a marker file and needs to be created on Das on the
                 // first access of the Timer Service application
-                if (_ejbContainerUtil.isDas() && appScratchFile.createNewFile() && !is_upgrade) {
+                if (_ejbContainerUtil.isDas() && appScratchFile.createNewFile()) {
                     params.origin = OpsParams.Origin.deploy;
                 } else {
                     params.origin = OpsParams.Origin.load;
@@ -1481,59 +1480,5 @@ public class PersistentEJBTimerService extends NonPersistentEJBTimerService {
         }
 
         return deployed;
-    }
-
-    private static boolean isUpgrade(String resource, EjbTimerService _ejbt, File root) {
-        boolean upgrade = false;
-        Property prop = null;
-        if (_ejbt != null) {
-            List<Property> properties = _ejbt.getProperty();
-            if (properties != null) {
-                for (Property p : properties) {
-                    if (p.getName().equals(EjbContainerUtil.TIMER_SERVICE_UPGRADED)) {
-                        String value = p.getValue();
-                        if (value != null && "false".equals(value)) {
-                            upgrade = true;
-                            prop = p;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("===> Upgrade? <==");
-        }
-        if (upgrade) {
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("===> Upgrade! <==");
-            }
-            boolean success = false;
-            try {
-                File dir = new File(root, "lib/install/databases/upgrade");
-
-                if (!dir.exists()) {
-                    logger.log (Level.WARNING, "Cannot upgrade EJBTimerService: " +
-                            "required directory is not available");
-                } else {
-                    Java2DBProcessorHelper h = new Java2DBProcessorHelper(TIMER_SERVICE_APP_NAME);
-                    success = h.executeDDLStatement(
-                            dir.getCanonicalPath() + "/ejbtimer_upgrade_", resource);
-                    ConfigSupport.apply(new SingleConfigCode<Property>() {
-                        public Object run(Property p) throws PropertyVetoException, TransactionFailure {
-                            p.setValue("true");
-                            return null;
-                        }
-                    }, prop);
-                }
-            } catch (Exception e) {
-                logger.log (Level.WARNING, "", e);
-            }
-            if (!success) {
-                logger.log (Level.SEVERE, "Failed to upgrade EJBTimerService: see log for details");
-            }
-        }
-        return upgrade;
     }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.admin.mbeanserver;
 
@@ -270,7 +270,6 @@ public final class JMXStartupService implements PostConstruct {
                     + ", Address = " + c.getAddress()
                     + ", Port = " + c.getPort()
                     + ", AcceptAll = " + c.getAcceptAll()
-                    + ", AuthRealmName = " + c.getAuthRealmName()
                     + ", SecurityEnabled = " + c.getSecurityEnabled()
                     + "}";
         }

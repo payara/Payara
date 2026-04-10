@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -83,26 +83,6 @@ public class CounterImpl implements Counter {
     @Override
     public void inc(long n) {
         count.add(n);
-    }
-
-    /**
-     * Decrement the counter by one.
-     * @deprecated since Payara 5.193; removed in MP Metrics 2.0
-     */
-    @Deprecated
-    public void dec() {
-        dec(1);
-    }
-
-    /**
-     * Decrement the counter by {@code n}.
-     *
-     * @param n the amount by which the counter will be decreased
-     * @deprecated since Payara 5.193; removed in MP Metrics 2.0
-     */
-    @Deprecated
-    public void dec(long n) {
-        count.add(-n);
     }
 
     /**

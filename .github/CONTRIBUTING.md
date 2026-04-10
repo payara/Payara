@@ -35,19 +35,27 @@ git remote add origin https://github.com/<YourUsername>/Payara
 You are now free to start working on Payara issues, adding new features, or tinkering with the codebase.
 
 ## Building Payara
-Payara uses maven to build the server, you can use JDK 11 to build Payara Server, we distribute Payara built with JDK 11.
-To build Payara from the root of the cloned source code tree execute;
+Payara uses Maven to build the server. You can use JDK 21 to build Payara Server.
+To build Payara from the root of the cloned source code tree, execute:
 ```
 mvn -DskipTests clean package
 ```
-When finished the Payara distribution zip file will be available in the directory;
+When finished, the Payara distribution zip file will be available in the directory:
 ```
 appserver/distributions/payara/target/payara.zip
 ```
-Payara Micro will be available in the path
+Payara Micro will be available in the path:
 ```
 appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar
 ```
+
+The following Maven profiles are available for building different distributions of Payara:
+* `DefaultBuild` (default): Builds Payara Server, Payara Server ML, Payara Server Web Profile, Payara Server Web Profile ML, Payara Micro
+* `QuickBuild`: Skips building Payara Server ML, Payara Server Web Profile, Payara Server Web Profile ML 
+* `BuildEmbedded`: Adds Payara Embedded All and Payara Embedded Web to the build reactor
+  * If combined with `QuickBuild` Payara Embedded Web is excluded from the build reactor
+* `BuildDockerImages`: Adds the Payara Server, Payara Server Web Profile, Payara Micro, and Payara Docker Nodes Docker images to the build reactor
+  * If combined with `QuickBuild` the Payara Server Web Profile Docker image is excluded from the build reactor 
 
 ## Updating your fork
 As Payara is under continuous development, our upstream branch is regularly updated with dev and community commits. It is worth synchronising your repository with the upstream repo you added previously.

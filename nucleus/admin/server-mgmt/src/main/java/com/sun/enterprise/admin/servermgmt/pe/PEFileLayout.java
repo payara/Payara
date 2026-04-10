@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
@@ -203,12 +202,6 @@ public class PEFileLayout
     public File getJ2EEModulesDir()
     {
         return new File(getApplicationsRootDir(), J2EE_MODULES_DIR);
-    }
-
-    public static final String LIFECYCLE_MODULES_DIR = "lifecycle-modules";
-    public File getLifecycleModulesDir()
-    {
-        return new File(getApplicationsRootDir(), LIFECYCLE_MODULES_DIR);
     }
 
     public static final String MBEAN_FOLDER_NAME = "mbeans";

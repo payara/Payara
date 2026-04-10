@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -175,7 +175,7 @@ public abstract class CreateRemoteNodeCommand implements AdminCommand {
         } catch (CommandValidationException e) {
             String invalidParamsMsg = Strings.get("node.ssh.invalid.params");
             if (!force) {
-                msg.append(StringUtils.cat(NL, invalidParamsMsg, Strings.get("create.node.ssh.or.dcom.not.created", getType().toString()), e.getMessage()));
+                msg.append(StringUtils.cat(NL, invalidParamsMsg, Strings.get("create.node.ssh.not.created", getType().toString()), e.getMessage()));
                 report.setMessage(msg.toString());
                 report.setActionExitCode(FAILURE);
                 return;

@@ -83,4 +83,9 @@ public class PayaraResourcesSniffer extends ResourcesSniffer {
         result.add(ResourceConstants.PAYARA_RESOURCES_LOCATION);
         return result;
     }
+    
+    @Override
+    public List<String> getDeploymentConfigurationPaths() {
+        return deploymentConfigurationPaths;
+    }
 }

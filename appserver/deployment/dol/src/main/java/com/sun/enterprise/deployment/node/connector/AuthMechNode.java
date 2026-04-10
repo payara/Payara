@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.connector;
 
@@ -104,7 +105,7 @@ public class AuthMechNode extends DeploymentDescriptorNode {
 	Iterator authMechs = null;
 
 	if (descriptor instanceof ConnectorDescriptor) {
-	    authMechs = ((ConnectorDescriptor)descriptor).getAuthMechanisms().iterator();
+	    authMechs = ((ConnectorDescriptor)descriptor).getOutboundResourceAdapter().getAuthMechanisms().iterator();
 	} else if (descriptor instanceof OutboundResourceAdapter) {
 	    authMechs = ((OutboundResourceAdapter)descriptor).getAuthMechanisms().iterator();
 	}

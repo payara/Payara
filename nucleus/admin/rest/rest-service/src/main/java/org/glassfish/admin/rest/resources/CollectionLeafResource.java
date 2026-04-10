@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admin.rest.resources;
 
@@ -91,7 +91,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
     protected Dom parent;
     protected String tagName;
     protected String target;
-    protected String profiler = "false";
     protected boolean isJvmOptions = false;
 
     public static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CollectionLeafResource.class);
@@ -135,7 +134,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 target = parent.parent().attribute("name");
             } else {
                 target = parent.parent().parent().attribute("name");
-                profiler = "true";
             }
         }
     }
@@ -183,23 +181,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
                 "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
         }
         return response;
-    }
-
-    @PUT //create
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Deprecated
-    public Response add(HashMap<String, String> data) throws TransactionFailure {
-        String postCommand = getPostCommand();
-        Map<String, String> payload = null;
-
-        if (isJvmOptions(postCommand)) {
-            payload = processData(data, false);
-        } else {
-            payload = data;
-        }
-
-        return runCommand(postCommand, payload, "rest.resource.create.message",
-            "\"{0}\" created successfully.", "rest.resource.post.forbidden","POST on \"{0}\" is forbidden.");
     }
 
     @DELETE //delete
@@ -369,9 +350,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> results = ResourceUtil.processJvmOptions(data, removeVersioning);
         if (results.get("target") == null) {
             results.put("target", target);
-        }
-        if (results.get("profiler") == null) {
-            results.put("profiler", profiler);
         }
 
         return results;

@@ -55,19 +55,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.startup;
 
 
-import org.apache.catalina.Container;
-import org.apache.catalina.Loader;
 import org.apache.tomcat.util.digester.Digester;
-import org.apache.tomcat.util.digester.Rule;
 import org.apache.tomcat.util.digester.RuleSetBase;
-import org.xml.sax.Attributes;
-
-import java.lang.reflect.Constructor;
 
 
 /**
@@ -170,8 +164,7 @@ public class ContextRuleSet extends RuleSetBase {
         if (create) {            
             digester.addRule(prefix + "Context",
                              new LifecycleListenerRule
-                                 (digester,
-                                  "org.apache.catalina.startup.ContextConfig",
+                                 ("org.apache.catalina.startup.ContextConfig",
                                   "configClass"));
             digester.addSetNext(prefix + "Context",
                                 "addChild",
@@ -270,70 +263,6 @@ public class ContextRuleSet extends RuleSetBase {
     protected boolean isDefaultContext() {
 
         return (prefix.endsWith("/Default"));
-
-    }
-
-
-}
-
-
-// ----------------------------------------------------------- Private Classes
-
-
-/**
- * Rule that creates a new <code>Loader</code> instance, with the parent
- * class loader associated with the top object on the stack (which must be
- * a <code>Container</code>), and pushes it on to the stack.
- */
-
-final class CreateLoaderRule extends Rule {
-
-    public CreateLoaderRule(Digester digester, String loaderClass,
-                            String attributeName) {
-
-        super(digester);
-        this.loaderClass = loaderClass;
-        this.attributeName = attributeName;
-
-    }
-
-    private final String attributeName;
-
-    private final String loaderClass;
-
-    @Override
-    public void begin(Attributes attributes) throws Exception {
-
-        // Look up the required parent class loader
-        Container container = (Container) digester.peek();
-        ClassLoader parentClassLoader = container.getParentClassLoader();
-
-        // Instantiate a new Loader implementation object
-        String className = loaderClass;
-        if (attributeName != null) {
-            String value = attributes.getValue(attributeName);
-            if (value != null)
-                className = value;
-        }
-        Class<?> clazz = Class.forName(className);
-        Class types[] = { ClassLoader.class };
-        Object args[] = { parentClassLoader };
-        Constructor constructor = clazz.getDeclaredConstructor(types);
-        Loader loader = (Loader) constructor.newInstance(args);
-
-        // Push the new loader onto the stack
-        digester.push(loader);
-        if (digester.getDebug() >= 1)
-            digester.log("new " + loader.getClass().getName());
-
-    }
-
-    @Override
-    public void end() throws Exception {
-
-        Loader loader = (Loader) digester.pop();
-        if (digester.getDebug() >= 1)
-            digester.log("pop " + loader.getClass().getName());
 
     }
 

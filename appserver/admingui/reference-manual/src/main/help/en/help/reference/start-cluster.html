@@ -17,7 +17,7 @@
     SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
 
 -->
-<!-- Portions Copyright [2019] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
@@ -86,7 +86,6 @@
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] start-cluster [--help]
-[--autohadboverride={true|false}]
 [--verbose={false|true}] cluster-name</code></pre>
 </div>
 </div>
@@ -96,8 +95,7 @@
 <div class="paragraph">
 <p>The <code>start-cluster</code> subcommand starts a cluster by starting all
 \{product---name} instances in the cluster that are not already running.
-This subcommand requires the Distributed Component Object Model (DCOM)
-remote protocol or secure shell (SSH) to be configured on the host where
+This subcommand requires the secure shell (SSH) to be configured on the host where
 the domain administration server (DAS) is running and on all hosts where
 instances in the cluster reside.</p>
 </div>
@@ -109,9 +107,9 @@ instances in the cluster reside.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>If all instances reside on the same host as the DAS, DCOM or SSH is not
+<p>If all instances reside on the same host as the DAS or SSH is not
 required. You might require to start a cluster in which instances reside
-on hosts where DCOM or SSH is not configured that are remote from the
+on hosts where SSH is not configured that are remote from the
 DAS. In this situation, run the
 <a href="start-local-instance.html#start-local-instance-1"><code>start-local-instance</code>(1)</a>
 subcommand for each instance from the host where the instance resides.</p>
@@ -140,13 +138,6 @@ options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> 
 <dt class="hdlist1"><code>-?</code></dt>
 <dd>
 <p>Displays the help text for the subcommand.</p>
-</dd>
-<dt class="hdlist1"><code>--autohadboverride</code></dt>
-<dd>
-<p>Do not specify this option. This option is retained for compatibility
-with earlier releases. If you specify this option, a syntax error does
-not occur. Instead, the subcommand runs successfully and displays a
-warning message that the option is ignored.</p>
 </dd>
 <dt class="hdlist1"><code>--verbose</code></dt>
 <dd>
@@ -232,8 +223,7 @@ Command start-cluster executed successfully.</code></pre>
 <a href="list-clusters.html#list-clusters-1"><code>list-clusters</code>(1)</a>,
 <a href="setup-ssh.html#setup-ssh-1"><code>setup-ssh</code>(1)</a>,
 <a href="start-local-instance.html#start-local-instance-1"><code>start-local-instance</code>(1)</a>,
-<a href="stop-cluster.html#stop-cluster-1"><code>stop-cluster</code>(1)</a>,
-<a href="validate-dcom.html#validate-dcom-1"><code>validate-dcom</code>(1)</a></p>
+<a href="stop-cluster.html#stop-cluster-1"><code>stop-cluster</code>(1)</a></p>
 </div>
 </div>
 </div>

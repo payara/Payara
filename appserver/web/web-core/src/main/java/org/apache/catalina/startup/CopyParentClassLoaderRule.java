@@ -55,13 +55,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.startup;
 
 
 import org.apache.catalina.Container;
-import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.digester.Rule;
 import org.xml.sax.Attributes;
 
@@ -89,9 +88,8 @@ public class CopyParentClassLoaderRule extends Rule {
      *
      * @param digester Digester we are associated with
      */
-    public CopyParentClassLoaderRule(Digester digester) {
-
-        super(digester);
+    public CopyParentClassLoaderRule() {
+        super();
 
     }
 

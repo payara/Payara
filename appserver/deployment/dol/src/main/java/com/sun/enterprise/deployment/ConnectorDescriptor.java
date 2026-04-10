@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment;
 
@@ -161,176 +161,6 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
         return ConnectorNode.SPEC_VERSION;
     }
 
-    ////////////////////////////////////////////////////////////////////
-    // The following are access methods for connector1.0's
-    // resourceadapter element.
-    // We no longer support them.
-    ////////////////////////////////////////////////////////////////////
-
-    //QQ. FIXME.  After verifier stops using this interface,
-    //this REALLY needs to be removed. (for 1.0 cases only)
-
-    // The methods for connection and connection factories have now shifted
-    //to OutboundResourceAdapter to maintain backward compatibility
-    //Sheetal. These methods should be removed from here once we start
-    //using new DOL
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public String getConnectionFactoryInterface() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param connectionFactoryInterface
-     * @deprecated
-     */
-    public void
-    setConnectionFactoryInterface(String connectionFactoryInterface) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated
-     */
-    public String
-    getConnectionFactoryImpl() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param connectionFactoryImpl
-     * @deprecated
-     */
-    public void
-    setConnectionFactoryImpl(String connectionFactoryImpl) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public String
-    getConnectionInterface() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param connectionInterface
-     * @deprecated
-     */
-    public void
-    setConnectionInterface(String connectionInterface) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public String getConnectionImpl() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param connectionImpl
-     * @deprecated
-     */
-    public void
-    setConnectionImpl(String connectionImpl) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public String getManagedConnectionFactoryImpl() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param managedConnectionFactoryImpl
-     * @deprecated
-     */
-    public void setManagedConnectionFactoryImpl(String managedConnectionFactoryImpl) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public boolean supportsReauthentication() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public String getReauthenticationSupport() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param reauthenticationSupport
-     * @deprecated
-     */
-    public void setReauthenticationSupport(boolean reauthenticationSupport) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated
-     */
-    public void setReauthenticationSupport(String reauthSupport) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public String getTransSupport() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public int getTransactionSupport() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param transactionSupport
-     * @deprecated
-     */
-    public void setTransactionSupport(int transactionSupport) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param support
-     * @deprecated
-     */
-    public void setTransactionSupport(String support) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @return
-     * @deprecated
-     */
-    public Set getAuthMechanisms() {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * @return a set of service-ref from this bundle or null
      * if none
@@ -349,47 +179,6 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
             securityPermissions = new OrderedSet();
         }
         return securityPermissions;
-    }
-
-    /**
-     * @param mech
-     * @return
-     * @deprecated
-     */
-    public boolean addAuthMechanism(AuthMechanism mech)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param mech
-     * @return
-     * @deprecated
-     */
-    public boolean removeAuthMechanism(AuthMechanism mech)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @param mech
-     * @return
-     * @deprecated
-     */
-    public boolean addAuthMechanism(int mech)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-
-    /**
-     * @param mech
-     * @return
-     * @deprecated
-     */
-    public boolean removeAuthMechanism(int mech)
-    {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -591,18 +380,13 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
     */
     public String getVersion() {
         return version;
-        //throw new UnsupportedOperationException();
     }
 
     /** set value for version
      * @param version
     */
     public void setVersion(String version) {
-        //TODO V3 validate version ?
         this.version = version;
-        //TODO V3 need to have "set" variable ?
-//        versionSet = true;
-        //throw new UnsupportedOperationException();
     }
 
     /** get value for resourceadapter version (1.5 schema
@@ -930,15 +714,6 @@ public class ConnectorDescriptor extends CommonResourceBundleDescriptor {
             }
         }
         return null;
-    }
-
-    /**
-     * @param type
-     * @return
-     * @deprecated
-     */
-    public boolean isMessageListenerSupported(String type) {
-        throw new UnsupportedOperationException();
     }
 
 

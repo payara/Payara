@@ -886,7 +886,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
     }
 
     /**
-     * Configures the valve_ and listener_ properties of this VirtualServer.
+     * Configures the listener_ properties of this VirtualServer.
      */
     protected void configureCatalinaProperties() {
 
@@ -904,9 +904,7 @@ public class VirtualServer extends StandardHost implements org.glassfish.embedda
             }
 
             if (propName != null) {
-                if (propName.startsWith("valve_")) {
-                    addValve(propValue);
-                } else if (propName.startsWith("listener_")) {
+                if (propName.startsWith("listener_")) {
                     addListener(propValue);
                 } else if (propName.equals("securePagesWithPragma")) {
                     setSecurePagesWithPragma(Boolean.valueOf(propValue));

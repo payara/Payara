@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.web.config.serverbeans;
 
@@ -158,28 +158,6 @@ public interface WebContainerAvailability extends ConfigBeanProxy,
     public void setPersistenceScope(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the persistenceStoreHealthCheckEnabled property.
-     *
-     * Deprecated. This attribute has no effect. If you wish to control
-     * enabling/disabling HADB health check, refer to store-healthcheck-enabled
-     * attribute in the availability-service element.
-     * 
-     * @return possible object is
-     *         {@link String }
-     */
-    @Deprecated
-    @Attribute (defaultValue="false",dataType=Boolean.class)
-    public String getPersistenceStoreHealthCheckEnabled();
-
-    /**
-     * Sets the value of the persistenceStoreHealthCheckEnabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setPersistenceStoreHealthCheckEnabled(String value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the ssoFailoverEnabled property.
      *
      * Controls whether Single-Sign-On state will be made available for failover
@@ -197,29 +175,6 @@ public interface WebContainerAvailability extends ConfigBeanProxy,
      *              {@link String }
      */
     public void setSsoFailoverEnabled(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the httpSessionStorePoolName property.
-     *
-     * This is the jndi-name for the JDBC Connection Pool used by the HTTP
-     * Session Persistence Framework. If missing, internal code will default it
-     * to value of store-pool-name under availability-service
-     * (ultimately "jdbc/hastore").
-     * 
-     * @return possible object is
-     *         {@link String }
-     */
-    @Deprecated
-    @Attribute
-    public String getHttpSessionStorePoolName();
-
-    /**
-     * Sets the value of the httpSessionStorePoolName property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setHttpSessionStorePoolName(String value) throws PropertyVetoException;
 
     /**
      * Gets thevalue of disableJreplica property.

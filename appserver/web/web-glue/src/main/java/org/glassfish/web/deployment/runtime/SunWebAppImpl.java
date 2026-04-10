@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 package org.glassfish.web.deployment.runtime;
 
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
@@ -245,16 +245,6 @@ public class SunWebAppImpl extends WebPropertyContainer implements SunWebApp {
     //
     public JspConfig getJspConfig() {
         return (JspConfig) this.getValue(JSP_CONFIG);
-    }
-
-    // This attribute is optional
-    public void setLocaleCharsetInfo(LocaleCharsetInfo value) {
-        this.setValue(LOCALE_CHARSET_INFO, value);
-    }
-
-    //
-    public LocaleCharsetInfo getLocaleCharsetInfo() {
-        return (LocaleCharsetInfo) this.getValue(LOCALE_CHARSET_INFO);
     }
 
     // This method verifies that the mandatory properties are set
