@@ -77,9 +77,8 @@
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
 
-        <script.extension></script.extension> <!-- Default empty for Unix-like systems -->
         <payara.home>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara7</payara.home>
-        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin</payara.asadmin>
         <payara.domain.name>domain1</payara.domain.name>
 
         <!-- Repackaged versions -->
@@ -290,7 +289,7 @@
                 </os>
             </activation>
             <properties>
-                <script.extension>.bat</script.extension>
+                <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin.bat</payara.asadmin>
             </properties>
         </profile>
         <profile>
