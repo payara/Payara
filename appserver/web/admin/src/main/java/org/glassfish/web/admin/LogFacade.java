@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2018] [Payara Foundation and/or its affiliates] 
+ * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
  */
 
 package org.glassfish.web.admin;
@@ -97,11 +97,6 @@ public class LogFacade {
             message = "A default virtual server is required.  Please use --default-virtual-server to specify this value.",
             level = "INFO")
     public static final String CREATE_HTTP_LISTENER_VS_BLANK = prefix + "00005";
-
-    @LogMessageInfo(
-            message = "--defaultVS and --default-virtual-server conflict.  Please use only --default-virtual-server to specify this value.",
-            level = "INFO")
-    public static final String CREATE_HTTP_LISTENER_VS_BOTH_PARAMS = prefix + "00006";
 
     @LogMessageInfo(
             message = "Attribute value (default-virtual-server = {0}) is not found in list of virtual servers defined in config.",

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.config;
 
@@ -129,45 +130,6 @@ public interface EjbContainerAvailability extends ConfigBeanProxy,
      *              {@link String }
      */
     void setSfsbPersistenceType(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the sfsbCheckpointEnabled property.
-     *
-     * This attribute is deprecated, replaced by availability-enabled and will
-     * be ignored if present.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute
-    String getSfsbCheckpointEnabled();
-
-    /**
-     * Sets the value of the sfsbCheckpointEnabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setSfsbCheckpointEnabled(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the sfsbQuickCheckpointEnabled property.
-     *
-     * This attribute is deprecated and will be ignored if present.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute
-    String getSfsbQuickCheckpointEnabled();
-
-    /**
-     * Sets the value of the sfsbQuickCheckpointEnabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setSfsbQuickCheckpointEnabled(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the sfsbStorePoolName property.

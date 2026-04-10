@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
+
 
 /**
  * <BR> <I>$Source: /cvs/glassfish/appserv-core/src/java/com/sun/ejb/containers/util/pool/Pool.java,v $</I>
@@ -58,24 +59,6 @@ package com.sun.ejb.containers.util.pool;
  *	
  */
 public interface Pool {
-    
-    /**
-     * @param canWait
-     * @param param
-     * @return
-       @deprecated  
-    */
-    public Object getObject(boolean canWait, Object param)
-        throws PoolException;
-    
-    /**
-     * @param maxWaitTime
-     * @param param
-     * @return
-       @deprecated  
-    */
-    public Object getObject(long maxWaitTime, Object param)
-        throws PoolException;
     
     /**
      * Get an object from the pool within the specified time.

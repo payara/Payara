@@ -505,15 +505,8 @@ public final class GlassFishORBManager {
             String initialPort = checkORBInitialPort(orbInitProperties);
 
             String orbInitialHost = checkORBInitialHost(orbInitProperties);
-            String[] orbInitRefArgs;
-            if (System.getProperty(IIOP_ENDPOINTS_PROPERTY) != null &&
-                    !System.getProperty(IIOP_ENDPOINTS_PROPERTY).isEmpty()) {
-                orbInitRefArgs = getORBInitRef(
-                        System.getProperty(IIOP_ENDPOINTS_PROPERTY));
-            } else {
-                // Add -ORBInitRef for INS to work
-                orbInitRefArgs = getORBInitRef(orbInitialHost, initialPort);
-            }
+            // Add -ORBInitRef for INS to work
+            String[] orbInitRefArgs = getORBInitRef(orbInitialHost, initialPort);
 
             // In a server, don't configure any default acceptors so that lazy init
             // can be used.  Actual lazy init setup takes place in PEORBConfigurator
@@ -942,11 +935,6 @@ public final class GlassFishORBManager {
 
         return newArgs;
     }
-
-    // TODO : Move this to naming  NOT needed for V3 FCS
-
-    public static final String IIOP_ENDPOINTS_PROPERTY =
-            "com.sun.appserv.iiop.endpoints";
 
     private static final String IIOP_URL = "iiop:1.2@";
 

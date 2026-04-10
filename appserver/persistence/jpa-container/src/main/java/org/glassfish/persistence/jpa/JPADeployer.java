@@ -119,6 +119,9 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
     /** Key used to get/put emflists in transientAppMetadata */
     private static final String EMF_KEY = EntityManagerFactory.class.toString();
 
+    /** Key used to get/put named emf map in transientAppMetadata */
+    private static final String EMF_NAME_KEY = EntityManagerFactory.class.toString() + "_nameMap";
+
     @Override public MetaData getMetaData() {
 
         return new MetaData(true /*invalidateCL */ ,
@@ -582,6 +585,15 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
                             appInfo.addTransientAppMetaData(EMF_KEY, emfsCreatedForThisApp);
                         }
                         emfsCreatedForThisApp.add(puLoader.getEMF());
+
+                        // Also store EMF by persistence unit name for Jakarta Data dataStore resolution
+                        @SuppressWarnings("unchecked")
+                        Map<String, EntityManagerFactory> emfNameMap = appInfo.getTransientAppMetaData(EMF_NAME_KEY, Map.class);
+                        if (emfNameMap == null) {
+                            emfNameMap = new java.util.HashMap<>();
+                            appInfo.addTransientAppMetaData(EMF_NAME_KEY, emfNameMap);
+                        }
+                        emfNameMap.put(pud.getName(), puLoader.getEMF());
                     } // if (saveEMF)
                 } // if(puLoader != null)
             }

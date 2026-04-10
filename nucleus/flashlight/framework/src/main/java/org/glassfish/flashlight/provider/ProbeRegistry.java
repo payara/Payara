@@ -37,13 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.flashlight.provider;
 
 import java.util.Collection;
 import java.util.ArrayList;
 
-import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.impl.core.*;
 
 import org.jvnet.hk2.annotations.Service;
@@ -68,19 +68,6 @@ public class ProbeRegistry {
 
     public static ProbeRegistry getInstance() {
         return _me;
-    }
-
-    // bnevins -- todo this is a huge concurrency bug!
-    // why is it even here?!?
-    // @deprecated
-
-    @Deprecated
-    public static ProbeRegistry createInstance() {
-    	if (_me == null) {
-    		_me = new ProbeRegistry();
-    	}
-
-    	return _me;
     }
 
     public static void cleanup() {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.client.acc;
 
@@ -90,7 +91,6 @@ public class AppclientCommandArguments {
     private final static String XML = "xml";
     private final static String CONFIGXML = "configxml";
     private final static String USER = "user";
-    private final static String PASSWORD = "password";
     private final static String PASSWORDFILE = "passwordfile";
     private final static String TARGETSERVER = "targetserver";
     private final static String USAGE = "usage";
@@ -100,7 +100,7 @@ public class AppclientCommandArguments {
 
     /* names of options that take a value */
     private final static String[] valuedArgNames =
-            new String[] {MAINCLASS, NAME, XML, CONFIGXML, USER, PASSWORD, PASSWORDFILE, TARGETSERVER};
+            new String[] {MAINCLASS, NAME, XML, CONFIGXML, USER, PASSWORDFILE, TARGETSERVER};
 
     /* names of options that take no value */
     private final static String[] unvaluedArgNames =
@@ -114,7 +114,6 @@ public class AppclientCommandArguments {
     private List<String> unrecognizedArgs = new ArrayList<String>();
 
     private char[] password = null;
-    private boolean isPasswordOptionUsed = false;
 
     private String configPathToUse = null;
 
@@ -281,16 +280,8 @@ public class AppclientCommandArguments {
                              ) {
                              value = value.substring(1, value.length() - 1);
                          }
-                         if (arg.equals(PASSWORD)) {
-                             password = value.toCharArray();
-                             isPasswordOptionUsed = true;
-                             if (isConfig) {
-                                 sb.append(LINE_SEP).append("  ").append(arg).append("=???");
-                             }
-                         } else {
-                             if (isConfig) {
-                                 sb.append(LINE_SEP).append("  ").append(arg).append("=").append(value);
-                             }
+                         if (isConfig) {
+                             sb.append(LINE_SEP).append("  ").append(arg).append("=").append(value);
                          }
                          valuedArgs.get(arg).set(value);
                          if (arg.equals(PASSWORDFILE)) {
@@ -360,7 +351,6 @@ public class AppclientCommandArguments {
 
     private void validateOptions() throws UserError {
         ensureAtMostOneOfNameAndMainClass();
-        warnAboutPasswordUsage();
     }
     /**
      * Makes sure that at most one of the -name and -mainclass arguments
@@ -375,16 +365,4 @@ public class AppclientCommandArguments {
                     "Specify either -mainclass or -name but not both to identify the app client to be run"));
         }
     }
-
-    /**
-     * Logs a warning if the user specified the -password command line
-     * option, which is discouraged and deprecated.
-     */
-    private void warnAboutPasswordUsage() {
-        if (isPasswordOptionUsed) {
-            final String msg = accLogger.getResourceBundle().getString("appclient.password.deprecated");
-            logger.warning(msg);
-        }
-    }
-
 }

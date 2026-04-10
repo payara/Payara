@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016-2021] [Payara Foundation]
+//Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -169,7 +169,7 @@ public class DeployerImpl implements Deployer {
     public Collection<String> getDeployedApplications() throws GlassFishException {
         try {
             CommandExecutorImpl executer = habitat.getService(CommandExecutorImpl.class);
-            ActionReport report = executer.executeCommand("list-components");
+            ActionReport report = executer.executeCommand("list-applications");
             Properties props = report.getTopMessagePart().getProps();
             return new ArrayList<>(props.stringPropertyNames());
         } catch (Exception e) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.kernel.embedded;
 
@@ -80,10 +81,5 @@ public class EmbeddedDomainXml extends GFDomainXml {
         }
 
         return EmbeddedDomainXml.class.getClassLoader().getResource("config/domain.xml");
-    }
-
-    @Override
-    protected void upgrade() {
-        // for now, we don't upgrade in embedded mode...
     }
 }

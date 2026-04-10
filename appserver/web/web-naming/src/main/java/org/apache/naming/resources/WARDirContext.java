@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.apache.naming.resources;
 
@@ -497,7 +498,7 @@ public class WARDirContext extends BaseDirContext {
         if (!zipEntry.isDirectory())
             attrs.setResourceType("");
         attrs.setContentLength(zipEntry.getSize());
-        attrs.setLastModified(new Date(zipEntry.getTime()));
+        attrs.setLastModifiedDate(new Date(zipEntry.getTime()));
         
         return attrs;
         

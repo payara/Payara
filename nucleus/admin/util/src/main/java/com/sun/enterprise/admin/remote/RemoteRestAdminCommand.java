@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2023] Payara Foundation and/or affiliates
+ * Portions Copyright 2017-2026 Payara Foundation and/or affiliates
  */
 
 package com.sun.enterprise.admin.remote;
@@ -329,16 +329,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      */
     public void setResponseFormatType(String responseFormatType) {
         this.responseFormatType = responseFormatType;
-    }
-
-    /**
-     * If set, the raw response from the command is written to the
-     * specified stream.
-     * @depecated no-op
-     */
-    @Deprecated
-    public void setUserOut(OutputStream userOut) {
-
     }
 
     /**

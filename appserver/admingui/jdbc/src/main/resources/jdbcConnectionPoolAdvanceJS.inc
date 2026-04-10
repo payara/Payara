@@ -188,21 +188,21 @@
                 disableComponent(textId, 'text');
                 document.getElementById(textId).value=textVal;
                 enableComponent(dropdownId, 'select');
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optB', false);
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optA', true);
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optB', false); });
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optA', true); });
                 document.getElementById(optionId).value='dropdown';
             }else{
                 enableComponent(textId, 'text');
                 disableComponent(dropdownId, 'select');
                 getTextElement(textId).focus();
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optB', true);
-                #{themeJavascript.JS_PREFIX}.radiobutton.setChecked(propId+':optA', false);
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optB', true); });
+                require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setChecked(propId+':optA', false); });
                 document.getElementById(optionId).value='text';
             }         
       }
       function disableTwoRadioButtons(opt, propId, optionId){
-          #{themeJavascript.JS_PREFIX}.radiobutton.setDisabled(propId+':optA', opt);
-          #{themeJavascript.JS_PREFIX}.radiobutton.setDisabled(propId+':optB', opt);
+          require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setDisabled(propId+':optA', opt); });
+          require(['webui/suntheme/radiobutton'], function (radiobutton) { radiobutton.setDisabled(propId+':optB', opt); });
           document.getElementById(optionId).value='';
       }
     </script>

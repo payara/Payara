@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.util;
 
@@ -237,21 +237,6 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "INFO")
     public final static String installRootIsNull = LOGMSG_PREFIX + "-00023";
-
-    @LogMessageInfo(
-            message = "default-config not detected during upgrade. Running DefaultConfigUpgrade to create default-config.",
-            publish = true,
-            level = "INFO")
-    public final static String runningDefaultConfigUpgrade = LOGMSG_PREFIX + "-00024";
-
-
-    @LogMessageInfo(
-            message = "Failure during upgrade - could not create default-config",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String defaultConfigUpgradeFailure = LOGMSG_PREFIX + "-00025";
 
     @LogMessageInfo(
             message = "Failure creating SecurityService Config",
@@ -772,22 +757,6 @@ public class ConfigApiLoggerInfo {
     public final static String badEnv = LOGMSG_PREFIX + "-00086";
 
 
-    @LogMessageInfo(
-            message = "Successful Upgrade domain.xml with ",
-
-            publish = true,
-            level = "FINE")
-    public final static String successfulUpgrade = LOGMSG_PREFIX + "-00087";
-
-
-    @LogMessageInfo(
-            message = " upgrading domain.xml failed ",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failedUpgrade = LOGMSG_PREFIX + "-00088";
-
 
     @LogMessageInfo(
             message = " does not exist or is empty, will use backup",
@@ -884,14 +853,6 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String nullHttpService = LOGMSG_PREFIX + "-00101";
-
-    @LogMessageInfo(
-            message = "Failure while upgrading domain.xml",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failUpgradeDomain = LOGMSG_PREFIX + "-00102";
 
     @LogMessageInfo(
             message = "Cannot get default configuration for: {0}",

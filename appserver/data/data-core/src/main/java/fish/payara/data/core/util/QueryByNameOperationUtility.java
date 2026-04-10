@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2025-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ import fish.payara.data.core.cdi.extension.CursoredPageImpl;
 import fish.payara.data.core.cdi.extension.EntityMetadata;
 import fish.payara.data.core.cdi.extension.PageImpl;
 import fish.payara.data.core.cdi.extension.QueryData;
+import fish.payara.data.core.cdi.extension.QueryMetadata;
 import fish.payara.data.core.querymethod.QueryMethodParser;
 import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
@@ -63,7 +64,6 @@ import jakarta.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -110,10 +110,11 @@ public class QueryByNameOperationUtility {
                                                       QueryData dataForQuery,
                                                       EntityManager entityManager,
                                                       TransactionManager transactionManager) {
-        List<?> entitiesToDelete = findEntitiesForModification(args, dataForQuery, entityManager);
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
+        List<?> entitiesToDelete = findEntitiesForModification(args, queryMetadata, entityManager);
 
         if (entitiesToDelete.isEmpty()) {
-            return processReturnQueryUpdate(dataForQuery.getMethod(), 0);
+            return processReturnQueryUpdate(queryMetadata.getMethod(), 0);
         }
 
         try {
@@ -126,8 +127,9 @@ public class QueryByNameOperationUtility {
 
             endTransaction(transactionManager, entityManager, dataForQuery);
 
-            clearCaches(entityManager);
-            return processReturnQueryUpdate(dataForQuery.getMethod(), entitiesToDelete.size());
+            // Evict specific instances from cache instead of all instances of the entity type
+            clearCache(entityManager, queryMetadata.getDeclaredEntityClass(), entitiesToDelete);
+            return processReturnQueryUpdate(queryMetadata.getMethod(), entitiesToDelete.size());
 
         } catch (OptimisticLockException ole) {
             doTransactionRollback(dataForQuery, transactionManager);
@@ -152,15 +154,56 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static void clearCaches(EntityManager entityManager) {
+    /**
+     * Clears cache for specific entity instances instead of all instances of the type.
+     * More efficient for large datasets as it only evicts the entities that were actually modified.
+     * Falls back to type-level eviction if IDs cannot be extracted.
+     */
+    private static void clearCache(EntityManager entityManager, Class<?> entityClass, List<?> entities) {
         EntityManagerFactory factory = entityManager.getEntityManagerFactory();
-        if (factory != null) {
-            Cache cache = factory.getCache();
-            if (cache != null) {
-                cache.evictAll();
+
+        Cache cache;
+        if (factory == null || (cache = factory.getCache()) == null) {
+            entityManager.clear();
+            return;
+        }
+
+        int evicted = 0;
+        // Try to evict only the specific instances that were modified
+        for (Object entity : entities) {
+            Object id = getEntityId(entity, entityClass);
+            if (id != null) {
+                cache.evict(entityClass, id);
+                evicted++;
             }
         }
+        // Fallback: if we couldn't extract any IDs, evict the entire type
+        if (evicted == 0 && !entities.isEmpty()) {
+            cache.evict(entityClass);
+        }
         entityManager.clear();
+    }
+
+    /**
+     * Extracts the ID value from an entity instance using reflection.
+     * Returns null if the ID cannot be extracted.
+     */
+    private static Object getEntityId(Object entity, Class<?> entityClass) {
+        try {
+            java.lang.reflect.Member idAccessor = EntityIntrospectionUtil.findIdAccessor(entityClass);
+            if (idAccessor instanceof java.lang.reflect.Field) {
+                java.lang.reflect.Field field = (java.lang.reflect.Field) idAccessor;
+                field.setAccessible(true);
+                return field.get(entity);
+            } else if (idAccessor instanceof Method) {
+                Method method = (Method) idAccessor;
+                return method.invoke(entity);
+            }
+        } catch (Exception e) {
+            // Log but don't throw - we'll handle this in the caller
+            // by falling back to type-level eviction if needed
+        }
+        return null;
     }
 
     /**
@@ -168,7 +211,7 @@ public class QueryByNameOperationUtility {
      * that will be modified (e.g., deleted). It ALWAYS returns the full List of results,
      * bypassing the normal processReturnType logic which might mistakenly return a single element.
      */
-    private static List<?> findEntitiesForModification(Object[] args, QueryData dataForQuery, EntityManager entityManager) {
+    private static List<?> findEntitiesForModification(Object[] args, QueryMetadata dataForQuery, EntityManager entityManager) {
         try {
             QueryMethodParser parser = new QueryMethodParser(dataForQuery.getMethod().getName()).parse();
             // We build the query as a FIND, regardless of the original method's action.
@@ -196,9 +239,10 @@ public class QueryByNameOperationUtility {
     // --- CENTRALIZED BUILD AND EXECUTION LOGIC ---
 
     private static Object buildAndExecuteQuery(Object[] args, QueryData dataForQuery, EntityManager entityManager, QueryMethodParser.Action expectedAction) {
-        Method method = dataForQuery.getMethod();
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
+        Method method = queryMetadata.getMethod();
         String methodName = method.getName();
-        boolean evaluatePages = paginationPredicate.test(dataForQuery.getMethod());
+        boolean evaluatePages = paginationPredicate.test(queryMetadata.getMethod());
 
         DataParameter parameter = extractDataParameter(args);
         Limit limitFromArgs = parameter.limit();
@@ -211,14 +255,14 @@ public class QueryByNameOperationUtility {
             if (evaluatePages) {
                 return buildQueryFromParserWithPagination(parser, args, dataForQuery, entityManager, expectedAction);
             } else {
-                jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, expectedAction);
+                jakarta.persistence.Query q = buildQueryFromParser(parser, args, queryMetadata, entityManager, expectedAction);
                 if (limitFromArgs != null) {
                     if (limitFromArgs.startAt() > 1) {
                         q.setFirstResult((int) (limitFromArgs.startAt() - 1));
                     }
                     q.setMaxResults(limitFromArgs.maxResults());
                 }
-                return executeQuery(q, parser, dataForQuery);
+                return executeQuery(q, parser, queryMetadata);
             }
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
             throw new MappingException("Failed to build or execute query from method name: " + methodName, e);
@@ -230,7 +274,7 @@ public class QueryByNameOperationUtility {
      * This is a central helper used by all `...ByName` operations.
      */
     private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args,
-                                                                  QueryData dataForQuery, EntityManager entityManager,
+                                                                  QueryMetadata dataForQuery, EntityManager entityManager,
                                                                   QueryMethodParser.Action executionAction) {
         Metamodel metamodel = entityManager.getMetamodel();
         EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
@@ -286,7 +330,8 @@ public class QueryByNameOperationUtility {
                                                              QueryData dataForQuery, EntityManager entityManager,
                                                              QueryMethodParser.Action executionAction) {
         Metamodel metamodel = entityManager.getMetamodel();
-        EntityType<?> rootEntityType = metamodel.entity(dataForQuery.getDeclaredEntityClass());
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
+        EntityType<?> rootEntityType = metamodel.entity(queryMetadata.getDeclaredEntityClass());
         PageRequest pageRequest = null;
         Object returnValue = null;
         String rootAlias = "e";
@@ -299,15 +344,15 @@ public class QueryByNameOperationUtility {
         pageRequest = getPageRequest(args);
 
 
-        buildQueryClause(jpql, executionAction, dataForQuery, rootAlias);
-        buildQueryClause(countClause, QueryMethodParser.Action.COUNT, dataForQuery, rootAlias);
+        buildQueryClause(jpql, executionAction, queryMetadata, rootAlias);
+        buildQueryClause(countClause, QueryMethodParser.Action.COUNT, queryMetadata, rootAlias);
         buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
 
         jpql.append(joinClause);
 
         if (!parser.getConditions().isEmpty()) {
-            jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
-            countClause.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
+            jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, queryMetadata));
+            countClause.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, queryMetadata));
         }
 
         //consolidates order criteria from method name and order attributes
@@ -315,7 +360,7 @@ public class QueryByNameOperationUtility {
         if (!parser.getOrderBy().isEmpty()) {
             List<QueryMethodParser.OrderBy> orders = parser.getOrderBy();
             for (QueryMethodParser.OrderBy order : orders) {
-                EntityMetadata entityMetadata = dataForQuery.getEntityMetadata();
+                EntityMetadata entityMetadata = queryMetadata.getEntityMetadata();
 
                 if (!entityMetadata.getAttributeNames().containsKey(order.property().toLowerCase())) {
                     throw new IllegalArgumentException("The attribute " + order.property() +
@@ -349,10 +394,10 @@ public class QueryByNameOperationUtility {
         dataForQuery.setQueryString(jpql.toString());
         dataForQuery.setCountQueryString(jpql.toString());
 
-        createQueriesForPagination(pageRequest, dataForQuery.getMethod(), dataForQuery,
+        createQueriesForPagination(pageRequest, queryMetadata.getMethod(), dataForQuery,
                 new StringBuilder(dataForQuery.getQueryString()), args, dataForQuery.getOrders(), rootAlias);
 
-        if (Page.class.equals(dataForQuery.getMethod().getReturnType())) {
+        if (Page.class.equals(queryMetadata.getMethod().getReturnType())) {
             returnValue = new PageImpl<>(dataForQuery, args, pageRequest, entityManager);
         } else {
             returnValue = new CursoredPageImpl<>(dataForQuery, args, pageRequest, entityManager);
@@ -362,7 +407,7 @@ public class QueryByNameOperationUtility {
     }
 
     // --- QUERY BUILDING HELPER METHODS ---
-    private static void buildQueryClause(StringBuilder jpql, QueryMethodParser.Action action, QueryData dataForQuery, String rootAlias) {
+    private static void buildQueryClause(StringBuilder jpql, QueryMethodParser.Action action, QueryMetadata dataForQuery, String rootAlias) {
         String entityName = dataForQuery.getDeclaredEntityClass().getSimpleName();
         switch (action) {
             case FIND:
@@ -408,7 +453,7 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static String buildWhereConditions(List<QueryMethodParser.Condition> conditions, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases, QueryData dataForQuery) {
+    private static String buildWhereConditions(List<QueryMethodParser.Condition> conditions, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases, QueryMetadata dataForQuery) {
         StringBuilder whereClause = new StringBuilder();
         boolean firstCondition = true;
         int paramIndex = 0;
@@ -475,7 +520,7 @@ public class QueryByNameOperationUtility {
         return currentAlias + "." + parts[parts.length - 1];
     }
 
-    private static void setQueryParameters(jakarta.persistence.Query q, List<QueryMethodParser.Condition> conditions, Object[] args, QueryData dataForQuery) {
+    private static void setQueryParameters(jakarta.persistence.Query q, List<QueryMethodParser.Condition> conditions, Object[] args, QueryMetadata dataForQuery) {
         List<Object> queryArgs = getQueryArguments(args);
         int argIndex = 0;
         int paramIndex = 0;
@@ -507,7 +552,7 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser parser, QueryData dataForQuery) {
+    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser parser, QueryMetadata dataForQuery) {
         QueryMethodParser.Action action = parser.getAction();
         switch (action) {
             case FIND:
@@ -525,7 +570,7 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static Object processReturnType(QueryData data, List<?> resultList) {
+    private static Object processReturnType(QueryMetadata data, List<?> resultList) {
         Class<?> returnType = data.getMethod().getReturnType();
 
         if (List.class.isAssignableFrom(returnType)) {

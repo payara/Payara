@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.configapi.tests.validation;
 
-import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.configapi.tests.ConfigApiTest;
 import java.util.HashMap;
@@ -125,41 +125,4 @@ public class ReferenceConstrainTest extends ConfigApiTest {
             fail("Can not reach this point");
         }
     }
-    
-    @Test
-    public void jmxConnectorAuthRealmRefInvalid() throws TransactionFailure {
-        JmxConnector jmxConnector = habitat.getService(JmxConnector.class, "system");
-        assertNotNull(jmxConnector);
-        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(jmxConnector);
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-        Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("auth-realm-name", "realm-not-exist");
-        changes.put(serverConfig, configChanges);
-        try {
-            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
-            cs.apply(changes);
-            fail("Can not reach this point");
-        } catch (TransactionFailure tf) {
-            ConstraintViolationException cv = findConstrViolation(tf);
-            assertNotNull(cv);
-        }
-    }
-    
-    @Test
-    public void jmxConnectorAuthRealmRefValid() throws TransactionFailure {
-        JmxConnector jmxConnector = habitat.getService(JmxConnector.class, "system");
-        assertNotNull(jmxConnector);
-        ConfigBean serverConfig = (ConfigBean) ConfigBean.unwrap(jmxConnector);
-        Map<ConfigBean, Map<String, String>> changes = new HashMap<ConfigBean, Map<String, String>>();
-        Map<String, String> configChanges = new HashMap<String, String>();
-        configChanges.put("auth-realm-name", "file");
-        changes.put(serverConfig, configChanges);
-        try {
-            ConfigSupport cs = getHabitat().getService(ConfigSupport.class);
-            cs.apply(changes);
-        } catch (TransactionFailure tf) {
-            fail("Can not reach this point");
-        }
-    }
-    
 }

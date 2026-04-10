@@ -59,12 +59,6 @@ And here is the resulting config in domain.xml
 		</ssh-connector>
 	</node>
 
-    <node node-host="wnevins-lnr" name="xyz" type="DCOM" install-dir="${com.sun.aas.productRoot}">
-      <ssh-connector ssh-port="135">
-        <ssh-auth user-name="wnevins" password="password-here!!"></ssh-auth>
-      </ssh-connector>
-    </node>
-
 </nodes>
 
 
@@ -81,11 +75,5 @@ bunch-o-nodes
       </ssh-connector>
     </node>
     <node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
-
-    <node node-host="wnevins-lnr" name="lnr" windows-domain="wnevins-lnr" type="DCOM" install-dir="${com.sun.aas.productRoot}">
-      <ssh-connector ssh-port="135">
-        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
-      </ssh-connector>
-    </node>
 
   </nodes>

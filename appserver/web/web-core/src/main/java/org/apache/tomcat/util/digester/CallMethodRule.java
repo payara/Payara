@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.tomcat.util.digester;
 
@@ -110,73 +110,6 @@ import java.util.logging.Level;
 public class CallMethodRule extends Rule {
 
     // ----------------------------------------------------------- Constructors
-
-
-    /**
-     * Construct a "call method" rule with the specified method name.  The
-     * parameter types (if any) default to java.lang.String.
-     *
-     * @param digester The associated Digester
-     * @param methodName Method name of the parent method to call
-     * @param paramCount The number of parameters to collect, or
-     *  zero for a single argument from the body of this element.
-     *
-     *
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. 
-     * Use {@link #CallMethodRule(String methodName,int paramCount)} instead.
-     */
-    public CallMethodRule(Digester digester, String methodName,
-                          int paramCount) {
-
-        this(methodName, paramCount);
-
-    }
-
-
-    /**
-     * Construct a "call method" rule with the specified method name.
-     *
-     * @param digester The associated Digester
-     * @param methodName Method name of the parent method to call
-     * @param paramCount The number of parameters to collect, or
-     *  zero for a single argument from the body of ths element
-     * @param paramTypes The Java class names of the arguments
-     *  (if you wish to use a primitive type, specify the corresonding
-     *  Java wrapper class instead, such as <code>java.lang.Boolean</code>
-     *  for a <code>boolean</code> parameter)
-     *
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. 
-     * Use {@link #CallMethodRule(String methodName,int paramCount, String [] paramTypes)} instead.
-     */
-    public CallMethodRule(Digester digester, String methodName,
-                          int paramCount, String paramTypes[]) {
-
-        this(methodName, paramCount, paramTypes);
-
-    }
-
-
-    /**
-     * Construct a "call method" rule with the specified method name.
-     *
-     * @param digester The associated Digester
-     * @param methodName Method name of the parent method to call
-     * @param paramCount The number of parameters to collect, or
-     *  zero for a single argument from the body of ths element
-     * @param paramTypes The Java classes that represent the
-     *  parameter types of the method arguments
-     *  (if you wish to use a primitive type, specify the corresonding
-     *  Java wrapper class instead, such as <code>java.lang.Boolean.TYPE</code>
-     *  for a <code>boolean</code> parameter)
-     *
-     * @deprecated The digester instance is now set in the {@link Digester#addRule} method. 
-     * Use {@link #CallMethodRule(String methodName,int paramCount, Class [] paramTypes)} instead.
-     */
-    public CallMethodRule(Digester digester, String methodName,
-                          int paramCount, Class paramTypes[]) {
-
-        this(methodName, paramCount, paramTypes);
-    }
 
 
     /**

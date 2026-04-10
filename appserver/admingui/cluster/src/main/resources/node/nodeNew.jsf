@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+    Portions Copyright [2020-2026] [Payara Foundation and/or its affiliates]
 -->
 
 <!initPage
@@ -58,12 +58,6 @@
 
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/create-node-ssh");
         gf.getDefaultValues(endpoint="#{pageSession.selfUrl}",  valueMap="#{pageSession.valueMap}");
-        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/create-node-dcom",  valueMap="#{requestScope.dcMap}");
-        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/validate-dcom",    valueMap="#{requestScope.vMap}");
-        mapPut(map="#{requestScope.vMap}", key="remotetestdir" value="C:\\");
-        mapPut(map="#{pageSession.valueMap}", key="windowsuser" value="#{requestScope.dcMap['windowsuser']}");
-        mapPut(map="#{pageSession.valueMap}", key="remotetestdir" value="#{requestScope.vMap['remotetestdir']}");
-        mapPut(map="#{pageSession.valueMap}", key="validateDcom" value="true");
         mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
         mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
         mapPut(map="#{pageSession.valueMap}", key="installdirDocker" value="/opt/payara/payara7");

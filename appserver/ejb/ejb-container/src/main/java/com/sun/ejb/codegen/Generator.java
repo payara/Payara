@@ -1,296 +1,227 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation.
+ * Copyright (c) 1997, 2018 Oracle and/or its affiliates. All rights reserved.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0, which is available at
+ * http://www.eclipse.org/legal/epl-2.0.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common Development
- * and Distribution License("CDDL") (collectively, the "License").  You
- * may not use this file except in compliance with the License.  You can
- * obtain a copy of the License at
- * https://github.com/payara/Payara/blob/main/LICENSE.txt
- * See the License for the specific
- * language governing permissions and limitations under the License.
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the
+ * Eclipse Public License v. 2.0 are satisfied: GNU General Public License,
+ * version 2 with the GNU Classpath Exception, which is available at
+ * https://www.gnu.org/software/classpath/license.html.
  *
- * When distributing the software, include this License Header Notice in each
- * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
- *
- * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
- * file that accompanied this code.
- *
- * Modifications:
- * If applicable, add the following below the License Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [year] [name of copyright owner]"
- *
- * Contributor(s):
- * If you wish your version of this file to be governed by only the CDDL or
- * only the GPL Version 2, indicate your decision by adding "[Contributor]
- * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
- * recipient has the option to distribute your version of this file under
- * either the CDDL, the GPL Version 2 or to extend the choice of license to
- * its licensees as provided above.  However, if you add GPL Version 2 code
- * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  */
+// Portions Copyright [2025] [Payara Foundation and/or its affiliates]
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package com.sun.ejb.codegen;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.pfl.dynamic.codegen.impl.ClassGeneratorImpl;
+import org.glassfish.pfl.dynamic.codegen.spi.ImportList;
+import org.glassfish.pfl.dynamic.codegen.spi.Wrapper;
 
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
-import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
+import static com.sun.ejb.codegen.ClassGenerator.defineClass;
+import static org.glassfish.pfl.dynamic.codegen.impl.CodeGenerator.generateBytecode;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.DUMP_AFTER_SETUP_VISITOR;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.TRACE_BYTE_CODE_GENERATION;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper.USE_ASM_VERIFIER;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._classGenerator;
+import static org.glassfish.pfl.dynamic.codegen.spi.Wrapper._package;
 
 
 /**
  * The base class for all code generators.
  */
-
 public abstract class Generator {
 
+    private static final Logger LOG = Logger.getLogger(Generator.class.getName());
 
-    protected static final Logger _logger = LogDomains.getLogger(Generator.class, LogDomains.EJB_LOGGER);
+    private static final String DEFAULT_PACKAGE_NAME = "";
 
-    protected String ejbClassSymbol;
-
-    public abstract String getGeneratedClass();
+    private final ClassLoader loader;
 
 
     /**
-     * Get the package name from the class name.
-     * @param className class name.
+     * @param loader {@link ClassLoader} owning generated classes
+     */
+    public Generator(final ClassLoader loader) {
+        this.loader = Objects.requireNonNull(loader);
+    }
+
+    /**
+     * @return the name of the package of the generated class.
+     */
+    protected abstract String getPackageName();
+
+    /**
+     * @return name of the generated class or interface
+     */
+    public abstract String getGeneratedClassName();
+
+    /**
+     * @return loadable class of the same package as {@link #getGeneratedClassName()}
+     */
+    protected abstract Class<?> getAnchorClass();
+
+    /**
+     * Calls {@link Wrapper} methods to configure the class definition.
+     * The {@link Wrapper} uses {@link ThreadLocal} internally, so you should
+     * always call {@link Wrapper#_clear()} in finally block after generation
+     * to avoid leakages.
+     */
+    protected abstract void defineClassBody();
+
+
+    /**
+     * @return {@link ClassLoader} owning the generated class.
+     */
+    public ClassLoader getClassLoader() {
+        return this.loader;
+    }
+
+
+    /**
+     * Generates the bytecode of the configured class with the usage of the PFL tool.
+     * Then uses {@link MethodHandles} or {@link ClassGenerator} to generate the class.
+     * <p>
+     * WARNING: This selection depends on the classloader capabilities and JVM rules,
+     * which change between JDK versions.
+     *
+     * @return {@link Class}
+     * @throws IllegalAccessException if a reflective access error occurred
+     */
+    public Class<?> generate() throws IllegalAccessException {
+        final String packageName = getPackageName();
+        if (DEFAULT_PACKAGE_NAME.equals(packageName)) {
+            _package();
+        } else {
+            _package(packageName);
+        }
+        final ImportList imports = Wrapper._import();
+        defineClassBody();
+        final Properties props = new Properties();
+        if (LOG.isLoggable(Level.FINEST)) {
+            props.put(DUMP_AFTER_SETUP_VISITOR, "true");
+            props.put(TRACE_BYTE_CODE_GENERATION, "true");
+            props.put(USE_ASM_VERIFIER, "true");
+            try {
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                final PrintStream ps = new PrintStream(baos);
+                Wrapper._sourceCode(ps, props);
+                LOG.finest(baos.toString());
+            } catch (final Exception e) {
+                LOG.log(Level.WARNING, "Exception generating src for logs", e);
+            }
+        }
+
+        final ClassGeneratorImpl codeGenerator = (ClassGeneratorImpl) _classGenerator();
+        final byte[] bytecode = generateBytecode(codeGenerator, getClassLoader(), imports, props, System.out);
+        return defineClass(getClassLoader(), getAnchorClass(), getPackageName(), getGeneratedClassName(), bytecode);
+    }
+
+
+    /**
      * @return the package name.
      */
-    protected String getPackageName(String className) {
-        int dot = className.lastIndexOf('.');
-        if (dot == -1)
-            return null;
-        return className.substring(0, dot);
-    }
-
-    protected String getBaseName(String className) {
-        int dot = className.lastIndexOf('.');
-        if (dot == -1)
-            return className;
-        return className.substring(dot+1);
-    }
-
-    protected String printType(Class cls) {
-        if (cls.isArray()) {
-            return printType(cls.getComponentType()) + "[]";
-        } else {
-            return cls.getName();
-        }
-    }
-
-    protected Method[] removeDups(Method[] orig)
-    {
-        // Remove duplicates from method array.
-        // Duplicates will arise if a class/intf and super-class/intf
-        // define methods with the same signature. Potentially the
-        // throws clauses of the methods may be different (note Java
-        // requires that the superclass/intf method have a superset of the
-        // exceptions in the derived method).
-        Vector nodups = new Vector();
-        for ( int i=0; i<orig.length; i++ ) {
-            Method m1 = orig[i];
-            boolean dup = false;
-            for ( Enumeration e=nodups.elements(); e.hasMoreElements(); ) {
-                Method m2 = (Method)e.nextElement();
-
-                // m1 and m2 are duplicates if they have the same signature
-                // (name and same parameters). 
-                if ( !m1.getName().equals(m2.getName()) )
-                    continue;
-
-                Class[] m1parms = m1.getParameterTypes();
-                Class[] m2parms = m2.getParameterTypes();
-                if ( m1parms.length != m2parms.length )
-                    continue;
-
-                boolean parmsDup = true;
-                for ( int j=0; j<m2parms.length; j++ ) {
-                    if ( m1parms[j] != m2parms[j] ) {
-                        parmsDup = false;
-                        break;
-                    }
-                }
-                if ( parmsDup ) {
-                    dup = true;
-                    // Select which of the duplicate methods to generate 
-                    // code for: choose the one that is lower in the
-                    // inheritance hierarchy: this ensures that the generated
-                    // method will compile.
-                    if ( m2.getDeclaringClass().isAssignableFrom(
-                                                    m1.getDeclaringClass()) ) {
-                        // m2 is a superclass/intf of m1, so replace m2 with m1
-                        nodups.remove(m2);
-                        nodups.add(m1);
-                    }
-                    break;
-                }
-            }
-
-            if ( !dup )
-                nodups.add(m1);
-        }
-        return (Method[])nodups.toArray(new Method[nodups.size()]);
+    public static String getPackageName(final String fullClassName) {
+        final int dot = fullClassName.lastIndexOf('.');
+        return dot == -1 ? DEFAULT_PACKAGE_NAME : fullClassName.substring(0, dot);
     }
 
     /**
-     * Return true if method is on a jakarta.ejb.EJBObject/EJBLocalObject/
-     * jakarta.ejb.EJBHome,jakarta.ejb.EJBLocalHome interface.
+     * @return simple class name (including wrapper class and dollar sign if it is internal class)
      */
-    protected boolean isEJBIntfMethod(Class ejbIntfClz, Method methodToCheck) {
-        boolean isEJBIntfMethod = false;
+    public static String getBaseName(final String fullClassName) {
+        final int dot = fullClassName.lastIndexOf('.');
+        return dot == -1 ? fullClassName : fullClassName.substring(dot + 1);
+    }
 
-        Method[] ejbIntfMethods = ejbIntfClz.getMethods();
-        for(int i = 0; i < ejbIntfMethods.length; i++) {
-            Method next = ejbIntfMethods[i];
-            if(methodCompare(methodToCheck, next)) {
-                isEJBIntfMethod = true;
+    /**
+     * Returns full qualified class name.
+     *
+     * @param packageName the package name
+     * @param baseName the base (simple) class name
+     * @return the full qualified class name
+     */
+    public static String getFullClassName(final String packageName, final String baseName) {
+        if (DEFAULT_PACKAGE_NAME.equals(packageName)) {
+            return baseName;
+        }
+        return packageName + "." + baseName;
+    }
 
-                String ejbIntfClzName  = ejbIntfClz.getName();
-                Class methodToCheckClz = methodToCheck.getDeclaringClass();
-                if( !methodToCheckClz.getName().equals(ejbIntfClzName) ) {
-                    String[] logParams = { next.toString(), 
-                                           methodToCheck.toString() };
-                    _logger.log(Level.WARNING, 
-                                "ejb.illegal_ejb_interface_override",
-                                logParams);
+    /**
+     * Remove duplicates from method array.
+     * <p>
+     * Duplicates will arise if a class/intf and super-class/intf
+     * define methods with the same signature. Potentially the
+     * throws clauses of the methods may be different (note Java
+     * requires that the superclass/intf method have a superset of the
+     * exceptions in the derived method).
+     *
+     * @param methods the methods array without duplicates
+     * @return methods which can be generated in an interface
+     */
+    protected Method[] removeRedundantMethods(final Method[] methods) {
+        final List<Method> nodups = new ArrayList<>();
+        for (final Method method : methods) {
+            boolean duplicationDetected = false;
+            final List<Method> previousResult = new ArrayList<>(nodups);
+            for (final Method alreadyProcessed : previousResult) {
+                // m1 and m2 are duplicates if they have the same signature
+                // (name and same parameters).
+                if (!method.getName().equals(alreadyProcessed.getName())) {
+                    continue;
                 }
-
+                if (!haveSameParams(method, alreadyProcessed)) {
+                    continue;
+                }
+                duplicationDetected = true;
+                // Select which of the duplicate methods to generate
+                // code for: choose the one that is lower in the
+                // inheritance hierarchy: this ensures that the generated
+                // method will compile.
+                if (alreadyProcessed.getDeclaringClass().isAssignableFrom(method.getDeclaringClass())) {
+                    // alreadyProcessedMethod is a superclass/intf of method,
+                    // so replace it with more concrete method
+                    nodups.remove(alreadyProcessed);
+                    nodups.add(method);
+                }
                 break;
             }
-        }
 
-	return isEJBIntfMethod;
+            if (!duplicationDetected) {
+                nodups.add(method);
+            }
+        }
+        return nodups.toArray(Method[]::new);
     }
 
 
-    private boolean methodCompare(Method factoryMethod, Method homeMethod) {
-
-	if(! factoryMethod.getName().equals(homeMethod.getName())) {
-	    return false;
+    private boolean haveSameParams(final Method method1, final Method method2) {
+        final Class<?>[] m1parms = method1.getParameterTypes();
+        final Class<?>[] m2parms = method2.getParameterTypes();
+        if (m1parms.length != m2parms.length) {
+            return false;
         }
-
-	Class[] factoryParamTypes = factoryMethod.getParameterTypes();
-	Class[] beanParamTypes = homeMethod.getParameterTypes();
-	if (factoryParamTypes.length != beanParamTypes.length) {
-	    return false;
-        }
-	for(int i = 0; i < factoryParamTypes.length; i++) {
-	    if (factoryParamTypes[i] != beanParamTypes[i]) {
-		return false;
+        for (int i = 0; i < m2parms.length; i++) {
+            if (m1parms[i] != m2parms[i]) {
+                return false;
             }
         }
-
-	// NOTE : Exceptions and return types are not part of equality check
-
-	return true;
-
+        return true;
     }
-
-    protected String getUniqueClassName(DeploymentContext context, String origName,
-                                        String origSuffix,
-					Vector existingClassNames)
-    {
-	String newClassName = null;
-	boolean foundUniqueName = false;
-	int count = 0;
-	while ( !foundUniqueName ) {
-	    String suffix = origSuffix;
-	    if ( count > 0 ) {
-		suffix = origSuffix + count;
-            }
-	    newClassName = origName + suffix;
-	    if ( !existingClassNames.contains(newClassName) ) {
-		foundUniqueName = true;
-                existingClassNames.add(newClassName);
-            }
-	    else {
-		count++;
-            }
-	}
-	return newClassName;
-    }
-
-
-    protected String getTxAttribute(EjbDescriptor dd, Method method)
-    {
-	// The TX_* strings returned MUST match the TX_* constants in 
-	// com.sun.ejb.Container.
-        if ( dd instanceof EjbSessionDescriptor
-	     && ((EjbSessionDescriptor)dd).getTransactionType().equals("Bean") )
-	    return "TX_BEAN_MANAGED";
-
-        String txAttr = null;
-	MethodDescriptor mdesc = new MethodDescriptor(method, ejbClassSymbol);
-        ContainerTransaction ct = dd.getContainerTransactionFor(mdesc);
-        if ( ct != null ) {
-            String attr = ct.getTransactionAttribute();
-            if ( attr.equals(ContainerTransaction.NOT_SUPPORTED) )
-                txAttr = "TX_NOT_SUPPORTED";
-            else if ( attr.equals(ContainerTransaction.SUPPORTS) )
-                txAttr = "TX_SUPPORTS";
-            else if ( attr.equals(ContainerTransaction.REQUIRED) )
-                txAttr = "TX_REQUIRED";
-            else if ( attr.equals(ContainerTransaction.REQUIRES_NEW) )
-                txAttr = "TX_REQUIRES_NEW";
-            else if ( attr.equals(ContainerTransaction.MANDATORY) )
-                txAttr = "TX_MANDATORY";
-            else if ( attr.equals(ContainerTransaction.NEVER) )
-                txAttr = "TX_NEVER";
-        }
-
-        if ( txAttr == null ) {
-            throw new RuntimeException("Transaction Attribute not found for method "+method);
-        }
-	return txAttr;
-    } 
-
-    protected String getSecurityAttribute(EjbDescriptor dd, Method m)
-    {
-	// The SEC_* strings returned MUST match the SEC_* constants in 
-	// com.sun.ejb.Container.
-
-	MethodDescriptor thisMethodDesc = new MethodDescriptor(m, ejbClassSymbol);
-
-	Set unchecked = dd.getUncheckedMethodDescriptors();
-	if ( unchecked != null ) {
-	    Iterator i = unchecked.iterator();
-	    while ( i.hasNext() ) {
-		MethodDescriptor md = (MethodDescriptor)i.next();
-		if ( thisMethodDesc.equals(md) )
-		    return "SEC_UNCHECKED";
-	    }
-	}
-
-	Set excluded = dd.getExcludedMethodDescriptors();
-	if ( excluded != null ) {
-	    Iterator i = excluded.iterator();
-	    while ( i.hasNext() ) {
-		MethodDescriptor md = (MethodDescriptor)i.next();
-		if ( thisMethodDesc.equals(md) )
-		    return "SEC_EXCLUDED";
-	    }
-	}
-
-	return "SEC_CHECKED";
-    } 
-
 }

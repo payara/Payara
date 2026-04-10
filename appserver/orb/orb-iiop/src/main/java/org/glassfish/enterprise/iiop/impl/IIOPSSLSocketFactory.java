@@ -97,8 +97,6 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     private static final int BACKLOG = 50;
 
     private static final String SO_KEEPALIVE = "fish.payara.SO_KEEPALIVE";
-    // Deprecated as of 5.191
-    private static final String SO_KEEPALIVE_DEPRECATED = "fish.payara.SOKeepAlive";
 
 
 
@@ -537,10 +535,8 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
             // For each listener, find one with a matching port
             for (IiopListener iiopListener : IIOPUtils.getInstance().getIiopService().getIiopListener()) {
                 if (Integer.valueOf(iiopListener.getPort()) == socket.getLocalPort()) {
-                    // Check for the property globally before checking on the specific listener, giving precedence to the
-                    // new property
-                    if ((System.getProperty(SO_KEEPALIVE) == null && Boolean.getBoolean(SO_KEEPALIVE_DEPRECATED))
-                            || Boolean.getBoolean(SO_KEEPALIVE)) {
+                    // Check for the property globally before checking on the specific listener
+                    if (Boolean.getBoolean(SO_KEEPALIVE)) {
                         // Check if the property has been set on the listener
                         if (soKeepAlivePropertyPresentOnIiopListener(iiopListener)) {
                             // Check if we should override the global value
@@ -576,7 +572,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     }
 
     /**
-     * Shorthand method that simply returns true if either the new or old SO_KEEPALIVE property is present on the
+     * Shorthand method that simply returns true if the SO_KEEPALIVE property is present on the
      * listener.
      * @param iiopListener The IIOP listener to check if the SO_KEEPALIVE property is set on
      * @return True if the SO_KEEPALIVE property is present on the IIOP listener
@@ -584,8 +580,7 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     private boolean soKeepAlivePropertyPresentOnIiopListener(IiopListener iiopListener) {
         boolean soKeepAlivePropertyPresentOnListener = false;
 
-        if (iiopListener.getPropertyValue(SO_KEEPALIVE) != null
-                || iiopListener.getPropertyValue(SO_KEEPALIVE_DEPRECATED) != null) {
+        if (iiopListener.getPropertyValue(SO_KEEPALIVE) != null) {
             soKeepAlivePropertyPresentOnListener = true;
         }
 
@@ -593,23 +588,13 @@ public class IIOPSSLSocketFactory implements ORBSocketFactory {
     }
 
     /**
-     * Helper method that checks if either the deprecated or new SO_KEEPALIVE property is enabled on an IIOP
-     * listener, giving precedence to the new property if both are present.
+     * Helper method that checks if the SO_KEEPALIVE property is enabled on an IIOP
+     * listener.
      * @param iiopListener The IIOP listener to check if the SO_KEEPALIVE property is set on
      * @return True if the SO_KEEPALIVE property is enabled on the IIOP listener
      */
     private boolean soKeepAlivePropertyEnabledOnIiopListener(IiopListener iiopListener) {
-        boolean soKeepAliveEnabledOnListener = false;
-
-        // If the new property isn't present and the deprecated one is set to true, or if the new property is set to
-        // true, then register SO_KEEPALIVE as enabled on the listener
-        if ((iiopListener.getPropertyValue(SO_KEEPALIVE) == null
-                && Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE_DEPRECATED)))
-                || Boolean.valueOf(iiopListener.getPropertyValue(SO_KEEPALIVE))) {
-            soKeepAliveEnabledOnListener = true;
-        }
-
-        return soKeepAliveEnabledOnListener;
+        return Boolean.parseBoolean(iiopListener.getPropertyValue(SO_KEEPALIVE));
     }
 
     /**

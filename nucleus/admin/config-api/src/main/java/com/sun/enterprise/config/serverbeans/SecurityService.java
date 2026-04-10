@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -122,24 +122,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException
      */
     public void setDefaultPrincipalPassword(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the anonymousRole property.
-     *
-     * This attribute is deprecated.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "AttributeDeprecated")
-    public String getAnonymousRole();
-
-    /**
-     * Sets the value of the anonymousRole property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setAnonymousRole(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the auditEnabled property.

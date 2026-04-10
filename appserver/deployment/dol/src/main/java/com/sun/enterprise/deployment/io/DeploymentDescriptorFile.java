@@ -138,13 +138,6 @@ public abstract class DeploymentDescriptorFile<T extends Descriptor> {
             spf.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
 	    
 	        try {
-                if (!validating) {
-                    // if we are not validating, let's not load the DTD
-                    if (getDeploymentDescriptorPath().contains(DescriptorConstants.WLS)) {
-                        // and let's only turn it off for weblogic*.xml for now
-                        spf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-                    }
-                }
 
                 // Validation part 2a: set the schema language if necessary
                 spf.setFeature("http://apache.org/xml/features/validation/schema", validating);

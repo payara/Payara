@@ -6,7 +6,7 @@ NAME
 
 SYNOPSIS
            delete-connector-security-map [--help]
-           --poolname connector_connection_pool_name [--target target] mapname
+           --poolname connector_connection_pool_name mapname
 
 DESCRIPTION
        The delete-connector-security-map subcommand deletes a security map for
@@ -24,13 +24,6 @@ OPTIONS
        --poolname
            Specifies the name of the connector connection pool to which the
            security map that is to be deleted belongs.
-
-       --target
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
 
 OPERANDS
        mapname

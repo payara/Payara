@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.apache.catalina.startup;
 
@@ -82,16 +82,15 @@ public class LifecycleListenerRule extends Rule {
     /**
      * Construct a new instance of this Rule.
      *
-     * @param digester Digester we are associated with
      * @param listenerClass Default name of the LifecycleListener
      *  implementation class to be created
      * @param attributeName Name of the attribute that optionally
      *  includes an override name of the LifecycleListener class
      */
-    public LifecycleListenerRule(Digester digester, String listenerClass,
+    public LifecycleListenerRule(String listenerClass,
                                  String attributeName) {
 
-        super(digester);
+        super();
         this.listenerClass = listenerClass;
         this.attributeName = attributeName;
 

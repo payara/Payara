@@ -347,18 +347,6 @@ public final class LogUtils {
     public static final String METADATA_DOCS = LOGMSG_PREFIX + "-00085";
 
     @LogMessageInfo(
-            message = "For endpoint {0}, Ignoring configuration {1} in weblogic-webservices.xml",
-            comment = "{0} - endpoint name, {1} - element name",
-            level = "INFO")
-    public static final String CONFIGURATION_IGNORE_IN_WLSWS = LOGMSG_PREFIX + "-00086";
-
-    @LogMessageInfo(
-            message = "For endpoint {0}, Unsupported configuration {1} in weblogic-webservices.xml",
-            comment = "{0} - endpoint name, {1} - element name",
-            level = "WARNING")
-    public static final String CONFIGURATION_UNSUPPORTED_IN_WLSWS = LOGMSG_PREFIX + "-00087";
-
-    @LogMessageInfo(
             message = "Unexpected error in EJB WebService endpoint post processing",
             level = "WARNING")
     public static final String EJB_POSTPROCESSING_ERROR = LOGMSG_PREFIX + "-00088";

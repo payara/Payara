@@ -11,12 +11,6 @@ SYNOPSIS
            [--multicastport multicast-port]
            [--multicastaddress multicast-address]
            [--bindaddress bind-address]
-           [--hosts hadb-host-list]
-           [--haagentport port-number]
-           [--haadminpassword password]
-           [--haadminpasswordfile file-name] [--devicesize devicesize ]
-           [--haproperty (name=value)[:name=value]*]
-           [--autohadb=false] [--portbase port-number]
            cluster-name
 
 DESCRIPTION
@@ -328,62 +322,6 @@ OPTIONS
            property. Finally, for each instance in the cluster, set the
            GMS-BIND-INTERFACE-ADDRESS-cluster-name system property to the
            required network interface address on the instance's machine.
-
-       --hosts
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --haagentport
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --haadminpassword
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --haadminpasswordfile
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --devicesize
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --haproperty
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --autohadb
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
-
-       --portbase
-           Do not specify this option. This option is retained for
-           compatibility with earlier releases. If you specify this option, a
-           syntax error does not occur. Instead, the subcommand runs
-           successfully and displays a warning message that the option is
-           ignored.
 
 OPERANDS
        cluster-name

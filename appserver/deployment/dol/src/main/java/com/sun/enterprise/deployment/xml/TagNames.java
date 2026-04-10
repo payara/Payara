@@ -257,14 +257,6 @@ public interface TagNames {
     public static final String JAKARTAEE_NAMESPACE = "https://jakarta.ee/xml/ns/jakartaee";
     public static final String XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
 
-    public static final String WLS_WEB_APP_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-web-app";
-    public static final String WLS_EJB_JAR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-ejb-jar";
-    public static final String WLS_WEBSERVICES_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-webservices";
-    public static final String WLS_CONNECTOR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-connector";
-    public static final String WLS_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application";
-    public static final String WLS_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client";
-    public final static String WLS_APPLICATION_SCHEMA_LOCATION = "http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.5/weblogic-application.xsd";
-
     public static final String PERSISTENCE_XML_NAMESPACE = "urn:ejb3-namespace";
     public final static String W3C_XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
     public final static String SCHEMA_LOCATION_TAG = "xsi:schemaLocation";

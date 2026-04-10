@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.servermgmt;
 
@@ -95,20 +95,6 @@ public class MasterPasswordFileManager extends KeystoreManager {
         final PEFileLayout layout = getFileLayout(config);
         final File pwdFile = layout.getMasterPasswordFile();    
         FileUtils.deleteFile(pwdFile);
-    }
-
-    /**
-     * Create the master password keystore at the default path. This routine can also modify the master password
-     * if the keystore already exists.
-     * @param config
-     * @param masterPassword
-     * @throws RepositoryException
-     */
-    @Deprecated
-    protected void createMasterPasswordFile(RepositoryConfig config, String masterPassword)
-        throws RepositoryException
-    {
-        this.createMasterPasswordFile(config, masterPassword, null);
     }
 
     /**
@@ -180,20 +166,6 @@ public class MasterPasswordFileManager extends KeystoreManager {
             //Return null if the password file does not exist.
             return null;
         }
-    }
-
-    /**
-     * Changes the master password in the master password file
-     * @param saveMasterPassword
-     * @param config
-     * @param newPassword
-     * @throws RepositoryException
-     */
-    @Deprecated
-    protected void changeMasterPasswordInMasterPasswordFile(RepositoryConfig config, String newPassword,
-        boolean saveMasterPassword) throws RepositoryException
-    {
-        this.changeMasterPasswordInMasterPasswordFile(config, newPassword, saveMasterPassword, null);
     }
 
     /**

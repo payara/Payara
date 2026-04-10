@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2017-2023] Payara Foundation and/or affiliates
+//Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -60,7 +60,6 @@ import com.sun.enterprise.admin.launcher.GFLauncherFactory;
 import com.sun.enterprise.admin.launcher.GFLauncherInfo;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import com.sun.enterprise.universal.process.ProcessStreamDrainer;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import org.glassfish.security.common.FileRealmStorageManager;
 
@@ -80,8 +79,6 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     private GFLauncher launcher;
     @Param(optional = true, shortName = "v", defaultValue = "false")
     private boolean verbose;
-    @Param(optional = true, defaultValue = "false")
-    private boolean upgrade;
     @Param(optional = true, shortName = "w", defaultValue = "false")
     private boolean watchdog;
     @Param(optional = true, shortName = "d", defaultValue = "false")
@@ -163,12 +160,6 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             if (helper.prepareForLaunch() == false){
                 return ERROR;
             }
-            
-            if (!upgrade && launcher.needsManualUpgrade()) {
-                logger.info(STRINGS.get("manualUpgradeNeeded"));
-                return ERROR;
-            }
-            doAutoUpgrade(mpv);
 
             if (dry_run) {
                 logger.fine(Strings.get("dry_run_msg"));
@@ -193,7 +184,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
             // if verbose is set then it returns after the domain dies
             launcher.launch();
 
-            if (verbose || upgrade || watchdog) { // we can potentially loop forever here...
+            if (verbose || watchdog) { // we can potentially loop forever here...
                 while (true) {
                     int returnValue = launcher.getExitValue();
 
@@ -251,9 +242,8 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
 
         info.setDomainName(getDomainName());
         info.setDomainParentDir(getDomainsDir().getPath());
-        info.setVerbose(verbose || upgrade);
+        info.setVerbose(verbose);
         info.setDebug(debug);
-        info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
         info.setWarmup(warmup);
         info.setDropInterruptedCommands(drop_interrupted_commands);
@@ -290,46 +280,6 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         String[] a = new String[args.size()];
         args.toArray(a);
         return a;
-    }
-
-    /*
-     * If this domain needs to be upgraded and --upgrade wasn't
-     * specified, first start the domain to do the upgrade and
-     * then start the domain again for real.
-     */
-    private void doAutoUpgrade(String mpv) throws GFLauncherException, MiniXmlParserException, CommandException {
-        if (upgrade || !launcher.needsAutoUpgrade())
-            return;
-
-        logger.info(STRINGS.get("upgradeNeeded"));
-        info.setUpgrade(true);
-        launcher.setup();
-        launcher.launch();
-        Process p = launcher.getProcess();
-        int exitCode = -1;
-        try {
-            exitCode = p.waitFor();
-        }
-        catch (InterruptedException ex) {
-            // should never happen
-        }
-        if (exitCode != SUCCESS) {
-            ProcessStreamDrainer psd =
-                    launcher.getProcessStreamDrainer();
-            String output = psd.getOutErrString();
-            if (ok(output))
-                throw new CommandException(
-                        STRINGS.get("upgradeFailedOutput",
-                        info.getDomainName(), exitCode, output));
-            else
-                throw new CommandException(STRINGS.get("upgradeFailed",
-                        info.getDomainName(), exitCode));
-        }
-        logger.info(STRINGS.get("upgradeSuccessful"));
-
-        // need a new launcher to start the domain for real
-        createLauncher();
-        // continue with normal start...
     }
 
     /*

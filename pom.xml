@@ -39,14 +39,14 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2017-2025 Payara Foundation and/or affiliates
+    Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.1-SNAPSHOT</version>
+    <version>7.2026.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -111,16 +111,6 @@
                 <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>jakarta-releases</id>
-            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
-            <releases>
-                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
-            </releases>
-            <snapshots>
-                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
-            </snapshots>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -177,16 +167,6 @@
                 <enabled>${payara-nexus-staging.repo.snapshots.enabled}</enabled>
             </snapshots>
         </pluginRepository>
-        <pluginRepository>
-            <id>jakarta-releases</id>
-            <url>https://jakarta.oss.sonatype.org/content/groups/staging/</url>
-            <releases>
-                <enabled>${jakarta-staging.repo.releases.enabled}</enabled>
-            </releases>
-            <snapshots>
-                <enabled>${jakarta-staging.repo.snapshots.enabled}</enabled>
-            </snapshots>
-        </pluginRepository>
     </pluginRepositories>
 
     <distributionManagement>
@@ -226,28 +206,28 @@
     <properties>
         <!-- build versions -->
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
-        <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
-        <maven.release.plugin.version>3.3.0</maven.release.plugin.version>
-        <maven.dependency.plugin.version>3.9.0</maven.dependency.plugin.version>
+        <maven.jar.plugin.version>3.5.0</maven.jar.plugin.version>
+        <maven.surefire.plugin.version>3.5.5</maven.surefire.plugin.version>
+        <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
+        <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
+        <maven.dependency.plugin.version>3.10.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
-        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
         <!-- Be careful updating to a higher version - an issue affecting 3.10.0-3.11.2 causes the aggregate jar to be empty -->
         <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
-        <maven.bundle.plugin.version>5.1.9</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
+        <maven.bundle.plugin.version>6.0.2</maven.bundle.plugin.version>
+        <maven.failsafe.plugin.version>3.5.5</maven.failsafe.plugin.version>
         <maven.site.plugin.version>3.21.0</maven.site.plugin.version>
         <maven.enforcer.plugin.version>3.6.2</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.7.3</maven.flatten.plugin.version>
         <maven.exec.plugin.version>3.6.2</maven.exec.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
-        <license-maven-plugin.version>2.7.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
 
         <!-- build settings -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -257,36 +237,35 @@
         <deploy.skip>true</deploy.skip>
         <javadoc.skip>true</javadoc.skip>
         <source.skip>true</source.skip>
-        <jakarta-staging.repo.releases.enabled>false</jakarta-staging.repo.releases.enabled>
-        <jakarta-staging.repo.snapshots.enabled>false</jakarta-staging.repo.snapshots.enabled>
         <payara-nexus-staging.repo.releases.enabled>false</payara-nexus-staging.repo.releases.enabled>
         <payara-nexus-staging.repo.snapshots.enabled>false</payara-nexus-staging.repo.snapshots.enabled>
 
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
-        <snakeyaml.version>2.5</snakeyaml.version>
-        <mojarra.version>4.1.4.payara-p1</mojarra.version>
+        <snakeyaml.version>2.6</snakeyaml.version>
+        <mojarra.version>4.1.6.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
-        <krazo.version>4.0.0</krazo.version>
+        <krazo.version>4.0.1.payara-p1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>5.0.0-B08.payara-p1</eclipselink.version>
+        <eclipselink.version>5.0.0-B13.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.9.0</eclipselink.asm.version>
-        <openmq.version>6.7.0.payara-p1</openmq.version>
+        <openmq.version>6.8.0.payara-p1</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.4.payara-p1</webservices.version>
         <santuario.version>4.0.4</santuario.version>
         <woodstox.version>7.1.1</woodstox.version>
-        <woodstock-jsf.version>6.0.1.payara-p1</woodstock-jsf.version>
-        <woodstock-jsf-suntheme.version>6.0.1.payara-p1</woodstock-jsf-suntheme.version>
-        <woodstock-external.dojo.version>6.0.2</woodstock-external.dojo.version>
-        <angus-activation.version>2.0.2</angus-activation.version>
+        <woodstock-jsf.version>6.0.3.payara-p1</woodstock-jsf.version>
+        <woodstock-jsf-suntheme.version>6.0.3.payara-p1</woodstock-jsf-suntheme.version>
+        <woodstock-external.dojo.version>6.0.3</woodstock-external.dojo.version>
+        <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
+        <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.6</jline.version>
+        <jline.version>3.30.9</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
-        <payara-arquillian-container.version>4.0.alpha2</payara-arquillian-container.version>
+        <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.1.0</concurro.version>
         <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
@@ -305,10 +284,10 @@
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
         <microprofile-config.version>3.1</microprofile-config.version>
-        <parsson.version>1.1.5.payara-p1</parsson.version>
+        <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
-        <jaxb-api.version>4.0.4</jaxb-api.version>
-        <jackson.version>2.20.1</jackson.version>
+        <jaxb-api.version>4.0.5</jaxb-api.version>
+        <jackson.version>2.21.2</jackson.version>
         <jersey.version>4.0.0.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
@@ -316,7 +295,7 @@
         <hibernate.validator.version>9.0.1.Final.payara-p1</hibernate.validator.version>
         <hibernate.validator.osgi.version>9.0</hibernate.validator.osgi.version>
         <hibernate.validator.osgi.version.upperbound>10.0</hibernate.validator.osgi.version.upperbound>
-        <jaxb-impl.version>4.0.6</jaxb-impl.version>
+        <jaxb-impl.version>4.0.7</jaxb-impl.version>
         <jsonp-api.version>2.1.3</jsonp-api.version>
         <jakarta.authentication-api.version>3.1.0</jakarta.authentication-api.version>
         <jakarta.authorization-api.version>3.0.0</jakarta.authorization-api.version>
@@ -338,34 +317,33 @@
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
-        <exousia.version>3.0.0-M3</exousia.version>
+        <exousia.version>3.0.1</exousia.version>
         <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.8-payara-1</hazelcast.version>
         <jakartaee.api.version>11.0.0</jakartaee.api.version>
         <weld-api.version>6.0.Final</weld-api.version>
-        <weld.version>6.0.3.Final</weld.version>
-        <tyrus.version>2.2.0</tyrus.version>
+        <weld.version>6.0.4.Final</weld.version>
+        <tyrus.version>2.2.2</tyrus.version>
         <jsp-impl.version>4.0.0</jsp-impl.version>
-        <asm.version>9.9</asm.version>
+        <asm.version>9.9.1</asm.version>
         <websocket-api.version>2.2.0</websocket-api.version>
         <jax-rs-api.impl.version>4.0.0</jax-rs-api.impl.version>
         <jstl-api.version>3.0.2</jstl-api.version>
         <concurrent-api.version>3.1.1</concurrent-api.version>
-        <jaxws-api.version>4.0.2</jaxws-api.version>
+        <jaxws-api.version>4.0.3</jaxws-api.version>
         <jms-api.version>3.1.0</jms-api.version>
         <jakarta.jws-api.version>3.0.0</jakarta.jws-api.version>
-        <stax2-api.version>4.2.2</stax2-api.version>
+        <stax2-api.version>4.3.0</stax2-api.version>
         <stax-api.version>1.0-2</stax-api.version>
         <jbi.version>1.0</jbi.version>
-        <epicyro.version>3.1.0</epicyro.version>
+        <epicyro.version>3.1.1</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.29.0</opentelemetry.version>
         <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
-        <payara.transformer.version>0.2.14</payara.transformer.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
     </properties>
@@ -504,14 +482,6 @@
             <properties>
                 <payara-nexus-staging.repo.releases.enabled>true</payara-nexus-staging.repo.releases.enabled>
                 <payara-nexus-staging.repo.snapshots.enabled>true</payara-nexus-staging.repo.snapshots.enabled>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>jakarta-staging</id>
-            <properties>
-                <jakarta-staging.repo.releases.enabled>true</jakarta-staging.repo.releases.enabled>
-                <jakarta-staging.repo.snapshots.enabled>true</jakarta-staging.repo.snapshots.enabled>
             </properties>
         </profile>
 
@@ -661,14 +631,14 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven.compiler.plugin.version}</version>
                     <configuration>
-                        <source>${javase.version}</source>
-                        <target>${javase.version}</target>
+                        <release>${javase.version}</release>
                         <excludes>
                             <exclude>**/.ade_path/**</exclude>
                         </excludes>
                         <testExcludes>
                             <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
+                        <proc>full</proc>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -687,7 +657,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.2.0</version>
+                    <version>1.2.1</version>
                     <executions>
                         <execution>
                             <id>validate-xml-files</id>

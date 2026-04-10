@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.bea.com/ns/weblogic/920/security/extension">
-  <xs:import namespace="http://www.bea.com/ns/weblogic/920/security" schemaLocation="http://www.bea.com/ns/weblogic/920/security.xsd"/>
-  <xs:complexType name="med-rec-sample-authenticatorType">
-    <xs:complexContent>
-      <xs:extension xmlns:sec="http://www.bea.com/ns/weblogic/920/security" base="sec:authenticatorType"/>
-    </xs:complexContent>
-  </xs:complexType>
-  <xs:element xmlns:ext="http://www.bea.com/ns/weblogic/920/security/extension" name="med-rec-sample-authenticator" type="ext:med-rec-sample-authenticatorType"/>
-</xs:schema>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2021] [Payara Foundation and/or it's affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -105,7 +105,9 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
     static final Logger ADMSEC_LOGGER = Logger.getLogger(ADMSEC_LOGGER_NAME, 
             AdminLoggerInfo.SHARED_LOGMESSAGE_RESOURCE);
-    
+    public static final String DOMAIN_ADMIN_GROUP_NAME = "asadmin";
+
+
     @Inject
     ServiceLocator habitat;
     
@@ -231,7 +233,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             for (Object principal : ps) {
                 if (principal instanceof Group) {
                     Group group = (Group) principal;
-                    if (group.getName().equals(AdminConstants.DOMAIN_ADMIN_GROUP_NAME))
+                    if (group.getName().equals(DOMAIN_ADMIN_GROUP_NAME))
                         return true;
                 }
             }
@@ -372,7 +374,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 String au = (String) users.nextElement();
                 FileRealmUser fru = (FileRealmUser)fr.getUser(au);
                 for (String group : fru.getGroups()) {
-                    if (group.equals(AdminConstants.DOMAIN_ADMIN_GROUP_NAME)) {
+                    if (group.equals(DOMAIN_ADMIN_GROUP_NAME)) {
                         if (candidateDefaultAdminUser != null) {
                             ADMSEC_LOGGER.log(Level.FINE, "There are multiple admin users so we cannot use any as a default");
                             return null;
@@ -463,9 +465,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             }
         }
 
-        String realm = as.getSystemJmxConnector().getAuthRealmName(); //yes, for backward compatibility;
-        if (realm == null)
-            realm = as.getAuthRealmName();
+        String realm = as.getAuthRealmName();
 
         try {
             return loginAsAdmin(user, new String(password), realm, host);

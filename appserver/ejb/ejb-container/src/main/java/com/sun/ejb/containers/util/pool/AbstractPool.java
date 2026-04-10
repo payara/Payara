@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 /**
  * <BR> <I>$Source: /cvs/glassfish/appserv-core/src/java/com/sun/ejb/containers/util/pool/AbstractPool.java,v $</I>
@@ -130,22 +130,6 @@ public abstract class AbstractPool
         }
 
     }
-
-    @Override
-    public Object getObject(boolean canWait, Object param)
-        throws PoolException
-    {
-        return getObject(param);
-    }
-
-    @Override
-    public Object getObject(long maxWaitTime, Object param)
-        throws PoolException
-    {
-        return getObject(param);
-    }
-
-
 
     protected abstract void removeIdleObjects();
     abstract public void close();

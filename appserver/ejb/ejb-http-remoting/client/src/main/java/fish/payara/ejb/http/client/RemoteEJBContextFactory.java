@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,36 +90,6 @@ public class RemoteEJBContextFactory implements InitialContextFactory {
     public static final String JAXRS_CLIENT_CONNECT_TIMEOUT = "fish.payara.connectTimeout";
     public static final String JAXRS_CLIENT_SERIALIZATION = "fish.payara.ejb.http.serialization";
     public static final String JAXRS_CLIENT_PROTOCOL_VERSION = "fish.payara.ejb.http.version";
-
-    @Deprecated
-    public static final String FISH_PAYARA_WITH_CONFIG = JAXRS_CLIENT_CONFIG;
-
-    @Deprecated
-    public static final String FISH_PAYARA_TRUST_STORE = JAXRS_CLIENT_TRUST_STORE;
-
-    @Deprecated
-    public static final String FISH_PAYARA_SSL_CONTEXT = JAXRS_CLIENT_SSL_CONTEXT;
-
-    @Deprecated
-    public static final String FISH_PAYARA_SCHEDULED_EXECUTOR_SERVICE = JAXRS_CLIENT_SCHEDULED_EXECUTOR_SERVICE;
-
-    @Deprecated
-    public static final String FISH_PAYARA_READ_TIMEOUT = JAXRS_CLIENT_READ_TIMEOUT;
-
-    @Deprecated
-    public static final String FISH_PAYARA_KEY_STORE = JAXRS_CLIENT_KEY_STORE;
-
-    @Deprecated
-    public static final String FISH_PAYARA_HOSTNAME_VERIFIER = JAXRS_CLIENT_HOSTNAME_VERIFIER;
-
-    @Deprecated
-    public static final String FISH_PAYARA_EXECUTOR_SERVICE = JAXRS_CLIENT_EXECUTOR_SERVICE;
-
-    @Deprecated
-    public static final String FISH_PAYARA_CONNECT_TIMEOUT = JAXRS_CLIENT_CONNECT_TIMEOUT;
-
-    @Deprecated
-    public static final String FISH_PAYARA_CLIENT_ADAPTER = CLIENT_ADAPTER;
 
     /**
      * The keys checked when creating a {@link Context} with {@link #getInitialContext(Hashtable)}. If these are not set

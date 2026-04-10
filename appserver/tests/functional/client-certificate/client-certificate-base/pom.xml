@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>client-certificate</artifactId>
-        <version>7.2026.1-SNAPSHOT</version>
+        <version>7.2026.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

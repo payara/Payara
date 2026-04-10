@@ -56,8 +56,6 @@ import org.omg.CORBA.ORB;
 public interface NamingClusterInfo {
     public static final String LOAD_BALANCING_PROPERTY = "com.sun.appserv.iiop.loadbalancingpolicy";
 
-    public static final String IIOP_ENDPOINTS_PROPERTY = "com.sun.appserv.iiop.endpoints";
-
     public static final String IIOP_URL_PROPERTY = "com.sun.appserv.ee.iiop.endpointslist";
 
     public static final String IIOP_CLUSTER_UPDATE_PROPERTY = "fish.payara.iiop.clusterupdate";

@@ -6,7 +6,6 @@ NAME
 SYNOPSIS
            create-transport [--help]
            [--acceptorthreads acceptor-threads]
-           [--buffersizebytes buffer-size]
            [--bytebuffertype byte-buffer-type]
            [--classname class-name]
            [--displayconfiguration={false|true}]
@@ -15,7 +14,6 @@ SYNOPSIS
            [--maxconnectionscount max-connections]
            [--readtimeoutmillis read-timeout]
            [--writetimeoutmillis write-timeout]
-           [--selectionkeyhandler selection-key-handler]
            [--selectorpolltimeoutmillis selector-poll-timeout]
            [--tcpnodelay={false|true}]
            [--target target]
@@ -33,11 +31,6 @@ OPTIONS
            The number of acceptor threads for the transport. The recommended
            value is the number of processors in the machine. The default value
            is 1.
-
-       --buffersizebytes
-           The size, in bytes, of the buffer to be provided for input streams
-           created by the network listener that references this transport. The
-           default value is 8192.
 
        --bytebuffertype
            The type of the buffer to be provided for input streams created by
@@ -74,10 +67,6 @@ OPTIONS
            The amount of time the server waits before considering the remote
            client disconnected when writing the response. The default is 30000
            milliseconds, or 30 seconds.
-
-       --selectionkeyhandler
-           The name of the selection key handler associated with this
-           transport. There is no default.
 
        --selectorpolltimeoutmillis
            The number of milliseconds a NIO Selector blocks waiting for events

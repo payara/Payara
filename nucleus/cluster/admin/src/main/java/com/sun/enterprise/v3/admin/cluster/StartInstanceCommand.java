@@ -36,9 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- * 
- * Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+
  */
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.v3.admin.cluster;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -120,9 +121,6 @@ public class StartInstanceCommand implements AdminCommand {
 
     @Param(optional = true, defaultValue = "false")
     private boolean terse;
-
-    @Param(optional = true, obsolete = true)
-    private String setenv;
 
     @Min(message = "Timeout must be at least 1 second long.", value = 1)
     @Param(optional = true, defaultValue = "120")

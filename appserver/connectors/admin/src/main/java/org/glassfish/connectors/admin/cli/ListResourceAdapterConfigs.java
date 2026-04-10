@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.connectors.admin.cli;
 
@@ -91,9 +91,6 @@ public class ListResourceAdapterConfigs implements AdminCommand {
 
     @Param(name="long", optional=true, defaultValue="false", shortName="l", alias="verbose")
     private Boolean long_opt;
-
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, alias = "targetName", obsolete = true)
-    private String target ;
 
     @Inject
     private Domain domain;

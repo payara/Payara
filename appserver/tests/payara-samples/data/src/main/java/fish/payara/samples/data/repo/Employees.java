@@ -2,6 +2,9 @@ package fish.payara.samples.data.repo;
 
 import fish.payara.samples.data.entity.Employee;
 import jakarta.data.repository.BasicRepository;
+import jakarta.data.repository.By;
+import jakarta.data.repository.Delete;
+import jakarta.data.repository.Query;
 import jakarta.data.repository.Repository;
 
 import java.math.BigDecimal;
@@ -116,4 +119,33 @@ public interface Employees extends BasicRepository<Employee, UUID> {
             return s2.compareTo(s1);
         }).limit(n).toList();
     }
+
+    // Delete operations for cache eviction testing
+
+    /**
+     * Query by Method Name DELETE - uses QueryByNameOperationUtility
+     * Tests instance-specific cache eviction (ISSUE #1)
+     */
+    long deleteByFirstNameAndLastName(String firstName, String lastName);
+
+    /**
+     * DELETE with @Delete + @By - uses DeleteOperationUtility
+     * Tests cache eviction for @Delete operations (ISSUE #2)
+     */
+    @Delete
+    void delete(@By("id") UUID id);
+
+    /**
+     * DELETE with @Query - uses QueryOperationUtility
+     * Tests cache eviction for @Query DELETE (ISSUE #2 variant)
+     */
+    @Query("DELETE FROM Employee WHERE firstName = :firstName")
+    long deleteByFirstName(@jakarta.data.repository.Param("firstName") String firstName);
+
+    /**
+     * UPDATE with @Query - uses QueryOperationUtility
+     * Tests cache eviction for @Query UPDATE (ISSUE #3)
+     */
+    @Query("UPDATE Employee SET firstName = :firstName WHERE id = :id")
+    long updateFirstName(@jakarta.data.repository.Param("id") UUID id, @jakarta.data.repository.Param("firstName") String firstName);
 }

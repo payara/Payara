@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2019-2024 Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or affiliates
 
 package org.apache.catalina.core;
 
@@ -206,16 +206,6 @@ public abstract class ContainerBase
      * The debugging detail level for this component.
      */
     protected int debug = 0;
-
-
-    /**
-     * The deprecated processor delay for this component.
-     * 
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBase#backgroundProcessorDelayAtomic}.
-     * Use {@link ContainerBase#getBackgroundProcessorDelay()} and {@link ContainerBase#setBackgroundProcessorDelay(int)}
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    protected int backgroundProcessorDelay = -1;
 
     /**
      * The processor delay for this component.
@@ -407,7 +397,6 @@ public abstract class ContainerBase
     @Override
     public void setBackgroundProcessorDelay(int delay) {
         backgroundProcessorDelayAtomic.set(delay);
-        backgroundProcessorDelay = delay;
     }
 
 
@@ -1938,68 +1927,4 @@ public abstract class ContainerBase
         }
 
     }
-
-    // -------------------------------------- DEPRECATED!
-    /**
-     * Deprecated private thread class to invoke the backgroundProcess method
-     * of this container and its children after a fixed delay.
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBackgroundProcessorAtomic}.
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    protected class ContainerBackgroundProcessor implements Runnable {
-
-        private final ContainerBackgroundProcessorAtomic containerBackgroundProcessorAtomic;
-
-        public ContainerBackgroundProcessor() {
-            containerBackgroundProcessorAtomic = new ContainerBackgroundProcessorAtomic(getMappingObject(),
-                    threadDone, backgroundProcessorDelayAtomic);
-        }
-
-        public ContainerBackgroundProcessor(ContainerBackgroundProcessorAtomic containerBackgroundProcessorAtomic) {
-            this.containerBackgroundProcessorAtomic = containerBackgroundProcessorAtomic;
-        }
-
-        @Override
-        public void run() {
-            containerBackgroundProcessorAtomic.run();
-        }
-
-        protected void processChildren(Container container, ClassLoader cl) {
-            containerBackgroundProcessorAtomic.processChildren(container, cl);
-        }
-    }
-
-    /**
-     * Deprecated thread class to invoke the backgroundSessionUpdate method
-     * of this container and its children after 500 milliseconds.
-     *
-     * DO NOT USE! Retained for semantic versioning. Replaced by {@link ContainerBackgroundSessionProcessorAtomic}.
-     */
-    @Deprecated(forRemoval = true, since = "6.17.0")
-    protected class ContainerBackgroundSessionProcessor implements Runnable {
-
-        private final ContainerBackgroundSessionProcessorAtomic containerBackgroundSessionProcessorAtomic;
-
-        public ContainerBackgroundSessionProcessor() {
-            containerBackgroundSessionProcessorAtomic = new ContainerBackgroundSessionProcessorAtomic(
-                    getMappingObject(), manager, threadSessionDone);
-        }
-
-        public ContainerBackgroundSessionProcessor(ContainerBackgroundSessionProcessorAtomic containerBackgroundSessionProcessorAtomic) {
-            this.containerBackgroundSessionProcessorAtomic = containerBackgroundSessionProcessorAtomic;
-        }
-
-        @Override
-        public void run() {
-            containerBackgroundSessionProcessorAtomic.run();
-        }
-
-        protected void processChildren(Container container, ClassLoader cl) {
-            containerBackgroundSessionProcessorAtomic.processChildren(container, cl);
-        }
-
-    }
-    
-
 }

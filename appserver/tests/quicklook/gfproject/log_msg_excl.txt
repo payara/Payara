@@ -131,7 +131,6 @@ Multiple JSF Applications found on same
 Method destroy defined on
 Initiating Jersey application
 custom-resource =
-profiler =
 config =
 Registered org.glassfish.ha.store.adapter.cache.ShoalBackingStoreProxy
 Stopping com.sun.enterprise.v3.server.AppServerStartup

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016-2021] [Payara Foundation]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.grizzly.config.dom;
 
@@ -100,15 +100,6 @@ public interface Transport extends ConfigBeanProxy, PropertyBag {
     String getSocketReadBufferSize();
 
     void setSocketReadBufferSize();
-
-    /**
-     * @deprecated This attribute is now ignored. Use socket-send-Buffer-size and/or socket-write-buffer-size instead.
-     */
-    @Deprecated
-    @Attribute(defaultValue = "" + BUFFER_SIZE, dataType = Integer.class)
-    String getBufferSizeBytes();
-
-    void setBufferSizeBytes(String size);
 
     /**
      * Type of ByteBuffer, which will be used with transport. Possible values are: HEAP and DIRECT
@@ -175,17 +166,6 @@ public interface Transport extends ConfigBeanProxy, PropertyBag {
     String getReadTimeoutMillis();
 
     void setReadTimeoutMillis(String value);
-
-    /**
-     * Use public SelectionKey handler, which was defined earlier in the document.
-     * @deprecated This attribute as well as the named selection-key-handler element this attribute refers to has been
-     *  deprecated and is effectively ignored by the runtime.  No equivalent functionality is available.
-     */
-    @Attribute
-    @Deprecated
-    String getSelectionKeyHandler();
-
-    void setSelectionKeyHandler(String value);
 
     /**
      * The time, in milliseconds, a NIO Selector will block waiting for events (users requests).

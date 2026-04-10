@@ -89,9 +89,8 @@ import static org.glassfish.enterprise.iiop.impl.NamingClusterInfoImpl.logger;
  * the Listener interface for listening to events generated whenever there
  * is a change in the cluster shape. The listener/event design is still
  * under construction.This list of endpoints will have to be created during 
- * bootstrapping(i.e. when the client first starts up.) This list will comprise
- * of the endpoints specified by the user in "com.sun.appserv.iiop.endpoints"
- * property. We can assume a default weight for these endpoints (e.g 10).
+ * bootstrapping(i.e. when the client first starts up.)
+ * We can assume a default weight for these endpoints (e.g 10).
  * 
  * <p>
  * This list will be used to make the first lookup call. During the first 
@@ -140,9 +139,6 @@ public class RoundRobinPolicy {
 
     @LogMessageInfo(message = "Unknown host: {0} Exception thrown : {1}")
     public static final String UNKNOWN_HOST = "AS-ORB-00005";
-
-    @LogMessageInfo(message = "No Endpoints selected in com.sun.appserv.iiop.endpoints property. Using JNDI Provider URL {0} instead")
-    public static final String NO_ENDPOINTS_SELECTED_PROVIDER = "AS-ORB-00006";
 
     @LogMessageInfo(message = "Exception : {0} thrown for bad provider URL String: {1}")
     public static final String PROVIDER_EXCEPTION = "AS-ORB-00007";
@@ -310,7 +306,7 @@ public class RoundRobinPolicy {
             try {
                 final IiopUrl providerURL = new IiopUrl(providerURLString);
                 final List<String> newList = getAddressPortList(providerURL);
-                logger.log(Level.WARNING, NO_ENDPOINTS_SELECTED_PROVIDER, providerURLString);
+                logger.log(Level.INFO, "Using JNDI Provider URL {0}", providerURLString);
                 return newList;
             } catch (MalformedURLException me) {
                 logger.log(Level.WARNING, PROVIDER_EXCEPTION, new Object[] { me, providerURLString });

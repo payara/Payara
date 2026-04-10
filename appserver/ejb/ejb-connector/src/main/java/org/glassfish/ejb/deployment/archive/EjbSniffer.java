@@ -183,7 +183,6 @@ public class EjbSniffer  extends GenericSniffer {
         result.add("META-INF/ejb-jar.xml");
         result.add("META-INF/sun-ejb-jar.xml");
         result.add("META-INF/glassfish-ejb-jar.xml");
-        result.add("META-INF/weblogic-ejb-jar.xml");
         return result;
     }
 

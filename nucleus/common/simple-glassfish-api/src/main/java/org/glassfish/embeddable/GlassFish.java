@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.embeddable;
 
@@ -78,7 +79,7 @@ package org.glassfish.embeddable;
         <span class="s0">// Run a command create 'my-http-listener' to listen at 9090</span>
         {@link CommandResult} commandResult = commandRunner.run(
                 </span><span class="s4">&quot;create-http-listener&quot;</span><span class="s1">, </span><span class="s4">&quot;--listenerport=9090&quot;</span><span class="s1">,
-                </span><span class="s4">&quot;--listeneraddress=0.0.0.0&quot;</span><span class="s1">, </span><span class="s4">&quot;--defaultvs=server&quot;</span><span class="s1">,
+                </span><span class="s4">&quot;--listeneraddress=0.0.0.0&quot;</span><span class="s1">, </span><span class="s4">&quot;--default-virtual-server=server&quot;</span><span class="s1">,
                 </span><span class="s4">&quot;my-http-listener&quot;</span><span class="s1">);
 
         </span><span class="s0">// Run a command to create your own thread pool</span><span class="s1">

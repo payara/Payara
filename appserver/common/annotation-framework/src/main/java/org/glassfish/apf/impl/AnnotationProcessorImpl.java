@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.apf.impl;
 
@@ -313,7 +313,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
                 if (!result.processedAnnotations().containsKey(annotation.annotationType())) {
                     process(ctx, subElement, result);
                 } else {
-                    if (AnnotationUtils.shouldLog("annotation")) { 
+                    if (logger.isLoggable(Level.FINE)) {
                         logger.finer("Annotation " + annotation.annotationType() + " already processed");
                     }
                 }       
@@ -333,7 +333,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         
         
         Annotation annotation = element.getAnnotation();
-        if (AnnotationUtils.shouldLog("annotation")) {
+        if (logger.isLoggable(Level.FINER)) {
             logger.log(Level.FINER, "Annotation : {0} delegate = {1}", new Object[]{annotation.annotationType().getName(), delegate});
         }
         result.addResult(annotation.annotationType(), ResultType.UNPROCESSED);
@@ -410,7 +410,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     private void dumpProcessingResult(HandlerProcessingResult result) {
 
-        if (result==null || !AnnotationUtils.shouldLog("annotation")) {
+        if (result==null || !logger.isLoggable(Level.FINER)) {
             return;
         }
    
@@ -485,8 +485,8 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     private void logStart(AnnotatedElementHandler handler, ElementType type, AnnotatedElement c) throws AnnotationProcessorException {
         
-        if (AnnotationUtils.shouldLog("types")) {
-            AnnotationUtils.getLogger().finer(type + " START : " + c);
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer(type + " START : " + c);
         }
         
         // push it to our annotated element stack
@@ -502,8 +502,8 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     
     private void logEnd(AnnotatedElementHandler handler, ElementType type, AnnotatedElement c) throws AnnotationProcessorException {
         
-        if (AnnotationUtils.shouldLog("types")) {
-            AnnotationUtils.getLogger().log(Level.FINER, "{0} END : {1}", new Object[]{type, c});
+        if (logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "{0} END : {1}", new Object[]{type, c});
         }
         
         // pop it from our annotated element stack

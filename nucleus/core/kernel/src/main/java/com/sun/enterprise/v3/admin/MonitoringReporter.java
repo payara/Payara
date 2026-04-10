@@ -38,13 +38,12 @@
  * holder.
  */
 
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.admin.report.ActionReporter;
@@ -151,7 +150,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
     }
 
     private String sanitizeResourceName(final String resourceName) {
-        return StringUtils.replace(resourceName, "[", "_ARRAY_");
+        return resourceName.replace("[", "_ARRAY_");
     }
     public void prepareList(AdminCommandContext c, String arg) {
         prepare(c, arg, OutputType.LIST);

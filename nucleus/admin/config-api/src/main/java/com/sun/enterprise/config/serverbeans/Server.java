@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2017-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -146,27 +146,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
     @Param(name = PARAM_CONFIG, optional = true)
     void setConfigRef(String value) throws PropertyVetoException;
 
-    /**
-     * Gets the value of the nodeAgentRef property.
-     *
-     * SE/EE only. Specifies name of node agent where server instance is hosted
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute
-    @Deprecated
-    String getNodeAgentRef();
 
-    /**
-     * Sets the value of the nodeAgentRef property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     * @throws PropertyVetoException if a listener vetoes the change
-     */
-    @Deprecated
-    void setNodeAgentRef(String value) throws PropertyVetoException;
 
     /**
      * Sets the value of the node property.

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.ejb.containers;
 
@@ -85,9 +85,6 @@ public interface EjbContainerUtil {
 
     // Used by the TimerService upgrade
     public long MINIMUM_TIMER_DELIVERY_INTERVAL = 1000;
-
-    // Used by the TimerService upgrade
-    public String TIMER_SERVICE_UPGRADED = "ejb-timer-service-upgraded";
 
     public GlassFishORBHelper getORBHelper();
     

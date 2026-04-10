@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+    Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 -->
 
@@ -66,7 +66,7 @@
         setSessionAttribute(key="onlyDASExist" value="#{true}");
         createMap(result="#{pageSession.attrs}")
         mapPut(map="#{pageSession.attrs}"  key="target"  value="#{pageSession.dgName}")
-        gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-components.json" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
+        gf.restRequest( endpoint="#{sessionScope.REST_URL}/applications/list-applications.json" , method="GET"  attrs="#{pageSession.attrs}" result="#{requestScope.result}");
         setPageSessionAttribute(key="appRefEndpoint" value="/deployment-groups/deployment-group/#{pageSession.encodedDGName}/application-ref/");
         gf.getSingleTargetAppsInfo(appPropsMap="#{requestScope.result.data.properties}" appRefEndpoint="#{pageSession.appRefEndpoint}" target="#{pageSession.dgName}"  filterValue="#{pageSession.filterValue}", filters="#{requestScope.filters}" result="#{requestScope.listOfRows}" );
         gf.isDGName(dgName="#{pageSession.dgName}" );

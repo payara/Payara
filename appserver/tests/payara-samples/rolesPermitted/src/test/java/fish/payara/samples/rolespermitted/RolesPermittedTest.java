@@ -92,7 +92,7 @@ public class RolesPermittedTest {
         return ShrinkWrap.create(WebArchive.class, "rolesPermitted.war")
                 .addPackage("fish.payara.samples.rolespermitted")
                 .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/web.xml"))
-                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/glassfish-web.xml"));
+                .addAsWebInfResource(new File(WEBAPP_SOURCE, "WEB-INF/payara-web.xml"));
     }
 
     @BeforeClass

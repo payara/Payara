@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 /*
  * JDOCodeGenerator.java
@@ -155,7 +155,7 @@ public class JDOCodeGenerator implements CMPGenerator, DatabaseConstants {
      * @see CMPGenerator#init(org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl, ClassLoader, String)
      *
      * This method should be merged with {@link #init(org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl, DeploymentContext, String)}
-     * when TestFramework is fixed for optional pm-descriptors and java2db support.
+     * when TestFramework is fixed for optional java2db support.
      *
      * @deprecated
      */

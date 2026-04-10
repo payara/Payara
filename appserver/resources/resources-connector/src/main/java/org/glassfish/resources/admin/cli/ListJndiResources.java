@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resources.admin.cli;
 
@@ -82,9 +83,6 @@ public class ListJndiResources implements AdminCommand {
 
     @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     private String targetOperand;
-
-    @Param(optional = true, obsolete = true)
-    private String target = SystemPropertyConstants.DAS_SERVER_NAME;
 
     @Inject
     private BindableResourcesHelper bindableResourcesHelper;

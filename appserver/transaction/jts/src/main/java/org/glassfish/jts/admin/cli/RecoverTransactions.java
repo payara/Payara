@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.jts.admin.cli;
 
@@ -79,7 +80,7 @@ import org.glassfish.api.admin.RestParam;
 })
 public class RecoverTransactions extends RecoverTransactionsBase implements AdminCommand {
 
-    @Param(name="target", alias = "destination", optional = true)
+    @Param(name="target", optional = true)
     String destinationServer;
 
     @Inject 
