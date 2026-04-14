@@ -143,7 +143,7 @@ public final class FaultTolerancePolicy implements Serializable {
         return new FaultTolerancePolicy(
                 config.isNonFallbackEnabled(),
                 config.isMetricsEnabled(),
-                AsynchronousPolicy.create(context, config),
+                 AsynchronousPolicy.create(context, config),
                 BulkheadPolicy.create(context, config),
                 CircuitBreakerPolicy.create(context, config),
                 FallbackPolicy.create(context, config),
@@ -280,7 +280,8 @@ public final class FaultTolerancePolicy implements Serializable {
             return context.proceed();
         }
         FaultToleranceMethodContext ftmContext = ftmContextSupplier.get();
-        FaultToleranceMetrics metrics = ftmContext.getMetrics().boundTo(ftmContext, this);
+        FaultToleranceMetrics metrics = ftmContext.getMetrics();
+        metrics.boundTo(ftmContext, this);
         try {
             Object res = processAsynchronousStage(ftmContext, metrics);
             if (res instanceof AsyncFuture) {

@@ -285,4 +285,18 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     public String toString() {
         return super.toString()+"[method="+context.getMethod()+", target="+ context.getTarget()+", sharedState=" + shared + "]";
     }
+    
+    public String getMethodName() {
+        if (context != null) {
+            return context.getMethod().getName();
+        }
+        return null;
+    }
+    
+    public String getClassName() {
+        if (context != null) {
+            return context.getMethod().getDeclaringClass().getName();
+        }
+        return null;
+    }
 }
