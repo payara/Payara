@@ -1,3 +1,42 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/main/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
 package fish.payara.microprofile.faulttolerance;
 
 import io.opentelemetry.api.common.AttributeKey;
@@ -13,7 +52,7 @@ import java.util.List;
  */
 public class FaultToleranceTelemetryMetricsRecorder {
     
-    //invocations metric properties
+    //invocations telemetry metrics properties
     private static final String FT_INVOCATIONS_TOTAL = "ft.invocations.total";
     private static final String FT_INVOCATIONS_TOTAL_DESCRIPTION = 
             """
@@ -22,7 +61,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
     private static final String FALLBACK_NAME = "fallback";
     private static final String METHOD_ATTRIBUTE_NAME = "method";
     
-    //retry metric properties
+    //retry telemetry metrics properties
     private static final String FT_RETRY_CALLS_TOTAL = "ft.retry.calls.total";
     private static final String FT_RETRY_CALLS_TOTAL_DESCRIPTION = 
             """
@@ -33,7 +72,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
             The number of time the method was retried.
             """;
     
-    //timeout metrics
+    //timeout telemetry metrics properties
     private static final String  FT_TIMEOUT_CALLS_TOTAL = "ft.timeout.calls.total";
     private static final String FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION = """
             The number of times the timeout logic was run.
@@ -45,7 +84,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
             """;
     private static final List<Double> HISTOGRAM_BUCKETS = List.of(0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0);
     
-    //circuitBreaker
+    //circuitBreaker telemetry metrics properties
     private static final String FT_CIRCUIT_BREAKER_CALLS_TOTAL = "ft.circuitbreaker.calls.total";
     private static final String FT_CIRCUIT_BREAKER_CALLS_TOTAL_DESCRIPTION = """
             The number of times the circuit breaker logic was run.
@@ -58,7 +97,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
     private static final String FT_CIRCUIT_BREAKER_OPENED_TOTAL_DESCRIPTION = """
             Number of times the circuit breaker moved from closed state to open state.
             """;
-    //bulkhead
+    //bulkhead telemetry metrics properties
     private static final String FT_BULKHEAD_CALLS_TOTAL = "ft.bulkhead.calls.total";
     private static final String FT_BULKHEAD_CALLS_TOTAL_DESCRIPTION = """
             The number of times the bulkhead logic was run.
@@ -105,10 +144,9 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.retry.retries.total metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTRetryRetriesTotal(String classAndMethodName, Meter currentMeter) {
+    public static void createFTRetryRetriesTotal(Meter currentMeter) {
         currentMeter.counterBuilder(FT_RETRY_RETRIES_TOTAL).setDescription(FT_RETRY_RETRIES_TOTAL_DESCRIPTION).build();
     }
 
