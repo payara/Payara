@@ -131,7 +131,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: "Build"),
@@ -152,7 +152,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -173,7 +173,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -194,7 +194,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP JWT Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -215,7 +215,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -236,7 +236,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -257,7 +257,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -278,7 +278,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -299,7 +299,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'TCKs/MP-TCKs',
                             parameters: [
                                 string(name: 'buildProject', value: 'Build'),
@@ -323,7 +323,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'Miscellaneous/Run-EE8-Samples',
                             parameters: [
                                 string(name: 'payaraBuildNumber', value: "${buildId}"),
@@ -367,7 +367,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        catchError(stageResult: 'UNSTABLE') {
                             build job: 'Miscellaneous/Run-EE7-Samples',
                             parameters: [
                                 string(name: 'payaraBuildNumber', value: "${buildId}"),
@@ -434,16 +434,6 @@ pipeline {
                             saveLogsAndCleanup 'asadmin-log.zip'
                         }
                     }
-                }
-            }
-        }
-    }
-    post {
-        unsuccessful {
-            script {
-                if (currentBuild.result == 'UNSTABLE') {
-                    currentBuild.result = 'SUCCESS'
-                    echo "Build result changed from UNSTABLE to SUCCESS for GitHub reporting"
                 }
             }
         }
