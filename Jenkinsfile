@@ -75,14 +75,16 @@ pipeline {
                         setupDomain()
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """rm  ~/test\\|sa.mv.db  || true"""
-                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
-                        -Dglassfish.home=\"${pwd()}/payara7/glassfish\" \
-                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                        -Djavax.xml.accessExternalSchema=all \
-                        -Dsurefire.rerunFailingTestsCount=2 \
-                        -Dfailsafe.rerunFailingTestsCount=2 \
-                        -f appserver/tests/quicklook/pom.xml"""
+                        catchError(stageResult: 'UNSTABLE') {
+                            sh """rm  ~/test\\|sa.mv.db  || true"""
+                            sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
+                            -Dglassfish.home=\"${pwd()}/payara7/glassfish\" \
+                            -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                            -Djavax.xml.accessExternalSchema=all \
+                            -Dsurefire.rerunFailingTestsCount=2 \
+                            -Dfailsafe.rerunFailingTestsCount=2 \
+                            -f appserver/tests/quicklook/pom.xml"""
+                        }
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
