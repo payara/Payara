@@ -306,7 +306,7 @@
         <json.bind-api.version>3.0.1</json.bind-api.version>
         <jakarta-persistence-api.version>3.2.0</jakarta-persistence-api.version>
         <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
-        <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-fault-tolerance.version>4.1.2</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
         <microprofile-metrics.version>5.1.2</microprofile-metrics.version>
