@@ -45,6 +45,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
@@ -213,6 +214,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     public static SchemaImpl valueOf(String content) throws JsonMappingException, JsonProcessingException {
         return ObjectMapperFactory
                 .createJson()
+                .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
                 .readValue(content, SchemaImpl.class);
     }
 
