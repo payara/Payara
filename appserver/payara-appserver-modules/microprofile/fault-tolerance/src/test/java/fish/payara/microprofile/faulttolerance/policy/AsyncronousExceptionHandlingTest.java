@@ -80,7 +80,7 @@ public class AsyncronousExceptionHandlingTest {
      * When returning a {@link Future} there is only 1 attempt made since a {@link Future} instance is returned on first
      * attempt.
      */
-    //@Test
+    @Test
     public void asyncFutureWithRetry() throws Exception {
         Future<?> result = proceedToDoneFuture();
         assertEquals("no retry attempt should occur", 1, asyncFutureWithRetryCallCount.get());
@@ -98,7 +98,7 @@ public class AsyncronousExceptionHandlingTest {
      * When the method returning a {@link Future} throws an {@link Exception} the {@link Retry} is applied and further
      * attempts are made.
      */
-    //@Test
+    @Test
     public void asyncFutureWithRetryThrowsException() throws Exception {
         Future<?> result = proceedToDoneFuture();
         assertEquals("all retry attempts should occur", 4, asyncFutureWithRetryThrowsExceptionCallCount.get());
@@ -116,7 +116,7 @@ public class AsyncronousExceptionHandlingTest {
      * A method returning {@link CompletionStage} must complete successful otherwise {@link Retry} is effective and
      * further attempts are made.
      */
-    //@Test
+    @Test
     public void asyncCompletionStageWithRetry() throws Exception {
         Future<?> result = proceedToDoneFuture();
         assertEquals("all retry attempts should occur", 3, asyncCompletionStageWithRetryCallCount.get());
@@ -134,7 +134,7 @@ public class AsyncronousExceptionHandlingTest {
      * For a method returning {@link CompletionStage} throwing an exception is similarly handled to returning a value
      * that later completes exceptionally. Therefore retry attempts should occur.
      */
-    //@Test
+    @Test
     public void asyncCompletionStageWithRetryThrowsException() throws Exception {
         Future<?> result = proceedToDoneFuture();
         assertEquals("all retry attempts should occur", 3, asyncCompletionStageWithRetryThrowsExceptionCallCount.get());
@@ -152,7 +152,7 @@ public class AsyncronousExceptionHandlingTest {
      * A {@link CompletionStage} that first completes exceptionally should make further {@link Retry} attempts and
      * complete successful in this scenario.
      */
-    //@Test
+    @Test
     public void asyncCompletionStageWithRetrySuccessOnRetry() throws Exception {
         Future<?> result = proceedToDoneFuture();
         assertEquals("one retry should lead to success", 2, asyncCompletionStageWithRetrySuccessOnRetryCallCount.get());

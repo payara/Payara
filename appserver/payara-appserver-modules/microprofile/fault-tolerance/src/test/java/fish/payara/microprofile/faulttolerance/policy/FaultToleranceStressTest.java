@@ -182,7 +182,7 @@ public class FaultToleranceStressTest implements FallbackHandler<Future<String>>
     final AtomicReference<BlockingQueue<Thread>> concurrentExecutions = service.getConcurrentExecutionsReference();
     final AtomicInteger waitingQueuePopulation = service.getWaitingQueuePopulationReference();
 
-    //@Test
+    @Test
     public void occasionallyFailingService() throws InterruptedException {
         Method annotatedMethod = TestUtils.getAnnotatedMethod();
         Runnable callerTask = () -> callServiceMethod(annotatedMethod);

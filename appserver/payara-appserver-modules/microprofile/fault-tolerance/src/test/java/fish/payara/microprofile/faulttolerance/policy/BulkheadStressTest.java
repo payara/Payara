@@ -55,7 +55,7 @@ import org.junit.Test;
  */
 public class BulkheadStressTest extends AbstractBulkheadTest {
 
-    //@Test
+    @Test
     public void bulkheadWithQueueAndRetry_55_100() {
         loop(5, 100, 5);
     }
@@ -68,7 +68,7 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
         return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
 
-   // @Test
+    @Test
     public void bulkheadWithQueueAndRetry_55_100_NoDelay() {
         loop(1, 100, 5);
     }
@@ -81,7 +81,7 @@ public class BulkheadStressTest extends AbstractBulkheadTest {
         return bodyWaitThenReturnSuccess(null).toCompletableFuture();
     }
 
-    //@Test
+    @Test
     public void bulkheadWithoutQueueSingleCapacity() {
         loop(0, 100, 3);
         assertMaxConcurrentExecution(1);
