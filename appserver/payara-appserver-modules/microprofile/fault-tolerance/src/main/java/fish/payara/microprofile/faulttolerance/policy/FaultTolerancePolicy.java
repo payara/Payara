@@ -280,8 +280,7 @@ public final class FaultTolerancePolicy implements Serializable {
             return context.proceed();
         }
         FaultToleranceMethodContext ftmContext = ftmContextSupplier.get();
-        FaultToleranceMetrics metrics = ftmContext.getMetrics();
-        metrics.boundTo(ftmContext, this);
+        FaultToleranceMetrics metrics = ftmContext.getMetrics().boundTo(ftmContext, this);
         try {
             Object res = processAsynchronousStage(ftmContext, metrics);
             if (res instanceof AsyncFuture) {
