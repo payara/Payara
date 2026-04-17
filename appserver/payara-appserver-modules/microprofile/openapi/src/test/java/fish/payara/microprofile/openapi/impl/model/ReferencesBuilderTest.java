@@ -147,7 +147,7 @@ public class ReferencesBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void pathItemReferenceHasExpectedFields() {
-        assertReference("NameRef", "paths.pathItemRef");
+        assertReference("#/components/pathItems/NameRef", "paths.pathItemRef");
         assertReference(url, "paths.pathItemUrlRef");
     }
 
