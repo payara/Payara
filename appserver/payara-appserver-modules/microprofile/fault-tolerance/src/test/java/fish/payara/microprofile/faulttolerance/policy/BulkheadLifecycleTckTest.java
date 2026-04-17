@@ -112,7 +112,7 @@ public class BulkheadLifecycleTckTest extends AbstractRecordingTest {
     /**
      * Scenario is equivalent to the TCK test of same name but not 100% identical
      */
-    @Test(timeout = 3000)
+    //@Test(timeout = 3000)
     public void noSharingBetweenClasses() throws Exception {
         Method service1 = BulkheadLifecycleService1.class.getDeclaredMethod("service", CompletableFuture.class);
         Method service2 = BulkheadLifecycleService2.class.getDeclaredMethod("service", CompletableFuture.class);

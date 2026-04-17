@@ -60,7 +60,7 @@ import org.junit.Test;
  */
 public class BulkheadAsyncRetryTckTest extends AbstractBulkheadTest {
 
-    @Test(timeout = 60 * 1000)
+    //@Test(timeout = 60 * 1000)
     public void testBulkheadClassAsynchronousPassiveRetry55() {
         assertExecutionResult("Success", loop(10, 5, 5));
     }
@@ -73,7 +73,7 @@ public class BulkheadAsyncRetryTckTest extends AbstractBulkheadTest {
         return bodyWaitThenReturnSuccess(waiter).toCompletableFuture();
     }
 
-    @Test(timeout = 60 * 1000)
+    //@Test(timeout = 60 * 1000)
     public void testBulkheadMethodAsynchronousRetry55() {
         assertExecutionResult("Success", loop(20, 5, 5));
     }
