@@ -255,16 +255,27 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         if (multipleOf != null) {
             from.setMultipleOf(BigDecimal.valueOf(multipleOf));
         }
+
         String maximum = annotation.getValue("maximum", String.class);
         if (maximum != null && !maximum.isEmpty()) {
-            from.setMaximum(new BigDecimal(maximum));
+            Boolean isExclusiveMaximum = annotation.getValue("exclusiveMaximum", Boolean.class);
+            BigDecimal max = new BigDecimal(maximum);
+            from.setMaximum(max);
+            if (Boolean.TRUE.equals(isExclusiveMaximum)) {
+                from.setExclusiveMaximum(max);
+            }
         }
-        from.setExclusiveMaximum(annotation.getValue("exclusiveMaximum", BigDecimal.class));
+
         String minimum = annotation.getValue("minimum", String.class);
         if (minimum != null && !minimum.isEmpty()) {
-            from.setMinimum(new BigDecimal(minimum));
+            Boolean isExclusiveMinimum = annotation.getValue("exclusiveMinimum", Boolean.class);
+            BigDecimal min = new BigDecimal(minimum);
+            from.setMinimum(min);
+            if (Boolean.TRUE.equals(isExclusiveMinimum)) {
+                from.setExclusiveMinimum(min);
+            }
         }
-        from.setExclusiveMinimum(annotation.getValue("exclusiveMinimum", BigDecimal.class));
+
         from.setMaxLength(annotation.getValue("maxLength", Integer.class));
         from.setMinLength(annotation.getValue("minLength", Integer.class));
         from.setPattern(annotation.getValue("pattern", String.class));
