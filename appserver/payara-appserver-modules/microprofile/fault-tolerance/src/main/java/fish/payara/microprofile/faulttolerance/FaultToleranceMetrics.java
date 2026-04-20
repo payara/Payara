@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,8 +39,16 @@
  */
 package fish.payara.microprofile.faulttolerance;
 
+import static fish.payara.microprofile.faulttolerance.FaultToleranceTelemetryMetricsRecorder.*;
 import static java.util.Arrays.asList;
+import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextImpl;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -72,7 +80,77 @@ public interface FaultToleranceMetrics {
     /**
      * Can be used as NULL object when metrics are disabled so avoid testing for enabled but still do essentially NOOPs.
      */
-    FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() { /* does nothing */ };
+    FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() {
+        @Override
+        public void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal) {
+            
+        } /* does nothing */
+
+        @Override
+        public void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal) {
+            
+        }
+
+        @Override
+        public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter) {
+            
+        }
+
+        @Override
+        public LongCounter getCircuitBreakerCallsTotal() {
+            return null;
+        }
+
+        @Override
+        public LongCounter getCircuitBreakerOpendTotal() {
+            return null;
+        }
+
+        @Override
+        public LongCounter getInvocationsValueReturnedCounter() {
+            return null;
+        }
+
+        @Override
+        public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerStateTotal, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes) {
+
+        }
+
+        @Override
+        public void setClassAndMethodName(String classAndMethodName) {
+
+        }
+
+        @Override
+        public String getClassAndMethodName() {
+            return "";
+        }
+    };
 
     Tag[] NO_TAGS = new Tag[0];
 
@@ -86,11 +164,19 @@ public interface FaultToleranceMetrics {
      */
     default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
         if (policy.isMetricsEnabled) {
+            long startTime = System.nanoTime();
+            OpenTelemetryService openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
             String[] fallbackTag = policy.isFallbackPresent()
                     ? new String[] {"fallback", "applied", "notApplied"}
                     : new String[] {"fallback", "notDefined"};
             register(Counter.class.getTypeName(), "ft.invocations.total", new String[][]{
                 {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
+            //place to register telemetry ft.invocations.total
+            Meter currentMeter = openTelemetryService.getCurrentMeter();
+            FaultToleranceMethodContextImpl faultToleranceMethodContext = (FaultToleranceMethodContextImpl) context;
+            setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
+            addFTInvocationTotalMeter(createFTInvocationTotalMeter(getClassAndMethodName(), currentMeter, policy.isFallbackPresent()));
+            
             if (policy.isRetryPresent()) {
                 List<String> retryResultTag = new ArrayList<>(asList("retryResult", "valueReturned", "exceptionNotRetryable"));
                 if (policy.retry.isMaxRetriesSet()) {
@@ -102,11 +188,16 @@ public interface FaultToleranceMetrics {
                 register(Counter.class.getTypeName(), "ft.retry.calls.total", new String[][]{
                     {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
                 register(Counter.class.getTypeName(), "ft.retry.retries.total");
+                //place to register telemetry ft.retry.calls.total and ft.retry.retries.total
+                createFTRetryCallsTotal(getClassAndMethodName(), currentMeter);
+                createFTRetryRetriesTotal(currentMeter);
             }
             if (policy.isTimeoutPresent()) {
                 register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
                     {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
+                createFTTimeoutCallsTotal(getClassAndMethodName(), currentMeter);
+                createFTTimeoutExecutionDuration(getClassAndMethodName(), currentMeter, startTime);
             }
             if (policy.isCircuitBreakerPresent()) {
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][] {
@@ -116,6 +207,9 @@ public interface FaultToleranceMetrics {
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosClosed, "state", "closed");
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.opened.total");
+                addCircuitBreakerCallsTotal(createFTCircuitBreakerCallsTotal(currentMeter));
+                addCircuitBreakerOpenedTotal(createFTCircuitBreakerOpenedTotal(currentMeter));
+                createFTCircuitBreakerStateTotal(getClassAndMethodName(), currentMeter);
             }
             if (policy.isBulkheadPresent()) {
                 register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][] {
@@ -131,6 +225,10 @@ public interface FaultToleranceMetrics {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
                 }
+                createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter);
+                createFTBulkheadExecutionsRunning(getClassAndMethodName(), currentMeter);
+                createFTBulkheadRunningDuration(getClassAndMethodName(), currentMeter, startTime);
+                createFTBulkheadExecutionWaiting(getClassAndMethodName(), currentMeter);
             }
         }
         return this;
@@ -178,6 +276,7 @@ public interface FaultToleranceMetrics {
 
     default void incrementCounter(String metric) {
         incrementCounter(metric, NO_TAGS);
+        
     }
 
     /**
@@ -206,6 +305,8 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.invocations.total",
                 new Tag("result", "valueReturned"),
                 new Tag("fallback", getFallbackUsage().name()));
+        incrementInvocationsValueReturnedCounter(getInvocationsValueReturnedCounter(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).put("result", "valueReturned").put("fallback", getFallbackUsage().name()).build());
     }
 
     /**
@@ -215,6 +316,8 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.invocations.total",
                 new Tag("result", "exceptionThrown"),
                 new Tag("fallback", getFallbackUsage().name()));
+        incrementInvocationsExceptionThrownCounter(getInvocationsValueReturnedCounter(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).put("result", "exceptionThrown").put("fallback", getFallbackUsage().name()).build());
     }
 
     /**
@@ -336,8 +439,11 @@ public interface FaultToleranceMetrics {
     default void incrementCircuitbreakerCallsSucceededTotal() {
         incrementCounter("ft.circuitbreaker.calls.total",
                 new Tag("circuitBreakerResult", "success"));
+        incrementCircuitBreakerCallsSuccessCount(getCircuitBreakerCallsTotal(), 
+                Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                        .stringKey("method"), getClassAndMethodName()).build()).put("circuitBreakerResult", "success").build());
     }
-
+    
     /**
      * The number of times the circuit breaker logic was run. This will usually be once per method call, but may be more
      * than once if the method call is retried.
@@ -347,6 +453,9 @@ public interface FaultToleranceMetrics {
     default void incrementCircuitbreakerCallsFailedTotal() {
         incrementCounter("ft.circuitbreaker.calls.total",
                 new Tag("circuitBreakerResult", "failure"));
+        incrementCircuitBreakerCallsFailureCount(getCircuitBreakerCallsTotal(), 
+                Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                        .stringKey("method"), getClassAndMethodName()).build()).put("circuitBreakerResult", "failure").build());
     }
 
     /**
@@ -358,6 +467,9 @@ public interface FaultToleranceMetrics {
     default void incrementCircuitbreakerCallsPreventedTotal() {
         incrementCounter("ft.circuitbreaker.calls.total",
                 new Tag("circuitBreakerResult", "circuitBreakerOpen"));
+        incrementCircuitBreakerCallsCircuitOpenCount(getCircuitBreakerCallsTotal(), 
+                Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                        .stringKey("method"), getClassAndMethodName()).build()).put("circuitBreakerResult", "circuitBreakerOpen").build());
     }
 
     /**
@@ -365,6 +477,8 @@ public interface FaultToleranceMetrics {
      */
     default void incrementCircuitbreakerOpenedTotal() {
         incrementCounter("ft.circuitbreaker.opened.total");
+        incrementCircuitBreakerOpendTotalTelemetry(getCircuitBreakerOpendTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).build());
     }
 
     /*
@@ -421,4 +535,32 @@ public interface FaultToleranceMetrics {
     default void incrementFallbackCallsTotal() {
         //NOOP
     }
+    
+    public void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal);
+    
+    public void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal);
+    
+    public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter);
+    
+    public LongCounter getCircuitBreakerCallsTotal();
+    
+    public LongCounter getCircuitBreakerOpendTotal();
+    
+    public LongCounter getInvocationsValueReturnedCounter();
+    
+    public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
+    
+    public void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes);
+    
+    public void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes);
+    
+    public void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerOpendTotal, Attributes attributes);
+    
+    public void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
+    
+    public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
+    
+    public void setClassAndMethodName(String classAndMethodName);
+    
+    public String getClassAndMethodName();
 }

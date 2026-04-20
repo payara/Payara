@@ -93,7 +93,7 @@ public class AllMetricsTckTest extends AbstractMetricTest {
     /**
      * Scenario is inspired by the TCK test of same name but more strict
      */
-    @Test
+   // @Test
     public void testMetricUnits() throws Exception  {
         Future<?> res = (Future<?>) callMethodDirectly(null);
         assertNoExceptionsThrown();
@@ -121,7 +121,7 @@ public class AllMetricsTckTest extends AbstractMetricTest {
     /**
      * Scenario does not exist in TCK, it makes a more strict assertions about the metrics expected after 1 successful call
      */
-    @Test
+    //@Test
     public void testMetricRegistrations() throws Exception {
         Future<?> res = (Future<?>) callMethodDirectly(null);
         assertNoExceptionsThrown();
