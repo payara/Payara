@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,8 @@ package fish.payara.microprofile.faulttolerance.service;
 import static java.lang.System.arraycopy;
 import static org.eclipse.microprofile.metrics.MetricUnits.NANOSECONDS;
 
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.LongCounter;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,6 +81,12 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private final Map<MetricID, Histogram> histogramsByMetricID;
     private FallbackUsage fallbackUsage;
     private boolean retried;
+    
+    //define metrics used for execution time 
+    private LongCounter ftInvocationsTotal = null;
+    private LongCounter ftCircuitBreakerCallsTotal = null;
+    private LongCounter ftCircuitBreakerOpenedTotal = null;
+    private String classAndMethodName = null;
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
         this(registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
@@ -95,6 +103,25 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.histogramsByMetricID = histogramsByMetricID;
     }
 
+    private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
+                                        AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, 
+                                        Map<MetricID, Histogram> histogramsByMetricID,
+                                        LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
+                                        LongCounter ftInvocationsTotal, String classAndMethodName) {
+        this.registry = registry;
+        this.canonicalMethodName = canonicalMethodName;
+        this.fallbackUsage = fallbackUsage;
+        this.registered = registered;
+        this.countersByMetricID = countersByMetricID;
+        this.histogramsByMetricID = histogramsByMetricID;
+        this.ftCircuitBreakerCallsTotal = ftCircuitBreakerCallsTotal;
+        this.ftCircuitBreakerOpenedTotal = ftCircuitBreakerOpenedTotal;
+        this.ftInvocationsTotal = ftInvocationsTotal;
+        this.classAndMethodName = classAndMethodName;   
+    }
+    
+    
+
     /**
      * The first thread calling creates the metrics all thread calling the same method work with. Other threads have to
      * wait until these metrics actually exist. The easiest to make that happen was to make this method synchronised.
@@ -103,12 +130,24 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
      */
     @Override
     public synchronized FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
+        FaultToleranceMetrics metrics = null;
         if (registered.compareAndSet(false, true)) {
-            FaultToleranceMetrics.super.boundTo(context, policy); // trigger registration if needed
+            metrics = FaultToleranceMetrics.super.boundTo(context, policy); // trigger registration if needed
         }
-        return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
-                policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
-                registered, countersByMetricID, histogramsByMetricID);
+        
+        if (metrics != null) {
+            return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
+                    policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
+                    registered, countersByMetricID, histogramsByMetricID, metrics.getCircuitBreakerCallsTotal(),
+                    metrics.getCircuitBreakerOpendTotal(), metrics.getInvocationsValueReturnedCounter(), 
+                    metrics.getClassAndMethodName());
+        } else {
+            return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
+                    policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
+                    registered, countersByMetricID, histogramsByMetricID, this.getCircuitBreakerCallsTotal(),
+                    this.getCircuitBreakerOpendTotal(), this.getInvocationsValueReturnedCounter(), 
+                    this.getClassAndMethodName());
+        }
     }
 
     /*
@@ -226,5 +265,88 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public boolean isRetried() {
         return retried;
+    }
+
+
+    @Override
+    public void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal) {
+        this.ftCircuitBreakerCallsTotal = circuitBreakerCallsTotal;
+    }
+
+    @Override
+    public void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal) {
+        this.ftCircuitBreakerOpenedTotal = circuitBreakerOpenedTotal;
+    }
+
+    @Override
+    public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter) {
+        this.ftInvocationsTotal = ftInvocationTotalMeter;
+    }
+
+    @Override
+    public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
+        if (circuitBreakerCallsSuccessCount != null) {
+            circuitBreakerCallsSuccessCount.add(1, attributes);
+        }
+    }
+
+    @Override
+    public void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes) {
+        if (circuitBreakerCallsFailureCount != null) {
+            circuitBreakerCallsFailureCount.add(1, attributes);
+        }
+    }
+
+    @Override
+    public void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes) {
+        if (circuitBreakerStateTotal != null) {
+            circuitBreakerStateTotal.add(1, attributes);
+        }
+    }
+
+    @Override
+    public void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerOpendTotal, Attributes attributes) {
+        if (circuitBreakerOpendTotal != null) {
+           circuitBreakerOpendTotal.add(1, attributes); 
+        }
+    }
+
+    @Override
+    public void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes) {
+        if (invocationsValueReturnedCounter != null) {
+            invocationsValueReturnedCounter.add(1, attributes);
+        }
+    }
+
+    @Override
+    public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes) {
+        if (invocationsValueReturnedCounter != null) {
+            invocationsValueReturnedCounter.add(1, attributes);
+        }  
+    }
+
+    @Override
+    public void setClassAndMethodName(String classAndMethodName) {
+        this.classAndMethodName = classAndMethodName;
+    }
+
+    @Override
+    public LongCounter getCircuitBreakerCallsTotal() {
+        return ftCircuitBreakerCallsTotal;
+    }
+
+    @Override
+    public LongCounter getCircuitBreakerOpendTotal() {
+        return ftCircuitBreakerOpenedTotal;
+    }
+
+    @Override
+    public LongCounter getInvocationsValueReturnedCounter() {
+        return ftInvocationsTotal;
+    }
+
+    @Override
+    public String getClassAndMethodName() {
+        return classAndMethodName;
     }
 }
