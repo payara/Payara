@@ -132,7 +132,6 @@ public class ProviderImplGenerator {
             Label enabledLabel = new Label();
             Label notEnabledLabel = new Label();
 
-            gen.ifCmp(Type.getType(boolean.class), GeneratorAdapter.EQ, enabledLabel);
             gen.goTo(notEnabledLabel);
             gen.visitLabel(enabledLabel);
             gen.loadLocal(index);

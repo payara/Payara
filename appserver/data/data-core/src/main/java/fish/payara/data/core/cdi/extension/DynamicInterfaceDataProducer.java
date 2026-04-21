@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -181,17 +181,17 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     }
 
     private void processQueriesForEntity() {
-        logger.info("Processing query for entity class: " + repository);
+        logger.finer("Processing query for entity class: " + repository);
         //get entity type
         Class<?> declaredEntityClass = getEntityTypeFromGenerics(this.repository);
         // If entity type is not declared via generics, infer it from lifecycle method parameters
         if (declaredEntityClass == null) {
             declaredEntityClass = inferEntityTypeFromLifecycleMethods(this.repository);
         }
-        logger.info("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
+        logger.finer("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
         try (EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get()) {
             for (Method method : this.repository.getMethods()) {
-                logger.info("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
+                logger.finer("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
                 //skip if method is default
                 if (method.isDefault()) {
                     continue;

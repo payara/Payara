@@ -46,12 +46,12 @@
   <parent>
     <groupId>fish.payara.samples</groupId>
     <artifactId>payara-samples-profiled-tests</artifactId>
-    <version>7.2026.4-SNAPSHOT</version>
+    <version>7.2026.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>data</artifactId>
   <name>Payara Samples - Data (Arquillian/H2)</name>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
 
   <properties>
     <junit.jupiter.version>6.0.3</junit.jupiter.version>

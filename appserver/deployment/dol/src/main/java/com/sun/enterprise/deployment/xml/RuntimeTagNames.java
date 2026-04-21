@@ -103,13 +103,10 @@ public interface RuntimeTagNames extends TagNames {
     String ACTIVATION_CONFIG_PROPERTY_VALUE = "activation-config-property-value";
 
     public static final String APPLICATION_CLIENT = "app-client";
-    public static final String CMP = "cmp";
-    public static final String CMPRESOURCE = "cmpresource";
     public static final String DEFAULT_RESOURCE_PRINCIPAL = "default-resource-principal";
     public static final String DISPLAY_NAME = "display-name";
     public static final String EJB = "ejb";
     public static final String EJB_NAME = "ejb-name";
-    public static final String EJB20_CMP = "ejb20-cmp";
     public static final String EJBS = "enterprise-beans";
     public static final String WEBSERVICE_DEFAULT_LOGIN_CONFIG = "webservice-default-login-config";
     public static final String FIELD = "field";
@@ -187,22 +184,6 @@ public interface RuntimeTagNames extends TagNames {
     public static final String AVAILABILITY_ENABLED = "availability-enabled";
     public static final String DISABLE_NONPORTABLE_JNDI_NAMES = "disable-nonportable-jndi-names";
     public static final String PER_REQUEST_LOAD_BALANCING = "per-request-load-balancing";
-
-    // CMP related
-    public static final String CMP_RESOURCE = "cmp-resource";
-    public static final String MAPPING_PROPERTIES = "mapping-properties";
-    public static final String IS_ONE_ONE_CMP = "is-one-one-cmp";
-    public static final String ONE_ONE_FINDERS = "one-one-finders";
-    public static final String METHOD_NAME = "method-name";
-    public static final String QUERY_PARAMS = "query-params";
-    public static final String QUERY_FILTER = "query-filter";
-    public static final String QUERY_VARIABLES = "query-variables";
-    public static final String QUERY_ORDERING = "query-ordering";
-    public static final String FINDER = "finder";
-    public static final String CREATE_TABLES_AT_DEPLOY = "create-tables-at-deploy";
-    public static final String DROP_TABLES_AT_UNDEPLOY = "drop-tables-at-undeploy";
-    public static final String DATABASE_VENDOR_NAME = "database-vendor-name";
-    public static final String SCHEMA_GENERATOR_PROPERTIES = "schema-generator-properties";
 
     // BEAN-POOL related
     public static final String BEAN_POOL = "bean-pool";

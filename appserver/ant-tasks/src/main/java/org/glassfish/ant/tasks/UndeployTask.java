@@ -63,10 +63,6 @@ public class UndeployTask extends AdminTask {
         addCommandParameter("force", Boolean.toString(force));
     }
 
-    public void setDroptables(boolean droptables) {
-        addCommandParameter("droptables", Boolean.toString(droptables));
-    }
-
     public void setCascade(boolean cascade) {
         addCommandParameter("cascade", Boolean.toString(cascade));
     }

@@ -88,7 +88,6 @@ public class LoggingXMLNames {
     public static final String root = "root";
     public static final String server = "server";
     public static final String ejbcontainer = "ejb-container";
-    public static final String cmpcontainer = "cmp-container";
     public static final String mdbcontainer = "mdb-container";
     public static final String webcontainer = "web-container";
     public static final String classloader = "classloader";
@@ -108,7 +107,6 @@ public class LoggingXMLNames {
     public static final String jms = "jms";
     public static final String connector = "connector";
     public static final String jdo = "jdo";
-    public static final String cmp = "cmp";
     public static final String util = "util";
     public static final String resourceadapter = "resource-adapter";
     public static final String synchronization = "synchronization";
@@ -143,7 +141,6 @@ public class LoggingXMLNames {
             Map.entry(root, LogDomains.DOMAIN_ROOT + LEVEL),
             Map.entry(server, LogDomains.SERVER_LOGGER + LEVEL),
             Map.entry(ejbcontainer, LogDomains.EJB_LOGGER + LEVEL),
-            Map.entry(cmpcontainer, LogDomains.CMP_LOGGER + LEVEL),
             Map.entry(mdbcontainer, LogDomains.MDB_LOGGER + LEVEL),
             Map.entry(webcontainer, LogDomains.WEB_LOGGER + LEVEL),
             Map.entry(classloader, LogDomains.LOADER_LOGGER + LEVEL),
@@ -163,7 +160,6 @@ public class LoggingXMLNames {
             Map.entry(jms, LogDomains.JMS_LOGGER + LEVEL),
             //  Map.entry(connector, LogDomains.
             Map.entry(jdo, LogDomains.JDO_LOGGER + LEVEL),
-            Map.entry(cmp, LogDomains.CMP_LOGGER + LEVEL),
             Map.entry(util, LogDomains.UTIL_LOGGER + LEVEL),
             Map.entry(resourceadapter, LogDomains.RSR_LOGGER + LEVEL),
             //  Map.entry(synchronization, LogDomains.

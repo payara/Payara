@@ -14,8 +14,6 @@ SYNOPSIS
            [--upload={true|false}]
            [--retrieve local_dirpath]
            [--dbvendorname dbvendorname]
-           [--createtables={true|false}|--dropandcreatetables={true|false}]
-           [--uniquetablenames={true|false}]
            [--deploymentplan deployment_plan]
            [--altdd alternate_deploymentdescriptor]
            [--runtimealtdd runtime_alternate_deploymentdescriptor]
@@ -39,17 +37,6 @@ DESCRIPTION
        (EJB) modules, connector modules, and application client modules. If
        the component is already deployed or already exists, it is forcibly
        redeployed if the --force option is set to true (default is false).
-
-       The --createtables and --dropandcreatetables options are boolean flags
-       and therefore can take the values of true or false. These options are
-       only used during deployment of CMP beans that have not been mapped to a
-       database (that is, no sun-cmp-mappings.xml descriptor is provided in
-       the module's META-INF directory). They are ignored otherwise.
-
-       The --createtables and --dropandcreatetables options are mutually
-       exclusive; only one should be used. If drop and/or create tables fails,
-       the deployment does not fail; a warning message is provided in the log
-       file.
 
        This subcommand is supported in remote mode only.
 
@@ -131,40 +118,9 @@ OPTIONS
            created. Supported values include db2, mssql, mysql, oracle, derby,
            javadb, postgresql, and sybase. These values are case-insensitive.
            If not specified, the value of the database-vendor-name attribute
-           in glassfish-ejb-jar.xml is used. If no value is specified, a
-           connection is made to the resource specified by the jndi-name
-           subelement of the cmp-resource element in the glassfish-ejb-jar.xml
-           file, and the database vendor name is read. If the connection
+           in glassfish-ejb-jar.xml is used. If the connection
            cannot be established, or if the value is not recognized, SQL-92
            compliance is presumed.
-
-       --createtables
-           If specified as true, creates tables at deployment of an
-           application with unmapped CMP beans. If specified as false, tables
-           are not created. If not specified, the value of the
-           create-tables-at-deploy entry in the cmp-resource element of the
-           glassfish-ejb-jar.xml file determines whether or not tables are
-           created. No unique constraints are created for the tables.
-
-       --dropandcreatetables
-           If specified as true when the component is redeployed, the tables
-           created by the previous deployment are dropped before creating the
-           new tables. Applies to deployed applications with unmapped CMP
-           beans. Preexisting tables will not be dropped on the initial
-           deployment of an application or on a deployment that follows an
-           explicit undeploy. If specified as false, tables are neither
-           dropped nor created. If not specified, the tables are dropped if
-           the drop-tables-at-undeploy entry in the cmp-resource element of
-           the glassfish-ejb-jar.xml file is set to true, and the new tables
-           are created if the create-tables-at-deploy entry in the
-           cmp-resource element of the glassfish-ejb-jar.xml file is set to
-           true.
-
-       --uniquetablenames
-           Guarantees unique table names for all the beans and results in a
-           hash code added to the table names. This is useful if you have an
-           application with case-sensitive bean names. Applies to applications
-           with unmapped CMP beans.
 
        --deploymentplan
            Deploys the deployment plan, which is a JAR file that contains
@@ -498,19 +454,7 @@ EXAMPLES
                Application deployed successfully with name hello.
                Command deploy executed successfully
 
-       Example 4, Deploying an Enterprise Bean
-           This example deploys a component based on the EJB specification
-           (enterprise bean) with CMP and creates the database tables used by
-           the bean.
-
-           This example uses the --target option. The target in this example
-           is an existing cluster, cluster1.
-
-               asadmin> deploy --createtables=true --target cluster1 EmployeeEJB.jar
-               Application deployed successfully with name EmployeeEJB.
-               Command deploy executed successfully
-
-       Example 5, Deploying a Connector Module
+       Example 4, Deploying a Connector Module
            This example deploys a connector module that is packaged in a RAR
            file.
 
@@ -522,7 +466,7 @@ EXAMPLES
                Application deployed successfully with name jdbcra.
                Command deploy executed successfully
 
-       Example 6, Specifying the Deployment Order for an Application
+       Example 5, Specifying the Deployment Order for an Application
            This example specifies the deployment order for two applications.
            The cart application is loaded before the horse application at
            server startup.
@@ -534,7 +478,7 @@ EXAMPLES
                asadmin> deploy --deploymentorder 110 --name horse horse.war
                ...
 
-       Example 7, Deploying an Application Using an Alternate Java EE 8
+       Example 6, Deploying an Application Using an Alternate Java EE 8
        Deployment Descriptor File
            This example deploys an application using a Java EE standard
            deployment descriptor file that resides outside of the application
@@ -544,7 +488,7 @@ EXAMPLES
                Application deployed successfully with name cart.
                Command deploy executed successfully
 
-       Example 8, Deploying an Application Using an Alternate GlassFish Server
+       Example 7, Deploying an Application Using an Alternate GlassFish Server
        Deployment Descriptor File
            This example deploys an application using a GlassFish Server
            runtime deployment descriptor file that resides outside of the
@@ -554,7 +498,7 @@ EXAMPLES
                Application deployed successfully with name horse.
                Command deploy executed successfully
 
-       Example 9, Wrapping a WAR File as a WAB
+       Example 8, Wrapping a WAR File as a WAB
            This example wraps a plain WAR file as a WAB when an OSGi bundle is
            deployed, and is specific to components packaged as OSGi bundles.
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -161,7 +161,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         //In this method we can add implementation to execute dynamic queries
-        logger.info("executing method:" + method.getName());
+        logger.fine("executing method:" + method.getName());
         if (method.isDefault()) {
             return InvocationHandler.invokeDefault(proxy, method, args);
         }

@@ -68,12 +68,6 @@ public enum ComponentType {
 	public String toString() { return "BEAN_MANAGED_PERSISTENCE"; }
     },
 
-    CMP	{
-	public String toString() {
-	    return "CONTAINER_MANAGED_PERSISTENCE";
-	}
-    },
-
     MDB	{
 	public String toString() { return "MESSAGE_DRIVEN_BEAN"; }
     },

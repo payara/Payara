@@ -57,7 +57,6 @@ pkg = {
 			"pkg:/glassfish-common-full@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/glassfish-ejb@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/glassfish-corba@"  + conf.corba_version : {"type" : "incorporate" },
-			"pkg:/glassfish-cmp@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/metro@" + conf.metro_version : {"type" : "incorporate" },
 			"pkg:/glassfish-appclient@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/glassfish-jms@" + conf.glassfish_version: {"type" : "incorporate" },

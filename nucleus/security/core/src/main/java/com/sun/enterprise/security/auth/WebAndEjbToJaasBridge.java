@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.auth;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.auditAtnRefusedError;
@@ -45,7 +45,6 @@ import static com.sun.enterprise.security.SecurityLoggerInfo.certLoginBadRealmEr
 import static com.sun.enterprise.security.SecurityLoggerInfo.invalidOperationForRealmError;
 import static com.sun.enterprise.security.SecurityLoggerInfo.noSuchUserInRealmError;
 import static com.sun.enterprise.security.SecurityLoggerInfo.unknownCredentialError;
-import static com.sun.enterprise.security.auth.login.LoginContextDriver.auditAuthenticate;
 import static com.sun.enterprise.security.auth.login.LoginContextDriver.getJaasContext;
 import static com.sun.enterprise.security.auth.login.LoginContextDriver.getValidRealm;
 import static com.sun.enterprise.security.auth.login.LoginContextDriver.throwLoginException;
@@ -259,7 +258,6 @@ public final class WebAndEjbToJaasBridge {
                 // The name that the cert realm decided to set as the caller principal name
                 user = certRealm.authenticate(subject, x500principal);
 
-                auditAuthenticate(user, realmName, true);
             } else {
                 // Should never come here
                 LOGGER.warning(certLoginBadRealmError);
@@ -270,7 +268,6 @@ public final class WebAndEjbToJaasBridge {
                 LOGGER.log(FINE, "X.500 name login succeeded for : {0}", user);
             }
         } catch (LoginException le) {
-            auditAuthenticate(user, realmName, false);
             throw le;
         } catch (Exception ex) {
             throw (LoginException) new LoginException(ex.toString()).initCause(ex);
@@ -292,7 +289,6 @@ public final class WebAndEjbToJaasBridge {
             LOGGER.log(INFO, auditAtnRefusedError, digestCred.getUserName());
             LOGGER.log(FINEST, "doPasswordLogin fails", e);
 
-            auditAuthenticate(digestCred.getUserName(), digestCred.getRealmName(), false);
 
             throwLoginException(e);
         }
@@ -391,11 +387,9 @@ public final class WebAndEjbToJaasBridge {
         } catch (Exception e) {
             LOGGER.log(FINEST, "doPasswordLogin fails", e);
 
-            auditAuthenticate(user, realm, false);
             throwLoginException(e);
         }
 
-        auditAuthenticate(user, realm, true);
 
         if (LOGGER.isLoggable(FINE)) {
             LOGGER.log(FINE, "Password login succeeded for : {0}", user);
@@ -421,20 +415,14 @@ public final class WebAndEjbToJaasBridge {
         String user = null;
         String realm = CertificateRealm.AUTH_TYPE;
 
-        try {
-            user = getPublicCredentials(subject, X509CertificateCredential.class).getAlias();
+        user = getPublicCredentials(subject, X509CertificateCredential.class).getAlias();
 
-            if (LOGGER.isLoggable(FINE)) {
-                LOGGER.log(FINE, "Set security context as user: {0}", user);
-            }
-
-            setSecurityContext(user, subject, realm);
-            auditAuthenticate(user, realm, true);
-
-        } catch (LoginException le) {
-            auditAuthenticate(user, realm, false);
-            throw le;
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "Set security context as user: {0}", user);
         }
+
+        setSecurityContext(user, subject, realm);
+
     }
 
     /**
@@ -460,18 +448,12 @@ public final class WebAndEjbToJaasBridge {
         String user = null;
         String realm = Realm.getDefaultRealm();
 
-        try {
-            user = getPublicCredentials(s, GSSUPName.class).getUser();
+        user = getPublicCredentials(s, GSSUPName.class).getUser();
 
-            setSecurityContext(user, s, realm);
-            auditAuthenticate(user, realm, true);
+        setSecurityContext(user, s, realm);
 
-            if (LOGGER.isLoggable(FINE)) {
-                LOGGER.log(FINE, "GSSUP login succeeded for : {0}", user);
-            }
-        } catch (LoginException le) {
-            auditAuthenticate(user, realm, false);
-            throw le;
+        if (LOGGER.isLoggable(FINE)) {
+            LOGGER.log(FINE, "GSSUP login succeeded for : {0}", user);
         }
     }
 

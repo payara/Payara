@@ -53,7 +53,6 @@ import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.deployment.common.ClientArtifactsManager;
-import org.glassfish.ejb.spi.CMPDeployer;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.ByteArrayOutputStream;
@@ -181,7 +180,7 @@ public class StaticRmiStubGenerator {
         long startTime = now();
 
         // class path to be used for this application during javac & rmic
-        String classPath =  deploymentCtx.getTransientAppMetaData(CMPDeployer.MODULE_CLASSPATH, String.class);
+        String classPath =  deploymentCtx.getTransientAppMetaData("org.glassfish.ejb.spi.module.classpath", String.class);
 
         // Warning: A class loader is passed in while constructing the
         //          application object

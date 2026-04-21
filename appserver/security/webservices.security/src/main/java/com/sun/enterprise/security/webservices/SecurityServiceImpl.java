@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 // Portions Copyright [2024] Contributors to the Eclipse Foundation
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.webservices;
@@ -45,12 +45,10 @@ package com.sun.enterprise.security.webservices;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.web.WebModule;
 import com.sun.web.security.RealmAdapter;
 import com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.security.jacc.PolicyContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -89,9 +87,6 @@ public class SecurityServiceImpl implements SecurityService {
     private static final String AUTHORIZATION_HEADER = "authorization";
 
     private static ThreadLocal<WeakReference<SOAPMessage>> req = new ThreadLocal<WeakReference<SOAPMessage>>();
-
-    @Inject
-    private AppServerAuditManager auditManager;
 
     @Override
     public boolean doSecurity(HttpServletRequest hreq, EjbRuntimeEndpointInfo epInfo, String realmName, WebServiceContextImpl context) {
@@ -169,10 +164,6 @@ public class SecurityServiceImpl implements SecurityService {
 
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            if (auditManager != null && auditManager.isAuditOn()) {
-                auditManager.ejbAsWebServiceInvocation(epInfo.getEndpoint().getEndpointName(), authenticated);
-            }
         }
         return authenticated;
     }

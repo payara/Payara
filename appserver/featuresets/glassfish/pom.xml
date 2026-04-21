@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>7.2026.4-SNAPSHOT</version>
+        <version>7.2026.5-SNAPSHOT</version>
     </parent>
     <artifactId>glassfish</artifactId>
     <name>Glassfish Featureset</name>
@@ -72,13 +72,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-ejb</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <!-- CMP package -->
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>glassfish-cmp</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

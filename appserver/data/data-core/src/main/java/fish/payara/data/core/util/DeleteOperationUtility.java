@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025-2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -116,7 +116,7 @@ public class DeleteOperationUtility {
         // Clear cache for the affected entity after DELETE
         clearCache(em, declaredEntityClass);
 
-        logger.info("Rows affected from delete operation: " + rowsAffected);
+        logger.fine("Rows affected from delete operation: " + rowsAffected);
         return rowsAffected;
     }
 
