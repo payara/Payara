@@ -447,7 +447,7 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.timeout.calls.total",
                 new Tag("timedOut", "true"));
         incrementTimeoutCallsCounter(getTimeoutCallsCounter(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                .stringKey("method"), getClassAndMethodName()).build()).put("timeOut", "true").build());
+                .stringKey("method"), getClassAndMethodName()).build()).put("timedOut", "true").build());
     }
     
 
@@ -461,7 +461,7 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.timeout.calls.total",
                 new Tag("timedOut", "false"));
         incrementTimeoutCallsCounter(getTimeoutCallsCounter(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                .stringKey("method"), getClassAndMethodName()).build()).put("timeOut", "false").build());
+                .stringKey("method"), getClassAndMethodName()).build()).put("timedOut", "false").build());
     }
 
     
