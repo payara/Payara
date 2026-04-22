@@ -97,6 +97,11 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
+        public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal) {
+            
+        }
+
+        @Override
         public LongCounter getCircuitBreakerCallsTotal() {
             return null;
         }
@@ -108,6 +113,11 @@ public interface FaultToleranceMetrics {
 
         @Override
         public LongCounter getInvocationsValueReturnedCounter() {
+            return null;
+        }
+
+        @Override
+        public LongCounter getTimeoutCallsCounter() {
             return null;
         }
 
@@ -139,6 +149,11 @@ public interface FaultToleranceMetrics {
         @Override
         public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes) {
 
+        }
+
+        @Override
+        public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes) {
+            
         }
 
         @Override
@@ -196,7 +211,7 @@ public interface FaultToleranceMetrics {
                 register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
                     {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
-                createFTTimeoutCallsTotal(getClassAndMethodName(), currentMeter);
+                addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(currentMeter));
                 createFTTimeoutExecutionDuration(getClassAndMethodName(), currentMeter, startTime);
             }
             if (policy.isCircuitBreakerPresent()) {
@@ -412,7 +427,10 @@ public interface FaultToleranceMetrics {
     default void incrementTimeoutCallsTimedOutTotal() {
         incrementCounter("ft.timeout.calls.total",
                 new Tag("timedOut", "true"));
+        incrementTimeoutCallsCounter(getTimeoutCallsCounter(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).put("timeOut", "true").build());
     }
+    
 
     /**
      * The number of times the timeout logic was run. This will usually be once per method call, but may be zero times
@@ -423,7 +441,11 @@ public interface FaultToleranceMetrics {
     default void incrementTimeoutCallsNotTimedOutTotal() {
         incrementCounter("ft.timeout.calls.total",
                 new Tag("timedOut", "false"));
+        incrementTimeoutCallsCounter(getTimeoutCallsCounter(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).put("timeOut", "false").build());
     }
+
+    
 
 
     /*
@@ -541,12 +563,16 @@ public interface FaultToleranceMetrics {
     public void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal);
     
     public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter);
+
+    public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal);
     
     public LongCounter getCircuitBreakerCallsTotal();
     
     public LongCounter getCircuitBreakerOpendTotal();
     
     public LongCounter getInvocationsValueReturnedCounter();
+    
+    public LongCounter getTimeoutCallsCounter();
     
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
@@ -559,6 +585,8 @@ public interface FaultToleranceMetrics {
     public void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
     
     public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
+    
+    public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
     
     public void setClassAndMethodName(String classAndMethodName);
     

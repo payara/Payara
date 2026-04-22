@@ -86,6 +86,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private LongCounter ftInvocationsTotal = null;
     private LongCounter ftCircuitBreakerCallsTotal = null;
     private LongCounter ftCircuitBreakerOpenedTotal = null;
+    private LongCounter ftTimeoutCallsTotal = null;
     private String classAndMethodName = null;
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
@@ -107,7 +108,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                                         AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, 
                                         Map<MetricID, Histogram> histogramsByMetricID,
                                         LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
-                                        LongCounter ftInvocationsTotal, String classAndMethodName) {
+                                        LongCounter ftInvocationsTotal, LongCounter ftTimeoutCallsTotal, String classAndMethodName) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -117,6 +118,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.ftCircuitBreakerCallsTotal = ftCircuitBreakerCallsTotal;
         this.ftCircuitBreakerOpenedTotal = ftCircuitBreakerOpenedTotal;
         this.ftInvocationsTotal = ftInvocationsTotal;
+        this.ftTimeoutCallsTotal = ftTimeoutCallsTotal;
         this.classAndMethodName = classAndMethodName;   
     }
     
@@ -140,13 +142,13 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                     registered, countersByMetricID, histogramsByMetricID, metrics.getCircuitBreakerCallsTotal(),
                     metrics.getCircuitBreakerOpendTotal(), metrics.getInvocationsValueReturnedCounter(), 
-                    metrics.getClassAndMethodName());
+                    metrics.getTimeoutCallsCounter(), metrics.getClassAndMethodName());
         } else {
             return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                     registered, countersByMetricID, histogramsByMetricID, this.getCircuitBreakerCallsTotal(),
                     this.getCircuitBreakerOpendTotal(), this.getInvocationsValueReturnedCounter(), 
-                    this.getClassAndMethodName());
+                    this.getTimeoutCallsCounter(), this.getClassAndMethodName());
         }
     }
 
@@ -284,6 +286,11 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
+    public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal) {
+        this.ftTimeoutCallsTotal = ftTimeoutCallsTotal;
+    }
+
+    @Override
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
         if (circuitBreakerCallsSuccessCount != null) {
             circuitBreakerCallsSuccessCount.add(1, attributes);
@@ -326,6 +333,13 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
+    public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes) {
+        if (timeoutCallsCounter != null) {
+            timeoutCallsCounter.add(1, attributes);
+        }
+    }
+
+    @Override
     public void setClassAndMethodName(String classAndMethodName) {
         this.classAndMethodName = classAndMethodName;
     }
@@ -343,6 +357,11 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public LongCounter getInvocationsValueReturnedCounter() {
         return ftInvocationsTotal;
+    }
+
+    @Override
+    public LongCounter getTimeoutCallsCounter() {
+        return ftTimeoutCallsTotal;
     }
 
     @Override

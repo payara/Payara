@@ -168,14 +168,10 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.timeout.calls.total metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTTimeoutCallsTotal(String classAndMethodName, Meter currentMeter) {
-        LongCounter longCounter = currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
-        AttributeKey<String> key = AttributeKey.stringKey("timedOut");
-        Attributes attributes = Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put(key, "false").build();
-        longCounter.add(1, attributes);
+    public static LongCounter createFTTimeoutCallsTotal(Meter currentMeter) {
+        return currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
     }
 
     /**
