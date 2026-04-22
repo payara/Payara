@@ -176,14 +176,11 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.timeout.executionDuration metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTTimeoutExecutionDuration(String classAndMethodName, Meter currentMeter, long startTime) {
-        DoubleHistogram doubleHistogram = currentMeter.histogramBuilder(FT_TIMEOUT_EXECUTION_DURATION).setDescription(FT_TIMEOUT_EXECUTION_DURATION_DESCRIPTION)
+    public static DoubleHistogram createFTTimeoutExecutionDuration(Meter currentMeter) {
+        return currentMeter.histogramBuilder(FT_TIMEOUT_EXECUTION_DURATION).setDescription(FT_TIMEOUT_EXECUTION_DURATION_DESCRIPTION)
                 .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
-        double seconds = System.nanoTime() - startTime;
-        doubleHistogram.record(seconds / 1_000_000_000d, getMethodAttribute(classAndMethodName));
     }
 
     /**

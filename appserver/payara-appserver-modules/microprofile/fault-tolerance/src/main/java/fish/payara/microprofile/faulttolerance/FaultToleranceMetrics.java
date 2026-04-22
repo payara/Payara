@@ -47,6 +47,7 @@ import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodConte
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import java.util.ArrayList;
@@ -102,6 +103,11 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
+        public void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration) {
+            
+        }
+
+        @Override
         public LongCounter getCircuitBreakerCallsTotal() {
             return null;
         }
@@ -118,6 +124,11 @@ public interface FaultToleranceMetrics {
 
         @Override
         public LongCounter getTimeoutCallsCounter() {
+            return null;
+        }
+
+        @Override
+        public DoubleHistogram getFTTimeoutExecutionDuration() {
             return null;
         }
 
@@ -153,6 +164,11 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
             
         }
 
@@ -212,7 +228,7 @@ public interface FaultToleranceMetrics {
                     {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
                 addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(currentMeter));
-                createFTTimeoutExecutionDuration(getClassAndMethodName(), currentMeter, startTime);
+                addFTTimeoutExecutionDuration(createFTTimeoutExecutionDuration(currentMeter));
             }
             if (policy.isCircuitBreakerPresent()) {
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][] {
@@ -416,7 +432,10 @@ public interface FaultToleranceMetrics {
      */
     default void addTimeoutExecutionDuration(long nanos) {
         addToHistogram("ft.timeout.executionDuration", nanos);
+        addTimeoutExecutionDuration(this.getFTTimeoutExecutionDuration(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).build(), nanos);
     }
+
 
     /**
      * The number of times the timeout logic was run. This will usually be once per method call, but may be zero times
@@ -565,6 +584,8 @@ public interface FaultToleranceMetrics {
     public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter);
 
     public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal);
+
+    public void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration);
     
     public LongCounter getCircuitBreakerCallsTotal();
     
@@ -573,6 +594,8 @@ public interface FaultToleranceMetrics {
     public LongCounter getInvocationsValueReturnedCounter();
     
     public LongCounter getTimeoutCallsCounter();
+    
+    public DoubleHistogram getFTTimeoutExecutionDuration();
     
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
@@ -587,6 +610,8 @@ public interface FaultToleranceMetrics {
     public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
     
     public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
+
+    public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
     
     public void setClassAndMethodName(String classAndMethodName);
     
