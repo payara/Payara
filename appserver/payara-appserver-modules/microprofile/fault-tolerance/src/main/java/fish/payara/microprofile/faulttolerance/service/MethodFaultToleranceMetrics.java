@@ -352,7 +352,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
         if (timeoutExecutionDuration != null) {
-            timeoutExecutionDuration.record(nanos, attributes);
+            double seconds = nanos / 1_000_000_000d;
+            timeoutExecutionDuration.record(seconds, attributes);
         }
     }
 
