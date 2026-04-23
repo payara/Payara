@@ -168,26 +168,19 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.timeout.calls.total metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTTimeoutCallsTotal(String classAndMethodName, Meter currentMeter) {
-        LongCounter longCounter = currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
-        AttributeKey<String> key = AttributeKey.stringKey("timedOut");
-        Attributes attributes = Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put(key, "false").build();
-        longCounter.add(1, attributes);
+    public static LongCounter createFTTimeoutCallsTotal(Meter currentMeter) {
+        return currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
     }
 
     /**
      * this method will help to report ft.timeout.executionDuration metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTTimeoutExecutionDuration(String classAndMethodName, Meter currentMeter, long startTime) {
-        DoubleHistogram doubleHistogram = currentMeter.histogramBuilder(FT_TIMEOUT_EXECUTION_DURATION).setDescription(FT_TIMEOUT_EXECUTION_DURATION_DESCRIPTION)
+    public static DoubleHistogram createFTTimeoutExecutionDuration(Meter currentMeter) {
+        return currentMeter.histogramBuilder(FT_TIMEOUT_EXECUTION_DURATION).setDescription(FT_TIMEOUT_EXECUTION_DURATION_DESCRIPTION)
                 .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
-        double seconds = System.nanoTime() - startTime;
-        doubleHistogram.record(seconds / 1_000_000_000d, getMethodAttribute(classAndMethodName));
     }
 
     /**
