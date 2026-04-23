@@ -608,7 +608,7 @@ void processPayaraArtifacts(String buildId, boolean restoreMavenRepo = false) {
     // Move into a different directory to stop Maven using the current pom
     echo "Installing copied artifacts to local maven repo"
     def installArtifactsScript = """
-        mkdir tmp
+        mkdir -p tmp
         cd tmp
         mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.distributions -DartifactId=payara -Dversion=${payaraVersion} -Dpackaging=zip -Dfile=${env.WORKSPACE}/artifacts/payara.zip
         mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.distributions -DartifactId=payara-web -Dversion=${payaraVersion} -Dpackaging=zip -Dfile=${env.WORKSPACE}/artifacts/payara-web.zip
