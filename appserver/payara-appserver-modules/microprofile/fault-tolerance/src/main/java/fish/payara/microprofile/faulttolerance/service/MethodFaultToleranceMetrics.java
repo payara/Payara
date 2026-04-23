@@ -43,6 +43,7 @@ import static java.lang.System.arraycopy;
 import static org.eclipse.microprofile.metrics.MetricUnits.NANOSECONDS;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -86,7 +87,10 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private LongCounter ftInvocationsTotal = null;
     private LongCounter ftCircuitBreakerCallsTotal = null;
     private LongCounter ftCircuitBreakerOpenedTotal = null;
+    private LongCounter ftTimeoutCallsTotal = null;
+    private DoubleHistogram ftTimeoutExecutionDuration = null;
     private String classAndMethodName = null;
+    
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
         this(registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
@@ -107,7 +111,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                                         AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, 
                                         Map<MetricID, Histogram> histogramsByMetricID,
                                         LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
-                                        LongCounter ftInvocationsTotal, String classAndMethodName) {
+                                        LongCounter ftInvocationsTotal, LongCounter ftTimeoutCallsTotal,
+            DoubleHistogram ftTimeoutExecutionDuration, String classAndMethodName) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -117,6 +122,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.ftCircuitBreakerCallsTotal = ftCircuitBreakerCallsTotal;
         this.ftCircuitBreakerOpenedTotal = ftCircuitBreakerOpenedTotal;
         this.ftInvocationsTotal = ftInvocationsTotal;
+        this.ftTimeoutCallsTotal = ftTimeoutCallsTotal;
+        this.ftTimeoutExecutionDuration = ftTimeoutExecutionDuration;
         this.classAndMethodName = classAndMethodName;   
     }
     
@@ -140,13 +147,13 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                     registered, countersByMetricID, histogramsByMetricID, metrics.getCircuitBreakerCallsTotal(),
                     metrics.getCircuitBreakerOpendTotal(), metrics.getInvocationsValueReturnedCounter(), 
-                    metrics.getClassAndMethodName());
+                    metrics.getTimeoutCallsCounter(), metrics.getFTTimeoutExecutionDuration(), metrics.getClassAndMethodName());
         } else {
             return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                     registered, countersByMetricID, histogramsByMetricID, this.getCircuitBreakerCallsTotal(),
                     this.getCircuitBreakerOpendTotal(), this.getInvocationsValueReturnedCounter(), 
-                    this.getClassAndMethodName());
+                    this.getTimeoutCallsCounter(), this.ftTimeoutExecutionDuration, this.getClassAndMethodName());
         }
     }
 
@@ -284,6 +291,16 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
+    public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal) {
+        this.ftTimeoutCallsTotal = ftTimeoutCallsTotal;
+    }
+
+    @Override
+    public void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration) {
+        this.ftTimeoutExecutionDuration = ftTimeoutExecutionDuration;
+    }
+
+    @Override
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
         if (circuitBreakerCallsSuccessCount != null) {
             circuitBreakerCallsSuccessCount.add(1, attributes);
@@ -326,6 +343,21 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
+    public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes) {
+        if (timeoutCallsCounter != null) {
+            timeoutCallsCounter.add(1, attributes);
+        }
+    }
+
+    @Override
+    public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
+        if (timeoutExecutionDuration != null) {
+            double seconds = nanos / 1_000_000_000d;
+            timeoutExecutionDuration.record(seconds, attributes);
+        }
+    }
+
+    @Override
     public void setClassAndMethodName(String classAndMethodName) {
         this.classAndMethodName = classAndMethodName;
     }
@@ -343,6 +375,16 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public LongCounter getInvocationsValueReturnedCounter() {
         return ftInvocationsTotal;
+    }
+
+    @Override
+    public LongCounter getTimeoutCallsCounter() {
+        return ftTimeoutCallsTotal;
+    }
+
+    @Override
+    public DoubleHistogram getFTTimeoutExecutionDuration() {
+        return ftTimeoutExecutionDuration;
     }
 
     @Override
