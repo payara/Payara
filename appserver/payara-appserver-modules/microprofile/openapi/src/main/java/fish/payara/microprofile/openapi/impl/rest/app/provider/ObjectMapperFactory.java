@@ -87,7 +87,7 @@ public final class ObjectMapperFactory {
     public static <T extends Constructible> ObjectMapper create(JsonFactory factory) {
         ObjectMapper mapper = new ObjectMapper(factory);
         mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-        mapper.setDefaultPropertyInclusion(Include.NON_ABSENT);
+        mapper.setDefaultPropertyInclusion(Include.NON_EMPTY);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(SerializationFeature.WRITE_ENUMS_USING_TO_STRING, true);
