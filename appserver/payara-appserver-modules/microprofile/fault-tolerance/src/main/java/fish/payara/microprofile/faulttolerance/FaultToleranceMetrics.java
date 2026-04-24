@@ -108,6 +108,16 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
+        public void addFTRetryCallsCounter(LongCounter ftRetryCallsTotal) {
+            
+        }
+
+        @Override
+        public void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal) {
+            
+        }
+
+        @Override
         public LongCounter getCircuitBreakerCallsTotal() {
             return null;
         }
@@ -129,6 +139,16 @@ public interface FaultToleranceMetrics {
 
         @Override
         public DoubleHistogram getFTTimeoutExecutionDuration() {
+            return null;
+        }
+
+        @Override
+        public LongCounter getFTRetryCallsTotal() {
+            return null;
+        }
+
+        @Override
+        public LongCounter getFTRetryRetriesTotal() {
             return null;
         }
 
@@ -169,6 +189,16 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
+            
+        }
+
+        @Override
+        public void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes) {
+            
+        }
+
+        @Override
+        public void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes method) {
             
         }
 
@@ -220,8 +250,8 @@ public interface FaultToleranceMetrics {
                     {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
                 register(Counter.class.getTypeName(), "ft.retry.retries.total");
                 //place to register telemetry ft.retry.calls.total and ft.retry.retries.total
-                createFTRetryCallsTotal(getClassAndMethodName(), currentMeter);
-                createFTRetryRetriesTotal(currentMeter);
+                addFTRetryCallsCounter(createFTRetryCallsTotal(getClassAndMethodName(), currentMeter, policy.retry.isMaxRetriesSet(), policy.retry.isMaxDurationSet()));
+                addFTRetryRetriesCounter(createFTRetryRetriesTotal(currentMeter));
             }
             if (policy.isTimeoutPresent()) {
                 register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
@@ -264,6 +294,7 @@ public interface FaultToleranceMetrics {
         }
         return this;
     }
+    
 
     /*
      * Generic (to be implemented/overridden)
@@ -372,7 +403,11 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.retry.calls.total",
                 new Tag("retried", String.valueOf(isRetried())),
                 new Tag("retryResult", "valueReturned"));
+        incrementRetryCallsCounter(getFTRetryCallsTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build())
+                .put("retried", String.valueOf(isRetried())).put("retryResult", "valueReturned").build());
     }
+    
 
     /**
      * The number of times the retry logic was run. This will always be once per method call.
@@ -383,6 +418,9 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.retry.calls.total",
                 new Tag("retried", String.valueOf(isRetried())),
                 new Tag("retryResult", "exceptionNotRetryable"));
+        incrementRetryCallsCounter(getFTRetryCallsTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                        .stringKey("method"), getClassAndMethodName()).build())
+                .put("retried", String.valueOf(isRetried())).put("retryResult", "exceptionNotRetryable").build());
     }
 
     /**
@@ -394,6 +432,9 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.retry.calls.total",
                 new Tag("retried", String.valueOf(isRetried())),
                 new Tag("retryResult", "maxDurationReached"));
+        incrementRetryCallsCounter(getFTRetryCallsTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                        .stringKey("method"), getClassAndMethodName()).build())
+                .put("retried", String.valueOf(isRetried())).put("retryResult", "maxDurationReached").build());
     }
 
     /**
@@ -405,6 +446,9 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.retry.calls.total",
                 new Tag("retried", String.valueOf(isRetried())),
                 new Tag("retryResult", "maxRetriesReached"));
+        incrementRetryCallsCounter(getFTRetryCallsTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                        .stringKey("method"), getClassAndMethodName()).build())
+                .put("retried", String.valueOf(isRetried())).put("retryResult", "maxRetriesReached").build());
     }
 
     /**
@@ -412,6 +456,9 @@ public interface FaultToleranceMetrics {
      */
     default void incrementRetryRetriesTotal() {
         incrementCounter("ft.retry.retries.total");
+
+        incrementRetryRetriesTotal(getFTRetryRetriesTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).build());
     }
 
     /**
@@ -586,6 +633,10 @@ public interface FaultToleranceMetrics {
     public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal);
 
     public void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration);
+
+    public void addFTRetryCallsCounter(LongCounter ftRetryCallsTotal);
+
+    public void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal);
     
     public LongCounter getCircuitBreakerCallsTotal();
     
@@ -596,6 +647,10 @@ public interface FaultToleranceMetrics {
     public LongCounter getTimeoutCallsCounter();
     
     public DoubleHistogram getFTTimeoutExecutionDuration();
+    
+    public LongCounter getFTRetryCallsTotal();
+    
+    public LongCounter getFTRetryRetriesTotal();
     
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
@@ -612,6 +667,10 @@ public interface FaultToleranceMetrics {
     public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
 
     public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
+
+    public void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes);
+
+    public void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes attributes);
     
     public void setClassAndMethodName(String classAndMethodName);
     

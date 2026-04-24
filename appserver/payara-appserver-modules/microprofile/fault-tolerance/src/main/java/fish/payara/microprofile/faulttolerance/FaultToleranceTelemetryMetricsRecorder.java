@@ -147,23 +147,38 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.retry.calls.total metric for Fault Tolerance using Telemetry api
+     *
      * @param classAndMethodName
      * @param currentMeter
+     * @param maxRetriesSet
+     * @param maxDurationSet
      */
-    public static void createFTRetryCallsTotal(String classAndMethodName, Meter currentMeter) {
+    public static LongCounter createFTRetryCallsTotal(String classAndMethodName, Meter currentMeter, boolean maxRetriesSet, boolean maxDurationSet) {
         LongCounter longCounter = currentMeter.counterBuilder(FT_RETRY_CALLS_TOTAL).setDescription(FT_RETRY_CALLS_TOTAL_DESCRIPTION).build();
-        AttributeKey<String> key = AttributeKey.stringKey("retryResult");
-        AttributeKey<String> retriedKey = AttributeKey.stringKey("retried");
-        Attributes attributes = Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put(key, "valueReturned").put(retriedKey, "false").build();
-        longCounter.add(1, attributes);
+        
+        if (maxRetriesSet) {
+            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","maxRetriesReached").build());
+            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","maxRetriesReached").build());
+        }
+        
+        if (maxDurationSet) {
+            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","maxDurationReached").build());
+            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","maxDurationReached").build());       
+        }
+
+        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","valueReturned").build());
+        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","exceptionNotRetryable").build());
+        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","valueReturned").build());
+        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","exceptionNotRetryable").build());
+        return longCounter;
     }
 
     /**
      * this method will help to report ft.retry.retries.total metric for Fault Tolerance using Telemetry api
      * @param currentMeter
      */
-    public static void createFTRetryRetriesTotal(Meter currentMeter) {
-        currentMeter.counterBuilder(FT_RETRY_RETRIES_TOTAL).setDescription(FT_RETRY_RETRIES_TOTAL_DESCRIPTION).build();
+    public static LongCounter createFTRetryRetriesTotal(Meter currentMeter) {
+        return currentMeter.counterBuilder(FT_RETRY_RETRIES_TOTAL).setDescription(FT_RETRY_RETRIES_TOTAL_DESCRIPTION).build();
     }
 
     /**
