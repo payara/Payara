@@ -217,25 +217,6 @@ public class LogDomains {
     public static final String GMS_LOGGER = DOMAIN_ROOT + "org.glassfish.gms";
 
     /**
-     * AMX Logger
-     */
-    public static final String AMX_LOGGER = DOMAIN_ROOT + "enterprise.system.amx";
-
-    /**
-     * JMX Logger
-     */
-    public static final String JMX_LOGGER = DOMAIN_ROOT + "enterprise.system.jmx";
-
-     * webservices logger
-     */
-    public static final String WEBSERVICES_LOGGER = DOMAIN_ROOT + "enterprise.webservices";
-
-    /**
-     * monitoring logger
-     */
-    public static final String MONITORING_LOGGER = DOMAIN_ROOT + "enterprise.system.tools.monitor";
-
-    /**
      * persistence logger
      */
     public static final String PERSISTENCE_LOGGER = DOMAIN_ROOT + "org.glassfish.persistence";
