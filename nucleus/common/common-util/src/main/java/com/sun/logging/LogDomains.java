@@ -78,16 +78,6 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String STD_LOGGER = DOMAIN_ROOT + "enterprise.system.std";
-
-    /**
-     * Field
-     */
-    public static final String TOOLS_LOGGER = DOMAIN_ROOT + "enterprise.system.tools";
-
-    /**
-     * Field
-     */
     public static final String EJB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.ejb";
 
     /**
@@ -138,11 +128,6 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String SECURITY_SSL_LOGGER = DOMAIN_ROOT + "enterprise.system.ssl.security";
-
-    /**
-     * Field
-     */
     public static final String TRANSACTION_LOGGER = DOMAIN_ROOT + "enterprise.system.core.transaction";
 
     /**
@@ -167,10 +152,7 @@ public class LogDomains {
      * Field
      */
     public static final String JNDI_LOGGER = DOMAIN_ROOT + "enterprise.system.core.naming";
-    /**
-     * Field
-     */
-    public static final String ACTIVATION_LOGGER = DOMAIN_ROOT + "enterprise.system.activation";
+
     /**
      * Field
      */
@@ -186,16 +168,6 @@ public class LogDomains {
      * Deployment Logger
      */
     public static final String DPL_LOGGER = DOMAIN_ROOT + "enterprise.system.tools.deployment";
-
-    /**
-     * Deployment audit logger
-     */
-    public static final String DPLAUDIT_LOGGER = DOMAIN_ROOT + "enterprise.system.tools.deployment.audit";
-
-    /**
-     * Field
-     */
-    public static final String DIAGNOSTICS_LOGGER = DOMAIN_ROOT + "enterprise.system.tools.diagnostics";
 
     /**
      * JAXRPC Logger
@@ -245,11 +217,6 @@ public class LogDomains {
     public static final String CONFIG_LOGGER = DOMAIN_ROOT + "enterprise.system.core.config";
 
     /**
-     * Process Launcher Logger
-     */
-    public static final String PROCESS_LAUNCHER_LOGGER = DOMAIN_ROOT + "enterprise.tools.launcher";
-
-    /**
      * GMS Logger
      */
     public static final String GMS_LOGGER = DOMAIN_ROOT + "org.glassfish.gms";
@@ -264,12 +231,6 @@ public class LogDomains {
      */
     public static final String JMX_LOGGER = DOMAIN_ROOT + "enterprise.system.jmx";
 
-    /**
-     * core/kernel Logger
-     */
-    public static final String SERVICES_LOGGER = DOMAIN_ROOT + "enterprise.system.core.services";
-
-    /**
      * webservices logger
      */
     public static final String WEBSERVICES_LOGGER = DOMAIN_ROOT + "enterprise.webservices";
@@ -283,16 +244,6 @@ public class LogDomains {
      * persistence logger
      */
     public static final String PERSISTENCE_LOGGER = DOMAIN_ROOT + "org.glassfish.persistence";
-
-    /**
-     * virtualization logger
-     */
-    public static final String VIRTUALIZATION_LOGGER = DOMAIN_ROOT + "org.glassfish.virtualization";
-
-    /**
-     * PaaS logger
-     */
-    public static final String PAAS_LOGGER = DOMAIN_ROOT + "org.glassfish.paas";
 
     /**
      * Returns initialized logger using resource bundle found by the class's
