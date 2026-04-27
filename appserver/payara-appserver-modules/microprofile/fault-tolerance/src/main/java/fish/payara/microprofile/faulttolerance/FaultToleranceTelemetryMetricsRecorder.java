@@ -185,7 +185,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
      */
     public static LongCounter createFTTimeoutCallsTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter counter = currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
-        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).build());
         return counter;
     }
 
@@ -205,7 +205,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
      */
     public static LongCounter createFTCircuitBreakerCallsTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter counter = currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_CALLS_TOTAL).setDescription(FT_CIRCUIT_BREAKER_CALLS_TOTAL_DESCRIPTION).build();
-        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).build());
         return counter;
     }
 
@@ -216,7 +216,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
      */
     public static LongCounter createFTCircuitBreakerOpenedTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter counter = currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_OPENED_TOTAL).setDescription(FT_CIRCUIT_BREAKER_OPENED_TOTAL_DESCRIPTION).build();
-        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).build());
         return counter;
     }
     
