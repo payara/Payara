@@ -120,7 +120,7 @@ import java.util.logging.Logger;
  */
 @Service
 public final class LDAPRealm extends BaseRealm {
-    // Child logger of javax.enterprise.system.core.security
+    // Child logger of jakarta.security
     protected static final Logger groupSearchLogger = Logger.getLogger(_logger.getName() + ".ldaprealm.groupsearch");
 
     // Descriptive string of the authentication type of this realm.

@@ -53,7 +53,7 @@ public class SecurityLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.security.LogMessages";
     
     @LoggerInfo(subsystem = "SECURITY", description = "Core Security", publish = true)
-    public static final String SECURITY_LOGGER = "javax.enterprise.system.core.security";
+    public static final String SECURITY_LOGGER = "jakarta.security";
     private static final Logger securityLogger = Logger.getLogger(
                 SECURITY_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 

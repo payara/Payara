@@ -62,6 +62,6 @@ public class GroupSearchLoggerTest{
     
     public void groupSearchErrorLoggerNameTest() {
         String loggerName = logger.getName();
-        assertEquals("javax.enterprise.system.core.security.ldaprealm.groupsearch", loggerName);
+        assertEquals("jakarta.security.ldaprealm.groupsearch", loggerName);
     }
 }
