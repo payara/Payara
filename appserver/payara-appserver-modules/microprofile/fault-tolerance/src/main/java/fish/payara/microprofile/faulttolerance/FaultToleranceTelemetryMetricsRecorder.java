@@ -174,7 +174,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
      */
     public static LongCounter createFTRetryRetriesTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter counter = currentMeter.counterBuilder(FT_RETRY_RETRIES_TOTAL).setDescription(FT_RETRY_RETRIES_TOTAL_DESCRIPTION).build();
-        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).build());
         return counter;
     }
 
