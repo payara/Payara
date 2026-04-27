@@ -121,25 +121,19 @@ public class FaultToleranceTelemetryMetricsRecorder {
     public static LongCounter createFTInvocationTotalMeter(String classAndMethodName, Meter currentMeter, boolean isFallback) {
         LongCounter longCounter = currentMeter.counterBuilder(FT_INVOCATIONS_TOTAL).setDescription(FT_INVOCATIONS_TOTAL_DESCRIPTION).build();
         if (isFallback) {
-            longCounter.add(0, Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                            .stringKey("method"), classAndMethodName).build()).put(AttributeKey.stringKey("result"), "valueReturned")
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put(AttributeKey.stringKey("result"), "valueReturned")
                     .put(AttributeKey.stringKey("fallback"), "notApplied").build());
-            longCounter.add(0, Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                            .stringKey("method"), classAndMethodName).build()).put(AttributeKey.stringKey("result"), "valueReturned")
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put(AttributeKey.stringKey("result"), "valueReturned")
                     .put(AttributeKey.stringKey("fallback"), "applied").build());
-            longCounter.add(0, Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                            .stringKey("method"), classAndMethodName).build()).put(AttributeKey.stringKey("result"), "exceptionThrown")
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put(AttributeKey.stringKey("result"), "exceptionThrown")
                     .put(AttributeKey.stringKey("fallback"), "notApplied").build());
-            longCounter.add(0, Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                            .stringKey("method"), classAndMethodName).build()).put(AttributeKey.stringKey("result"), "exceptionThrown")
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put(AttributeKey.stringKey("result"), "exceptionThrown")
                     .put(AttributeKey.stringKey("fallback"), "applied").build());
 
         } else {
-            longCounter.add(0, Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                            .stringKey("method"), classAndMethodName).build()).put(AttributeKey.stringKey("result"), "valueReturned")
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put(AttributeKey.stringKey("result"), "valueReturned")
                     .put(AttributeKey.stringKey("fallback"), "notDefined").build());
-            longCounter.add(0, Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                            .stringKey("method"), classAndMethodName).build()).put(AttributeKey.stringKey("result"), "exceptionThrown")
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put(AttributeKey.stringKey("result"), "exceptionThrown")
                     .put(AttributeKey.stringKey("fallback"), "notDefined").build());
         }
         return longCounter;
@@ -157,36 +151,42 @@ public class FaultToleranceTelemetryMetricsRecorder {
         LongCounter longCounter = currentMeter.counterBuilder(FT_RETRY_CALLS_TOTAL).setDescription(FT_RETRY_CALLS_TOTAL_DESCRIPTION).build();
         
         if (maxRetriesSet) {
-            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","maxRetriesReached").build());
-            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","maxRetriesReached").build());
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").put("retryResult","maxRetriesReached").build());
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "false").put("retryResult","maxRetriesReached").build());
         }
         
         if (maxDurationSet) {
-            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","maxDurationReached").build());
-            longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","maxDurationReached").build());       
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").put("retryResult","maxDurationReached").build());
+            longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "false").put("retryResult","maxDurationReached").build());       
         }
 
-        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","valueReturned").build());
-        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "true").put("retryResult","exceptionNotRetryable").build());
-        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","valueReturned").build());
-        longCounter.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("retried", "false").put("retryResult","exceptionNotRetryable").build());
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").put("retryResult","valueReturned").build());
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").put("retryResult","exceptionNotRetryable").build());
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "false").put("retryResult","valueReturned").build());
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "false").put("retryResult","exceptionNotRetryable").build());
         return longCounter;
     }
 
     /**
      * this method will help to report ft.retry.retries.total metric for Fault Tolerance using Telemetry api
+     * @param classAndMethodName 
      * @param currentMeter
      */
-    public static LongCounter createFTRetryRetriesTotal(Meter currentMeter) {
-        return currentMeter.counterBuilder(FT_RETRY_RETRIES_TOTAL).setDescription(FT_RETRY_RETRIES_TOTAL_DESCRIPTION).build();
+    public static LongCounter createFTRetryRetriesTotal(String classAndMethodName, Meter currentMeter) {
+        LongCounter counter = currentMeter.counterBuilder(FT_RETRY_RETRIES_TOTAL).setDescription(FT_RETRY_RETRIES_TOTAL_DESCRIPTION).build();
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        return counter;
     }
 
     /**
      * this method will help to report ft.timeout.calls.total metric for Fault Tolerance using Telemetry api
+     * @param classAndMethodName
      * @param currentMeter
      */
-    public static LongCounter createFTTimeoutCallsTotal(Meter currentMeter) {
-        return currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
+    public static LongCounter createFTTimeoutCallsTotal(String classAndMethodName, Meter currentMeter) {
+        LongCounter counter = currentMeter.counterBuilder(FT_TIMEOUT_CALLS_TOTAL).setDescription(FT_TIMEOUT_CALLS_TOTAL_DESCRIPTION).build();
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        return counter;
     }
 
     /**
@@ -200,18 +200,24 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.circuitbreaker.calls.total metric for Fault Tolerance using Telemetry api
+     * @param classAndMethodName
      * @param currentMeter
      */
-    public static LongCounter createFTCircuitBreakerCallsTotal(Meter currentMeter) {
-        return currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_CALLS_TOTAL).setDescription(FT_CIRCUIT_BREAKER_CALLS_TOTAL_DESCRIPTION).build();
+    public static LongCounter createFTCircuitBreakerCallsTotal(String classAndMethodName, Meter currentMeter) {
+        LongCounter counter = currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_CALLS_TOTAL).setDescription(FT_CIRCUIT_BREAKER_CALLS_TOTAL_DESCRIPTION).build();
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        return counter;
     }
 
     /**
      * this method will help to report ft.circuitbreaker.opened.total metric for Fault Tolerance using Telemetry api
+     * @param classAndMethodName
      * @param currentMeter
      */
-    public static LongCounter createFTCircuitBreakerOpenedTotal(Meter currentMeter) {
-        return currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_OPENED_TOTAL).setDescription(FT_CIRCUIT_BREAKER_OPENED_TOTAL_DESCRIPTION).build();
+    public static LongCounter createFTCircuitBreakerOpenedTotal(String classAndMethodName, Meter currentMeter) {
+        LongCounter counter = currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_OPENED_TOTAL).setDescription(FT_CIRCUIT_BREAKER_OPENED_TOTAL_DESCRIPTION).build();
+        counter.add(0, Attributes.builder().put("method", classAndMethodName).put("retried", "true").build());
+        return counter;
     }
     
     public static void createFTCircuitBreakerStateTotal(String classAndMethodName, Meter currentMeter) {
@@ -221,9 +227,9 @@ public class FaultToleranceTelemetryMetricsRecorder {
                 .setDescription(FT_CIRCUIT_BREAKER_STATE_TOTAL_DESCRIPTION).build();
         LongCounter longCounterOpen = currentMeter.counterBuilder(FT_CIRCUIT_BREAKER_STATE_TOTAL).setUnit("nanoseconds")
                 .setDescription(FT_CIRCUIT_BREAKER_STATE_TOTAL_DESCRIPTION).build();
-        longCounterClosed.add(1, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("state", "closed").build());
-        longCounterHalfOpen.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("state", "halfOpen").build()); 
-        longCounterOpen.add(0, Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put("state", "open").build());
+        longCounterClosed.add(1, Attributes.builder().put("method", classAndMethodName).put("state", "closed").build());
+        longCounterHalfOpen.add(0, Attributes.builder().put("method", classAndMethodName).put("state", "halfOpen").build()); 
+        longCounterOpen.add(0, Attributes.builder().put("method", classAndMethodName).put("state", "open").build());
     }
 
     /**
@@ -234,7 +240,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
     public static void createFTBulkheadCallsTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter longCounter = currentMeter.counterBuilder(FT_BULKHEAD_CALLS_TOTAL).setDescription(FT_BULKHEAD_CALLS_TOTAL_DESCRIPTION).build();
         AttributeKey<String> key = AttributeKey.stringKey("bulkheadResult");
-        Attributes attributes = Attributes.builder().putAll(getMethodAttribute(classAndMethodName)).put(key, "accepted").build();
+        Attributes attributes = Attributes.builder().put("method", classAndMethodName).put(key, "accepted").build();
         longCounter.add(1, attributes);      
     }
 

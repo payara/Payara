@@ -251,13 +251,13 @@ public interface FaultToleranceMetrics {
                 register(Counter.class.getTypeName(), "ft.retry.retries.total");
                 //place to register telemetry ft.retry.calls.total and ft.retry.retries.total
                 addFTRetryCallsCounter(createFTRetryCallsTotal(getClassAndMethodName(), currentMeter, policy.retry.isMaxRetriesSet(), policy.retry.isMaxDurationSet()));
-                addFTRetryRetriesCounter(createFTRetryRetriesTotal(currentMeter));
+                addFTRetryRetriesCounter(createFTRetryRetriesTotal(getClassAndMethodName(), currentMeter));
             }
             if (policy.isTimeoutPresent()) {
                 register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
                     {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
-                addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(currentMeter));
+                addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(getClassAndMethodName(), currentMeter));
                 addFTTimeoutExecutionDuration(createFTTimeoutExecutionDuration(currentMeter));
             }
             if (policy.isCircuitBreakerPresent()) {
@@ -268,8 +268,8 @@ public interface FaultToleranceMetrics {
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosClosed, "state", "closed");
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.opened.total");
-                addCircuitBreakerCallsTotal(createFTCircuitBreakerCallsTotal(currentMeter));
-                addCircuitBreakerOpenedTotal(createFTCircuitBreakerOpenedTotal(currentMeter));
+                addCircuitBreakerCallsTotal(createFTCircuitBreakerCallsTotal(getClassAndMethodName(), currentMeter));
+                addCircuitBreakerOpenedTotal(createFTCircuitBreakerOpenedTotal(getClassAndMethodName(), currentMeter));
                 createFTCircuitBreakerStateTotal(getClassAndMethodName(), currentMeter);
             }
             if (policy.isBulkheadPresent()) {
