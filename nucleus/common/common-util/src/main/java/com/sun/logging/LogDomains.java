@@ -78,7 +78,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String EJB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.ejb";
+    public static final String EJB_LOGGER = DOMAIN_ROOT + "ejb";
 
     /**
      * JavaMail Logger
@@ -118,7 +118,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String MDB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.ejb.mdb";
+    public static final String MDB_LOGGER = DOMAIN_ROOT + "ejb.mdb";
 
     /**
      * Field
