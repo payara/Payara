@@ -83,7 +83,7 @@ public class LogDomains {
     /**
      * JavaMail Logger
      */
-    public static final String JAVAMAIL_LOGGER = DOMAIN_ROOT + "enterprise.resource.javamail";
+    public static final String JAVAMAIL_LOGGER = DOMAIN_ROOT + "mail";
 
     /**
      * IIOP Logger public static final String IIOP_LOGGER = DOMAIN_ROOT +
