@@ -103,7 +103,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String CMP_LOGGER = DOMAIN_ROOT + "enterprise.system.container.cmp";
+    public static final String CMP_LOGGER = DOMAIN_ROOT + "ejb.cmp";
 
     /**
      * Field
