@@ -161,7 +161,7 @@ public class LogDomains {
     /**
      * Resource Logger
      */
-    public static final String RSR_LOGGER = DOMAIN_ROOT + "enterprise.resource.resourceadapter";
+    public static final String RSR_LOGGER = DOMAIN_ROOT + "resource";
     // END OF IASRI 4660742
 
     /**
