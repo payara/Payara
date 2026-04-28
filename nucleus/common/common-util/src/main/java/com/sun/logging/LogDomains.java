@@ -113,7 +113,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String ACC_LOGGER = DOMAIN_ROOT + "enterprise.system.container.appclient";
+    public static final String ACC_LOGGER = DOMAIN_ROOT + "platform.appclient";
 
     /**
      * Field
