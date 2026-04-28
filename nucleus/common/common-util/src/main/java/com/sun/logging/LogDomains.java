@@ -123,7 +123,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String SECURITY_LOGGER = DOMAIN_ROOT + "enterprise.system.core.security";
+    public static final String SECURITY_LOGGER = DOMAIN_ROOT + "security";
 
     /**
      * Field

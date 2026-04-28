@@ -12,11 +12,11 @@
 
 [#|2012-10-19T15:26:38.536-0400|INFO|44.0|jakarta.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798536;_LevelValue=800;|Grizzly Framework 2.3 started in: 3ms - bound to [/0.0.0.0:4,848]|#]
 
-[#|2012-10-19T15:26:38.628-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798628;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [admin-realm] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.|#]
+[#|2012-10-19T15:26:38.628-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798628;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [admin-realm] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.|#]
 
-[#|2012-10-19T15:26:38.629-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798629;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [file] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.|#]
+[#|2012-10-19T15:26:38.629-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798629;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [file] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.|#]
 
-[#|2012-10-19T15:26:38.632-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798632;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [certificate] of classtype [com.sun.enterprise.security.auth.realm.certificate.CertificateRealm] successfully created.|#]
+[#|2012-10-19T15:26:38.632-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security.auth.realm|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798632;_LevelValue=800;_MessageID=realm.loaded.successfully;|SEC1115: Realm [certificate] of classtype [com.sun.enterprise.security.auth.realm.certificate.CertificateRealm] successfully created.|#]
 
 [#|2012-10-19T15:26:38.963-0400|INFO|44.0|jakarta.enterprise.system.core.com.sun.enterprise.v3.services.impl|_ThreadID=1;_ThreadName=main;_TimeMillis=1350674798963;_LevelValue=800;|Grizzly Framework 2.3 started in: 2ms - bound to [/0.0.0.0:3,700]|#]
 
@@ -118,13 +118,13 @@
 
 [#|2012-10-19T15:27:29.667-0400|INFO|44.0|jakarta.enterprise.web|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674849667;_LevelValue=800;_MessageID=AS-WEB-00025;|Virtual server server loaded default web module |#]
 
-[#|2012-10-19T15:27:30.058-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=security.secmgroff;|SEC1002: Security Manager is OFF.|#]
+[#|2012-10-19T15:27:30.058-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=security.secmgroff;|SEC1002: Security Manager is OFF.|#]
 
-[#|2012-10-19T15:27:30.058-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=sec.service.startup.enter;|SEC1010: Entering Security Startup Service|#]
+[#|2012-10-19T15:27:30.058-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850058;_LevelValue=800;_MessageID=sec.service.startup.enter;|SEC1010: Entering Security Startup Service|#]
 
-[#|2012-10-19T15:27:30.061-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850061;_LevelValue=800;_MessageID=policy.loading;|SEC1143: Loading policy provider com.sun.enterprise.security.jacc.provider.SimplePolicyProvider.|#]
+[#|2012-10-19T15:27:30.061-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850061;_LevelValue=800;_MessageID=policy.loading;|SEC1143: Loading policy provider com.sun.enterprise.security.jacc.provider.SimplePolicyProvider.|#]
 
-[#|2012-10-19T15:27:30.140-0400|INFO|44.0|jakarta.enterprise.system.core.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850140;_LevelValue=800;_MessageID=sec.service.startup.exit;|SEC1011: Security Service(s) Started Successfully|#]
+[#|2012-10-19T15:27:30.140-0400|INFO|44.0|jakarta.security.com.sun.enterprise.security|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850140;_LevelValue=800;_MessageID=sec.service.startup.exit;|SEC1011: Security Service(s) Started Successfully|#]
 
 [#|2012-10-19T15:27:30.140-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850140;_LevelValue=800;|Snifer com.sun.enterprise.security.ee.SecuritySniffer@389278a3 set up following modules: null|#]
 
