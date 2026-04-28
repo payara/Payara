@@ -123,7 +123,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String TRANSACTION_LOGGER = DOMAIN_ROOT + "enterprise.system.core.transaction";
+    public static final String TRANSACTION_LOGGER = DOMAIN_ROOT + "transactions";
 
     /**
      * Field
