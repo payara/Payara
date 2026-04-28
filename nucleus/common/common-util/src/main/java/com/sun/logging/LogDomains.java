@@ -61,6 +61,10 @@ public class LogDomains {
      */
     public static final String DOMAIN_ROOT = "javax.";
 
+    public static final String JAKARTA_DOMAIN_ROOT = "jakarta.";
+
+    public static final String PAYARA_DOMAIN_ROOT = "payara.";
+
     /**
      * PACKAGE_ROOT the prefix for the packages where logger resource bundles
      * reside. This is public only so it can be accessed w/in the ias package
@@ -79,11 +83,13 @@ public class LogDomains {
      * Field
      */
     public static final String EJB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.ejb";
+    public static final String JAKARTA_EJB_LOGGER = JAKARTA_DOMAIN_ROOT + "ejb";
 
     /**
      * JavaMail Logger
      */
     public static final String JAVAMAIL_LOGGER = DOMAIN_ROOT + "enterprise.resource.javamail";
+    public static final String JAKARTA_JAVAMAIL_LOGGER = JAKARTA_DOMAIN_ROOT + "mail";
 
     /**
      * IIOP Logger public static final String IIOP_LOGGER = DOMAIN_ROOT +
@@ -94,16 +100,19 @@ public class LogDomains {
      * JMS Logger
      */
     public static final String JMS_LOGGER = DOMAIN_ROOT + "enterprise.resource.jms";
+    public static final String JAKARTA_JMS_LOGGER = JAKARTA_DOMAIN_ROOT + "jms";
 
     /**
      * Field
      */
     public static final String WEB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.web";
+    public static final String JAKARTA_WEB_LOGGER = JAKARTA_DOMAIN_ROOT + "servlet";
 
     /**
      * Field
      */
     public static final String CMP_LOGGER = DOMAIN_ROOT + "enterprise.system.container.cmp";
+    public static final String JAKARTA_CMP_LOGGER = JAKARTA_DOMAIN_ROOT + "ejb.cmp";
 
     /**
      * Field
@@ -114,16 +123,19 @@ public class LogDomains {
      * Field
      */
     public static final String ACC_LOGGER = DOMAIN_ROOT + "enterprise.system.container.appclient";
+    public static final String JAKARTA_ACC_LOGGER = JAKARTA_DOMAIN_ROOT + "acc";
 
     /**
      * Field
      */
     public static final String MDB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.ejb.mdb";
+    public static final String JAKARTA_MDB_LOGGER = JAKARTA_DOMAIN_ROOT + "ejb.mdb";
 
     /**
      * Field
      */
     public static final String SECURITY_LOGGER = DOMAIN_ROOT + "enterprise.system.core.security";
+    public static final String JAKARTA_SECURITY_LOGGER = JAKARTA_DOMAIN_ROOT + "security";
 
     /**
      * Field
