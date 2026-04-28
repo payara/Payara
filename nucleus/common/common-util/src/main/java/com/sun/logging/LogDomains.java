@@ -134,7 +134,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String CORBA_LOGGER = DOMAIN_ROOT + "enterprise.resource.corba";
+    public static final String CORBA_LOGGER = LEGACY_DOMAIN_ROOT + "enterprise.resource.corba";
 
     /**
      * Field
