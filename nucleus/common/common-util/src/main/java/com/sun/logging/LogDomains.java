@@ -59,7 +59,8 @@ public class LogDomains {
      * DOMAIN_ROOT the prefix for the logger name. This is public only so it can
      * be accessed w/in the ias package space.
      */
-    public static final String DOMAIN_ROOT = "javax.";
+    public static final String DOMAIN_ROOT = "jakarta.";
+    public static final String LEGACY_DOMAIN_ROOT = "javax.";
 
     /**
      * PACKAGE_ROOT the prefix for the packages where logger resource bundles
@@ -108,7 +109,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String JDO_LOGGER = DOMAIN_ROOT + "enterprise.resource.jdo";
+    public static final String JDO_LOGGER = LEGACY_DOMAIN_ROOT + "enterprise.resource.jdo";
 
     /**
      * Field
