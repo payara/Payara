@@ -93,7 +93,7 @@ public class LogDomains {
     /**
      * JMS Logger
      */
-    public static final String JMS_LOGGER = DOMAIN_ROOT + "enterprise.resource.jms";
+    public static final String JMS_LOGGER = DOMAIN_ROOT + "messaging";
 
     /**
      * Field
