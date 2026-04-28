@@ -61,6 +61,7 @@ public class LogDomains {
      */
     public static final String DOMAIN_ROOT = "jakarta.";
     public static final String LEGACY_DOMAIN_ROOT = "javax.";
+    public static final String PAYARA_DOMAIN_ROOT = "payara.";
 
     /**
      * PACKAGE_ROOT the prefix for the packages where logger resource bundles
@@ -147,12 +148,12 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String NAMING_LOGGER = DOMAIN_ROOT + "enterprise.system.core.naming";
+    public static final String NAMING_LOGGER = PAYARA_DOMAIN_ROOT + "naming";
 
     /**
      * Field
      */
-    public static final String JNDI_LOGGER = DOMAIN_ROOT + "enterprise.system.core.naming";
+    public static final String JNDI_LOGGER = PAYARA_DOMAIN_ROOT + "naming";
 
     /**
      * Field
