@@ -98,7 +98,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String WEB_LOGGER = DOMAIN_ROOT + "enterprise.system.container.web";
+    public static final String WEB_LOGGER = DOMAIN_ROOT + "servlet";
 
     /**
      * Field
