@@ -159,7 +159,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Integer maxProperties;
     private Integer minProperties;
     private List<String> required = createList();
-    private List<SchemaType> type = createList();
+    private List<SchemaType> type;
     private Map<String, Schema> properties = createMap();
     private String description;
     private String format;
@@ -1439,7 +1439,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                     List<SchemaType> schemaType = ModelUtils.getSchemaType(implementationClass, context);
                     copyFrom = new SchemaImpl().type(schemaType);
                 }
-                if (schema.getType().contains(SchemaType.ARRAY)) {
+                if (schema.getType() != null && schema.getType().contains(SchemaType.ARRAY)) {
                     schema.setItems(new SchemaImpl());
                     ModelUtils.merge(copyFrom, schema.getItems(), false);
                 } else {
