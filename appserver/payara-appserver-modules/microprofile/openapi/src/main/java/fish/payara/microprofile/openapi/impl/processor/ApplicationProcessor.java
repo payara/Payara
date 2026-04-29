@@ -73,6 +73,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
@@ -82,7 +84,6 @@ import java.util.stream.Collectors;
 
 import fish.payara.microprofile.openapi.util.BeanValidationType;
 import jakarta.validation.groups.Default;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
@@ -183,17 +184,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setGET(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.GET);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
+        visitJaxRSMethodHandler(get, element, context, HttpMethod.GET, PathItem::getGET, PathItem::setGET);
     }
 
     @Override
@@ -202,20 +193,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setPOST(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.POST);
+        OperationImpl operation = visitJaxRSMethodHandler(post, element, context,
+                HttpMethod.POST, PathItem::getPOST, PathItem::setPOST);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -224,20 +206,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setPUT(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.PUT);
+        OperationImpl operation = visitJaxRSMethodHandler(put, element, context,
+                HttpMethod.PUT, PathItem::getPUT, PathItem::setPUT);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -246,17 +219,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setDELETE(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.DELETE);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
+        visitJaxRSMethodHandler(delete, element, context, HttpMethod.DELETE, PathItem::getDELETE, PathItem::setDELETE);
     }
 
     @Override
@@ -265,20 +228,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setHEAD(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.HEAD);
+        OperationImpl operation = visitJaxRSMethodHandler(head, element, context,
+                HttpMethod.HEAD, PathItem::getHEAD, PathItem::setHEAD);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -287,20 +241,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setOPTIONS(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.OPTIONS);
+        OperationImpl operation = visitJaxRSMethodHandler(options, element, context,
+                HttpMethod.OPTIONS, PathItem::getOPTIONS, PathItem::setOPTIONS);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -309,20 +254,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setPATCH(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.PATCH);
+        OperationImpl operation = visitJaxRSMethodHandler(patch, element, context,
+                HttpMethod.PATCH, PathItem::getPATCH, PathItem::setPATCH);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -1815,4 +1751,25 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return false;
     }
 
+    private OperationImpl visitJaxRSMethodHandler(AnnotationModel model, MethodModel element, ApiContext context,
+              String httpMethod, Function<PathItem, Operation> getter, BiConsumer<PathItem, Operation> setter) {
+        // Get or create the path item
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
+        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
+
+        OperationImpl operation = new OperationImpl();
+        operation.setOperationId(element.getName());
+        operation.setMethod(httpMethod);
+
+        Operation existing = getter.apply(pathItem);
+        if (existing != null) {
+            OperationImpl.merge(existing, operation, true);
+        }
+        setter.accept(pathItem, operation);
+
+        // Add the default response
+        insertDefaultResponse(context, operation, element);
+
+        return operation;
+    }
 }

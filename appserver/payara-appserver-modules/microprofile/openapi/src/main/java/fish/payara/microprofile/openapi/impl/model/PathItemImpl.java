@@ -50,6 +50,8 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
@@ -386,4 +388,21 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
         return hash;
     }
 
+    public static void merge (PathItem from, PathItem to, boolean override) {
+        ExtensibleImpl.merge(from, to, override);
+
+        to.setRef(ModelUtils.mergeProperty(from.getRef(), to.getRef(), override));
+        to.setSummary(ModelUtils.mergeProperty(from.getSummary(), to.getSummary(), override));
+        to.setDescription(ModelUtils.mergeProperty(from.getDescription(), to.getDescription(), override));
+        OperationImpl.merge(from.getGET(), to.getGET(), override);
+        OperationImpl.merge(from.getPUT(), to.getPUT(), override);
+        OperationImpl.merge(from.getPOST(), to.getPOST(), override);
+        OperationImpl.merge(from.getDELETE(), to.getDELETE(), override);
+        OperationImpl.merge(from.getOPTIONS(), to.getOPTIONS(), override);
+        OperationImpl.merge(from.getHEAD(), to.getHEAD(), override);
+        OperationImpl.merge(from.getPATCH(), to.getPATCH(), override);
+        OperationImpl.merge(from.getTRACE(), to.getTRACE(), override);
+        ModelUtils.mergeImmutableList(from.getServers(), to.getServers(), to::setServers);
+        ModelUtils.mergeImmutableList(from.getParameters(), to.getParameters(), to::setParameters);
+    }
 }
