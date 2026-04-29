@@ -129,8 +129,6 @@ public class JakartaDataExtension implements Extension {
                                 continue root;
                             } else if (annotationType.isAnnotationPresent(EntityDefining.class)) {
                                 continue root;
-                            } else {
-                                continue root;
                             }
                         }
                     }
