@@ -130,7 +130,7 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String TRANSACTION_LOGGER = DOMAIN_ROOT + "transactions";
+    public static final String TRANSACTION_LOGGER = DOMAIN_ROOT + "transactions.engine";
 
     /**
      * Field
