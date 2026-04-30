@@ -105,6 +105,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
         if (components != null) {
             from.setComponents(ComponentsImpl.createInstance(components, context));
         }
+        extractAnnotations(annotation, context, "webhooks", "name", PathItemImpl::createInstance, from::addWebhook);
         from.setExtensions(parseExtensions(annotation));
         return from;
     }
@@ -373,6 +374,18 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
             for (String root : endpoints.keySet()) {
                 Set<String> paths = endpoints.get(root);
                 toImpl.setEndpoints(ModelUtils.buildEndpoints(toImpl.getEndpoints(), root, paths));
+            }
+        }
+
+        Map<String, PathItem> webhooks = from.getWebhooks();
+        if (webhooks != null && !webhooks.isEmpty()) {
+            for (String webhookName : webhooks.keySet()) {
+                if (to.getWebhooks().containsKey(webhookName)) {
+                    PathItemImpl.merge(webhooks.get(webhookName), to.getWebhooks().get(webhookName), override);
+                }
+                else {
+                    to.addWebhook(webhookName, webhooks.get(webhookName));
+                }
             }
         }
     }
