@@ -54,9 +54,6 @@ public interface DescriptorConstants {
     /** Prefix used for S1AS xmls */
     String S1AS_PREFIX = "sun-";
 
-    /** Prefix used for S1AS Cmp xmls */
-    String S1AS_CMP_PREFIX = "sun-cmp-";
-
     /** Prefix used for GF xmls */
     String GF_PREFIX = "glassfish-";
     
@@ -191,16 +188,6 @@ public interface DescriptorConstants {
 
     /** prefix used for module role mapper key */
     String MODULE_ROLEMAPPER_PREFIX = "module_";
-
-    /** The Sun cmp-mapping  descriptor entry in exploded file system. */
-    String S1AS_CMP_MAPPING_DD_ENTRY = "META-INF" 
-                                    + File.separator
-                                    + S1AS_PREFIX 
-                                    + "cmp-mappings.xml";
-
-    /** The Sun cmp-mapping  descriptor entry inside an ejb jar. */
-    String S1AS_CMP_MAPPING_JAR_ENTRY = "META-INF/" 
-                                     + S1AS_PREFIX + "cmp-mappings.xml";
     
     /** JaxRPC deployment descriptor file */
     String JAXRPC_JAR_ENTRY = "WEB-INF/jaxrpc-ri.xml";

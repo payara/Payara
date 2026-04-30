@@ -142,13 +142,6 @@
         -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>glassfish-cmp</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>glassfish-common</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

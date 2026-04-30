@@ -65,9 +65,6 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
-                    // FIX: removed retry(3) from options{} — intermediate failures were
-                    // setting currentBuild.result = UNSTABLE and never being reset.
-                    // retry() is now inside script{} so we can control result propagation.
                     steps {
                         script {
                             def lastErr = null
@@ -504,11 +501,16 @@ pipeline {
                                 -Dfailsafe.rerunFailingTestsCount=2 \
                                 -f appserver/tests/functional/embeddedtest """
 
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                                 setupDomain()
+
+                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                                sh """export PAYARA_HOME=${pwd()}/payara7 && pytest appserver/tests/functional/deployment-groups/test_deployment_group.py -v -s"""
+                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                                 sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
                                 --asadmin ${pwd()}/payara7/bin/asadmin"""
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran asadmin test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                             }
                         }
                     }
@@ -608,7 +610,7 @@ void processPayaraArtifacts(String buildId, boolean restoreMavenRepo = false) {
     // Move into a different directory to stop Maven using the current pom
     echo "Installing copied artifacts to local maven repo"
     def installArtifactsScript = """
-        mkdir -p tmp
+        mkdir tmp
         cd tmp
         mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.distributions -DartifactId=payara -Dversion=${payaraVersion} -Dpackaging=zip -Dfile=${env.WORKSPACE}/artifacts/payara.zip
         mvn install:install-file -DgeneratePom=true -DgroupId=fish.payara.distributions -DartifactId=payara-web -Dversion=${payaraVersion} -Dpackaging=zip -Dfile=${env.WORKSPACE}/artifacts/payara-web.zip

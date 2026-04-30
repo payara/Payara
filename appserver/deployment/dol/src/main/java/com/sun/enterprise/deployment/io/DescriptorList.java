@@ -63,7 +63,6 @@ public class DescriptorList {
 	private final static String [] ejbList = {
 		DescriptorConstants.EJB_DD_ENTRY,
 		DescriptorConstants.S1AS_EJB_DD_ENTRY,
-		DescriptorConstants.S1AS_CMP_MAPPING_DD_ENTRY,
 		DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY
 	};
 

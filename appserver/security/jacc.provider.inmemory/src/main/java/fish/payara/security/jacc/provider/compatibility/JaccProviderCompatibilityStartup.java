@@ -165,7 +165,7 @@ public class JaccProviderCompatibilityStartup implements PostConstruct {
 
     private void ensureJaccPolicyFactoryJvmOption(Config config) {
         JavaConfig javaConfig = config.getJavaConfig();
-        List<String> jvmOptions = javaConfig.getJvmOptions();
+        List<String> jvmOptions = javaConfig.getJvmRawOptions();
 
         Optional<String> existing = jvmOptions.stream()
                 .filter(opt -> opt.startsWith(JACC_POLICY_FACTORY_JVM_OPTION_KEY))
@@ -183,12 +183,11 @@ public class JaccProviderCompatibilityStartup implements PostConstruct {
         }
 
         logger.log(Level.INFO, "Adding missing JACC PolicyFactory JVM option: {0}", JACC_POLICY_FACTORY_JVM_OPTION);
-        jvmOptions.add(JACC_POLICY_FACTORY_JVM_OPTION);
 
         try {
             ConfigSupport.apply(jconfig -> {
-                jconfig.setJvmOptions(jvmOptions);
-                return config;
+                jconfig.getJvmRawOptions().add(JACC_POLICY_FACTORY_JVM_OPTION);
+                return true;
             }, javaConfig);
 
             logger.log(Level.INFO, "Successfully added JACC PolicyFactory JVM option");

@@ -52,7 +52,7 @@
     <artifactId>persistence-common</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Common persistence code between JPA and CMP</name>
+    <name>Common persistence cod JPA</name>
     
     <developers>
         <developer>

@@ -189,7 +189,13 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
             declaredEntityClass = inferEntityTypeFromLifecycleMethods(this.repository);
         }
         logger.finer("Processing entity class " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null"));
-        try (EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get()) {
+        EntityManager entityManager = getEntityManagerSupplier(this.jakartaDataExtension.getApplicationName(), this.dataStore).get();
+        if (entityManager == null) {
+            logger.warning("No persistence unit available for repository " + repository.getName()
+                    + "; methods will throw UnsupportedOperationException at runtime.");
+            return;
+        }
+        try (entityManager) {
             for (Method method : this.repository.getMethods()) {
                 logger.finer("Processing query for " + (declaredEntityClass != null ? declaredEntityClass.getName() : "null") + "." + method.getName());
                 //skip if method is default

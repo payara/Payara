@@ -89,7 +89,6 @@
         <fileset dir="${glassfish.home}/modules">
             <include name="**/*.jar"/>
             <!-- excluding some obviously unnecessary jars to reduce classpath length (> 32kB causes javac to fail on WinXP) -->
-            <exclude name="cmp*.jar"/>
             <exclude name="connectors-*.jar"/>
             <exclude name="console-*.jar"/>
             <exclude name="deployment-*.jar"/>
@@ -294,7 +293,6 @@
     <mkdir dir="${class.output}/META-INF"/>
     <copy file="metadata/ejb-jar.xml" tofile="${class.output}/META-INF/ejb-jar.xml" failonerror="false"/>
     <copy file="metadata/sun-ejb-jar.xml" tofile="${class.output}/META-INF/sun-ejb-jar.xml" failonerror="false"/>
-    <copy file="metadata/sun-cmp-mappings.xml" tofile="${class.output}/META-INF/sun-cmp-mappings.xml" failonerror="false"/>
     <copy file="metadata/${dbschema}" tofile="${class.output}/${dbschema}" failonerror="false"/>
     <jar destfile="${dist.dir}/${app.file}EJB.jar"
         basedir="${class.output}"

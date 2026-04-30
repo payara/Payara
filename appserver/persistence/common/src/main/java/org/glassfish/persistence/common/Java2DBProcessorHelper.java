@@ -117,10 +117,6 @@ public class Java2DBProcessorHelper {
      */
     private  boolean deploy;
 
-
-    private  Boolean cliCreateTables;
-    private  Boolean cliDropAndCreateTables;
-    private  Boolean cliDropTables;
     /**
      * Name with which the application is registered.
      */
@@ -161,32 +157,11 @@ public class Java2DBProcessorHelper {
      */
     public void init() {
         if (deploy) {
-            // DeployCommandParameters are available only on deploy or deploy
-            // part of redeploy
-            DeployCommandParameters cliOverrides =
-                    ctx.getCommandParameters(DeployCommandParameters.class);
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("---> cliOverrides " + cliOverrides);
-            }
-
-            cliCreateTables = cliOverrides.createtables;
-            cliDropAndCreateTables = cliOverrides.dropandcreatetables;
-
             Application application = ctx.getModuleMetaData(Application.class);
             appRegisteredName = application.getRegistrationName();
             deploymentContextProps.setProperty(APPLICATION_NAME, appRegisteredName);
 
         } else {
-            // UndeployCommandParameters are available only on undeploy or undeploy
-            // part of redeploy. In the latter case, cliOverrides.droptables
-            // is set from cliOverrides.dropandcreatetables passed to redeploy.
-            UndeployCommandParameters cliOverrides =
-                    ctx.getCommandParameters(UndeployCommandParameters.class);
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("---> cliOverrides " + cliOverrides);
-            }
-
-            cliDropTables = cliOverrides.droptables;
             appRegisteredName = deploymentContextProps.getProperty(APPLICATION_NAME);
         }
 
@@ -420,64 +395,10 @@ public class Java2DBProcessorHelper {
     }
 
     /**
-     * @return true if cli overrides were set during deploy
-     */
-    public boolean hasDeployCliOverrides() {
-        return (cliCreateTables != null || cliDropAndCreateTables != null);
-    }
-
-    /**
-     * @return true if cli overrides were set during undeploy
-     */
-    public boolean hasUndeployCliOverrides() {
-        return (cliDropTables != null);
-    }
-
-    /**
-     * Create tables only on  deploy, and only if the CLI options cliCreateTables or
-     * cliDropAndCreateTables are not set to false.
-     * If those options are not set (null) the value is taken from the boolean parameter
-     * provided by the caller.
-     * @return true if tables are to be created.
-     */
-    public boolean getCreateTables(boolean param) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("---> param " + param);
-            logger.fine("---> cliCreateTables " + cliCreateTables);
-            logger.fine("---> cliDropAndCreateTables " + cliDropAndCreateTables);
-        }
-
-        return
-                (cliCreateTables != null && cliCreateTables.equals(Boolean.TRUE))
-                || (cliDropAndCreateTables != null && cliDropAndCreateTables.equals(Boolean.TRUE))
-                || (cliCreateTables == null && cliDropAndCreateTables == null && param);
-
-    }
-
-    /**
-     * Drop tables on undeploy and redeploy, if the corresponding CLI options
-     * cliDropAndCreateTables (for redeploy) or cliDropTables (for undeploy) are
-     * not set to false.
-     * If the corresponding option is not set the value is taken from the boolean parameter
-     * provided by the caller.
-     * @return true if the tables have to be dropped.
-     */
-    public boolean getDropTables(boolean param) {
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("---> param " + param);
-            logger.fine("---> cliDropTables " + cliDropTables);
-        }
-        return
-                (cliDropTables != null && cliDropTables.equals(Boolean.TRUE))
-                || (cliDropTables == null && param);
-
-    }
-
-    /**
      * Calculate createTables value based on the parameter stored on deploy
      */
     public boolean getCreateTables(String bundleName) {
-        return getCreateTables(Boolean.valueOf(deploymentContextProps.getProperty(CREATE_TABLE_VALUE + bundleName)));
+        return Boolean.parseBoolean(deploymentContextProps.getProperty(CREATE_TABLE_VALUE + bundleName));
     }
 
     /**
@@ -494,7 +415,7 @@ public class Java2DBProcessorHelper {
      * Calculate dropTables value based on the parameter stored on deploy
      */
     public boolean getDropTables(String bundleName) {
-        return getDropTables(Boolean.valueOf(deploymentContextProps.getProperty(DROP_TABLE_VALUE + bundleName)));
+        return Boolean.parseBoolean(deploymentContextProps.getProperty(DROP_TABLE_VALUE + bundleName));
     }
 
     /**
@@ -575,34 +496,6 @@ public class Java2DBProcessorHelper {
             closeConn(conn);
         }
         return result;
-    }
-
-    /**
-     * Get the DDL file and execute the statements.
-     * @param fileNamePrefix the common prefix for the DDL file name
-     * @param resourceName the jdbc resource name that would be used
-     * to get a connection to the database.
-     * @return true if the statements were successfully in the database.
-     */
-    public boolean executeDDLStatement(String fileNamePrefix, String resourceName) {
-        File file = null;
-        Connection conn = null;
-        try {
-            conn = getConnection(resourceName);
-            DatabaseMetaData dbMetaData = conn.getMetaData();
-            String vendorName = DBVendorTypeHelper.getDBType(
-                    dbMetaData.getDatabaseProductName()).toLowerCase(Locale.ENGLISH);
-            file = new File(fileNamePrefix + vendorName + DatabaseConstants.SQL_FILE_EXTENSION);
-            logger.fine("===> File to use: " + file);
-        } catch (IOException e) {
-            fileIOError(appRegisteredName, e);
-        } catch (Exception ex) {
-            cannotConnect(resourceName, ex);
-        } finally {
-            closeConn(conn);
-        }
-
-        return executeDDLStatement(file, resourceName);
     }
 
 

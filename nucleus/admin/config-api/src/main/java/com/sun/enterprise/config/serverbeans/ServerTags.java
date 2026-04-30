@@ -144,7 +144,6 @@ public class ServerTags  {
     public static final String ROOT = "root";
     public static final String SERVER = "server";
     public static final String EJB_CONTAINER = "ejb-container";
-    public static final String CMP_CONTAINER = "cmp-container";
     public static final String MDB_CONTAINER = "mdb-container";
     public static final String WEB_CONTAINER = "web-container";
     public static final String CLASSLOADER = "classloader";
@@ -164,7 +163,6 @@ public class ServerTags  {
     public static final String JMS = "jms";
     public static final String CONNECTOR = "connector";
     public static final String JDO = "jdo";
-    public static final String CMP = "cmp";
     public static final String UTIL = "util";
     public static final String RESOURCE_ADAPTER = "resource-adapter";
     public static final String SYNCHRONIZATION = "synchronization";

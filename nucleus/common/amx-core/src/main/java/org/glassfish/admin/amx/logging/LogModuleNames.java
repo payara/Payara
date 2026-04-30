@@ -60,7 +60,6 @@ public class LogModuleNames
 	public static final String ROOT_KEY					= "Root";
 	public static final String SERVER_KEY				= "Server";
 	public static final String EJB_CONTAINER_KEY		= "EJBContainer";
-    public static final String CMP_CONTAINER_KEY		= "CMPContainer";
     public static final String MDB_CONTAINER_KEY		= "MDBContainer";
     public static final String WEB_CONTAINER_KEY		= "WebContainer";
     public static final String CLASSLOADER_KEY			= "Classloader";
@@ -80,7 +79,6 @@ public class LogModuleNames
     public static final String JMS_KEY					= "JMS";
     public static final String CONNECTOR_KEY			= "Connector";
     public static final String JDO_KEY					= "JDO";
-    public static final String CMP_KEY					= "CMP";
     public static final String UTIL_KEY					= "Util";
     public static final String RESOURCE_ADAPTER_KEY		= "ResourceAdapter";
     public static final String SYNCHRONIZATION_KEY		= "Synchronization";
@@ -94,7 +92,6 @@ public class LogModuleNames
             ROOT_KEY,
             SERVER_KEY,
             EJB_CONTAINER_KEY,
-            CMP_CONTAINER_KEY,
             MDB_CONTAINER_KEY,
             WEB_CONTAINER_KEY,
             CLASSLOADER_KEY,
@@ -114,7 +111,6 @@ public class LogModuleNames
             JMS_KEY,
             CONNECTOR_KEY,
             JDO_KEY,
-            CMP_KEY,
             UTIL_KEY,
             RESOURCE_ADAPTER_KEY,
             SYNCHRONIZATION_KEY,

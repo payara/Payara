@@ -88,8 +88,6 @@
 [--upload={true|false}]
 [--retrieve local_dirpath]
 [--dbvendorname dbvendorname]
-[--createtables={true|false}|--dropandcreatetables={true|false}]
-[--uniquetablenames={true|false}]
 [--deploymentplan deployment_plan]
 [--altdd alternate_deploymentdescriptor]
 [--runtimealtdd runtime_alternate_deploymentdescriptor]
@@ -117,19 +115,6 @@ can be enterprise applications, web applications, Enterprise JavaBeans
 component is already deployed or already exists, it is forcibly
 redeployed if the <code>--force</code> option is set to <code>true</code> (default is
 <code>false</code>).</p>
-</div>
-<div class="paragraph">
-<p>The <code>--createtables</code> and <code>--dropandcreatetables</code> options are boolean
-flags and therefore can take the values of true or false. These options
-are only used during deployment of CMP beans that have not been mapped
-to a database (that is, no <code>sun-cmp-mappings.xml</code> descriptor is provided
-in the module&#8217;s <code>META-INF</code> directory). They are ignored otherwise.</p>
-</div>
-<div class="paragraph">
-<p>The <code>--createtables</code> and <code>--dropandcreatetables</code> options are mutually
-exclusive; only one should be used. If drop and/or create tables fails,
-the deployment does not fail; a warning message is provided in the log
-file.</p>
 </div>
 <div class="paragraph">
 <p>This subcommand is supported in remote mode only.</p>
@@ -239,41 +224,8 @@ created. Supported values include <code>db2</code>, <code>mssql</code>, <code>my
 <code>derby</code>, <code>javadb</code>, <code>postgresql</code>, and <code>sybase</code>. These values are
 case-insensitive. If not specified, the value of the
 <code>database-vendor-name</code> attribute in <code>glassfish-ejb-jar.xml</code> is used.
-If no value is specified, a connection is made to the resource
-specified by the <code>jndi-name</code> subelement of the <code>cmp-resource</code> element
-in the <code>glassfish-ejb-jar.xml</code> file, and the database vendor name is
-read. If the connection cannot be established, or if the value is not
+If the connection cannot be established, or if the value is not
 recognized, SQL-92 compliance is presumed.</p>
-</dd>
-<dt class="hdlist1"><code>--createtables</code></dt>
-<dd>
-<p>If specified as true, creates tables at deployment of an application
-with unmapped CMP beans. If specified as false, tables are not
-created. If not specified, the value of the <code>create-tables-at-deploy</code>
-entry in the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code>
-file determines whether or not tables are created. No unique
-constraints are created for the tables.</p>
-</dd>
-<dt class="hdlist1"><code>--dropandcreatetables</code></dt>
-<dd>
-<p>If specified as true when the component is redeployed, the tables
-created by the previous deployment are dropped before creating the new
-tables. Applies to deployed applications with unmapped CMP beans.
-Preexisting tables will not be dropped on the initial deployment of an
-application or on a deployment that follows an explicit undeploy. If
-specified as false, tables are neither dropped nor created. If not
-specified, the tables are dropped if the <code>drop-tables-at-undeploy</code>
-entry in the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code>
-file is set to true, and the new tables are created if the
-<code>create-tables-at-deploy</code> entry in the <code>cmp-resource</code> element of the
-<code>glassfish-ejb-jar.xml</code> file is set to true.</p>
-</dd>
-<dt class="hdlist1"><code>--uniquetablenames</code></dt>
-<dd>
-<p>Guarantees unique table names for all the beans and results in a hash
-code added to the table names. This is useful if you have an
-application with case-sensitive bean names. Applies to applications
-with unmapped CMP beans.</p>
 </dd>
 <dt class="hdlist1"><code>--deploymentplan</code></dt>
 <dd>
@@ -659,29 +611,10 @@ Command deploy executed successfully</code></pre>
 <p><a id="GSRFM587"></a><a id="sthref1023"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 4   Deploying an Enterprise Bean</p>
-</div>
-<div class="paragraph">
-<p>This example deploys a component based on the EJB specification
-(enterprise bean) with CMP and creates the database tables used by the
-bean.</p>
-</div>
-<div class="paragraph">
-<p>This example uses the <code>--target</code> option. The target in this example is
-an existing cluster, <code>cluster1</code>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; deploy --createtables=true --target cluster1 EmployeeEJB.jar
-Application deployed successfully with name EmployeeEJB.
-Command deploy executed successfully</code></pre>
-</div>
-</div>
-<div class="paragraph">
 <p><a id="GSRFM588"></a><a id="sthref1024"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 5   Deploying a Connector Module</p>
+<p>Example 4 Deploying a Connector Module</p>
 </div>
 <div class="paragraph">
 <p>This example deploys a connector module that is packaged in a RAR file.</p>
@@ -702,7 +635,7 @@ Command deploy executed successfully</code></pre>
 <p><a id="GSRFM856"></a><a id="sthref1025"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 6   Specifying the Deployment Order for an Application</p>
+<p>Example 5 Specifying the Deployment Order for an Application</p>
 </div>
 <div class="paragraph">
 <p>This example specifies the deployment order for two applications. The
@@ -724,7 +657,7 @@ asadmin&gt; deploy --deploymentorder 110 --name horse horse.war
 <p><a id="GSRFM857"></a><a id="sthref1026"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 7   Deploying an Application Using an Alternate Java EE 8
+<p>Example 6 Deploying an Application Using an Alternate Java EE 8
 Deployment Descriptor File</p>
 </div>
 <div class="paragraph">
@@ -742,7 +675,7 @@ Command deploy executed successfully</code></pre>
 <p><a id="GSRFM858"></a><a id="sthref1027"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 8   Deploying an Application Using an Alternate
+<p>Example 7 Deploying an Application Using an Alternate
 \{product---name} Deployment Descriptor File</p>
 </div>
 <div class="paragraph">
@@ -761,7 +694,7 @@ Command deploy executed successfully</code></pre>
 <p><a id="GSRFM883"></a><a id="sthref1028"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 9   Wrapping a WAR File as a WAB</p>
+<p>Example 8 Wrapping a WAR File as a WAB</p>
 </div>
 <div class="paragraph">
 <p>This example wraps a plain WAR file as a WAB when an OSGi bundle is

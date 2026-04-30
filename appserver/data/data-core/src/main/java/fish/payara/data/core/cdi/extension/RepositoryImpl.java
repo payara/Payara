@@ -116,9 +116,13 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryMetadata>> queriesPerEntityClass, String applicationName, String dataStore) {
+        this(repositoryInterface, queriesPerEntityClass, applicationName, getEntityManagerSupplier(applicationName, dataStore));
+    }
+
+    public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryMetadata>> queriesPerEntityClass, String applicationName, Supplier<EntityManager> entityManagerSupplier) {
         this.repositoryInterface = repositoryInterface;
         this.applicationName = applicationName;
-        this.entityManagerSupplier = getEntityManagerSupplier(applicationName, dataStore);
+        this.entityManagerSupplier = entityManagerSupplier;
 
         Map<Method, QueryMetadata> r = queriesPerEntityClass.entrySet().stream().map(e -> e.getValue())
                 .flatMap(List::stream).collect(Collectors.toMap(QueryMetadata::getMethod, Function.identity()));
@@ -166,7 +170,19 @@ public class RepositoryImpl<T> implements InvocationHandler {
             return InvocationHandler.invokeDefault(proxy, method, args);
         }
 
+        if (method.getDeclaringClass().equals(Object.class)) {
+            return switch (method.getName()) {
+                case "toString" -> repositoryInterface.getName() + " Proxy";
+                case "hashCode" -> System.identityHashCode(proxy);
+                case "equals" -> proxy == args[0];
+                default -> method.invoke(this, args);
+            };
+        }
+
         QueryMetadata queryMetadata = queries.get(method);
+        if (queryMetadata == null) {
+            throw new UnsupportedOperationException("The method " + method.getName() + " is not supported by the Jakarta Data provider.");
+        }
         QueryData dataForQuery = new QueryData(queryMetadata);
         Object objectToReturn;
         startTransactionComponents();

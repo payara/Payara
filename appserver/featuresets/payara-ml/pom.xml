@@ -83,12 +83,6 @@
         </dependency>
 	<dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>glassfish-cmp-l10n</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-	<dependency>
-            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>metro-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>

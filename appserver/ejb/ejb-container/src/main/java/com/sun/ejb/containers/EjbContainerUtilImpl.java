@@ -56,7 +56,6 @@ import com.sun.enterprise.admin.monitor.callflow.Agent;
 import com.sun.enterprise.util.Utility;
 import com.sun.logging.LogDomains;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
-import org.glassfish.ejb.spi.CMPDeployer;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
 import org.glassfish.api.admin.ProcessEnvironment;
@@ -177,9 +176,6 @@ public class EjbContainerUtilImpl
 
     @Inject
     Provider<Deployment> deploymentProvider;
-
-    @Inject
-    private Provider<CMPDeployer> cmpDeployerProvider;
 
     private  static EjbContainerUtil _me;
 
@@ -460,7 +456,7 @@ public class EjbContainerUtilImpl
 
     @Override
     public boolean isEJBLite() {
-        return (!env.isMicro() && cmpDeployerProvider.get() == null);
+        return env.isMicro();
     }
 
     @Override

@@ -61,12 +61,7 @@ import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.deployment.util.TracerVisitor;
 import org.glassfish.ejb.deployment.descriptor.ContainerTransaction;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
-import org.glassfish.ejb.deployment.descriptor.EjbCMPEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.FieldDescriptor;
-import org.glassfish.ejb.deployment.descriptor.PersistenceDescriptor;
-import org.glassfish.ejb.deployment.descriptor.QueryDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
 
 public class EjbBundleTracerVisitor extends TracerVisitor implements EjbBundleVisitor {
 
@@ -78,11 +73,6 @@ public class EjbBundleTracerVisitor extends TracerVisitor implements EjbBundleVi
 
             for (EjbDescriptor anEjb : ejbBundle.getEjbs()) {
                 anEjb.visit(getSubDescriptorVisitor(anEjb));
-            }
-            if (ejbBundle.hasRelationships()) {
-                for (RelationshipDescriptor rd : ejbBundle.getRelationships()) {
-                    accept(rd);
-                }
             }
             for (WebService ws : ejbBundle.getWebServices().getWebServices()) {
                 accept(ws);
@@ -172,19 +162,6 @@ public class EjbBundleTracerVisitor extends TracerVisitor implements EjbBundleVi
             accept(sref);
         }
 
-        if (ejb instanceof EjbCMPEntityDescriptor) {
-            EjbCMPEntityDescriptor cmp = (EjbCMPEntityDescriptor) ejb;
-            PersistenceDescriptor persistenceDesc = cmp.getPersistenceDescriptor();
-            for (Object fd : persistenceDesc.getCMPFields()) {
-                accept((FieldDescriptor) fd);
-            }
-            for (Object o : persistenceDesc.getQueriedMethods()) {
-                if (o instanceof MethodDescriptor) {
-                    QueryDescriptor qd = persistenceDesc.getQueryFor((MethodDescriptor) o);
-                    accept(qd);
-                }
-            }
-        }
     }
 
     protected void accept(MethodPermission pm, Collection<MethodDescriptor> mds) {
@@ -201,33 +178,6 @@ public class EjbBundleTracerVisitor extends TracerVisitor implements EjbBundleVi
     protected void accept(MethodDescriptor md, ContainerTransaction ct) {
         logInfo(ct.getTransactionAttribute()
                 + " Container Transaction for method " + md.prettyPrint());
-    }
-
-    protected void accept(FieldDescriptor fd) {
-        logInfo("CMP Field " + fd);
-    }
-
-    protected void accept(QueryDescriptor qd) {
-        logInfo(qd.toString());
-    }
-
-    protected void accept(RelationshipDescriptor rd) {
-        logInfo("============ Relationships ===========");
-        logInfo("From EJB " + rd.getSource().getName() + " cmr field : "
-                + rd.getSource().getCMRField() + "("
-                + rd.getSource().getCMRFieldType() + ")  to EJB "
-                + rd.getSink().getName() + " isMany "
-                + rd.getSource().getIsMany() + " cascade-delete "
-                + rd.getSource().getCascadeDelete());
-
-        logInfo("To  EJB " + rd.getSink().getName() + " isMany "
-                + rd.getSink().getIsMany() + " cascade-delete "
-                + rd.getSink().getCascadeDelete());
-
-        if (rd.getIsBidirectional()) {
-            logInfo("Bidirectional cmr field : " + rd.getSink().getCMRField()
-                    + "(" + rd.getSink().getCMRFieldType() + ")");
-        }
     }
 
     private void logInfo(String message) {

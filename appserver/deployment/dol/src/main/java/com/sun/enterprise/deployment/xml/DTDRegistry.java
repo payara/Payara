@@ -255,26 +255,7 @@ public final class DTDRegistry {
     public static final String SUN_CLIENTCONTAINER_700_DTD_SYSTEM_ID =
         "http://www.sun.com/software/sunone/appserver/dtds/sun-application-client-container_1_0.dtd";
 
-    //4690447-adding it for sun-cmp-mapping.xml
-    /**
-     * EJB CMP Mapping : Sun ONE App Server specific dtd info.
-     */
-    public static final String SUN_CMP_MAPPING_700_DTD_PUBLIC_ID =
-        "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 OR Mapping //EN";
-    public static final String SUN_CMP_MAPPING_700_DTD_SYSTEM_ID =
-        "http://www.sun.com/software/sunone/appserver/dtds/sun-cmp-mapping_1_0.dtd";
-
-    public static final String SUN_CMP_MAPPING_800_DTD_PUBLIC_ID =
-        "-//Sun Microsystems, Inc.//DTD Application Server 8.0 OR Mapping//EN";
-    public static final String SUN_CMP_MAPPING_800_DTD_SYSTEM_ID =
-        "http://www.sun.com/software/appserver/dtds/sun-cmp-mapping_1_1.dtd";
-
-    public static final String SUN_CMP_MAPPING_810_DTD_PUBLIC_ID =
-        "-//Sun Microsystems, Inc.//DTD Application Server 8.1 OR Mapping//EN";
-    public static final String SUN_CMP_MAPPING_810_DTD_SYSTEM_ID =
-        "http://www.sun.com/software/appserver/dtds/sun-cmp-mapping_1_2.dtd";
-
-    public static final String GF_WEBAPP_301_DTD_PUBLIC_ID = 
+    public static final String GF_WEBAPP_301_DTD_PUBLIC_ID =
         "-//GlassFish.org//DTD GlassFish Application Server 3.1 Servlet 3.0//EN";
     public static final String GF_WEBAPP_301_DTD_SYSTEM_ID = 
         "http://glassfish.org/dtds/glassfish-web-app_3_0-1.dtd";

@@ -159,6 +159,10 @@ public class DataCommonOperationUtility {
         ApplicationInfo applicationInfo = applicationRegistry.get(applicationName);
         List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
 
+        if (factoryList == null || factoryList.isEmpty()) {
+            return () -> null;
+        }
+
         if (factoryList.size() == 1) {
             EntityManagerFactory entityManagerFactory = factoryList.getFirst();
             return () -> entityManagerFactory.createEntityManager();

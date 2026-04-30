@@ -103,7 +103,6 @@
         <module>glassfish-jts</module>
         <module>glassfish-jms</module>
         <module>glassfish-ejb</module>
-        <module>glassfish-cmp</module>
         <module>metro</module>
         <module>glassfish-appclient</module>
         <module>h2db</module>
@@ -123,7 +122,6 @@
         <module>glassfish-ant-tasks</module>
         <module>glassfish-appclient-l10n</module>
         <module>glassfish-cluster-l10n</module>
-        <module>glassfish-cmp-l10n</module>
         <module>glassfish-common-full-l10n</module>
         <module>glassfish-common-l10n</module>
         <module>glassfish-ejb-l10n</module>

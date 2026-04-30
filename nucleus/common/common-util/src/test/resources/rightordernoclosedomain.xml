@@ -139,7 +139,7 @@
    </ejb-container>
    <mdb-container steady-pool-size="0" pool-resize-quantity="8" max-pool-size="32" idle-timeout-in-seconds="600"/>
    <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" use-system-logging="false" log-to-console="false" alarms="false" log-rotation-limit-in-bytes="2000000" log-rotation-timelimit-in-minutes="0" retain-error-statistics-for-hours="5">
-    <module-log-levels root="INFO" server="INFO" ejb-container="INFO" cmp-container="INFO" mdb-container="INFO" web-container="INFO" classloader="INFO" configuration="INFO" naming="INFO" security="INFO" admin="INFO" jts="INFO" jta="INFO" deployment="INFO" verifier="INFO" jaxr="INFO" jaxrpc="INFO" saaj="INFO" corba="INFO" javamail="INFO" jms="INFO" connector="INFO" jdo="INFO" cmp="INFO" util="INFO" resource-adapter="INFO" synchronization="INFO" node-agent="INFO" self-management="INFO" group-management-service="INFO" management-event="INFO"/>
+    <module-log-levels root="INFO" server="INFO" ejb-container="INFO" mdb-container="INFO" web-container="INFO" classloader="INFO" configuration="INFO" naming="INFO" security="INFO" admin="INFO" jts="INFO" jta="INFO" deployment="INFO" verifier="INFO" jaxr="INFO" jaxrpc="INFO" saaj="INFO" corba="INFO" javamail="INFO" jms="INFO" connector="INFO" jdo="INFO" util="INFO" resource-adapter="INFO" synchronization="INFO" node-agent="INFO" self-management="INFO" group-management-service="INFO" management-event="INFO"/>
    </log-service>
    <security-service default-realm="file" jacc="default" anonymous-role="AttributeDeprecated" activate-default-principal-to-role-mapping="false">
     <!-- All administrative users use this realm by default. -->

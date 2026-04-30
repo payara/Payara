@@ -54,10 +54,8 @@ import org.glassfish.ejb.deployment.EjbTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.RelationshipDescriptor;
 import org.glassfish.ejb.deployment.node.runtime.EjbBundleRuntimeNode;
 import org.glassfish.ejb.deployment.node.runtime.GFEjbBundleRuntimeNode;
 import org.glassfish.security.common.Role;
@@ -142,13 +140,11 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
         super();
         // register sub XMLNodes
         registerElementHandler(new XMLElement(EjbTagNames.SESSION), EjbSessionNode.class);
-        registerElementHandler(new XMLElement(EjbTagNames.ENTITY), EjbEntityNode.class);
         registerElementHandler(new XMLElement(EjbTagNames.MESSAGE_DRIVEN), MessageDrivenBeanNode.class);
         registerElementHandler(new XMLElement(EjbTagNames.METHOD_PERMISSION), MethodPermissionNode.class);
         registerElementHandler(new XMLElement(TagNames.ROLE), SecurityRoleNode.class, "addRole");
         registerElementHandler(new XMLElement(EjbTagNames.CONTAINER_TRANSACTION), ContainerTransactionNode.class);
         registerElementHandler(new XMLElement(EjbTagNames.EXCLUDE_LIST), ExcludeListNode.class);
-        registerElementHandler(new XMLElement(EjbTagNames.RELATIONSHIPS), RelationshipsNode.class);
         registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION), MessageDestinationNode.class, "addMessageDestination");
         registerElementHandler(new XMLElement(EjbTagNames.APPLICATION_EXCEPTION), EjbApplicationExceptionNode.class, "addApplicationException");
         registerElementHandler(new XMLElement(EjbTagNames.INTERCEPTOR), EjbInterceptorNode.class, "addInterceptor");
@@ -162,8 +158,6 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
     public void addDescriptor(Object newDescriptor) {
         if (newDescriptor instanceof EjbDescriptor) {
             descriptor.addEjb((EjbDescriptor) newDescriptor);
-        } else if (newDescriptor instanceof RelationshipDescriptor) {
-            descriptor.addRelationship((RelationshipDescriptor) newDescriptor);
         } else if (newDescriptor instanceof MethodPermissionDescriptor) {
             MethodPermissionDescriptor nd = (MethodPermissionDescriptor) newDescriptor;
             MethodDescriptor[] array = nd.getMethods();
@@ -223,9 +217,6 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
             if (EjbSessionDescriptor.TYPE.equals(ejb.getType())) {
                 EjbSessionNode subNode = new EjbSessionNode();
                 subNode.writeDescriptor(entrepriseBeansNode, EjbTagNames.SESSION, (EjbSessionDescriptor) ejb);
-            } else if (EjbEntityDescriptor.TYPE.equals(ejb.getType())) {
-                EjbEntityNode subNode = new EjbEntityNode();
-                subNode.writeDescriptor(entrepriseBeansNode, EjbTagNames.ENTITY, (EjbEntityDescriptor) ejb);
             } else if (EjbMessageBeanDescriptor.TYPE.equals(ejb.getType())) {
                 MessageDrivenBeanNode subNode = new MessageDrivenBeanNode();
                 subNode.writeDescriptor(entrepriseBeansNode, EjbTagNames.MESSAGE_DRIVEN, (EjbMessageBeanDescriptor) ejb);
@@ -240,11 +231,6 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
             for (EjbInterceptor next : ejbDesc.getInterceptors()) {
                 interceptorNode.writeDescriptor(interceptorsNode, EjbTagNames.INTERCEPTOR, next);
             }
-        }
-
-        // relationships*
-        if (ejbDesc.hasRelationships()) {
-            (new RelationshipsNode()).writeDescriptor(jarNode, EjbTagNames.RELATIONSHIPS, ejbDesc);
         }
 
         // assembly-descriptor

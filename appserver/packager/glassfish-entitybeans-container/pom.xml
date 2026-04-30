@@ -78,13 +78,5 @@
             </plugin>
         </plugins>
     </build>
-    
-    <dependencies>
-        <dependency>
-           <groupId>fish.payara.server.internal.persistence</groupId>
-           <artifactId>entitybean-container</artifactId>
-	   <version>${project.version}</version>
-        </dependency>
-    </dependencies>
 </project>
 
