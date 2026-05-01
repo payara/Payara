@@ -1019,7 +1019,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             String adminPassword = JmsRaUtil.getUnAliasedPwd(jmsHost.getAdminPassword());
             
             if (adminPassword.equals("admin")) {
-                _logger.log(Level.WARNING, "Your default broker instance from OpenMQ is using default admin password, we recommend you to change using the tool imqusermgr from OpenMQ. Also consider to change admin password for JMS configuration on the server using the asadmin set command to change the property server-config.jms-service.jms-host.default_JMS_host.admin-password");
+                _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_DEFAULT_BROKER_PASSWORD);
             }
             List jmsHostProps= getJmsService().getProperty();
 

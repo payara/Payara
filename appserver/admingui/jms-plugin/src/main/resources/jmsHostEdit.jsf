@@ -61,9 +61,11 @@
             setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.name}");
             setPageSessionAttribute(key="rest-api" value="true");
             gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+            setPageSessionAttribute(key="errorDefaultPassBroker" value="$resource{i18njms.defaultAdmin.usingDefaultBrokerPass}");
         />
     </event>
     <sun:form id="propertyForm" autoComplete="off">
+        <sun:alert type="error" summary="Admin default broker credentials used" detail="#{pageSession.errorDefaultPassBroker}" rendered="#{pageSession.valueMap['adminPassword'] == 'admin'}"/>
 #include "/jms/jmsHost.inc"
         <sun:hidden id="helpKey" value="$resource{helpjms.jmsHostEdit}" />
     </sun:form>

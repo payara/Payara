@@ -106,15 +106,8 @@
                 <!beforeCreate
                     setSessionAttribute(key="gf_application_list_page" value="/common/applications/applications.jsf");
                     setSessionAttribute(key="gf_application_cancel_page" value="/common/commonTask.jsf");
-                    getRequestValue(key="configName" value=>$page{configName});
-                    setPageSessionAttribute(key="childType" value="jms-host");
-                    setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/jms-service");
-                    setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/default_JMS_host");
-                    setPageSessionAttribute(key="rest-api" value="true");
-                    gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
                 />
             </event>
-              <sun:staticText style="color: red;" text="Your default broker instance from OpenMQ is using default admin password, we recommend you to change using the tool imqusermgr from OpenMQ. Also consider to change admin password for JMS configuration on the server using the asadmin set command to change the property server-config.jms-service.jms-host.default_JMS_host.admin-password" rendered="#{pageSession.valueMap['adminPassword'] == 'admin'}"/>
         </sun:commonTasksGroup>
 
         <sun:commonTasksGroup id="administration" title="$resource{i18n.commonTasks.group.Administration}" >
