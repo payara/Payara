@@ -41,6 +41,7 @@ package fish.payara.microprofile.openapi.impl.model.media;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -613,6 +614,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    @JsonFormat(with = JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
     public List<SchemaType> getType() {
         return readOnlyView(type);
     }
