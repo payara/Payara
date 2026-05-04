@@ -65,7 +65,7 @@
         />
     </event>
     <sun:form id="propertyForm" autoComplete="off">
-        <sun:alert type="error" summary="Admin default broker credentials used" detail="#{pageSession.errorDefaultPassBroker}" rendered="#{pageSession.valueMap['adminPassword'] == 'admin'}"/>
+        <sun:alert type="warning" summary="Admin default broker credentials used" detail="#{pageSession.errorDefaultPassBroker}" rendered="#{pageSession.valueMap['adminPassword'] == 'admin'}"/>
 #include "/jms/jmsHost.inc"
         <sun:hidden id="helpKey" value="$resource{helpjms.jmsHostEdit}" />
     </sun:form>
