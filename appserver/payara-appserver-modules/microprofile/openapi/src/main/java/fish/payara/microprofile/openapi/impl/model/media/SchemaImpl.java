@@ -326,7 +326,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         Object example = annotation.getValue("example", Object.class);
         if (example != null) {
             from.setExample(example);
-            from.addExample(example);
+            from.setExamples(List.of(example));
         }
 
         AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
@@ -1508,7 +1508,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         to.setBooleanSchema(mergeProperty(to.getBooleanSchema(), from.getBooleanSchema(), override));
 
         if (from.getExample() != null && (to.getExamples() == null || !to.getExamples().contains(from.getExample()))) {
-            to.addExample(from.getExample());
+            to.setExamples(List.of(from.getExample()));
         }
         if (from.getExamples() != null) {
             to.setExamples(from.getExamples());
