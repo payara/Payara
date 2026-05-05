@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2026 [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.connectors.jms;
 
 import java.util.logging.Logger;
