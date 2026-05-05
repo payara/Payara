@@ -45,9 +45,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
@@ -61,6 +68,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeP
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -425,6 +433,11 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         List<String> prefixItems = annotation.getValue("prefixItems", List.class);
         if (prefixItems != null) {
             mergeImmutableList(from.getPrefixItems(), from.getSchemaInstances(prefixItems, context), from::setPrefixItems);
+        }
+
+        Boolean isNullable = annotation.getValue("nullable", Boolean.class);
+        if (Boolean.TRUE.equals(isNullable)) {
+            from.addType(SchemaType.NULL);
         }
 
         return from;
@@ -1620,6 +1633,42 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         
         private void set (Schema schema, Object value) {
             setter.accept(schema, (T)value);
+        }
+    }
+
+    public static class SchemaSerialiserModifier extends BeanSerializerModifier {
+        @Override
+        public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
+            if (SchemaImpl.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                return new SchemaBooleanSerialiser((JsonSerializer<SchemaImpl>)serializer);
+            }
+
+            return super.modifySerializer(config, beanDesc, serializer);
+        }
+    }
+
+    private static class SchemaBooleanSerialiser extends JsonSerializer<SchemaImpl> implements ResolvableSerializer {
+        private final JsonSerializer<SchemaImpl> defaultSerialiser;
+
+        private SchemaBooleanSerialiser (JsonSerializer<SchemaImpl> serialiser) {
+            defaultSerialiser = serialiser;
+        }
+
+        @Override
+        public void serialize(SchemaImpl value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (value.booleanSchema != null) {
+                gen.writeBoolean(value.booleanSchema);
+                return;
+            }
+
+            defaultSerialiser.serialize(value, gen, provider);
+        }
+
+        @Override
+        public void resolve(SerializerProvider provider) throws JsonMappingException {
+            if (defaultSerialiser instanceof ResolvableSerializer resolvable) {
+                resolvable.resolve(provider);
+            }
         }
     }
 }
