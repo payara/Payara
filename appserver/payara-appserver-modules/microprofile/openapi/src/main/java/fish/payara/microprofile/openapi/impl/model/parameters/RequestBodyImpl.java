@@ -57,7 +57,7 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
 
     private String description;
     private Content content = new ContentImpl();
-    private Boolean required;
+    private Boolean required = true;
     private String ref;
 
     public static RequestBodyImpl createInstance(AnnotationModel annotation, ApiContext context) {
