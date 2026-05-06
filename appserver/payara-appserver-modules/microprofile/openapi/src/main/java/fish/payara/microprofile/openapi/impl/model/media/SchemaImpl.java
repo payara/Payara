@@ -422,12 +422,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         handleSchema.accept("thenSchema", from::setThenSchema);
         handleSchema.accept("elseSchema", from::setElseSchema);
         extractClassSchemas(annotation, context, "dependentSchemas", "name", "schema", from::addDependentSchema);
-        //extractAnnotations(annotation, context, "dependentSchemas", "name", SchemaImpl::createInstance, from::addDependentSchema);
         handleSchema.accept("contains", from::setContains);
         handleSchema.accept("propertyNames", from::setPropertyNames);
         handleSchema.accept("contentSchema", from::setContentSchema);
         extractClassSchemas(annotation, context, "patternProperties", "regex", "schema", from::addPatternProperty);
-        //extractAnnotations(annotation, context, "patternProperties", "name", SchemaImpl::createInstance, from::addPatternProperty);
         handleSchema.accept("additionalProperties", from::setAdditionalPropertiesSchema);
 
         List<String> prefixItems = annotation.getValue("prefixItems", List.class);
