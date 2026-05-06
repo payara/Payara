@@ -123,6 +123,11 @@ public enum NodeType implements Iterable<Field> {
         return this;
     }
 
+    NodeType optionalArray() {
+        lastField.isOptionalArray = true;
+        return this;
+    }
+
     NodeType map() {
         lastField.isMap = true;
         return this;
@@ -330,7 +335,9 @@ public enum NodeType implements Iterable<Field> {
             .extensible();
 
         Reference
-            .addField("$ref", string).required();
+            .addField("$ref", string).required()
+            .addField("description", string)
+            .addField("summary", string);
 
         Schema
             .addField("title", string)
@@ -349,7 +356,7 @@ public enum NodeType implements Iterable<Field> {
             .addField("minProperties", number)
             .addField("required", string).array()
             .addField("enum").array()
-            .addField("type", string).array()
+            .addField("type", string).optionalArray()
             .addField("allOf", Schema, Reference).array()
             .addField("oneOf", Schema, Reference).array()
             .addField("anyOf", Schema, Reference).array()
@@ -366,6 +373,7 @@ public enum NodeType implements Iterable<Field> {
             .addField("xml", XML)
             .addField("externalDocs", ExternalDocumentation)
             .addField("example")
+            .addField("examples").array()
             .addField("deprecated", bool)
             .extensible();
 

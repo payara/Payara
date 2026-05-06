@@ -120,6 +120,11 @@ public class RequestBodyImpl extends ExtensibleImpl<RequestBody> implements Requ
             ref = "#/components/requestBodies/" + ref;
         }
         this.ref = ref;
+
+        // `required` should always default to true even without the annotation, but should be null if there's a reference
+        if (ref != null) {
+            required = null;
+        }
     }
 
     public static void merge(RequestBody from, RequestBody to,

@@ -91,7 +91,7 @@ public class ExternalSchemaWithProducesTest extends OpenApiApplicationTest {
     public void externalSchemaExampleIsRendere() {
         JsonNode nameProperties = JsonUtils.path(getOpenAPIJson(), "components.schemas.Teacher.properties.name");
         Assert.assertNotNull(nameProperties);
-        Assert.assertEquals("string", nameProperties.get("type").get(0).textValue());
+        Assert.assertEquals("string", nameProperties.get("type").textValue());
         Assert.assertEquals("the teacher name", nameProperties.get("description").textValue());
         Assert.assertEquals("Trunchbull", nameProperties.get("example").textValue());
     }
