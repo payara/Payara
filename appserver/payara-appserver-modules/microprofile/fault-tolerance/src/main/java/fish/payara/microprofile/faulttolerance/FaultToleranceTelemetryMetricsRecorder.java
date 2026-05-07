@@ -45,6 +45,7 @@ import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import java.util.List;
 
 /**
@@ -246,14 +247,16 @@ public class FaultToleranceTelemetryMetricsRecorder {
 
     /**
      * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
+     *
      * @param currentMeter
+     * @param faultToleranceMetrics
      */
-    public static void createFTBulkheadExecutionsRunning(String classAndMethodName, Meter currentMeter) {
-        LongUpDownCounter longUpDownCounter = currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING).setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION).build();
-        longUpDownCounter.add(0, getMethodAttribute(classAndMethodName));
+    public static ObservableLongUpDownCounter createFTBulkheadExecutionsRunning(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
+        ObservableLongUpDownCounter  longUpDownCounter = currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING)
+                .setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION).buildWithCallback(faultToleranceMetrics::getConcurrentExecutions);
+        return longUpDownCounter;
     }
-
+    
     /**
      * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
      * @param classAndMethodName

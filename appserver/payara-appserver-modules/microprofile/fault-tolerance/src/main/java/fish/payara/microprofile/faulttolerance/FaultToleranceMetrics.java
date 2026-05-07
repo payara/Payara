@@ -50,6 +50,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.ObservableLongMeasurement;
+import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -82,6 +85,16 @@ public interface FaultToleranceMetrics {
      * Can be used as NULL object when metrics are disabled so avoid testing for enabled but still do essentially NOOPs.
      */
     FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() {
+        @Override
+        public LongSupplier getConcurrentExecutionCountSupplier() {
+            return null;
+        }
+
+        @Override
+        public void setConcurrentExecutionCountSupplier(LongSupplier concurrentExecutionCountSupplier) {
+            
+        }
+
         @Override
         public void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal) {
             
@@ -123,6 +136,11 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
+        public void addFTBulkheadExecutionDuration(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
+            
+        }
+
+        @Override
         public LongCounter getCircuitBreakerCallsTotal() {
             return null;
         }
@@ -159,6 +177,16 @@ public interface FaultToleranceMetrics {
 
         @Override
         public LongCounter getBulkheadCallsTotal() {
+            return null;
+        }
+
+        @Override
+        public ObservableLongUpDownCounter getFTBulkheadExecutionDuration() {
+            return null;
+        }
+
+        @Override
+        public AtomicInteger getInProgressExecutions() {
             return null;
         }
 
@@ -292,6 +320,7 @@ public interface FaultToleranceMetrics {
                     {"bulkheadResult", "accepted", "rejected"}});
                 addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
+                addFTBulkheadExecutionDuration(createFTBulkheadExecutionsRunning(currentMeter, this));
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
@@ -302,8 +331,6 @@ public interface FaultToleranceMetrics {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
                 }
-                
-                createFTBulkheadExecutionsRunning(getClassAndMethodName(), currentMeter);
                 createFTBulkheadRunningDuration(getClassAndMethodName(), currentMeter, startTime);
                 createFTBulkheadExecutionWaiting(getClassAndMethodName(), currentMeter);
             }
@@ -311,7 +338,6 @@ public interface FaultToleranceMetrics {
         return this;
     }
     
-
     /*
      * Generic (to be implemented/overridden)
      */
@@ -643,7 +669,19 @@ public interface FaultToleranceMetrics {
     default void incrementFallbackCallsTotal() {
         //NOOP
     }
+
+    default void getConcurrentExecutions(ObservableLongMeasurement measurement) {
+        long executions = 0L;
+        if (this.getConcurrentExecutionCountSupplier() != null) {
+            executions = this.getConcurrentExecutionCountSupplier().getAsLong();
+        }
+        measurement.record(executions, Attributes.builder().put("method", this.getClassAndMethodName()).build());
+    }
+
+    LongSupplier getConcurrentExecutionCountSupplier();
     
+    void setConcurrentExecutionCountSupplier(LongSupplier concurrentExecutionCountSupplier);
+
     void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal);
     
     void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal);
@@ -659,6 +697,8 @@ public interface FaultToleranceMetrics {
     void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal);
     
     void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal);
+
+    void addFTBulkheadExecutionDuration(ObservableLongUpDownCounter ftBulkheadExecutionsRunning);
     
     LongCounter getCircuitBreakerCallsTotal();
     
@@ -670,35 +710,39 @@ public interface FaultToleranceMetrics {
     
     DoubleHistogram getFTTimeoutExecutionDuration();
     
-    public LongCounter getFTRetryCallsTotal();
+    LongCounter getFTRetryCallsTotal();
     
-    public LongCounter getFTRetryRetriesTotal();
+    LongCounter getFTRetryRetriesTotal();
     
-    public LongCounter getBulkheadCallsTotal();
+    LongCounter getBulkheadCallsTotal();
     
-    public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
-    
-    public void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes);
-    
-    public void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes);
-    
-    public void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerOpendTotal, Attributes attributes);
-    
-    public void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
-    
-    public void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
-    
-    public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
+    ObservableLongUpDownCounter getFTBulkheadExecutionDuration();
 
-    public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
-
-    public void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes);
-
-    public void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes attributes);
-
-    public void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build);
+    AtomicInteger getInProgressExecutions();
     
-    public void setClassAndMethodName(String classAndMethodName);
+    void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
-    public String getClassAndMethodName();
+    void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes);
+    
+    void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes);
+    
+    void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerOpendTotal, Attributes attributes);
+    
+    void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
+    
+    void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
+    
+    void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
+
+    void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
+
+    void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes);
+
+    void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes attributes);
+
+    void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build);
+    
+    void setClassAndMethodName(String classAndMethodName);
+    
+    String getClassAndMethodName();
 }

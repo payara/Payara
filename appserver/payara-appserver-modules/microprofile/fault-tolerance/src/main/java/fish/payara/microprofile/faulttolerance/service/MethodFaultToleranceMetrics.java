@@ -45,10 +45,12 @@ import static org.eclipse.microprofile.metrics.MetricUnits.NANOSECONDS;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
@@ -93,6 +95,9 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private LongCounter ftRetriesRetryTotal = null;
     private LongCounter bulkheadCallsTotal = null;
     private String classAndMethodName = null;
+    private LongSupplier concurrentExecutionCountSupplier = null;
+    private ObservableLongUpDownCounter ftBulkheadExecutionsRunning;
+    private AtomicInteger inProgressExecutions = new AtomicInteger(0);
 
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
@@ -116,7 +121,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                                         LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
                                         LongCounter ftInvocationsTotal, LongCounter ftTimeoutCallsTotal,
             DoubleHistogram ftTimeoutExecutionDuration, LongCounter ftRetryCallsTotal, LongCounter ftRetriesRetryTotal,
-            LongCounter bulkheadCallsTotal, String classAndMethodName) {
+            LongCounter bulkheadCallsTotal, ObservableLongUpDownCounter ftBulkheadExecutionsRunning, 
+                                        AtomicInteger inProgressExecutions, String classAndMethodName) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -131,6 +137,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.ftRetryCallsTotal = ftRetryCallsTotal;
         this.ftRetriesRetryTotal = ftRetriesRetryTotal;
         this.bulkheadCallsTotal = bulkheadCallsTotal;
+        this.ftBulkheadExecutionsRunning = ftBulkheadExecutionsRunning;
+        this.inProgressExecutions = inProgressExecutions;
         this.classAndMethodName = classAndMethodName;   
     }
     
@@ -155,14 +163,16 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     registered, countersByMetricID, histogramsByMetricID, metrics.getCircuitBreakerCallsTotal(),
                     metrics.getCircuitBreakerOpendTotal(), metrics.getInvocationsValueReturnedCounter(), 
                     metrics.getTimeoutCallsCounter(), metrics.getFTTimeoutExecutionDuration(), metrics.getFTRetryCallsTotal(), 
-                    metrics.getFTRetryRetriesTotal(), metrics.getBulkheadCallsTotal(), metrics.getClassAndMethodName());
+                    metrics.getFTRetryRetriesTotal(), metrics.getBulkheadCallsTotal(), metrics.getFTBulkheadExecutionDuration(), 
+                    metrics.getInProgressExecutions(), metrics.getClassAndMethodName());
         } else {
             return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                     registered, countersByMetricID, histogramsByMetricID, this.getCircuitBreakerCallsTotal(),
                     this.getCircuitBreakerOpendTotal(), this.getInvocationsValueReturnedCounter(), 
                     this.getTimeoutCallsCounter(), this.ftTimeoutExecutionDuration, this.ftRetryCallsTotal, 
-                    this.ftRetriesRetryTotal, this.bulkheadCallsTotal, this.getClassAndMethodName());
+                    this.ftRetriesRetryTotal, this.bulkheadCallsTotal, this.ftBulkheadExecutionsRunning,
+                    this.inProgressExecutions, this.getClassAndMethodName());
         }
     }
 
@@ -268,6 +278,16 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         fallbackUsage = FaultToleranceMetrics.FallbackUsage.applied;
     }
 
+    @Override
+    public LongSupplier getConcurrentExecutionCountSupplier() {
+        return concurrentExecutionCountSupplier;
+    }
+
+    @Override
+    public void setConcurrentExecutionCountSupplier(LongSupplier concurrentExecutionCountSupplier) {
+        this.concurrentExecutionCountSupplier = concurrentExecutionCountSupplier;
+    }
+
     /*
      * @Retry
      */
@@ -322,6 +342,11 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal) {
         this.bulkheadCallsTotal = bulkheadCallsTotal;
+    }
+
+    @Override
+    public void addFTBulkheadExecutionDuration(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
+        this.ftBulkheadExecutionsRunning = ftBulkheadExecutionsRunning;
     }
 
     @Override
@@ -445,6 +470,16 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public LongCounter getBulkheadCallsTotal() {
         return bulkheadCallsTotal;
+    }
+
+    @Override
+    public ObservableLongUpDownCounter getFTBulkheadExecutionDuration() {
+        return ftBulkheadExecutionsRunning;
+    }
+
+    @Override
+    public AtomicInteger getInProgressExecutions() {
+        return inProgressExecutions;
     }
 
     @Override
