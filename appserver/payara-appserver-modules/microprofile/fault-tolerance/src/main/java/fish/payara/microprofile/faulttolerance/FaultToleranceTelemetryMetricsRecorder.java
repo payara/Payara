@@ -252,9 +252,17 @@ public class FaultToleranceTelemetryMetricsRecorder {
      * @param faultToleranceMetrics
      */
     public static ObservableLongUpDownCounter createFTBulkheadExecutionsRunning(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
-        ObservableLongUpDownCounter  longUpDownCounter = currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING)
-                .setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION).buildWithCallback(faultToleranceMetrics::getConcurrentExecutions);
-        return longUpDownCounter;
+        return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING)
+                .setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION).buildWithCallback(faultToleranceMetrics::getExecutionBulkheadRunning);
+    }
+
+    /**
+     * this method will help to report ft.bulkhead.executionWaiting metric for Fault Tolerance using Telemetry api
+     * @param currentMeter
+     */
+    public static ObservableLongUpDownCounter createFTBulkheadExecutionWaiting(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
+        return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTION_WAITING).setDescription(FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION)
+                .buildWithCallback(faultToleranceMetrics::getExecutionBulkheadWaiting);
     }
     
     /**
@@ -269,17 +277,7 @@ public class FaultToleranceTelemetryMetricsRecorder {
         doubleHistogram.record(seconds / 1_000_000_000d, getMethodAttribute(classAndMethodName));
     }
 
-    /**
-     * this method will help to report ft.bulkhead.executionWaiting metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
-     * @param currentMeter
-     */
-    public static void createFTBulkheadExecutionWaiting(String classAndMethodName, Meter currentMeter) {
-        LongUpDownCounter longUpDownCounter = currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTION_WAITING).setDescription(FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION).build();
-        longUpDownCounter.add(0, getMethodAttribute(classAndMethodName));
-    }
     
-
     public static Attributes getMethodAttribute(String classAndMethodName) {
         return Attributes.builder().put(AttributeKey.stringKey(METHOD_ATTRIBUTE_NAME), classAndMethodName).build();
     }

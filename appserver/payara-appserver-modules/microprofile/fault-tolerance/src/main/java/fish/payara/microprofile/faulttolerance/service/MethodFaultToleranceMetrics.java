@@ -95,9 +95,10 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private LongCounter ftRetriesRetryTotal = null;
     private LongCounter bulkheadCallsTotal = null;
     private String classAndMethodName = null;
-    private LongSupplier concurrentExecutionCountSupplier = null;
+    private LongSupplier executionRunningCountSupplier = null;
+    private LongSupplier executionWaitingCountSupplier = null;
     private ObservableLongUpDownCounter ftBulkheadExecutionsRunning;
-    private AtomicInteger inProgressExecutions = new AtomicInteger(0);
+    private ObservableLongUpDownCounter ftBulkheadExecutionWaiting;
 
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
@@ -121,8 +122,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                                         LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
                                         LongCounter ftInvocationsTotal, LongCounter ftTimeoutCallsTotal,
             DoubleHistogram ftTimeoutExecutionDuration, LongCounter ftRetryCallsTotal, LongCounter ftRetriesRetryTotal,
-            LongCounter bulkheadCallsTotal, ObservableLongUpDownCounter ftBulkheadExecutionsRunning, 
-                                        AtomicInteger inProgressExecutions, String classAndMethodName) {
+            LongCounter bulkheadCallsTotal, ObservableLongUpDownCounter ftBulkheadExecutionsRunning, ObservableLongUpDownCounter ftBulkheadExecutionWaiting,
+                                        String classAndMethodName) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -138,7 +139,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.ftRetriesRetryTotal = ftRetriesRetryTotal;
         this.bulkheadCallsTotal = bulkheadCallsTotal;
         this.ftBulkheadExecutionsRunning = ftBulkheadExecutionsRunning;
-        this.inProgressExecutions = inProgressExecutions;
+        this.ftBulkheadExecutionWaiting = ftBulkheadExecutionWaiting;
         this.classAndMethodName = classAndMethodName;   
     }
     
@@ -163,8 +164,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     registered, countersByMetricID, histogramsByMetricID, metrics.getCircuitBreakerCallsTotal(),
                     metrics.getCircuitBreakerOpendTotal(), metrics.getInvocationsValueReturnedCounter(), 
                     metrics.getTimeoutCallsCounter(), metrics.getFTTimeoutExecutionDuration(), metrics.getFTRetryCallsTotal(), 
-                    metrics.getFTRetryRetriesTotal(), metrics.getBulkheadCallsTotal(), metrics.getFTBulkheadExecutionDuration(), 
-                    metrics.getInProgressExecutions(), metrics.getClassAndMethodName());
+                    metrics.getFTRetryRetriesTotal(), metrics.getBulkheadCallsTotal(), metrics.getFTBulkheadExecutionRunning(), 
+                    metrics.getFTBulkheadExecutionWaiting(), metrics.getClassAndMethodName());
         } else {
             return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
@@ -172,7 +173,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     this.getCircuitBreakerOpendTotal(), this.getInvocationsValueReturnedCounter(), 
                     this.getTimeoutCallsCounter(), this.ftTimeoutExecutionDuration, this.ftRetryCallsTotal, 
                     this.ftRetriesRetryTotal, this.bulkheadCallsTotal, this.ftBulkheadExecutionsRunning,
-                    this.inProgressExecutions, this.getClassAndMethodName());
+                    this.ftBulkheadExecutionWaiting, this.getClassAndMethodName());
         }
     }
 
@@ -279,13 +280,23 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
-    public LongSupplier getConcurrentExecutionCountSupplier() {
-        return concurrentExecutionCountSupplier;
+    public LongSupplier getExecutionBulkheadRunningSupplier() {
+        return this.executionRunningCountSupplier;
     }
 
     @Override
-    public void setConcurrentExecutionCountSupplier(LongSupplier concurrentExecutionCountSupplier) {
-        this.concurrentExecutionCountSupplier = concurrentExecutionCountSupplier;
+    public LongSupplier getExecutionBulkheadWaitingSupplier() {
+        return this.executionWaitingCountSupplier;
+    }
+
+    @Override
+    public void setExecutionBulkheadRunningSupplier(LongSupplier executionRunningCountSupplier) {
+        this.executionRunningCountSupplier = executionRunningCountSupplier;
+    }
+
+    @Override
+    public void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingSupplier) {
+        this.executionWaitingCountSupplier = executionWaitingSupplier;
     }
 
     /*
@@ -348,7 +359,12 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     public void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
         this.ftBulkheadExecutionsRunning = ftBulkheadExecutionsRunning;
     }
-    
+
+    @Override
+    public void addFTBulkheadExecutionWaiting(ObservableLongUpDownCounter ftBulkheadExecutionWaiting) {
+        this.ftBulkheadExecutionWaiting = ftBulkheadExecutionWaiting;
+    }
+
     @Override
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
         if (circuitBreakerCallsSuccessCount != null) {
@@ -473,14 +489,15 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
-    public ObservableLongUpDownCounter getFTBulkheadExecutionDuration() {
+    public ObservableLongUpDownCounter getFTBulkheadExecutionRunning() {
         return ftBulkheadExecutionsRunning;
     }
 
     @Override
-    public AtomicInteger getInProgressExecutions() {
-        return inProgressExecutions;
+    public ObservableLongUpDownCounter getFTBulkheadExecutionWaiting() {
+        return ftBulkheadExecutionWaiting;
     }
+    
 
     @Override
     public String getClassAndMethodName() {

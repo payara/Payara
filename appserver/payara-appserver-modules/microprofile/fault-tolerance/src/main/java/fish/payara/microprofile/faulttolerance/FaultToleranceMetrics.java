@@ -52,7 +52,6 @@ import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongMeasurement;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -86,13 +85,23 @@ public interface FaultToleranceMetrics {
      */
     FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() {
         @Override
-        public LongSupplier getConcurrentExecutionCountSupplier() {
+        public LongSupplier getExecutionBulkheadRunningSupplier() {
             return null;
         }
 
         @Override
-        public void setConcurrentExecutionCountSupplier(LongSupplier concurrentExecutionCountSupplier) {
+        public LongSupplier getExecutionBulkheadWaitingSupplier() {
+            return null;
+        }
+
+        @Override
+        public void setExecutionBulkheadRunningSupplier(LongSupplier concurrentExecutionCountSupplier) {
             
+        }
+
+        @Override
+        public void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingSupplier) {
+
         }
 
         @Override
@@ -140,6 +149,11 @@ public interface FaultToleranceMetrics {
             
         }
 
+        @Override
+        public void addFTBulkheadExecutionWaiting(ObservableLongUpDownCounter ftBulkheadExecutionWaiting) {
+            
+        }
+
 
         @Override
         public LongCounter getCircuitBreakerCallsTotal() {
@@ -182,12 +196,12 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
-        public ObservableLongUpDownCounter getFTBulkheadExecutionDuration() {
+        public ObservableLongUpDownCounter getFTBulkheadExecutionRunning() {
             return null;
         }
 
         @Override
-        public AtomicInteger getInProgressExecutions() {
+        public ObservableLongUpDownCounter getFTBulkheadExecutionWaiting() {
             return null;
         }
 
@@ -324,22 +338,27 @@ public interface FaultToleranceMetrics {
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
+                    this.setExecutionBulkheadRunningSupplier(running::size);
+                    addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
                     AtomicInteger queuingOrRunning = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsWaiting", null, () -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
+                    this.setExecutionBulkheadWaitingSupplier(() -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
+                    addFTBulkheadExecutionWaiting(createFTBulkheadExecutionWaiting(currentMeter, this));
                     register(Histogram.class.getTypeName(), "ft.bulkhead.waitingDuration");
                 } else {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
-                    this.setConcurrentExecutionCountSupplier(running::get);
+                    this.setExecutionBulkheadRunningSupplier(running::get);
                     addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
                 }
                 createFTBulkheadRunningDuration(getClassAndMethodName(), currentMeter, startTime);
-                createFTBulkheadExecutionWaiting(getClassAndMethodName(), currentMeter);
             }
         }
         return this;
     }
+
     
+
     /*
      * Generic (to be implemented/overridden)
      */
@@ -672,17 +691,29 @@ public interface FaultToleranceMetrics {
         //NOOP
     }
 
-    default void getConcurrentExecutions(ObservableLongMeasurement measurement) {
+    default void getExecutionBulkheadRunning(ObservableLongMeasurement measurement) {
         long executions = 0L;
-        if (this.getConcurrentExecutionCountSupplier() != null) {
-            executions = this.getConcurrentExecutionCountSupplier().getAsLong();
+        if (this.getExecutionBulkheadRunningSupplier() != null) {
+            executions = this.getExecutionBulkheadRunningSupplier().getAsLong();
         }
         measurement.record(executions, Attributes.builder().put("method", this.getClassAndMethodName()).build());
     }
-
-    LongSupplier getConcurrentExecutionCountSupplier();
     
-    void setConcurrentExecutionCountSupplier(LongSupplier concurrentExecutionCountSupplier);
+    default void getExecutionBulkheadWaiting(ObservableLongMeasurement measurement) {
+        long executionsWaiting = 0L;
+        if (this.getExecutionBulkheadWaitingSupplier() != null) {
+            executionsWaiting = this.getExecutionBulkheadWaitingSupplier().getAsLong();
+        }
+        measurement.record(executionsWaiting, Attributes.builder().put("method", this.getClassAndMethodName()).build());
+    }
+
+    LongSupplier getExecutionBulkheadRunningSupplier();
+    
+    LongSupplier getExecutionBulkheadWaitingSupplier();
+    
+    void setExecutionBulkheadRunningSupplier(LongSupplier executionRunningSupplier);
+
+    void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingSupplier);
 
     void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal);
     
@@ -701,6 +732,8 @@ public interface FaultToleranceMetrics {
     void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal);
 
     void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning);
+
+    void addFTBulkheadExecutionWaiting(ObservableLongUpDownCounter ftBulkheadExecutionWaiting);
     
     LongCounter getCircuitBreakerCallsTotal();
     
@@ -718,9 +751,9 @@ public interface FaultToleranceMetrics {
     
     LongCounter getBulkheadCallsTotal();
     
-    ObservableLongUpDownCounter getFTBulkheadExecutionDuration();
-
-    AtomicInteger getInProgressExecutions();
+    ObservableLongUpDownCounter getFTBulkheadExecutionRunning();
+    
+    ObservableLongUpDownCounter getFTBulkheadExecutionWaiting();
     
     void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
