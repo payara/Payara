@@ -111,9 +111,13 @@ public class FaultToleranceTelemetryMetricsRecorder {
     private static final String FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION = """
             Histogram of the time that method executions spent running.
             """;
+    private static final String FT_BULKHEAD_WAITING_DURATION = "ft.bulkhead.waitingDuration";
+    private static final String FT_BULKHEAD_WAITING_DURATION_DESCRIPTION = """
+            Histogram of the time that method executions spent waiting.
+            """;
     private static final String FT_BULKHEAD_EXECUTION_WAITING = "ft.bulkhead.executionsWaiting";
     private static final String FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION = """
-            Histogram of the time that method executions spent waiting.
+            Number of executions that are currently waiting.
             """;
     /**
      * this method will help to report ft.invocations.total metric for Fault Tolerance using Telemetry api
@@ -267,19 +271,16 @@ public class FaultToleranceTelemetryMetricsRecorder {
     
     /**
      * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTBulkheadRunningDuration(String classAndMethodName, Meter currentMeter, long startTime) {
-        DoubleHistogram doubleHistogram = currentMeter.histogramBuilder(FT_BULKHEAD_RUNNING_DURATION).setDescription(FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION)
+    public static DoubleHistogram createFTBulkheadRunningDuration(Meter currentMeter) {
+        return currentMeter.histogramBuilder(FT_BULKHEAD_RUNNING_DURATION).setDescription(FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION)
                 .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
-        double seconds = System.nanoTime() - startTime;
-        doubleHistogram.record(seconds / 1_000_000_000d, getMethodAttribute(classAndMethodName));
     }
-
     
-    public static Attributes getMethodAttribute(String classAndMethodName) {
-        return Attributes.builder().put(AttributeKey.stringKey(METHOD_ATTRIBUTE_NAME), classAndMethodName).build();
+    public static DoubleHistogram createFTBulkheadWaitingDuration(Meter currentMeter) {
+        return currentMeter.histogramBuilder(FT_BULKHEAD_WAITING_DURATION).setDescription(FT_BULKHEAD_WAITING_DURATION_DESCRIPTION)
+                .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
     }
     
 }

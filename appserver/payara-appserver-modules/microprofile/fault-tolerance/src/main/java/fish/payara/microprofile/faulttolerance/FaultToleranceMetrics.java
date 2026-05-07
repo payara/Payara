@@ -154,6 +154,16 @@ public interface FaultToleranceMetrics {
             
         }
 
+        @Override
+        public void addFTBulkheadRunningDuration(DoubleHistogram ftBulkheadRunningDuration) {
+            
+        }
+
+        @Override
+        public void addFTBulkheadWaitingDuration(DoubleHistogram ftBulkheadWaitingDuration) {
+
+        }
+
 
         @Override
         public LongCounter getCircuitBreakerCallsTotal() {
@@ -206,6 +216,16 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
+        public DoubleHistogram getFTBulkheadRunningDuration() {
+            return null;
+        }
+
+        @Override
+        public DoubleHistogram getFTBulkheadWaitingDuration() {
+            return null;
+        }
+
+        @Override
         public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
             
         }
@@ -241,7 +261,7 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
-        public void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
+        public void addExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
             
         }
 
@@ -335,6 +355,7 @@ public interface FaultToleranceMetrics {
                     {"bulkheadResult", "accepted", "rejected"}});
                 addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
+                addFTBulkheadRunningDuration(createFTBulkheadRunningDuration(currentMeter));
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
@@ -345,20 +366,19 @@ public interface FaultToleranceMetrics {
                     this.setExecutionBulkheadWaitingSupplier(() -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
                     addFTBulkheadExecutionWaiting(createFTBulkheadExecutionWaiting(currentMeter, this));
                     register(Histogram.class.getTypeName(), "ft.bulkhead.waitingDuration");
+                    addFTBulkheadWaitingDuration(createFTBulkheadWaitingDuration(currentMeter));
                 } else {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
                     this.setExecutionBulkheadRunningSupplier(running::get);
                     addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
                 }
-                createFTBulkheadRunningDuration(getClassAndMethodName(), currentMeter, startTime);
+                
             }
         }
         return this;
     }
-
     
-
     /*
      * Generic (to be implemented/overridden)
      */
@@ -542,7 +562,7 @@ public interface FaultToleranceMetrics {
      */
     default void addTimeoutExecutionDuration(long nanos) {
         addToHistogram("ft.timeout.executionDuration", nanos);
-        addTimeoutExecutionDuration(this.getFTTimeoutExecutionDuration(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+        addExecutionDuration(this.getFTTimeoutExecutionDuration(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
                 .stringKey("method"), getClassAndMethodName()).build()).build(), nanos);
     }
 
@@ -669,6 +689,8 @@ public interface FaultToleranceMetrics {
      */
     default void addBulkheadExecutionDuration(long nanos) {
         addToHistogram("ft.bulkhead.runningDuration", nanos);
+        addExecutionDuration(this.getFTBulkheadRunningDuration(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).build(), nanos);
     }
 
     /**
@@ -680,6 +702,8 @@ public interface FaultToleranceMetrics {
      */
     default void addBulkheadWaitingDuration(long nanos) {
         addToHistogram("ft.bulkhead.waitingDuration", nanos);
+        addExecutionDuration(this.getFTBulkheadWaitingDuration(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
+                .stringKey("method"), getClassAndMethodName()).build()).build(), nanos);
     }
 
 
@@ -735,6 +759,10 @@ public interface FaultToleranceMetrics {
 
     void addFTBulkheadExecutionWaiting(ObservableLongUpDownCounter ftBulkheadExecutionWaiting);
     
+    void addFTBulkheadRunningDuration(DoubleHistogram ftBulkheadRunningDuration);
+
+    void addFTBulkheadWaitingDuration(DoubleHistogram ftBulkheadWaitingDuration);
+    
     LongCounter getCircuitBreakerCallsTotal();
     
     LongCounter getCircuitBreakerOpendTotal();
@@ -754,6 +782,10 @@ public interface FaultToleranceMetrics {
     ObservableLongUpDownCounter getFTBulkheadExecutionRunning();
     
     ObservableLongUpDownCounter getFTBulkheadExecutionWaiting();
+
+    DoubleHistogram getFTBulkheadRunningDuration();
+    
+    DoubleHistogram getFTBulkheadWaitingDuration();
     
     void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
@@ -769,7 +801,7 @@ public interface FaultToleranceMetrics {
     
     void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
 
-    void addTimeoutExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
+    void addExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
 
     void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes);
 
