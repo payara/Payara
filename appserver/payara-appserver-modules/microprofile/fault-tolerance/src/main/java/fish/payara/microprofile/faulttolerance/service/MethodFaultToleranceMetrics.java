@@ -91,6 +91,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     private DoubleHistogram ftTimeoutExecutionDuration = null;
     private LongCounter ftRetryCallsTotal = null;
     private LongCounter ftRetriesRetryTotal = null;
+    private LongCounter bulkheadCallsTotal = null;
     private String classAndMethodName = null;
 
 
@@ -114,7 +115,8 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                                         Map<MetricID, Histogram> histogramsByMetricID,
                                         LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
                                         LongCounter ftInvocationsTotal, LongCounter ftTimeoutCallsTotal,
-            DoubleHistogram ftTimeoutExecutionDuration, LongCounter ftRetryCallsTotal, LongCounter ftRetriesRetryTotal, String classAndMethodName) {
+            DoubleHistogram ftTimeoutExecutionDuration, LongCounter ftRetryCallsTotal, LongCounter ftRetriesRetryTotal,
+            LongCounter bulkheadCallsTotal, String classAndMethodName) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -128,6 +130,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.ftTimeoutExecutionDuration = ftTimeoutExecutionDuration;
         this.ftRetryCallsTotal = ftRetryCallsTotal;
         this.ftRetriesRetryTotal = ftRetriesRetryTotal;
+        this.bulkheadCallsTotal = bulkheadCallsTotal;
         this.classAndMethodName = classAndMethodName;   
     }
     
@@ -152,14 +155,14 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     registered, countersByMetricID, histogramsByMetricID, metrics.getCircuitBreakerCallsTotal(),
                     metrics.getCircuitBreakerOpendTotal(), metrics.getInvocationsValueReturnedCounter(), 
                     metrics.getTimeoutCallsCounter(), metrics.getFTTimeoutExecutionDuration(), metrics.getFTRetryCallsTotal(), 
-                    metrics.getFTRetryRetriesTotal(), metrics.getClassAndMethodName());
+                    metrics.getFTRetryRetriesTotal(), metrics.getBulkheadCallsTotal(), metrics.getClassAndMethodName());
         } else {
             return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                     policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                     registered, countersByMetricID, histogramsByMetricID, this.getCircuitBreakerCallsTotal(),
                     this.getCircuitBreakerOpendTotal(), this.getInvocationsValueReturnedCounter(), 
                     this.getTimeoutCallsCounter(), this.ftTimeoutExecutionDuration, this.ftRetryCallsTotal, 
-                    this.ftRetriesRetryTotal, this.getClassAndMethodName());
+                    this.ftRetriesRetryTotal, this.bulkheadCallsTotal, this.getClassAndMethodName());
         }
     }
 
@@ -317,6 +320,11 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
+    public void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal) {
+        this.bulkheadCallsTotal = bulkheadCallsTotal;
+    }
+
+    @Override
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
         if (circuitBreakerCallsSuccessCount != null) {
             circuitBreakerCallsSuccessCount.add(1, attributes);
@@ -388,6 +396,13 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
+    public void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build) {
+        if (bulkheadCallsTotal != null) {
+           bulkheadCallsTotal.add(1, build); 
+        }
+    }
+
+    @Override
     public void setClassAndMethodName(String classAndMethodName) {
         this.classAndMethodName = classAndMethodName;
     }
@@ -425,6 +440,11 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public LongCounter getFTRetryRetriesTotal() {
         return ftRetriesRetryTotal;
+    }
+
+    @Override
+    public LongCounter getBulkheadCallsTotal() {
+        return bulkheadCallsTotal;
     }
 
     @Override

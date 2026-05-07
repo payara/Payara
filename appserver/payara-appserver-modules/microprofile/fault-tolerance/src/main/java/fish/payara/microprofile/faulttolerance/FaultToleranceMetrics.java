@@ -118,6 +118,11 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
+        public void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal) {
+            
+        }
+
+        @Override
         public LongCounter getCircuitBreakerCallsTotal() {
             return null;
         }
@@ -149,6 +154,11 @@ public interface FaultToleranceMetrics {
 
         @Override
         public LongCounter getFTRetryRetriesTotal() {
+            return null;
+        }
+
+        @Override
+        public LongCounter getBulkheadCallsTotal() {
             return null;
         }
 
@@ -199,6 +209,11 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes method) {
+            
+        }
+
+        @Override
+        public void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build) {
             
         }
 
@@ -275,6 +290,7 @@ public interface FaultToleranceMetrics {
             if (policy.isBulkheadPresent()) {
                 register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][] {
                     {"bulkheadResult", "accepted", "rejected"}});
+                addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
@@ -286,7 +302,7 @@ public interface FaultToleranceMetrics {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
                 }
-                createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter);
+                
                 createFTBulkheadExecutionsRunning(getClassAndMethodName(), currentMeter);
                 createFTBulkheadRunningDuration(getClassAndMethodName(), currentMeter, startTime);
                 createFTBulkheadExecutionWaiting(getClassAndMethodName(), currentMeter);
@@ -565,8 +581,7 @@ public interface FaultToleranceMetrics {
      */
     default void incrementCircuitbreakerOpenedTotal() {
         incrementCounter("ft.circuitbreaker.opened.total");
-        incrementCircuitBreakerOpendTotalTelemetry(getCircuitBreakerOpendTotal(), Attributes.builder().putAll(Attributes.builder().put(AttributeKey
-                .stringKey("method"), getClassAndMethodName()).build()).build());
+        incrementCircuitBreakerOpendTotalTelemetry(getCircuitBreakerOpendTotal(), Attributes.builder().put("method", getClassAndMethodName()).build());
     }
 
     /*
@@ -582,7 +597,10 @@ public interface FaultToleranceMetrics {
     default void incrementBulkheadCallsAcceptedTotal() {
         incrementCounter("ft.bulkhead.calls.total",
                 new Tag("bulkheadResult", "accepted"));
+        incrementBulkheadCallsTotal(getBulkheadCallsTotal(),Attributes.builder().put("method", getClassAndMethodName()).
+                put("bulkheadResult", "accepted").build());
     }
+    
 
     /**
      * The number of times the bulkhead logic was run. This will usually be once per method call, but may be zero times
@@ -593,6 +611,8 @@ public interface FaultToleranceMetrics {
     default void incrementBulkheadCallsRejectedTotal() {
         incrementCounter("ft.bulkhead.calls.total",
                 new Tag("bulkheadResult", "rejected"));
+        incrementBulkheadCallsTotal(getBulkheadCallsTotal(),Attributes.builder().put("method", getClassAndMethodName()).
+                put("bulkheadResult", "rejected").build());
     }
 
     /**
@@ -624,33 +644,37 @@ public interface FaultToleranceMetrics {
         //NOOP
     }
     
-    public void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal);
+    void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal);
     
-    public void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal);
+    void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal);
     
-    public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter);
+    void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter);
 
-    public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal);
+    void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal);
 
-    public void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration);
+    void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration);
 
-    public void addFTRetryCallsCounter(LongCounter ftRetryCallsTotal);
+    void addFTRetryCallsCounter(LongCounter ftRetryCallsTotal);
 
-    public void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal);
+    void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal);
     
-    public LongCounter getCircuitBreakerCallsTotal();
+    void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal);
     
-    public LongCounter getCircuitBreakerOpendTotal();
+    LongCounter getCircuitBreakerCallsTotal();
     
-    public LongCounter getInvocationsValueReturnedCounter();
+    LongCounter getCircuitBreakerOpendTotal();
     
-    public LongCounter getTimeoutCallsCounter();
+    LongCounter getInvocationsValueReturnedCounter();
     
-    public DoubleHistogram getFTTimeoutExecutionDuration();
+    LongCounter getTimeoutCallsCounter();
+    
+    DoubleHistogram getFTTimeoutExecutionDuration();
     
     public LongCounter getFTRetryCallsTotal();
     
     public LongCounter getFTRetryRetriesTotal();
+    
+    public LongCounter getBulkheadCallsTotal();
     
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
     
@@ -671,6 +695,8 @@ public interface FaultToleranceMetrics {
     public void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes);
 
     public void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes attributes);
+
+    public void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build);
     
     public void setClassAndMethodName(String classAndMethodName);
     

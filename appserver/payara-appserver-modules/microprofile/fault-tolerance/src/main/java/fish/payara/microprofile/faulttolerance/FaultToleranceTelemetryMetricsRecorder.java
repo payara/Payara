@@ -237,11 +237,11 @@ public class FaultToleranceTelemetryMetricsRecorder {
      * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTBulkheadCallsTotal(String classAndMethodName, Meter currentMeter) {
+    public static LongCounter createFTBulkheadCallsTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter longCounter = currentMeter.counterBuilder(FT_BULKHEAD_CALLS_TOTAL).setDescription(FT_BULKHEAD_CALLS_TOTAL_DESCRIPTION).build();
-        AttributeKey<String> key = AttributeKey.stringKey("bulkheadResult");
-        Attributes attributes = Attributes.builder().put("method", classAndMethodName).put(key, "accepted").build();
-        longCounter.add(1, attributes);      
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("bulkheadResult", "accepted").build());
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("bulkheadResult", "rejected").build());
+        return longCounter;
     }
 
     /**
