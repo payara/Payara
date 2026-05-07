@@ -345,10 +345,10 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
-    public void addFTBulkheadExecutionDuration(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
+    public void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
         this.ftBulkheadExecutionsRunning = ftBulkheadExecutionsRunning;
     }
-
+    
     @Override
     public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
         if (circuitBreakerCallsSuccessCount != null) {

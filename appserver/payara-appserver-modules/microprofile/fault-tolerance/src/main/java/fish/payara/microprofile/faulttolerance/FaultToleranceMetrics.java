@@ -136,9 +136,10 @@ public interface FaultToleranceMetrics {
         }
 
         @Override
-        public void addFTBulkheadExecutionDuration(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
+        public void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
             
         }
+
 
         @Override
         public LongCounter getCircuitBreakerCallsTotal() {
@@ -320,7 +321,6 @@ public interface FaultToleranceMetrics {
                     {"bulkheadResult", "accepted", "rejected"}});
                 addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
-                addFTBulkheadExecutionDuration(createFTBulkheadExecutionsRunning(currentMeter, this));
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
@@ -330,6 +330,8 @@ public interface FaultToleranceMetrics {
                 } else {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
+                    this.setConcurrentExecutionCountSupplier(running::get);
+                    addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
                 }
                 createFTBulkheadRunningDuration(getClassAndMethodName(), currentMeter, startTime);
                 createFTBulkheadExecutionWaiting(getClassAndMethodName(), currentMeter);
@@ -698,7 +700,7 @@ public interface FaultToleranceMetrics {
     
     void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal);
 
-    void addFTBulkheadExecutionDuration(ObservableLongUpDownCounter ftBulkheadExecutionsRunning);
+    void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning);
     
     LongCounter getCircuitBreakerCallsTotal();
     
