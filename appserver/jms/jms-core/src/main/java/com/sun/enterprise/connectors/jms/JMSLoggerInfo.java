@@ -238,9 +238,10 @@ public class JMSLoggerInfo {
     )
     public static final String JMSRA_UPGRADE_CHECK_FAILED = LOGMSG_PREFIX + "-00027";
     
-    @LogMessageInfo(message = "Your default broker instance from OpenMQ is using default admin password, " +
-            "it is recommended that you change it using the imqusermgr tool from OpenMQ. " +
-            "When doing so, also update the JMS configuration of the server using the asadmin set command to change " +
-            "the property server-config.jms-service.jms-host.default_JMS_host.admin-password")
-    public static final String JMSRA_UPGRADE_DEFAULT_BROKER_PASSWORD = LOGMSG_PREFIX + "-00028";
+    @LogMessageInfo(message = "The default broker instance for OpenMQ is using the default admin password, " +
+            "so OpenMQ is running insecurely. It is recommended that you change it using the imqusermgr tool from OpenMQ, " +
+            "and update the broker configuration accordingly to maintain connectivity. " +
+            "Alternatively if you are not utilizing Java Message Service, you can disable it. " +
+            "This will prevent the embedded OpenMQ server from starting altogether.")
+    public static final String JMSRA_USING_DEFAULT_BROKER_PASSWORD = LOGMSG_PREFIX + "-00028";
 }

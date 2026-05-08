@@ -1018,8 +1018,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             String adminUserName = jmsHost.getAdminUserName();
             String adminPassword = JmsRaUtil.getUnAliasedPwd(jmsHost.getAdminPassword());
             
-            if (adminPassword.equals("admin")) {
-                _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_UPGRADE_DEFAULT_BROKER_PASSWORD);
+            if (!brokerType.equals(DISABLED) && "default_JMS_host".equals(jmsHost.getName()) && "admin".equals(adminPassword)) {
+                _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_USING_DEFAULT_BROKER_PASSWORD);
             }
             List jmsHostProps= getJmsService().getProperty();
 
