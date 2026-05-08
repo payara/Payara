@@ -80,15 +80,6 @@
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <version>3.6.3</version>
-                        <executions>
-                          <execution>
-                            <id>install-playwright-dependencies</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                              <goal>exec</goal>
-                            </goals>
-                          </execution>
-                        </executions>
                         <configuration>
                             <executable>java</executable>
                             <mainClass>com.microsoft.playwright.CLI</mainClass>
