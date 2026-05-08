@@ -43,7 +43,6 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import java.util.List;
@@ -257,27 +256,37 @@ public class FaultToleranceTelemetryMetricsRecorder {
      */
     public static ObservableLongUpDownCounter createFTBulkheadExecutionsRunning(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
         return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING)
-                .setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION).buildWithCallback(faultToleranceMetrics::getExecutionBulkheadRunning);
+                .setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION)
+                .buildWithCallback(faultToleranceMetrics::getExecutionBulkheadRunning);
     }
 
     /**
      * this method will help to report ft.bulkhead.executionWaiting metric for Fault Tolerance using Telemetry api
      * @param currentMeter
+     * @param faultToleranceMetrics
      */
     public static ObservableLongUpDownCounter createFTBulkheadExecutionWaiting(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
-        return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTION_WAITING).setDescription(FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION)
+        return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTION_WAITING)
+                .setDescription(FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION)
                 .buildWithCallback(faultToleranceMetrics::getExecutionBulkheadWaiting);
     }
-    
+
     /**
      * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
+     *
      * @param currentMeter
      */
     public static DoubleHistogram createFTBulkheadRunningDuration(Meter currentMeter) {
         return currentMeter.histogramBuilder(FT_BULKHEAD_RUNNING_DURATION).setDescription(FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION)
                 .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
     }
-    
+
+    /**
+     * this method will help to report ft.bulkhead.waitingDuration metric for Fault Tolerance using Telemetry api
+     *
+     * @param currentMeter
+     * @return
+     */
     public static DoubleHistogram createFTBulkheadWaitingDuration(Meter currentMeter) {
         return currentMeter.histogramBuilder(FT_BULKHEAD_WAITING_DURATION).setDescription(FT_BULKHEAD_WAITING_DURATION_DESCRIPTION)
                 .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();

@@ -50,7 +50,6 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
@@ -109,7 +108,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
-            AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
+                                        AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -119,14 +118,14 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
-                                        AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, 
+                                        AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID,
                                         Map<MetricID, Histogram> histogramsByMetricID,
-                                        LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal, 
+                                        LongCounter ftCircuitBreakerCallsTotal, LongCounter ftCircuitBreakerOpenedTotal,
                                         LongCounter ftInvocationsTotal, LongCounter ftTimeoutCallsTotal,
-            DoubleHistogram ftTimeoutExecutionDuration, LongCounter ftRetryCallsTotal, LongCounter ftRetriesRetryTotal,
-            LongCounter bulkheadCallsTotal, ObservableLongUpDownCounter ftBulkheadExecutionsRunning, 
-                                        ObservableLongUpDownCounter ftBulkheadExecutionWaiting, 
-                                        DoubleHistogram ftBulkheadRunningDuration, DoubleHistogram ftBulkheadWaitingDuration, 
+                                        DoubleHistogram ftTimeoutExecutionDuration, LongCounter ftRetryCallsTotal, LongCounter ftRetriesRetryTotal,
+                                        LongCounter bulkheadCallsTotal, ObservableLongUpDownCounter ftBulkheadExecutionsRunning,
+                                        ObservableLongUpDownCounter ftBulkheadExecutionWaiting,
+                                        DoubleHistogram ftBulkheadRunningDuration, DoubleHistogram ftBulkheadWaitingDuration,
                                         String classAndMethodName) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
@@ -146,7 +145,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.ftBulkheadExecutionWaiting = ftBulkheadExecutionWaiting;
         this.ftBulkheadRunningDuration = ftBulkheadRunningDuration;
         this.ftBulkheadWaitingDuration = ftBulkheadWaitingDuration;
-        this.classAndMethodName = classAndMethodName;   
+        this.classAndMethodName = classAndMethodName;
     }
     
     
@@ -184,11 +183,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
                     this.getClassAndMethodName());
         }
     }
-
-    /*
-     * General Metrics
-     */
-
+    
 
     @Override
     public void register(String metric, String unit, LongSupplier gauge, String... tag) {
@@ -272,7 +267,6 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     /*
      * @Retry, @Timeout, @CircuitBreaker, @Bulkhead and @Fallback
      */
-
     @Override
     public FallbackUsage getFallbackUsage() {
         return fallbackUsage;
@@ -281,7 +275,6 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     /*
      * @Fallback
      */
-
     @Override
     public void incrementFallbackCallsTotal() {
         fallbackUsage = FaultToleranceMetrics.FallbackUsage.applied;
@@ -310,7 +303,6 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     /*
      * @Retry
      */
-
     @Override
     public void incrementRetryRetriesTotal() {
         retried = true;
@@ -405,9 +397,9 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     @Override
-    public void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerOpendTotal, Attributes attributes) {
-        if (circuitBreakerOpendTotal != null) {
-           circuitBreakerOpendTotal.add(1, attributes); 
+    public void incrementCircuitBreakerOpenedTotalTelemetry(LongCounter circuitBreakerOpenedTotal, Attributes attributes) {
+        if (circuitBreakerOpenedTotal != null) {
+            circuitBreakerOpenedTotal.add(1, attributes); 
         }
     }
 
@@ -525,8 +517,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     public DoubleHistogram getFTBulkheadWaitingDuration() {
         return ftBulkheadWaitingDuration;
     }
-
-
+    
     @Override
     public String getClassAndMethodName() {
         return classAndMethodName;

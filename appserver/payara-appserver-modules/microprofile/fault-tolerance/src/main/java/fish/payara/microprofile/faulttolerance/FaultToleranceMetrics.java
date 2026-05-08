@@ -96,7 +96,7 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void setExecutionBulkheadRunningSupplier(LongSupplier concurrentExecutionCountSupplier) {
-            
+
         }
 
         @Override
@@ -106,64 +106,63 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal) {
-            
+
         } /* does nothing */
 
         @Override
         public void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal) {
-            
+
         }
 
         @Override
         public void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter) {
-            
+
         }
 
         @Override
         public void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal) {
-            
+
         }
 
         @Override
         public void addFTTimeoutExecutionDuration(DoubleHistogram ftTimeoutExecutionDuration) {
-            
+
         }
 
         @Override
         public void addFTRetryCallsCounter(LongCounter ftRetryCallsTotal) {
-            
+
         }
 
         @Override
         public void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal) {
-            
+
         }
 
         @Override
         public void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal) {
-            
+
         }
 
         @Override
         public void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning) {
-            
+
         }
 
         @Override
         public void addFTBulkheadExecutionWaiting(ObservableLongUpDownCounter ftBulkheadExecutionWaiting) {
-            
+
         }
 
         @Override
         public void addFTBulkheadRunningDuration(DoubleHistogram ftBulkheadRunningDuration) {
-            
+
         }
 
         @Override
         public void addFTBulkheadWaitingDuration(DoubleHistogram ftBulkheadWaitingDuration) {
 
         }
-
 
         @Override
         public LongCounter getCircuitBreakerCallsTotal() {
@@ -227,27 +226,27 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes) {
-            
+
         }
 
         @Override
         public void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes) {
-            
+
         }
 
         @Override
         public void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes) {
-            
+
         }
 
         @Override
-        public void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerStateTotal, Attributes attributes) {
-            
+        public void incrementCircuitBreakerOpenedTotalTelemetry(LongCounter circuitBreakerStateTotal, Attributes attributes) {
+
         }
 
         @Override
         public void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes) {
-            
+
         }
 
         @Override
@@ -257,27 +256,27 @@ public interface FaultToleranceMetrics {
 
         @Override
         public void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes) {
-            
+
         }
 
         @Override
         public void addExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos) {
-            
+
         }
 
         @Override
         public void incrementRetryCallsCounter(LongCounter ftRetryCallsTotal, Attributes attributes) {
-            
+
         }
 
         @Override
         public void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes method) {
-            
+
         }
 
         @Override
         public void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build) {
-            
+
         }
 
         @Override
@@ -303,19 +302,18 @@ public interface FaultToleranceMetrics {
      */
     default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
         if (policy.isMetricsEnabled) {
-            long startTime = System.nanoTime();
             OpenTelemetryService openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
             String[] fallbackTag = policy.isFallbackPresent()
-                    ? new String[] {"fallback", "applied", "notApplied"}
-                    : new String[] {"fallback", "notDefined"};
+                    ? new String[]{"fallback", "applied", "notApplied"}
+                    : new String[]{"fallback", "notDefined"};
             register(Counter.class.getTypeName(), "ft.invocations.total", new String[][]{
-                {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
+                    {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
             //place to register telemetry ft.invocations.total
             Meter currentMeter = openTelemetryService.getCurrentMeter();
             FaultToleranceMethodContextImpl faultToleranceMethodContext = (FaultToleranceMethodContextImpl) context;
             setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
             addFTInvocationTotalMeter(createFTInvocationTotalMeter(getClassAndMethodName(), currentMeter, policy.isFallbackPresent()));
-            
+
             if (policy.isRetryPresent()) {
                 List<String> retryResultTag = new ArrayList<>(asList("retryResult", "valueReturned", "exceptionNotRetryable"));
                 if (policy.retry.isMaxRetriesSet()) {
@@ -325,22 +323,22 @@ public interface FaultToleranceMetrics {
                     retryResultTag.add("maxDurationReached");
                 }
                 register(Counter.class.getTypeName(), "ft.retry.calls.total", new String[][]{
-                    {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
+                        {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
                 register(Counter.class.getTypeName(), "ft.retry.retries.total");
                 //place to register telemetry ft.retry.calls.total and ft.retry.retries.total
                 addFTRetryCallsCounter(createFTRetryCallsTotal(getClassAndMethodName(), currentMeter, policy.retry.isMaxRetriesSet(), policy.retry.isMaxDurationSet()));
                 addFTRetryRetriesCounter(createFTRetryRetriesTotal(getClassAndMethodName(), currentMeter));
             }
             if (policy.isTimeoutPresent()) {
-                register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
-                    {"timedOut", "true", "false"}});
+                register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][]{
+                        {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
                 addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(getClassAndMethodName(), currentMeter));
                 addFTTimeoutExecutionDuration(createFTTimeoutExecutionDuration(currentMeter));
             }
             if (policy.isCircuitBreakerPresent()) {
-                register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][] {
-                    {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
+                register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][]{
+                        {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
                 CircuitBreakerState state = context.getState();
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosOpen, "state", "open");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
@@ -351,8 +349,8 @@ public interface FaultToleranceMetrics {
                 createFTCircuitBreakerStateTotal(getClassAndMethodName(), currentMeter);
             }
             if (policy.isBulkheadPresent()) {
-                register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][] {
-                    {"bulkheadResult", "accepted", "rejected"}});
+                register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][]{
+                        {"bulkheadResult", "accepted", "rejected"}});
                 addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
                 addFTBulkheadRunningDuration(createFTBulkheadRunningDuration(currentMeter));
@@ -373,7 +371,7 @@ public interface FaultToleranceMetrics {
                     this.setExecutionBulkheadRunningSupplier(running::get);
                     addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
                 }
-                
+
             }
         }
         return this;
@@ -648,7 +646,8 @@ public interface FaultToleranceMetrics {
      */
     default void incrementCircuitbreakerOpenedTotal() {
         incrementCounter("ft.circuitbreaker.opened.total");
-        incrementCircuitBreakerOpendTotalTelemetry(getCircuitBreakerOpendTotal(), Attributes.builder().put("method", getClassAndMethodName()).build());
+        incrementCircuitBreakerOpenedTotalTelemetry(getCircuitBreakerOpendTotal(), 
+                Attributes.builder().put("method", getClassAndMethodName()).build());
     }
 
     /*
@@ -664,7 +663,7 @@ public interface FaultToleranceMetrics {
     default void incrementBulkheadCallsAcceptedTotal() {
         incrementCounter("ft.bulkhead.calls.total",
                 new Tag("bulkheadResult", "accepted"));
-        incrementBulkheadCallsTotal(getBulkheadCallsTotal(),Attributes.builder().put("method", getClassAndMethodName()).
+        incrementBulkheadCallsTotal(getBulkheadCallsTotal(), Attributes.builder().put("method", getClassAndMethodName()).
                 put("bulkheadResult", "accepted").build());
     }
     
@@ -678,7 +677,7 @@ public interface FaultToleranceMetrics {
     default void incrementBulkheadCallsRejectedTotal() {
         incrementCounter("ft.bulkhead.calls.total",
                 new Tag("bulkheadResult", "rejected"));
-        incrementBulkheadCallsTotal(getBulkheadCallsTotal(),Attributes.builder().put("method", getClassAndMethodName()).
+        incrementBulkheadCallsTotal(getBulkheadCallsTotal(), Attributes.builder().put("method", getClassAndMethodName()).
                 put("bulkheadResult", "rejected").build());
     }
 
@@ -722,7 +721,7 @@ public interface FaultToleranceMetrics {
         }
         measurement.record(executions, Attributes.builder().put("method", this.getClassAndMethodName()).build());
     }
-    
+
     default void getExecutionBulkheadWaiting(ObservableLongMeasurement measurement) {
         long executionsWaiting = 0L;
         if (this.getExecutionBulkheadWaitingSupplier() != null) {
@@ -732,17 +731,17 @@ public interface FaultToleranceMetrics {
     }
 
     LongSupplier getExecutionBulkheadRunningSupplier();
-    
+
     LongSupplier getExecutionBulkheadWaitingSupplier();
-    
+
     void setExecutionBulkheadRunningSupplier(LongSupplier executionRunningSupplier);
 
     void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingSupplier);
 
     void addCircuitBreakerCallsTotal(LongCounter circuitBreakerCallsTotal);
-    
+
     void addCircuitBreakerOpenedTotal(LongCounter circuitBreakerOpenedTotal);
-    
+
     void addFTInvocationTotalMeter(LongCounter ftInvocationTotalMeter);
 
     void addFTTimeoutCallsTotal(LongCounter ftTimeoutCallsTotal);
@@ -752,53 +751,53 @@ public interface FaultToleranceMetrics {
     void addFTRetryCallsCounter(LongCounter ftRetryCallsTotal);
 
     void addFTRetryRetriesCounter(LongCounter ftRetryRetriesTotal);
-    
+
     void addBulkheadCallsTotal(LongCounter bulkheadCallsTotal);
 
     void addFTBulkheadExecutionRunning(ObservableLongUpDownCounter ftBulkheadExecutionsRunning);
 
     void addFTBulkheadExecutionWaiting(ObservableLongUpDownCounter ftBulkheadExecutionWaiting);
-    
+
     void addFTBulkheadRunningDuration(DoubleHistogram ftBulkheadRunningDuration);
 
     void addFTBulkheadWaitingDuration(DoubleHistogram ftBulkheadWaitingDuration);
-    
+
     LongCounter getCircuitBreakerCallsTotal();
-    
+
     LongCounter getCircuitBreakerOpendTotal();
-    
+
     LongCounter getInvocationsValueReturnedCounter();
-    
+
     LongCounter getTimeoutCallsCounter();
-    
+
     DoubleHistogram getFTTimeoutExecutionDuration();
-    
+
     LongCounter getFTRetryCallsTotal();
-    
+
     LongCounter getFTRetryRetriesTotal();
-    
+
     LongCounter getBulkheadCallsTotal();
-    
+
     ObservableLongUpDownCounter getFTBulkheadExecutionRunning();
-    
+
     ObservableLongUpDownCounter getFTBulkheadExecutionWaiting();
 
     DoubleHistogram getFTBulkheadRunningDuration();
-    
+
     DoubleHistogram getFTBulkheadWaitingDuration();
-    
+
     void incrementCircuitBreakerCallsSuccessCount(LongCounter circuitBreakerCallsSuccessCount, Attributes attributes);
-    
+
     void incrementCircuitBreakerCallsFailureCount(LongCounter circuitBreakerCallsFailureCount, Attributes attributes);
-    
+
     void incrementCircuitBreakerCallsCircuitOpenCount(LongCounter circuitBreakerStateTotal, Attributes attributes);
-    
-    void incrementCircuitBreakerOpendTotalTelemetry(LongCounter circuitBreakerOpendTotal, Attributes attributes);
-    
+
+    void incrementCircuitBreakerOpenedTotalTelemetry(LongCounter circuitBreakerOpenedTotal, Attributes attributes);
+
     void incrementInvocationsValueReturnedCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
-    
+
     void incrementInvocationsExceptionThrownCounter(LongCounter invocationsValueReturnedCounter, Attributes attributes);
-    
+
     void incrementTimeoutCallsCounter(LongCounter timeoutCallsCounter, Attributes attributes);
 
     void addExecutionDuration(DoubleHistogram timeoutExecutionDuration, Attributes attributes, long nanos);
@@ -808,8 +807,8 @@ public interface FaultToleranceMetrics {
     void incrementRetryRetriesTotal(LongCounter ftRetryRetriesTotal, Attributes attributes);
 
     void incrementBulkheadCallsTotal(LongCounter bulkheadCallsTotal, Attributes build);
-    
+
     void setClassAndMethodName(String classAndMethodName);
-    
+
     String getClassAndMethodName();
 }
