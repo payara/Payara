@@ -240,7 +240,8 @@ public class JMSLoggerInfo {
     
     @LogMessageInfo(message = "The default broker instance for OpenMQ is using the default admin password, " +
             "so OpenMQ is running insecurely. It is recommended that you change it using the imqusermgr tool from OpenMQ, " +
-            "and update the broker configuration accordingly to maintain connectivity. " +
+            "and update the JMS Host configuration accordingly to maintain connectivity. " +
+            "To change the JMS Host please refer to the section Administering the Java Message Service from the Payara Documentation. " +
             "Alternatively if you are not utilizing Java Message Service, you can disable it. " +
             "This will prevent the embedded OpenMQ server from starting altogether.")
     public static final String JMSRA_USING_DEFAULT_BROKER_PASSWORD = LOGMSG_PREFIX + "-00028";
