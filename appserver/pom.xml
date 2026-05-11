@@ -527,7 +527,7 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>genericra</artifactId>
-                <version>2.0-20081121</version>
+                <version>2.1-20100913</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
