@@ -43,8 +43,8 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.ObservableLongUpDownCounter;
 import java.util.List;
 
 /**
@@ -110,9 +110,13 @@ public class FaultToleranceTelemetryMetricsRecorder {
     private static final String FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION = """
             Histogram of the time that method executions spent running.
             """;
+    private static final String FT_BULKHEAD_WAITING_DURATION = "ft.bulkhead.waitingDuration";
+    private static final String FT_BULKHEAD_WAITING_DURATION_DESCRIPTION = """
+            Histogram of the time that method executions spent waiting.
+            """;
     private static final String FT_BULKHEAD_EXECUTION_WAITING = "ft.bulkhead.executionsWaiting";
     private static final String FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION = """
-            Histogram of the time that method executions spent waiting.
+            Number of executions that are currently waiting.
             """;
     /**
      * this method will help to report ft.invocations.total metric for Fault Tolerance using Telemetry api
@@ -237,48 +241,55 @@ public class FaultToleranceTelemetryMetricsRecorder {
      * @param classAndMethodName
      * @param currentMeter
      */
-    public static void createFTBulkheadCallsTotal(String classAndMethodName, Meter currentMeter) {
+    public static LongCounter createFTBulkheadCallsTotal(String classAndMethodName, Meter currentMeter) {
         LongCounter longCounter = currentMeter.counterBuilder(FT_BULKHEAD_CALLS_TOTAL).setDescription(FT_BULKHEAD_CALLS_TOTAL_DESCRIPTION).build();
-        AttributeKey<String> key = AttributeKey.stringKey("bulkheadResult");
-        Attributes attributes = Attributes.builder().put("method", classAndMethodName).put(key, "accepted").build();
-        longCounter.add(1, attributes);      
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("bulkheadResult", "accepted").build());
+        longCounter.add(0, Attributes.builder().put("method", classAndMethodName).put("bulkheadResult", "rejected").build());
+        return longCounter;
     }
 
     /**
      * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
+     *
      * @param currentMeter
+     * @param faultToleranceMetrics
      */
-    public static void createFTBulkheadExecutionsRunning(String classAndMethodName, Meter currentMeter) {
-        LongUpDownCounter longUpDownCounter = currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING).setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION).build();
-        longUpDownCounter.add(0, getMethodAttribute(classAndMethodName));
-    }
-
-    /**
-     * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
-     * @param currentMeter
-     */
-    public static void createFTBulkheadRunningDuration(String classAndMethodName, Meter currentMeter, long startTime) {
-        DoubleHistogram doubleHistogram = currentMeter.histogramBuilder(FT_BULKHEAD_RUNNING_DURATION).setDescription(FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION)
-                .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
-        double seconds = System.nanoTime() - startTime;
-        doubleHistogram.record(seconds / 1_000_000_000d, getMethodAttribute(classAndMethodName));
+    public static ObservableLongUpDownCounter createFTBulkheadExecutionsRunning(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
+        return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTIONS_RUNNING)
+                .setDescription(FT_BULKHEAD_EXECUTIONS_RUNNING_DESCRIPTION)
+                .buildWithCallback(faultToleranceMetrics::getExecutionBulkheadRunning);
     }
 
     /**
      * this method will help to report ft.bulkhead.executionWaiting metric for Fault Tolerance using Telemetry api
-     * @param classAndMethodName
+     * @param currentMeter
+     * @param faultToleranceMetrics
+     */
+    public static ObservableLongUpDownCounter createFTBulkheadExecutionWaiting(Meter currentMeter, FaultToleranceMetrics faultToleranceMetrics) {
+        return currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTION_WAITING)
+                .setDescription(FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION)
+                .buildWithCallback(faultToleranceMetrics::getExecutionBulkheadWaiting);
+    }
+
+    /**
+     * this method will help to report ft.bulkhead.runningDuration metric for Fault Tolerance using Telemetry api
+     *
      * @param currentMeter
      */
-    public static void createFTBulkheadExecutionWaiting(String classAndMethodName, Meter currentMeter) {
-        LongUpDownCounter longUpDownCounter = currentMeter.upDownCounterBuilder(FT_BULKHEAD_EXECUTION_WAITING).setDescription(FT_BULKHEAD_EXECUTION_WAITING_DESCRIPTION).build();
-        longUpDownCounter.add(0, getMethodAttribute(classAndMethodName));
+    public static DoubleHistogram createFTBulkheadRunningDuration(Meter currentMeter) {
+        return currentMeter.histogramBuilder(FT_BULKHEAD_RUNNING_DURATION).setDescription(FT_BULKHEAD_RUNNING_DURATION_DESCRIPTION)
+                .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
     }
-    
 
-    public static Attributes getMethodAttribute(String classAndMethodName) {
-        return Attributes.builder().put(AttributeKey.stringKey(METHOD_ATTRIBUTE_NAME), classAndMethodName).build();
+    /**
+     * this method will help to report ft.bulkhead.waitingDuration metric for Fault Tolerance using Telemetry api
+     *
+     * @param currentMeter
+     * @return
+     */
+    public static DoubleHistogram createFTBulkheadWaitingDuration(Meter currentMeter) {
+        return currentMeter.histogramBuilder(FT_BULKHEAD_WAITING_DURATION).setDescription(FT_BULKHEAD_WAITING_DURATION_DESCRIPTION)
+                .setUnit("seconds").setExplicitBucketBoundariesAdvice(HISTOGRAM_BUCKETS).build();
     }
     
 }
