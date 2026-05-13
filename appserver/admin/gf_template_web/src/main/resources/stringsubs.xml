@@ -2,7 +2,7 @@
 <!--
    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   
-   Copyright (c) [2017-2019] Payara Foundation and/or its affiliates. All rights reserved.
+   Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
   
    The contents of this file are subject to the terms of either the GNU
    General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     </component>
     <group id="glassfish-core-sub" mode="forward">
     <file-entry name="$DOMAIN_DIR$/config/domain.xml"/>
-        <file-entry name="$DOMAIN_DIR$/config/glassfish-acc.xml"/>
+        <file-entry name="$DOMAIN_DIR$/config/payara-acc.xml"/>
         <file-entry name="$DOMAIN_DIR$/docroot/index.html"/>
         <change-pair-ref name="VERSION"/>
         <change-pair-ref name="INSTALL_ROOT"/>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package org.glassfish.javaee.full.deployment;
 
 import static com.sun.enterprise.security.permissionsxml.GlobalPolicyUtil.getDeclaredPermissions;
@@ -156,8 +156,8 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifier = null;
         try {
-            GFApplicationXmlParser gfApplicationXMLParser = new GFApplicationXmlParser(archive);
-            versionIdentifier = gfApplicationXMLParser.extractVersionIdentifierValue(archive);
+            PayaraApplicationXmlParser payaraApplicationXMLParser = new PayaraApplicationXmlParser(archive);
+            versionIdentifier = payaraApplicationXMLParser.extractVersionIdentifierValue(archive);
         } catch (XMLStreamException e) {
             _logger.log(Level.SEVERE, e.getMessage());
         } catch (IOException e) {
@@ -309,7 +309,17 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         // Add the libraries packaged in the application library directory
         try {
             String compatProp = context.getAppProps().getProperty(COMPATIBILITY);
-            
+
+            // If user does not specify the compatibility property
+            // let's see if it's defined in payara-application.xml
+            if (compatProp == null) {
+                PayaraApplicationXmlParser payaraApplicationXmlParser = new PayaraApplicationXmlParser(context.getSource());
+                compatProp = payaraApplicationXmlParser.getCompatibilityValue();
+                if (compatProp != null) {
+                    context.getAppProps().put(COMPATIBILITY, compatProp);
+                }
+            }
+
             // If user does not specify the compatibility property
             // let's see if it's defined in glassfish-application.xml
             if (compatProp == null) {
@@ -535,12 +545,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
         if (!context.getAppProps().containsKey(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
             try {
-                Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
+                Boolean cdiEnabled = new PayaraApplicationXmlParser(source).isEnableImplicitCDI();
                 if (cdiEnabled != null) {
-                    context.getAppProps().put(
-                            RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI,
-                            cdiEnabled.toString().toLowerCase()
-                    );
+                    context.getAppProps().put(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI, cdiEnabled.toString().toLowerCase());
                 }
             } catch (XMLStreamException | IOException ex) {
                 throw new RuntimeException(ex);
@@ -594,6 +601,147 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             return habitat.getService(ArchiveHandler.class, CarDetector.ARCHIVE_TYPE);
         } else {
             return null;
+        }
+    }
+
+    private static class PayaraApplicationXmlParser {
+        private XMLStreamReader parser = null;
+        private String compatValue = null;
+        private Boolean enableImplicitCDI = null;
+
+        PayaraApplicationXmlParser(ReadableArchive archive) throws XMLStreamException, FileNotFoundException, IOException {
+            InputStream input;
+            File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+            if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.PAYARA_PREFIX) != -1 && runtimeAltDDFile.exists()
+                    && runtimeAltDDFile.isFile()) {
+                DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
+                input = new FileInputStream(runtimeAltDDFile);
+            } else {
+                input = archive.getEntry("META-INF/payara-application.xml");
+            }
+
+            if (input != null) {
+                try {
+                    read(input);
+                } catch (Throwable t) {
+                    String msg = localStrings.getLocalString("exception_parsing_payaraapplicationxml",
+                            "Error in parsing payara-application.xml for archive [{0}]: {1}", archive.getURI(), t.getMessage());
+                    throw new RuntimeException(msg);
+                } finally {
+                    if (parser != null) {
+                        try {
+                            parser.close();
+                        } catch (Exception ex) {
+                            // ignore
+                        }
+                    }
+                    try {
+                        input.close();
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                }
+            }
+        }
+
+        protected String extractVersionIdentifierValue(ReadableArchive archive) throws XMLStreamException, IOException {
+            InputStream input = null;
+            String versionIdentifierValue = null;
+
+            try {
+                File runtimeAltDDFile = archive.getArchiveMetaData(DeploymentProperties.RUNTIME_ALT_DD, File.class);
+                if (runtimeAltDDFile != null && runtimeAltDDFile.getPath().indexOf(DescriptorConstants.PAYARA_PREFIX) != -1 && runtimeAltDDFile.exists()
+                        && runtimeAltDDFile.isFile()) {
+                    DOLUtils.validateRuntimeAltDDPath(runtimeAltDDFile.getPath());
+                    input = new FileInputStream(runtimeAltDDFile);
+                } else {
+                    input = archive.getEntry("META-INF/payara-application.xml");
+                }
+
+                if (input != null) {
+
+                    // parse elements only from payara-web
+                    parser = getXMLInputFactory().createXMLStreamReader(input);
+
+                    int event = 0;
+                    skipRoot("payara-application");
+
+                    while (parser.hasNext() && (event = parser.next()) != END_DOCUMENT) {
+                        if (event == START_ELEMENT) {
+                            String name = parser.getLocalName();
+                            if ("version-identifier".equals(name)) {
+                                versionIdentifierValue = parser.getElementText();
+                            } else {
+                                skipSubTree(name);
+                            }
+                        }
+                    }
+                }
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
+            }
+
+            return versionIdentifierValue;
+        }
+
+        private void read(InputStream input) throws XMLStreamException {
+            parser = getXMLInputFactory().createXMLStreamReader(input);
+
+            int event;
+            boolean done = false;
+            skipRoot("payara-application");
+
+            while (!done && (event = parser.next()) != END_DOCUMENT) {
+
+                if (event == START_ELEMENT) {
+                    String name = parser.getLocalName();
+                    if (DeploymentProperties.COMPATIBILITY.equals(name)) {
+                        compatValue = parser.getElementText();
+                    } else if (RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI.equals(name)) {
+                        enableImplicitCDI = Boolean.parseBoolean(parser.getElementText());
+                        done = true;
+                    } else {
+                        skipSubTree(name);
+                    }
+                }
+            }
+        }
+
+        private void skipRoot(String name) throws XMLStreamException {
+            while (true) {
+                int event = parser.next();
+                if (event == START_ELEMENT) {
+                    if (!name.equals(parser.getLocalName())) {
+                        throw new XMLStreamException();
+                    }
+                    return;
+                }
+            }
+        }
+
+        private void skipSubTree(String name) throws XMLStreamException {
+            while (true) {
+                int event = parser.next();
+                if (event == END_DOCUMENT) {
+                    throw new XMLStreamException();
+                } else if (event == END_ELEMENT && name.equals(parser.getLocalName())) {
+                    return;
+                }
+            }
+        }
+
+        String getCompatibilityValue() {
+            return compatValue;
+        }
+
+        public Boolean isEnableImplicitCDI() {
+            return enableImplicitCDI;
         }
     }
 

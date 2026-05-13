@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.client.acc.config.util;
 
@@ -52,7 +53,6 @@ import javax.xml.parsers.SAXParserFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
@@ -72,7 +72,7 @@ import static org.junit.Assert.*;
  */
 public class XMLTest {
 
-    private static final String[] SAMPLE_XML_PATH = {"/sun-acc.xml", "/glassfish-acc.xml"};
+    private static final String[] SAMPLE_XML_PATH = {"/sun-acc.xml", "/glassfish-acc.xml", "/payara-acc.xml"};
     
     private static final String FIRST_HOST = "glassfish.dev.java.net";
     private static final int FIRST_PORT = 3701;
@@ -85,15 +85,12 @@ public class XMLTest {
     private static final String SECOND_PROP_NAME = "secondProp";
     private static final String SECOND_PROP_VALUE = "secondValue";
 
-    public XMLTest() {
-    }
-
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() {
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() {
     }
 
     @Test
@@ -130,8 +127,8 @@ public class XMLTest {
     }
 
     private static ClientContainer readConfig(final String configPath) 
-            throws JAXBException, FileNotFoundException, ParserConfigurationException, SAXException, IOException {
-        ClientContainer result = null;
+            throws JAXBException, ParserConfigurationException, SAXException, IOException {
+        ClientContainer result;
         InputStream is = XMLTest.class.getResourceAsStream(configPath);
         try {
             if (is == null) {
@@ -177,7 +174,10 @@ public class XMLTest {
                 "dtds/sun-application-client-container_1_2.dtd"),
             GLASSFISH_ACC(
                 "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client Container//EN",
-                "dtds/glassfish-application-client-container_1_3.dtd");
+                "dtds/glassfish-application-client-container_1_3.dtd"),
+            PAYARA_ACC(
+                "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN",
+                        "dtds/payara-application-client-container_1_4.dtd");
             
             private static final String SYSTEM_ID_PREFIX = "http://glassfish.org/";
             
@@ -192,24 +192,13 @@ public class XMLTest {
             }
         }
         
-        private static final String SUN_ACC_PUBLIC_ID =
-                "-//Sun Microsystems Inc.//DTD Application Server 8.0 Application Client Container//EN";
-        private static final String GLASSFISH_ACC_PUBLIC_ID =
-                "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client Container//EN";
-        private static final String SYSTEM_ID_PREFIX =
-                "http://glassfish.org/";
-        private static final URI SUN_ACC_SYSTEM_ID_URI = 
-                URI.create(SYSTEM_ID_PREFIX + "dtds/sun-application-client-container_1_2.dtd");
-        private static final URI GLASSFISH_ACC_SYSTEM_ID_URI = 
-                URI.create(SYSTEM_ID_PREFIX + "dtds/glassfish-application-client-container_1_3.dtd");
-        
         private static final String LOCAL_PATH_PREFIX = "/glassfish/lib/";
 
         private static final Map<String,String> publicIdToLocalPathMap =
                 initPublicIdToLocalPathMap();
 
         private static Map<String,String> initPublicIdToLocalPathMap() {
-            final Map<String,String> result = new HashMap<String,String>();
+            final Map<String,String> result = new HashMap<>();
             for (ACC_INFO accInfo : ACC_INFO.values()) {
                 result.put(accInfo.publicID, accInfo.uri.toASCIIString());
             }
@@ -222,15 +211,11 @@ public class XMLTest {
          */
         @Override
         public InputSource resolveEntity(String publicId, String systemId){
-            InputSource result = null;
+            InputSource result;
             final String localPath = publicIdToLocalPathMap.get(publicId);
             if (localPath == null) {
                 return null;
             }
-
-//            showClassPath(Thread.currentThread().getContextClassLoader(), "context");
-//            showClassPath(getClass().getClassLoader(), "class");
-//            showClassPath(ClassLoader.getSystemClassLoader(), "system");
 
             /*
              * The next line works because the pom for this project extracted
@@ -248,22 +233,6 @@ public class XMLTest {
             result = new InputSource(is);
             return result;
         }
-
-//        private void showClassPath(ClassLoader cl, final String title) {
-//            System.err.println("URLs of loaders for the " + title + " class loader");
-//            while (cl != null) {
-//                if (cl instanceof URLClassLoader) {
-//                    System.err.println("  " + cl.toString());
-//                    URLClassLoader urlCL = URLClassLoader.class.cast(cl);
-//                    System.err.println();
-//                    for (URL url : urlCL.getURLs()) {
-//                        System.err.println("    " + url.toExternalForm());
-//                    }
-//                }
-//                cl = cl.getParent();
-//            }
-//            System.err.println();
-//        }
 
     }
 }

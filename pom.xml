@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.5-SNAPSHOT</version>
+    <version>7.2026.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -261,7 +261,7 @@
         <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
         <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.9</jline.version>
+        <jline.version>3.30.11</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>6.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
@@ -269,7 +269,7 @@
         <concurro.version>3.1.0</concurro.version>
         <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.security-connectors.version>4.0.0.Alpha3</payara.security-connectors.version>
+        <payara.security-connectors.version>4.0.0</payara.security-connectors.version>
         <hk2.version>4.0.0-M3.payara-p2</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -294,7 +294,7 @@
         <hibernate.validator.version>9.0.1.Final.payara-p1</hibernate.validator.version>
         <hibernate.validator.osgi.version>9.0</hibernate.validator.osgi.version>
         <hibernate.validator.osgi.version.upperbound>10.0</hibernate.validator.osgi.version.upperbound>
-        <jaxb-impl.version>4.0.7</jaxb-impl.version>
+        <jaxb-impl.version>4.0.8</jaxb-impl.version>
         <jsonp-api.version>2.1.3</jsonp-api.version>
         <jakarta.authentication-api.version>3.1.0</jakarta.authentication-api.version>
         <jakarta.authorization-api.version>3.0.0</jakarta.authorization-api.version>

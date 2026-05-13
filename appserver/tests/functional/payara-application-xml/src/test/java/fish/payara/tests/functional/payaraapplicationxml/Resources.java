@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,33 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedexecutor;
+package fish.payara.tests.functional.payaraapplicationxml;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.Stateless;
-import jakarta.enterprise.concurrent.ManagedExecutorService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
 
-@Stateless
-public class ManagedExecutorDefinitionEJBFromConfig {
-
-    public static final Logger log = Logger.getLogger(ManagedExecutorDefinitionEJBFromConfig.class.getName());
-
-    @Resource(lookup = "java:app/jakartaee/EJBExecutor")
-    ManagedExecutorService ejbExecutor;
-
-    public String submitEJBExecutor() throws InterruptedException, ExecutionException {
-        log.log(Level.INFO, "EJBExecutor:"+ejbExecutor);
-        AtomicInteger numberExecution = new AtomicInteger(0);
-        Future future = ejbExecutor.submit(() -> {
-            numberExecution.incrementAndGet();
-            System.out.println("Job running");
-        });
-        future.get();
-        return "Executor submitted:" + numberExecution.get();
-    }
+@ApplicationPath("/resources")
+public class Resources extends Application {
 }

@@ -465,54 +465,53 @@ pipeline {
                     }
                     // FIX: removed retry(3) from options{} — moved into script{} below
                     steps {
-                        script {
-                            retry(3) {
-                                if (currentBuild.result in ['UNSTABLE', 'FAILURE']) {
-                                    currentBuild.result = null
-                                }
+                        processPayaraArtifacts(buildId, true)
 
-                                processPayaraArtifacts(buildId, true)
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean install --strict-checksums \
+                        -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
+                        -Djavax.xml.accessExternalSchema=all \
+                        -DskipTests \
+                        -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
+                        -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
+                        -pl fish.payara.samples:payara-samples-profiled-tests"""
 
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building dependencies  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                                sh """mvn -V -B -ff clean install --strict-checksums \
-                                -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                                -Djavax.xml.accessExternalSchema=all \
-                                -DskipTests \
-                                -f appserver/tests/payara-samples -pl fish.payara.samples:payara-samples \
-                                -pl fish.payara.samples:samples-test-utils -pl fish.payara.samples:test-domain-setup \
-                                -pl fish.payara.samples:payara-samples-profiled-tests"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
+                        -f appserver/tests/functional/payara-micro """
 
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                                sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
+                        -Dversion=${pom.version} \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
+                        -f appserver/tests/functional/embeddedtest """
+
+                        sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
+                        -Dversion=${pom.version} \
+                        -Dsurefire.rerunFailingTestsCount=2 \
+                        -Dfailsafe.rerunFailingTestsCount=2 \
+                        -f appserver/tests/functional/embeddedtest """
+
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && pytest appserver/tests/functional/deployment-groups/test_deployment_group.py -v -s"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
+                        --asadmin ${pwd()}/payara7/bin/asadmin"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran asadmin test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean verify --strict-checksums -Ppayara-server-remote \
                                 -Dsurefire.rerunFailingTestsCount=2 \
                                 -Dfailsafe.rerunFailingTestsCount=2 \
-                                -f appserver/tests/functional/payara-micro """
-
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Embedded  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                                sh """mvn -V -B -ff clean verify --strict-checksums -PFullProfile \
-                                -Dversion=${pom.version} \
-                                -Dsurefire.rerunFailingTestsCount=2 \
-                                -Dfailsafe.rerunFailingTestsCount=2 \
-                                -f appserver/tests/functional/embeddedtest """
-
-                                sh """mvn -V -B -ff clean verify --strict-checksums -PWebProfile \
-                                -Dversion=${pom.version} \
-                                -Dsurefire.rerunFailingTestsCount=2 \
-                                -Dfailsafe.rerunFailingTestsCount=2 \
-                                -f appserver/tests/functional/embeddedtest """
-
-                                setupDomain()
-
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                                sh """export PAYARA_HOME=${pwd()}/payara7 && pytest appserver/tests/functional/deployment-groups/test_deployment_group.py -v -s"""
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                                sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
-                                --asadmin ${pwd()}/payara7/bin/asadmin"""
-                                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran asadmin test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                            }
-                        }
+                                -f appserver/tests/functional/payara-application-xml """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
                         always {

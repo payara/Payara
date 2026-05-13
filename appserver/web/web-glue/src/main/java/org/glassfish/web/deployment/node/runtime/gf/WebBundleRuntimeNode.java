@@ -96,6 +96,7 @@ import java.util.Collections;
  * @author Jerome Dochez
  * @version
  */
+@Deprecated // When we remove support for sun-web.xml files, we should roll all of this into PayaraWebBundleRuntimeNode (or vice versa)
 public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorImpl> {
 
     /**
