@@ -270,7 +270,7 @@
         <jakarta.data-api.version>1.0.1</jakarta.data-api.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
         <payara.security-connectors.version>4.0.0</payara.security-connectors.version>
-        <hk2.version>4.0.0-M3.payara-p2</hk2.version>
+        <hk2.version>4.0.1</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
