@@ -133,7 +133,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: "Build"),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -152,7 +152,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -171,7 +171,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Health TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -190,7 +190,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP JWT Auth TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -209,7 +209,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -228,7 +228,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -247,7 +247,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -266,7 +266,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -285,7 +285,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/MP-TCKs-Development',
+                        build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
@@ -304,7 +304,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/Run-EE8-Samples-Development',
+                        build job: 'Miscellaneous/Run-EE8-Samples',
                         parameters: [
                             string(name: 'payaraBuildNumber', value: "${buildId}"),
                             string(name: 'buildProject', value: "Build/Build"),
@@ -322,7 +322,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running CargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/Run-CargoTracker-Development',
+                        build job: 'Miscellaneous/Run-CargoTracker',
                         parameters: [
                             string(name: 'payaraBuildNumber', value: "${buildId}"),
                             string(name: 'buildProject', value: "Build/Build"),
@@ -340,7 +340,7 @@ pipeline {
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'Development-Testing/Run-EE7-Samples-Development',
+                        build job: 'Miscellaneous/Run-EE7-Samples',
                         parameters: [
                             string(name: 'payaraBuildNumber', value: "${buildId}"),
                             string(name: 'buildProject', value: "Build/Build"),
