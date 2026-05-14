@@ -1,5 +1,3 @@
-# TYPE response_time_seconds_mean gauge
-response_time_seconds_mean 4.15041E-4
 # TYPE response_time_seconds_max gauge
 # HELP response_time_seconds_max Server response time for /index.html
 response_time_seconds_max 0

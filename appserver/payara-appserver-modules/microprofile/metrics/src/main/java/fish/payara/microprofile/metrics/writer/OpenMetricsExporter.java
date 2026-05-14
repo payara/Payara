@@ -157,13 +157,17 @@ public class OpenMetricsExporter implements MetricExporter {
     private void exportSampling(MetricID metricID, Sampling sampling, LongSupplier count, Supplier<Number> sum, Metadata metadata) {
         Tag[] tags = metricID.getTagsAsArray();
         Snapshot snapshot = sampling.getSnapshot();
-        String mean = globalName(metricID, metadata, "_mean");
-        appendTYPE(mean, OpenMetricsType.gauge);
-        appendValue(mean, tags, scaleToBaseUnit(snapshot.getMean(), metadata));
         String max = globalName(metricID, metadata, "_max");
         appendTYPE(max, OpenMetricsType.gauge);
         appendHELP(max, metadata);
-        appendValue(max, tags, scaleToBaseUnit(snapshot.getMax(), metadata));
+        double maxValueToSet = 0.0;
+        if (sampling instanceof TimerImpl) {
+            maxValueToSet = snapshot.getMax() / 1000000000D;
+        } else {
+            maxValueToSet = snapshot.getMax();
+        }
+
+        appendValue(max, tags, scaleToBaseUnit(maxValueToSet, metadata));
 
         String summary = globalName(metricID, metadata);
         appendHELP(summary, metadata);
@@ -173,12 +177,12 @@ public class OpenMetricsExporter implements MetricExporter {
             if (w.getConfigAdapter() != null) {
                 if (w.bucketValues() != null && w.bucketValues().length > 0) {
                     appendTYPE(summary, OpenMetricsType.histogram);
-                    printCustomPercentile(percentileValues, summary, tags, metadata);
+                    printCustomPercentile(percentileValues, sampling, summary, tags, metadata);
                     printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"),
-                                tags, metadata, sampling, count);
+                            tags, metadata, sampling, count);
                 } else {
                     appendTYPE(summary, OpenMetricsType.summary);
-                    printCustomPercentile(percentileValues, summary, tags, metadata);
+                    printCustomPercentile(percentileValues, sampling, summary, tags, metadata);
                 }
             } else {
                 appendTYPE(summary, OpenMetricsType.summary);
@@ -190,12 +194,16 @@ public class OpenMetricsExporter implements MetricExporter {
         }
 
         appendValue(globalName(metricID, metadata, "_count"), tags, ((double) count.getAsLong()));
-        appendValue(globalName(metricID, metadata, "_sum"), tags, (sum.get()).doubleValue());
+        appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get().doubleValue());
     }
 
-    public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
+    public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, Sampling sampling, String summary, Tag[] tags, Metadata metadata) {
         for (Snapshot.PercentileValue value : pencentileValues) {
-            appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
+              if (sampling instanceof TimerImpl) {
+                  appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue() / 1000000000D);
+              } else {
+                  appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
+              }
         }
     }
 
