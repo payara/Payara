@@ -250,7 +250,7 @@ public class PayaraCluster implements MembershipListener, EventListener {
                 }
                 String group = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
                 if (group == null) {
-                    name =  member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+                    group =  member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
                 }
                 message.append(" DataGrid: ").append(dataGridName);
                 if (group != null) {

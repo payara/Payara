@@ -308,7 +308,11 @@ public class CollectLogFiles implements AdminCommand {
             /******************************************************/
 
             DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
-            List<Server> instances = deploymentGroup.getInstances();
+            List<Server> instances = List.of();
+
+            if (deploymentGroup != null) {
+                instances = deploymentGroup.getInstances();
+            }
 
             int instanceCount = 0;
             int errorCount = 0;
