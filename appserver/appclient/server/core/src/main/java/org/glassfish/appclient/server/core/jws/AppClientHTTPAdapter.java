@@ -366,7 +366,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
         answer.setProperty("request.adapter.context.root", contextRoot());
         
         
-        answer.setProperty("request.glassfish-acc.xml.content", 
+        answer.setProperty("request.payara-acc.xml.content",
                 Util.toXMLEscaped(accConfigContent.sunACC()));
         answer.setProperty("request.appclient.login.conf.content",
                 Util.toXMLEscaped(accConfigContent.appClientLogin()));

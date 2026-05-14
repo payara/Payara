@@ -38,6 +38,7 @@
    only if the new code is made subject to such option by the copyright
    holder.
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!--
    Please remember to customize this file for your environment. The defaults for 
@@ -46,7 +47,7 @@
    - Property security.config in message-security-config
 -->
 
-<!DOCTYPE client-container PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client Container//EN" "http://glassfish.org/dtds/glassfish-application-client-container_1_3.dtd">
+<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-application-client-container_1_4.dtd">
 
 <client-container>
   <target-server name="%%%SERVER_NAME%%%" address="localhost" port="%%%ORB_LISTENER1_PORT%%%"/>

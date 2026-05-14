@@ -49,45 +49,47 @@ package com.sun.enterprise.deployment.xml;
 
 public interface RuntimeTagNames extends TagNames {
 
-    public final static String S1AS_EJB_RUNTIME_TAG = "sun-ejb-jar";
-    public final static String S1AS_APPCLIENT_RUNTIME_TAG = "sun-application-client";
-    public final static String S1AS_APPLICATION_RUNTIME_TAG = "sun-application";
-    public final static String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
-    public final static String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
+    String S1AS_EJB_RUNTIME_TAG = "sun-ejb-jar";
+    String S1AS_APPCLIENT_RUNTIME_TAG = "sun-application-client";
+    String S1AS_APPLICATION_RUNTIME_TAG = "sun-application";
+    String S1AS_WEB_RUNTIME_TAG = "sun-web-app";
+    String S1AS_CONNECTOR_RUNTIME_TAG = "sun-connector";
 
-    public final static String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
-    public final static String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
-    public final static String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
-    public final static String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
+    String GF_EJB_RUNTIME_TAG = "glassfish-ejb-jar";
+    String GF_APPCLIENT_RUNTIME_TAG = "glassfish-application-client";
+    String GF_APPLICATION_RUNTIME_TAG = "glassfish-application";
+    String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
 
-    public final static String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
-    public final static String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
-    public final static String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
-    public final static String PAYARA_SCANNING_INCLUDE = "scanning-include";
-    public final static String PAYARA_WHITELIST_PACKAGE = "whitelist-package";
-    public final static String PAYARA_JAXRS_ROLES_ALLOWED_ENABLED = "jaxrs-roles-allowed-enabled";
-    public final static String PAYARA_APPLICATION_RUNTIME_TAG = "payara-application";
-    public final static String PAYARA_WEB_RUNTIME_TAG = "payara-web-app";
+    String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
+    String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
+    String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
+    String PAYARA_SCANNING_INCLUDE = "scanning-include";
+    String PAYARA_WHITELIST_PACKAGE = "whitelist-package";
+    String PAYARA_JAXRS_ROLES_ALLOWED_ENABLED = "jaxrs-roles-allowed-enabled";
+    String PAYARA_APPLICATION_RUNTIME_TAG = "payara-application";
+    String PAYARA_WEB_RUNTIME_TAG = "payara-web-app";
+    String PAYARA_EJB_RUNTIME_TAG = "payara-ejb-jar";
+    String PAYARA_APPCLIENT_RUNTIME_TAG = "payara-application-client";
 
     // The name of the deployment context property used to disable implicit bean discovery for a
     // particular application deployment.
-    public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
-    public final static String PAYARA_CLUSTERED_BEAN = "clustered-bean";
-    public final static String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
-    public final static String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
-    public final static String PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH = "clustered-attach-postconstruct";
-    public final static String PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH = "clustered-detach-predestroy";
+    String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
+    String PAYARA_CLUSTERED_BEAN = "clustered-bean";
+    String PAYARA_CLUSTERED_KEY_NAME = "clustered-key-name";
+    String PAYARA_CLUSTERED_LOCK_TYPE = "clustered-lock-type";
+    String PAYARA_CLUSTERED_POSTCONSTRUCT_ON_ATTACH = "clustered-attach-postconstruct";
+    String PAYARA_CLUSTERED_PREDESTROY_ON_DETTACH = "clustered-detach-predestroy";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";
     String CALLER_PROPAGATION = "caller-propagation";
     String CONFIDENTIALITY = "confidentiality";
-    public static final String DURABLE_SUBSCRIPTION = "jms-durable-subscription-name";
+    String DURABLE_SUBSCRIPTION = "jms-durable-subscription-name";
     String ESTABLISH_TRUST_IN_CLIENT = "establish-trust-in-client";
     String ESTABLISH_TRUST_IN_TARGET = "establish-trust-in-target";
     String INTEGRITY = "integrity";
     String IOR_CONFIG = "ior-security-config";
-    public static final String MDB_CONNECTION_FACTORY = "mdb-connection-factory";
+    String MDB_CONNECTION_FACTORY = "mdb-connection-factory";
     String MESSAGE_DESTINATION = "message-destination";
     String MESSAGE_DESTINATION_NAME = "message-destination-name";
     String REALM = "realm";
@@ -102,204 +104,176 @@ public interface RuntimeTagNames extends TagNames {
     String ACTIVATION_CONFIG_PROPERTY_NAME = "activation-config-property-name";
     String ACTIVATION_CONFIG_PROPERTY_VALUE = "activation-config-property-value";
 
-    public static final String APPLICATION_CLIENT = "app-client";
-    public static final String DEFAULT_RESOURCE_PRINCIPAL = "default-resource-principal";
-    public static final String DISPLAY_NAME = "display-name";
-    public static final String EJB = "ejb";
-    public static final String EJB_NAME = "ejb-name";
-    public static final String EJBS = "enterprise-beans";
-    public static final String WEBSERVICE_DEFAULT_LOGIN_CONFIG = "webservice-default-login-config";
-    public static final String FIELD = "field";
+    String DEFAULT_RESOURCE_PRINCIPAL = "default-resource-principal";
+    String EJB = "ejb";
+    String EJB_NAME = "ejb-name";
+    String EJBS = "enterprise-beans";
+    String WEBSERVICE_DEFAULT_LOGIN_CONFIG = "webservice-default-login-config";
+    String FIELD = "field";
 
-    public static final String GROUP = "group";
-    public static final String GROUPS = "groups";
-    public static final String JOIN_OBJECT = "join-object";
-    public static final String JNDI_NAME = "jndi-name";
-    public static final String LOCAL_PART = "localpart";
-    public static final String MAIL_CONFIG = "mail-configuration";
-    public static final String MAIL_FROM = "mail-from";
-    public static final String MAIL_HOST = "mail-host";
-    public static final String METHOD = "method";
-    public static final String NAME = "name";
-    public static final String NAMESPACE_URI = "namespace-uri";
-    public static final String OPERATION = "operation";
+    String GROUP = "group";
+    String JNDI_NAME = "jndi-name";
+    String MAIL_FROM = "mail-from";
+    String MAIL_HOST = "mail-host";
+    String METHOD = "method";
+    String NAME = "name";
 
-    public static final String PASSWORD = "password";
-    public static final String PRINCIPALS = "principals";
-    public static final String PRINCIPAL = "principal";
-    public static final String REMOTE_ENTITY = "remote-entity";
-    public static final String ROLE = "role";
-    public static final String ROLE_MAPPING = "rolemapping";
-    public static final String ROLE_ENTRY = "role";
-    public static final String SERVER_NAME = "server-name";
+    String PASSWORD = "password";
+    String PRINCIPAL = "principal";
 
-    public static final String SERVLET = "servlet";
-    public static final String SERVLET_NAME = "servlet-name";
-    public static final String SOURCE = "source";
-    public static final String SINK = "sink";
-    public static final String SQL = "sql";
-    public static final String SQL_STATEMENT = "sql-statement";
-    public static final String TABLE_CREATE = "table-create-sql";
-    public static final String TABLE_REMOVE = "table-remove-sql";
+    String SERVLET = "servlet";
+    String SERVLET_NAME = "servlet-name";
+    String SOURCE = "source";
+    String SQL = "sql";
 
 
-    public static final String UNIQUE_ID = "unique-id";
-    public static final String WEB = "web";
-    public static final String WEB_SERVICE_ENDPOINT = "web-service-endpoint";
+    String UNIQUE_ID = "unique-id";
+    String WEB = "web";
 
 
-    public static final String EJB_IMPL = "ejb-impl";
-    public static final String REMOTE_IMPL = "remote-impl";
-    public static final String LOCAL_IMPL = "local-impl";
-    public static final String REMOTE_HOME_IMPL = "remote-home-impl";
-    public static final String LOCAL_HOME_IMPL = "local-home-impl";
-    public static final String STATE_IMPL = "state-impl";
-    public static final String GEN_CLASSES = "gen-classes";
+    String REMOTE_IMPL = "remote-impl";
+    String LOCAL_IMPL = "local-impl";
+    String REMOTE_HOME_IMPL = "remote-home-impl";
+    String LOCAL_HOME_IMPL = "local-home-impl";
+    String GEN_CLASSES = "gen-classes";
 
     // acceptable values
-    public static final String TRUE = "true";
-    public static final String FALSE = "false";
+    String TRUE = "true";
+    String FALSE = "false";
 
     // SECURITY related
-    public static final String SECURITY_ROLE_MAPPING = "security-role-mapping";
-    public static final String SECURITY_ROLE_ASSIGNMENT = "security-role-assignment";
-    public static final String ROLE_NAME = "role-name";
-    public static final String PRINCIPAL_NAME = "principal-name";
-    public static final String GROUP_NAME = "group-name";
-    public static final String EXTERNALLY_DEFINED = "externally-defined";
+    String SECURITY_ROLE_MAPPING = "security-role-mapping";
+    String ROLE_NAME = "role-name";
+    String PRINCIPAL_NAME = "principal-name";
+    String GROUP_NAME = "group-name";
 
     // common
-    public static final String EJB_REF = "ejb-ref";
-    public static final String RESOURCE_REF = "resource-ref";
-    public static final String RESOURCE_ENV_REF = "resource-env-ref";
+    String EJB_REF = "ejb-ref";
+    String RESOURCE_REF = "resource-ref";
+    String RESOURCE_ENV_REF = "resource-env-ref";
 
     // S1AS specific
-    public static final String PASS_BY_REFERENCE = "pass-by-reference";
-    public static final String JMS_MAX_MESSAGES_LOAD = "jms-max-messages-load";
-    public static final String IS_READ_ONLY_BEAN = "is-read-only-bean";
-    public static final String REFRESH_PERIOD_IN_SECONDS = "refresh-period-in-seconds";
-    public static final String COMMIT_OPTION = "commit-option";
-    public static final String CMT_TIMEOUT_IN_SECONDS = "cmt-timeout-in-seconds";
-    public static final String USE_THREAD_POOL_ID = "use-thread-pool-id";
-    public static final String AVAILABILITY_ENABLED = "availability-enabled";
-    public static final String DISABLE_NONPORTABLE_JNDI_NAMES = "disable-nonportable-jndi-names";
-    public static final String PER_REQUEST_LOAD_BALANCING = "per-request-load-balancing";
+    String PASS_BY_REFERENCE = "pass-by-reference";
+    String JMS_MAX_MESSAGES_LOAD = "jms-max-messages-load";
+    String IS_READ_ONLY_BEAN = "is-read-only-bean";
+    String REFRESH_PERIOD_IN_SECONDS = "refresh-period-in-seconds";
+    String COMMIT_OPTION = "commit-option";
+    String CMT_TIMEOUT_IN_SECONDS = "cmt-timeout-in-seconds";
+    String USE_THREAD_POOL_ID = "use-thread-pool-id";
+    String AVAILABILITY_ENABLED = "availability-enabled";
+    String DISABLE_NONPORTABLE_JNDI_NAMES = "disable-nonportable-jndi-names";
+    String PER_REQUEST_LOAD_BALANCING = "per-request-load-balancing";
 
     // BEAN-POOL related
-    public static final String BEAN_POOL = "bean-pool";
-    public static final String STEADY_POOL_SIZE = "steady-pool-size";
-    public static final String POOL_RESIZE_QUANTITY = "resize-quantity";
-    public static final String MAX_POOL_SIZE = "max-pool-size";
-    public static final String POOL_IDLE_TIMEOUT_IN_SECONDS = "pool-idle-timeout-in-seconds";
+    String BEAN_POOL = "bean-pool";
+    String STEADY_POOL_SIZE = "steady-pool-size";
+    String POOL_RESIZE_QUANTITY = "resize-quantity";
+    String MAX_POOL_SIZE = "max-pool-size";
+    String POOL_IDLE_TIMEOUT_IN_SECONDS = "pool-idle-timeout-in-seconds";
 
     // BEAN-CACHE related
-    public static final String BEAN_CACHE = "bean-cache";
-    public static final String MAX_CACHE_SIZE = "max-cache-size";
-    public static final String RESIZE_QUANTITY = "resize-quantity";
-    public static final String CACHE_IDLE_TIMEOUT_IN_SECONDS = "cache-idle-timeout-in-seconds";
-    public static final String REMOVAL_TIMEOUT_IN_SECONDS = "removal-timeout-in-seconds";
-    public static final String VICTIM_SELECTION_POLICY = "victim-selection-policy";
+    String BEAN_CACHE = "bean-cache";
+    String MAX_CACHE_SIZE = "max-cache-size";
+    String RESIZE_QUANTITY = "resize-quantity";
+    String CACHE_IDLE_TIMEOUT_IN_SECONDS = "cache-idle-timeout-in-seconds";
+    String REMOVAL_TIMEOUT_IN_SECONDS = "removal-timeout-in-seconds";
+    String VICTIM_SELECTION_POLICY = "victim-selection-policy";
 
     // thread-pool related
-    public static final String THREAD_CORE_POOL_SIZE = "thread-core-pool-size";
-    public static final String THREAD_MAX_POOL_SIZE  = "thread-max-pool-size";
-    public static final String THREAD_KEEP_ALIVE_SECONDS = "thread-keep-alive-seconds";
-    public static final String THREAD_QUEUE_CAPACITY = "thread-queue-capacity";
-    public static final String ALLOW_CORE_THREAD_TIMEOUT = "allow-core-thread-timeout";
-    public static final String PRESTART_ALL_CORE_THREADS = "prestart-all-core-threads";
+    String THREAD_CORE_POOL_SIZE = "thread-core-pool-size";
+    String THREAD_MAX_POOL_SIZE  = "thread-max-pool-size";
+    String THREAD_KEEP_ALIVE_SECONDS = "thread-keep-alive-seconds";
+    String THREAD_QUEUE_CAPACITY = "thread-queue-capacity";
+    String ALLOW_CORE_THREAD_TIMEOUT = "allow-core-thread-timeout";
+    String PRESTART_ALL_CORE_THREADS = "prestart-all-core-threads";
 
     // flush-at-end-of-method
-    public static final String FLUSH_AT_END_OF_METHOD =
+    String FLUSH_AT_END_OF_METHOD =
         "flush-at-end-of-method";
     // checkpoint-at-end-of-method, equivalent element of
     // checkpointed-methods in 8.1 and later releases
-    public static final String CHECKPOINT_AT_END_OF_METHOD =
+    String CHECKPOINT_AT_END_OF_METHOD =
         "checkpoint-at-end-of-method";
-    // prefetch-disabled
-    public static final String PREFETCH_DISABLED =
-        "prefetch-disabled";
 
-    public static final String QUERY_METHOD = "query-method";
+    String QUERY_METHOD = "query-method";
 
     // Connector related
-    public static final String RESOURCE_ADAPTER = "resource-adapter";
-    public static final String ROLE_MAP = "role-map";
-    public static final String IDLE_TIMEOUT_IN_SECONDS = "idle-timeout-in-seconds";
-    public static final String PROPERTY = "property";
-    public static final String MAP_ELEMENT = "map-element";
-    public static final String MAP_ID = "map-id";
-    public static final String BACKEND_PRINCIPAL = "backend-principal";
-    public static final String USER_NAME = "user-name";
-    public static final String CREDENTIAL = "credential";
+    String RESOURCE_ADAPTER = "resource-adapter";
+    String ROLE_MAP = "role-map";
+    String IDLE_TIMEOUT_IN_SECONDS = "idle-timeout-in-seconds";
+    String PROPERTY = "property";
+    String MAP_ELEMENT = "map-element";
+    String MAP_ID = "map-id";
+    String BACKEND_PRINCIPAL = "backend-principal";
+    String USER_NAME = "user-name";
+    String CREDENTIAL = "credential";
 
     // application related
-    public static final String WEB_URI = "web-uri";
-    public static final String CONTEXT_ROOT = "context-root"; // also used in java web start support
-    public final static String ARCHIVE_NAME = "archive-name";
-    public final static String COMPATIBILITY = "compatibility";
-    public final static String KEEP_STATE = "keep-state";
-    public static final String VERSION_IDENTIFIER = "version-identifier";
-    public final static String APPLICATION_PARAM = "application-param";
-    public static final String PARAM_NAME = "param-name";
-    public static final String PARAM_VALUE = "param-value";
-    public final static String MODULE = "module";
-    public final static String TYPE = "type";
-    public final static String PATH = "path";
+    String WEB_URI = "web-uri";
+    String CONTEXT_ROOT = "context-root"; // also used in java web start support
+    String ARCHIVE_NAME = "archive-name";
+    String COMPATIBILITY = "compatibility";
+    String KEEP_STATE = "keep-state";
+    String VERSION_IDENTIFIER = "version-identifier";
+    String APPLICATION_PARAM = "application-param";
+    String MODULE = "module";
+    String TYPE = "type";
+    String PATH = "path";
 
     // Web
-    public static final String CACHE_MAPPING = "cache-mapping";
-    public static final String CACHE_HELPER = "cache-helper";
-    public static final String CACHE_HELPER_REF = "cache-helper-ref";
-    public static final String CLASS_NAME = "class-name";
-    public static final String COOKIE_PROPERTIES = "cookie-properties";
-    public static final String CONSTRAINT_FIELD = "constraint-field";
-    public static final String CONSTRAINT_FIELD_VALUE = "constraint-field-value";
-    public static final String DEFAULT_HELPER = "default-helper";
-    public static final String MAX_ENTRIES = "max-entries";
-    public static final String TIMEOUT_IN_SECONDS = "timeout-in-seconds";
-    public static final String ENABLED = "enabled";
-    public static final String PARAMETER_ENCODING = "parameter-encoding";
-    public static final String FORM_HINT_FIELD = "form-hint-field";
-    public static final String DEFAULT_CHARSET = "default-charset";
-    public static final String STORE_PROPERTIES = "store-properties";
-    public static final String MANAGER_PROPERTIES = "manager-properties";
-    public static final String REFRESH_FIELD = "refresh-field";
-    public static final String SESSION_MANAGER = "session-manager";
-    public static final String SESSION_PROPERTIES = "session-properties";
-    public static final String SESSION_CONFIG = "session-config";
-    public static final String TIMEOUT = "timeout";
-    public static final String PERSISTENCE_TYPE = "persistence-type";
-    public static final String JSP_CONFIG = "jsp-config";
-    public static final String CLASS_LOADER = "class-loader";
-    public static final String EXTRA_CLASS_PATH = "extra-class-path";
-    public static final String DELEGATE = "delegate";
-    public static final String DYNAMIC_RELOAD_INTERVAL =
+    String CACHE_MAPPING = "cache-mapping";
+    String CACHE_HELPER = "cache-helper";
+    String CACHE_HELPER_REF = "cache-helper-ref";
+    String CLASS_NAME = "class-name";
+    String COOKIE_PROPERTIES = "cookie-properties";
+    String CONSTRAINT_FIELD = "constraint-field";
+    String CONSTRAINT_FIELD_VALUE = "constraint-field-value";
+    String DEFAULT_HELPER = "default-helper";
+    String MAX_ENTRIES = "max-entries";
+    String TIMEOUT_IN_SECONDS = "timeout-in-seconds";
+    String ENABLED = "enabled";
+    String PARAMETER_ENCODING = "parameter-encoding";
+    String FORM_HINT_FIELD = "form-hint-field";
+    String DEFAULT_CHARSET = "default-charset";
+    String STORE_PROPERTIES = "store-properties";
+    String MANAGER_PROPERTIES = "manager-properties";
+    String REFRESH_FIELD = "refresh-field";
+    String SESSION_MANAGER = "session-manager";
+    String SESSION_PROPERTIES = "session-properties";
+    String SESSION_CONFIG = "session-config";
+    String TIMEOUT = "timeout";
+    String PERSISTENCE_TYPE = "persistence-type";
+    String JSP_CONFIG = "jsp-config";
+    String CLASS_LOADER = "class-loader";
+    String EXTRA_CLASS_PATH = "extra-class-path";
+    String DELEGATE = "delegate";
+    String DYNAMIC_RELOAD_INTERVAL =
         "dynamic-reload-interval";
-    public static final String CACHE = "cache";
-    public static final String KEY_FIELD = "key-field";
-    public static final String URL_PATTERN = "url-pattern";
-    public static final String HTTP_METHOD = "http-method";
-    public static final String DISPATCHER = "dispatcher";
-    public static final String SCOPE = "scope";
-    public static final String CACHE_ON_MATCH = "cache-on-match";
-    public static final String CACHE_ON_MATCH_FAILURE = "cache-on-match-failure";
-    public static final String MATCH_EXPR = "match-expr";
-    public static final String VALUE = "value";
-    public static final String IDEMPOTENT_URL_PATTERN = "idempotent-url-pattern";
-    public static final String ERROR_URL = "error-url";
-    public static final String HTTPSERVLET_SECURITY_PROVIDER = "httpservlet-security-provider";
-    public static final String NUM_OF_RETRIES = "num-of-retries";
+    String CACHE = "cache";
+    String KEY_FIELD = "key-field";
+    String URL_PATTERN = "url-pattern";
+    String HTTP_METHOD = "http-method";
+    String DISPATCHER = "dispatcher";
+    String SCOPE = "scope";
+    String CACHE_ON_MATCH = "cache-on-match";
+    String CACHE_ON_MATCH_FAILURE = "cache-on-match-failure";
+    String MATCH_EXPR = "match-expr";
+    String VALUE = "value";
+    String IDEMPOTENT_URL_PATTERN = "idempotent-url-pattern";
+    String ERROR_URL = "error-url";
+    String HTTPSERVLET_SECURITY_PROVIDER = "httpservlet-security-provider";
+    String NUM_OF_RETRIES = "num-of-retries";
 
-    public static final String JAVA_METHOD = "java-method";
-    public final static String METHOD_PARAMS = "method-params";
-    public final static String METHOD_PARAM = "method-param";
+    String JAVA_METHOD = "java-method";
+    String METHOD_PARAMS = "method-params";
+    String METHOD_PARAM = "method-param";
 
-    public final static String VALVE = "valve";
+    String VALVE = "valve";
 
     // Java Web Start-support related
-    public final static String JAVA_WEB_START_ACCESS = "java-web-start-access";
-    public final static String ELIGIBLE = "eligible";
-    public final static String VENDOR = "vendor";
-    public final static String JNLP_DOC = "jnlp-doc";
+    String JAVA_WEB_START_ACCESS = "java-web-start-access";
+    String ELIGIBLE = "eligible";
+    String VENDOR = "vendor";
+    String JNLP_DOC = "jnlp-doc";
     // also uses CONTEXT_ROOT defined above in the application-related section
 }

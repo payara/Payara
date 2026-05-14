@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,65 +37,61 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
-package com.sun.enterprise.deployment.io;
+package fish.payara.deployment.node.runtime;
 
-import org.glassfish.api.deployment.archive.ArchiveType;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import com.sun.enterprise.deployment.node.XMLElement;
+import com.sun.enterprise.deployment.node.runtime.AppClientRuntimeNode;
+import com.sun.enterprise.deployment.xml.DTDRegistry;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
-import com.sun.enterprise.deployment.util.DOLUtils;
+import java.util.Map;
+
 
 /**
- * Repository of descriptors
- * This class will evolve to provide a comprhensive list of
- * descriptors for any given type of j2ee application or
- * stand-alone module.
- *
- * @author Sreenivas Munnangi
+ * This node is responsible for handling all runtime information for 
+ * application client.
  */
+public class PayaraAppClientRuntimeNode extends AppClientRuntimeNode {
 
-public class DescriptorList {
+    public PayaraAppClientRuntimeNode(ApplicationClientDescriptor descriptor) {
+        super(descriptor);
+    }
 
-	private final static String [] earList = {
-		DescriptorConstants.APPLICATION_DD_ENTRY,
-		DescriptorConstants.S1AS_APPLICATION_DD_ENTRY
-	};
+    public PayaraAppClientRuntimeNode() {
+    }
 
-	private final static String [] ejbList = {
-		DescriptorConstants.EJB_DD_ENTRY,
-		DescriptorConstants.S1AS_EJB_DD_ENTRY,
-		DescriptorConstants.EJB_WEBSERVICES_JAR_ENTRY
-	};
+    /**
+     * @return the XML tag associated with this XMLNode
+     */
+    protected XMLElement getXMLRootTag() {
+        return new XMLElement(RuntimeTagNames.PAYARA_APPCLIENT_RUNTIME_TAG);
+    }
 
-	private final static String [] warList = {
-		DescriptorConstants.WEB_DD_ENTRY,
-		DescriptorConstants.S1AS_WEB_DD_ENTRY,
-		DescriptorConstants.WEB_WEBSERVICES_JAR_ENTRY,
-		DescriptorConstants.JAXRPC_JAR_ENTRY
-	};
+    /**
+     * @return the DOCTYPE that should be written to the XML file
+     */
+    public String getDocType() {
+        return DTDRegistry.PAYARA_APPCLIENT_110_DTD_PUBLIC_ID;
+    }
 
-	private final static String [] rarList = {
-		DescriptorConstants.RAR_DD_ENTRY,
-		DescriptorConstants.S1AS_RAR_DD_ENTRY
-	};
+    /**
+     * @return the SystemID of the XML file
+     */
+    public String getSystemID() {
+        return DTDRegistry.PAYARA_APPCLIENT_110_DTD_SYSTEM_ID;
+    }
 
-	private final static String [] carList = {
-		DescriptorConstants.APP_CLIENT_DD_ENTRY,
-		DescriptorConstants.S1AS_APP_CLIENT_DD_ENTRY
-	};
-
-	public final static String [] getDescriptorsList (ArchiveType moduleType) {
-		if (moduleType == null) return null;
-		if (moduleType.equals(DOLUtils.earType())) {
-			return (String[])earList.clone();
-		} else if (moduleType.equals(DOLUtils.ejbType())) {
-			return (String[])ejbList.clone();
-		} else if (moduleType.equals(DOLUtils.warType())) {
-			return (String[])warList.clone();
-		} else if (moduleType.equals(DOLUtils.rarType())) {
-			return (String[])rarList.clone();
-		} else if (moduleType.equals(DOLUtils.carType())) {
-			return (String[])carList.clone();
-		}
-		return null;
-	}
+    /**
+     * register this node as a root node capable of loading entire DD files
+     *
+     * @param publicIDToDTD is a mapping between xml Public-ID to DTD
+     * @return the doctype tag name
+     */
+    public static String registerBundle(Map publicIDToDTD) {
+        publicIDToDTD.put(DTDRegistry.PAYARA_APPCLIENT_110_DTD_PUBLIC_ID, DTDRegistry.PAYARA_APPCLIENT_110_DTD_SYSTEM_ID);
+        return RuntimeTagNames.PAYARA_APPCLIENT_RUNTIME_TAG;
+    }
 }

@@ -37,12 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.archivist;
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
+import fish.payara.deployment.io.runtime.PayaraAppClientRuntimeDDFile;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.io.AppClientDeploymentDescriptorFile;
 import com.sun.enterprise.deployment.io.DeploymentDescriptorFile;
@@ -152,6 +153,7 @@ public class AppClientArchivist extends Archivist<ApplicationClientDescriptor> {
     public List<ConfigurationDeploymentDescriptorFile> getConfigurationDDFiles() {
         if (confDDFiles == null) {
             confDDFiles = new ArrayList<>();
+            confDDFiles.add(new PayaraAppClientRuntimeDDFile());
             confDDFiles.add(new GFAppClientRuntimeDDFile());
             confDDFiles.add(new AppClientRuntimeDDFile());
         }

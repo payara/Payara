@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.javaee.full.deployment;
 
@@ -51,7 +51,6 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
@@ -81,6 +80,7 @@ public class EarDetector implements ArchiveDetector {
     private static final String APPLICATION_XML = "META-INF/application.xml";
     private static final String SUN_APPLICATION_XML = "META-INF/sun-application.xml";
     private static final String GF_APPLICATION_XML = "META-INF/glassfish-application.xml";
+    private static final String PAYARA_APPLICATION_XML = "META-INF/payara-application.xml";
     private static final String EAR_EXTENSION = ".ear";
     private static final String EXPANDED_WAR_SUFFIX = "_war";
     private static final String EXPANDED_RAR_SUFFIX = "_rar";
@@ -102,9 +102,8 @@ public class EarDetector implements ArchiveDetector {
                 return true;
             }
 
-            isEar = archive.exists(APPLICATION_XML) ||
-                    archive.exists(SUN_APPLICATION_XML) ||
-                    archive.exists(GF_APPLICATION_XML);
+            isEar = archive.exists(APPLICATION_XML) || archive.exists(SUN_APPLICATION_XML) ||
+                    archive.exists(GF_APPLICATION_XML) || archive.exists(PAYARA_APPLICATION_XML);
 
             if (!isEar) {
                 isEar = isEARFromIntrospecting(archive);

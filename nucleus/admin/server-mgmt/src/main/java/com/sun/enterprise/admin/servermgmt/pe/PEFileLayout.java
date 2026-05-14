@@ -582,7 +582,7 @@ public class PEFileLayout
     }
 
     
-    public static final String ACC_XML_TEMPLATE = "glassfish-acc.xml";
+    public static final String ACC_XML_TEMPLATE = "payara-acc.xml";
     
     public Map<File,File> getAppClientContainerTemplateAndXml() {
         final Map<File,File> result = new HashMap<File,File>();
@@ -590,7 +590,7 @@ public class PEFileLayout
         return result;
     }
     
-    public static final String ACC_XML = "glassfish-acc.xml";
+    public static final String ACC_XML = "payara-acc.xml";
     
     public static final String SESSION_STORE = "session-store";
     public File getSessionStore()

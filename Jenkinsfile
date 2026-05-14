@@ -429,6 +429,13 @@ pipeline {
                         sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
                         --asadmin ${pwd()}/payara7/bin/asadmin"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran asadmin test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean verify --strict-checksums -Ppayara-server-remote \
+                                -Dsurefire.rerunFailingTestsCount=2 \
+                                -Dfailsafe.rerunFailingTestsCount=2 \
+                                -f appserver/tests/functional/payara-application-xml """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
                         always {

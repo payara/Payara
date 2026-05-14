@@ -41,13 +41,13 @@
 
 -->
 
-<!-- Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2018-2026 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>acc-config</artifactId>
@@ -150,7 +150,7 @@
                 </dependencies>
                 <executions>
                     <execution>
-                        <id>xjc-gen-for-glassfish-acc</id>
+                        <id>xjc-gen-for-payara-acc</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>run</goal>
@@ -227,9 +227,9 @@
     <dependencies>
         <!--
             We depend on the deployment/dtds module which contains the
-            sun-application-client-container_1_2.dtd and
-            glassfish-application-client-container_1_3.dtd.  We use that for
-            generating JAXB classes but we do not want to package the DTD
+            sun-application-client-container_1_2.dtd,
+            glassfish-application-client-container_1_3.dtd, and payara-application-client-container_1_4.dtd.
+            We use that for generating JAXB classes but we do not want to package the DTD
             with the ACC module, nor do we want the ACC module depending on
             the deploymenet/dtds module at runtime.  Note the scope is "provided"
             to indicate this.

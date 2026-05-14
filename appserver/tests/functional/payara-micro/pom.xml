@@ -46,8 +46,8 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
-        <relativePath>../payara-samples/samples</relativePath>
+        <version>7.2026.6-SNAPSHOT</version>
+        <relativePath>../../payara-samples/samples</relativePath>
     </parent>
 
     <artifactId>payara-micro</artifactId>

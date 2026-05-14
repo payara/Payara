@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.io.runtime;
 
@@ -51,6 +52,7 @@ import com.sun.enterprise.deployment.node.runtime.GFAppClientRuntimeNode;
  * This class is responsible for handling the XML configuration information
  * for the Glassfish Application Client Container
  */
+@Deprecated
 public class GFAppClientRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {  
     /**
      * @return the location of the DeploymentDescriptor file for a

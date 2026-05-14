@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
 
-import jakarta.annotation.Resource;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -48,8 +47,6 @@ import jakarta.ejb.EJB;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 
 @Path("xml")
@@ -60,23 +57,12 @@ public class ManagedScheduledExecutorEJBRest {
     @EJB
     ManagedScheduledExecutorEJB managedScheduledExecutorEJB;
 
-    @EJB
-    ManagedScheduledExecutorEJBFromConfig managedScheduledExecutorEJBFromConfig;
-
     @GET
     @Path("application")
     @Produces(MediaType.TEXT_PLAIN)
     public String processManagedScheduledExecutor() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, "Processing xml tag from ear application config");
         return managedScheduledExecutorEJB.processCustomManagedScheduled();
-    }
-
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutorFromEJBConfig() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedScheduledExecutorEJBFromConfig.processCustomManagedScheduled();
     }
 
 }

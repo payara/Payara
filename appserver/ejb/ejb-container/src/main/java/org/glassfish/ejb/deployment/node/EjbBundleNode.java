@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.node;
 
 import static java.util.Collections.unmodifiableList;
@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import fish.payara.ejb.deployment.node.runtime.PayaraEjbBundleRuntimeNode;
 import org.glassfish.ejb.deployment.EjbTagNames;
 import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
@@ -83,19 +84,26 @@ import com.sun.enterprise.deployment.xml.TagNames;
 public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
 
     public final static XMLElement tag = new XMLElement(EjbTagNames.EJB_BUNDLE_TAG);
+    @Deprecated
     public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN";
+    @Deprecated
     public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN";
 
     /** The system ID of an ejb-jar document. */
+    @Deprecated
     public final static String SYSTEM_ID = "http://java.sun.com/dtd/ejb-jar_2_0.dtd";
+    @Deprecated
     public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/ejb-jar_1_1.dtd";
+    @Deprecated
     public final static String SCHEMA_ID_21 = "ejb-jar_2_1.xsd";
+    @Deprecated
     public final static String SCHEMA_ID_30 = "ejb-jar_3_0.xsd";
+    @Deprecated
     public final static String SCHEMA_ID_31 = "ejb-jar_3_1.xsd";
+    @Deprecated
     public final static String SCHEMA_ID_32 = "ejb-jar_3_2.xsd";
-    public final static String SCHEMA_ID_33 = "ejb-jar_4_0.xsd";
-    public final static String SCHEMA_ID = "ejb-jar_4_1.xsd";
-    public final static String SPEC_VERSION = "4.1";
+    public final static String SCHEMA_ID_40 = "ejb-jar_4_0.xsd";
+    public final static String SPEC_VERSION = "4.0";
     private final static List<String> systemIDs = initSystemIDs();
 
     /**
@@ -113,18 +121,18 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
 
     @Override
     public Map<String, Class<?>> registerRuntimeBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
-        Map<String, Class<?>> result = new HashMap<String, Class<?>>();
+        Map<String, Class<?>> result = new HashMap<>();
 
         result.put(EjbBundleRuntimeNode.registerBundle(publicIDToDTD), EjbBundleRuntimeNode.class);
         result.put(GFEjbBundleRuntimeNode.registerBundle(publicIDToDTD), GFEjbBundleRuntimeNode.class);
+        result.put(PayaraEjbBundleRuntimeNode.registerBundle(publicIDToDTD), PayaraEjbBundleRuntimeNode.class);
 
         return result;
     }
 
     private static List<String> initSystemIDs() {
-        List<String> systemIDs = new ArrayList<String>(3);
-        systemIDs.add(SCHEMA_ID);
-        systemIDs.add(SCHEMA_ID_33);
+        List<String> systemIDs = new ArrayList<>(3);
+        systemIDs.add(SCHEMA_ID_40);
         systemIDs.add(SCHEMA_ID_32);
         systemIDs.add(SCHEMA_ID_31);
         systemIDs.add(SCHEMA_ID_30);
@@ -247,7 +255,7 @@ public class EjbBundleNode extends AbstractBundleNode<EjbBundleDescriptorImpl> {
 
     @Override
     public String getSystemID() {
-        return SCHEMA_ID;
+        return SCHEMA_ID_40;
     }
 
     @Override
