@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright 2026 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms;
 
