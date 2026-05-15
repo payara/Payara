@@ -220,25 +220,25 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-//                 stage('MicroProfile OpenAPI TCK') {
-//                     agent {
-//                         label 'general-purpose'
-//                     }
-//                     steps {
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         build job: 'TCKs/MP-TCKs',
-//                         parameters: [
-//                             string(name: 'buildProject', value: 'Build'),
-//                             string(name: 'payaraBuildNumber', value: buildId),
-//                             string(name: 'repoOrg', value: 'payara'),
-//                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-//                             string(name: 'suites', value: 'OpenAPI'),
-//                             string(name: 'jdkVer', value: 'zulu-21'),
-//                             string(name: 'distribution', value: 'full')
-//                         ]
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                     }
-//                 }
+                 stage('MicroProfile OpenAPI TCK') {
+                     agent {
+                         label 'general-purpose'
+                     }
+                     steps {
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                         build job: 'TCKs/MP-TCKs',
+                         parameters: [
+                             string(name: 'buildProject', value: 'Build'),
+                             string(name: 'payaraBuildNumber', value: buildId),
+                             string(name: 'repoOrg', value: 'payara'),
+                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                             string(name: 'suites', value: 'OpenAPI'),
+                             string(name: 'jdkVer', value: 'zulu-21'),
+                             string(name: 'distribution', value: 'full')
+                         ]
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                     }
+                 }
 //                 stage('MicroProfile OpenTelemetry Tracing TCK') {
 //                     agent {
 //                         label 'general-purpose'

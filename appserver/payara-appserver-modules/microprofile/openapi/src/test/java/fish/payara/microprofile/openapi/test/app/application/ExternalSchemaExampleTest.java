@@ -83,7 +83,7 @@ public class ExternalSchemaExampleTest extends OpenApiApplicationTest {
     public void fieldSchemaExampleIsRendered() {
         JsonNode nameProperties = JsonUtils.path(getOpenAPIJson(), "components.schemas.Student.properties.name");
         assertNotNull(nameProperties);
-        assertEquals("string", nameProperties.get("type").get(0).textValue());
+        assertEquals("string", nameProperties.get("type").textValue());
         assertEquals("the student name", nameProperties.get("description").textValue());
         assertEquals("cuba", nameProperties.get("example").textValue());
     }

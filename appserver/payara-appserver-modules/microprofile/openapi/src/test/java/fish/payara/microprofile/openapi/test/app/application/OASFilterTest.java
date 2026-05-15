@@ -84,6 +84,6 @@ public class OASFilterTest extends OpenApiApplicationTest {
     @Test
     public void additionalPropertiesAreAddedByFilter() {
         ObjectNode openAPI = getOpenAPIJson();
-        assertEquals("string", JsonUtils.path(openAPI, "components.schemas.SimpleMap.additionalProperties.type").get(0).textValue());
+        assertEquals("string", JsonUtils.path(openAPI, "components.schemas.SimpleMap.additionalProperties.type").textValue());
     }
 }

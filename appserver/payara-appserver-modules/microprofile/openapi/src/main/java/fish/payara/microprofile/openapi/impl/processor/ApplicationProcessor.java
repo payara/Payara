@@ -1264,6 +1264,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                             .setType(ModelUtils.mergeProperty(mediaType.getSchema().getType(), type, false));
                 }
             }
+        } else {
+            context.getWorkingOperation().addParameter(parameter);
         }
     }
 

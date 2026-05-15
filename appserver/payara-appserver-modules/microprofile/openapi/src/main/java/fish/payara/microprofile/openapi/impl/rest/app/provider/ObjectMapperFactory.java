@@ -51,6 +51,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import fish.payara.microprofile.openapi.impl.model.OASFactoryResolverImpl;
+import fish.payara.microprofile.openapi.impl.model.media.SchemaImpl;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.ArbitraryExtensionsMixin;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.mixin.BaseExtensionsMixin;
 
@@ -111,6 +112,8 @@ public final class ObjectMapperFactory {
                 .collect(Collectors.toMap(
                     Function.identity(),
                     c -> USE_BASE_MIXIN.contains(c) ? BaseExtensionsMixin.class : ArbitraryExtensionsMixin.class)));
+
+        module.setSerializerModifier(new SchemaImpl.SchemaSerialiserModifier());
 
         mapper.registerModule(module);
 

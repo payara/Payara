@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -176,8 +176,8 @@ public class HiddenTest extends OpenApiApplicationTest {
     public void hiddenSchemaPropertyDoesNotCauseErrors() {
         System.out.println(getOpenAPIJson());
         JsonNode properties = JsonUtils.path(getOpenAPIJson(), "components.schemas.User.properties");
-        assertEquals("number", properties.get("id").get("type").get(0).textValue());
-        assertEquals("string", properties.get("email").get("type").get(0).textValue());
+        assertEquals("number", properties.get("id").get("type").textValue());
+        assertEquals("string", properties.get("email").get("type").textValue());
         assertNull(properties.get("passwordHash"));
     }
     

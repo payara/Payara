@@ -74,7 +74,7 @@ public class HelloControllerTest extends OpenApiApplicationTest {
         assertEquals("sayHello", sayHello.get("operationId").textValue());
         JsonNode schema = path(sayHello, "responses.default.content.*/*.schema");
         assertNotNull(schema);
-        assertEquals("string", schema.get("type").get(0).textValue());
+        assertEquals("string", schema.get("type").textValue());
     }
 
     @Path("/welcome")
@@ -99,6 +99,6 @@ public class HelloControllerTest extends OpenApiApplicationTest {
         assertEquals("sayWelcome", sayWelcome.get("operationId").textValue());
         JsonNode schema = path(sayWelcome, "responses.default.content.*/*.schema");
         assertNotNull(schema);
-        assertEquals("string", schema.get("type").get(0).textValue());
+        assertEquals("string", schema.get("type").textValue());
     }
 }
