@@ -41,12 +41,20 @@ package fish.payara.microprofile.openapi.impl.model.media;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
@@ -59,6 +67,8 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeI
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
+
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -68,8 +78,10 @@ import java.util.Map.Entry;
 import static java.util.logging.Level.WARNING;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Logger;
+
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -221,6 +233,16 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
 
+        BiConsumer<String, Consumer<Schema>> handleSchema = (name, setter) -> {
+            String schemaString = annotation.getValue(name, String.class);
+            if (schemaString != null) {
+                Schema schema = from.getSchemaInstance(schemaString, context);
+                if (schema != null) {
+                    setter.accept(schema);
+                }
+            }
+        };
+
         if (annotation == null) {
             return from;
         }
@@ -308,7 +330,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         from.setFormat(annotation.getValue("format", String.class));
         from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
         from.setWriteOnly(annotation.getValue("writeOnly", Boolean.class));
-        from.setExample(annotation.getValue("example", Object.class));
+
+        Object example = annotation.getValue("example", Object.class);
+        if (example != null) {
+            from.setExample(example);
+            from.setExamples(List.of(example));
+        }
+
         AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
@@ -348,7 +376,65 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             mergeImmutableList(from.getOneOf(), from.getSchemaInstances(oneOf, context), from::setOneOf);
         }
 
-        // TODO: Add new properties
+        if (from.getType() != null && from.getType().contains(SchemaType.STRING)) {
+            from.setConstValue(annotation.getValue("constValue", String.class));
+        } else {
+            String constValue = annotation.getValue("constValue", String.class);
+            if (constValue != null) {
+                if (constValue.equals("true") || constValue.equals("false")) {
+                    from.setConstValue(Boolean.valueOf(constValue));
+                } else {
+                    try {
+                        Double numericalConst = Double.parseDouble(constValue);
+                        from.setConstValue(numericalConst);
+                    } catch (NumberFormatException e) {
+                        from.setConstValue(constValue);
+                    }
+                }
+            }
+        }
+
+        from.setMaxContains(annotation.getValue("maxContains", Integer.class));
+        from.setMinContains(annotation.getValue("minContains", Integer.class));
+        from.setComment(annotation.getValue("comment", String.class));
+
+        List<AnnotationModel> dependentRequiredAnnotations = annotation.getValue("dependentRequired", List.class);
+        if (dependentRequiredAnnotations != null) {
+            for (AnnotationModel dependentRequiredAnnotation : dependentRequiredAnnotations) {
+                from.addDependentRequired(
+                        dependentRequiredAnnotation.getValue("name", String.class),
+                        dependentRequiredAnnotation.getValue("requires", List.class));
+            }
+        }
+
+        from.setContentEncoding(annotation.getValue("contentEncoding", String.class));
+        from.setContentMediaType(annotation.getValue("contentMediaType", String.class));
+
+        List<Object> examples = annotation.getValue("examples", List.class);
+        if (examples != null) {
+            examples.forEach(from::addExample);
+        }
+
+        handleSchema.accept("ifSchema", from::setIfSchema);
+        handleSchema.accept("thenSchema", from::setThenSchema);
+        handleSchema.accept("elseSchema", from::setElseSchema);
+        extractClassSchemas(annotation, context, "dependentSchemas", "name", "schema", from::addDependentSchema);
+        handleSchema.accept("contains", from::setContains);
+        handleSchema.accept("propertyNames", from::setPropertyNames);
+        handleSchema.accept("contentSchema", from::setContentSchema);
+        extractClassSchemas(annotation, context, "patternProperties", "regex", "schema", from::addPatternProperty);
+        handleSchema.accept("additionalProperties", from::setAdditionalPropertiesSchema);
+
+        List<String> prefixItems = annotation.getValue("prefixItems", List.class);
+        if (prefixItems != null) {
+            mergeImmutableList(from.getPrefixItems(), from.getSchemaInstances(prefixItems, context), from::setPrefixItems);
+        }
+
+        Boolean isNullable = annotation.getValue("nullable", Boolean.class);
+        if (Boolean.TRUE.equals(isNullable)) {
+            from.addType(SchemaType.NULL);
+        }
+
         return from;
     }
 
@@ -613,6 +699,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    @JsonFormat(with = JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
     public List<SchemaType> getType() {
         return readOnlyView(type);
     }
@@ -677,19 +764,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             this.properties.remove(key);
         }
     }
-    
-    public Object getAdditionalProperties () {
-        if (additionalPropertiesSchema == null) {
-            return null;
-        }
-        if (additionalPropertiesSchema.getBooleanSchema() != null) {
-            return additionalPropertiesSchema.getBooleanSchema();
-        }
-        return additionalPropertiesSchema;
-    }
 
-    @JsonIgnore
     @Override
+    @JsonProperty("additionalProperties")
     public Schema getAdditionalPropertiesSchema() {
         return additionalPropertiesSchema;
     }
@@ -913,21 +990,25 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    @JsonProperty("$schema")
     public String getSchemaDialect() {
         return schemaDialect;
     }
 
     @Override
+    @JsonProperty("$schema")
     public void setSchemaDialect(String schemaDialect) {
         this.schemaDialect = schemaDialect;
     }
 
     @Override
+    @JsonProperty("$comment")
     public String getComment() {
         return comment;
     }
 
     @Override
+    @JsonProperty("$comment")
     public void setComment(String comment) {
         this.comment = comment;
     }
@@ -1087,11 +1168,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    @JsonProperty("const")
     public Object getConstValue() {
         return constValue;
     }
 
     @Override
+    @JsonProperty("const")
     public void setConstValue(Object constValue) {
         this.constValue = constValue;
     }
@@ -1406,8 +1489,56 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
         mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
         mergeImmutableList(from.getOneOf(), to.getOneOf(), to::setOneOf);
-        
-        // TODO: Add new properties
+        mergeImmutableList(from.getPrefixItems(), to.getPrefixItems(), to::setPrefixItems);
+
+        to.setConstValue(mergeProperty(to.getConstValue(), from.getConstValue(), override));
+        to.setMaxContains(mergeProperty(to.getMaxContains(), from.getMaxContains(), override));
+        to.setMinContains(mergeProperty(to.getMinContains(), from.getMinContains(), override));
+        to.setSchemaDialect(mergeProperty(to.getSchemaDialect(), from.getSchemaDialect(), override));
+        to.setComment(mergeProperty(to.getComment(), from.getComment(), override));
+
+        if (from.getDependentRequired() != null && !from.getDependentRequired().isEmpty()) {
+            from.getDependentRequired().forEach((key, value) -> to.addDependentRequired(key, value));
+        }
+
+        to.setContentEncoding(mergeProperty(to.getContentEncoding(), from.getContentEncoding(), override));
+        to.setContentMediaType(mergeProperty(to.getContentMediaType(), from.getContentMediaType(), override));
+        to.setBooleanSchema(mergeProperty(to.getBooleanSchema(), from.getBooleanSchema(), override));
+
+        if (from.getExample() != null && (to.getExamples() == null || !to.getExamples().contains(from.getExample()))) {
+            to.setExamples(List.of(from.getExample()));
+        }
+        if (from.getExamples() != null) {
+            to.setExamples(from.getExamples());
+        }
+
+        if (from.getIfSchema() != null) {
+            to.setIfSchema(from.getIfSchema());
+        }
+        if (from.getThenSchema() != null) {
+            to.setThenSchema(from.getThenSchema());
+        }
+        if (from.getElseSchema() != null) {
+            to.setElseSchema(from.getElseSchema());
+        }
+        if (from.getDependentSchemas() != null && !from.getDependentSchemas().isEmpty()) {
+            from.getDependentSchemas().forEach(to::addDependentSchema);
+        }
+        if (from.getContains() != null) {
+            to.setContains(from.getContains());
+        }
+        if (from.getPropertyNames() != null) {
+            to.setPropertyNames(from.getPropertyNames());
+        }
+        if (from.getUnevaluatedItems() != null) {
+            to.setUnevaluatedItems(from.getUnevaluatedItems());
+        }
+        if (from.getUnevaluatedProperties() != null) {
+            to.setUnevaluatedProperties(from.getUnevaluatedProperties());
+        }
+        if (from.getContentSchema() != null) {
+            to.setContentSchema(from.getContentSchema());
+        }
     }
 
     private static void setImplementation(SchemaImpl schema, String implementationClass, boolean override, ApiContext context) {
@@ -1446,6 +1577,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                     ModelUtils.merge(copyFrom, schema, false);
                 }
                 schema.setRef(null);
+
+                if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$True")) {
+                    schema.setBooleanSchema(true);
+                } else if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$False")) {
+                    schema.setBooleanSchema(false);
+                }
             }
         }
     }
@@ -1455,12 +1592,67 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         setImplementation(schema, implementationClass, true, context);
         return schema;
     }
+
+    private static void extractClassSchemas(
+            AnnotationModel annotation,
+            ApiContext context,
+            String parameterName,
+            String nameKey,
+            String classKey,
+            BiConsumer<String, Schema> setter) {
+
+        List<AnnotationModel> annotations = annotation.getValue(parameterName, List.class);
+        if (annotations != null) {
+            for (AnnotationModel subannotation : annotations) {
+                String name = subannotation.getValue(nameKey, String.class);
+                String className = subannotation.getValue(classKey, String.class);
+                Schema schema = fromImplementation(className, context);
+                setter.accept(name, schema);
+            }
+        }
+    }
     
     private record GetterSetter<T> (Function<Schema, T> getter, BiConsumer<Schema, T> setter) {
         private static final GetterSetter<Object> DEFAULT = new GetterSetter<>(schema -> null, (schema, value) -> {});
         
         private void set (Schema schema, Object value) {
             setter.accept(schema, (T)value);
+        }
+    }
+
+    public static class SchemaSerialiserModifier extends BeanSerializerModifier {
+        @Override
+        public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
+            if (SchemaImpl.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                return new SchemaBooleanSerialiser((JsonSerializer<SchemaImpl>)serializer);
+            }
+
+            return super.modifySerializer(config, beanDesc, serializer);
+        }
+    }
+
+    private static class SchemaBooleanSerialiser extends JsonSerializer<SchemaImpl> implements ResolvableSerializer {
+        private final JsonSerializer<SchemaImpl> defaultSerialiser;
+
+        private SchemaBooleanSerialiser (JsonSerializer<SchemaImpl> serialiser) {
+            defaultSerialiser = serialiser;
+        }
+
+        @Override
+        public void serialize(SchemaImpl value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            if (value.booleanSchema != null) {
+                gen.writeBoolean(value.booleanSchema);
+                return;
+            }
+
+            defaultSerialiser.serialize(value, gen, provider);
+        }
+
+        @Override
+        public void resolve(SerializerProvider provider) throws JsonMappingException {
+            if (defaultSerialiser instanceof ResolvableSerializer resolvable) {
+                resolvable.resolve(provider);
+            }
         }
     }
 }

@@ -168,12 +168,10 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
     public void simpleMapSchemaHasExpectedFields() {
         JsonNode mapEntry = path(getOpenAPIJson(), "components.schemas.SimpleMap");
         assertNotNull(mapEntry);
-        assertTrue(mapEntry.get("type").isArray());
-        assertEquals("object", mapEntry.get("type").get(0).textValue());
+        assertEquals("object", mapEntry.get("type").textValue());
         JsonNode additionalProperties = mapEntry.get("additionalProperties");
         assertNotNull(additionalProperties);
-        assertTrue(additionalProperties.get("type").isArray());
-        assertEquals("string", additionalProperties.get("type").get(0).textValue());
+        assertEquals("string", additionalProperties.get("type").textValue());
     }
 
     @Test
@@ -258,7 +256,7 @@ public class MediaBuilderTest extends OpenApiBuilderTest {
         assertEquals(2, required.size());
         assertEquals("required1", required.get(0).textValue());
         assertEquals("required2", required.get(1).textValue());
-        assertEquals("number", schema.get("type").get(0).textValue());
+        assertEquals("number", schema.get("type").textValue());
         assertTrue(schema.get("not").isObject());
         assertTrue(schema.get("properties").isObject());
         assertTrue(schema.get("properties").get("property1").isObject());

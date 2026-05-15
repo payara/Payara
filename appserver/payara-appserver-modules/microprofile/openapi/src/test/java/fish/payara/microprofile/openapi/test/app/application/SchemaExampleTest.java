@@ -99,7 +99,7 @@ public class SchemaExampleTest extends OpenApiApplicationTest {
     public void fieldSchemaExampleIsRendered() {
         JsonNode passwordProperties = JsonUtils.path(getOpenAPIJson(), "components.schemas.User.properties.password");
         assertNotNull(passwordProperties);
-        assertEquals("string", passwordProperties.get("type").get(0).textValue());
+        assertEquals("string", passwordProperties.get("type").textValue());
         assertEquals("bobSm37", passwordProperties.get("example").textValue());
     }
 

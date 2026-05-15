@@ -95,7 +95,7 @@ public class ComponentsImpl extends ExtensibleImpl<Components> implements Compon
         extractAnnotations(annotation, context, "securitySchemes", "securitySchemeName", SecuritySchemeImpl::createInstance, from::addSecurityScheme);
         extractAnnotations(annotation, context, "links", "name", LinkImpl::createInstance, from::addLink);
         extractAnnotations(annotation, context, "callbacks", "name", CallbackImpl::createInstance, from::addCallback);
-        // TODO: Add pathItems
+        extractAnnotations(annotation, context, "pathItems", "name", PathItemImpl::createInstance, from::addPathItem);
         HeaderImpl.createInstances(annotation, context).forEach(from::addHeader);
         return from;
     }
