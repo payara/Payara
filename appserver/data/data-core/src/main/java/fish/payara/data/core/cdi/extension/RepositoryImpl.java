@@ -58,6 +58,11 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.Transactional;
+import jakarta.transaction.TransactionalException;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.TransactionRequiredException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -114,6 +119,7 @@ public class RepositoryImpl<T> implements InvocationHandler {
     private TransactionManager transactionManager;
     private EntityManager em;
     private final Map<Class<?>, Member> idAccessorCache = new ConcurrentHashMap<>();
+    private final Map<Method, Transactional> txAnnotationCache = new ConcurrentHashMap<>();
 
     public RepositoryImpl(Class<T> repositoryInterface, Map<Class<?>, List<QueryMetadata>> queriesPerEntityClass, String applicationName, String dataStore) {
         this(repositoryInterface, queriesPerEntityClass, applicationName, getEntityManagerSupplier(applicationName, dataStore));
@@ -181,42 +187,190 @@ public class RepositoryImpl<T> implements InvocationHandler {
 
         QueryMetadata queryMetadata = queries.get(method);
         if (queryMetadata == null) {
-            throw new UnsupportedOperationException("The method " + method.getName() + " is not supported by the Jakarta Data provider.");
+            throw new UnsupportedOperationException(
+                    "The method " + method.getName() + " is not supported by the Jakarta Data provider.");
         }
         QueryData dataForQuery = new QueryData(queryMetadata);
-        Object objectToReturn;
         startTransactionComponents();
-        prevalidateTransaction(dataForQuery);
-        try {
-            switch (queryMetadata.getQueryType()) {
-                case SAVE -> objectToReturn = processSaveOperation(args, dataForQuery);
-                case INSERT -> objectToReturn = processInsertOperation(args, dataForQuery);
-                case DELETE -> objectToReturn = processDeleteOperation(args, queryMetadata.getDeclaredEntityClass(),
-                        queryMetadata.getMethod(), dataForQuery);
-                case UPDATE -> objectToReturn = processUpdateOperation(args, dataForQuery);
-                case FIND -> objectToReturn = processFindOperation(proxy, args, dataForQuery);
-                case QUERY -> objectToReturn = processQueryOperation(args, dataForQuery);
-                case FIND_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processFindByNameOperation(args,
-                        dataForQuery, entityManagerSupplier.get());
-                case DELETE_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processDeleteByNameOperation(args,
-                        dataForQuery, entityManagerSupplier.get(), getTransactionManager());
-                case COUNT_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processCountByNameOperation(args,
-                        dataForQuery, entityManagerSupplier.get());
-                case EXISTS_BY_NAME -> objectToReturn = QueryByNameOperationUtility.processExistsByNameOperation(args,
-                        dataForQuery, entityManagerSupplier.get());
-                default ->
-                        throw new UnsupportedOperationException("QueryType " + queryMetadata.getQueryType() + " not supported.");
-            }
-        } catch (jakarta.persistence.OptimisticLockException e) {
-            // Expected in Data TCK
-            throw new jakarta.data.exceptions.OptimisticLockingFailureException(e.getMessage(), e);
-        }
 
-        return objectToReturn;
+        Transactional spec = resolveTransactional(method);
+        Transactional.TxType txType = (spec != null) ? spec.value() : Transactional.TxType.REQUIRED;
+
+        return applyTransactionalSemantics(txType, spec, dataForQuery, () -> dispatch(proxy, args, dataForQuery));
     }
 
-    private void prevalidateTransaction(QueryData dataForQuery) throws SystemException {
-        dataForQuery.setUserTransaction(transactionManager.getStatus() == Status.STATUS_ACTIVE);
+    /**
+     * Replicates {@code jakarta.transaction.Transactional} semantics for the
+     * dynamic-proxy repository, since the standard CDI {@code TransactionalInterceptor}
+     * does not intercept invocations on a {@code java.lang.reflect.Proxy} that has
+     * not been registered as an interceptable managed bean.
+     *
+     * <p>Honors REQUIRED, REQUIRES_NEW, MANDATORY, SUPPORTS, NOT_SUPPORTED and
+     * NEVER, plus {@code rollbackOn}/{@code dontRollbackOn} rules.
+     */
+    private Object applyTransactionalSemantics(Transactional.TxType txType, Transactional spec,
+                                               QueryData dataForQuery, ThrowingSupplier<Object> action) throws Throwable {
+        int currentStatus = transactionManager.getStatus();
+        boolean txActive = (currentStatus == Status.STATUS_ACTIVE
+                || currentStatus == Status.STATUS_MARKED_ROLLBACK);
+
+        Transaction suspended = null;
+        boolean startedHere = false;
+        dataForQuery.setLifecycleManagedExternally(true);
+
+        try {
+            switch (txType) {
+                case REQUIRED -> {
+                    if (!txActive) {
+                        transactionManager.begin();
+                        startedHere = true;
+                        em = entityManagerSupplier.get(); // bind EM to the new tx
+                    }
+                    em.joinTransaction();
+                    dataForQuery.setUserTransaction(!startedHere);
+                }
+                case REQUIRES_NEW -> {
+                    if (txActive) {
+                        suspended = transactionManager.suspend();
+                    }
+                    transactionManager.begin();
+                    startedHere = true;
+                    em = entityManagerSupplier.get(); // EM tied to the new tx
+                    em.joinTransaction();
+                }
+                case MANDATORY -> {
+                    if (!txActive) {
+                        throw new TransactionalException(
+                                "@Transactional(MANDATORY): no active transaction on method "
+                                        + dataForQuery.getQueryMetadata().getMethod().getName(),
+                                new TransactionRequiredException());
+                    }
+                    em.joinTransaction();
+                    dataForQuery.setUserTransaction(true);
+                }
+                case SUPPORTS -> {
+                    if (txActive) {
+                        em.joinTransaction();
+                        dataForQuery.setUserTransaction(true);
+                    }
+                }
+                case NOT_SUPPORTED -> {
+                    if (txActive) {
+                        suspended = transactionManager.suspend();
+                        em = entityManagerSupplier.get(); // EM detached from any tx
+                    }
+                }
+                case NEVER -> {
+                    if (txActive) {
+                        throw new TransactionalException(
+                                "@Transactional(NEVER): a transaction is active on method "
+                                        + dataForQuery.getQueryMetadata().getMethod().getName(),
+                                new InvalidTransactionException());
+                    }
+                }
+                default -> throw new IllegalStateException("Unknown TxType: " + txType);
+            }
+
+            Object result;
+            try {
+                result = action.get();
+            } catch (Throwable t) {
+                if (startedHere) {
+                    // We own the tx: roll back on runtime/error (or per spec rule when declared);
+                    // commit otherwise. Matches the legacy data-core behavior for self-managed txs.
+                    if (shouldRollback(spec, t)) {
+                        safeRollback();
+                    } else {
+                        transactionManager.commit();
+                    }
+                    startedHere = false;
+                } else if (txActive && spec != null && shouldRollback(spec, t)) {
+                    // User owns the tx. Only enforce a rollback policy when the user has
+                    // explicitly opted in by declaring @Transactional on the repository or
+                    // the method; otherwise let the user keep control of commit/rollback.
+                    transactionManager.setRollbackOnly();
+                }
+                throw t;
+            }
+
+            if (startedHere) {
+                transactionManager.commit();
+                startedHere = false;
+            }
+            return result;
+
+        } finally {
+            if (startedHere) {
+                safeRollback();
+            }
+            if (suspended != null) {
+                transactionManager.resume(suspended);
+            }
+        }
+    }
+
+    private boolean shouldRollback(Transactional spec, Throwable t) {
+        if (spec != null) {
+            for (Class<?> dont : spec.dontRollbackOn()) {
+                if (dont.isInstance(t)) {
+                    return false;
+                }
+            }
+            for (Class<?> on : spec.rollbackOn()) {
+                if (on.isInstance(t)) {
+                    return true;
+                }
+            }
+        }
+        return (t instanceof RuntimeException) || (t instanceof Error);
+    }
+
+    private Object dispatch(Object proxy, Object[] args, QueryData dataForQuery) throws Throwable {
+        QueryMetadata queryMetadata = dataForQuery.getQueryMetadata();
+        try {
+            return switch (queryMetadata.getQueryType()) {
+                case SAVE   -> processSaveOperation(args, dataForQuery);
+                case INSERT -> processInsertOperation(args, dataForQuery);
+                case DELETE -> processDeleteOperation(args, queryMetadata.getDeclaredEntityClass(),
+                        queryMetadata.getMethod(), dataForQuery);
+                case UPDATE -> processUpdateOperation(args, dataForQuery);
+                case FIND   -> processFindOperation(proxy, args, dataForQuery);
+                case QUERY  -> processQueryOperation(args, dataForQuery);
+                case FIND_BY_NAME   -> QueryByNameOperationUtility.processFindByNameOperation(
+                        args, dataForQuery, entityManagerSupplier.get());
+                case DELETE_BY_NAME -> QueryByNameOperationUtility.processDeleteByNameOperation(
+                        args, dataForQuery, entityManagerSupplier.get(), getTransactionManager());
+                case COUNT_BY_NAME  -> QueryByNameOperationUtility.processCountByNameOperation(
+                        args, dataForQuery, entityManagerSupplier.get());
+                case EXISTS_BY_NAME -> QueryByNameOperationUtility.processExistsByNameOperation(
+                        args, dataForQuery, entityManagerSupplier.get());
+                default -> throw new UnsupportedOperationException(
+                        "QueryType " + queryMetadata.getQueryType() + " not supported.");
+            };
+        } catch (jakarta.persistence.OptimisticLockException e) {
+            throw new jakarta.data.exceptions.OptimisticLockingFailureException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Returns the {@code @Transactional} annotation that should be applied to the
+     * given repository method, with method-level annotations overriding any
+     * interface-level default. Returns {@code null} if neither is declared.
+     *
+     * <p>The Jakarta Data 1.0 spec says the annotation on the user-written
+     * repository interface is "automatically inherited by the repository
+     * implementation". Reflection on a {@code java.lang.reflect.Proxy} method
+     * does not surface interface-level annotations through {@code getAnnotation},
+     * so we look them up explicitly on the repository interface.
+     */
+    private Transactional resolveTransactional(Method method) {
+        return txAnnotationCache.computeIfAbsent(method, m -> {
+           Transactional onMethod = m.getAnnotation(Transactional.class);
+           if (onMethod != null) {
+               return onMethod;
+           }
+           return repositoryInterface.getAnnotation(Transactional.class);
+        });
     }
 
     public Object processFindOperation(Object proxy, Object[] args, QueryData dataForQuery) {
@@ -677,5 +831,9 @@ public class RepositoryImpl<T> implements InvocationHandler {
         transactionManager = getTransactionManager();
         em = entityManagerSupplier.get();
     }
-    
+
+    @FunctionalInterface
+    private interface ThrowingSupplier<R> {
+        R get() throws Throwable;
+    }
 }
