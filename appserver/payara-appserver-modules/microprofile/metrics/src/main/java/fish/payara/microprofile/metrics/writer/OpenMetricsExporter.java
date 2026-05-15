@@ -199,11 +199,11 @@ public class OpenMetricsExporter implements MetricExporter {
 
     public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, Sampling sampling, String summary, Tag[] tags, Metadata metadata) {
         for (Snapshot.PercentileValue value : pencentileValues) {
-              if (sampling instanceof TimerImpl) {
-                  appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue() / 1000000000D);
-              } else {
-                  appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
-              }
+            if (sampling instanceof TimerImpl) {
+                appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue() / 1000000000D);
+            } else {
+                appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
+            }
         }
     }
 
