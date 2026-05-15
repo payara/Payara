@@ -74,7 +74,7 @@
         <smallrye-common.version>2.18.1</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
-        <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
+        <shrinkwrap.resolver.version>3.3.6</shrinkwrap.resolver.version>
         <arquillian.version>1.10.1.Final</arquillian.version>
     </properties>
 
