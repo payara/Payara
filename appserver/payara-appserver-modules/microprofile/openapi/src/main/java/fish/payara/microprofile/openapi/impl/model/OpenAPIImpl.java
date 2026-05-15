@@ -382,8 +382,7 @@ public class OpenAPIImpl extends ExtensibleImpl<OpenAPI> implements OpenAPI, Clo
             for (String webhookName : webhooks.keySet()) {
                 if (to.getWebhooks().containsKey(webhookName)) {
                     PathItemImpl.merge(webhooks.get(webhookName), to.getWebhooks().get(webhookName), override);
-                }
-                else {
+                } else {
                     to.addWebhook(webhookName, webhooks.get(webhookName));
                 }
             }

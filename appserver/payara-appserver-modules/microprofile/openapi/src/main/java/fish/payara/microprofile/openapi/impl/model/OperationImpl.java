@@ -407,8 +407,7 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
 
                 if (toParam.isPresent()) {
                     ParameterImpl.merge(parameter, toParam.get(), override, context);
-                }
-                else {
+                } else {
                     to.addParameter(parameter);
                 }
             }

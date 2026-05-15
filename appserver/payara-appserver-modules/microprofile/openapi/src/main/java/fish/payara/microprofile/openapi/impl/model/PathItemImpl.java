@@ -421,57 +421,49 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
         if (to.getGET() == null) {
             to.setGET(from.getGET());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getGET(), to.getGET(), override);
         }
 
         if (to.getPUT() == null) {
             to.setPUT(from.getPUT());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getPUT(), to.getPUT(), override);
         }
 
         if (to.getPOST() == null) {
             to.setPOST(from.getPOST());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getPOST(), to.getPOST(), override);
         }
 
         if (to.getDELETE() == null) {
             to.setDELETE(from.getDELETE());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getDELETE(), to.getDELETE(), override);
         }
 
         if (to.getOPTIONS() == null) {
             to.setOPTIONS(from.getOPTIONS());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getOPTIONS(), to.getOPTIONS(), override);
         }
 
         if (to.getHEAD() == null) {
             to.setHEAD(from.getHEAD());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getHEAD(), to.getHEAD(), override);
         }
 
         if (to.getPATCH() == null) {
             to.setPATCH(from.getPATCH());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getPATCH(), to.getPATCH(), override);
         }
 
         if (to.getTRACE() == null) {
             to.setTRACE(from.getTRACE());
-        }
-        else {
+        } else {
             OperationImpl.merge(from.getTRACE(), to.getTRACE(), override);
         }
 

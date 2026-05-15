@@ -378,19 +378,16 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
         if (from.getType() != null && from.getType().contains(SchemaType.STRING)) {
             from.setConstValue(annotation.getValue("constValue", String.class));
-        }
-        else {
+        } else {
             String constValue = annotation.getValue("constValue", String.class);
             if (constValue != null) {
                 if (constValue.equals("true") || constValue.equals("false")) {
                     from.setConstValue(Boolean.valueOf(constValue));
-                }
-                else {
+                } else {
                     try {
                         Double numericalConst = Double.parseDouble(constValue);
                         from.setConstValue(numericalConst);
-                    }
-                    catch (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         from.setConstValue(constValue);
                     }
                 }
@@ -1583,8 +1580,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
                 if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$True")) {
                     schema.setBooleanSchema(true);
-                }
-                else if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$False")) {
+                } else if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$False")) {
                     schema.setBooleanSchema(false);
                 }
             }
