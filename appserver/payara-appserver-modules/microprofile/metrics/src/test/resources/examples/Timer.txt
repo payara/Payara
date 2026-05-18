@@ -1,13 +1,13 @@
 # TYPE response_time_seconds_max gauge
 # HELP response_time_seconds_max Server response time for /index.html
-response_time_seconds_max 0
+response_time_seconds_max 0.0
 # TYPE response_time_seconds summary
 # HELP response_time_seconds Server response time for /index.html
 response_time_seconds_count 80
 response_time_seconds_sum 0.023
-response_time_seconds{quantile="0.5"} 0
-response_time_seconds{quantile="0.75"} 0
-response_time_seconds{quantile="0.95"} 0
-response_time_seconds{quantile="0.98"} 0
-response_time_seconds{quantile="0.99"} 0
-response_time_seconds{quantile="0.999"} 0
+response_time_seconds{quantile="0.5"} 0.0
+response_time_seconds{quantile="0.75"} 0.0
+response_time_seconds{quantile="0.95"} 0.0
+response_time_seconds{quantile="0.98"} 0.0
+response_time_seconds{quantile="0.99"} 0.0
+response_time_seconds{quantile="0.999"} 0.0
