@@ -42,7 +42,6 @@ package fish.payara.microprofile.metrics.writer;
 import static fish.payara.microprofile.metrics.MetricUnitsUtils.scaleToBaseUnit;
 
 import fish.payara.microprofile.metrics.impl.HistogramImpl;
-import fish.payara.microprofile.metrics.impl.TimerImpl;
 import fish.payara.microprofile.metrics.impl.WeightedSnapshot;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -232,7 +231,7 @@ public class OpenMetricsExporter implements MetricExporter {
             WeightedSnapshot weightedSnapshot = (WeightedSnapshot) snapshot;
             double[] conversionArray = null;
             long[] values = weightedSnapshot.getValues();
-            if (sampling instanceof TimerImpl) {
+            if (sampling instanceof Timer) {
                 conversionArray = Arrays.stream(values).mapToDouble(l -> l / 1000000000D).toArray();
             } else {
                 conversionArray = Arrays.stream(values).mapToDouble(l -> Long.valueOf(l).doubleValue()).toArray();
