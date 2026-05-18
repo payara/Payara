@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -129,9 +128,6 @@ public class TransactionalRepositoryTests {
      * read sees the uncommitted write. Re-enable once the provider applies
      * method-level overrides.
      */
-    @Ignore("Method-level @Transactional(REQUIRES_NEW) is not enforced by the "
-            + "current Jakarta Data provider; only interface-level is applied. "
-            + "The interface-level REQUIRED tests still cover the spec invariant.")
     @Test
     public void requiresNewSuspendsCallerTransaction() throws Exception {
         UUID stableId = UUID.randomUUID();
@@ -175,9 +171,6 @@ public class TransactionalRepositoryTests {
      * applied (covered by the other tests in this class). Re-enable once the
      * provider applies method-level overrides.
      */
-    @Ignore("Method-level @Transactional(MANDATORY) is not enforced by the "
-            + "current Jakarta Data provider; only interface-level is applied. "
-            + "The interface-level REQUIRED tests still cover the spec invariant.")
     @Test
     public void mandatoryWithoutActiveTransactionFails() throws Exception {
         assertEquals(Status.STATUS_NO_TRANSACTION, utx.getStatus());
@@ -217,8 +210,6 @@ public class TransactionalRepositoryTests {
      * {@code @Transactional} is applied. Re-enable once the provider applies
      * method-level overrides.
      */
-    @Ignore("Method-level @Transactional(NEVER) is not enforced by the "
-            + "current Jakarta Data provider; only interface-level is applied.")
     @Test
     public void neverInsideActiveTransactionFails() throws Exception {
         utx.begin();

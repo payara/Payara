@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,7 @@ import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Array;
@@ -483,7 +484,13 @@ public class DataCommonOperationUtility {
 
     public static void startTransactionAndJoin(TransactionManager transactionManager,
                                                EntityManager em, QueryData dataForQuery) throws SystemException, NotSupportedException {
-        
+        if (dataForQuery.isLifecycleManagedExternally()) {
+            if (transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+                em.joinTransaction();
+            }
+            return;
+        }
+
         if (dataForQuery.isUserTransaction()) {
             em.joinTransaction();
             return;
@@ -499,6 +506,19 @@ public class DataCommonOperationUtility {
 
     public static void endTransaction(TransactionManager transactionManager,
                                       EntityManager em, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
+        if (dataForQuery.isLifecycleManagedExternally()) {
+            // When the lifecycle is owned by applyTransactionalSemantics, only flush
+            // if WE started the transaction (so we can surface JPA errors as exceptions
+            // of this operation rather than as RollbackException at commit time).
+            // For a user-managed transaction, leave flushing to the caller's commit so
+            // we don't change the L2 cache eviction timing or visibility semantics.
+            if (!dataForQuery.isUserTransaction()
+                    && transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+                em.flush();
+            }
+            return;
+        }
+
         if (!dataForQuery.isUserTransaction()) {
             em.flush();
             if (dataForQuery.isNewTransaction()) {
