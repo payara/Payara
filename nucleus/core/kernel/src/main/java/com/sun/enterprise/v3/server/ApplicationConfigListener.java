@@ -54,7 +54,6 @@ import com.sun.enterprise.admin.report.HTMLActionReporter;
 import java.beans.PropertyChangeEvent;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
@@ -162,7 +161,9 @@ public class ApplicationConfigListener implements TransactionListener, PostConst
                         appName = ((ApplicationRef)parent).getRef();
                         propertyName = event.getPropertyName();
                     } else if (parent instanceof Property) {
-                        appName = ((Property)parent).getParent(Application.class).getName();
+                        if (((Property) parent).getParent() instanceof Application grandparent) {
+                            appName = grandparent.getName();
+                        }
                         propertyName = ((Property)parent).getName();
                     }
                     // if it's not a user application, let's not do
