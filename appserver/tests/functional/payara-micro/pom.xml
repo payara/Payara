@@ -54,7 +54,7 @@
     <name>Payara Samples - Payara Micro</name>
 
     <properties>
-      <playwright.version>1.59.0</playwright.version>
+      <playwright.version>1.60.0</playwright.version>
     </properties>
 
 
