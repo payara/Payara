@@ -46,6 +46,7 @@ import fish.payara.nucleus.hotdeploy.ApplicationState;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.loader.CachingReflectionUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
@@ -393,10 +394,16 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 return null;
             }
 
+            span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoaderHierarchy");
+            ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
+
             span.start(DeploymentTracing.AppStage.CLASS_SCANNING);
 
             Types types = null;
             if (handler.requiresAnnotationScanning(context.getSource())) {
+                // web container needs to be loaded before deployable classes can be determined correctly
+                habitat.getService(CachingReflectionUtil
+                        .getClass("com.sun.enterprise.web.WebContainer", clh.getCommonClassLoader()));
                 types = getDeployableTypes(context);
             }
 
@@ -416,10 +423,6 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             sniffers = getSniffers(handler, sniffers, context);
             final Collection<? extends Sniffer> selectedSniffers = sniffers;
             appState.ifPresent(s -> s.setSniffers(selectedSniffers));
-
-            span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoaderHierarchy");
-
-            ClassLoaderHierarchy clh = habitat.getService(ClassLoaderHierarchy.class);
 
             span.start(DeploymentTracing.AppStage.PREPARE, "ClassLoader");
 
