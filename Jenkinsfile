@@ -144,25 +144,25 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-//                 stage('MicroProfile Fault Tolerance TCK') {
-//                     agent {
-//                         label 'general-purpose'
-//                     }
-//                     steps {
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         build job: 'TCKs/MP-TCKs',
-//                         parameters: [
-//                             string(name: 'buildProject', value: 'Build'),
-//                             string(name: 'payaraBuildNumber', value: buildId),
-//                             string(name: 'repoOrg', value: 'payara'),
-//                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-//                             string(name: 'suites', value: 'Fault-Tolerance'),
-//                             string(name: 'jdkVer', value: 'zulu-21'),
-//                             string(name: 'distribution', value: 'full')
-//                         ]
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                     }
-//                 }
+                 stage('MicroProfile Fault Tolerance TCK') {
+                     agent {
+                         label 'general-purpose'
+                     }
+                     steps {
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                         build job: 'TCKs/MP-TCKs',
+                         parameters: [
+                             string(name: 'buildProject', value: 'Build'),
+                             string(name: 'payaraBuildNumber', value: buildId),
+                             string(name: 'repoOrg', value: 'payara'),
+                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                             string(name: 'suites', value: 'Fault-Tolerance'),
+                             string(name: 'jdkVer', value: 'zulu-21'),
+                             string(name: 'distribution', value: 'full')
+                         ]
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                     }
+                 }
                 stage('MicroProfile Health TCK') {
                     agent {
                         label 'general-purpose'
