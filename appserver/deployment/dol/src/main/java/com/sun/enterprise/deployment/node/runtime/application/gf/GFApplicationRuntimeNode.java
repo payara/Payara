@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
@@ -52,6 +53,7 @@ import java.util.Map;
  * This node is responsible for handling all runtime information for 
  * application.
  */
+@Deprecated
 public class GFApplicationRuntimeNode extends ApplicationRuntimeNode {
 
     public GFApplicationRuntimeNode(Application descriptor) {

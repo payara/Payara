@@ -41,7 +41,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2017-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2017-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
     <hazelcast-runtime-configuration start-port="%%%HAZELCAST_START_PORT%%%" das-port="%%%HAZELCAST_DAS_PORT%%%" auto-increment-port="%%%HAZELCAST_AUTO_INCREMENT%%%"></hazelcast-runtime-configuration>
@@ -147,9 +147,6 @@
                     <property value="true" name="certificate-validation"/>
                 </auth-realm>
                 <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-                <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-                    <property value="false" name="auditOn" />
-                </audit-module>
                 <message-security-config auth-layer="SOAP">
                     <provider-config provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
                         <request-policy auth-source="content" />
@@ -381,9 +378,6 @@
                     <property name="certificate-validation" value="true" />
                 </auth-realm>
                 <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-                <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-                    <property value="false" name="auditOn" />
-                </audit-module>
                 <message-security-config auth-layer="SOAP">
                     <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
                         <request-policy auth-source="content" />

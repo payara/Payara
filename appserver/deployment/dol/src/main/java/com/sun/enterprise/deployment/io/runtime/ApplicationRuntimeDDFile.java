@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.deployment.io.runtime;
 
 import com.sun.enterprise.deployment.Application;
@@ -62,6 +62,7 @@ import java.util.Map;
 @ConfigurationDeploymentDescriptorFileFor(EarType.ARCHIVE_TYPE)
 @PerLookup
 @Service
+@Deprecated
 public class ApplicationRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
 
     /**

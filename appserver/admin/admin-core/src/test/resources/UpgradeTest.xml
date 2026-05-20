@@ -40,7 +40,7 @@
 
 -->
 
-<!--  Portions Copyright [2017-2024] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2017-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
   <system-applications>
@@ -168,9 +168,6 @@
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm"></auth-realm>
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
-          <property name="auditOn" value="false"></property>
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content"></request-policy>

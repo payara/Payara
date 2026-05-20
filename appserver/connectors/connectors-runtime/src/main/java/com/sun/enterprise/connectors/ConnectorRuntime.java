@@ -576,7 +576,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     /**
      * Get a wrapper datasource specified by the jdbcjndi name
      * This API is intended to be used in the DAS. The motivation for having this
-     * API is to provide the CMP backend/ JPA-Java2DB a means of acquiring a connection during
+     * API is to provide the JPA-Java2DB a means of acquiring a connection during
      * the codegen phase. If a user is trying to deploy an JPA-Java2DB app on a remote server,
      * without this API, a resource reference has to be present both in the DAS
      * and the server instance. This makes the deployment more complex for the

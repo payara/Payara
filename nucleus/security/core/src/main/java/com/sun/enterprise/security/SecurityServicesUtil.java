@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import jakarta.inject.Inject;
@@ -50,7 +50,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.security.audit.AuditManager;
 
 @Service
 @Singleton
@@ -61,18 +60,11 @@ public class SecurityServicesUtil {
     @Inject
     private ProcessEnvironment processEnv;
 
-    @Inject
-    private AuditManager auditManager;
-
     // the appclient CBH
     private CallbackHandler callbackHandler;
 
     public ServiceLocator getHabitat() {
         return habitat;
-    }
-
-    public AuditManager getAuditManager() {
-        return auditManager;
     }
 
     public static SecurityServicesUtil getInstance() {

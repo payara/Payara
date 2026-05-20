@@ -4,7 +4,7 @@ NAME
        undeploy - removes a deployed component
 
 SYNOPSIS
-           undeploy [--help] [--target target] [--droptables={true|false}]
+           undeploy [--help] [--target target]
            [--cascade={false|true}] name
 
 DESCRIPTION
@@ -28,14 +28,6 @@ OPTIONS
            resource adapter is undeployed. This option is applicable to
            connectors (resource adapters) and applications. Default value is
            false.
-
-       --droptables
-           If set to true, drops the tables that the application created by
-           using CMP beans during deployment. If set to false, tables are not
-           dropped. If not specified, the value of the drop-tables-at-deploy
-           entry in the cmp-resource element of the glassfish-ejb-jar.xml file
-           determines whether or not tables are dropped. Default value is
-           true.
 
        --target
            Specifies the target from which you are undeploying. Valid values
@@ -76,15 +68,7 @@ EXAMPLES
                asadmin> undeploy Cart
                Command undeploy executed successfully.
 
-       Example 2, Undeploying an Enterprise Bean With Container-Managed
-       Persistence (CMP)
-           This example undeploys a CMP bean named myejb and drops the
-           corresponding database tables.
-
-               asadmin> undeploy --droptables=true myejb
-               Command undeploy executed successfully.
-
-       Example 3, Undeploying a Connector (Resource Adapter)
+       Example 2, Undeploying a Connector (Resource Adapter)
            This example undeploys the connector module named jdbcra and
            performs a cascading delete to remove the associated resources and
            connection pools.

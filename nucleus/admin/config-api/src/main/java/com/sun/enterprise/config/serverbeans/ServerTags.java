@@ -144,7 +144,6 @@ public class ServerTags  {
     public static final String ROOT = "root";
     public static final String SERVER = "server";
     public static final String EJB_CONTAINER = "ejb-container";
-    public static final String CMP_CONTAINER = "cmp-container";
     public static final String MDB_CONTAINER = "mdb-container";
     public static final String WEB_CONTAINER = "web-container";
     public static final String CLASSLOADER = "classloader";
@@ -164,7 +163,6 @@ public class ServerTags  {
     public static final String JMS = "jms";
     public static final String CONNECTOR = "connector";
     public static final String JDO = "jdo";
-    public static final String CMP = "cmp";
     public static final String UTIL = "util";
     public static final String RESOURCE_ADAPTER = "resource-adapter";
     public static final String SYNCHRONIZATION = "synchronization";
@@ -263,9 +261,7 @@ public class ServerTags  {
     public static final String DEFAULT_PRINCIPAL = "default-principal";
     public static final String DEFAULT_PRINCIPAL_PASSWORD = "default-principal-password";
     public static final String ANONYMOUS_ROLE = "anonymous-role";
-    public static final String AUDIT_ENABLED = "audit-enabled";
     public static final String JACC = "jacc";
-    public static final String AUDIT_MODULES = "audit-modules";
     public static final String ACTIVATE_DEFAULT_PRINCIPAL_TO_ROLE_MAPPING = "activate-default-principal-to-role-mapping";
     public static final String MAPPED_PRINCIPAL_CLASS = "mapped-principal-class";
     /** Tags for Element transaction-service */
@@ -405,10 +401,6 @@ public class ServerTags  {
     //public static final String NAME = "name";
     public static final String POLICY_PROVIDER = "policy-provider";
     public static final String POLICY_CONFIGURATION_FACTORY_PROVIDER = "policy-configuration-factory-provider";
-    /** Tags for Element audit-module */
-    public static final String AUDIT_MODULE = "audit-module";
-    //public static final String NAME = "name";
-    //public static final String CLASSNAME = "classname";
     /** Tags for Element message-security-config */
     public static final String MESSAGE_SECURITY_CONFIG = "message-security-config";
     public static final String AUTH_LAYER = "auth-layer";

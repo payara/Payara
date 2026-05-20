@@ -68,18 +68,6 @@
     <indexitem text="viewing web service endpoint information (reference)" target="ref-endpoint"></indexitem>
     <indexitem text="viewing web service endpoint information (task)" target="task-endpoint"></indexitem>
   </indexitem>
-  <indexitem text="audit modules">
-    <indexitem text="creating (reference)" target="ref-auditmodulenew"></indexitem>
-    <indexitem text="creating (task)" target="task-auditmodulenew"></indexitem>
-    <indexitem text="deleting" target="task-auditmoduledelete"></indexitem>
-    <indexitem text="editing (reference)" target="ref-auditmoduleedit"></indexitem>
-    <indexitem text="editing (task)" target="task-auditmoduleedit"></indexitem>
-    <indexitem text="enabling and disabling" target="task-enabledisableauditmod"></indexitem>
-    <indexitem text="properties" target="ref-auditmoduleprop"></indexitem>
-    <indexitem text="setting active" target="task-setactiveauditmod"></indexitem>
-    <indexitem text="using the default" target="task-usedefaultauditmod"></indexitem>
-    <indexitem text="viewing and configuring" target="ref-auditmodules"></indexitem>
-  </indexitem>
   <indexitem text="autodeploy settings for applications (reference)" target="ref-serverinstappsconfig"></indexitem>
   <indexitem text="autodeploy settings for applications (task)" target="task-setadvanceappconfig"></indexitem>
   <indexitem text="certificate realm">
@@ -279,7 +267,6 @@
     <indexitem text="listing (reference)" target="ref-pswdaliases"></indexitem>
   </indexitem>
   <indexitem text="properties">
-    <indexitem text="audit modules" target="ref-auditmoduleprop"></indexitem>
     <indexitem text="certificate realm" target="ref-editcertrealm"></indexitem>
     <indexitem text="file realm" target="ref-editfile-adminrealm"></indexitem>
     <indexitem text="JACC providers" target="ref-jaccproviderprop"></indexitem>

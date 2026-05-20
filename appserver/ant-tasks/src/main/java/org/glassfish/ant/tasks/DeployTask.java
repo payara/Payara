@@ -81,18 +81,6 @@ public class DeployTask extends AdminTask {
         addCommandParameter("verify", Boolean.toString(verify));
     }
 
-    public void setCreatetables(boolean createtables) {
-        addCommandParameter("createtables", Boolean.toString(createtables));
-    }
-
-    public void setDropandcreatetables(boolean dropandcreatetables) {
-        addCommandParameter("dropandcreatetables", Boolean.toString(dropandcreatetables));
-    }
-
-    public void setUniquetablenames(boolean uniquetablenames) {
-        addCommandParameter("uniquetablenames", Boolean.toString(uniquetablenames));
-    }
-
     public void setEnabled(boolean enabled) {
         addCommandParameter("enabled", Boolean.toString(enabled));
     }

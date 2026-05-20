@@ -67,9 +67,6 @@ delete-ssl R
 create-jvm-options R
 delete-jvm-options R
 # no list-jvm-options (it's a new command I added in v3)
-create-audit-module R
-delete-audit-module R
-list-audit-modules R
 create-file-user R
 delete-file-user R
 list-file-users R

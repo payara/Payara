@@ -151,8 +151,6 @@ public class MethodNode extends DeploymentDescriptorNode<MethodDescriptor> {
         MethodDescriptor descriptor, 
         boolean writeEmptyMethodParamsElementForVoidMethods) {
         Node methodNode = super.writeDescriptor(parent, nodeName, descriptor);
-        appendTextChild(methodNode, RuntimeTagNames.METHOD_NAME, 
-            descriptor.getName());    
         if (descriptor.getParameterClassNames() != null) {
             Node paramsNode = 
                 appendChild(methodNode, RuntimeTagNames.METHOD_PARAMS); 
