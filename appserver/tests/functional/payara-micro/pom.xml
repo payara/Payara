@@ -47,7 +47,7 @@
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
         <version>7.2026.6-SNAPSHOT</version>
-        <relativePath>../payara-samples</relativePath>
+        <relativePath>../../payara-samples</relativePath>
     </parent>
 
     <artifactId>payara-micro</artifactId>
