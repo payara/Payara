@@ -54,7 +54,7 @@
   <packaging>war</packaging>
 
   <properties>
-    <junit.jupiter.version>6.0.3</junit.jupiter.version>
+    <junit.jupiter.version>6.1.0</junit.jupiter.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
   </properties>
 
