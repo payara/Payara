@@ -61,6 +61,7 @@
         <skipTests>false</skipTests>
         <skipConfig>${skipTests}</skipConfig> <!-- Whether to skip applying server config during pre-integration-test phase -->
         <skipTestConfigCleanup>${skipConfig}</skipTestConfigCleanup> <!-- Whether to skip cleaning up any config applied to the server for a test after executing it -->
+        <serverRestartCommand>stop-domain</serverRestartCommand> <!-- Command used to restart the domain; overridden to restart-domain for payara-server-remote -->
 
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
@@ -350,6 +351,7 @@
             <properties>
                 <payara.server.remote/>
                 <payara.containerType>SERVER</payara.containerType>
+                <serverRestartCommand>restart-domain</serverRestartCommand>
             </properties>
             <!--
             This profile requires you to start up a Payara server outside of the build.
