@@ -52,10 +52,6 @@
         <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>jakarta.platform</groupId>
