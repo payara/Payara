@@ -197,7 +197,7 @@
                                     <skip>${skipServerRestart}</skip>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
-                                        <argument>${serverRestartCommand}</argument>
+                                        <argument>restart-domain</argument>
                                         <argument>${payara.domain.name}</argument>
                                     </arguments>
                                 </configuration>
@@ -263,7 +263,7 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Start Domain to apply configuration -->
+                            <!-- Stop Domain so it can be restarted with configuration applied -->
                             <execution>
                                 <id>restart-payara-for-config</id>
                                 <phase>pre-integration-test</phase>
@@ -274,7 +274,7 @@
                                     <skip>${skipServerRestart}</skip>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
-                                        <argument>${serverRestartCommand}</argument>
+                                        <argument>stop-domain</argument>
                                         <argument>${payara.domain.name}</argument>
                                     </arguments>
                                 </configuration>
