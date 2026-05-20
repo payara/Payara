@@ -539,7 +539,6 @@ public class DeploymentProperties extends Properties {
     public static final String IS_UNDEPLOY = "isundeploy";
     public static final String IGNORE_CASCADE = "_ignoreCascade";
     public static final String KEEP_STATE = "keepstate";
-    public static final String DROP_TABLES = "droptables";
     public static final String ALT_DD = "altdd";
     public static final String RUNTIME_ALT_DD = "runtimealtdd";
     public static final String COMMAND_PARAMS = "commandparams";

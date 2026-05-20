@@ -93,8 +93,8 @@ public class CustomLoginModuleRealmTest {
     @Test
     @InSequence(1)
     public void serverSetup() throws IOException {
-        Path serverPathToRealm = Paths.get("../tests/loginmodule-realm-impl.jar");
-        serverPathToRealm.getParent().toFile().mkdir();
+        Path serverPathToRealm = Paths.get(System.getProperty("com.sun.aas.productRoot"), "tests", "loginmodule-realm-impl.jar");
+        Files.createDirectories(serverPathToRealm.getParent());
         try (InputStream strm = getClass().getClassLoader().getResourceAsStream("loginmodule-realm-impl.jar")) {
             Files.copy(strm, serverPathToRealm, StandardCopyOption.REPLACE_EXISTING);
         }

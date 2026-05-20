@@ -9,8 +9,6 @@ SYNOPSIS
            [--upload={true|false}]
            [--retrieve local_dirpath]
            [--dbvendorname dbvendorname]
-           [--createtables={true|false}|--dropandcreatetables={true|false}]
-           [--uniquetablenames={true|false}]
            [--deploymentplan deployment_plan]
            [--altdd alternate_deploymentdescriptor]
            [--runtimealtdd runtime_alternate_deploymentdescriptor]
@@ -116,37 +114,9 @@ OPTIONS
            created. Supported values include db2, mssql, oracle, h2,
            postgresql, and sybase, case-insensitive. If not specified,
            the value of the database-vendor-name attribute in
-           glassfish-ejb-jar.xml is used. If no value is specified, a
-           connection is made to the resource specified by the jndi-name
-           subelement of the cmp-resource element in the glassfish-ejb-jar.xml
-           file, and the database vendor name is read. If the connection
+           glassfish-ejb-jar.xml is used. If the connection
            cannot be established, or if the value is not recognized, SQL-92
            compliance is presumed.
-
-       --createtables
-           If specified as true, creates tables at deployment of an
-           application with unmapped CMP beans. If specified as false, tables
-           are not created. If not specified, the value of the
-           create-tables-at-deploy entry in the cmp-resource element of the
-           glassfish-ejb-jar.xml file determines whether or not tables are
-           created. No unique constraints are created for the tables.
-
-       --dropandcreatetables
-           If specified as true when the component is redeployed, the tables
-           created by the previous deployment are dropped before creating the
-           new tables. Applies to deployed applications with unmapped CMP
-           beans. If specified as false, tables are neither dropped nor
-           created. If not specified, the tables are dropped if the
-           drop-tables-at-undeploy entry in the cmp-resource element of the
-           glassfish-ejb-jar.xml file is set to true, and the new tables are
-           created if the create-tables-at-deploy entry in the cmp-resource
-           element of the glassfish-ejb-jar.xml file is set to true.
-
-       --uniquetablenames
-           Guarantees unique table names for all the beans and results in a
-           hash code added to the table names. This is useful if you have an
-           application with case-sensitive bean names. Applies to applications
-           with unmapped CMP beans.
 
        --deploymentplan
            Deploys the deployment plan, which is a JAR file that contains

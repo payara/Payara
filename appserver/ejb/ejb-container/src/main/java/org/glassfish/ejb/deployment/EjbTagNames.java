@@ -61,48 +61,11 @@ public interface EjbTagNames extends TagNames {
     String SERVICE_ENDPOINT_INTERFACE = "service-endpoint";
     String ROLE_REFERENCES = "security-role-refs";
 
-    // entity
-    String PERSISTENCE_TYPE = "persistence-type";
-    String PRIMARY_KEY_CLASS = "prim-key-class";
-    String PRIMARY_KEY_FIELD = "primkey-field";
-    String REENTRANT = "reentrant";
-    String PERSISTENT_FIELDS = "persistent-fields";
-    String CMP_FIELD = "cmp-field";
-    String CMP_VERSION = "cmp-version";
-    String CMP_2_VERSION = "2.x";
-    String CMP_1_VERSION = "1.x";
-    String FIELD_NAME = "field-name";
-    String ABSTRACT_SCHEMA_NAME = "abstract-schema-name";
-
-    // relationships
-    String RELATIONSHIPS = "relationships";
-    String EJB_RELATION = "ejb-relation";
-    String EJB_RELATION_NAME = "ejb-relation-name";
-    String EJB_RELATIONSHIP_ROLE = "ejb-relationship-role";
-    String EJB_RELATIONSHIP_ROLE_NAME = "ejb-relationship-role-name";
-    String MULTIPLICITY = "multiplicity";
-    String RELATIONSHIP_ROLE_SOURCE = "relationship-role-source";
-    String CMR_FIELD = "cmr-field";
-    String CMR_FIELD_NAME = "cmr-field-name";
-    String CMR_FIELD_TYPE = "cmr-field-type";
-    String CASCADE_DELETE = "cascade-delete";
-
     // application exceptions
     String APPLICATION_EXCEPTION = "application-exception";
     String APP_EXCEPTION_CLASS = "exception-class";
     String APP_EXCEPTION_ROLLBACK = "rollback";
     String APP_EXCEPTION_INHERITED = "inherited";
-
-    // ejb-entity-ref
-    String REMOTE_EJB_NAME = "remote-ejb-name";
-
-    // query
-    String QUERY = "query";
-    String QUERY_METHOD = "query-method";
-    String EJB_QL = "ejb-ql";
-    String QUERY_RESULT_TYPE_MAPPING = "result-type-mapping";
-    String QUERY_REMOTE_TYPE_MAPPING = "Remote";
-    String QUERY_LOCAL_TYPE_MAPPING = "Local";
 
     // session
     String TRANSACTION_TYPE = "transaction-type";

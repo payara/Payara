@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -77,7 +77,7 @@ public class UseBundledJsfTest {
                 .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "payara-web.xml"))
                 .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.glassfish:jakarta.faces:" + JSF_VERSION))
-                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:13.0.1"));
+                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:15.0.4"));
     }
 
     @Test

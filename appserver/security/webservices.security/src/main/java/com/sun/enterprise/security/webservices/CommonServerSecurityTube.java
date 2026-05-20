@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.webservices;
 
 import java.security.PrivilegedActionException;
@@ -136,15 +136,12 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
                 WebServiceException wse = new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantValidateRequest",
                         "Cannot validate request for {0}", new Object[] { helper.getModelName() }), e);
 
-                // set status for audit
-                status = AuthStatus.SEND_FAILURE;
                 // if unable to determine if two-way will return empty response
                 Packet ret = helper.getFaultResponse(info.getRequestPacket(), info.getResponsePacket(), wse);
                 return doReturnWith(ret);
 
             } finally {
                 validatedRequest = info.getRequestPacket();
-                helper.auditInvocation(validatedRequest, status);
             }
 
             Packet response = null;

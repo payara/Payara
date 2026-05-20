@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import static com.sun.enterprise.security.SecurityLoggerInfo.secServiceStartupEnter;
@@ -50,20 +50,12 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ServerContext;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.Util;
-import com.sun.enterprise.security.ssl.SSLUtils;
 
 /**
  * This class extends default implementation of ServerLifecycle interface.
@@ -73,32 +65,11 @@ import com.sun.enterprise.security.ssl.SSLUtils;
 @Service
 @Singleton
 public class SecurityLifecycle implements  PostConstruct, PreDestroy {
-    
-    @Inject
-    private ServerContext sc;
-    
-    @Inject
-    private SecurityServicesUtil secServUtil;
-    
-    @Inject 
-    private Util util;
-    
-    @Inject
-    private SSLUtils sslUtils;
-    
-    @Inject
-    private SecurityConfigListener configListener;
-    
-    @Inject
-    private ServiceLocator habitat;
+
 
     @Inject
     private RealmsManager realmsManager;
 
-    @Inject @Optional
-    private ContainerSecurityLifecycle eeSecLifecycle;
-
-    private EventListener listener = null;
 
     private static final String SYS_PROP_LOGIN_CONF = "java.security.auth.login.config";
     private static final String SYS_PROP_JAVA_SEC_POLICY =  "java.security.policy";
@@ -147,12 +118,6 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
             }
 
             realmsManager.createRealms();
-            // start the audit mechanism
-            AuditManager auditManager = secServUtil.getAuditManager();
-            auditManager.loadAuditModules();
-
-            //Audit the server started event
-            auditManager.serverStarted();
             
             // initRoleMapperFactory is in J2EEServer.java and not moved to here
             // this is because a DummyRoleMapperFactory is register due
@@ -172,23 +137,9 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     @Override
     public void postConstruct() {
         onInitialization();
-        listener = new AuditServerShutdownListener();
-        Events events = habitat.getService(Events.class);
-        events.register(listener);
-
     }
 
     @Override
     public void preDestroy() {
-    }
-    
-    // To audit the server shutdown event
-    public class AuditServerShutdownListener implements EventListener {
-        @Override
-        public void event(Event event) {
-            if (EventTypes.SERVER_SHUTDOWN.equals(event.type())) {
-                secServUtil.getAuditManager().serverShutdown();
-            }
-        }
     }
 }

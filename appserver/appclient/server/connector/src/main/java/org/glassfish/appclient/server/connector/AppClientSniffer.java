@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.connector;
 
@@ -60,7 +61,8 @@ import java.util.ArrayList;
 @Singleton
 public class AppClientSniffer extends GenericSniffer {
     private static final String[] stigmas = {
-        "META-INF/application-client.xml", "META-INF/sun-application-client.xml", "META-INF/glassfish-application-client.xml"
+            "META-INF/application-client.xml", "META-INF/sun-application-client.xml",
+            "META-INF/glassfish-application-client.xml", "META-INF/payara-application-client.xml"
     };
 
     private static final String[] containers = {"appclient"};
@@ -164,6 +166,7 @@ public class AppClientSniffer extends GenericSniffer {
         result.add("META-INF/application-client.xml");
         result.add("META-INF/sun-application-client.xml");
         result.add("META-INF/glassfish-application-client.xml");
+        result.add("META-INF/payara-application-client.xml");
         return result;
     }
 

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2021-2022 Payara Foundation and/or its affiliates
+// Portions Copyright 2021-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.client;
 
@@ -108,7 +108,7 @@ import java.util.logging.Logger;
  */
 public class AppClientFacade {
 
-    private static final String ACC_CONFIG_CONTENT_PROPERTY_NAME = "glassfish-acc.xml.content";
+    private static final String ACC_CONFIG_CONTENT_PROPERTY_NAME = "payara-acc.xml.content";
     private static final String MAN_PAGE_PATH = "/org/glassfish/appclient/client/acc/appclient.1m";
     private static final String LINE_SEP = System.getProperty("line.separator");
 

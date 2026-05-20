@@ -108,16 +108,6 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 
     private List runtimeProps=null;
 
-    // for cmp-resource type
-    boolean createTablesAtDeploy=false;
-    boolean dropTablesAtUndeploy=false;
-    String databaseVendorName = null;
-    Properties schemaGeneratorProperties = null;
-
-    // Create logger object per Java SDK 1.4 to log messages
-    // introduced Santanu De, Sun Microsystems, March 2002
-    static final Logger _logger = DOLUtils.getDefaultLogger();
-
     // START OF IASRI 4718559
     private static final LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(ResourceReferenceDescriptor.class);
@@ -377,26 +367,6 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
 	this.mailConfiguration = mailConfiguration;
     }
 
-    /**
-     * Add a new runtime property to this cmp resource
-     * @param newProp
-     */
-     public void addProperty(NameValuePairDescriptor newProp) {
-	 if (runtimeProps==null) {
-	     runtimeProps = new ArrayList();
-	 }
-	 runtimeProps.add(newProp);
-     }
-
-     /**
-      * @return the runtime properties for this cmp resource
-      */
-     public Iterator getProperties() {
-	 if (runtimeProps==null) {
-	     return null;
-	 }
-	 return runtimeProps.iterator();
-     }
 
     /**
      * Return the mail configuration details of thsi resource or null.
@@ -404,70 +374,6 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
      */
     public MailConfiguration getMailConfiguration() {
 	return this.mailConfiguration;
-    }
-
-    /**
-     * @return true if automatic creation of tables for the CMP Beans is
-     * done at deployment time
-     */
-    public boolean isCreateTablesAtDeploy() {
-        return createTablesAtDeploy;
-    }
-
-    /**
-     * Sets whether if automatic creation of tables for the CMP Beans is
-     * done at deployment time
-     * @param createTablesAtDeploy
-     */
-    public void setCreateTablesAtDeploy(boolean createTablesAtDeploy) {
-        this.createTablesAtDeploy = createTablesAtDeploy;
-    }
-
-    /**
-     * @return true if automatic creation of tables for the CMP Beans is
-     * done at deployment time
-     */
-    public boolean isDropTablesAtUndeploy() {
-        return dropTablesAtUndeploy;
-    }
-
-    /**
-     * Sets whether if automatic creation of tables for the CMP Beans is
-     * done at deployment time
-     * @param dropTablesAtUndeploy
-     */
-    public void setDropTablesAtUndeploy(boolean dropTablesAtUndeploy) {
-        this.dropTablesAtUndeploy = dropTablesAtUndeploy;
-    }
-
-    /**
-     * @return the database vendor name
-     */
-    public String getDatabaseVendorName() {
-        return databaseVendorName;
-    }
-
-    /**
-     * Sets the database vendor name
-     * @param vendorName
-     */
-    public void setDatabaseVendorName(String vendorName) {
-        this.databaseVendorName = vendorName;
-    }
-
-    /**
-     * @return the override properties for the schema generation
-     */
-    public Properties getSchemaGeneratorProperties() {
-        return schemaGeneratorProperties;
-    }
-
-    /**
-     * Sets the override properties for the schema generation
-     * @param props
-     */
-    public void setSchemaGeneratorProperties(Properties props) {
-        schemaGeneratorProperties = props;
     }
 
     /**
@@ -522,14 +428,7 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         } else {
             sb.append("\nNo Runtime properties");
         }
-        sb.append("\nDatabase Vendor : ").append(databaseVendorName);
-        sb.append("\nCreate Tables at Deploy : ").append(createTablesAtDeploy);
-        sb.append("\nDelete Tables at Undeploy : ").append(dropTablesAtUndeploy);
 
-        if (schemaGeneratorProperties!=null) {
-            sb.append("\nSchema Generator Properties : ");
-            sb.append(schemaGeneratorProperties);
-        }
 
     }
    //START OF IASRI 4633229

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package org.glassfish.web.deployment.node.runtime.gf;
 
 import static com.sun.enterprise.deployment.xml.DTDRegistry.GF_WEBAPP_301_DTD_PUBLIC_ID;
@@ -54,6 +54,7 @@ import com.sun.enterprise.deployment.node.XMLElement;
 /**
  * This node is responsible for handling all runtime information for web bundle.
  */
+@Deprecated
 public class GFWebBundleRuntimeNode extends WebBundleRuntimeNode {
 
     /** Creates new GFWebBundleRuntimeNode */

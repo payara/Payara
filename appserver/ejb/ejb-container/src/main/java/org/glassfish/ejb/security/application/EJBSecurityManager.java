@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package org.glassfish.ejb.security.application;
@@ -50,7 +50,6 @@ import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.security.auth.WebAndEjbToJaasBridge;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.ee.SecurityUtil;
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authorization.WebAuthorizationManagerService;
 import com.sun.enterprise.security.ee.authorization.cache.PermissionCache;
 import com.sun.enterprise.security.ee.authorization.cache.PermissionCacheFactory;
@@ -103,8 +102,7 @@ public final class EJBSecurityManager implements SecurityManager {
 
     private static final Logger _logger = LogDomains.getLogger(EJBSecurityManager.class, LogDomains.EJB_LOGGER);
 
-    private AppServerAuditManager auditManager;
-    
+
     private final SecurityRoleMapperFactory roleMapperFactory;
 
     private final EjbDescriptor deploymentDescriptor;
@@ -167,8 +165,6 @@ public final class EJBSecurityManager implements SecurityManager {
         // create and initialize the unchecked permission cache.
         uncheckedMethodPermissionCache = PermissionCacheFactory.createPermissionCache(this.contextId,
                 EJBMethodPermission.class, this.ejbName);
-
-        auditManager = this.securityManagerFactory.getAuditManager();
 
         authorizationService = new AuthorizationService(
                 getContextID(ejbDescriptor),
@@ -321,8 +317,6 @@ public final class EJBSecurityManager implements SecurityManager {
 
         ejbInvocation.setAuth(authorized);
 
-        doAuditAuthorize(securityContext, ejbInvocation, authorized);
-
         if (authorized && ejbInvocation.isWebService && !ejbInvocation.isPreInvokeDone()) {
             preInvoke(ejbInvocation);
         }
@@ -334,15 +328,6 @@ public final class EJBSecurityManager implements SecurityManager {
         }
 
         return authorized;
-    }
-
-    private void doAuditAuthorize(SecurityContext securityContext, EjbInvocation ejbInvocation, boolean authorized) {
-        if (auditManager.isAuditOn()) {
-            String caller = securityContext.getCallerPrincipal().getName();
-            auditManager.ejbInvocation(caller, ejbName, ejbInvocation.method.toString(), authorized);
-
-            _logger.fine(() -> " (Caller) = " + caller);
-        }
     }
 
     /**
