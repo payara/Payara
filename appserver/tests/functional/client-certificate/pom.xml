@@ -121,37 +121,39 @@
                         </executions>
                     </plugin>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
                             <execution>
                                 <id>enable-client-auth</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
-                                    </arguments>
+                                    <target>
+                                        <exec executable="${payara.asadmin}">
+                                            <arg value="set" />
+                                            <arg value="configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want" />
+                                        </exec>
+                                    </target>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>assign-certificate-realm-group</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>run</goal>
                                 </goals>
                                 <configuration>
                                     <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole</argument>
-                                    </arguments>
+                                    <target>
+                                        <exec executable="${payara.asadmin}">
+                                            <arg value="set" />
+                                            <arg value="configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole" />
+                                        </exec>
+                                    </target>
                                 </configuration>
                             </execution>
                         </executions>
