@@ -70,7 +70,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
     /**
      * Scenario is equivalent to the TCK test of same name but not 100% identical
      */
-    //@Test(timeout = 3000)
+    @Test(timeout = 3000)
     public void bulkheadMetricAsyncTest() {
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
@@ -106,7 +106,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
     /**
      * Scenario is equivalent to the TCK test of same name but not 100% identical
      */
-    //@Test(timeout = 3000)
+    @Test(timeout = 3000)
     public void bulkheadMetricHistogramTest() {
         final long delayMs = 100;
         long beforeInitTimestamp = System.nanoTime();
@@ -151,7 +151,7 @@ public class BulkheadMetricTckTest extends AbstractMetricTest {
     /**
      * Scenario is equivalent to the TCK test of same name but not 100% identical
      */
-    //@Test(timeout = 3000)
+    @Test(timeout = 3000)
     public void bulkheadMetricRejectionTest() {
         callMethodWithNewThreadAndWaitFor(commonWaiter);
         callMethodWithNewThreadAndWaitFor(commonWaiter);
