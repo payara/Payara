@@ -22,7 +22,6 @@ pipeline {
                 script {
                     pom = readMavenPom file: 'pom.xml'
                     payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
-                    DOMAIN_NAME = "test-domain"
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
@@ -31,27 +30,26 @@ pipeline {
         }
         stage('Build') {
             steps {
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#  Building SRC  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                sh """mvn -B -V -ff -e clean install --strict-checksums -PQuickBuild,BuildEmbedded,jakarta-staging \
-                    -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
-                    -Djavax.xml.accessExternalSchema=all -Dbuild.number=${payaraBuildNumber} \
-                    -Djavadoc.skip -Dsource.skip"""
-                echo '*#*#*#*#*#*#*#*#*#*#*#*#    Built SRC   *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-            }
-            post {
-                success{
-                    archiveArtifacts artifacts: 'appserver/distributions/payara/target/payara.zip', fingerprint: true
-                    archiveArtifacts artifacts: 'appserver/extras/payara-micro/payara-micro-distribution/target/payara-micro.jar', fingerprint: true
-                    stash name: 'payara-target', includes: 'appserver/distributions/payara/target/**', allowEmpty: true
-                    stash name: 'payara-micro', includes: 'appserver/extras/payara-micro/payara-micro-distribution/target/**', allowEmpty: true
-                    stash name: 'payara-embedded-all', includes: 'appserver/extras/embedded/all/target/**', allowEmpty: true
-                    stash name: 'payara-embedded-web', includes: 'appserver/extras/embedded/web/target/**', allowEmpty: true
-                    dir('/home/ubuntu/.m2/repository/'){
-                        stash name: 'payara-m2-repository', includes: '**', allowEmpty: true
-                    }
-                }
-                always {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: 'appserver/distributions/payara/target/stage/payara7/glassfish/logs/server.log'
+                script {
+                    echo 'Fetching Build Job Artifacts'
+
+                    def specificBranchCommitOrTag = env.CHANGE_BRANCH ?: env.BRANCH_NAME
+                    def repoOrg = env.CHANGE_FORK ?: 'Payara'
+
+                    def buildJob = build job: 'Build/Build',
+                    wait: true,
+                    parameters: [
+                        string(name: 'specificBranchCommitOrTag', value: specificBranchCommitOrTag),
+                        string(name: 'repoOrg', value: repoOrg),
+                        string(name: 'jdkVer', value: 'zulu-21'),
+                        string(name: 'stream', value: 'Community'),
+                        string(name: 'profiles', value: 'BuildEmbedded'),
+                        booleanParam(name: 'skipTests', value: false),
+                        string(name: 'multiThread', value: '1'),
+                        booleanParam(name: 'archiveMavenRepository', value: true)
+                    ]
+
+                    buildId = buildJob.getNumber().toString()
                 }
             }
         }
@@ -69,8 +67,8 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """rm  ~/test\\|sa.mv.db  || true"""
-                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall,jakarta-staging \
-                        -Dglassfish.home=\"${pwd()}/appserver/distributions/payara/target/stage/payara7/glassfish\" \
+                        sh """mvn -B -V -ff -e clean test --strict-checksums -Pall \
+                        -Dglassfish.home=\"${pwd()}/payara7/glassfish\" \
                         -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                         -Djavax.xml.accessExternalSchema=all \
                         -Dsurefire.rerunFailingTestsCount=2 \
@@ -95,10 +93,13 @@ pipeline {
                      options {
                          retry(3)
                     }
-                     steps {
-                         setupDomain()
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
+                    steps {
+
+                        processPayaraArtifacts(buildId, true)
+                        setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
                          -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                          -Djavax.xml.accessExternalSchema=all \
                          -Dsurefire.rerunFailingTestsCount=2 \
