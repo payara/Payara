@@ -64,45 +64,36 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.antrun.plugin.version}</version>
                 <executions>
                     <!-- Generate an expired self-signed certificate -->
                     <execution>
                         <id>generate-expired-certificate</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
                             <skip>${skipConfig}</skip>
-                            <executable>keytool</executable>
-                            <arguments>
-                                <argument>-genkeypair</argument>
-                                <argument>-alias</argument>
-                                <argument>client-certificate-validation-disabled</argument>
-                                <argument>-keyalg</argument>
-                                <argument>RSA</argument>
-                                <argument>-keysize</argument>
-                                <argument>2048</argument>
-                                <argument>-sigalg</argument>
-                                <argument>SHA256withRSA</argument>
-                                <argument>-dname</argument>
-                                <argument>CN=ExpiredClient</argument>
-                                <argument>-validity</argument>
-                                <argument>1</argument>
-                                <argument>-keystore</argument>
-                                <argument>${project.build.directory}${file.separator}expired-keystore.p12</argument>
-                                <argument>-storetype</argument>
-                                <argument>PKCS12</argument>
-                                <argument>-storepass</argument>
-                                <argument>changeit</argument>
-                                <argument>-keypass</argument>
-                                <argument>changeit</argument>
-                                <argument>-startdate</argument>
-                                <argument>2019/08/01</argument>
-                                <argument>-noprompt</argument>
-                            </arguments>
+                            <target>
+                                <exec executable="keytool">
+                                    <arg value="-genkeypair" />
+                                    <arg value="-alias" /><arg value="client-certificate-validation-disabled" />
+                                    <arg value="-keyalg" /><arg value="RSA" />
+                                    <arg value="-keysize" /><arg value="2048" />
+                                    <arg value="-sigalg" /><arg value="SHA256withRSA" />
+                                    <arg value="-dname" /><arg value="CN=ExpiredClient" />
+                                    <arg value="-validity" /><arg value="1" />
+                                    <arg value="-keystore" /><arg value="${project.build.directory}${file.separator}expired-keystore.p12" />
+                                    <arg value="-storetype" /><arg value="PKCS12" />
+                                    <arg value="-storepass" /><arg value="changeit" />
+                                    <arg value="-keypass" /><arg value="changeit" />
+                                    <arg value="-startdate" /><arg value="2019/08/01" />
+                                    <arg value="-noprompt" />
+                                </exec>
+                            </target>
                         </configuration>
                     </execution>
 
@@ -111,174 +102,80 @@
                         <id>add-expired-certificate-to-server</id>
                         <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
                             <skip>${skipConfig}</skip>
-                            <executable>keytool</executable>
-                            <arguments>
-                                <argument>-importkeystore</argument>
-                                <argument>-srckeystore</argument>
-                                <argument>${project.build.directory}${file.separator}expired-keystore.p12</argument>
-                                <argument>-srcstoretype</argument>
-                                <argument>PKCS12</argument>
-                                <argument>-destkeystore</argument>
-                                <argument>${payara.home}${file.separator}glassfish${file.separator}domains${file.separator}${payara.domain.name}${file.separator}config${file.separator}cacerts.p12</argument>
-                                <argument>-deststoretype</argument>
-                                <argument>PKCS12</argument>
-                                <argument>-srcstorepass</argument>
-                                <argument>changeit</argument>
-                                <argument>-deststorepass</argument>
-                                <argument>changeit</argument>
-                                <argument>-noprompt</argument>
-                            </arguments>
+                            <target unless="payara.micro.managed">
+                                <exec executable="keytool">
+                                    <arg value="-importkeystore" />
+                                    <arg value="-srckeystore" /><arg value="${project.build.directory}${file.separator}expired-keystore.p12" />
+                                    <arg value="-srcstoretype" /><arg value="PKCS12" />
+                                    <arg value="-destkeystore" /><arg value="${payara.home}${file.separator}glassfish${file.separator}domains${file.separator}${payara.domain.name}${file.separator}config${file.separator}cacerts.p12" />
+                                    <arg value="-deststoretype" /><arg value="PKCS12" />
+                                    <arg value="-srcstorepass" /><arg value="changeit" />
+                                    <arg value="-deststorepass" /><arg value="changeit" />
+                                    <arg value="-noprompt" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Disable Certificate Expiration Validation -->
+                    <execution>
+                        <id>disable-expiration-validation</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target unless="payara.micro.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set" />
+                                    <arg value="configs.config.server-config.security-service.auth-realm.certificate.property.certificate-validation=false" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Stop managed server so Arquillian can restart it for tests -->
+                    <execution>
+                        <id>stop-managed-payara-server-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target if="payara.server.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="stop-domain" />
+                                    <arg value="${payara.domain.name}" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+
+                    <!-- Restart remote server to apply trust store and config changes -->
+                    <execution>
+                        <id>restart-remote-payara-server-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target if="payara.server.remote">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="restart-domain" />
+                                    <arg value="${payara.domain.name}" />
+                                </exec>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>payara-server-remote</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <!-- Disable Certificate Expiration Validation -->
-                            <execution>
-                                <id>disable-expiration-validation</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.certificate-validation=false</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
-                            <!-- Start Domain to apply configuration -->
-                            <execution>
-                                <id>restart-payara-for-config</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipServerRestart}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>${serverRestartCommand}</argument>
-                                        <argument>${payara.domain.name}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>payara-server-managed</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>start-payara-server-for-config</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipServerStart}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>start-domain</argument>
-                                        <argument>${payara.domain.name}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
-                            <!-- Disable Certificate Expiration Validation -->
-                            <execution>
-                                <id>disable-expiration-validation</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.certificate-validation=false</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>enable-client-auth</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>assign-certificate-realm-group</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
-                            <!-- Start Domain to apply configuration -->
-                            <execution>
-                                <id>restart-payara-for-config</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipServerRestart}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>${serverRestartCommand}</argument>
-                                        <argument>${payara.domain.name}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
