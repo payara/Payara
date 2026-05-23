@@ -40,6 +40,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <jnlp
     spec="1.0+"
@@ -111,7 +112,7 @@
         <!--
             Content normally read from files during an appclient script launch.
         -->
-        <property name="glassfish-acc.xml.content" value="${request.glassfish-acc.xml.content}"/>
+        <property name="payara-acc.xml.content" value="${request.payara-acc.xml.content}"/>
         <property name="appclient.login.conf.content" value="${request.appclient.login.conf.content}"/>
         <property name="message.security.config.provider.security.config"
             value="${request.message.security.config.provider.security.config}"/>

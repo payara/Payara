@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.security.auth.login;
 
@@ -64,11 +64,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 
 import javax.security.auth.x500.X500Principal;
-import org.glassfish.internal.api.Globals;
 
 import com.sun.enterprise.security.SecurityLoggerInfo;
-import com.sun.enterprise.security.SecurityServicesUtil;
-import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.login.common.ServerLoginCallbackHandler;
@@ -94,8 +91,6 @@ public class LoginContextDriver {
 
     public static final ServerLoginCallbackHandler dummyCallback = new ServerLoginCallbackHandler();
     public static final String CERT_REALMNAME = "certificate";
-
-    private static volatile AuditManager AUDIT_MANAGER;
 
     /**
      * This class cannot be instantiated
@@ -174,21 +169,6 @@ public class LoginContextDriver {
 
     // ############################   Private methods ######################################
 
-
-
-    public static void validateJaasLogin(String username, String jaasCtx, String realm, Subject subject) {
-        try {
-            tryJaasLogin(jaasCtx, subject);
-        } catch (Exception e) {
-            LOGGER.log(INFO, auditAtnRefusedError, username);
-
-            auditAuthenticate(username, realm, false);
-
-            throwLoginException(e);
-        }
-
-        auditAuthenticate(username, realm, true);
-    }
 
     public static void tryJaasLogin(String jaasCtx, Subject subject) throws javax.security.auth.login.LoginException  {
         // A dummyCallback is used to satisfy JAAS but it is never used.
@@ -321,27 +301,6 @@ public class LoginContextDriver {
         ClientSecurityContext.setCurrent(null);
     }
 
-    private static AuditManager getAuditManager() {
-        if (AUDIT_MANAGER != null) {
-            return AUDIT_MANAGER;
-        }
-        return _getAuditManager();
-    }
-
-    private static synchronized AuditManager _getAuditManager() {
-        if (AUDIT_MANAGER == null) {
-            SecurityServicesUtil secServUtil = Globals.get(SecurityServicesUtil.class);
-            AUDIT_MANAGER = secServUtil.getAuditManager();
-        }
-        return AUDIT_MANAGER;
-    }
-
-    public static void auditAuthenticate(String username, String realm, boolean success) {
-        if (getAuditManager().isAuditOn()) {
-            getAuditManager().authentication(username, realm, success);
-        }
-    }
-
     public static void jmacLogin(Subject subject, Principal callerPrincipal, String realmName) throws LoginException {
         if (CertificateRealm.AUTH_TYPE.equals(realmName)) {
             if (callerPrincipal instanceof X500Principal) {
@@ -371,9 +330,6 @@ public class LoginContextDriver {
             certRealm.authenticate(subject, x500Principal);
         } catch (Exception ex) {
             LOGGER.log(INFO, auditAtnRefusedError, userName);
-            if (getAuditManager().isAuditOn()) {
-                getAuditManager().authentication(userName, CertificateRealm.AUTH_TYPE, false);
-            }
 
             if (ex instanceof LoginException) {
                 throw (LoginException) ex;
@@ -382,10 +338,6 @@ public class LoginContextDriver {
         }
 
         LOGGER.log(FINE, "JMAC cert login succeeded for {0}", userName);
-
-        if (getAuditManager().isAuditOn()) {
-            getAuditManager().authentication(userName, CertificateRealm.AUTH_TYPE, true);
-        }
         // do not set the security Context
 
         return subject;
@@ -451,17 +403,11 @@ public class LoginContextDriver {
 
         } catch (Exception e) {
             LOGGER.log(INFO, SecurityLoggerInfo.auditAtnRefusedError, username);
-            if (getAuditManager().isAuditOn()) {
-                getAuditManager().authentication(username, realmName, false);
-            }
 
             if (e instanceof LoginException) {
                 throw (LoginException) e;
             }
             throw new LoginException("Login failed: " + e.getMessage(), e);
-        }
-        if (getAuditManager().isAuditOn()) {
-            getAuditManager().authentication(username, realmName, true);
         }
         LOGGER.log(FINE, "jmac Password login succeeded for {0}", username);
 

@@ -45,8 +45,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <artifactId>payara-samples-profiled-tests</artifactId>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <name>Payara Samples - OpenTelemetry</name>

@@ -60,7 +60,6 @@
     <tocitem target="reference/copy-config" text="copy-config" expand="false"></tocitem>
     <tocitem target="reference/create-admin-object" text="create-admin-object" expand="false"></tocitem>
     <tocitem target="reference/create-application-ref" text="create-application-ref" expand="false"></tocitem>
-    <tocitem target="reference/create-audit-module" text="create-audit-module" expand="false"></tocitem>
     <tocitem target="reference/create-auth-realm" text="create-auth-realm" expand="false"></tocitem>
     <tocitem target="reference/create-cluster" text="create-cluster" expand="false"></tocitem>
     <tocitem target="reference/create-connector-connection-pool" text="create-connector-connection-pool" expand="false"></tocitem>
@@ -112,7 +111,6 @@
     <tocitem target="reference/create-virtual-server" text="create-virtual-server" expand="false"></tocitem>
     <tocitem target="reference/delete-admin-object" text="delete-admin-object" expand="false"></tocitem>
     <tocitem target="reference/delete-application-ref" text="delete-application-ref" expand="false"></tocitem>
-    <tocitem target="reference/delete-audit-module" text="delete-audit-module" expand="false"></tocitem>
     <tocitem target="reference/delete-auth-realm" text="delete-auth-realm" expand="false"></tocitem>
     <tocitem target="reference/delete-cluster" text="delete-cluster" expand="false"></tocitem>
     <tocitem target="reference/delete-config" text="delete-config" expand="false"></tocitem>
@@ -199,7 +197,6 @@
     <tocitem target="reference/list-admin-objects" text="list-admin-objects" expand="false"></tocitem>
     <tocitem target="reference/list-application-refs" text="list-application-refs" expand="false"></tocitem>
     <tocitem target="reference/list-applications" text="list-applications" expand="false"></tocitem>
-    <tocitem target="reference/list-audit-modules" text="list-audit-modules" expand="false"></tocitem>
     <tocitem target="reference/list-auth-realms" text="list-auth-realms" expand="false"></tocitem>
     <tocitem target="reference/list-backups" text="list-backups" expand="false"></tocitem>
     <tocitem target="reference/list-batch-job-executions" text="list-batch-job-executions" expand="false"></tocitem>

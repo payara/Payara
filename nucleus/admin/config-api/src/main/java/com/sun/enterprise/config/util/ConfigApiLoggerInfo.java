@@ -393,32 +393,6 @@ public class ConfigApiLoggerInfo {
     public final static String problemParsingJaacProviderAttr = LOGMSG_PREFIX + "-00044";
 
     @LogMessageInfo(
-            message = "Failure creating AuditModule config object",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failureCreatingAuditModule = LOGMSG_PREFIX + "-00045";
-
-
-    @LogMessageInfo(
-            message = "Create AuditModule Property failed.",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failureCreatingAuditModuleAttr = LOGMSG_PREFIX + "-00046";
-
-
-    @LogMessageInfo(
-            message = "Problem parsing audit-module property",
-            cause = "unknown",
-            action = "unknown",
-            publish = true,
-            level = "SEVERE")
-    public final static String failureParsingAuditModuleProp = LOGMSG_PREFIX + "-00047";
-
-    @LogMessageInfo(
             message = "Failure creating ProviderConfig",
             cause = "unknown",
             action = "unknown",

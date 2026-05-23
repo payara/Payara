@@ -42,8 +42,8 @@
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <artifactId>payara-samples-profiled-tests</artifactId>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>jaxws-tracing</artifactId>
@@ -81,57 +81,4 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>payara-server-remote</id>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-
-                        <executions>
-                            <execution>
-                                <id>set-requesttracing-configuration</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTestConfigCleanup}</skip>
-                                    <successCodes>0,1</successCodes>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set-requesttracing-configuration</argument>
-                                        <argument>--enabled=false</argument>
-                                        <argument>--dynamic=true</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>notification-cdieventbus-configure</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTestConfigCleanup}</skip>
-                                    <successCodes>0,1</successCodes>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>notification-cdieventbus-configure</argument>
-                                        <argument>--enabled=false</argument>
-                                        <argument>--dynamic=true</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

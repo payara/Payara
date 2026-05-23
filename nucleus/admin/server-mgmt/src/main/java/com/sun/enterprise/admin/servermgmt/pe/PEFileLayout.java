@@ -493,14 +493,6 @@ public class PEFileLayout
             return new File(getTemplatesDir(), templateName);
     }
 
-    public static final String IMQBROKERD_UNIX = "imqbrokerd";
-    public static final String IMQBROKERD_WIN = "imqbrokerd.exe";
-    public static final String IMQBROKERD = isWindows() ? IMQBROKERD_WIN : IMQBROKERD_UNIX;
-    public File getImqBrokerExecutable()
-    {
-        return new File(getImqBinDir(), IMQBROKERD);
-    }
-
     public static final String START_SERV_UNIX = "startserv";
     public static final String START_SERV_WIN = "startserv.bat";
     public static final String START_SERV_OS = isWindows() ? START_SERV_WIN : START_SERV_UNIX;
@@ -582,7 +574,7 @@ public class PEFileLayout
     }
 
     
-    public static final String ACC_XML_TEMPLATE = "glassfish-acc.xml";
+    public static final String ACC_XML_TEMPLATE = "payara-acc.xml";
     
     public Map<File,File> getAppClientContainerTemplateAndXml() {
         final Map<File,File> result = new HashMap<File,File>();
@@ -590,7 +582,7 @@ public class PEFileLayout
         return result;
     }
     
-    public static final String ACC_XML = "glassfish-acc.xml";
+    public static final String ACC_XML = "payara-acc.xml";
     
     public static final String SESSION_STORE = "session-store";
     public File getSessionStore()

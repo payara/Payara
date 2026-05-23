@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node;
 
@@ -76,26 +76,37 @@ import org.w3c.dom.Node;
 @Service
 public class ApplicationNode extends AbstractBundleNode<Application> {
 
-   /** 
+    /**
     * The public ID.
     */
+    @Deprecated
     public final static String PUBLIC_DTD_ID = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN";
+    @Deprecated
     public final static String PUBLIC_DTD_ID_12 = "-//Sun Microsystems, Inc.//DTD J2EE Application 1.2//EN";
     /** 
      * The system ID.
      */
+    @Deprecated
     public final static String SYSTEM_ID = "http://java.sun.com/dtd/application_1_3.dtd";
-    public final static String SYSTEM_ID_12 = "http://java.sun.com/dtd/application_1_2.dtd";
-    
-    public final static String SCHEMA_ID_14 = "application_1_4.xsd";
+    @Deprecated
+    public final static String SYSTEM_ID_1_2 = "http://java.sun.com/dtd/application_1_2.dtd";
 
-    public final static String SCHEMA_ID_15 = "application_5.xsd";
-    public final static String SCHEMA_ID_16 = "application_6.xsd";
-    public final static String SCHEMA_ID_17 = "application_7.xsd";
-    public final static String SCHEMA_ID_18 = "application_8.xsd";
-    public final static String SCHEMA_ID_19 = "application_9.xsd";
-    public final static String SCHEMA_ID = "application_10.xsd";
-    public final static String SPEC_VERSION = "10";
+    @Deprecated
+    public final static String SCHEMA_ID_1_4 = "application_1_4.xsd";
+    @Deprecated
+    public final static String SCHEMA_ID_5 = "application_5.xsd";
+    @Deprecated
+    public final static String SCHEMA_ID_6 = "application_6.xsd";
+    @Deprecated
+    public final static String SCHEMA_ID_7 = "application_7.xsd";
+    @Deprecated
+    public final static String SCHEMA_ID_8 = "application_8.xsd";
+    @Deprecated
+    public final static String SCHEMA_ID_9 = "application_9.xsd";
+    @Deprecated
+    public final static String SCHEMA_ID_10 = "application_10.xsd";
+    public final static String SCHEMA_ID_11 = "application_11.xsd";
+    public final static String SPEC_VERSION = "11";
     private final static List<String> systemIDs = initSystemIDs();
      
     // The XML tag associated with this Node
@@ -103,13 +114,14 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
 
     private final static List<String> initSystemIDs() {
         List<String> systemIDs = new ArrayList<>();
-        systemIDs.add(SCHEMA_ID);
-        systemIDs.add(SCHEMA_ID_14);
-        systemIDs.add(SCHEMA_ID_15);
-        systemIDs.add(SCHEMA_ID_16);
-        systemIDs.add(SCHEMA_ID_17);
-        systemIDs.add(SCHEMA_ID_18);
-        systemIDs.add(SCHEMA_ID_19);
+        systemIDs.add(SCHEMA_ID_11);
+        systemIDs.add(SCHEMA_ID_1_4);
+        systemIDs.add(SCHEMA_ID_5);
+        systemIDs.add(SCHEMA_ID_6);
+        systemIDs.add(SCHEMA_ID_7);
+        systemIDs.add(SCHEMA_ID_8);
+        systemIDs.add(SCHEMA_ID_9);
+        systemIDs.add(SCHEMA_ID_10);
         return Collections.unmodifiableList(systemIDs);
     }
     
@@ -124,7 +136,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      */
     public String registerBundle(Map publicIDToDTD) {
         publicIDToDTD.put(PUBLIC_DTD_ID, SYSTEM_ID);
-        publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_12);
+        publicIDToDTD.put(PUBLIC_DTD_ID_12, SYSTEM_ID_1_2);
         return tag.getQName();
     }
 
@@ -268,7 +280,7 @@ public class ApplicationNode extends AbstractBundleNode<Application> {
      */
     @Override
     public String getSystemID() {
-        return SCHEMA_ID;
+        return SCHEMA_ID_11;
     }
 
     /**

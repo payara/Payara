@@ -154,18 +154,16 @@ public class EclipseLinkSchemaGenerationProcessor implements SchemaGenerationPro
                 || ddlGenerate.equals(DROP_AND_CREATE))
                 && !ddlMode.equals(NONE);
 
-        boolean createTables = helper.getCreateTables(userCreateTables);
-
         boolean userDropTables = ddlGenerate.equals(DROP_AND_CREATE)
                 && (ddlMode.equals(DDL_DATABASE_GENERATION)
                 || ddlMode.equals(DDL_BOTH_GENERATION));
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Processing request with create tables: " + createTables //NOI18N
+            logger.fine("Processing request with create tables: " + userCreateTables //NOI18N
                     + ", drop tables: " + userDropTables); //NOI18N
         }
 
-        if (createTables || userDropTables) {
+        if (userCreateTables || userDropTables) {
             helper.setProcessorType("JPA", pud.getName()); // NOI18N
             helper.setDropTablesValue(userDropTables, pud.getName());
             helper.setCreateTablesValue(userCreateTables && !ddlMode.equals(DDL_SQL_SCRIPT_GENERATION),

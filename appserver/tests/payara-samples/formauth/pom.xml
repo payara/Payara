@@ -31,12 +31,12 @@
 
     <parent>
         <groupId>fish.payara.samples</groupId>
-        <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <artifactId>microprofile-endpoints</artifactId>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
-    <artifactId>formauth</artifactId>
-    <name>Payara Samples - Payara - FORM Auth</name>
+    <artifactId>microprofile-insecure-endpoints</artifactId>
+    <name>Payara Samples - Payara - Microprofile insecure endpoints</name>
     <packaging>war</packaging>
 
     <dependencies>
@@ -44,36 +44,34 @@
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.sourceforge.htmlunit</groupId>
+            <artifactId>htmlunit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
         <profile>
-            <id>payara-server-remote</id>
-
+            <id>payara-micro-managed</id>
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-
-                        <executions>
-                            <execution>
-                                <id>delete-jvm-option-post</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipTestConfigCleanup}</skip>
-                                    <successCodes>0,1</successCodes>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>delete-jvm-options</argument>
-                                        <argument>-Dfish.payara.permittedFormBasedAuthHttpMethods=POST</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <EXTRA_MICRO_OPTIONS>--postbootcommandfile ${project.build.testOutputDirectory}/post-boot-commands.txt --sslPort 8181 --autoBindSsl</EXTRA_MICRO_OPTIONS>
+                            </environmentVariables>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

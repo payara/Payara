@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.web;
 
@@ -58,6 +58,7 @@ import org.glassfish.web.LogFacade;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -626,7 +627,8 @@ public final class PEAccessLogValve
                 charBuffer.flip();
                 String bufString = charBuffer.toString();
                 if (accessLogToConsole && !bufString.isEmpty()) {
-                    logManager.getOutStream().print(bufString.replaceAll("(?m)^", "AccessLog: "));
+                    PrintStream outStream = logManager != null ? logManager.getOutStream() : System.out;
+                    outStream.print(bufString.replaceAll("(?m)^", "AccessLog: "));
                 }
                 ByteBuffer byteBuffer =
                     ByteBuffer.wrap(bufString.getBytes(Charset.defaultCharset()));
