@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>jacc-per-app</artifactId>
@@ -111,10 +111,11 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <configuration>
-                        <argLine>-DpomPath=${basedir}/pom.xml</argLine>
+                        <systemPropertyVariables>
+                            <pomPath>${basedir}/pom.xml</pomPath>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
             </plugins>

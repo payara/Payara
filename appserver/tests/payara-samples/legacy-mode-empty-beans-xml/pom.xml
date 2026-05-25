@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -69,6 +69,7 @@
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
         <dependency>

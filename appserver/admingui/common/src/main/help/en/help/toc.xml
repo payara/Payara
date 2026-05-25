@@ -92,14 +92,6 @@
       <tocitem target="task-adminusersedit" text="To Edit Admin Realm User Information" expand="false"></tocitem>
       <tocitem target="task-adminusersdelete" text="To Delete a User from the Admin Realm" expand="false"></tocitem>
     </tocitem>
-    <tocitem target="task-group-auditevents" text="Auditing Payara Server Events" expand="false">
-      <tocitem target="task-auditmodulenew" text="To Create an Audit Module" expand="false"></tocitem>
-      <tocitem target="task-auditmoduleedit" text="To Edit an Audit Module" expand="false"></tocitem>
-      <tocitem target="task-auditmoduledelete" text="To Delete an Audit Module" expand="false"></tocitem>
-      <tocitem target="task-enabledisableauditmod" text="To Enable or Disable Audit Logging" expand="false"></tocitem>
-      <tocitem target="task-setactiveauditmod" text="To Set the Active Audit Module" expand="false"></tocitem>
-      <tocitem target="task-usedefaultauditmod" text="To Use the Default Audit Module" expand="false"></tocitem>
-    </tocitem>
     <tocitem target="task-group-jaccproviders" text="Configuring JACC Providers" expand="false">
       <tocitem target="task-jaccprovidernew" text="To Create a JACC Provider" expand="false"></tocitem>
       <tocitem target="task-jaccprovideredit" text="To Edit a JACC Provider" expand="false"></tocitem>
@@ -195,7 +187,6 @@
       <tocitem target="ref-group-security" text="Security" expand="false">
         <tocitem target="ref-security" text="Security" expand="false"></tocitem>
         <tocitem target="ref-group-realms" text="Realms" expand="false"></tocitem>
-        <tocitem target="ref-group-auditmodules" text="Audit Modules" expand="false"></tocitem>
         <tocitem target="ref-group-jaccproviders" text="JACC Providers" expand="false"></tocitem>
         <tocitem target="ref-group-messagesecurity" text="Message Security" expand="false"></tocitem>
       </tocitem>

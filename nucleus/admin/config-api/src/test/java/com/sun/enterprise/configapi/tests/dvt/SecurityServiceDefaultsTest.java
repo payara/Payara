@@ -82,8 +82,6 @@ public class SecurityServiceDefaultsTest extends ConfigApiTest {
     public void testFewDefaults() {
         assertEquals("file", securityService.getDefaultRealm());
         assertEquals("true", securityService.getActivateDefaultPrincipalToRoleMapping());
-        assertEquals("false", securityService.getAuditEnabled());
-        assertEquals("default", securityService.getAuditModules());
         assertEquals("default", securityService.getJacc());
     }
 }

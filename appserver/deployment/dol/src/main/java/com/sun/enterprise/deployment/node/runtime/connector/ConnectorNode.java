@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.runtime.connector;
 
@@ -59,6 +60,7 @@ import java.util.Map;
  * @author  Jerome Dochez
  * @version 
  */
+@Deprecated // Is the sun connector still a thing?
 public class ConnectorNode extends RuntimeBundleNode<ConnectorDescriptor> {
 
     protected SunConnector connector=null;

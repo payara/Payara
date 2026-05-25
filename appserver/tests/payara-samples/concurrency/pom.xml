@@ -43,9 +43,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <groupId>fish.payara.samples</groupId>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>concurrency</artifactId>
@@ -53,11 +53,22 @@
     <packaging>war</packaging>
 
     <properties>
-        <junit-jupiter.version>5.14.1</junit-jupiter.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+        <junit-jupiter.version>5.14.4</junit-jupiter.version>
+        <arquillian-payara.version>4.0.alpha1</arquillian-payara.version>
+        <jakarta-concurrent.version>3.0.4</jakarta-concurrent.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${arquillian.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
@@ -96,12 +107,38 @@
             <version>${shrinkwrap.resolver.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.ws.rs</groupId>
+            <artifactId>jakarta.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise.concurrent</groupId>
+            <artifactId>jakarta.enterprise.concurrent-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- End of temporary dependencies -->
     </dependencies>
     <build>
         <finalName>concurrencyApp</finalName>
         <plugins>
             <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.5</version>
+            </plugin>
+            <plugin>
                 <artifactId>maven-war-plugin</artifactId>
+                <version>3.5.1</version>
                 <configuration>
                     <attachClasses>true</attachClasses>
                 </configuration>
@@ -115,16 +152,13 @@
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
                     <artifactId>payara-client-ee11</artifactId>
+                    <version>${arquillian-payara.version}</version>
                     <scope>test</scope>
                 </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>payara-server-managed</id>
-            <dependencies>
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>
-                    <artifactId>payara-client-ee11</artifactId>
+                    <artifactId>arquillian-payara-server-remote</artifactId>
+                    <version>${arquillian-payara.version}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>

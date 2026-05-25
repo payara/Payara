@@ -1,0 +1,10 @@
+<!DOCTYPE payara-ejb-jar PUBLIC "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-ejb-jar_4_0-0.dtd">
+<payara-ejb-jar>
+    <enterprise-beans>
+        <ejb>
+            <ejb-name>ClusteredSingletonEjbXml</ejb-name>
+            <clustered-bean>true</clustered-bean>
+            <clustered-attach-postconstruct>true</clustered-attach-postconstruct>
+        </ejb>
+    </enterprise-beans>
+</payara-ejb-jar>

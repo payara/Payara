@@ -1954,7 +1954,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             inv.instance = inv.ejb = ctx.getEJB();
             InvocationInfo info = inv.invocationInfo;
 
-            inv.useFastPath = (info.isTxRequiredLocalCMPField) && (inv.foundInTxCache);
+            inv.useFastPath = inv.foundInTxCache;
             //    _logger.log(Level.INFO, "Use fastPath() ==> " + info.method);
 
             if (!inv.useFastPath) {

@@ -1419,10 +1419,26 @@ public class WebModule extends PwcWebModule implements Context {
             parseAlternateDocBase(name, value);
         } else if(CACHE_TTL_APP_PROPERTY.equalsIgnoreCase(name)) {
             setCacheTTL(Integer.parseInt(value));
-        } else if(name.startsWith("listener_") ||
-            name.startsWith("send-error_")) {
-            // do nothing; these properties are dealt with
+        } else if(name.startsWith("listener_")) {
+            // do nothing; the listener_ property is dealt with
             // in configureCatalinaProperties()
+        } else if ("allowRemoteAddress".equalsIgnoreCase(name) ||
+                "denyRemoteAddress".equalsIgnoreCase(name) ||
+                "allowRemoteHost".equalsIgnoreCase(name) ||
+                "denyRemoteHost".equalsIgnoreCase(name) ||
+                "contextXmlDefault".equalsIgnoreCase(name) ||
+                "sso-max-inactive-seconds".equalsIgnoreCase(name) ||
+                "sso-reap-interval-seconds".equalsIgnoreCase(name) ||
+                "errorReportValve".equalsIgnoreCase(name) ||
+                "authRealm".equalsIgnoreCase(name) ||
+                "setCacheControl".equalsIgnoreCase(name) ||
+                "accessLogBufferSize".equalsIgnoreCase(name) ||
+                "accessLogWriteInterval".equalsIgnoreCase(name) ||
+                "accessLogPrefix".equalsIgnoreCase(name) ||
+                "accessLoggingEnabled".equalsIgnoreCase(name) ||
+                name.startsWith("send-error_") ||
+                name.startsWith("redirect_")) {
+            // do nothing; these properties are handled at the VirtualServer level
         } else {
             Object[] params = {name, value};
             logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,

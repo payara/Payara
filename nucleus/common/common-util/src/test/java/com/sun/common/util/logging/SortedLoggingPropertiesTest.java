@@ -75,7 +75,7 @@ public class SortedLoggingPropertiesTest {
         Assert.assertTrue("28th properties line must be 'fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation' ",lines[28].startsWith("fish.payara.enterprise.server.logging.PayaraNotificationFileHandler.compressOnRotation="));
         Assert.assertTrue("37th properties line must be '.level' ",lines[37].startsWith(".level="));
 
-        Assert.assertEquals("Total number of lines is 89 ", 89, lines.length);
+        Assert.assertEquals("Total number of lines is 88 ", 88, lines.length);
 
         Arrays.stream(lines).forEach(System.out::println);
 

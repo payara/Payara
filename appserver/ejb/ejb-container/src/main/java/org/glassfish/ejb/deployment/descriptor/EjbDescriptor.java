@@ -2663,64 +2663,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
         }
     }
 
-    /**
-     * Return a Vector of the Field objects of this ejb.
-     *
-     * @return
-     */
-    public Vector<Field> getFields() {
-        Vector<Field> fieldsVector = new Vector<>();
-        Class<?> ejb = null;
-        try {
-            ClassLoader cl = getEjbBundleDescriptor().getClassLoader();
-            ejb = cl.loadClass(this.getEjbClassName());
-        } catch (Throwable t) {
-            _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[] { this.getEjbClassName() });
-
-            return fieldsVector;
-        }
-        Field[] fields = ejb.getFields();
-        for (int i = 0; i < fields.length; i++) {
-            fieldsVector.addElement(fields[i]);
-        }
-        return fieldsVector;
-
-    }
-
-    /**
-     *
-     * @return
-     */
-    public Vector<FieldDescriptor> getFieldDescriptors() {
-        Vector<Field> fields = this.getFields();
-        Vector<FieldDescriptor> fieldDescriptors = new Vector<>();
-        for (int fieldIndex = 0; fieldIndex < fields.size(); fieldIndex++) {
-            Field field = fields.elementAt(fieldIndex);
-            fieldDescriptors.insertElementAt(new FieldDescriptor(field), fieldIndex);
-        }
-        return fieldDescriptors;
-    }
-
-    void doMethodDescriptorConversions() throws Exception {
-        // container transactions first
-        Hashtable<MethodDescriptor, ContainerTransaction> transactions = getMethodContainerTransactions();
-        // _logger.log(Level.FINE,"Pre conversion = " + transactions);
-        Hashtable<MethodDescriptor, ContainerTransaction> convertedTransactions = new Hashtable<>();
-        Collection<MethodDescriptor> transactionMethods = getTransactionMethodDescriptors();
-        for (Enumeration<MethodDescriptor> e = transactions.keys(); e.hasMoreElements();) {
-            MethodDescriptor md = e.nextElement();
-            ContainerTransaction ct = transactions.get(md);
-            for (Enumeration<MethodDescriptor> mds = md.doStyleConversion(this, transactionMethods).elements(); mds.hasMoreElements();) {
-                MethodDescriptor next = mds.nextElement();
-                convertedTransactions.put(next, new ContainerTransaction(ct));
-            }
-        }
-        // _logger.log(Level.FINE,"Post conversion = " + convertedTransactions);
-        setMethodContainerTransactions(convertedTransactions);
-
-        convertMethodPermissions();
-    }
-
     @Override
     public void removeEjbReferencer(EjbReferenceDescriptor ref) {
         ejbReferencersPointingToMe.remove(ref);
@@ -2730,11 +2672,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor implements 
     @Override
     public void addEjbReferencer(EjbReferenceDescriptor ref) {
         ejbReferencersPointingToMe.add(ref);
-    }
-
-    // called from EjbEntityDescriptor.replaceEntityDescriptor etc
-    public Set<EjbReferenceDescriptor> getAllEjbReferencers() {
-        return ejbReferencersPointingToMe;
     }
 
     // Called from EjbBundleDescriptor only

@@ -67,7 +67,6 @@ public class ModuleToLoggerNameMapper {
          root %log-level; "INFO"
          server %log-level; "INFO"
          ejb-container %log-level; "INFO"
-         cmp-container %log-level; "INFO"
          mdb-container %log-level; "INFO"
          web-container %log-level; "INFO"
          classloader %log-level; "INFO"
@@ -87,7 +86,6 @@ public class ModuleToLoggerNameMapper {
          jms %log-level; "INFO"
          connector %log-level; "INFO"
          jdo %log-level; "INFO"
-         cmp %log-level; "INFO"
          util %log-level; "INFO"
          resource-adapter %log-level; "INFO"
          synchronization %log-level; "INFO"
@@ -99,8 +97,6 @@ public class ModuleToLoggerNameMapper {
     private static final Object[][] ModuleAndLoggerTable = {
         {"admin",          new String[] { LogDomains.ADMIN_LOGGER } },    //admin
         {"classloader",    new String[] { LogDomains.LOADER_LOGGER} },    //classloader
-        {"cmp",            new String[] { LogDomains.CMP_LOGGER} },
-        {"cmp-container",  new String[] { LogDomains.CMP_LOGGER} }, //todo: verify with "cmp"
         {"configuration",  new String[] { LogDomains.CONFIG_LOGGER} },
         {"connector",      new String[] { LogDomains.RSR_LOGGER} },
         {"resource-adapter", new String[] { LogDomains.RSR_LOGGER} },//todo: verify with "connector"

@@ -59,7 +59,6 @@ import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
-import org.glassfish.ejb.deployment.descriptor.EjbEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.jvnet.hk2.annotations.Service;
 
@@ -297,14 +296,6 @@ public class EJBHandler extends AbstractResourceHandler {
             for (Method m : methods) {
                 if (m.getName().equals("create")) {
                     ejbRef.setEjbInterface(m.getReturnType().getName());
-                    break;
-                }
-            }
-            // Use existence of findByPrimaryKey method on Home to
-            // determine target bean type
-            for (Method m : methods) {
-                if (m.getName().equals("findByPrimaryKey")) {
-                    targetBeanType = EjbEntityDescriptor.TYPE;
                     break;
                 }
             }

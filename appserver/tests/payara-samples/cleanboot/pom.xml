@@ -29,18 +29,18 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-
+    
     <artifactId>cleanboot</artifactId>
     <name>Payara Samples - Payara - Clean boot test</name>
 
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <properties>
-      <playwright.version>1.58.0</playwright.version>
+      <playwright.version>1.60.0</playwright.version>
     </properties>
 
 
@@ -53,11 +53,12 @@
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
 
-
+    
     <profiles>
         <profile>
             <id>payara-server-managed</id>
@@ -72,12 +73,13 @@
             <id>install-deps</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-            </activation>
+            </activation>  
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.6.3</version>
                         <executions>
                           <execution>
                             <id>install-playwright-dependencies</id>
@@ -99,7 +101,7 @@
                         </configuration>
                     </plugin>
                 </plugins>
-            </build>
-        </profile>
+            </build>         
+        </profile> 
     </profiles>
 </project>

@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>client-certificate</artifactId>
@@ -100,6 +100,82 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>${maven.antrun.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>start-managed-payara-server-for-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target if="payara.server.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="start-domain" />
+                                    <arg value="${payara.domain.name}" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>enable-client-auth</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target unless="payara.micro.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set" />
+                                    <arg value="configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>assign-certificate-realm-group</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target unless="payara.micro.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set" />
+                                    <arg value="configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-managed-payara-server-after-config</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target if="payara.server.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="stop-domain" />
+                                    <arg value="${payara.domain.name}" />
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <profiles>
         <profile>
             <id>payara-server-remote</id>
@@ -116,42 +192,6 @@
                                 </goals>
                                 <configuration>
                                     <skip>!${skipConfig}</skip>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>enable-client-auth</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.network-config.protocols.protocol.http-listener-2.ssl.client-auth=want</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>assign-certificate-realm-group</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipConfig}</skip>
-                                    <executable>${payara.asadmin}</executable>
-                                    <arguments>
-                                        <argument>set</argument>
-                                        <argument>configs.config.server-config.security-service.auth-realm.certificate.property.assign-groups=myRole</argument>
-                                    </arguments>
                                 </configuration>
                             </execution>
                         </executions>

@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.5-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>rest-management</artifactId>
@@ -54,7 +54,7 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <runOrder>alphabetical</runOrder>
                 </configuration>
@@ -66,6 +66,7 @@
         <dependency>
             <groupId>fish.payara.samples</groupId>
             <artifactId>samples-test-utils</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext.microprofile</groupId>

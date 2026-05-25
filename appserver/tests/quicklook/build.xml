@@ -299,7 +299,6 @@
 		<echo message="Glassfish Distribution Build Deploy"/>
 		<ant dir="ejb/remoteview" target="build-deploy"/>
 		<ant dir="ejb/singleton" target="build-deploy"/>
-		<ant dir="ejb/cmp" target="build-deploy"/>
 		<ant dir="ejb/mdb" target="build"/>
 		<ant dir="jms/injection" target="build-deploy"/>
 		<!-- Temporarily jruby test is commented, because we need to integrate a newer version
@@ -334,7 +333,6 @@
 	<target name="undeploy-gd">
 		<ant dir="ejb/singleton" target="undeploy"/>
 		<ant dir="ejb/remoteview" target="undeploy"/>
-		<ant dir="ejb/cmp" target="undeploy"/>
 		<!-- Temporarily jruby test is commented, because we need to integrate a newer version
              for the test to pass. We are waiting for RE to release a newer version.
 	<ant dir="web/jruby" target="undeploy"/>

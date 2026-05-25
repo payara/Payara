@@ -424,7 +424,7 @@ public class DOLUtils {
     }
 
     /**
-     * If the path does not contain "glassfish-" this method throws an IllegalArgumentException
+     * If the path does not contain "glassfish-" or "payara-" this method throws an IllegalArgumentException
      * @param runtimeAltDDPath
      */
     public static void validateRuntimeAltDDPath(String runtimeAltDDPath) {
