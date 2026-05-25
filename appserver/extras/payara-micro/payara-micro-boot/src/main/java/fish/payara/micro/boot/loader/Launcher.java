@@ -82,7 +82,7 @@ public abstract class Launcher {
         return launch(method, args, getMainClass(), classLoader);
     }
 
-    public static Properties setPayaraBootProperties() {
+    private static Properties setPayaraBootProperties() {
         Properties bootProperties = new Properties();
 
         try (InputStream is = Launcher.class.getResourceAsStream(BOOT_PROPS_FILE)) {
