@@ -13,16 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Modified 2017 Payara Foundation
+// Modified 2017-2026 Payara Foundation
 package fish.payara.micro.boot.loader;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import fish.payara.micro.boot.loader.archive.Archive;
 import fish.payara.micro.boot.loader.archive.JarFileArchive;
@@ -35,6 +40,8 @@ import fish.payara.micro.boot.loader.archive.JarFileArchive;
  * @author Dave Syer
  */
 public abstract class Launcher {
+
+    private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
 
     /**
      * Launch the application. This method is the initial entry point that
@@ -57,6 +64,8 @@ public abstract class Launcher {
             }
         }
 
+        setPayaraBootProperties();
+
         ClassLoader classLoader;
         if (!explode) {
             classLoader = createClassLoader(getClassPathArchives());
@@ -71,6 +80,26 @@ public abstract class Launcher {
             }
         }
         return launch(method, args, getMainClass(), classLoader);
+    }
+
+    public static Properties setPayaraBootProperties() {
+        Properties bootProperties = new Properties();
+
+        try (InputStream is = Launcher.class.getResourceAsStream(BOOT_PROPS_FILE)) {
+            if (is != null) {
+                bootProperties.load(is);
+                for (String key : bootProperties.stringPropertyNames()) {
+                    // Do not override an existing system property
+                    if (System.getProperty(key) == null) {
+                        System.setProperty(key, bootProperties.getProperty(key));
+                    }
+                }
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(Launcher.class.getName()).log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
+        }
+
+        return bootProperties;
     }
 
     /**
