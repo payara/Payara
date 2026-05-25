@@ -401,7 +401,7 @@ pipeline {
                         -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/payara-micro """
