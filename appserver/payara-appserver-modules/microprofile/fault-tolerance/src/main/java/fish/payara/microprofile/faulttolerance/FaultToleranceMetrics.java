@@ -309,9 +309,9 @@ public interface FaultToleranceMetrics {
                     {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
             //place to register telemetry ft.invocations.total
             Meter currentMeter = getCurrentMeter();
+            FaultToleranceMethodContextImpl faultToleranceMethodContext = (FaultToleranceMethodContextImpl) context;
+            setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
             if (currentMeter != null) {
-                FaultToleranceMethodContextImpl faultToleranceMethodContext = (FaultToleranceMethodContextImpl) context;
-                setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
                 addFTInvocationTotalMeter(createFTInvocationTotalMeter(getClassAndMethodName(), currentMeter, policy.isFallbackPresent()));
             }
 
@@ -391,10 +391,11 @@ public interface FaultToleranceMetrics {
     }
 
     default Meter getCurrentMeter() {
-        if (getDefaultHabitat() == null) {
+        var habitat = getDefaultHabitat();
+        if (habitat == null) {
             return null;
         }
-        OpenTelemetryService service = getDefaultHabitat().getService(OpenTelemetryService.class);
+        var service = habitat.getService(OpenTelemetryService.class);
         return service != null ? service.getCurrentMeter() : null;
     }
     
