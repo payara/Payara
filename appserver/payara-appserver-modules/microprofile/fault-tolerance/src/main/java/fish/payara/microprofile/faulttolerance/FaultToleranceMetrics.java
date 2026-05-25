@@ -309,8 +309,10 @@ public interface FaultToleranceMetrics {
                     {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
             //place to register telemetry ft.invocations.total
             Meter currentMeter = getCurrentMeter();
-            FaultToleranceMethodContextImpl faultToleranceMethodContext = (FaultToleranceMethodContextImpl) context;
-            setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
+            if(context instanceof FaultToleranceMethodContextImpl faultToleranceMethodContext) {
+                setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
+            }
+            
             if (currentMeter != null) {
                 addFTInvocationTotalMeter(createFTInvocationTotalMeter(getClassAndMethodName(), currentMeter, policy.isFallbackPresent()));
             }
