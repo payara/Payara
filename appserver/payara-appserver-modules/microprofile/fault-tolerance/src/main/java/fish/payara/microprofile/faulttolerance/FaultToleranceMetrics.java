@@ -302,17 +302,20 @@ public interface FaultToleranceMetrics {
      */
     default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
         if (policy.isMetricsEnabled) {
-            OpenTelemetryService openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
             String[] fallbackTag = policy.isFallbackPresent()
                     ? new String[]{"fallback", "applied", "notApplied"}
                     : new String[]{"fallback", "notDefined"};
             register(Counter.class.getTypeName(), "ft.invocations.total", new String[][]{
                     {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
             //place to register telemetry ft.invocations.total
-            Meter currentMeter = openTelemetryService.getCurrentMeter();
-            FaultToleranceMethodContextImpl faultToleranceMethodContext = (FaultToleranceMethodContextImpl) context;
-            setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
-            addFTInvocationTotalMeter(createFTInvocationTotalMeter(getClassAndMethodName(), currentMeter, policy.isFallbackPresent()));
+            Meter currentMeter = getCurrentMeter();
+            if(context instanceof FaultToleranceMethodContextImpl faultToleranceMethodContext) {
+                setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
+            }
+            
+            if (currentMeter != null) {
+                addFTInvocationTotalMeter(createFTInvocationTotalMeter(getClassAndMethodName(), currentMeter, policy.isFallbackPresent()));
+            }
 
             if (policy.isRetryPresent()) {
                 List<String> retryResultTag = new ArrayList<>(asList("retryResult", "valueReturned", "exceptionNotRetryable"));
@@ -326,15 +329,19 @@ public interface FaultToleranceMetrics {
                         {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
                 register(Counter.class.getTypeName(), "ft.retry.retries.total");
                 //place to register telemetry ft.retry.calls.total and ft.retry.retries.total
-                addFTRetryCallsCounter(createFTRetryCallsTotal(getClassAndMethodName(), currentMeter, policy.retry.isMaxRetriesSet(), policy.retry.isMaxDurationSet()));
-                addFTRetryRetriesCounter(createFTRetryRetriesTotal(getClassAndMethodName(), currentMeter));
+                if (currentMeter != null) {
+                    addFTRetryCallsCounter(createFTRetryCallsTotal(getClassAndMethodName(), currentMeter, policy.retry.isMaxRetriesSet(), policy.retry.isMaxDurationSet()));
+                    addFTRetryRetriesCounter(createFTRetryRetriesTotal(getClassAndMethodName(), currentMeter));
+                }
             }
             if (policy.isTimeoutPresent()) {
                 register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][]{
                         {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
-                addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(getClassAndMethodName(), currentMeter));
-                addFTTimeoutExecutionDuration(createFTTimeoutExecutionDuration(currentMeter));
+                if (currentMeter != null) {
+                    addFTTimeoutCallsTotal(createFTTimeoutCallsTotal(getClassAndMethodName(), currentMeter));
+                    addFTTimeoutExecutionDuration(createFTTimeoutExecutionDuration(currentMeter));
+                }
             }
             if (policy.isCircuitBreakerPresent()) {
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][]{
@@ -344,37 +351,54 @@ public interface FaultToleranceMetrics {
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosClosed, "state", "closed");
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.opened.total");
-                addCircuitBreakerCallsTotal(createFTCircuitBreakerCallsTotal(getClassAndMethodName(), currentMeter));
-                addCircuitBreakerOpenedTotal(createFTCircuitBreakerOpenedTotal(getClassAndMethodName(), currentMeter));
-                createFTCircuitBreakerStateTotal(getClassAndMethodName(), currentMeter);
+                if (currentMeter != null) {
+                    addCircuitBreakerCallsTotal(createFTCircuitBreakerCallsTotal(getClassAndMethodName(), currentMeter));
+                    addCircuitBreakerOpenedTotal(createFTCircuitBreakerOpenedTotal(getClassAndMethodName(), currentMeter));
+                    createFTCircuitBreakerStateTotal(getClassAndMethodName(), currentMeter);
+                }
             }
             if (policy.isBulkheadPresent()) {
                 register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][]{
                         {"bulkheadResult", "accepted", "rejected"}});
-                addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
-                addFTBulkheadRunningDuration(createFTBulkheadRunningDuration(currentMeter));
+                if (currentMeter != null) {
+                    addBulkheadCallsTotal(createFTBulkheadCallsTotal(getClassAndMethodName(), currentMeter));
+                    addFTBulkheadRunningDuration(createFTBulkheadRunningDuration(currentMeter));
+                }
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
                     this.setExecutionBulkheadRunningSupplier(running::size);
-                    addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
                     AtomicInteger queuingOrRunning = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsWaiting", null, () -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
                     this.setExecutionBulkheadWaitingSupplier(() -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
-                    addFTBulkheadExecutionWaiting(createFTBulkheadExecutionWaiting(currentMeter, this));
                     register(Histogram.class.getTypeName(), "ft.bulkhead.waitingDuration");
-                    addFTBulkheadWaitingDuration(createFTBulkheadWaitingDuration(currentMeter));
+                    if (currentMeter != null) {
+                        addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
+                        addFTBulkheadExecutionWaiting(createFTBulkheadExecutionWaiting(currentMeter, this));
+                        addFTBulkheadWaitingDuration(createFTBulkheadWaitingDuration(currentMeter));
+                    }
                 } else {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
                     this.setExecutionBulkheadRunningSupplier(running::get);
-                    addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
+                    if (currentMeter != null) {
+                        addFTBulkheadExecutionRunning(createFTBulkheadExecutionsRunning(currentMeter, this));
+                    }
                 }
 
             }
         }
         return this;
+    }
+
+    default Meter getCurrentMeter() {
+        var habitat = getDefaultHabitat();
+        if (habitat == null) {
+            return null;
+        }
+        var service = habitat.getService(OpenTelemetryService.class);
+        return service != null ? service.getCurrentMeter() : null;
     }
     
     /*

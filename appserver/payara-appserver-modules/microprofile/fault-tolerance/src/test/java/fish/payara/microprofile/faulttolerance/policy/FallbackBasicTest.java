@@ -61,7 +61,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     /**
      * Most basic case where annotated method fails and the fallback returns a result (no method arguments)
      */
-    //@Test
+    @Test
     public void fallbackMethod( ) throws Exception {
         assertEquals("fallbackMethod", proceedToResultValue());
     }
@@ -78,7 +78,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     /**
      * Annotated method fails and fallback returns a result with method arguments
      */
-    //@Test
+    @Test
     public void fallbackMethodWithArguments() throws Exception {
         assertEquals("fallbackMethodWithArguments:Peter", proceedToResultValue("Peter"));
     }
@@ -95,7 +95,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     /**
      * Both annotated method and fallback method fail.
      */
-    //@Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void fallbackMethodFailsToo() throws Exception {
         proceedToResultValue();
     }
@@ -112,7 +112,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     /**
      * Most basic {@link FallbackHandler} test where annotated method fails and fallback returns a result value. 
      */
-    //@Test
+    @Test
     public void fallbackHandler() throws Exception {
         assertEquals("fallbackHandler", proceedToResultValue());
     }
@@ -125,7 +125,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     /**
      * Basic case of a {@link FallbackHandler} for a method with arguments.
      */
-    //@Test
+    @Test
     public void fallbackHandlerWithArguments() throws Exception {
         assertEquals("fallbackHandlerWithArguments:Peter", proceedToResultValue("Peter"));
     }
@@ -138,7 +138,7 @@ public class FallbackBasicTest implements FallbackHandler<String> {
     /**
      * Both annotated method and fallback handler fail.
      */
-    //@Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void fallbackHandlerFailsToo() throws Exception {
         proceedToResultValue();
     }
