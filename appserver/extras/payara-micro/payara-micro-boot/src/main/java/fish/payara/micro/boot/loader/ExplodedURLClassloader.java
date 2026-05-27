@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.ArrayList;
@@ -56,6 +57,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE;
 
 /**
  *
@@ -131,6 +134,9 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                 String[] jars = src.getLocation().toURI().getSchemeSpecificPart().split("!");
                 File file = new File(jars[0]);
 
+                // Strip the preceding '/'
+                String bootPropsFile = BOOT_PROPS_FILE.substring(1);
+
                 try (JarFile jar = new JarFile(file)) {
                     Enumeration<JarEntry> entries = jar.entries();
                     while (entries.hasMoreElements()) {
@@ -140,6 +146,8 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                             fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
                         } else if (entry.getName().startsWith(LIB_DOMAIN_DIR)) {
                             fileName = entry.getName().substring(LIB_DOMAIN_DIR.length());
+                        } else if (entry.getName().equals(bootPropsFile)) {
+                            fileName = Paths.get(BOOT_PROPS_FILE).getFileName().toString();
                         }
 
                         if (fileName != null) {

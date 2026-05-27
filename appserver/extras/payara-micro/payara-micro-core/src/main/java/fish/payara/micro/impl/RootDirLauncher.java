@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -41,15 +41,20 @@
 package fish.payara.micro.impl;
 
 import fish.payara.micro.PayaraMicro;
+import fish.payara.micro.boot.loader.Launcher;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE;
 
 public class RootDirLauncher {
     static final String BOOT_JAR_URL = "fish.payara.micro.BootJar";
@@ -61,6 +66,12 @@ public class RootDirLauncher {
         String rootDir = bootJar.getParentFile().getAbsolutePath();
         System.setProperty(BOOT_JAR_URL, bootJar.toURI().toString());
         System.setProperty(ROOT_DIR_PATH, rootDir);
+
+        String bootPropsFile = rootDir + File.separator + "runtime" + File.separator + Paths.get(BOOT_PROPS_FILE).getFileName().toString();
+        try (FileInputStream fis = new FileInputStream(bootPropsFile)) {
+            Launcher.setPayaraBootProperties(fis);
+        }
+
         PayaraMicroImpl.main(prepareArgs(args, rootDir));
     }
 
