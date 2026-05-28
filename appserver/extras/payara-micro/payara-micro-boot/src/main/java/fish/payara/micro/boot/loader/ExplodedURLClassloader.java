@@ -47,7 +47,6 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.ArrayList;
@@ -58,8 +57,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE;
-
 /**
  *
  * @author steve
@@ -67,8 +64,10 @@ import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE;
 public class ExplodedURLClassloader extends OpenURLClassLoader {
 
     private final File explodedDir;
-    private static final String JAR_DOMAIN_DIR = "MICRO-INF/runtime/";
-    private static final String LIB_DOMAIN_DIR = "MICRO-INF/lib/";
+    public static final String RUNTIME_DIR_NAME = "runtime";
+    public static final String LIB_DIR_NAME = "lib";
+    private static final String JAR_DOMAIN_DIR = "MICRO-INF/" + RUNTIME_DIR_NAME + "/";
+    private static final String LIB_DOMAIN_DIR = "MICRO-INF/" + LIB_DIR_NAME + "/";
 
     private List<File> filesForDeletion;
 
@@ -113,12 +112,12 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
     private void explodeJars() throws IOException {
 
         // create a runtime jar directory
-        File runtimeDir = new File(explodedDir, "runtime");
+        File runtimeDir = new File(explodedDir, RUNTIME_DIR_NAME);
         runtimeDir.mkdirs();
         registerForDeletion(runtimeDir);
 
         // create a lib directory
-        File libDir = new File(explodedDir,"lib");
+        File libDir = new File(explodedDir, LIB_DIR_NAME);
         libDir.mkdirs();
         registerForDeletion(libDir);
 
@@ -134,9 +133,6 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                 String[] jars = src.getLocation().toURI().getSchemeSpecificPart().split("!");
                 File file = new File(jars[0]);
 
-                // Strip the preceding '/'
-                String bootPropsFile = BOOT_PROPS_FILE.substring(1);
-
                 try (JarFile jar = new JarFile(file)) {
                     Enumeration<JarEntry> entries = jar.entries();
                     while (entries.hasMoreElements()) {
@@ -146,8 +142,6 @@ public class ExplodedURLClassloader extends OpenURLClassLoader {
                             fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
                         } else if (entry.getName().startsWith(LIB_DOMAIN_DIR)) {
                             fileName = entry.getName().substring(LIB_DOMAIN_DIR.length());
-                        } else if (entry.getName().equals(bootPropsFile)) {
-                            fileName = Paths.get(BOOT_PROPS_FILE).getFileName().toString();
                         }
 
                         if (fileName != null) {

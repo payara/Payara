@@ -17,6 +17,7 @@
 package fish.payara.micro.boot.loader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -41,7 +42,8 @@ import fish.payara.micro.boot.loader.archive.JarFileArchive;
  */
 public abstract class Launcher {
 
-    public static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
+    public static final String BOOT_PROPS_FILE_NAME = "payara-boot.properties";
+    public static final String BOOT_PROPS_FILE = "/MICRO-INF/" + BOOT_PROPS_FILE_NAME;
 
     /**
      * Launch the application. This method is the initial entry point that
@@ -66,6 +68,8 @@ public abstract class Launcher {
 
         try (InputStream inputStream = Launcher.class.getResourceAsStream(BOOT_PROPS_FILE)) {
             setPayaraBootProperties(inputStream);
+        } catch (FileNotFoundException fnfe) {
+            Logger.getLogger(Launcher.class.getName()).log(Level.WARNING, "Could not load the boot system properties", fnfe);
         }
 
         ClassLoader classLoader;

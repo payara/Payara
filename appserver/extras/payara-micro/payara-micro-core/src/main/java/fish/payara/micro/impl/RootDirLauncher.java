@@ -45,16 +45,17 @@ import fish.payara.micro.boot.loader.Launcher;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE;
+import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE_NAME;
+import static fish.payara.micro.impl.RuntimeDirectory.CONFIG_DIR_NAME;
 
 public class RootDirLauncher {
     static final String BOOT_JAR_URL = "fish.payara.micro.BootJar";
@@ -67,9 +68,11 @@ public class RootDirLauncher {
         System.setProperty(BOOT_JAR_URL, bootJar.toURI().toString());
         System.setProperty(ROOT_DIR_PATH, rootDir);
 
-        String bootPropsFile = rootDir + File.separator + "runtime" + File.separator + Paths.get(BOOT_PROPS_FILE).getFileName().toString();
+        String bootPropsFile = rootDir + File.separator + CONFIG_DIR_NAME + File.separator + BOOT_PROPS_FILE_NAME;
         try (FileInputStream fis = new FileInputStream(bootPropsFile)) {
             Launcher.setPayaraBootProperties(fis);
+        } catch (FileNotFoundException fnfe) {
+            LOGGER.log(Level.WARNING, "Could not load the expected boot system properties file", fnfe);
         }
 
         PayaraMicroImpl.main(prepareArgs(args, rootDir));
