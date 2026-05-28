@@ -410,7 +410,7 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """export PAYARA_HOME=${pwd()}/payara7 && python3 appserver/tests/functional/jms/test_jms_ping.py \
-                        --domain-name ${DOMAIN_NAME}"""
+                        --domain-name ${env.DOMAIN_NAME} """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
