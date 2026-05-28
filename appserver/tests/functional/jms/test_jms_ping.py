@@ -29,10 +29,11 @@ class AsadminCommandError(Exception):
 
 
 class TestJmsPing:
-    def __init__(self, asadmin_path: str, domain_name: str, log_dir: str):
+    def __init__(self, asadmin_path: str, domain_name: str, log_dir: str, sleep_time: int = 3):
         self.asadmin_path = asadmin_path
         self.domain_name = domain_name
         self.log_dir = Path(log_dir)
+        self.sleep_time = sleep_time
 
     def _run_asadmin(self, *args: str) -> Tuple[bool, str, str]:
         cmd = [self.asadmin_path] + list(args)
@@ -56,14 +57,6 @@ class TestJmsPing:
             logger.error(msg)
             return False, "", msg
 
-    def setup(self):
-        logger.info(f"Starting domain: {self.domain_name}")
-        success, stdout, stderr = self._run_asadmin('start-domain', self.domain_name)
-        if not success:
-            raise AsadminCommandError(f"start-domain failed: {stderr}")
-        logger.info("Domain started. Waiting 3 seconds...")
-        time.sleep(3)
-
     def run_test(self) -> bool:
         logger.info("Running jms-ping...")
         success, stdout, stderr = self._run_asadmin('jms-ping')
@@ -72,8 +65,8 @@ class TestJmsPing:
             return False
         logger.info(f"jms-ping output: {stdout}")
 
-        logger.info("Waiting 3 seconds...")
-        time.sleep(3)
+        logger.info(f"Waiting {self.sleep_time} seconds...")
+        time.sleep(self.sleep_time)
 
         log_file = self.log_dir / 'server.log'
         logger.info(f"Reading log file: {log_file}")
@@ -91,13 +84,6 @@ class TestJmsPing:
         for line in content.splitlines()[-20:]:
             logger.error(f"  {line}")
         return False
-
-    def cleanup(self):
-        logger.info(f"Stopping domain: {self.domain_name}")
-        success, _, stderr = self._run_asadmin('stop-domain', self.domain_name)
-        if not success:
-            logger.error(f"stop-domain failed (ignored): {stderr}")
-
 
 def _resolve_asadmin(asadmin_arg: str) -> str:
     if asadmin_arg:
@@ -135,6 +121,10 @@ def main() -> int:
         help='Path to domain log directory '
              '(default: $PAYARA_HOME/glassfish/domains/<domain-name>/logs)'
     )
+    parser.add_argument(
+        '--sleep-time', type=int, default=3,
+        help='Seconds to wait after domain start and after jms-ping (default: 3)'
+    )
     parser.add_argument('--debug', action='store_true', help='Enable debug logging')
     args = parser.parse_args()
 
@@ -144,22 +134,18 @@ def main() -> int:
     asadmin_path = _resolve_asadmin(args.asadmin_path)
     log_dir = _resolve_log_dir(args.log_dir, args.domain_name)
 
-    test = None
     passed = False
     try:
         test = TestJmsPing(
             asadmin_path=asadmin_path,
             domain_name=args.domain_name,
             log_dir=log_dir,
+            sleep_time=args.sleep_time,
         )
-        test.setup()
         passed = test.run_test()
     except Exception as e:
         logger.error(f"Test error: {e}", exc_info=args.debug)
         passed = False
-    finally:
-        if test:
-            test.cleanup()
 
     if passed:
         logger.info("TEST RESULT: PASSED")

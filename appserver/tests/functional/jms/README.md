@@ -21,3 +21,5 @@ Navigate to the tests directory:
     cd appserver/tests/functional/jms
     python3 test_jms_ping.py
 ```
+
+By default, the test_jms_pings.py test is using a timeout sleep of 3 seconds to wait between calls, and that value can be changed by using the property **--sleep_time**
