@@ -157,16 +157,16 @@ public class BootCommands {
     }
 
     private static String unquote(String token) {
-        int eq = token.indexOf('=');
-        if (eq >= 0 && eq < token.length() - 1) {
-            String val = token.substring(eq + 1);
-            if (val.length() >= 2 &&
-                    ((val.startsWith("\"") && val.endsWith("\"")) ||
-                    (val.startsWith("'") && val.endsWith("'")))) {
-                val = val.substring(1, val.length() - 1)
+        int equalsIndex = token.indexOf('=');
+        if (equalsIndex >= 0 && equalsIndex < token.length() - 1) {
+            String textAfterEquals = token.substring(equalsIndex + 1);
+            if (textAfterEquals.length() >= 2 &&
+                    ((textAfterEquals.startsWith("\"") && textAfterEquals.endsWith("\"")) ||
+                    (textAfterEquals.startsWith("'") && textAfterEquals.endsWith("'")))) {
+                textAfterEquals = textAfterEquals.substring(1, textAfterEquals.length() - 1)
                         .replace("\\\"", "\"")
                         .replace("\\'", "'");
-                return token.substring(0, eq + 1) + val;
+                return token.substring(0, equalsIndex + 1) + textAfterEquals;
             }
         } else if (token.length() >= 2 &&
                 ((token.startsWith("\"") && token.endsWith("\"")) ||
