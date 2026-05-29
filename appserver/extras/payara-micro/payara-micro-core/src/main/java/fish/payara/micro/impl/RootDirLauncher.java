@@ -48,6 +48,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
@@ -68,8 +69,7 @@ public class RootDirLauncher {
         System.setProperty(BOOT_JAR_URL, bootJar.toURI().toString());
         System.setProperty(ROOT_DIR_PATH, rootDir);
 
-        String bootPropsFile = rootDir + File.separator + CONFIG_DIR_NAME + File.separator + BOOT_PROPS_FILE_NAME;
-        try (FileInputStream fis = new FileInputStream(bootPropsFile)) {
+        try (FileInputStream fis = new FileInputStream(Path.of(rootDir, CONFIG_DIR_NAME, BOOT_PROPS_FILE_NAME).toString())) {
             Launcher.setPayaraBootProperties(fis);
         } catch (FileNotFoundException fnfe) {
             LOGGER.log(Level.WARNING, "Could not load the expected boot system properties file", fnfe);
