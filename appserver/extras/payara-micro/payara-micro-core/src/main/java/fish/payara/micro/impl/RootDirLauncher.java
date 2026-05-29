@@ -45,7 +45,7 @@ import fish.payara.micro.boot.loader.Launcher;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -71,8 +71,8 @@ public class RootDirLauncher {
 
         try (FileInputStream fis = new FileInputStream(Path.of(rootDir, CONFIG_DIR_NAME, BOOT_PROPS_FILE_NAME).toString())) {
             Launcher.setPayaraBootProperties(fis);
-        } catch (FileNotFoundException fnfe) {
-            LOGGER.log(Level.WARNING, "Could not load the expected boot system properties file", fnfe);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, "Could not load the expected boot system properties file", ioe);
         }
 
         PayaraMicroImpl.main(prepareArgs(args, rootDir));
