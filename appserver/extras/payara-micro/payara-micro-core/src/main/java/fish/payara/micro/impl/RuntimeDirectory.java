@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2018 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,9 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE;
+import static fish.payara.micro.boot.loader.Launcher.BOOT_PROPS_FILE_NAME;
+
 /**
  * Class for manipulating the Payara Micro runtime directory
  *
@@ -76,6 +79,9 @@ class RuntimeDirectory {
     private static final String JAR_DOMAIN_DIR = "MICRO-INF/domain/";
     private File domainXML;
     private File configDir;
+
+    public static final String DOCROOT_DIR_NAME = "docroot";
+    public static final String CONFIG_DIR_NAME = "config";
 
     /**
      * Default constructor unpacks into a temporary directory
@@ -129,10 +135,10 @@ class RuntimeDirectory {
     private void unpackRuntime() throws URISyntaxException, IOException {
 
         // make a docroot here
-        new File(directory, "docroot").mkdirs();
+        new File(directory, DOCROOT_DIR_NAME).mkdirs();
 
         // create a config dir and unpack
-        configDir = new File(directory, "config");
+        configDir = new File(directory, CONFIG_DIR_NAME);
         configDir.mkdirs();
 
         // Get our configuration files
@@ -143,12 +149,19 @@ class RuntimeDirectory {
             String jars[] = src.getLocation().toURI().getSchemeSpecificPart().split("!");
             File file = new File(jars[0]);
 
+            String bootPropsFile = BOOT_PROPS_FILE.substring(1);
+
             try (JarFile jar = new JarFile(file)) {
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
+                    String fileName = null;
                     if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
-                        String fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
+                        fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
+                    } else if (entry.getName().equals(bootPropsFile)) {
+                        fileName = BOOT_PROPS_FILE_NAME;
+                    }
+                    if (fileName != null) {
                         File outputFile = new File(configDir, fileName);
 
                         if (isTempDir) {
@@ -160,7 +173,7 @@ class RuntimeDirectory {
                             if (entry.isDirectory()) {
                                 outputFile.mkdirs();
                             } else {
-                                // write out the conifugration file
+                                // write out the configuration file
                                 try (InputStream is = jar.getInputStream(entry)) {
                                     Files.copy(is, outputFile.toPath());
                                 }
