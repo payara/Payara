@@ -3,14 +3,20 @@
 def pom
 def DOMAIN_NAME
 def payaraBuildNumber
+def buildId
+
 pipeline {
     agent {
         label 'general-purpose'
+    }
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5', daysToKeepStr: '14'))
     }
     environment {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
         JAVA_HOME = tool("zulu-21")
+        DOMAIN_NAME = "test-domain"
     }
     tools {
         jdk "zulu-21"
@@ -25,7 +31,7 @@ pipeline {
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
                     echo "Domain name is ${DOMAIN_NAME}"
-              }
+                }
             }
         }
         stage('Build') {
@@ -63,6 +69,9 @@ pipeline {
                         retry(3)
                     }
                     steps {
+
+                        processPayaraArtifacts(buildId)
+
                         setupDomain()
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -86,12 +95,12 @@ pipeline {
                         }
                     }
                 }
-                 stage('Payara Samples Tests') {
-                     agent {
-                         label 'general-purpose'
+                stage('Payara Samples Tests') {
+                    agent {
+                        label 'general-purpose'
                     }
-                     options {
-                         retry(3)
+                    options {
+                        retry(3)
                     }
                     steps {
 
@@ -105,17 +114,17 @@ pipeline {
                          -Dsurefire.rerunFailingTestsCount=2 \
                          -Dfailsafe.rerunFailingTestsCount=2 \
                          -f appserver/tests/payara-samples """
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                     post {
-                         always {
-                             processReportAndStopDomain()
-                         }
-                         cleanup {
-                             saveLogsAndCleanup 'samples-log.zip'
-                         }
-                     }
-                 }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        always {
+                            processReportAndStopDomain()
+                        }
+                        cleanup {
+                            saveLogsAndCleanup 'samples-log.zip'
+                        }
+                    }
+                }
                 stage('MicroProfile Config TCK') {
                     agent {
                         label 'general-purpose'
