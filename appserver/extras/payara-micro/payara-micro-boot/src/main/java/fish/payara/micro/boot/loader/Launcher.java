@@ -66,11 +66,7 @@ public abstract class Launcher {
             }
         }
 
-        try (InputStream inputStream = Launcher.class.getResourceAsStream(BOOT_PROPS_FILE)) {
-            setPayaraBootProperties(inputStream);
-        } catch (FileNotFoundException fnfe) {
-            Logger.getLogger(Launcher.class.getName()).log(Level.WARNING, "Could not load the boot system properties", fnfe);
-        }
+        setPayaraBootProperties(Launcher.class.getResourceAsStream(BOOT_PROPS_FILE));
 
         ClassLoader classLoader;
         if (!explode) {
