@@ -365,14 +365,16 @@ public class QueryMethodParser {
     private List<OrderBy> orderBy = new ArrayList<>();
     private List<Condition> conditions = new ArrayList<>();
 
+    public record ParseResult(Action action, Integer limit, List<OrderBy> orderBy, List<Condition> conditions) {}
+
     public QueryMethodParser(String methodName) {
         this.methodName = methodName;
     }
 
-    public QueryMethodParser parse() throws QueryMethodSyntaxException {
+    public ParseResult parse() throws QueryMethodSyntaxException {
         splitTokens();
         grammarQuery();
-        return this; // for flow usage
+        return new ParseResult(action, limit, orderBy, conditions);
     }
 
     private void splitTokens() throws QueryMethodSyntaxException {
@@ -426,27 +428,11 @@ public class QueryMethodParser {
         }
     }
 
-    public Action getAction() {
-        return action;
-    }
-
-    public Integer getLimit() {
-        return limit;
-    }
-
     /**
      * @return list of tokens, only for testing
      */
     protected List<String> getTokens() {
         return tokens;
-    }
-
-    public List<OrderBy> getOrderBy() {
-        return orderBy;
-    }
-
-    public List<Condition> getConditions() {
-        return conditions;
     }
 
     /**

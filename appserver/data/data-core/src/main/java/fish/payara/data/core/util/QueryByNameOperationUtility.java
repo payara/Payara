@@ -213,9 +213,9 @@ public class QueryByNameOperationUtility {
      */
     private static List<?> findEntitiesForModification(Object[] args, QueryMetadata dataForQuery, EntityManager entityManager) {
         try {
-            QueryMethodParser parser = new QueryMethodParser(dataForQuery.getMethod().getName()).parse();
+            QueryMethodParser.ParseResult parseResult = new QueryMethodParser(dataForQuery.getMethod().getName()).parse();
             // We build the query as a FIND, regardless of the original method's action.
-            jakarta.persistence.Query q = buildQueryFromParser(parser, args, dataForQuery, entityManager, QueryMethodParser.Action.FIND);
+            jakarta.persistence.Query q = buildQueryFromParser(parseResult, args, dataForQuery, entityManager, QueryMethodParser.Action.FIND);
             return q.getResultList();
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
             throw new MappingException("Failed to find entities for modification for method: " + dataForQuery.getMethod().getName(), e);
@@ -248,21 +248,21 @@ public class QueryByNameOperationUtility {
         Limit limitFromArgs = parameter.limit();
 
         try {
-            QueryMethodParser parser = new QueryMethodParser(methodName).parse();
-            if (parser.getAction() != expectedAction) {
-                throw new IllegalStateException("Mismatched action type. Expected " + expectedAction + " but got " + parser.getAction());
+            QueryMethodParser.ParseResult parseResult = new QueryMethodParser(methodName).parse();
+            if (parseResult.action() != expectedAction) {
+                throw new IllegalStateException("Mismatched action type. Expected " + expectedAction + " but got " + parseResult.action());
             }
             if (evaluatePages) {
-                return buildQueryFromParserWithPagination(parser, args, dataForQuery, entityManager, expectedAction);
+                return buildQueryFromParserWithPagination(parseResult, args, dataForQuery, entityManager, expectedAction);
             } else {
-                jakarta.persistence.Query q = buildQueryFromParser(parser, args, queryMetadata, entityManager, expectedAction);
+                jakarta.persistence.Query q = buildQueryFromParser(parseResult, args, queryMetadata, entityManager, expectedAction);
                 if (limitFromArgs != null) {
                     if (limitFromArgs.startAt() > 1) {
                         q.setFirstResult((int) (limitFromArgs.startAt() - 1));
                     }
                     q.setMaxResults(limitFromArgs.maxResults());
                 }
-                return executeQuery(q, parser, queryMetadata);
+                return executeQuery(q, parseResult, queryMetadata);
             }
         } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
             throw new MappingException("Failed to build or execute query from method name: " + methodName, e);
@@ -273,7 +273,7 @@ public class QueryByNameOperationUtility {
      * Builds a jakarta.persistence.Query object from a parsed method name.
      * This is a central helper used by all `...ByName` operations.
      */
-    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser parser, Object[] args,
+    private static jakarta.persistence.Query buildQueryFromParser(QueryMethodParser.ParseResult parseResult, Object[] args,
                                                                   QueryMetadata dataForQuery, EntityManager entityManager,
                                                                   QueryMethodParser.Action executionAction) {
         Metamodel metamodel = entityManager.getMetamodel();
@@ -288,7 +288,7 @@ public class QueryByNameOperationUtility {
 
         DataParameter parameter = extractDataParameter(args);
         List<Sort<?>> dynamicSorts = parameter.sortList();
-        buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
+        buildJoins(joinClause, parseResult, rootEntityType, rootAlias, joinAliases);
         if (executionAction == QueryMethodParser.Action.FIND) {
             for (Sort<?> sort : dynamicSorts) {
                 buildJoinsForPath(joinClause, rootEntityType, rootAlias, sort.property(), joinAliases);
@@ -297,14 +297,14 @@ public class QueryByNameOperationUtility {
 
         jpql.append(joinClause);
 
-        if (!parser.getConditions().isEmpty()) {
-            jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
+        if (!parseResult.conditions().isEmpty()) {
+            jpql.append(" WHERE ").append(buildWhereConditions(parseResult.conditions(), rootEntityType, rootAlias, joinAliases, dataForQuery));
         }
 
         if (executionAction == QueryMethodParser.Action.FIND) {
             List<String> orderSegments = new ArrayList<>();
-            if (!parser.getOrderBy().isEmpty()) {
-                for (QueryMethodParser.OrderBy ob : parser.getOrderBy()) {
+            if (!parseResult.orderBy().isEmpty()) {
+                for (QueryMethodParser.OrderBy ob : parseResult.orderBy()) {
                     String propertyPath = findAliasedPath(ob.property(), rootEntityType, rootAlias, joinAliases);
                     String direction = (ob.ascDesc() == null || "Asc".equalsIgnoreCase(ob.ascDesc())) ? "ASC" : "DESC";
                     orderSegments.add(propertyPath + " " + direction);
@@ -321,12 +321,12 @@ public class QueryByNameOperationUtility {
             }
         }
         jakarta.persistence.Query q = entityManager.createQuery(jpql.toString());
-        setQueryParameters(q, parser.getConditions(), args, dataForQuery);
+        setQueryParameters(q, parseResult.conditions(), args, dataForQuery);
 
         return q;
     }
 
-    private static Object buildQueryFromParserWithPagination(QueryMethodParser parser, Object[] args,
+    private static Object buildQueryFromParserWithPagination(QueryMethodParser.ParseResult parseResult, Object[] args,
                                                              QueryData dataForQuery, EntityManager entityManager,
                                                              QueryMethodParser.Action executionAction) {
         Metamodel metamodel = entityManager.getMetamodel();
@@ -346,19 +346,19 @@ public class QueryByNameOperationUtility {
 
         buildQueryClause(jpql, executionAction, queryMetadata, rootAlias);
         buildQueryClause(countClause, QueryMethodParser.Action.COUNT, queryMetadata, rootAlias);
-        buildJoins(joinClause, parser, rootEntityType, rootAlias, joinAliases);
+        buildJoins(joinClause, parseResult, rootEntityType, rootAlias, joinAliases);
 
         jpql.append(joinClause);
 
-        if (!parser.getConditions().isEmpty()) {
-            jpql.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, queryMetadata));
-            countClause.append(" WHERE ").append(buildWhereConditions(parser.getConditions(), rootEntityType, rootAlias, joinAliases, queryMetadata));
+        if (!parseResult.conditions().isEmpty()) {
+            jpql.append(" WHERE ").append(buildWhereConditions(parseResult.conditions(), rootEntityType, rootAlias, joinAliases, queryMetadata));
+            countClause.append(" WHERE ").append(buildWhereConditions(parseResult.conditions(), rootEntityType, rootAlias, joinAliases, queryMetadata));
         }
 
         //consolidates order criteria from method name and order attributes
         List<Sort<?>> sortsFromMethodName = new ArrayList<>();
-        if (!parser.getOrderBy().isEmpty()) {
-            List<QueryMethodParser.OrderBy> orders = parser.getOrderBy();
+        if (!parseResult.orderBy().isEmpty()) {
+            List<QueryMethodParser.OrderBy> orders = parseResult.orderBy();
             for (QueryMethodParser.OrderBy order : orders) {
                 EntityMetadata entityMetadata = queryMetadata.getEntityMetadata();
 
@@ -378,7 +378,7 @@ public class QueryByNameOperationUtility {
         }
 
         List<Sort<?>> finalOrders = new ArrayList<>();
-        if (!parser.getOrderBy().isEmpty()) {
+        if (!parseResult.orderBy().isEmpty()) {
             finalOrders.addAll(sortsFromMethodName);
         }
         if (sortList != null && !sortList.isEmpty()) {
@@ -421,12 +421,12 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static void buildJoins(StringBuilder joinClause, QueryMethodParser parser, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases) {
-        for (QueryMethodParser.Condition condition : parser.getConditions()) {
+    private static void buildJoins(StringBuilder joinClause, QueryMethodParser.ParseResult parseResult, EntityType<?> rootEntityType, String rootAlias, Map<String, String> joinAliases) {
+        for (QueryMethodParser.Condition condition : parseResult.conditions()) {
             buildJoinsForPath(joinClause, rootEntityType, rootAlias, condition.property(), joinAliases);
         }
-        if (parser.getAction() == QueryMethodParser.Action.FIND) {
-            for (QueryMethodParser.OrderBy orderBy : parser.getOrderBy()) {
+        if (parseResult.action() == QueryMethodParser.Action.FIND) {
+            for (QueryMethodParser.OrderBy orderBy : parseResult.orderBy()) {
                 buildJoinsForPath(joinClause, rootEntityType, rootAlias, orderBy.property(), joinAliases);
             }
         }
@@ -552,12 +552,12 @@ public class QueryByNameOperationUtility {
         }
     }
 
-    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser parser, QueryMetadata dataForQuery) {
-        QueryMethodParser.Action action = parser.getAction();
+    private static Object executeQuery(jakarta.persistence.Query q, QueryMethodParser.ParseResult parseResult, QueryMetadata dataForQuery) {
+        QueryMethodParser.Action action = parseResult.action();
         switch (action) {
             case FIND:
-                if (parser.getLimit() != null) {
-                    q.setMaxResults(parser.getLimit());
+                if (parseResult.limit() != null) {
+                    q.setMaxResults(parseResult.limit());
                 }
                 return processReturnType(dataForQuery, q.getResultList());
             case COUNT:
