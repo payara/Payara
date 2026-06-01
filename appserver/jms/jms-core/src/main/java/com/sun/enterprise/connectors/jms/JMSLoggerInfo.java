@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
+
 package com.sun.enterprise.connectors.jms;
 
 import java.util.logging.Logger;
@@ -235,4 +237,12 @@ public class JMSLoggerInfo {
             action = "unknown"
     )
     public static final String JMSRA_UPGRADE_CHECK_FAILED = LOGMSG_PREFIX + "-00027";
+    
+    @LogMessageInfo(message = "The default broker instance for OpenMQ is using the default admin password, " +
+            "so OpenMQ is running insecurely. It is recommended that you change it using the imqusermgr tool from OpenMQ, " +
+            "and update the JMS Host configuration accordingly to maintain connectivity. " +
+            "To change the JMS Host please refer to the section Administering the Java Message Service from the Payara Documentation. " +
+            "Alternatively if you are not utilizing Java Message Service, you can disable it. " +
+            "This will prevent the embedded OpenMQ server from starting altogether.")
+    public static final String JMSRA_USING_DEFAULT_BROKER_PASSWORD = LOGMSG_PREFIX + "-00028";
 }

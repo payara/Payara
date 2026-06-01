@@ -77,7 +77,7 @@ public class UseBundledJsfTest {
                 .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "web.xml"))
                 .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "payara-web.xml"))
                 .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.glassfish:jakarta.faces:" + JSF_VERSION))
-                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:15.0.4"));
+                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:15.0.15"));
     }
 
     @Test

@@ -1,5 +1,3 @@
-# TYPE file_sizes_bytes_mean gauge
-file_sizes_bytes_mean 0
 # TYPE file_sizes_bytes_max gauge
 # HELP file_sizes_bytes_max Users file size
 file_sizes_bytes_max 0

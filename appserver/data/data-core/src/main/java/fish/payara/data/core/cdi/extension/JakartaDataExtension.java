@@ -95,18 +95,18 @@ public class JakartaDataExtension implements Extension {
 
     public Set<Class<?>> getRepositoryClasses() {
         Set<Class<?>> repositories = new HashSet<>();
-
-        List<Class<?>> classList = new ArrayList<>();
-        for (String annotatedClassName : annotatedClassNames) {
-            try {
-                classList.add(Thread.currentThread().getContextClassLoader().loadClass(annotatedClassName));
-            } catch (ClassNotFoundException ex) {
-                logger.log(Level.WARNING, "Could not find class " + annotatedClassName, ex);
-            }
-        }
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
         root:
-        for (Class<?> clazz : classList) {
+        for (String annotatedClassName : annotatedClassNames) {
+            Class<?> clazz;
+            try {
+                clazz = loader.loadClass(annotatedClassName);
+            } catch (ClassNotFoundException ex) {
+                logger.log(Level.WARNING, "Could not find class " + annotatedClassName, ex);
+                continue;
+            }
+
             Repository repository = clazz.getAnnotation(Repository.class);
             if (repository != null) {
                 String dataProvider = repository.provider();
@@ -115,21 +115,16 @@ public class JakartaDataExtension implements Extension {
                     continue;
                 }
             }
-            Type[] types = clazz.getGenericInterfaces();
-            for (Type type : types) {
+            for (Type type : clazz.getGenericInterfaces()) {
                 if (type instanceof ParameterizedType parameterizedType) {
                     Type[] typeParams = parameterizedType.getActualTypeArguments();
-                    Type entityType = typeParams.length > 0 ? typeParams[0] : null;
-                    if (entityType != null) {
-                        Annotation[] annotations = ((Class) entityType).getAnnotations();
-                        for (Annotation annotation : annotations) {
+                    if (typeParams.length > 0 && typeParams[0] instanceof Class<?> entityClass) {
+                        for (Annotation annotation : entityClass.getAnnotations()) {
                             Class<? extends Annotation> annotationType = annotation.annotationType();
                             if (annotationType.equals(Entity.class)) {
                                 repositories.add(clazz);
                                 continue root;
                             } else if (annotationType.isAnnotationPresent(EntityDefining.class)) {
-                                continue root;
-                            } else {
                                 continue root;
                             }
                         }
@@ -139,7 +134,7 @@ public class JakartaDataExtension implements Extension {
             repositories.add(clazz);
         }
 
-        return repositories.stream().collect(Collectors.toUnmodifiableSet());
+        return Set.copyOf(repositories);
     }
 
     public String getApplicationName() {

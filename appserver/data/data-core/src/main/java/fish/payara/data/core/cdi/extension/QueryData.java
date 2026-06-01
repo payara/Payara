@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ public class QueryData {
     private boolean isUserTransaction = false;
     private boolean isNewTransaction = false;
     private final QueryMetadata queryMetadata;
+    private boolean lifecycleManagedExternally = false;
 
     public QueryData(QueryMetadata queryMetadata) {
         this.queryMetadata = queryMetadata;
@@ -139,5 +140,13 @@ public class QueryData {
 
     public void setNewTransaction(boolean newTransaction) {
         isNewTransaction = newTransaction;
+    }
+
+    public boolean isLifecycleManagedExternally() {
+        return lifecycleManagedExternally;
+    }
+
+    public void setLifecycleManagedExternally(boolean lifecycleManagedExternally) {
+        this.lifecycleManagedExternally = lifecycleManagedExternally;
     }
 }
