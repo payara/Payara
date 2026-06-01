@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.connectors.jms.system;
 
@@ -1017,6 +1017,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             brkrPort = brokerPort;
             String adminUserName = jmsHost.getAdminUserName();
             String adminPassword = JmsRaUtil.getUnAliasedPwd(jmsHost.getAdminPassword());
+            
+            if (!brokerType.equals(DISABLED) && "default_JMS_host".equals(jmsHost.getName()) && "admin".equals(adminPassword)) {
+                _logger.log(Level.WARNING, JMSLoggerInfo.JMSRA_USING_DEFAULT_BROKER_PASSWORD);
+            }
             List jmsHostProps= getJmsService().getProperty();
 
             String username = null;

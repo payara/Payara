@@ -493,14 +493,6 @@ public class PEFileLayout
             return new File(getTemplatesDir(), templateName);
     }
 
-    public static final String IMQBROKERD_UNIX = "imqbrokerd";
-    public static final String IMQBROKERD_WIN = "imqbrokerd.exe";
-    public static final String IMQBROKERD = isWindows() ? IMQBROKERD_WIN : IMQBROKERD_UNIX;
-    public File getImqBrokerExecutable()
-    {
-        return new File(getImqBinDir(), IMQBROKERD);
-    }
-
     public static final String START_SERV_UNIX = "startserv";
     public static final String START_SERV_WIN = "startserv.bat";
     public static final String START_SERV_OS = isWindows() ? START_SERV_WIN : START_SERV_UNIX;

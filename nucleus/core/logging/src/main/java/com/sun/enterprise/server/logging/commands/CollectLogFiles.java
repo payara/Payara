@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.server.logging.commands;
 
@@ -50,6 +50,7 @@ import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilterForInstance;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -314,9 +315,18 @@ public class CollectLogFiles implements AdminCommand {
             /******************************************************/
 
 
-            com.sun.enterprise.config.serverbeans.Cluster cluster = domain.getClusterNamed(target);
+            Cluster cluster = domain.getClusterNamed(target);
+            List<Server> instances = List.of();
 
-            List<Server> instances = cluster.getInstances();
+            // Check for a cluster first, before checking for a deployment group
+            if (cluster != null) {
+                instances = cluster.getInstances();
+            } else {
+                DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(target);
+                if (deploymentGroup != null) {
+                    instances = deploymentGroup.getInstances();
+                }
+            }
 
             int instanceCount = 0;
             int errorCount = 0;

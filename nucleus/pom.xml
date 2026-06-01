@@ -62,14 +62,14 @@
         <maven.assembly.plugin.version>3.8.0</maven.assembly.plugin.version>
         <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
         <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
-        <maven.invoker.plugin.version>3.10.0</maven.invoker.plugin.version>
+        <maven.invoker.plugin.version>3.10.1</maven.invoker.plugin.version>
         <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
         <maven.makepkgs.plugin.version>0.6.2</maven.makepkgs.plugin.version>
         <maven.jaxb2.plugin.version>0.15.3</maven.jaxb2.plugin.version>
 
         <maven.jaxws.plugin.version>2.6</maven.jaxws.plugin.version>
         <maven.apt.plugin.version>1.0-alpha-5</maven.apt.plugin.version>
-        <maven.plugin.api.version>3.9.15</maven.plugin.api.version>
+        <maven.plugin.api.version>3.9.16</maven.plugin.api.version>
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
@@ -98,14 +98,14 @@
         <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
-        <pfl.version>5.1.0</pfl.version>
+        <pfl.version>5.1.1</pfl.version>
         <!-- GlassFish MBean Annotation Library -->
-        <gmbal.version>4.1.1</gmbal.version>
+        <gmbal.version>4.1.2</gmbal.version>
         <antlr.version>2.7.7</antlr.version>
 
         <commons-io.version>2.22.0</commons-io.version>
 
-        <mimepull.version>1.10.0</mimepull.version>
+        <mimepull.version>1.11.0</mimepull.version>
 
         <!-- Apache Felix is an open source implementation of the OSGi Core Release 8 framework specification. -->
         <org.apache.felix.main.version>7.0.5</org.apache.felix.main.version>
@@ -149,7 +149,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.3.20</kotlin-version>
+        <kotlin-version>2.3.21</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>

@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Modified 2017 Payara Foundation
+// Modified 2017-2026 Payara Foundation and/or its affiliates
 package fish.payara.micro.boot.loader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import fish.payara.micro.boot.loader.archive.Archive;
 import fish.payara.micro.boot.loader.archive.JarFileArchive;
@@ -35,6 +41,9 @@ import fish.payara.micro.boot.loader.archive.JarFileArchive;
  * @author Dave Syer
  */
 public abstract class Launcher {
+
+    public static final String BOOT_PROPS_FILE_NAME = "payara-boot.properties";
+    public static final String BOOT_PROPS_FILE = "/MICRO-INF/" + BOOT_PROPS_FILE_NAME;
 
     /**
      * Launch the application. This method is the initial entry point that
@@ -57,6 +66,8 @@ public abstract class Launcher {
             }
         }
 
+        setPayaraBootProperties(Launcher.class.getResourceAsStream(BOOT_PROPS_FILE));
+
         ClassLoader classLoader;
         if (!explode) {
             classLoader = createClassLoader(getClassPathArchives());
@@ -71,6 +82,34 @@ public abstract class Launcher {
             }
         }
         return launch(method, args, getMainClass(), classLoader);
+    }
+
+    /**
+     * Loads the properties from the given {@link InputStream} and sets them as system properties if not already set.
+     *
+     * This method will not close the provided {@link InputStream}.
+     *
+     * @param inputStream the input stream to read the properties from.
+     * @return The properties read from the {@code inputStream} parameter.
+     */
+    public static Properties setPayaraBootProperties(InputStream inputStream) {
+        Properties bootProperties = new Properties();
+
+        try {
+            if (inputStream != null) {
+                bootProperties.load(inputStream);
+                for (String key : bootProperties.stringPropertyNames()) {
+                    // Do not override an existing system property
+                    if (System.getProperty(key) == null) {
+                        System.setProperty(key, bootProperties.getProperty(key));
+                    }
+                }
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(Launcher.class.getName()).log(Level.WARNING, "Could not load the boot system properties", ioe);
+        }
+
+        return bootProperties;
     }
 
     /**

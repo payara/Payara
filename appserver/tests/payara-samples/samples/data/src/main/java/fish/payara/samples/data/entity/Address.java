@@ -6,8 +6,9 @@ import jakarta.persistence.Table;
 
 import java.util.UUID;
 
-@Entity
+// @Table declared before @Entity — regression guard for FISH-13400
 @Table(name = "Address")
+@Entity
 public class Address {
     @Id
     public UUID id;

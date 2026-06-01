@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -708,7 +708,14 @@ public abstract class ManagerBase implements Manager {
      */
     @Override
     public void add(Session session) {
-        sessions.put(session.getIdInternal(), session);
+        sessions.compute(session.getIdInternal(), (id, existingSession) -> {
+            if (isSessionVersioningSupported()
+                    && existingSession != null
+                    && existingSession.getVersion() > session.getVersion()) {
+                    return existingSession;
+                }
+            return session;
+        });
         int size = sessions.size();
         if (size > maxActive) {
             synchronized(maxActiveUpdateLock) {

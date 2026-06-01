@@ -75,7 +75,7 @@ public class ParallelUseBundledJsfTest {
                 // Don't add payara-web.xml so that useBundledJsf and class loader delegation are not configured
                 // .addAsWebInfResource(new File("src/main/webapp/WEB-INF", "payara-web.xml"))
                 .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.glassfish:jakarta.faces:" + JSF_VERSION))
-                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:15.0.4"));
+                .addAsLibraries(Libraries.resolveMavenCoordinatesToFiles("org.primefaces:primefaces:jar:jakarta:15.0.15"));
     }
 
     @Deployment(name = "usebundledjsfprimefaces")
