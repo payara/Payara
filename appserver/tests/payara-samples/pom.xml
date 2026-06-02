@@ -75,7 +75,7 @@
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
         <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
-        <arquillian.version>1.10.1.Final</arquillian.version>
+        <arquillian.version>1.10.2.Final</arquillian.version>
     </properties>
 
     <modules>
@@ -516,7 +516,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.17</version>
+            <version>2.0.18</version>
             <scope>test</scope>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->
