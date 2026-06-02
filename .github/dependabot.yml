@@ -15,6 +15,7 @@ updates:
       - payara-nexus-staging
     schedule:
       interval: "daily"
+      time: "06:00"
     open-pull-requests-limit: 5
     target-branch: "main"
     ignore:
