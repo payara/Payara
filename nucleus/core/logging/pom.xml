@@ -96,7 +96,7 @@
         <!-- Used only for LogFilterForInstance -->
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
-            <artifactId>trilead-ssh2-repackaged</artifactId>
+            <artifactId>apache-mina-repackaged</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
             <optional>true</optional>

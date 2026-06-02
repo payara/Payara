@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 
 package org.glassfish.cluster.ssh.connect;
 
@@ -65,8 +66,6 @@ public class NodeRunnerSsh  {
 
     private String lastCommandRun = null;
 
-    private int commandStatus;
-
     private SSHLauncher sshL = null;
 
     public NodeRunnerSsh(ServiceLocator habitat, Logger logger) {
@@ -80,7 +79,7 @@ public class NodeRunnerSsh  {
         if (node == null) {
             throw new IllegalArgumentException("Node is null");
         }
-        if (node.getType() ==null)
+        if (node.getType() == null)
             return false;
         return node.getType().equals("SSH");
     }
@@ -98,69 +97,76 @@ public class NodeRunnerSsh  {
         args.add(0, AsadminInput.CLI_INPUT_OPTION);
         args.add(1, AsadminInput.SYSTEM_IN_INDICATOR); // specified to read from System.in
 
-        if (! isSshNode(node)) {
+        if (!isSshNode(node)) {
             throw new UnsupportedOperationException(
                     "Node is not of type SSH");
         }
 
-        String installDir = node.getInstallDirUnixStyle() + "/" +
-            SystemPropertyConstants.getComponentName();
-        if (!StringUtils.ok(installDir)) {
+        String nodeInstallDir = node.getInstallDirUnixStyle();
+        if (!StringUtils.ok(nodeInstallDir)) {
             throw new IllegalArgumentException("Node does not have an installDir");
         }
+        String installDir = nodeInstallDir + "/" + SystemPropertyConstants.getComponentName();
 
-        List<String> fullcommand = new ArrayList<String>();
+        List<String> fullcommand = new ArrayList<>();
 
-        // We can just use "nadmin" even on Windows since the SSHD provider
-        // will locate the command (.exe or .bat) for us
-        fullcommand.add(installDir + "/lib/nadmin");
+        // On Windows nodes the install dir begins with a drive letter (e.g. C:/).
+        // cmd.exe does not auto-resolve a fully-qualified path without an extension,
+        // so we must explicitly use nadmin.bat on Windows hosts.
+        String nadmin = installDir + "/lib/nadmin" + (isWindowsInstallDir(installDir) ? ".bat" : "");
+        fullcommand.add(nadmin);
         fullcommand.addAll(args);
 
-        try{
+        try {
             lastCommandRun = commandListToString(fullcommand);
-            trace("Running command on " + node.getNodeHost() + ": " +
-                    lastCommandRun);
-            sshL=habitat.getService(SSHLauncher.class);
+            logger.fine("Preparing SSH command on " + node.getNodeHost()
+                    + " (windows=" + isWindowsInstallDir(installDir) + "): " + lastCommandRun);
+
+            sshL = habitat.getService(SSHLauncher.class);
             sshL.init(node, logger);
 
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            commandStatus = sshL.runCommand(fullcommand, outStream, stdinLines);
+            int commandStatus = sshL.runCommand(fullcommand, outStream, stdinLines);
+            logger.fine("Command returned status=" + commandStatus
+                    + " output=[" + outStream.toString().trim() + "]");
             output.append(outStream.toString());
             return commandStatus;
 
-        }catch (IOException ex) {
-            String m1 = " Command execution failed. " +ex.getMessage();
+        } catch (IOException ex) {
+            String m1 = " Command execution failed. " + ex.getMessage();
             String m2 = "";
             Throwable e2 = ex.getCause();
-            if(e2 != null) {
+            if (e2 != null) {
                 m2 = e2.getMessage();
             }
-            logger.severe("Command execution failed for "+ lastCommandRun);
-            SSHCommandExecutionException cee = new SSHCommandExecutionException(StringUtils.cat(":",
-                                            m1, m2));
+            logger.severe("Command execution failed for " + lastCommandRun);
+            SSHCommandExecutionException cee = new SSHCommandExecutionException(StringUtils.cat(":", m1, m2));
             cee.setSSHSettings(sshL.toString());
             cee.setCommandRun(lastCommandRun);
             throw cee;
 
-        } catch (java.lang.InterruptedException ei){
-            ei.printStackTrace();
-            String m1 = ei.getMessage();
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            String m1 = ie.getMessage();
             String m2 = "";
-            Throwable e2 = ei.getCause();
-            if(e2 != null) {
+            Throwable e2 = ie.getCause();
+            if (e2 != null) {
                 m2 = e2.getMessage();
             }
-            logger.severe("Command interrupted "+ lastCommandRun);
-            SSHCommandExecutionException cee = new SSHCommandExecutionException(StringUtils.cat(":",
-                                             m1, m2));
+            logger.severe("Command interrupted " + lastCommandRun);
+            SSHCommandExecutionException cee = new SSHCommandExecutionException(StringUtils.cat(":", m1, m2));
             cee.setSSHSettings(sshL.toString());
             cee.setCommandRun(lastCommandRun);
             throw cee;
         }
     }
-    private void trace(String s) {
-        logger.fine(String.format("%s: %s", this.getClass().getSimpleName(), s));
-   }
+
+    /** Returns {@code true} when the install dir begins with a Windows drive letter (e.g. {@code C:/}). */
+    public static boolean isWindowsInstallDir(String installDir) {
+        return installDir != null && installDir.length() >= 2
+                && Character.isLetter(installDir.charAt(0))
+                && installDir.charAt(1) == ':';
+    }
 
     private String commandListToString(List<String> command) {
         StringBuilder fullCommand = new StringBuilder();

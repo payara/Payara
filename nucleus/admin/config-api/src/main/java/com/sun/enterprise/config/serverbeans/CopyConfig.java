@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.config.serverbeans;
 
@@ -53,7 +54,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -121,11 +122,8 @@ public abstract class CopyConfig implements AdminCommand {
             }
         }
         try {
-            if (!(new File(configConfigDir, "docroot").mkdirs() &&
-                  new File(configConfigDir, "lib/ext").mkdirs())) {
-                throw new IOException(LOCAL_STRINGSs.getLocalString("config.mkdirs",
-                        "error creating config specific directories"));
-            }
+            Files.createDirectories(new File(configConfigDir, "docroot").toPath());
+            Files.createDirectories(new File(configConfigDir, "lib/ext").toPath());
 
             String srcConfigLoggingFile = env.getInstanceRoot().getAbsolutePath() + File.separator + "config" + File.separator
                     + srcConfig + File.separator + ServerEnvironmentImpl.kLoggingPropertiesFileName;
