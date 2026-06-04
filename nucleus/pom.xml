@@ -73,7 +73,7 @@
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
-        <grizzly-npn-osgi.version>2.0.0</grizzly-npn-osgi.version>
+        <grizzly-npn-osgi.version>2.0.1</grizzly-npn-osgi.version>
 
         <!-- Other -->
 
