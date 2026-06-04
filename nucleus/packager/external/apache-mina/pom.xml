@@ -71,7 +71,6 @@
                         <Embed-Dependency>
                             *;scope=compile;inline=true
                         </Embed-Dependency>
-                        <_exportcontents>*</_exportcontents>
                         <Export-Package>
                             org.apache.sshd.*
                         </Export-Package>
@@ -131,13 +130,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.17</version>
+            <version>${slf4j.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
-            <version>2.0.17</version>
+            <version>${slf4j.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
