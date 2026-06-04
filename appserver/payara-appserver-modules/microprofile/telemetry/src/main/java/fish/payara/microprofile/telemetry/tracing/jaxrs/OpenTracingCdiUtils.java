@@ -105,9 +105,7 @@ public final class OpenTracingCdiUtils {
      * @return The annotation that triggered the interceptor.
      */
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, ResourceInfo resourceInfo) {
-        return WithSpanMethodInterceptor.getAnnotation(
-                beanManager, annotationClass,
-                resourceInfo.getResourceClass(),
+        return WithSpanMethodInterceptor.getAnnotation(beanManager, annotationClass, resourceInfo.getResourceClass(),
                 resourceInfo.getResourceMethod());
     }
 
@@ -157,7 +155,7 @@ public final class OpenTracingCdiUtils {
 
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass,
                                                          MonitorContext monitorContext) {
-        return getAnnotation(beanManager, annotationClass, monitorContext.getImplementationClass(), 
+        return getAnnotation(beanManager, annotationClass, monitorContext.getImplementationClass(),
                 monitorContext.getCallInfo().getMethod());
     }
 
@@ -171,7 +169,9 @@ public final class OpenTracingCdiUtils {
      * @param parameterType     The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
-    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName, InvocationContext invocationContext, Class<T> parameterType) {
+    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName,
+                                                                               InvocationContext invocationContext,
+                                                                               Class<T> parameterType) {
         return getConfigOverrideValue(annotationClass, parameterName, invocationContext.getMethod(), parameterType);
     }
 
@@ -185,7 +185,9 @@ public final class OpenTracingCdiUtils {
      * @param parameterType   The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
-    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName, Method method, Class<T> parameterType) {
+    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName,
+                                                                               Method method,
+                                                                               Class<T> parameterType) {
 
         final Config config = getConfig();
         if (config == null) {
@@ -231,8 +233,9 @@ public final class OpenTracingCdiUtils {
         return appValue;
     }
 
-    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass,
-                                                                               String parameterName, MonitorContext monitorContext, Class<T> parameterType) {
+    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName,
+                                                                               MonitorContext monitorContext,
+                                                                               Class<T> parameterType) {
         return getConfigOverrideValue(annotationClass, parameterName, monitorContext.getCallInfo().getMethod(), parameterType);
     }
 

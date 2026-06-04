@@ -78,8 +78,9 @@ import org.jvnet.hk2.annotations.Service;
 import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static jakarta.xml.ws.handler.MessageContext.*;
-import static java.util.Collections.singletonMap;
-import static java.util.logging.Level.*;
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.SEVERE;
 
 @Service(name = "jaxws-telemetry-tracing-filter")
 public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilter {
@@ -143,16 +144,16 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
                     }
 
                     Span activeSpan = (Span) httpSpan;
-                    
+
                     if (!activeSpan.getSpanContext().isValid()) {
                         return;
                     }
-                   
+
                     try {
 
                         // Get and add the response status to the active span
                         Response.StatusType statusInfo = getResponseStatus(pipeRequest, pipeRequest);
-                        
+
                         activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, statusInfo.getStatusCode());
 
                         // If the response status is an error, add error information to the span
@@ -210,7 +211,8 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
         HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
 
         if (tracedAnnotation != null) {
-            String operationName = OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "operationName", monitorContext, String.class).orElse(tracedAnnotation.operationName());
+            String operationName = OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "operationName",
+                    monitorContext, String.class).orElse(tracedAnnotation.operationName());
 
             // If the annotation or config override providing an empty name, just set it equal to the HTTP Method,
             // followed by the method signature
@@ -257,7 +259,8 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     }
 
     private String createFallbackName(HttpServletRequest httpRequest, MonitorContext monitorContext) {
-        return httpRequest.getMethod() + ":" + monitorContext.getImplementationClass().getCanonicalName() + "." + monitorContext.getCallInfo().getMethod().getName();
+        return httpRequest.getMethod() + ":" + monitorContext.getImplementationClass().getCanonicalName() + "." + 
+                monitorContext.getCallInfo().getMethod().getName();
     }
 
 
@@ -273,7 +276,8 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
             return true;
         }
 
-        return OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "value", monitorContext, boolean.class).orElse(tracedAnnotation.value());
+        return OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "value", monitorContext, 
+                boolean.class).orElse(tracedAnnotation.value());
     }
 
     private Object getErrorObject(Message message) {
@@ -347,7 +351,6 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     }
 
     private Response.StatusType getResponseStatus(Packet pipeRequest, Packet pipeResponse) {
-
         Integer statusCode = (Integer) pipeResponse.get(HTTP_RESPONSE_CODE);
 
         if (statusCode == null || statusCode.equals(0)) {
@@ -359,7 +362,8 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     }
 
     private Throwable getResponseException(MonitorContext monitorContext, Packet pipeResponse) {
-        return monitorContext.getSeiModel().getDatabinding().deserializeResponse(pipeResponse.copy(true), monitorContext.getCallInfo()).getException();
+        return monitorContext.getSeiModel().getDatabinding().deserializeResponse(pipeResponse.copy(true), 
+                monitorContext.getCallInfo()).getException();
     }
 
     private BeanManager getBeanManager() {
