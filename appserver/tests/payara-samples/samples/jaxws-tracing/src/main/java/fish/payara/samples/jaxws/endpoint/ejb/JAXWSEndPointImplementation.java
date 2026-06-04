@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.Stateless;
 import jakarta.jws.WebService;
 
-import org.eclipse.microprofile.opentracing.Traced;
+import fish.payara.microprofile.telemetry.tracing.Traced;
 
 
 @Stateless

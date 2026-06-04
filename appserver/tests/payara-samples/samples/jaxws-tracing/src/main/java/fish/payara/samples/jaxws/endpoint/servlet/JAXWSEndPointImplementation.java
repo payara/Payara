@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 
 import jakarta.jws.WebService;
 
-import org.eclipse.microprofile.opentracing.Traced;
+import fish.payara.microprofile.telemetry.tracing.Traced;
 
 @WebService(
     endpointInterface = "fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointInterface",
