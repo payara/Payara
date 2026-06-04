@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,11 @@ import fish.payara.microprofile.telemetry.tracing.WithSpanMethodInterceptor;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.interceptor.InvocationContext;
 import jakarta.ws.rs.container.ResourceInfo;
+import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.Set;
+import java.util.function.Function;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -53,7 +58,10 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.webservices.monitoring.MonitorContext;
+import org.jboss.weld.interceptor.WeldInvocationContext;
 
+import static java.util.Arrays.asList;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -64,48 +72,117 @@ import static java.util.logging.Level.FINEST;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  * @author Arjan Tijms <arjan.tijms@payara.fish>
  */
-final class OpenTracingCdiUtils {
+public final class OpenTracingCdiUtils {
 
     private static final Logger LOG = Logger.getLogger(OpenTracingCdiUtils.class.getName());
 
     /**
      * Gets the annotation from the method that triggered the interceptor.
      *
-     * @param <A> The annotation type to return
-     * @param beanManager The invoking interceptor's BeanManager
+     * @param <A>               The annotation type to return
+     * @param beanManager       The invoking interceptor's BeanManager
+     * @param annotationClass   The class of the annotation to get
+     * @param invocationContext The context of the method invocation
+     * @return The annotation that triggered the interceptor.
+     */
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, InvocationContext invocationContext) {
+        A annotation = getInterceptedAnnotation(annotationClass, invocationContext);
+
+        if (annotation == null) {
+            annotation = getAnnotation(beanManager, annotationClass, invocationContext.getMethod().getDeclaringClass(), invocationContext.getMethod());
+        }
+
+        return annotation;
+    }
+
+    /**
+     * Gets the annotation from the method that triggered the interceptor.
+     *
+     * @param <A>             The annotation type to return
+     * @param beanManager     The invoking interceptor's BeanManager
      * @param annotationClass The class of the annotation to get
-     * @param resourceInfo The targeted jaxrs resource
+     * @param resourceInfo    The targeted jaxrs resource
      * @return The annotation that triggered the interceptor.
      */
     public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, ResourceInfo resourceInfo) {
         return WithSpanMethodInterceptor.getAnnotation(
-            beanManager, annotationClass,
-            resourceInfo.getResourceClass(),
-            resourceInfo.getResourceMethod());
+                beanManager, annotationClass,
+                resourceInfo.getResourceClass(),
+                resourceInfo.getResourceMethod());
+    }
+
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, Class<?> annotatedClass, Method method) {
+        logGetAnnotation(annotationClass, method);
+        Objects.requireNonNull(annotatedClass, "annotatedClass");
+        Objects.requireNonNull(method, "method");
+
+        // Try to get the annotation from the method, otherwise attempt to get it from the class
+        if (method.isAnnotationPresent(annotationClass)) {
+            LOG.log(FINER, "Annotation was directly present on the method");
+            return method.getAnnotation(annotationClass);
+        }
+
+        if (annotatedClass.isAnnotationPresent(annotationClass)) {
+            LOG.log(FINER, "Annotation was directly present on the class");
+            return annotatedClass.getAnnotation(annotationClass);
+        }
+
+        LOG.log(FINER, "Annotation wasn't directly present on the method or class, checking stereotypes");
+
+        // Account for Stereotypes
+        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
+
+        A annotation = null;
+
+        // Loop over each individual annotation
+        while (!annotations.isEmpty()) {
+            Annotation a = annotations.remove();
+
+            // Check if this is the annotation we're looking for
+            if (a.annotationType().equals(annotationClass)) {
+                LOG.log(FINER, "Annotation was found in a stereotype");
+                annotation = annotationClass.cast(a);
+                break;
+            }
+
+            // If the found annotation is a stereotype, get the individual annotations and add them to the list
+            // to be iterated over
+            if (beanManager.isStereotype(a.annotationType())) {
+                annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
+            }
+        }
+
+        return annotation;
+    }
+
+    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass,
+                                                         MonitorContext monitorContext) {
+        return getAnnotation(beanManager, annotationClass, monitorContext.getImplementationClass(), 
+                monitorContext.getCallInfo().getMethod());
     }
 
     /**
      * Gets overriding config parameter values if they're present from an invocation context.
      *
-     * @param <A> The annotation type
-     * @param annotationClass The annotation class
-     * @param parameterName The name of the parameter to get the override value of
+     * @param <A>               The annotation type
+     * @param annotationClass   The annotation class
+     * @param parameterName     The name of the parameter to get the override value of
      * @param invocationContext The context of the invoking request
-     * @param parameterType The type of the parameter to get the override value of
+     * @param parameterType     The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
     public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName, InvocationContext invocationContext, Class<T> parameterType) {
-        return  getConfigOverrideValue(annotationClass, parameterName, invocationContext.getMethod(), parameterType);
+        return getConfigOverrideValue(annotationClass, parameterName, invocationContext.getMethod(), parameterType);
     }
 
     /**
      * Gets overriding config parameter values if they're present from an invocation context.
      *
-     * @param <A> The annotation type
+     * @param <A>             The annotation type
      * @param annotationClass The annotation class
-     * @param parameterName The name of the parameter to get the override value of
-     * @param method The method to be invoked
-     * @param parameterType The type of the parameter to get the override value of
+     * @param parameterName   The name of the parameter to get the override value of
+     * @param method          The method to be invoked
+     * @param parameterType   The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
     public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass, String parameterName, Method method, Class<T> parameterType) {
@@ -125,8 +202,8 @@ final class OpenTracingCdiUtils {
         LOG.log(FINER, "Getting config override for annotated method...");
 
         final Optional<T> methodValue = config.getOptionalValue( //
-            annotatedClassCanonicalName + "/" + annotatedMethodName + "/" + annotationName + "/" + parameterName, //
-            parameterType);
+                annotatedClassCanonicalName + "/" + annotatedMethodName + "/" + annotationName + "/" + parameterName, //
+                parameterType);
         if (methodValue.isPresent()) {
             return methodValue;
         }
@@ -140,7 +217,7 @@ final class OpenTracingCdiUtils {
         // If there wasn't a config override for the method, check if there's one for the class
         LOG.log(FINER, "No config override or annotated method, getting config override for the annotated class...");
         final Optional<T> classValue = config.getOptionalValue( //
-            annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, parameterType);
+                annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, parameterType);
         if (classValue.isPresent()) {
             return classValue;
         }
@@ -154,18 +231,23 @@ final class OpenTracingCdiUtils {
         return appValue;
     }
 
+    public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass,
+                                                                               String parameterName, MonitorContext monitorContext, Class<T> parameterType) {
+        return getConfigOverrideValue(annotationClass, parameterName, monitorContext.getCallInfo().getMethod(), parameterType);
+    }
+
     /**
      * Gets overriding config parameter values if they're present from an invocation context.
      *
-     * @param <A> The annotation type
+     * @param <A>             The annotation type
      * @param annotationClass The annotation class
-     * @param parameterName The name of the parameter to get the override value of
-     * @param resourceInfo The targeted jaxrs resource
-     * @param parameterType The type of the parameter to get the override value of
+     * @param parameterName   The name of the parameter to get the override value of
+     * @param resourceInfo    The targeted jaxrs resource
+     * @param parameterType   The type of the parameter to get the override value of
      * @return An Optional containing the override value from the config if there is one
      */
     public static <A extends Annotation, T> Optional<T> getConfigOverrideValue(Class<A> annotationClass,
-            String parameterName, ResourceInfo resourceInfo, Class<T> parameterType) {
+                                                                               String parameterName, ResourceInfo resourceInfo, Class<T> parameterType) {
 
         final Config config = getConfig();
         if (config == null) {
@@ -179,8 +261,8 @@ final class OpenTracingCdiUtils {
         final String annotatedClassCanonicalName = resourceInfo.getResourceClass().getCanonicalName();
 
         final Optional<T> methodValue = config.getOptionalValue( //
-            annotatedClassCanonicalName + "/" + annotatedMethodName + "/" + annotationName + "/" + parameterName,
-            parameterType);
+                annotatedClassCanonicalName + "/" + annotatedMethodName + "/" + annotationName + "/" + parameterName,
+                parameterType);
         if (methodValue.isPresent()) {
             return methodValue;
         }
@@ -193,7 +275,7 @@ final class OpenTracingCdiUtils {
 
         LOG.log(FINER, "No config override or annotated method, getting config override for the annotated class...");
         final Optional<T> classValue = config.getOptionalValue( //
-            annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, parameterType);
+                annotatedClassCanonicalName + "/" + annotationName + "/" + parameterName, parameterType);
         if (classValue.isPresent()) {
             return classValue;
         }
@@ -206,6 +288,26 @@ final class OpenTracingCdiUtils {
         return appValue;
     }
 
+    /**
+     * Uses Weld to find an annotation. The annotation must be an intercepted annotation that has a binding
+     *
+     * @param <A>
+     * @param annotationClass   {@link Annotation} to look for
+     * @param invocationContext
+     * @return the {@link Annotation} that the interceptor is inceptoring,or null if it cannot be found
+     */
+    private static <A extends Annotation> A getInterceptedAnnotation(Class<A> annotationClass, InvocationContext invocationContext) {
+        if (invocationContext instanceof WeldInvocationContext) {
+            Set<Annotation> interceptorBindings = invocationContext.getInterceptorBindings();
+            for (Annotation annotationBound : interceptorBindings) {
+                if (annotationBound.annotationType().equals(annotationClass)) {
+                    return (A) annotationBound;
+                }
+            }
+        }
+        return null;
+    }
+
     private static Config getConfig() {
         try {
             return ConfigProvider.getConfig();
@@ -214,6 +316,18 @@ final class OpenTracingCdiUtils {
         }
 
         return null;
+    }
+
+    private static void logGetAnnotation(Class<?> annotatedClass, Method method) {
+        LOG.log(FINER, "Attempting to get annotation {0} from {1}",
+                new String[]{getString(annotatedClass, Class::getSimpleName), getString(method, Method::getName)});
+    }
+
+    private static <T> String getString(final T object, Function<T, String> toString) {
+        if (object == null) {
+            return null;
+        }
+        return toString.apply(object);
     }
 
 
