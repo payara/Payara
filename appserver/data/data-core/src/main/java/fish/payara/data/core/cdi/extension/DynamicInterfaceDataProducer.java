@@ -351,7 +351,6 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                     case DELETE -> QueryType.DELETE_BY_NAME;
                     case COUNT -> QueryType.COUNT_BY_NAME;
                     case EXISTS -> QueryType.EXISTS_BY_NAME;
-                    case FIND_FOR_DELETE -> QueryType.FIND_BY_NAME;
                 };
             }
 

@@ -410,7 +410,6 @@ public class QueryByNameOperationUtility {
         String entityName = dataForQuery.getDeclaredEntityClass().getSimpleName();
         switch (action) {
             case FIND:
-            case FIND_FOR_DELETE:
                 jpql.append("SELECT DISTINCT ").append(rootAlias).append(" FROM ").append(entityName).append(" ").append(rootAlias);
                 break;
             case COUNT:
