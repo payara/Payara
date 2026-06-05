@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025-2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@ import fish.payara.data.core.cdi.extension.PageImpl;
 import fish.payara.data.core.cdi.extension.QueryData;
 import fish.payara.data.core.cdi.extension.QueryMetadata;
 import fish.payara.data.core.querymethod.QueryMethodParser;
-import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
 import jakarta.data.Limit;
 import jakarta.data.Sort;
 import jakarta.data.exceptions.EmptyResultException;
@@ -213,11 +212,11 @@ public class QueryByNameOperationUtility {
      */
     private static List<?> findEntitiesForModification(Object[] args, QueryMetadata dataForQuery, EntityManager entityManager) {
         try {
-            QueryMethodParser.ParseResult parseResult = new QueryMethodParser(dataForQuery.getMethod().getName()).parse();
+            QueryMethodParser.ParseResult parseResult = dataForQuery.getParseResult();
             // We build the query as a FIND, regardless of the original method's action.
             jakarta.persistence.Query q = buildQueryFromParser(parseResult, args, dataForQuery, entityManager, QueryMethodParser.Action.FIND);
             return q.getResultList();
-        } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new MappingException("Failed to find entities for modification for method: " + dataForQuery.getMethod().getName(), e);
         }
     }
@@ -248,7 +247,7 @@ public class QueryByNameOperationUtility {
         Limit limitFromArgs = parameter.limit();
 
         try {
-            QueryMethodParser.ParseResult parseResult = new QueryMethodParser(methodName).parse();
+            QueryMethodParser.ParseResult parseResult = queryMetadata.getParseResult();
             if (parseResult.action() != expectedAction) {
                 throw new IllegalStateException("Mismatched action type. Expected " + expectedAction + " but got " + parseResult.action());
             }
@@ -264,7 +263,7 @@ public class QueryByNameOperationUtility {
                 }
                 return executeQuery(q, parseResult, queryMetadata);
             }
-        } catch (QueryMethodSyntaxException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new MappingException("Failed to build or execute query from method name: " + methodName, e);
         }
     }
