@@ -346,12 +346,7 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
                 queryType = QueryType.QUERY;
             } else {
                 parseResult = new QueryMethodParser(method.getName()).parse();
-                queryType = switch (parseResult.action()) {
-                    case FIND -> QueryType.FIND_BY_NAME;
-                    case DELETE -> QueryType.DELETE_BY_NAME;
-                    case COUNT -> QueryType.COUNT_BY_NAME;
-                    case EXISTS -> QueryType.EXISTS_BY_NAME;
-                };
+                queryType = queryTypeForByNameAction(parseResult.action());
             }
 
             Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
@@ -384,6 +379,23 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
         } catch (MappingException | QueryMethodSyntaxException e) {
             logger.warning(e.getMessage());
         }
+    }
+
+    /**
+     * Maps the parsed action of a "query by method name" to its corresponding {@link QueryType}.
+     * This classification happens once at deploy time so it does not need to be recomputed on every
+     * request.
+     *
+     * @param action the action resolved by {@link QueryMethodParser}
+     * @return the matching by-name query type
+     */
+    static QueryType queryTypeForByNameAction(QueryMethodParser.Action action) {
+        return switch (action) {
+            case FIND -> QueryType.FIND_BY_NAME;
+            case DELETE -> QueryType.DELETE_BY_NAME;
+            case COUNT -> QueryType.COUNT_BY_NAME;
+            case EXISTS -> QueryType.EXISTS_BY_NAME;
+        };
     }
 
     @Override
