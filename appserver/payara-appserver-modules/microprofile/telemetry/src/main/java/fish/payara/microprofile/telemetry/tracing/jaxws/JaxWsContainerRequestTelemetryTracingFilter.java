@@ -47,12 +47,15 @@ import fish.payara.microprofile.telemetry.tracing.Traced;
 import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.ErrorAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
@@ -63,10 +66,14 @@ import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.soap.SOAPException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.glassfish.api.invocation.InvocationManager;
@@ -78,6 +85,7 @@ import org.jvnet.hk2.annotations.Service;
 import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
 import static jakarta.xml.ws.handler.MessageContext.*;
+import static java.util.Collections.list;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
@@ -100,7 +108,17 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     public void filterRequest(Packet pipeRequest, MonitorContext monitorContext) {
         // If request tracing is enabled, and there's a trace in progress (which there should be!)
         if (isTraceInProgress()) {
+            TextMapGetter<Map<String, String>> getter = new TextMapGetter<Map<String, String>>() {
+                @Override
+                public Iterable<String> keys(Map<String, String> carrier) {
+                    return carrier.keySet();
+                }
 
+                @Override
+                public String get(Map<String, String> carrier, String key) {
+                    return carrier.get(key);
+                }
+            };
             // Get the Traced annotation from the target method if CDI is initialised
             Traced tracedAnnotation = getTraceAnnotation(monitorContext);
 
@@ -110,12 +128,24 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
 
                 // Get the application's tracer instance
                 Tracer tracer = getTracer();
-
                 HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-
-                // Create a Span and instrument it with details about the request
-                SpanBuilder spanBuilder = tracer.spanBuilder(determineOperationName(pipeRequest, monitorContext, tracedAnnotation)).setSpanKind(SpanKind.SERVER).setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, httpRequest.getMethod()).setAttribute(UrlAttributes.URL_FULL, httpRequest.getRequestURL().toString()).setAttribute("component", "jaxws");
-
+                Map<String, String> headers = getHeaders(httpRequest);
+                Context extractedContext = GlobalOpenTelemetry.getPropagators().getTextMapPropagator()
+                        .extract(Context.current(), headers, getter);
+                SpanBuilder spanBuilder = null;
+                if (extractedContext != null) {
+                    // Create a Span and instrument it with details about the request
+                     spanBuilder = tracer.spanBuilder(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
+                            .setSpanKind(SpanKind.SERVER).setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, httpRequest.getMethod())
+                            .setAttribute(UrlAttributes.URL_FULL, httpRequest.getRequestURL().toString())
+                            .setAttribute("component", "jaxws").setParent(extractedContext);
+                } else {
+                    spanBuilder = tracer.spanBuilder(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
+                            .setSpanKind(SpanKind.SERVER).setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, httpRequest.getMethod())
+                            .setAttribute(UrlAttributes.URL_FULL, httpRequest.getRequestURL().toString())
+                            .setAttribute("component", "jaxws");
+                }
+                
                 Span span = spanBuilder.startSpan();
                 Scope scope = span.makeCurrent();
                 httpRequest.setAttribute(Scope.class.getName(), scope);
@@ -152,7 +182,7 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
                     try {
 
                         // Get and add the response status to the active span
-                        Response.StatusType statusInfo = getResponseStatus(pipeRequest, pipeRequest);
+                        Response.StatusType statusInfo = getResponseStatus(pipeRequest, pipeResponse);
 
                         activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, statusInfo.getStatusCode());
 
@@ -375,5 +405,16 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
         }
 
         return null;
+    }
+
+    private Map<String, String> getHeaders(HttpServletRequest httpRequest) {
+        MultivaluedMap<String, String> headerMap = new MultivaluedHashMap<>();
+
+        for (String headerName : list(httpRequest.getHeaderNames())) {
+            headerMap.addAll(headerName, list(httpRequest.getHeaders(headerName)));
+        }
+
+        return headerMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                entry -> String.join(",", entry.getValue())));
     }
 }

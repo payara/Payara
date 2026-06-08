@@ -49,7 +49,7 @@ import io.opentelemetry.context.Scope;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.inject.Inject;
-import jakarta.interceptor.AroundConstruct;
+import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
 import jakarta.ws.rs.DELETE;
@@ -82,7 +82,7 @@ public class TracedInterceptor implements Serializable {
     @Inject
     private BeanManager beanManager;
 
-    @AroundConstruct
+    @AroundInvoke
     public Object traceCdiCall(final InvocationContext invocationContext) throws Exception {
         LOG.fine(() -> "traceCdiCall(" + invocationContext + ")");
         final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
