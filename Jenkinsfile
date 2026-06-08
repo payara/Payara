@@ -239,7 +239,26 @@ pipeline {
                          echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                      }
                  }
-//                 stage('MicroProfile OpenTelemetry Tracing TCK') {
+                 stage('MicroProfile OpenTelemetry JVM Metrics TCK') {
+                     agent {
+                         label 'general-purpose'
+                     }
+                     steps {
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                         build job: 'TCKs/MP-TCKs',
+                         parameters: [
+                             string(name: 'buildProject', value: 'Build'),
+                             string(name: 'payaraBuildNumber', value: buildId),
+                             string(name: 'repoOrg', value: 'payara'),
+                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                             string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Runtime'),
+                             string(name: 'jdkVer', value: 'zulu-21'),
+                             string(name: 'distribution', value: 'full')
+                         ]
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                     }
+                 }
+//                 stage('MicroProfile OpenTelemetry JVM Metrics TCK') {
 //                     agent {
 //                         label 'general-purpose'
 //                     }
@@ -258,23 +277,23 @@ pipeline {
 //                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 //                     }
 //                 }
-//                 stage('MicroProfile OpenTracing TCK') {
+//                 stage('MicroProfile OpenTelemetry JVM Metrics TCK') {
 //                     agent {
 //                         label 'general-purpose'
 //                     }
 //                     steps {
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 //                         build job: 'TCKs/MP-TCKs',
 //                         parameters: [
 //                             string(name: 'buildProject', value: 'Build'),
 //                             string(name: 'payaraBuildNumber', value: buildId),
 //                             string(name: 'repoOrg', value: 'payara'),
 //                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-//                             string(name: 'suites', value: 'OpenTracing'),
+//                             string(name: 'suites', value: 'OpenTelemetry-Tracing'),
 //                             string(name: 'jdkVer', value: 'zulu-21'),
 //                             string(name: 'distribution', value: 'full')
 //                         ]
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 //                     }
 //                 }
                  stage('MicroProfile REST Client TCK') {
