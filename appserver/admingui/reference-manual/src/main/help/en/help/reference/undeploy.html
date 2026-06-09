@@ -86,7 +86,7 @@
 <div class="listingblock">
 <div class="content">
 <pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] undeploy [--help]
-[--target target] [--droptables={true|false}]
+[--target target]
 [--cascade={false|true}] name</code></pre>
 </div>
 </div>
@@ -126,14 +126,6 @@ and resources must be deleted explicitly, or the option must be set to
 resources still associated with the resource adapter, the resource
 adapter is undeployed. This option is applicable to connectors
 (resource adapters) and applications. Default value is false.</p>
-</dd>
-<dt class="hdlist1"><code>--droptables</code></dt>
-<dd>
-<p>If set to true, drops the tables that the application created by using
-CMP beans during deployment. If set to false, tables are not dropped.
-If not specified, the value of the <code>drop-tables-at-deploy</code> entry in
-the <code>cmp-resource</code> element of the <code>glassfish-ejb-jar.xml</code> file
-determines whether or not tables are dropped. Default value is true.</p>
 </dd>
 <dt class="hdlist1"><code>--target</code></dt>
 <dd>
@@ -205,24 +197,10 @@ Command undeploy executed successfully.</code></pre>
 <p><a id="GSRFM770"></a><a id="sthref2195"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 2   Undeploying an Enterprise Bean With Container-Managed
-Persistence (CMP)</p>
-</div>
-<div class="paragraph">
-<p>This example undeploys a CMP bean named <code>myejb</code> and drops the
-corresponding database tables.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; undeploy --droptables=true myejb
-Command undeploy executed successfully.</code></pre>
-</div>
-</div>
-<div class="paragraph">
 <p><a id="GSRFM771"></a><a id="sthref2196"></a></p>
 </div>
 <div class="paragraph">
-<p>Example 3   Undeploying a Connector (Resource Adapter)</p>
+<p>Example 2 Undeploying a Connector (Resource Adapter)</p>
 </div>
 <div class="paragraph">
 <p>This example undeploys the connector module named <code>jdbcra</code> and performs

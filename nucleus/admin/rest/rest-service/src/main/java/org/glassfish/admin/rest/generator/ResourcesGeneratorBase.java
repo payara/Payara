@@ -464,7 +464,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
     //TODO - fetch command name from config bean(RestRedirect annotation).
     //RESTREdirect currently only support automatically these deletes:
     /*
-     * delete-admin-object delete-audit-module delete-auth-realm delete-connector-connection-pool delete-connector-resource
+     * delete-admin-object delete-auth-realm delete-connector-connection-pool delete-connector-resource
      * delete-custom-resource delete-http-listener delete-iiop-listener delete-javamail-resource delete-jdbc-connection-pool
      * delete-jdbc-resource delete-jms-host delete-message-security-provider delete-resource-adapter-config
      * delete-resource-ref delete-system-property delete-virtual-server What is missing is: delete-jms-resource delete-jmsdest
@@ -476,7 +476,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
 
         {
             put("AdminObjectResource", "delete-admin-object");
-            put("AuditModule", "delete-audit-module");
             put("AuthRealm", "delete-auth-realm");
             put("ApplicationRef", "delete-application-ref");
             put("Cluster", "delete-cluster");
@@ -514,7 +513,6 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("ListAdminObjectResource", "create-admin-object");
             put("ListApplication", "deploy");
             put("ListApplicationRef", "create-application-ref");
-            put("ListAuditModule", "create-audit-module");
             put("ListAuthRealm", "create-auth-realm");
             put("ListCluster", "create-cluster");
             put("ListConfig", "_create-config");

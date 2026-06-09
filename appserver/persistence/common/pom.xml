@@ -47,12 +47,12 @@
     <parent>
 	<groupId>fish.payara.server.internal.persistence</groupId>
     	<artifactId>persistence</artifactId>
-        <version>7.2026.4-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
     <artifactId>persistence-common</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Common persistence code between JPA and CMP</name>
+    <name>Common persistence cod JPA</name>
     
     <developers>
         <developer>

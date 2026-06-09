@@ -84,7 +84,7 @@ public class EmbeddedDeploymentIT {
 
 
             glassfish.start();
-            glassfish.getDeployer().deploy(new File("./src/test/resources/clusterjsp.war"));
+            glassfish.getDeployer().deploy(new File("../../../../test-apps/clusterjsp.war"));
 
             // Close the logger
             logger.removeHandler(handler);

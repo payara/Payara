@@ -81,10 +81,4 @@
         <Field name="isHomeFinder"/>
         <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
     </Match>
-    
-    <Match>
-        <Class name="org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor"/>
-        <Field name="finders"/>
-        <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED"/>
-    </Match>
 </FindBugsFilter>

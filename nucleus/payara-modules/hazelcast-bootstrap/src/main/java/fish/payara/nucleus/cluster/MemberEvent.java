@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,11 +59,19 @@ public class MemberEvent {
     }
     
     public String getServer() {
-        return hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
+        String serverName = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_ATTRIBUTE);
+        if (serverName == null) {
+            serverName = member.getAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        }
+        return serverName;
     }
     
     public String getServerGroup() {
-        return member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+        String serverGroup = hzCore.getAttribute(member.getUuid(), HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+        if (serverGroup == null) {
+            serverGroup = member.getAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
+        }
+        return serverGroup;
     }
     
     private final HazelcastCore hzCore;

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.ejb.deployment.io;
 
@@ -61,6 +62,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 @ConfigurationDeploymentDescriptorFileFor(EjbContainerUtil.EJB_CONTAINER_NAME)
 @Service
 @PerLookup
+@Deprecated
 public class GFEjbRuntimeDDFile extends ConfigurationDeploymentDescriptorFile {
     /**
      * @return the location of the DeploymentDescriptor file for a

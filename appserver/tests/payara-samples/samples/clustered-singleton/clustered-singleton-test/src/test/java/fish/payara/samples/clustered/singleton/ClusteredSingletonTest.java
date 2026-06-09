@@ -74,7 +74,7 @@ public class ClusteredSingletonTest {
                         "fish.payara.samples.clustered.singleton.api",
                         "fish.payara.samples.clustered.singleton.interceptor")
                 .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/ejb-jar.xml"))
-                .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/glassfish-ejb-jar.xml"));
+                .addAsWebInfResource(new File(WEBAPP_SRC, "WEB-INF/payara-ejb-jar.xml"));
     }
 
     @Test

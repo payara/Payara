@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) [2018] Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  * 
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_PUBLIC_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_SYSTEM_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_610_DTD_PUBLIC_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_610_DTD_SYSTEM_ID;
 import static com.sun.enterprise.deployment.xml.RuntimeTagNames.PAYARA_WEB_RUNTIME_TAG;
 
 import java.util.List;
@@ -75,12 +77,12 @@ public class PayaraWebBundleRuntimeNode extends GFWebBundleRuntimeNode {
 
     @Override
     public String getDocType() {
-        return PAYARA_WEBAPP_4_DTD_PUBLIC_ID;
+        return PAYARA_WEBAPP_610_DTD_PUBLIC_ID;
     }
 
     @Override
     public String getSystemID() {
-        return PAYARA_WEBAPP_4_DTD_SYSTEM_ID;
+        return PAYARA_WEBAPP_610_DTD_SYSTEM_ID;
     }
 
     /**
@@ -92,6 +94,7 @@ public class PayaraWebBundleRuntimeNode extends GFWebBundleRuntimeNode {
      */
     public static String registerBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
         publicIDToDTD.put(PAYARA_WEBAPP_4_DTD_PUBLIC_ID, PAYARA_WEBAPP_4_DTD_SYSTEM_ID);
+        publicIDToDTD.put(PAYARA_WEBAPP_610_DTD_PUBLIC_ID, PAYARA_WEBAPP_610_DTD_SYSTEM_ID);
 
         return PAYARA_WEB_RUNTIME_TAG;
     }

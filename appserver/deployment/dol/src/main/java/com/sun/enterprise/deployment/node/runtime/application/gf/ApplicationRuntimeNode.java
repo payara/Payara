@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
@@ -74,6 +74,7 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
+@Deprecated // When we remove support for sun-application.xml files, we should roll all of this into PayaraApplicationRuntimeNode (or vice versa)
 public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
     
     private String currentWebUri=null;

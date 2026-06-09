@@ -1299,6 +1299,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         // Initialize the docroot
         VirtualServer virtualServer = (VirtualServer) _embedded.createHost(virtualServerId, virtualServerBean, docroot, virtualServerBean.getLogFile(), mimeMap);
 
+        virtualServer.setServerContext(getServerContext());
         virtualServer.configureState();
         virtualServer.configureRemoteAddressFilterValve();
         virtualServer.configureRemoteHostFilterValve();
@@ -1306,7 +1307,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
         virtualServer.configureRedirect();
         virtualServer.configureErrorPage();
         virtualServer.configureErrorReportValve();
-        virtualServer.setServerContext(getServerContext());
         virtualServer.setServerConfig(serverConfig);
         virtualServer.setGrizzlyService(grizzlyService);
         virtualServer.setWebContainer(this);

@@ -46,15 +46,15 @@
   <parent>
     <groupId>fish.payara.samples</groupId>
     <artifactId>payara-samples-profiled-tests</artifactId>
-    <version>7.2026.4-SNAPSHOT</version>
+    <version>7.2026.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>data</artifactId>
   <name>Payara Samples - Data (Arquillian/H2)</name>
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
 
   <properties>
-    <junit.jupiter.version>6.0.3</junit.jupiter.version>
+    <junit.jupiter.version>6.1.0</junit.jupiter.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
   </properties>
 
@@ -187,7 +187,7 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-junit4</artifactId>
-            <version>3.5.5</version>
+            <version>3.5.6</version>
           </dependency>
         </dependencies>
       </plugin>

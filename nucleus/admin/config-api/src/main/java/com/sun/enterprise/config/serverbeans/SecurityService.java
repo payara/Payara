@@ -124,24 +124,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
     public void setDefaultPrincipalPassword(String value) throws PropertyVetoException;
 
     /**
-     * Gets the value of the auditEnabled property.
-     *
-     * If true, additional access logging is performed to provide audit information
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    public String getAuditEnabled();
-
-    /**
-     * Sets the value of the auditEnabled property.
-     *
-     * @param value allowed object is {@link String }
-     * @throws PropertyVetoException
-     */
-    public void setAuditEnabled(String value) throws PropertyVetoException;
-
-    /**
      * Gets the value of the jacc property. Specifies the name of the jacc-provider element to use for setting up the JACC infrastructure. The default value
      * "default" does not need to be changed unless adding a custom JACC provider.
      *
@@ -159,25 +141,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
 
      */
     public void setJacc(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the auditModules property.
-     *
-     * Optional list of audit provider modules which will be used by the audit subsystem. Default value refers to the internal log-based audit module
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "default")
-    public String getAuditModules();
-
-    /**
-     * Sets the value of the auditModules property.
-     *
-     * @param value allowed object is {@link String }
-     * Sets the username for this authorized internal admin user entry.
-     * @throws PropertyVetoException
-     */
-    public void setAuditModules(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the activateDefaultPrincipalToRoleMapping property.
@@ -277,29 +240,6 @@ public interface SecurityService extends ConfigBeanProxy, PropertyBag {
      */
     @Element(required = true)
     public List<JaccProvider> getJaccProvider();
-
-    /**
-     * Gets the value of the auditModule property.
-     * <p/>
-     * <p/>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the auditModule property.
-     * <p/>
-     * <p/>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAuditModule().add(newItem);
-     * </pre>
-     * <p/>
-     * <p/>
-     * <p/>
-     * Objects of the following type(s) are allowed in the list {@link AuditModule }
-     * @return 
-     */
-    @Element
-    public List<AuditModule> getAuditModule();
 
     /**
      * Gets the value of the messageSecurityConfig property.

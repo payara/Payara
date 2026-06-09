@@ -27,10 +27,10 @@ Alternatively, you can start specify the location of a different jar for Payara 
 
 ## Playwright dependencies
 
-By default, this test will check and install Playwright dependencies before running the test. 
-The user needs to have the permissions to install such dependencies. 
-Alternatively, dependencies can be installed manually. 
-Playwright needs the following libraries to run:
+Playwright dependencies are pre-installed in the Jenkins AMI used for CI.
+
+If running the tests locally, Playwright requires the following system libraries:
+
     libatk1.0-0
     libatk-bridge2.0-0
     libcups2
@@ -43,5 +43,17 @@ Playwright needs the following libraries to run:
     libgbm1
     libpango-1.0-0
     libcairo2
-and to run the test without installing the dependencies with maven and Playwright CLI command:
-    mvn clean verify -Ppayara-micro-managed -P!install-deps
+
+Install them manually via your distribution's package manager, for example on Debian/Ubuntu:
+
+    sudo apt-get install -y libatk1.0-0 libatk-bridge2.0-0 libcups2 libxkbcommon0 \
+        libatspi2.0-0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 \
+        libpango-1.0-0 libcairo2
+
+Alternatively, use the Playwright CLI to install them:
+
+    mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install-deps"
+
+Then run the tests:
+
+    mvn clean verify -Ppayara-micro-managed

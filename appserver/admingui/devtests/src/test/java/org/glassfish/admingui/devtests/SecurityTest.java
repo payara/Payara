@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.devtests;
 
@@ -52,10 +53,6 @@ public class SecurityTest extends BaseSeleniumTestClass {
     public static final String TRIGGER_EDIT_REALM = "i18nc.realm.EditPageTitleHelp";
     public static final String TRIGGER_FILE_USERS = "i18nc.manageUsers.TablePageHelp";
     public static final String TRIGGER_NEW_FILE_REALM_USER = "i18nc.manageUsers.NewPageTitle";
-    public static final String TRIGGER_AUDIT_MODULES = "com.sun.enterprise.security.Audit";
-    //"Use audit modules to develop an audit trail of all authentication and authorization decisions.";
-    public static final String TRIGGER_NEW_AUDIT_MODULE = "i18nc.auditModule.NewPageTitle";
-    public static final String TRIGGER_EDIT_AUDIT_MODULE = "i18nc.auditModule.EditPageTitle";
     public static final String TRIGGER_JACC_PROVIDERS = "i18nc.jacc.PageHelp";
     public static final String TRIGGER_NEW_JACC_PROVIDER = "i18nc.jacc.NewPageTitle";
     public static final String TRIGGER_EDIT_JACC_PROVIDER = "i18nc.jacc.EditTitle";
@@ -122,35 +119,6 @@ public class SecurityTest extends BaseSeleniumTestClass {
             addUserToRealm(configName, "file", userId, password);
 
             deleteRow("propertyForm:users:topActionsGroup1:button1", "propertyForm:users", userId);
-        }
-    }
-
-    @Test
-    public void testAddAuditModule() {
-        final String auditModuleName = "auditModule" + generateRandomString();
-        final String className = "org.glassfish.NonexistentModule";
-
-        createConfig("new-config");
-        for (String configName : list) {
-            clickAndWait("treeForm:tree:configurations:" + configName + ":security:auditModules:auditModules_link", TRIGGER_AUDIT_MODULES);
-            clickAndWait("propertyForm:configs:topActionsGroup1:newButton", TRIGGER_NEW_AUDIT_MODULE);
-            setFieldValue("propertyForm:propertySheet:propertSectionTextField:IdTextProp:IdText", auditModuleName);
-            setFieldValue("propertyForm:propertySheet:propertSectionTextField:classNameProp:ClassName", className);
-            int count = addTableRow("propertyForm:basicTable", "propertyForm:basicTable:topActionsGroup1:addSharedTableButton");
-
-            setFieldValue("propertyForm:basicTable:rowGroup1:0:col2:col1St", "property");
-            setFieldValue("propertyForm:basicTable:rowGroup1:0:col3:col1St", "value");
-            setFieldValue("propertyForm:basicTable:rowGroup1:0:col4:col1St", "description");
-
-            clickAndWait("propertyForm:propertyContentPage:topButtons:newButton", TRIGGER_AUDIT_MODULES);
-            assertTrue(isTextPresent(auditModuleName));
-
-            clickAndWait(getLinkIdByLinkText("propertyForm:configs", auditModuleName), TRIGGER_EDIT_AUDIT_MODULE);
-            assertTableRowCount("propertyForm:basicTable", count);
-
-            clickAndWait("propertyForm:propertyContentPage:topButtons:cancelButton", TRIGGER_AUDIT_MODULES);
-
-            deleteRow("propertyForm:configs:topActionsGroup1:button1", "propertyForm:configs", auditModuleName);
         }
     }
 

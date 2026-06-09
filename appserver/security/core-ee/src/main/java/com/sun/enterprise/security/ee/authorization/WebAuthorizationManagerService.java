@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license.
 
 package com.sun.enterprise.security.ee.authorization;
@@ -45,14 +45,9 @@ package com.sun.enterprise.security.ee.authorization;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
-import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
-import com.sun.enterprise.security.audit.AuditManager;
-import org.glassfish.exousia.modules.def.DefaultPolicy;
-import org.glassfish.exousia.modules.def.DefaultPolicyFactory;
 import org.glassfish.security.common.Role;
 import com.sun.enterprise.security.ee.SecurityUtil;
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authorization.cache.CachedPermission;
 import com.sun.enterprise.security.ee.authorization.cache.CachedPermissionImpl;
 import com.sun.enterprise.security.ee.authorization.cache.PermissionCache;
@@ -325,8 +320,6 @@ public class WebAuthorizationManagerService {
             logger.log(FINE, "[Web-Security] hasUserDataPermission isGranted: {0}", isGranted);
         }
 
-        // Audit the grant
-        recordWebInvocation(servletRequest, USERDATA, isGranted);
 
         if (!isGranted && !servletRequest.isSecure()) {
 
@@ -417,8 +410,6 @@ public class WebAuthorizationManagerService {
             logger.log(Level.FINE, "[Web-Security] hasResource perm: {0}", getUriMinusContextPath(servletRequest));
         }
 
-        recordWebInvocation(servletRequest, RESOURCE, isGranted);
-
         return isGranted;
     }
 
@@ -491,18 +482,6 @@ public class WebAuthorizationManagerService {
         }
 
         return securityContext;
-    }
-
-    private void recordWebInvocation(HttpServletRequest servletRequest, String type, boolean isGranted) {
-        AuditManager auditManager = SecurityServicesUtil.getInstance().getAuditManager();
-
-        if (auditManager != null && auditManager.isAuditOn() && (auditManager instanceof AppServerAuditManager)) {
-            AppServerAuditManager appServerAuditManager = (AppServerAuditManager) auditManager;
-            Principal principal = servletRequest.getUserPrincipal();
-            String user = (principal != null) ? principal.getName() : null;
-
-            appServerAuditManager.webInvocation(user, servletRequest, type, isGranted);
-        }
     }
     
     private static String getUriMinusContextPath(HttpServletRequest request) {

@@ -69,9 +69,7 @@ pipeline {
                         retry(3)
                     }
                     steps {
-
                         processPayaraArtifacts(buildId)
-
                         setupDomain()
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -87,8 +85,10 @@ pipeline {
                     }
                     post {
                         always {
-                            junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                             stopDomain()
+                        }
+                        success {
+                            junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                         }
                         cleanup {
                             saveLogsAndCleanup 'quicklook-log.zip'
@@ -103,7 +103,6 @@ pipeline {
                         retry(3)
                     }
                     steps {
-
                         processPayaraArtifacts(buildId, true)
                         setupDomain()
 
@@ -118,7 +117,10 @@ pipeline {
                     }
                     post {
                         always {
-                            processReportAndStopDomain()
+                            stopDomain()
+                        }
+                        success {
+                            junit '**/target/*-reports/*.xml'
                         }
                         cleanup {
                             saveLogsAndCleanup 'samples-log.zip'
@@ -300,9 +302,6 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
-                    options {
-                        retry(3)
-                    }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE8 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         build job: 'Miscellaneous/Run-EE8-Samples',
@@ -320,9 +319,6 @@ pipeline {
                 stage('CargoTracker Tests') {
                     agent {
                         label 'general-purpose'
-                    }
-                    options {
-                        retry(3)
                     }
                     steps {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running CargoTracker tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -379,7 +375,7 @@ pipeline {
                         -pl fish.payara.samples:payara-samples-profiled-tests"""
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/payara-micro """
@@ -397,20 +393,39 @@ pipeline {
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/embeddedtest """
 
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         setupDomain()
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && pytest appserver/tests/functional/deployment-groups/test_deployment_group.py -v -s"""
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran deployment groups tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running asadmin tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         sh """python3 appserver/tests/functional/asadmin/run_all_tests.py \
                         --asadmin ${pwd()}/payara7/bin/asadmin"""
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran asadmin test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """mvn -V -B -ff clean verify --strict-checksums -Ppayara-server-remote \
+                                -Dsurefire.rerunFailingTestsCount=2 \
+                                -Dfailsafe.rerunFailingTestsCount=2 \
+                                -f appserver/tests/functional/payara-application-xml """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && python3 appserver/tests/functional/jms/test_jms_ping.py \
+                        --domain-name ${env.DOMAIN_NAME} """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
                         always {
                             stopDomain()
                         }
-                        cleanup {
+                        success {
                             processReport()
-                            saveLogsAndCleanup 'asadmin-log.zip'
                         }
+                        cleanup {
+                            saveLogsAndCleanup 'asadmin-log.zip'
+                       }
                     }
                 }
             }
@@ -432,12 +447,6 @@ void setupDomain() {
     sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
     sh "${ASADMIN} start-database || true"
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Domain setup complete  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-}
-
-void processReportAndStopDomain() {
-    junit '**/target/*-reports/*.xml'
-    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
-    sh "${ASADMIN} stop-database || true"
 }
 
 void processReport() {

@@ -81,18 +81,6 @@ public class DeployTask extends TaskBase {
         deployParams.add("--verify=" + verify);
     }
 
-    public void setCreatetables(boolean createtables) {
-        deployParams.add("--createtables=" + createtables);
-    }
-
-    public void setDropandcreatetables(boolean dropandcreatetables) {
-        deployParams.add("--dropandcreatetables=" + dropandcreatetables);
-    }
-
-    public void setUniquetablenames(boolean uniquetablenames) {
-        deployParams.add("--uniquetablenames=" + uniquetablenames);
-    }
-
     public void setEnabled(boolean enabled) {
         deployParams.add("--enabled=" + enabled);
     }

@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.data</groupId>
         <artifactId>data</artifactId>
-        <version>7.2026.4-SNAPSHOT</version>
+        <version>7.2026.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>data-core</artifactId>
@@ -68,6 +68,16 @@
         <dependency>
             <groupId>fish.payara.server.internal.web</groupId>
             <artifactId>weld-integration</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.transaction</groupId>
+            <artifactId>transaction-internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.common</groupId>
+            <artifactId>container-common</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

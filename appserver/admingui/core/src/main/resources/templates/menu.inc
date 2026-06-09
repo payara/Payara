@@ -77,7 +77,6 @@
 	    <sc:menuItem value="Security Settings" url="#{request.contextPath}/common/security/security.jsf" />
 	    <sc:menuItem value="Realms" url="#{request.contextPath}/common/security/realms/realms.jsf" />
             <sc:menuItem value="Admin Audit" url="#{request.contextPath}/common/security/adminAudit/adminAudit.jsf" />
-	    <sc:menuItem value="Audit Modules" url="#{request.contextPath}/common/security/auditModules/auditModules.jsf" />
 	    <sc:menuItem value="JACC Providers" url="#{request.contextPath}/layouttest.jsf?page=JACC+Providers" />
 	    <sc:menuItem value="Thread Pools" url="#{request.contextPath}/layouttest.jsf?page=Thread+Pools" />
 	</sc:subMenu>

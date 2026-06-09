@@ -52,6 +52,7 @@ import java.util.Map;
  * This node is responsible for handling all runtime information for 
  * application client.
  */
+@Deprecated
 public class GFAppClientRuntimeNode extends AppClientRuntimeNode {
 
     public GFAppClientRuntimeNode(ApplicationClientDescriptor descriptor) {
