@@ -114,5 +114,12 @@
             <artifactId>telemetry-bootstrap</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.webservices</groupId>
+            <artifactId>jsr109-impl</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

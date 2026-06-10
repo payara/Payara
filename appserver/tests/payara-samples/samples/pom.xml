@@ -2,7 +2,7 @@
 <!--
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-     Copyright (c) 2021-2024 Payara Foundation and/or its affiliates. All rights reserved.
+     Copyright (c) 2021-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
      The contents of this file are subject to the terms of either the GNU
      General Public License Version 2 only ("GPL") or the Common Development
@@ -65,7 +65,7 @@
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
         <!-- disabled until we have the new implementation using new MicroProfile OpenTelemetry Tracing-->
-        <!--module>jaxws-tracing</module-->
+        <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
         <module>microprofile-config</module>
         <module>microprofile-endpoints</module>
