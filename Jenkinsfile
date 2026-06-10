@@ -338,27 +338,27 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-//                 stage('EE7 Tests') {
-//                     agent {
-//                         label 'general-purpose'
-//                     }
-//                     options {
-//                         retry(3)
-//                     }
-//                     steps {
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                         build job: 'Miscellaneous/Run-EE7-Samples',
-//                         parameters: [
-//                             string(name: 'payaraBuildNumber', value: "${buildId}"),
-//                             string(name: 'buildProject', value: "Build/Build"),
-//                             string(name: 'repoOrg', value: 'Payara'),
-//                             string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
-//                             string(name: 'jdkChoice', value: 'zulu-21'),
-//                             string(name: 'arquillianProfile', value: 'payara-server-remote')
-//                         ]
-//                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-//                     }
-//                 }
+                 stage('EE7 Tests') {
+                     agent {
+                         label 'general-purpose'
+                     }
+                     options {
+                         retry(3)
+                     }
+                     steps {
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running EE7 tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                         build job: 'Miscellaneous/Run-EE7-Samples',
+                         parameters: [
+                             string(name: 'payaraBuildNumber', value: "${buildId}"),
+                             string(name: 'buildProject', value: "Build/Build"),
+                             string(name: 'repoOrg', value: 'Payara'),
+                             string(name: 'buildSpecificBranchCommitOrTag', value: 'Payara7'),
+                             string(name: 'jdkChoice', value: 'zulu-21'),
+                             string(name: 'arquillianProfile', value: 'payara-server-remote')
+                         ]
+                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                     }
+                 }
                 stage('Payara Functional Tests') {
                     agent {
                         label 'general-purpose'

@@ -161,8 +161,7 @@ public final class PayaraTracingServices {
         if (applicationName == null || !isTracingAvailable()) {
             return null;
         }
-        //return openTracingService.getTracer(applicationName);
-        return null;
+        return openTracingService.getTracer(applicationName);
     }
 
     /**
