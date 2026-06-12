@@ -55,7 +55,7 @@
     <description>libpam4j (Java binding for libpam.so) repackaged as a module</description>
 
     <properties>
-      <libpam4j.jna.version>${jna.version}</libpam4j.jna.version>
+      <libpam4j.jna.version>5.19.0</libpam4j.jna.version>
     </properties>
 
     <build>
