@@ -49,6 +49,15 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * CDI {@link AlterableContext} backing the {@code @WorkflowScoped} normal scope.
+ * <p>
+ * Bean instances are stored per thread in a {@link ThreadLocal} so that each
+ * workflow invocation — which runs on its own thread — gets an isolated set of
+ * {@code @WorkflowScoped} beans. The context is activated before a workflow
+ * starts and deactivated when it ends (see {@link WorkflowScopeManager}); while
+ * inactive, any bean access raises {@link ContextNotActiveException}.
+ */
 public class WorkflowScopeContext implements AlterableContext {
     private static final ThreadLocal<Map<Contextual<?>, BeanInstance<?>>> STORE =
             new ThreadLocal<>();
@@ -58,6 +67,13 @@ public class WorkflowScopeContext implements AlterableContext {
         return WorkflowScoped.class;
     }
 
+    /**
+     * Returns the contextual instance for the current workflow, creating and
+     * storing it on first access.
+     *
+     * @return the existing instance, or a newly created one if none exists yet
+     * @throws ContextNotActiveException if no workflow context is active on this thread
+     */
     @Override
     public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext) {
         checkActive();
@@ -93,10 +109,19 @@ public class WorkflowScopeContext implements AlterableContext {
         }
     }
 
+    /**
+     * Activates a fresh, empty workflow context for the current thread. Must be
+     * called before a workflow starts using {@code @WorkflowScoped} beans.
+     */
     void activate() {
         STORE.set(new HashMap<>());
     }
 
+    /**
+     * Destroys every bean held in the current workflow context (invoking their
+     * {@code @PreDestroy} callbacks) and detaches the context from the thread.
+     * Called when the workflow ends, on success or failure.
+     */
     void deactivate() {
         Map<Contextual<?>, BeanInstance<?>> map = STORE.get();
         if (map != null) {

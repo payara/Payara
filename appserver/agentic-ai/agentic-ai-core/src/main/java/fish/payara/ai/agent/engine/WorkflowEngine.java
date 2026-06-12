@@ -47,6 +47,19 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * Orchestrates the execution of an agent workflow.
+ * <p>
+ * A single {@link #execute(AgentMetadata, Object)} call drives a whole workflow
+ * for one triggering event: it activates the {@code @WorkflowScoped} context,
+ * invokes the {@code @Trigger} phase, then the ordered {@code @Decision} and
+ * {@code @Action} phases, and finally the optional {@code @Outcome} phase. The
+ * context is always destroyed when execution finishes, whether it completes
+ * normally, terminates early, or fails.
+ * <p>
+ * Each workflow runs on the calling thread; the {@code @WorkflowScoped} context
+ * is bound to that thread, so concurrent workflow invocations stay isolated.
+ */
 public class WorkflowEngine {
 
     private final BeanManager beanManager;
@@ -59,6 +72,22 @@ public class WorkflowEngine {
         this.parameterResolver = new ParameterResolver(beanManager);
     }
 
+    /**
+     * Runs the full workflow for a single triggering event.
+     * <p>
+     * Phases execute in order: {@code @Trigger}, then the pre-sorted
+     * {@code @Decision}/{@code @Action} phases, then {@code @Outcome}. The result
+     * of each phase is added to the {@link WorkflowContext} so later phases can
+     * receive it by type. A {@code @Decision} that signals failure (see
+     * {@link #shouldContinue(Object)}) stops the workflow without running the
+     * remaining phases or the outcome. Any exception thrown by a phase is routed
+     * to a matching {@code @HandleException} method; if none handles it, the
+     * exception is rethrown to the container.
+     *
+     * @param agentMetadata the discovered metadata describing the agent's phases
+     * @param triggerEvent  the CDI event that started the workflow, seeded into
+     *                      the workflow context (may be {@code null})
+     */
     public void execute(AgentMetadata agentMetadata, Object triggerEvent) {
         workflowScopeManager.activate();
         WorkflowContext workflowContext = new WorkflowContext();
@@ -101,6 +130,19 @@ public class WorkflowEngine {
         }
     }
 
+    /**
+     * Routes a thrown exception to the most specific matching
+     * {@code @HandleException} method.
+     * <p>
+     * Among the handlers whose exception parameter is assignable from the thrown
+     * exception, the one with the most specific (most derived) exception type is
+     * chosen, following the Java exception hierarchy. If the handler returns
+     * normally the workflow is considered recovered; if it throws, that exception
+     * propagates to the container.
+     *
+     * @return {@code true} if a handler was found and completed normally;
+     *         {@code false} if no handler matched (caller must rethrow)
+     */
     private boolean dispatchException(AgentMetadata metadata, Object agent,
                                       WorkflowContext ctx, LargeLanguageModel llm,
                                       Throwable exception) {
@@ -126,6 +168,17 @@ public class WorkflowEngine {
         }
     }
 
+    /**
+     * Resolves the method's parameters and invokes a single phase method on the
+     * agent instance.
+     * <p>
+     * Any exception thrown by the phase body is unwrapped from the reflective
+     * {@link InvocationTargetException} so callers see the original cause.
+     *
+     * @param ex the in-flight exception, passed only when invoking a
+     *           {@code @HandleException} method; {@code null} otherwise
+     * @return the phase's return value, or {@code null} for {@code void} phases
+     */
     private Object invokePhase(Method method, Object instance, WorkflowContext ctx,
                                LargeLanguageModel llm, Throwable ex) throws Exception {
         method.setAccessible(true);
@@ -137,6 +190,16 @@ public class WorkflowEngine {
         }
     }
 
+    /**
+     * Decides whether the workflow should proceed past a {@code @Decision} phase.
+     * <p>
+     * The workflow stops when a decision returns {@code null}, {@code false}, or
+     * a {@link Result} whose {@code success()} is {@code false}; any other
+     * non-null value lets the workflow continue.
+     *
+     * @param result the value returned by the {@code @Decision} method
+     * @return {@code true} to continue the workflow, {@code false} to terminate
+     */
     private boolean shouldContinue(Object result) {
         return switch (result) {
             case null ->  false;
@@ -146,6 +209,14 @@ public class WorkflowEngine {
         };
     }
 
+    /**
+     * Publishes the data carried by a {@code @Decision} result into the workflow
+     * context so later phases can receive it by type.
+     * <p>
+     * For a {@link Result} the {@code details()} payload is published; a plain
+     * {@code Boolean} carries no data and is ignored; any other domain object is
+     * published as-is.
+     */
     private void addDecisionResultToContext(Object result, WorkflowContext ctx) {
         if (result instanceof Result r) {
             ctx.add(r.details());

@@ -39,6 +39,12 @@
  */
 package fish.payara.ai.agent.cdi;
 
+/**
+ * Controls activation of the {@code @WorkflowScoped} context around a workflow
+ * run. The workflow engine activates the context before the first phase and
+ * deactivates it once the workflow ends, ensuring per-thread isolation and
+ * deterministic cleanup of workflow-scoped beans.
+ */
 public class WorkflowScopeManager {
     private final WorkflowScopeContext workflowScopeContext;
 

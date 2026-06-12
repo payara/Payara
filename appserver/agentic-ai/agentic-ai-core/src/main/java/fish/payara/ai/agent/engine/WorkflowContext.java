@@ -43,16 +43,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Holds the domain objects produced during a single workflow run.
+ * <p>
+ * The trigger event and the return values of each phase are recorded here in
+ * production order, so that later phases can receive earlier results by type
+ * through {@link #getByType(Class)}.
+ */
 public class WorkflowContext {
 
     private final List<Object> produced =  new ArrayList<>();
 
+    /**
+     * Records a value produced by a phase. {@code null} values are ignored, so
+     * {@code void} phases and absent results contribute nothing.
+     */
     public void add(Object object) {
         if (object != null) {
             produced.add(object);
         }
     }
 
+    /**
+     * Returns the most recently produced value assignable to {@code type}.
+     * <p>
+     * Iterating from newest to oldest ensures a later phase sees the freshest
+     * value when several produced objects share a type.
+     *
+     * @return the matching value, or {@link Optional#empty()} if none was produced
+     */
     public <T> Optional<T> getByType(Class<T> type) {
         for (int i = produced.size() - 1; i >= 0; i--) {
             Object object = produced.get(i);

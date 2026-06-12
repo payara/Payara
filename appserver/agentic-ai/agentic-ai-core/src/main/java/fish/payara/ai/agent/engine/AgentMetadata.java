@@ -42,14 +42,22 @@ package fish.payara.ai.agent.engine;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * Immutable, validated description of an {@code @Agent} produced at deploy time.
+ * <p>
+ * Captures everything the {@link WorkflowEngine} needs to run a workflow: the
+ * trigger method and its CDI event type, the {@code @Decision}/{@code @Action}
+ * phases already in execution order, the optional {@code @Outcome} method, and
+ * the {@code @HandleException} methods ordered most-specific-first.
+ */
 public class AgentMetadata {
     private final Class<?> agentClass;
     private final String agentName;
     private final Method triggerMethod;
-    private final Class<?> triggerEventType;      // tipo do CDI event que aciona o workflow
-    private final List<PhaseMethod> sortedPhases; // @Decision + @Action ordenados
-    private final Method outcomeMethod;           // null se o agent não tem @Outcome
-    private final List<Method> exceptionHandlers; // @HandleException ordenados mais-especif. primeiro
+    private final Class<?> triggerEventType;      // CDI event type that starts the workflow
+    private final List<PhaseMethod> sortedPhases; // @Decision + @Action in execution order
+    private final Method outcomeMethod;           // null when the agent has no @Outcome
+    private final List<Method> exceptionHandlers; // @HandleException, most-specific first
 
     public AgentMetadata(Class<?> agentClass, String agentName, Method triggerMethod,
                          Class<?> triggerEventType, List<PhaseMethod> sortedPhases,

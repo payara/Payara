@@ -45,6 +45,15 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
+/**
+ * Resolves the argument values for an agent phase method.
+ * <p>
+ * For each parameter the resolution order is: the {@link LargeLanguageModel}
+ * facade, then the in-flight exception (only for {@code @HandleException}
+ * phases), then the most recent matching value produced by an earlier phase
+ * (from the {@link WorkflowContext}), and finally a CDI bean looked up from the
+ * {@link BeanManager}.
+ */
 public class ParameterResolver {
 
     private final BeanManager beanManager;
@@ -53,6 +62,14 @@ public class ParameterResolver {
         this.beanManager = beanManager;
     }
 
+    /**
+     * Builds the argument array for invoking {@code method}, resolving each
+     * parameter by type according to the documented precedence order.
+     *
+     * @param currentException the exception being handled, supplied only for
+     *                         {@code @HandleException} phases; {@code null} otherwise
+     * @return the resolved arguments, positionally matching the method parameters
+     */
     public Object[] resolve(Method method, WorkflowContext workflowContext, LargeLanguageModel llm,
                             Throwable currentException) {
         Parameter[] parameters = method.getParameters();

@@ -39,6 +39,9 @@
  */
 package fish.payara.ai.agent.engine;
 
+/**
+ * The kinds of lifecycle phase a method can represent within an agent workflow.
+ */
 public enum PhaseType {
     TRIGGER, DECISION, ACTION, OUTCOME, HANDLE_EXCEPTION
 }

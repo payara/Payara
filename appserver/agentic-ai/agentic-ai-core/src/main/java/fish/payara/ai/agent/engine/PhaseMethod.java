@@ -45,12 +45,26 @@ import jakarta.annotation.Priority;
 
 import java.lang.reflect.Method;
 
+/**
+ * Describes a single {@code @Decision} or {@code @Action} phase method together
+ * with its computed execution-ordering key.
+ * <p>
+ * The sort key is derived with this precedence: {@code @Priority} on the method,
+ * then the {@code order()} attribute of {@code @Decision}/{@code @Action}, then
+ * declaration order. {@link #isExplicitlyOrdered()} reports whether the method
+ * carries an explicit order, which the extension uses to enforce that ordering
+ * is declared either on all phases or on none.
+ */
 public class PhaseMethod {
     private final Method method;
     private final PhaseType phaseType;
     private final int sortKey;
     private final boolean explicitlyOrdered;
 
+    /**
+     * Computes and stores the ordering key for the given phase method based on
+     * {@code @Priority} or the annotation's {@code order()} attribute.
+     */
     public PhaseMethod(Method method, PhaseType phaseType) {
         this.method = method;
         this.phaseType = phaseType;

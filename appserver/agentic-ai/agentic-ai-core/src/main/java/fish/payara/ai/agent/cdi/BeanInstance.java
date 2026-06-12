@@ -42,6 +42,13 @@ package fish.payara.ai.agent.cdi;
 import jakarta.enterprise.context.spi.Contextual;
 import jakarta.enterprise.context.spi.CreationalContext;
 
+/**
+ * Holds a contextual bean instance together with its {@link CreationalContext}
+ * so the {@code @WorkflowScoped} context can later destroy it correctly,
+ * triggering the bean's {@code @PreDestroy} callback.
+ *
+ * @param <T> the bean type
+ */
 class BeanInstance<T> {
     final T instance;
     final CreationalContext<T> creationalContext;
@@ -53,6 +60,10 @@ class BeanInstance<T> {
         this.creationalContext = ctx;
     }
 
+    /**
+     * Destroys the held instance through its {@link Contextual}, releasing the
+     * creational context and running lifecycle callbacks.
+     */
     void destroy() {
         contextual.destroy(instance, creationalContext);
     }
