@@ -45,6 +45,8 @@ import fish.payara.ai.agent.engine.AgentMetadata;
 import fish.payara.ai.agent.engine.PhaseMethod;
 import fish.payara.ai.agent.engine.PhaseType;
 import fish.payara.ai.agent.engine.WorkflowEngine;
+import fish.payara.ai.agent.llm.LargeLanguageModelImpl;
+import fish.payara.ai.agent.llm.NoOpLlmBackend;
 import jakarta.ai.agent.Action;
 import jakarta.ai.agent.Agent;
 import jakarta.ai.agent.Decision;
@@ -54,12 +56,14 @@ import jakarta.ai.agent.Outcome;
 import jakarta.ai.agent.Trigger;
 import jakarta.ai.agent.WorkflowScoped;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.DefinitionException;
 import jakarta.enterprise.inject.spi.Extension;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
+import jakarta.enterprise.inject.spi.ProcessManagedBean;
 import jakarta.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 
 import java.lang.reflect.Method;
@@ -81,6 +85,7 @@ import java.util.List;
 public class AgenticAIExtension implements Extension {
 
     private final List<Class<?>> agentClasses = new ArrayList<>();
+    private boolean appProvidesLlm = false;
 
     /**
      * Discovers and prepares each {@code @Agent} type during bean discovery.
@@ -117,6 +122,26 @@ public class AgenticAIExtension implements Extension {
     }
 
     /**
+     * Tracks whether the deployed application supplies its own
+     * {@link LargeLanguageModel} bean.
+     * <p>
+     * Synthetic beans (such as the runtime's default LLM registered in
+     * {@link #afterBeanDiscovery}) are not observed here, so only application
+     * managed beans flip this flag. The result drives the self-vetoing default
+     * LLM: if the application provides an {@code LargeLanguageModel} (e.g. the TCK
+     * stub or a real LangChain4j-backed bean), Payara does not register its own,
+     * avoiding an {@code AmbiguousResolutionException}.
+     *
+     * @param processManagedBean the managed bean being processed
+     * @param <X>                the bean's Java type
+     */
+    <X> void watchForLlm(@Observes ProcessManagedBean<X> processManagedBean) {
+        if (processManagedBean.getBean().getTypes().contains(LargeLanguageModel.class)) {
+            appProvidesLlm = true;
+        }
+    }
+
+    /**
      * Registers the {@code @WorkflowScoped} context and a synthetic observer for
      * every discovered agent.
      * <p>
@@ -124,6 +149,10 @@ public class AgenticAIExtension implements Extension {
      * the event fires, runs the complete workflow through the
      * {@link WorkflowEngine}. Agents whose trigger declares no event type are
      * skipped (reserved for future programmatic triggering).
+     * <p>
+     * Finally, when the application supplies no {@link LargeLanguageModel} of its
+     * own (see {@link #watchForLlm}), a default {@code @Dependent} LLM backed by a
+     * no-op backend is registered so injection points resolve without ambiguity.
      */
     void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
         WorkflowScopeContext workflowScopeContext = new WorkflowScopeContext();
@@ -142,6 +171,13 @@ public class AgenticAIExtension implements Extension {
                     .beanClass(agentClass)
                     .observedType(eventType)
                     .notifyWith(eventContext -> workflowEngine.execute(agentMetadata, eventContext.getEvent()));
+        }
+
+        if (!appProvidesLlm) {
+            afterBeanDiscovery.addBean()
+                    .types(LargeLanguageModel.class, Object.class)
+                    .scope(Dependent.class)
+                    .createWith(creationalContext -> new LargeLanguageModelImpl(new NoOpLlmBackend()));
         }
     }
 
