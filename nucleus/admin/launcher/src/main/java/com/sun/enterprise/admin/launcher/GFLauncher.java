@@ -54,9 +54,30 @@ import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.admin.launcher.PayaraDefaultJvmOptions;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclEntryType;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -143,30 +164,6 @@ public abstract class GFLauncher {
     public final void relaunch() throws GFLauncherException {
         setupCalledByClients = false;
         launch();
-    }
-
-    @SuppressWarnings("UseSpecificCatch")
-    public final void launchJVM(List<String> cmdsIn) throws GFLauncherException {
-        try {
-            setup();    // we only use one thing -- the java executable
-            List<String> commands = new LinkedList<String>();
-            commands.add(javaExe);
-
-            for (String cmd : cmdsIn) {
-                commands.add(cmd);
-            }
-
-            ProcessBuilder pb = new ProcessBuilder(commands);
-            Process p = pb.start();
-            ProcessStreamDrainer.drain("launchJVM", p); // just to be safe
-        } catch (GFLauncherException gfe) {
-            throw gfe;
-        } catch (Throwable t) {
-            // hk2 might throw a java.lang.Error
-            throw new GFLauncherException(STRINGS.get("unknownError", t.getMessage()), t);
-        } finally {
-            GFLauncherLogger.removeLogFileHandler();
-        }
     }
 
     public void setup() throws GFLauncherException, MiniXmlParserException {
@@ -522,7 +519,16 @@ public abstract class GFLauncher {
         //run the process and attach Stream Drainers
         try {
             closeStandardStreamsMaybe();
-            process = pb.start();
+
+            // Under SSH on Windows, the child JVM inherits the SSH session's Job Object and
+            // is killed when the exec channel closes. Use a detached launch to escape it.
+            if (System.console() == null && OS.isWindows() && !info.isVerboseOrWatchdog()) {
+                process = launchDetachedOnWindows(cmds, pb);
+            } else {
+                process = pb.start();
+                writeSecurityTokens(process);
+            }
+
             final String name = getInfo().getDomainName();
 
             // verbose trumps watchdog.
@@ -535,7 +541,6 @@ public abstract class GFLauncher {
             else {
                 psd = ProcessStreamDrainer.save(name, process);
             }
-            writeSecurityTokens(process);
         }
         catch (Exception e) {
             throw new GFLauncherException("jvmfailure", e, e);
@@ -999,6 +1004,135 @@ public abstract class GFLauncher {
         }
 
         return ss;
+    }
+
+    // Launches ASMain via WMI Win32_Process.Create() so it runs outside the SSH Job Object.
+    // Win32-OpenSSH puts every exec-channel process in a Job Object with KILL_ON_JOB_CLOSE;
+    // WMI delegates creation to WmiPrvSE.exe (a system service not in that Job Object),
+    // so the new JVM inherits no Job Object from the SSH session and survives channel close.
+    // PowerShell Start-Process cannot escape it: CREATE_NO_WINDOW doesn't break Job Object
+    // inheritance, and OpenSSH disallows CREATE_BREAKAWAY_FROM_JOB on its Job Objects.
+    // WMI doesn't support stream redirection, so a batch file lets cmd.exe wire up stdin.
+    // Returns a sentinel process that keeps waitForServer() alive while the JVM starts.
+    // Requires local administrator rights for Win32_Process.Create() to succeed.
+    private Process launchDetachedOnWindows(List<String> cmds, ProcessBuilder pb) throws IOException, GFLauncherException {
+
+        File tokenFile = File.createTempFile("payara-tokens-", ".tmp");
+        // Restrict access to owner before writing sensitive content.
+        // On Windows, java.io.tmpdir is typically the user's private AppData\Temp, but
+        // it can be overridden to a shared dir; removing inherited ACEs defends against that.
+        restrictToOwner(tokenFile);
+        try (BufferedWriter writer = Files.newBufferedWriter(tokenFile.toPath(), StandardCharsets.UTF_8)) {
+            for (String token : info.securityTokens) {
+                writer.write(token);
+                writer.newLine();
+            }
+        }
+
+        // @argfile avoids Windows 32 767-char CreateProcess limit
+        File argFile = File.createTempFile("payara-args-", ".tmp");
+        try (BufferedWriter writer = Files.newBufferedWriter(argFile.toPath(), StandardCharsets.UTF_8)) {
+            for (String arg : cmds.subList(1, cmds.size())) {
+                if (arg.contains(" ") || arg.contains("\t")) {
+                    writer.write("\"" + arg.replace("\\", "\\\\").replace("\"", "\\\"") + "\"");
+                } else {
+                    writer.write(arg);
+                }
+                writer.newLine();
+            }
+        }
+
+        // Batch wrapper so cmd.exe can redirect stdin with '<' (WMI Create() cannot)
+        File batchFile = File.createTempFile("payara-start-", ".bat");
+        try (BufferedWriter writer = Files.newBufferedWriter(batchFile.toPath(), StandardCharsets.UTF_8)) {
+            String javaQ = cmds.getFirst().replace("\"", "\"\"");
+            String argQ = argFile.getAbsolutePath().replace("\"", "\"\"");
+            String tokQ = tokenFile.getAbsolutePath().replace("\"", "\"\"");
+            writer.write("@echo off\r\n");
+            writer.write("\"" + javaQ + "\" \"@" + argQ + "\" < \"" + tokQ + "\"\r\n");
+        }
+
+        // PowerShell is just a thin WMI client here; streams go to NUL so nothing is inherited
+        File psStderrFile = File.createTempFile("payara-ps-stderr-", ".log");
+        String batchPs = batchFile.getAbsolutePath().replace("'", "''");
+        String workDirPs = (pb.directory() != null ? pb.directory() : new File(".")).getAbsolutePath().replace("'", "''");
+        String psCmd = String.format(
+                "$bp='%s';$wd='%s';"
+                + "$r=([wmiclass]'Win32_Process').Create('cmd.exe /c \"'+$bp+'\"',$wd,$null);"
+                + "if($r.ReturnValue -ne 0){exit 1}",
+                batchPs, workDirPs);
+
+        List<File> toClean = Arrays.asList(tokenFile, argFile, batchFile, psStderrFile);
+
+        ProcessBuilder psPb = new ProcessBuilder("powershell", "-NonInteractive", "-Command", psCmd);
+        psPb.redirectInput(new File("NUL"));
+        psPb.redirectOutput(new File("NUL"));
+        psPb.redirectError(psStderrFile);
+
+        Process ps = psPb.start();
+        try {
+            boolean finished = ps.waitFor(30, TimeUnit.SECONDS);
+            if (!finished) {
+                ps.destroyForcibly();
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("WMI process creation timed out after 30 s");
+            }
+            if (ps.exitValue() != 0) {
+                String psErr;
+                try {
+                    psErr = new String(Files.readAllBytes(psStderrFile.toPath()), StandardCharsets.UTF_8).trim();
+                } catch (Exception ignored) {
+                    psErr = "";
+                }
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("Win32_Process.Create() failed (exit=" + ps.exitValue() + "): " + psErr);
+            }
+        } catch (InterruptedException ie) {
+            ps.destroyForcibly();
+            toClean.forEach(File::delete);
+            Thread.currentThread().interrupt();
+            throw new GFLauncherException("WMI process creation interrupted");
+        }
+        GFLauncherLogger.fine("launchDetachedOnWindows", "WMI process created. batchFile=" + batchFile.getAbsolutePath());
+
+        // Delete temp files after 120 s — enough time for cmd.exe to open them at startup
+        Thread cleanup = new Thread(() -> {
+            try {
+                Thread.sleep(120_000);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            toClean.forEach(File::delete);
+        }, "payara-launch-cleanup");
+        cleanup.setDaemon(true);
+        cleanup.start();
+
+        // Sentinel keeps waitForServer() polling; shutdown hook kills it promptly so
+        // OpenSSH doesn't wait the full ping duration before sending the exit status.
+        Process sentinel = new ProcessBuilder("cmd", "/c", "ping", "-n", "700", "127.0.0.1")
+                .redirectInput(new File("NUL"))
+                .redirectOutput(new File("NUL"))
+                .redirectError(new File("NUL"))
+                .start();
+        Runtime.getRuntime().addShutdownHook(new Thread(sentinel::destroyForcibly, "payara-sentinel-killer"));
+        return sentinel;
+    }
+
+    // Replaces the file's ACL with a single owner-only ALLOW entry so that other
+    // local accounts cannot read the file even if java.io.tmpdir is a shared directory.
+    // Best-effort: if the platform or file system does not support ACLs, we proceed
+    // with whatever permissions the OS assigned at creation time.
+    private static void restrictToOwner(File file) {
+        try {
+            AclFileAttributeView aclView = Files.getFileAttributeView(file.toPath(), AclFileAttributeView.class);
+            if (aclView == null) {
+                return;
+            }
+            UserPrincipal owner = Files.getOwner(file.toPath());
+            AclEntry ownerOnly = AclEntry.newBuilder().setType(AclEntryType.ALLOW).setPrincipal(owner).setPermissions(AclEntryPermission.values()).build();
+            aclView.setAcl(List.of(ownerOnly));
+        } catch (IOException ignored) {
+        }
     }
 
     private void setupLogLevels() {

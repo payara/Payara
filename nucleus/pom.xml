@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright 2016-2025 Payara Foundation and/or its affiliates -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -73,7 +73,7 @@
 
         <!-- Servlet -->
         <grizzly.npn.api.version>2.0.0.payara-p1</grizzly.npn.api.version>
-        <grizzly-npn-osgi.version>2.0.0</grizzly-npn-osgi.version>
+        <grizzly-npn-osgi.version>2.0.1</grizzly-npn-osgi.version>
 
         <!-- Other -->
 
@@ -94,8 +94,8 @@
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.31.0-GA</javassist.version>
 
-        <!-- A pure Java implementation of the SSH-2 protocol -->
-        <trilead-ssh2.version>build-217-jenkins-16</trilead-ssh2.version>
+        <apache.sshd.version>2.17.1</apache.sshd.version>
+        <slf4j.version>2.0.18</slf4j.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>5.1.1</pfl.version>
@@ -149,7 +149,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.3.21</kotlin-version>
+        <kotlin-version>2.4.0</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>
@@ -836,12 +836,6 @@ Parent is ${project.parent}</echo>
                 <version>${ldapbp.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.jenkins-ci</groupId>
-                <artifactId>trilead-ssh2</artifactId>
-                <version>${trilead-ssh2.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
                 <groupId>org.glassfish.ha</groupId>
                 <artifactId>ha-api</artifactId>
                 <version>${ha-api.version}</version>
@@ -895,6 +889,27 @@ Parent is ${project.parent}</echo>
                 <groupId>fish.payara.deployment.transformer</groupId>
                 <artifactId>deployment-transformer-api</artifactId>
                 <version>${payara.deployment.transformer.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.sshd</groupId>
+                <artifactId>sshd-common</artifactId>
+                <version>${apache.sshd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sshd</groupId>
+                <artifactId>sshd-core</artifactId>
+                <version>${apache.sshd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sshd</groupId>
+                <artifactId>sshd-sftp</artifactId>
+                <version>${apache.sshd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sshd</groupId>
+                <artifactId>sshd-scp</artifactId>
+                <version>${apache.sshd.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -38,47 +38,16 @@
  * holder.
  */
 
-package org.glassfish.cluster.ssh.util;
-
-import com.trilead.ssh2.KnownHosts;
-import com.trilead.ssh2.ServerHostKeyVerifier;
+package org.glassfish.cluster.ssh.launcher;
 
 import java.io.IOException;
+import java.io.Serial;
 
-/**
- * @author Rajiv Mordani
- */
-public class HostVerifier implements ServerHostKeyVerifier {
+public class SSHAuthenticationException extends IOException {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-    private KnownHosts knownHosts;
-
-    public HostVerifier(KnownHosts knownHosts) {
-        if (knownHosts == null) {
-            throw new IllegalArgumentException("Known hosts database cannot be null");
-        }
-        this.knownHosts = knownHosts;
+    public SSHAuthenticationException(String message) {
+        super(message);
     }
-
-    public boolean verifyServerHostKey(String hostName, int port, String serverHostKeyAlgorithm,byte[] serverHostKey)
-                        throws IOException 
-    {
-        int result = knownHosts.verifyHostkey(hostName, serverHostKeyAlgorithm, serverHostKey);
-        switch (result) {
-            case KnownHosts.HOSTKEY_IS_OK:
-                return true;
-
-            case KnownHosts.HOSTKEY_IS_NEW:
-                // Accept new keys
-            case KnownHosts.HOSTKEY_HAS_CHANGED:
-                // In a virtualized environment we may have VMs that are frequently
-                // (re)created causing host keys to change. Allow that.
-                knownHosts.addHostkey(new String[] {hostName}, serverHostKeyAlgorithm, serverHostKey);
-                return true;
-            
-            default:
-                throw new IllegalStateException("Cannot verify server key");
-        }
-
-    }
-    
 }

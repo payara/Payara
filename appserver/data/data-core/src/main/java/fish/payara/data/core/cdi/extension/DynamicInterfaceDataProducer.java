@@ -83,6 +83,9 @@ import static fish.payara.data.core.util.DataCommonOperationUtility.findEntityTy
 import static fish.payara.data.core.util.DataCommonOperationUtility.getEntityManagerSupplier;
 import static fish.payara.data.core.util.DataCommonOperationUtility.preprocesEntityMetadata;
 
+import fish.payara.data.core.querymethod.QueryMethodParser;
+import fish.payara.data.core.querymethod.QueryMethodSyntaxException;
+
 /**
  * This is a generic class that works as a producer for a Bean that is going to be used during
  * injection point resolution
@@ -325,33 +328,27 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
     private void addQueries(EntityManager entityManager, Class<?> entityClass, Class<?> declaredEntityClass, Class<?> entityParamType, Method method) {
         List<QueryMetadata> queries;
         queries = queriesForEntity.computeIfAbsent(entityClass, k -> new ArrayList<>());
-        QueryType queryType = null;
-        if (method.isAnnotationPresent(Save.class)) {
-            queryType = QueryType.SAVE;
-        } else if (method.isAnnotationPresent(Delete.class)) {
-            queryType = QueryType.DELETE;
-        } else if (method.isAnnotationPresent(Update.class)) {
-            queryType = QueryType.UPDATE;
-        } else if (method.isAnnotationPresent(Insert.class)) {
-            queryType = QueryType.INSERT;
-        } else if (method.isAnnotationPresent(Find.class)) {
-            queryType = QueryType.FIND;
-        } else if (method.isAnnotationPresent(Query.class)) {
-            queryType = QueryType.QUERY;
-        } else {
-            String methodName = method.getName();
-            if (methodName.startsWith("delete")) {
-                queryType = QueryType.DELETE_BY_NAME;
-            } else if (methodName.startsWith("count")) {
-                queryType = QueryType.COUNT_BY_NAME;
-            } else if (methodName.startsWith("exists")) {
-                queryType = QueryType.EXISTS_BY_NAME;
-            } else {
-                queryType = QueryType.FIND_BY_NAME;
-            }
-        }
 
         try {
+            QueryType queryType = null;
+            QueryMethodParser.ParseResult parseResult = null;
+            if (method.isAnnotationPresent(Save.class)) {
+                queryType = QueryType.SAVE;
+            } else if (method.isAnnotationPresent(Delete.class)) {
+                queryType = QueryType.DELETE;
+            } else if (method.isAnnotationPresent(Update.class)) {
+                queryType = QueryType.UPDATE;
+            } else if (method.isAnnotationPresent(Insert.class)) {
+                queryType = QueryType.INSERT;
+            } else if (method.isAnnotationPresent(Find.class)) {
+                queryType = QueryType.FIND;
+            } else if (method.isAnnotationPresent(Query.class)) {
+                queryType = QueryType.QUERY;
+            } else {
+                parseResult = new QueryMethodParser(method.getName()).parse();
+                queryType = queryTypeForByNameAction(parseResult.action());
+            }
+
             Class<?> entityTypeInMethod = findEntityTypeInMethod(method);
             if (entityTypeInMethod != null) {
                 declaredEntityClass = entityTypeInMethod;
@@ -377,11 +374,28 @@ public class DynamicInterfaceDataProducer<T> implements Producer<T>, ProducerFac
 
             queries.add(new QueryMetadata(
                     repository, method, declaredEntityClass, entityParamType,
-                    queryType, preprocesEntityMetadata(mapOfMetaData, entityManager, declaredEntityClass, method)));
-        }
-        catch (MappingException e) {
+                    queryType, preprocesEntityMetadata(mapOfMetaData, entityManager, declaredEntityClass, method),
+                    parseResult));
+        } catch (MappingException | QueryMethodSyntaxException e) {
             logger.warning(e.getMessage());
         }
+    }
+
+    /**
+     * Maps the parsed action of a "query by method name" to its corresponding {@link QueryType}.
+     * This classification happens once at deploy time so it does not need to be recomputed on every
+     * request.
+     *
+     * @param action the action resolved by {@link QueryMethodParser}
+     * @return the matching by-name query type
+     */
+    static QueryType queryTypeForByNameAction(QueryMethodParser.Action action) {
+        return switch (action) {
+            case FIND -> QueryType.FIND_BY_NAME;
+            case DELETE -> QueryType.DELETE_BY_NAME;
+            case COUNT -> QueryType.COUNT_BY_NAME;
+            case EXISTS -> QueryType.EXISTS_BY_NAME;
+        };
     }
 
     @Override

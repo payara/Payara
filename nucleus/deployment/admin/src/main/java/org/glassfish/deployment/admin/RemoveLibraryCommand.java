@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -76,7 +76,7 @@ public class RemoveLibraryCommand implements AdminCommand, AdminCommandSecurity.
     @Param(primary=true, multiple=true)
     String[] names = null;
 
-    @Param(optional=true, acceptableValues="common, ext, app")
+    @Param(optional=true, acceptableValues="common, ext, app, war")
     String type = "common";
 
     @Inject
@@ -111,6 +111,8 @@ public class RemoveLibraryCommand implements AdminCommand, AdminCommandSecurity.
             libDir = new File(libDir, "ext");
         } else if (type.equals("app")) {
             libDir = new File(libDir, "applibs");
+        } else if (type.equals("war")) {
+            libDir = new File(libDir, "warlibs");
         }
 
         try {

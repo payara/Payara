@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.admingui.common.servlet;
 
@@ -81,14 +82,13 @@ public class LogViewerContentSource  implements DownloadServlet.ContentSource {
 
         HttpServletRequest request = (HttpServletRequest) ctx.getServletRequest();
         //http://localhost:4848/management/domain/view-log/?start=180427&instanceName=server
-        String restUrl = request.getParameter("restUrl");
         String start = request.getParameter("start");
         String instanceName = request.getParameter("instanceName");
 
         // Create the tmpFile
         InputStream tmpFile = null;
         try {
-            String endpoint = restUrl + "/view-log/";
+            String endpoint = request.getSession().getAttribute("REST_URL") + "/view-log/";
             Map<String, Object> attrsMap = new HashMap<String, Object>();
             attrsMap.put("start", start);
             attrsMap.put("instanceName", instanceName);
