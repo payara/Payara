@@ -65,6 +65,8 @@ import jakarta.enterprise.inject.spi.Extension;
 import jakarta.enterprise.inject.spi.ProcessAnnotatedType;
 import jakarta.enterprise.inject.spi.ProcessManagedBean;
 import jakarta.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
+import jakarta.validation.Validation;
+import jakarta.validation.executable.ExecutableValidator;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -159,7 +161,7 @@ public class AgenticAIExtension implements Extension {
         afterBeanDiscovery.addContext(workflowScopeContext);
 
         WorkflowScopeManager workflowScopeManager = new WorkflowScopeManager(workflowScopeContext);
-        WorkflowEngine workflowEngine = new WorkflowEngine(beanManager, workflowScopeManager);
+        WorkflowEngine workflowEngine = new WorkflowEngine(beanManager, workflowScopeManager, resolveExecutableValidator());
 
         for (Class<?> agentClass : agentClasses) {
             AgentMetadata agentMetadata = buildMetadata(agentClass);
@@ -235,6 +237,19 @@ public class AgenticAIExtension implements Extension {
 
         return new AgentMetadata(agentClass, resolveAgentName(agentClass), trigger,
                 extractTriggerEventType(trigger), phases, outcome, handlerMethods);
+    }
+
+    /**
+     * Builds the {@link ExecutableValidator} used to validate phase-method
+     * parameters. Returns {@code null} when no Bean Validation provider is
+     * available, in which case the engine simply skips parameter validation.
+     */
+    private ExecutableValidator resolveExecutableValidator() {
+        try {
+            return Validation.buildDefaultValidatorFactory().getValidator().forExecutables();
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     private boolean hasObservesParam(Method method) {

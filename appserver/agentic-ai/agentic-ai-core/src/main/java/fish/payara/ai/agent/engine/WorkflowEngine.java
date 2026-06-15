@@ -47,6 +47,9 @@ import jakarta.enterprise.inject.spi.BeanManager;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.executable.ExecutableValidator;
+
 /**
  * Orchestrates the execution of an agent workflow.
  * <p>
@@ -65,11 +68,13 @@ public class WorkflowEngine {
     private final BeanManager beanManager;
     private final WorkflowScopeManager workflowScopeManager;
     private final ParameterResolver parameterResolver;
+    private final ExecutableValidator executableValidator;
 
-    public WorkflowEngine(BeanManager beanManager, WorkflowScopeManager workflowScopeManager) {
+    public WorkflowEngine(BeanManager beanManager, WorkflowScopeManager workflowScopeManager, ExecutableValidator executableValidator) {
         this.beanManager = beanManager;
         this.workflowScopeManager = workflowScopeManager;
         this.parameterResolver = new ParameterResolver(beanManager);
+        this.executableValidator = executableValidator;
     }
 
     /**
@@ -141,7 +146,7 @@ public class WorkflowEngine {
      * propagates to the container.
      *
      * @return {@code true} if a handler was found and completed normally;
-     *         {@code false} if no handler matched (caller must rethrow)
+     * {@code false} if no handler matched (caller must rethrow)
      */
     private boolean dispatchException(AgentMetadata metadata, Object agent,
                                       WorkflowContext ctx, LargeLanguageModel llm,
@@ -183,6 +188,7 @@ public class WorkflowEngine {
                                LargeLanguageModel llm, Throwable ex) throws Exception {
         method.setAccessible(true);
         Object[] args = parameterResolver.resolve(method, ctx, llm, ex);
+        validateParameters(instance, method, args);
         try {
             return method.invoke(instance, args);
         } catch (InvocationTargetException ite) {
@@ -202,7 +208,7 @@ public class WorkflowEngine {
      */
     private boolean shouldContinue(Object result) {
         return switch (result) {
-            case null ->  false;
+            case null -> false;
             case Boolean b -> b;
             case Result r -> r.success();
             default -> true;
@@ -230,6 +236,25 @@ public class WorkflowEngine {
             if (Throwable.class.isAssignableFrom(parameterType)) return parameterType;
         }
         return null;
+    }
+
+    /**
+     * Validates the resolved parameters of a phase method against any Jakarta
+     * Validation constraints declared on them, before the method is invoked.
+     *
+     * @throws ConstraintViolationException if one or more parameters violate a
+     *         constraint; the exception is routed to a matching
+     *         {@code @HandleException} method like any other failure
+     */
+    private void validateParameters(Object instance, Method method, Object[] args) {
+        if (executableValidator == null) {
+            return;
+        }
+        var violations =
+                executableValidator.validateParameters(instance, method, args);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
     }
 
     private Throwable unwrap(Exception e) {
