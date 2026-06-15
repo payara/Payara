@@ -37,6 +37,7 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright 2026 Payara Foundation and/or affiliates
 
 # logviewer.backend is used by REST implementation. We should be able to remove that when we move
 # REST logging code to this module.
@@ -46,7 +47,7 @@
 DynamicImport-Package: \
 					org.glassfish.cluster.ssh.launcher, \
                     org.glassfish.cluster.ssh.sftp, \
-					com.trilead.ssh2, \
+					org.apache.sshd.*, \
 					com.sun.enterprise.util.cluster.windows.io, \
 					com.sun.enterprise.util.cluster.windows.process, \
 					org.glassfish.cluster.ssh.util

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -546,24 +546,22 @@ public class NetUtils {
 
     private static boolean isPortFreeClient(String hostName, int portNumber) {
         try {
-            // WBN - I have no idea why I'm messing with these streams!
-            // I lifted the code from installer.  Apparently if you just
-            // open a socket on a free port and catch the exception something
-            // will go wrong in Windows.
-            // Feel free to change it if you know EXACTLY what you're doing
-
-            //If the host name is null, assume localhost
             if (hostName == null) {
                 hostName = getHostName();
             }
-            try(Socket socket = new Socket(hostName, portNumber);
-                OutputStream os = socket.getOutputStream();
-                InputStream is = socket.getInputStream()) {
-                // will be closed automatically
+            if (hostName == null) {
+                hostName = "localhost";
+            }
+            // Use an explicit 1-second timeout: on remote hosts (especially Windows) that
+            // silently drop packets via firewall, new Socket(host, port) without a timeout
+            // blocks for the OS TCP connection timeout (minutes), hanging callers like
+            // PortManager indefinitely.
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(hostName, portNumber), 1000);
             }
         }
         catch (Exception e) {
-            // Nobody is listening on this port
+            // Connection refused, timed out, or nobody listening — port is free
             return true;
         }
 
