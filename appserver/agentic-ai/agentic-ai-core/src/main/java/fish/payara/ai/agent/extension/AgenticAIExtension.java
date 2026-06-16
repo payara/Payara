@@ -44,6 +44,7 @@ import fish.payara.ai.agent.cdi.WorkflowScopeManager;
 import fish.payara.ai.agent.engine.AgentMetadata;
 import fish.payara.ai.agent.engine.PhaseMethod;
 import fish.payara.ai.agent.engine.PhaseType;
+import fish.payara.ai.agent.engine.ClassMethodOrder;
 import fish.payara.ai.agent.engine.WorkflowEngine;
 import fish.payara.ai.agent.llm.LargeLanguageModelImpl;
 import fish.payara.ai.agent.llm.NoOpLlmBackend;
@@ -73,6 +74,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * CDI portable extension that wires Jakarta Agentic AI agents into the runtime.
@@ -196,6 +198,7 @@ public class AgenticAIExtension implements Extension {
      * are sorted most-specific-first.
      */
     private AgentMetadata buildMetadata(Class<?> agentClass) {
+        Map<String, Integer> declarationOrder = ClassMethodOrder.of(agentClass);
         List<PhaseMethod> phases = new ArrayList<>();
         List<Method> handlerMethods = new ArrayList<>();
         Method trigger = null;
@@ -232,7 +235,7 @@ public class AgenticAIExtension implements Extension {
         }
 
         validateOrdering(phases, agentClass);
-        sortPhases(phases);
+        sortPhases(phases, declarationOrder);
         sortHandlers(handlerMethods);
 
         return new AgentMetadata(agentClass, resolveAgentName(agentClass), trigger,
@@ -312,9 +315,22 @@ public class AgenticAIExtension implements Extension {
         return null;
     }
 
-    private void sortPhases(List<PhaseMethod> phases) {
+    /**
+     * Sorts phases into execution order.
+     *
+     * <p>When any phase carries an explicit ordering ({@code @Priority} or a
+     * non-zero {@code order()}) the list is sorted by {@link PhaseMethod#getSortKey()}.
+     * Otherwise phases are sorted by their source-file declaration order, obtained
+     * from the class file's methods table via {@link ClassMethodOrder}. The
+     * specification mandates declaration order when no explicit ordering is given
+     * (AGENTICAI-ORCHESTRATION-BHV-002).</p>
+     */
+    private void sortPhases(List<PhaseMethod> phases, Map<String, Integer> declarationOrder) {
         if (phases.stream().anyMatch(PhaseMethod::isExplicitlyOrdered)) {
             phases.sort(Comparator.comparingInt(PhaseMethod::getSortKey));
+        } else {
+            phases.sort(Comparator.comparingInt(
+                    p -> declarationOrder.getOrDefault(p.getMethod().getName(), Integer.MAX_VALUE)));
         }
     }
 
