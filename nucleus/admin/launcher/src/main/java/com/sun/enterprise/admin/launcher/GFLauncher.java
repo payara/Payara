@@ -1054,15 +1054,18 @@ public abstract class GFLauncher {
 
         // PowerShell is just a thin WMI client here; streams go to NUL so nothing is inherited
         File psStderrFile = File.createTempFile("payara-ps-stderr-", ".log");
+        File wmiPidFile = File.createTempFile("payara-wmipid-", ".tmp");
         String batchPs = batchFile.getAbsolutePath().replace("'", "''");
         String workDirPs = (pb.directory() != null ? pb.directory() : new File(".")).getAbsolutePath().replace("'", "''");
+        String pidFilePs = wmiPidFile.getAbsolutePath().replace("'", "''");
         String psCmd = String.format(
                 "$bp='%s';$wd='%s';"
                 + "$r=([wmiclass]'Win32_Process').Create('cmd.exe /c \"'+$bp+'\"',$wd,$null);"
-                + "if($r.ReturnValue -ne 0){exit 1}",
-                batchPs, workDirPs);
+                + "if($r.ReturnValue -ne 0){exit 1};"
+                + "$r.ProcessId|Out-File -FilePath '%s' -Encoding ascii -NoNewline",
+                batchPs, workDirPs, pidFilePs);
 
-        List<File> toClean = Arrays.asList(tokenFile, argFile, batchFile, psStderrFile);
+        List<File> toClean = Arrays.asList(tokenFile, argFile, batchFile, psStderrFile, wmiPidFile);
 
         ProcessBuilder psPb = new ProcessBuilder("powershell", "-NonInteractive", "-Command", psCmd);
         psPb.redirectInput(new File("NUL"));
@@ -1095,7 +1098,8 @@ public abstract class GFLauncher {
         }
         GFLauncherLogger.fine("launchDetachedOnWindows", "WMI process created. batchFile=" + batchFile.getAbsolutePath());
 
-        // Delete temp files after 120 s — enough time for cmd.exe to open them at startup
+        // Delete temp files after 120 s — enough time for cmd.exe to open them at startup.
+        // wmiPidFile is read immediately by the sentinel at startup so it can also be cleaned here.
         Thread cleanup = new Thread(() -> {
             try {
                 Thread.sleep(120_000);
@@ -1107,9 +1111,15 @@ public abstract class GFLauncher {
         cleanup.setDaemon(true);
         cleanup.start();
 
-        // Sentinel keeps waitForServer() polling; shutdown hook kills it promptly so
-        // OpenSSH doesn't wait the full ping duration before sending the exit status.
-        Process sentinel = new ProcessBuilder("cmd", "/c", "ping", "-n", "700", "127.0.0.1")
+        // Sentinel monitors the WMI-created cmd.exe (which waits for java.exe to finish),
+        // so waitForServer() detects actual GF failures quickly instead of waiting for timeout.
+        // cmd.exe /c batch.bat blocks until java.exe exits, making its PID a reliable proxy
+        // for GF liveness. Exits with code 1 when GF dies; killed by shutdown hook on success.
+        String pidFileSentinel = wmiPidFile.getAbsolutePath().replace("'", "''");
+        Process sentinel = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command",
+                "$p=[int](Get-Content '" + pidFileSentinel + "');"
+                + "while(Get-Process -Id $p -ErrorAction SilentlyContinue){Start-Sleep -Seconds 1};"
+                + "exit 1")
                 .redirectInput(new File("NUL"))
                 .redirectOutput(new File("NUL"))
                 .redirectError(new File("NUL"))
