@@ -94,7 +94,7 @@
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.31.0-GA</javassist.version>
 
-        <apache.sshd.version>2.17.1</apache.sshd.version>
+        <apache.sshd.version>2.18.0</apache.sshd.version>
         <slf4j.version>2.0.18</slf4j.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
