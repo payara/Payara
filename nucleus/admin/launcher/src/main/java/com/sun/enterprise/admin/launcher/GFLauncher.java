@@ -522,7 +522,10 @@ public abstract class GFLauncher {
 
             // Under SSH on Windows, the child JVM inherits the SSH session's Job Object and
             // is killed when the exec channel closes. Use a detached launch to escape it.
-            if (System.console() == null && OS.isWindows() && !info.isVerboseOrWatchdog()) {
+            // SSH_CLIENT / SSH_CONNECTION are set by sshd for every exec channel and are
+            // absent for local subprocess launches (e.g. admin console start-instance),
+            // making them a reliable discriminator over System.console() == null alone.
+            if (OS.isWindows() && !info.isVerboseOrWatchdog() && isRunningUnderSsh()) {
                 process = launchDetachedOnWindows(cmds, pb);
             } else {
                 process = pb.start();
@@ -1132,6 +1135,10 @@ public abstract class GFLauncher {
     // local accounts cannot read the file even if java.io.tmpdir is a shared directory.
     // Best-effort: if the platform or file system does not support ACLs, we proceed
     // with whatever permissions the OS assigned at creation time.
+    private static boolean isRunningUnderSsh() {
+        return System.getenv("SSH_CLIENT") != null || System.getenv("SSH_CONNECTION") != null;
+    }
+
     private static void restrictToOwner(File file) {
         try {
             AclFileAttributeView aclView = Files.getFileAttributeView(file.toPath(), AclFileAttributeView.class);
