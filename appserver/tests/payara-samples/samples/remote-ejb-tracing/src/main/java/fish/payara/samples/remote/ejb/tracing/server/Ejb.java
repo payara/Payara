@@ -44,6 +44,9 @@ import fish.payara.microprofile.telemetry.tracing.Traced;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.common.AttributeKey;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import java.util.Map;
@@ -139,6 +142,16 @@ public class Ejb implements EjbRemote {
         StringBuilder sb = new StringBuilder("\n");
         Baggage.current().asMap().forEach((key, entry) ->
                 sb.append(key).append(" : ").append(entry.getValue()).append("\n"));
+        Span currentSpan = Span.current();
+        if (currentSpan.isRecording()) {
+            if (currentSpan instanceof ReadableSpan) {
+                ReadableSpan readableSpan = (ReadableSpan) currentSpan;
+                String tcID = readableSpan.getAttribute(AttributeKey.stringKey("TX-ID"));
+                if (tcID != null) {
+                    sb.append("TX-ID : ").append(tcID).append("\n");
+                }
+            }
+        }
         return sb.toString();
     }
 }

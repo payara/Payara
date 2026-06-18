@@ -102,6 +102,23 @@ public class RemoteEjbClientIT {
 
     }
     
+    @Test
+    public void transactionIdAddedAsBaggageIT() throws NamingException {
+        Properties contextProperties = new Properties();
+        contextProperties.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
+        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
+        // enable OpenTelemetry tracing so we get our OpenTracing instance
+        System.setProperty("otel.sdk.disabled", "false");
+
+        javax.naming.Context context = new InitialContext(contextProperties);
+        EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
+        
+        String baggageItems = ejb.annotatedMethod();
+        Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
+                    baggageItems.contains("TX-ID"));
+    }
+    
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class).addClasses(EjbRemote.class, Ejb.class);

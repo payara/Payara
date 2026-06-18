@@ -109,17 +109,37 @@ public class TracedInterceptor implements Serializable {
         final String applicationName = payaraTracingServices.getApplicationName();
         final Tracer tracer = payaraTracingServices.getActiveTracer();
         final String operationName = getOperationName(invocationContext, traced);
-        Span span = tracer.spanBuilder(operationName).setAttribute("otel.service.name", applicationName).startSpan();
-        try (Scope scope = span.makeCurrent()) {
-            try {
-                return invocationContext.proceed();
-            } catch (Exception e) {
-                LOG.log(Level.FINEST, "Setting the error to the active span ...", e);
-                span.recordException(e);
-                throw e;
+
+        Span span = Span.current();
+        if (span.isRecording()) {
+            span.updateName(operationName);
+            span.setAttribute("otel.service.name", applicationName);
+            try (Scope scope = span.makeCurrent()) {
+                try {
+                    return invocationContext.proceed();
+                } catch (Exception e) {
+                    LOG.log(Level.FINEST, "Setting the error to the active span ...", e);
+                    span.recordException(e);
+                    throw e;
+                }
+            } finally {
+                span.end();
+                LOG.log(Level.FINEST, "Don't close the span for now");
             }
-        } finally {
-            span.end();
+        } else {
+            span = tracer.spanBuilder(operationName).setAttribute("otel.service.name", applicationName).startSpan();
+            try (Scope scope = span.makeCurrent()) {
+                try {
+                    return invocationContext.proceed();
+                } catch (Exception e) {
+                    LOG.log(Level.FINEST, "Setting the error to the active span ...", e);
+                    span.recordException(e);
+                    throw e;
+                }
+            } finally {
+                span.end();
+                LOG.log(Level.FINEST, "Don't close the span for now");
+            }
         }
     }
 

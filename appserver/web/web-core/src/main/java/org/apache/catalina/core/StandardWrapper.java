@@ -1572,7 +1572,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                         if (tracer != null && response.isCommitted()) {
                             // If response is not committed, it is likely async
                             SpanBuilder spanBuilder = tracer.spanBuilder(applicationName);
-                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus());
+                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus()).startSpan();
                         }
                         // TODO: clear OpenTelemetry context once we move to natively using it.
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
