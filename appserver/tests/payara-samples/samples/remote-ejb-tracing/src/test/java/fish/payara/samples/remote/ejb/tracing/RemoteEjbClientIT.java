@@ -57,6 +57,13 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+
 /**
  * Test that verifies the automatic propagation of baggage items across process boundaries when using Remote EJBs.
  *
@@ -83,34 +90,45 @@ public class RemoteEjbClientIT {
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
 
 
-        Tracer tracer = GlobalTracer.get();
-        Span span = tracer.buildSpan("ExecuteEjb").start();
-        try (Scope scope = tracer.activateSpan(span)) {
-            span.setBaggageItem("Wibbles", "Wobbles");
+        Tracer tracer = GlobalOpenTelemetry.getTracer("remote-ejb-tracing", "1.0.0");
+        Span span = tracer.spanBuilder("ExecuteEjb").startSpan();
+        try (Scope scope = Context.current()
+                .with(span)
+                .with(Baggage.builder().put("Wibbles", "Wobbles").build())
+                .makeCurrent()) {
+
             String baggageItems = ejb.annotatedMethod();
             Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
                     baggageItems.contains("\nWibbles : Wobbles\n"));
+            try (Scope scope2 = Baggage.current().toBuilder()
+                    .put("Nibbles", "Nobbles").build()
+                    .storeInContext(Context.current()).makeCurrent()) {
 
-            span.setBaggageItem("Nibbles", "Nobbles");
-            baggageItems = ejb.nonAnnotatedMethod();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("Wibbles : Wobbles")
-                    && baggageItems.contains("Nibbles : Nobbles"));
+                baggageItems = ejb.nonAnnotatedMethod();
+                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                        baggageItems.contains("Wibbles : Wobbles")
+                                && baggageItems.contains("Nibbles : Nobbles"));
 
-            span.setBaggageItem("Bibbles", "Bobbles");
-            baggageItems = ejb.shouldNotBeTraced();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("Wibbles : Wobbles")
-                    && baggageItems.contains("Nibbles : Nobbles")
-                    && baggageItems.contains("Bibbles : Bobbles"));
+                try (Scope scope3 = Baggage.current().toBuilder()
+                        .put("Bibbles", "Bobbles").build()
+                        .storeInContext(Context.current()).makeCurrent()) {
 
-            baggageItems = ejb.editBaggageItems();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("Wibbles : Wabbles")
-                    && baggageItems.contains("Nibbles : Nabbles")
-                    && baggageItems.contains("Bibbles : Babbles"));
+                    baggageItems = ejb.shouldNotBeTraced();
+                    Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                            baggageItems.contains("Wibbles : Wobbles")
+                                    && baggageItems.contains("Nibbles : Nobbles")
+                                    && baggageItems.contains("Bibbles : Bobbles"));
+
+                    baggageItems = ejb.editBaggageItems();
+                    Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                            baggageItems.contains("Wibbles : Wabbles")
+                                    && baggageItems.contains("Nibbles : Nabbles")
+                                    && baggageItems.contains("Bibbles : Babbles"));
+                }
+            }
+
         } finally {
-            span.finish();
+            span.end();
         }
     }
 
@@ -126,15 +144,15 @@ public class RemoteEjbClientIT {
         Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
 
-        Tracer tracer = GlobalTracer.get();
+        Tracer tracer = GlobalOpenTelemetry.getTracer("remote-ejb-tracing", "1.0.0");
 
-        Span span = tracer.buildSpan("ExecuteEjb").start();
-        try(Scope scope = tracer.activateSpan(span)) {
+        Span span = tracer.spanBuilder("ExecuteEjb").startSpan();
+        try(Scope scope = span.makeCurrent()) {
             String baggageItems = ejb.annotatedMethod();
             Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
                     baggageItems.contains("TX-ID"));
         } finally {
-            span.finish();
+            span.end();
         }
     }
 

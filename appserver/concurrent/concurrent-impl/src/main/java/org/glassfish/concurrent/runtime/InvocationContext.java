@@ -42,10 +42,16 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTracingService;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
 import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.concurro.spi.ContextHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 
@@ -63,7 +69,8 @@ public class InvocationContext implements ContextHandle {
 
     private List<ThreadContextSnapshot> threadContextSnapshots;
     private List<ThreadContextRestorer> threadContextRestorers;
-    
+
+    private io.opentelemetry.context.Context parentTraceContext;
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
             boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
@@ -74,8 +81,25 @@ public class InvocationContext implements ContextHandle {
         this.useTransactionOfExecutionThread = useTransactionOfExecutionThread;
         this.threadContextSnapshots = threadContextSnapshots;
         this.threadContextRestorers = threadContextRestorers;
+        saveTracingContext();
     }
-    
+
+    private void saveTracingContext() {
+        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+
+        if (serviceLocator != null) {
+            RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
+            OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
+
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()
+                    && requestTracing.isTraceInProgress() && openTracing != null) {
+                Span currentSpan = Span.current();
+                if (currentSpan.isRecording()) {
+                    this.parentTraceContext = Context.current();
+                }
+            }
+        }
+    }
     
     public ComponentInvocation getInvocation() {
         return invocation;
@@ -101,6 +125,10 @@ public class InvocationContext implements ContextHandle {
         return threadContextRestorers;
     }
 
+    public io.opentelemetry.context.Context getParentTraceContext() {
+        return parentTraceContext;
+    }
+    
     /**
      * Used to make duplicate of the InvocationContext.
      */

@@ -49,6 +49,12 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
+import io.opentelemetry.api.baggage.Baggage;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
@@ -106,6 +112,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     public static final String CONTEXT_TYPE_SECURITY = "SECURITY"; // Concurrency 3.0: SECURITY
     public static final String CONTEXT_TYPE_NAMING = "NAMING"; // Concurrency 3.0: APPLICATION
     public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA"; // Concurrency 3.0: TRANSACTION
+
+    private static final ThreadLocal<Span> currentConcurrentSpan = new ThreadLocal<>();
+    private static final ThreadLocal<Scope> currentConcurrentScope = new ThreadLocal<>();
 
     // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;
@@ -306,6 +315,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
 
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            startConcurrentContextSpan(invocation, handle);
+        }
+        
         if (stuckThreads != null) {
             stuckThreads.registerThread(Thread.currentThread().threadId());
         }
@@ -320,6 +333,53 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
                 Collections.EMPTY_LIST, restorers);
+    }
+
+    private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
+        Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
+                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
+
+        SpanBuilder builder = tracer.spanBuilder("executeConcurrentContext");
+
+        Context parentContext = handle.getParentTraceContext();
+        if (parentContext != null) {
+            builder.setParent(parentContext);
+
+            String parentOperationName = Baggage.fromContext(parentContext).getEntryValue("operation.name");
+            if (parentOperationName != null) {
+                builder.setAttribute("Parent Operation Name", parentOperationName);
+            }
+        }
+
+        if (invocation != null) {
+            builder.setAttribute("App Name", invocation.getAppName())
+                    .setAttribute("Component ID", invocation.getComponentId())
+                    .setAttribute("Module Name", invocation.getModuleName());
+
+            Object instance = invocation.getInstance();
+            if (instance != null) {
+                builder.setAttribute("Class Name", instance.getClass().getName());
+            }
+        }
+
+        builder.setAttribute("Thread Name", Thread.currentThread().getName());
+
+        Span span = builder.startSpan();
+        currentConcurrentSpan.set(span);
+        currentConcurrentScope.set(span.makeCurrent());
+    }
+
+    private void stopConcurrentContextSpan() {
+        Scope scope = currentConcurrentScope.get();
+        Span span = currentConcurrentSpan.get();
+        if (scope != null) {
+            scope.close();
+            currentConcurrentScope.remove();
+        }
+        if (span != null) {
+            span.end();
+            currentConcurrentSpan.remove();
+        }
     }
 
     @Override
@@ -362,6 +422,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            stopConcurrentContextSpan();
             requestTracing.endTrace();
         }
         if (stuckThreads != null) {
