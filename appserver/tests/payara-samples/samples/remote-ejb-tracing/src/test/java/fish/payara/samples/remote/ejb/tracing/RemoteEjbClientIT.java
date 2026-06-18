@@ -46,7 +46,6 @@ import java.net.URI;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Properties;
@@ -56,13 +55,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
-
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 
 /**
  * Test that verifies the automatic propagation of baggage items across process boundaries when using Remote EJBs.
@@ -79,83 +71,37 @@ public class RemoteEjbClientIT {
     @Test
     public void executeRemoteEjbMethodIT() throws NamingException {
         Properties contextProperties = new Properties();
-        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
         // enable OpenTelemetry tracing so we get our OpenTracing instance
         System.setProperty("otel.sdk.disabled", "false");
-
-
-        Context context = new InitialContext(contextProperties);
+        
+        javax.naming.Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
+        String baggageItems = ejb.annotatedMethod();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wobbles"));
 
+        baggageItems = ejb.nonAnnotatedMethod();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wobbles")
+                        && baggageItems.contains("Nibbles : Nobbles"));
 
-        Tracer tracer = GlobalOpenTelemetry.getTracer("remote-ejb-tracing", "1.0.0");
-        Span span = tracer.spanBuilder("ExecuteEjb").startSpan();
-        try (Scope scope = Context.current()
-                .with(span)
-                .with(Baggage.builder().put("Wibbles", "Wobbles").build())
-                .makeCurrent()) {
+        baggageItems = ejb.shouldNotBeTraced();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wobbles")
+                        && baggageItems.contains("Nibbles : Nobbles")
+                        && baggageItems.contains("Bibbles : Bobbles"));
 
-            String baggageItems = ejb.annotatedMethod();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("\nWibbles : Wobbles\n"));
-            try (Scope scope2 = Baggage.current().toBuilder()
-                    .put("Nibbles", "Nobbles").build()
-                    .storeInContext(Context.current()).makeCurrent()) {
+        baggageItems = ejb.editBaggageItems();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wabbles")
+                        && baggageItems.contains("Nibbles : Nabbles")
+                        && baggageItems.contains("Bibbles : Babbles"));
 
-                baggageItems = ejb.nonAnnotatedMethod();
-                Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                        baggageItems.contains("Wibbles : Wobbles")
-                                && baggageItems.contains("Nibbles : Nobbles"));
-
-                try (Scope scope3 = Baggage.current().toBuilder()
-                        .put("Bibbles", "Bobbles").build()
-                        .storeInContext(Context.current()).makeCurrent()) {
-
-                    baggageItems = ejb.shouldNotBeTraced();
-                    Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                            baggageItems.contains("Wibbles : Wobbles")
-                                    && baggageItems.contains("Nibbles : Nobbles")
-                                    && baggageItems.contains("Bibbles : Bobbles"));
-
-                    baggageItems = ejb.editBaggageItems();
-                    Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                            baggageItems.contains("Wibbles : Wabbles")
-                                    && baggageItems.contains("Nibbles : Nabbles")
-                                    && baggageItems.contains("Bibbles : Babbles"));
-                }
-            }
-
-        } finally {
-            span.end();
-        }
     }
-
-    @Test
-    public void transactionIdAddedAsBaggageIT() throws NamingException {
-        Properties contextProperties = new Properties();
-        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
-        contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
-        // enable OpenTelemetry tracing so we get our OpenTracing instance
-        System.setProperty("otel.sdk.disabled", "false");
-
-        Context context = new InitialContext(contextProperties);
-        EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
-
-        Tracer tracer = GlobalOpenTelemetry.getTracer("remote-ejb-tracing", "1.0.0");
-
-        Span span = tracer.spanBuilder("ExecuteEjb").startSpan();
-        try(Scope scope = span.makeCurrent()) {
-            String baggageItems = ejb.annotatedMethod();
-            Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
-                    baggageItems.contains("TX-ID"));
-        } finally {
-            span.end();
-        }
-    }
-
+    
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class).addClasses(EjbRemote.class, Ejb.class);

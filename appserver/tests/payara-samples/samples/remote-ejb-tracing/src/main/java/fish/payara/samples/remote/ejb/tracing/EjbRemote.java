@@ -53,4 +53,5 @@ public interface EjbRemote {
     String shouldNotBeTraced();
 
     String editBaggageItems();
+    
 }

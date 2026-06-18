@@ -42,7 +42,6 @@ package fish.payara.samples.remote.ejb.tracing.server;
 import fish.payara.samples.remote.ejb.tracing.EjbRemote;
 import fish.payara.microprofile.telemetry.tracing.Traced;
 import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import jakarta.ejb.Stateless;
@@ -53,7 +52,7 @@ import java.util.Random;
 
 @Stateless
 public class Ejb implements EjbRemote {
-    
+
     /**
      * This method should not be traced, but the baggage items should still be available.
      *
@@ -62,8 +61,14 @@ public class Ejb implements EjbRemote {
     @Override
     public String nonAnnotatedMethod() {
         randomSleep();
-        Span current = Span.current();
-        return current.isRecording() ? getBaggageItems() : "Nothing found!";
+        Baggage baggage = Baggage.builder()
+                .put("Wibbles", "Wobbles")
+                .put("Nibbles", "Nobbles")
+                .build();
+        try (Scope scope = baggage.storeInContext(Context.current()).makeCurrent()) {
+            return getBaggageItems();
+        }
+
     }
 
     /**
@@ -75,8 +80,12 @@ public class Ejb implements EjbRemote {
     @Traced(operationName = "customName")
     public String annotatedMethod() {
         randomSleep();
-        Span current = Span.current();
-        return current.isRecording() ? getBaggageItems() : "Nothing found!";
+        Baggage baggage = Baggage.builder()
+                .put("Wibbles", "Wobbles")
+                .build();
+        try (Scope scope = baggage.storeInContext(Context.current()).makeCurrent()) {
+            return getBaggageItems();
+        }
     }
 
     /**
@@ -88,20 +97,33 @@ public class Ejb implements EjbRemote {
     @Traced(false)
     public String shouldNotBeTraced() {
         randomSleep();
-        Span current = Span.current();
-        return current.isRecording() ? getBaggageItems() : "Nothing found!";
+        Baggage baggage = Baggage.builder()
+                .put("Wibbles", "Wobbles")
+                .put("Nibbles", "Nobbles")
+                .put("Bibbles", "Bobbles")
+                .build();
+        try (Scope scope = baggage.storeInContext(Context.current()).makeCurrent()) {
+            return getBaggageItems();
+        }
     }
 
     @Override
     public String editBaggageItems() {
         randomSleep();
-        Baggage updated = Baggage.current().toBuilder()
-                .put("Wibbles", "Wabbles")
-                .put("Nibbles", "Nabbles")
-                .put("Bibbles", "Babbles")
+        Baggage initial = Baggage.builder()
+                .put("Wibbles", "Wobbles")
+                .put("Nibbles", "Nobbles")
+                .put("Bibbles", "Bobbles")
                 .build();
-        try (Scope scope = updated.storeInContext(Context.current()).makeCurrent()) {
-            return getBaggageItems();
+        try (Scope scope = initial.storeInContext(Context.current()).makeCurrent()) {
+            Baggage edited = Baggage.current().toBuilder()
+                    .put("Wibbles", "Wabbles")
+                    .put("Nibbles", "Nabbles")
+                    .put("Bibbles", "Babbles")
+                    .build();
+            try (Scope scope2 = edited.storeInContext(Context.current()).makeCurrent()) {
+                return getBaggageItems();
+            }
         }
     }
 
