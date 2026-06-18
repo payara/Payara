@@ -103,6 +103,9 @@ public class WorkflowEngine {
         Object agentInstance = null;
         LargeLanguageModel llm = null;
 
+        // Track whether @Outcome was attempted so we do not re-invoke it after handler
+        // recovery when it was @Outcome itself that threw the original exception.
+        boolean outcomeAttempted = false;
         try {
             agentInstance = resolveBean(agentMetadata.getAgentClass());
             llm = resolveBean(LargeLanguageModel.class);
@@ -121,6 +124,7 @@ public class WorkflowEngine {
             }
 
             if (agentMetadata.getOutcomeMethod() != null) {
+                outcomeAttempted = true;
                 invokePhase(agentMetadata.getOutcomeMethod(), agentInstance, workflowContext, llm, null);
             }
         } catch (Exception e) {
@@ -130,8 +134,9 @@ public class WorkflowEngine {
                 if (cause instanceof RuntimeException re) throw re;
                 throw new RuntimeException(cause);
             }
-            // Handler completed normally: run @Outcome as the recovery closure phase
-            if (agentMetadata.getOutcomeMethod() != null) {
+            // Handler completed normally: run @Outcome as the recovery closure phase,
+            // but only if @Outcome was not the phase that originally threw.
+            if (!outcomeAttempted && agentMetadata.getOutcomeMethod() != null) {
                 try {
                     invokePhase(agentMetadata.getOutcomeMethod(), agentInstance, workflowContext, llm, null);
                 } catch (Exception outcomeEx) {
