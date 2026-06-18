@@ -130,6 +130,16 @@ public class WorkflowEngine {
                 if (cause instanceof RuntimeException re) throw re;
                 throw new RuntimeException(cause);
             }
+            // Handler completed normally: run @Outcome as the recovery closure phase
+            if (agentMetadata.getOutcomeMethod() != null) {
+                try {
+                    invokePhase(agentMetadata.getOutcomeMethod(), agentInstance, workflowContext, llm, null);
+                } catch (Exception outcomeEx) {
+                    Throwable outcomeCause = unwrap(outcomeEx);
+                    if (outcomeCause instanceof RuntimeException re) throw re;
+                    throw new RuntimeException(outcomeCause);
+                }
+            }
         } finally {
             workflowScopeManager.deactivate();
         }
