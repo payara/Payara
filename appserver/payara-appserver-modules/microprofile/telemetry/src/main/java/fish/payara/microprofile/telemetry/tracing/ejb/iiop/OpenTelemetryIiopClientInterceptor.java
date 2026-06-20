@@ -64,7 +64,7 @@ public class OpenTelemetryIiopClientInterceptor extends LocalObject implements C
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryIiopClientInterceptor.class.getName());
     static final int OPENTELEMETRY_IIOP_ID = 3226428;
-    
+
     @Override
     public void send_request(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
         Span currentSpan = Span.current();
@@ -73,7 +73,6 @@ public class OpenTelemetryIiopClientInterceptor extends LocalObject implements C
         }
 
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-
         HashMap<String, String> contextMap = new HashMap<>();
         openTelemetry.getPropagators().getTextMapPropagator()
                 .inject(Context.current(), contextMap, HashMap::put);
@@ -115,7 +114,7 @@ public class OpenTelemetryIiopClientInterceptor extends LocalObject implements C
 
     @Override
     public String name() {
-        return "";
+        return this.getClass().getSimpleName();
     }
 
     @Override

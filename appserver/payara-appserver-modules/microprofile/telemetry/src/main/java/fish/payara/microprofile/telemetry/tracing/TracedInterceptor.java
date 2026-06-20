@@ -112,8 +112,7 @@ public class TracedInterceptor implements Serializable {
 
         Span span = Span.current();
         if (span.isRecording()) {
-            span.updateName(operationName);
-            span.setAttribute("otel.service.name", applicationName);
+            span = span.updateName(operationName).setAttribute("otel.service.name", applicationName);
             try (Scope scope = span.makeCurrent()) {
                 try {
                     return invocationContext.proceed();

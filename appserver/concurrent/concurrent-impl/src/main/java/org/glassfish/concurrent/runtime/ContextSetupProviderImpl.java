@@ -338,9 +338,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
         Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
                 Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-
         SpanBuilder builder = tracer.spanBuilder("executeConcurrentContext");
-
         Context parentContext = handle.getParentTraceContext();
         if (parentContext != null) {
             builder.setParent(parentContext);
@@ -363,7 +361,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         builder.setAttribute("Thread Name", Thread.currentThread().getName());
-
         Span span = builder.startSpan();
         currentConcurrentSpan.set(span);
         currentConcurrentScope.set(span.makeCurrent());

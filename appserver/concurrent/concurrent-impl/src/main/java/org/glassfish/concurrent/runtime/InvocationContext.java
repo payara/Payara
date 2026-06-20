@@ -70,7 +70,7 @@ public class InvocationContext implements ContextHandle {
     private List<ThreadContextSnapshot> threadContextSnapshots;
     private List<ThreadContextRestorer> threadContextRestorers;
 
-    private io.opentelemetry.context.Context parentTraceContext;
+    private Context parentTraceContext;
 
     public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
             boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
@@ -125,7 +125,7 @@ public class InvocationContext implements ContextHandle {
         return threadContextRestorers;
     }
 
-    public io.opentelemetry.context.Context getParentTraceContext() {
+    public Context getParentTraceContext() {
         return parentTraceContext;
     }
     

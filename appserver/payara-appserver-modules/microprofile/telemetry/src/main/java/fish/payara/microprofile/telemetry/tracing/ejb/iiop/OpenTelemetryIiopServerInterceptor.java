@@ -76,11 +76,11 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
     private OpenTracingService openTracingService;
     private final ThreadLocal<Scope> currentScope = new ThreadLocal<>();
     private final ThreadLocal<Span> currentSpan = new ThreadLocal<>();
-    
+
     public OpenTelemetryIiopServerInterceptor(OpenTracingService openTracingService) {
         this.openTracingService = openTracingService;
     }
-    
+
     @Override
     public void receive_request_service_contexts(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
         // Noop
@@ -93,7 +93,7 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
         if (!tracerAvailable()) {
             return;
         }
-        
+
         try {
             serviceContext = serverRequestInfo.get_request_service_context(OPENTELEMETRY_IIOP_ID);
             if (serviceContext == null) {
@@ -113,22 +113,20 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
         }
 
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-
         TextMapGetter<HashMap<String, String>> getter = new TextMapGetter<HashMap<String, String>>() {
             @Override
             public Iterable<String> keys(HashMap<String, String> carrier) {
                 return carrier.keySet();
             }
-            
+
             @Override
             public String get(HashMap<String, String> carrier, String key) {
                 return carrier.get(key);
             }
         };
-        
+
         Context parentContext = openTelemetry.getPropagators().getTextMapPropagator()
                 .extract(Context.current(), contextMap, getter);
-
         Tracer tracer = openTelemetry.getTracerProvider().get(OpenTelemetryService.INSTRUMENTATION_SCOPE_NAME);
         Span span = tracer.spanBuilder("rmi")
                 .setParent(parentContext)
@@ -183,6 +181,9 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
     }
 
     private boolean tracerAvailable() {
+        if (openTracingService == null) {
+            return false;
+        }
         return openTracingService.isEnabled();
     }
 }

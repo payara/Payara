@@ -89,7 +89,12 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
     public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (serverRequestInterceptor == null) {
             if (attemptCreation()) {
-                serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(openTracingService);
+                try {
+                    serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(openTracingService);
+                } catch (NullPointerException nullPointerException) {
+                    logger.log(Level.WARNING, "Could not create OpenTracing IIOP Server Interceptor - Remote EJBs will not be traced");
+                    return null;
+                }
             }
         }
 
@@ -106,9 +111,7 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
 
         if (openTracingService == null) {
             openTracingService = serviceLocator.getService(OpenTracingService.class);
-            if (openTracingService == null) {
-                return false;
-            }
+            return openTracingService != null;
         }
 
         return true;

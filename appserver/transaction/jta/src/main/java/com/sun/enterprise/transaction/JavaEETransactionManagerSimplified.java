@@ -1751,10 +1751,8 @@ public class JavaEETransactionManagerSimplified
         if (span.isRecording()) {
             AttributesBuilder attrsBuilder = Attributes.builder();
             spanLog.getLogEntries().forEach(attrsBuilder::put);
-
             String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
             span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
-
             // Add transaction ID as baggage item
             if (tx != null) {
                 if (tx.getClass().equals(JavaEETransactionImpl.class)) {

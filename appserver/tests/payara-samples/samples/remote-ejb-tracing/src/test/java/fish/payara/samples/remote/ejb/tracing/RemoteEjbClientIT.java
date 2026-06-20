@@ -46,6 +46,7 @@ import java.net.URI;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Properties;
@@ -71,13 +72,13 @@ public class RemoteEjbClientIT {
     @Test
     public void executeRemoteEjbMethodIT() throws NamingException {
         Properties contextProperties = new Properties();
-        contextProperties.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
         // enable OpenTelemetry tracing so we get our OpenTracing instance
         System.setProperty("otel.sdk.disabled", "false");
         
-        javax.naming.Context context = new InitialContext(contextProperties);
+        Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
         String baggageItems = ejb.annotatedMethod();
         Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
@@ -105,13 +106,13 @@ public class RemoteEjbClientIT {
     @Test
     public void transactionIdAddedAsBaggageIT() throws NamingException {
         Properties contextProperties = new Properties();
-        contextProperties.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
+        contextProperties.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.enterprise.naming.SerialInitContextFactory");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialHost", "localhost");
         contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
         // enable OpenTelemetry tracing so we get our OpenTracing instance
         System.setProperty("otel.sdk.disabled", "false");
 
-        javax.naming.Context context = new InitialContext(contextProperties);
+        Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
         
         String baggageItems = ejb.annotatedMethod();
