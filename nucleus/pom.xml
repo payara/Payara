@@ -92,7 +92,7 @@
         <classmate.version>1.7.3</classmate.version>
         <jboss-logging.version>3.6.3.Final</jboss-logging.version>
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
-        <javassist.version>3.31.0-GA</javassist.version>
+        <javassist.version>3.32.0-GA</javassist.version>
 
         <apache.sshd.version>2.18.0</apache.sshd.version>
         <slf4j.version>2.0.18</slf4j.version>
