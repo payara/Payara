@@ -129,8 +129,10 @@ public class TranslatedConfigView implements ConfigView {
                 return value;
             }
 
-            if (domainPasswordAliasStore() != null) {
-                if (getAlias(stringValue) != null) {
+            if (getAlias(stringValue) != null) {
+                // First search for alias in value, it's faster than loading alias store. If no alias in value, store doesn't need to load. Speeds up startup.
+                DomainScopedPasswordAliasStore dasPasswordAliasStore = domainPasswordAliasStore();
+                if (dasPasswordAliasStore != null) {
                     try {
                         return getRealPasswordFromAlias(stringValue);
                     } catch (Exception e) {
