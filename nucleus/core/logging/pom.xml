@@ -129,6 +129,19 @@
                                 <Export-Package>
                                     fish.payara.enterprise.server.logging
                                 </Export-Package>
+                                <_exportcontents>
+                                    com.sun.enterprise.server.logging.logviewer.backend,
+                                    com.sun.enterprise.server.logging.diagnostics,
+                                    com.sun.enterprise.server.logging
+                                </_exportcontents>
+                                <DynamicImport-Package>
+                                    org.glassfish.cluster.ssh.launcher,
+                                    org.glassfish.cluster.ssh.sftp,
+                                    org.apache.sshd.*,
+                                    com.sun.enterprise.util.cluster.windows.io,
+                                    com.sun.enterprise.util.cluster.windows.process,
+                                    org.glassfish.cluster.ssh.util
+                                </DynamicImport-Package>
                             </instructions>
                         </configuration>
                     </execution>
