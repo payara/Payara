@@ -46,7 +46,6 @@ import io.opentelemetry.context.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.omg.CORBA.LocalObject;
@@ -74,9 +73,9 @@ public class OpenTelemetryIiopClientInterceptor extends LocalObject implements C
         }
 
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-        HashMap<String, String> contextMap = new HashMap<>();
+        OpenTelemetryIiopTextMap contextMap = new OpenTelemetryIiopTextMap();
         openTelemetry.getPropagators().getTextMapPropagator()
-                .inject(Context.current(), contextMap, HashMap::put);
+                .inject(Context.current(), contextMap, OpenTelemetryIiopTextMap::put);
 
         if (contextMap.isEmpty()) {
             return;
