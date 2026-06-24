@@ -94,14 +94,6 @@ of COPY_LIB map constant.)
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <properties>
-                <property>
-                  <name>listener</name>
-                  <value>org.testng.reporters.VerboseReporter</value>
-                </property>
-                <property>
-                  <name>reporter</name>
-                  <value>listenReport.Reporter</value>
-                </property>
                 <runOrder>alphabetical</runOrder>
               </properties>
             </configuration>
