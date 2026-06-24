@@ -53,13 +53,12 @@ import java.util.Map;
 import org.glassfish.tests.utils.NucleusTestUtils;
 import static org.glassfish.tests.utils.NucleusTestUtils.*;
 import static org.testng.AssertJUnit.*;
-import org.testng.ITestContext;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 
 public class NucleusStartStopTest {
 
-    private static final String TEST_LIBS_KEY = "TEST_LIBS";
+    private static final Collection<File> testLibs = new ArrayList<>();
     private static final Map<String, String> COPY_LIB;
     static {
         HashMap<String, String> map = new HashMap<String, String>();
@@ -68,10 +67,8 @@ public class NucleusStartStopTest {
     }
 
     @BeforeSuite
-    public void setUp(ITestContext context) throws IOException {
+    public void setUp() throws IOException {
         //Copy testing libraries into Nucleus distribution
-        Collection<File> testLibs = new ArrayList<File>();
-        context.setAttribute(TEST_LIBS_KEY, testLibs);
         String basedir = System.getProperty("basedir");
         assertNotNull(basedir);
         File addondir = new File(basedir, "target/addon");
@@ -85,19 +82,16 @@ public class NucleusStartStopTest {
     }
 
     @AfterSuite(alwaysRun = true)
-    public void tearDown(ITestContext context) {
+    public void tearDown() {
         try {
             assertTrue(nadmin("stop-domain"));
         } finally {
-            Collection<File> libs = (Collection<File>) context.getAttribute(TEST_LIBS_KEY);
-            if (libs != null) {
-                for (File lib : libs) {
-                    if (lib.exists()) {
-                        try {
-                            lib.delete();
-                        } catch (Exception ex) {
-                            System.out.println("Can not delete " + lib.getAbsolutePath());
-                        }
+            for (File lib : testLibs) {
+                if (lib.exists()) {
+                    try {
+                        lib.delete();
+                    } catch (Exception ex) {
+                        System.out.println("Can not delete " + lib.getAbsolutePath());
                     }
                 }
             }
