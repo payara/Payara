@@ -1765,12 +1765,11 @@ public class JavaEETransactionManagerSimplified
             spanLog.getLogEntries().forEach(attrsBuilder::put);
             if (tx != null && tracer != null) {
                 span = tracer.spanBuilder("addJtaEventTraceLog").startSpan();
-                try (Scope scope = span.makeCurrent()) {
-                    String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
-                    span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
-                    // Add transaction ID as attribute item
-                    setTransactionAttribute(span, tx);
-                }
+                span.makeCurrent();
+                String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
+                span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
+                // Add transaction ID as attribute item
+                setTransactionAttribute(span, tx);
             }
             getRequestTracing().addSpanLog(spanLog);
         }

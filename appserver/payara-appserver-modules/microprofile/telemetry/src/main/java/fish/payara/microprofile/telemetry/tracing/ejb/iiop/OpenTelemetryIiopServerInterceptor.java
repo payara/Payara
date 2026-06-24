@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.util.HashMap;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.ServiceContext;
@@ -84,14 +85,16 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
             return carrier.get(key);
         }
     };
-
+    
+    private ServiceLocator serviceLocator;
     private OpenTracingService openTracingService;
     private final ThreadLocal<Scope> currentScope = new ThreadLocal<>();
     private final ThreadLocal<Span> currentSpan = new ThreadLocal<>();
 
-    public OpenTelemetryIiopServerInterceptor(OpenTracingService openTracingService) {
-        this.openTracingService = openTracingService;
+    public OpenTelemetryIiopServerInterceptor(ServiceLocator serviceLocator) {
+        this.serviceLocator = serviceLocator;
     }
+
 
     @Override
     public void receive_request_service_contexts(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
@@ -101,7 +104,7 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
     @Override
     public void receive_request(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
         ServiceContext serviceContext;
-
+        
         if (!tracerAvailable()) {
             return;
         }
@@ -183,6 +186,7 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
     }
 
     private boolean tracerAvailable() {
+        openTracingService = serviceLocator.getService(OpenTracingService.class);
         if (openTracingService == null) {
             return false;
         }

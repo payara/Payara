@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.ServiceContext;
 import org.omg.PortableInterceptor.ClientRequestInfo;
@@ -64,7 +65,7 @@ import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryI
 public class OpenTelemetryIiopClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryIiopClientInterceptor.class.getName());
-
+    
     @Override
     public void send_request(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
         Span currentSpan = Span.current();

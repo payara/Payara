@@ -70,7 +70,6 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
     private ServerRequestInterceptor serverRequestInterceptor;
 
     private ServiceLocator serviceLocator;
-    private OpenTracingService openTracingService;
 
     @Override
     public synchronized ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
@@ -83,7 +82,7 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
     @Override
     public synchronized ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (serverRequestInterceptor == null && attemptCreation()) {
-            serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(openTracingService);
+            serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(serviceLocator);
         }
         return serverRequestInterceptor;
     }
@@ -91,14 +90,8 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
     private boolean attemptCreation() {
         if (serviceLocator == null) {
             serviceLocator = Globals.getStaticBaseServiceLocator();
-            if (serviceLocator == null) {
-                return false;
-            }
         }
-
-        if (openTracingService == null) {
-            openTracingService = serviceLocator.getService(OpenTracingService.class);
-        }
-        return openTracingService != null;
+        
+        return serviceLocator != null;
     }
 }
