@@ -88,6 +88,8 @@
 
         <ldapbp.version>1.0</ldapbp.version>
 
+        <winrm4j.version>0.12.3</winrm4j.version>
+
         <!-- Library for introspecting types with full generic information including resolving of field and method types. -->
         <classmate.version>1.7.3</classmate.version>
         <jboss-logging.version>3.6.3.Final</jboss-logging.version>
@@ -910,6 +912,11 @@ Parent is ${project.parent}</echo>
                 <groupId>org.apache.sshd</groupId>
                 <artifactId>sshd-scp</artifactId>
                 <version>${apache.sshd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.cloudsoft.windows</groupId>
+                <artifactId>winrm4j</artifactId>
+                <version>${winrm4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
