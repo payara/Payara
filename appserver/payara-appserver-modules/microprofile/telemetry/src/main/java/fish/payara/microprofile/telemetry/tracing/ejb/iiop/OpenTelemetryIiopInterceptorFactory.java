@@ -57,11 +57,14 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
  *
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
-@Service(name = "OpenTracingIiopInterceptorFactory")
+@Service(name = "OpenTelemetryIiopInterceptorFactory")
 @Singleton
 public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFactory {
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryIiopInterceptorFactory.class.getName());
+
+    public static final int OPENTELEMETRY_IIOP_ID = 3226428;
+    public static final long OPENTRACING_IIOP_SERIAL_VERSION_UID = 20200731171822L;
 
     private ClientRequestInterceptor clientRequestInterceptor;
     private ServerRequestInterceptor serverRequestInterceptor;
@@ -70,34 +73,18 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
     private OpenTracingService openTracingService;
 
     @Override
-    public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
-        if (clientRequestInterceptor == null) {
-            if (attemptCreation()) {
-                try {
-                    clientRequestInterceptor = new OpenTelemetryIiopClientInterceptor();
-                } catch (NullPointerException nullPointerException) {
-                    logger.log(Level.WARNING, "Could not create OpenTracing IIOP Client Interceptor - Remote EJBs will not be traced");
-                    return null;
-                }
-            }
+    public synchronized ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
+        if (clientRequestInterceptor == null && attemptCreation()) {
+            clientRequestInterceptor = new OpenTelemetryIiopClientInterceptor();
         }
-
         return clientRequestInterceptor;
     }
 
     @Override
-    public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
-        if (serverRequestInterceptor == null) {
-            if (attemptCreation()) {
-                try {
-                    serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(openTracingService);
-                } catch (NullPointerException nullPointerException) {
-                    logger.log(Level.WARNING, "Could not create OpenTracing IIOP Server Interceptor - Remote EJBs will not be traced");
-                    return null;
-                }
-            }
+    public synchronized ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
+        if (serverRequestInterceptor == null && attemptCreation()) {
+            serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(openTracingService);
         }
-
         return serverRequestInterceptor;
     }
 
@@ -111,9 +98,7 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
 
         if (openTracingService == null) {
             openTracingService = serviceLocator.getService(OpenTracingService.class);
-            return openTracingService != null;
         }
-
-        return true;
+        return openTracingService != null;
     }
 }

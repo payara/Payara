@@ -55,6 +55,8 @@ import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import org.omg.PortableInterceptor.ForwardRequest;
 
+import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryIiopInterceptorFactory.OPENTELEMETRY_IIOP_ID;
+
 /**
  * IIOP Client Interceptor for propagating OpenTracing SpanContext to Payara Server.
  *
@@ -63,7 +65,6 @@ import org.omg.PortableInterceptor.ForwardRequest;
 public class OpenTelemetryIiopClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryIiopClientInterceptor.class.getName());
-    static final int OPENTELEMETRY_IIOP_ID = 3226428;
 
     @Override
     public void send_request(ClientRequestInfo clientRequestInfo) throws ForwardRequest {

@@ -315,7 +315,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
 
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && openTracing != null && requestTracing.isRequestTracingEnabled()) {
             startConcurrentContextSpan(invocation, handle);
         }
         
@@ -336,8 +336,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
-        Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
+        Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(invocationManager));
         SpanBuilder builder = tracer.spanBuilder("executeConcurrentContext");
         Context parentContext = handle.getParentTraceContext();
         if (parentContext != null) {

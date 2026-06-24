@@ -51,7 +51,7 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.ObjectInput;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import org.omg.CORBA.BAD_PARAM;
@@ -61,7 +61,7 @@ import org.omg.PortableInterceptor.ForwardRequest;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
-import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryIiopClientInterceptor.OPENTELEMETRY_IIOP_ID;
+import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryIiopInterceptorFactory.OPENTELEMETRY_IIOP_ID;
 
 
 /**
@@ -72,6 +72,18 @@ import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryI
 public class OpenTelemetryIiopServerInterceptor extends LocalObject implements ServerRequestInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(OpenTelemetryIiopServerInterceptor.class.getName());
+
+    private static final TextMapGetter<HashMap<String, String>> getter = new TextMapGetter<HashMap<String, String>>() {
+        @Override
+        public Iterable<String> keys(HashMap<String, String> carrier) {
+            return carrier.keySet();
+        }
+
+        @Override
+        public String get(HashMap<String, String> carrier, String key) {
+            return carrier.get(key);
+        }
+    };
 
     private OpenTracingService openTracingService;
     private final ThreadLocal<Scope> currentScope = new ThreadLocal<>();
@@ -104,29 +116,19 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
             return;
         }
 
-        HashMap<String, String> contextMap;
+        OpenTelemetryIiopTextMap openTelemetryIiopTextMap = null;
         try (ByteArrayInputStream bis = new ByteArrayInputStream(serviceContext.context_data);
-             ObjectInputStream in = new ObjectInputStream(bis)) {
-            contextMap = (HashMap<String, String>) in.readObject();
+             ObjectInput in = new OpenTelemetryIiopObjectInputStream(bis)) {
+            openTelemetryIiopTextMap =  (OpenTelemetryIiopTextMap) in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new ForwardRequest(e.getMessage(), serverRequestInfo);
         }
 
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-        TextMapGetter<HashMap<String, String>> getter = new TextMapGetter<HashMap<String, String>>() {
-            @Override
-            public Iterable<String> keys(HashMap<String, String> carrier) {
-                return carrier.keySet();
-            }
-
-            @Override
-            public String get(HashMap<String, String> carrier, String key) {
-                return carrier.get(key);
-            }
-        };
+        
 
         Context parentContext = openTelemetry.getPropagators().getTextMapPropagator()
-                .extract(Context.current(), contextMap, getter);
+                .extract(Context.current(), openTelemetryIiopTextMap, getter);
         Tracer tracer = openTelemetry.getTracerProvider().get(OpenTelemetryService.INSTRUMENTATION_SCOPE_NAME);
         Span span = tracer.spanBuilder("rmi")
                 .setParent(parentContext)

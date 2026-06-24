@@ -4101,9 +4101,21 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
             Tracer tracer = openTracingService.getTracer(openTracingService.getApplicationName(invocationManager));
             if (tracer != null) {
                 String eventName = callEnter ? "enterEjbMethodEvent" : "exitEjbMethodEvent";
-                Span span = tracer.spanBuilder(info.getMethod().getName()).startSpan();
-                try(Scope scope = span.makeCurrent()) {
-                    if (span.isRecording()) {
+                Span span = Span.current();
+                if (span.isRecording()) {
+                    span.addEvent(eventName, Attributes.builder()
+                            .put("ApplicationName", info.getApplicationName())
+                            .put("ComponentName", info.getComponentName())
+                            .put("ComponentType", info.getComponentType().toString())
+                            .put("ModuleName", info.getModuleName())
+                            .put("EJBClass", ejbClass.getCanonicalName())
+                            .put("EJBMethod", info.getMethod().getName())
+                            .put("CallerPrincipal", String.valueOf(info.getCallerPrincipal()))
+                            .put("TX-ID", String.valueOf(info.getTransactionId()))
+                            .build());
+                } else {
+                    span = tracer.spanBuilder(info.getMethod().getName()).startSpan();
+                    try (Scope scope = span.makeCurrent()) {
                         span.addEvent(eventName, Attributes.builder()
                                 .put("ApplicationName", info.getApplicationName())
                                 .put("ComponentName", info.getComponentName())
@@ -4114,11 +4126,9 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                                 .put("CallerPrincipal", String.valueOf(info.getCallerPrincipal()))
                                 .put("TX-ID", String.valueOf(info.getTransactionId()))
                                 .build());
-                    } else {
-                        _logger.log(Level.FINE, "Tracing is not enabled, skipping event {0}", eventName);
+                    } finally {
+                        span.end();
                     }
-                } finally {
-                   span.end();
                 }
             }
             RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(info, callEnter);

@@ -123,7 +123,6 @@ public class TracedInterceptor implements Serializable {
                 }
             } finally {
                 span.end();
-                LOG.log(Level.FINEST, "Don't close the span for now");
             }
         } else {
             span = tracer.spanBuilder(operationName).setAttribute("otel.service.name", applicationName).startSpan();
@@ -137,7 +136,6 @@ public class TracedInterceptor implements Serializable {
                 }
             } finally {
                 span.end();
-                LOG.log(Level.FINEST, "Don't close the span for now");
             }
         }
     }
