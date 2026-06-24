@@ -62,7 +62,7 @@ public class NucleusStartStopTest {
     private static final Map<String, String> COPY_LIB;
     static {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("modules", "modules");
+        map.put("modules", "glassfish/modules");
         COPY_LIB = Collections.unmodifiableMap(map);
     }
 
@@ -128,6 +128,7 @@ public class NucleusStartStopTest {
 
     private static void copy(File src, File dest) throws IOException {
         if (!dest.exists()) {
+            dest.getParentFile().mkdirs();
             dest.createNewFile();
         }
         FileChannel sch = null;
