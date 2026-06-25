@@ -77,43 +77,32 @@ public class RemoteEjbClientIT {
         contextProperties.setProperty("org.omg.CORBA.ORBInitialPort", "3700");
         // enable OpenTelemetry tracing so we get our OpenTracing instance
         System.setProperty("otel.sdk.disabled", "false");
-
-
+        
         Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
+        String baggageItems = ejb.annotatedMethod();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wobbles"));
 
+        baggageItems = ejb.nonAnnotatedMethod();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wobbles")
+                        && baggageItems.contains("Nibbles : Nobbles"));
 
-        Tracer tracer = GlobalTracer.get();
-        Span span = tracer.buildSpan("ExecuteEjb").start();
-        try (Scope scope = tracer.activateSpan(span)) {
-            span.setBaggageItem("Wibbles", "Wobbles");
-            String baggageItems = ejb.annotatedMethod();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("\nWibbles : Wobbles\n"));
+        baggageItems = ejb.shouldNotBeTraced();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wobbles")
+                        && baggageItems.contains("Nibbles : Nobbles")
+                        && baggageItems.contains("Bibbles : Bobbles"));
 
-            span.setBaggageItem("Nibbles", "Nobbles");
-            baggageItems = ejb.nonAnnotatedMethod();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("Wibbles : Wobbles")
-                    && baggageItems.contains("Nibbles : Nobbles"));
+        baggageItems = ejb.editBaggageItems();
+        Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
+                baggageItems.contains("Wibbles : Wabbles")
+                        && baggageItems.contains("Nibbles : Nabbles")
+                        && baggageItems.contains("Bibbles : Babbles"));
 
-            span.setBaggageItem("Bibbles", "Bobbles");
-            baggageItems = ejb.shouldNotBeTraced();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("Wibbles : Wobbles")
-                    && baggageItems.contains("Nibbles : Nobbles")
-                    && baggageItems.contains("Bibbles : Bobbles"));
-
-            baggageItems = ejb.editBaggageItems();
-            Assert.assertTrue("Baggage items didn't match, received: " + baggageItems,
-                    baggageItems.contains("Wibbles : Wabbles")
-                    && baggageItems.contains("Nibbles : Nabbles")
-                    && baggageItems.contains("Bibbles : Babbles"));
-        } finally {
-            span.finish();
-        }
     }
-
+    
     @Test
     public void transactionIdAddedAsBaggageIT() throws NamingException {
         Properties contextProperties = new Properties();
@@ -125,19 +114,12 @@ public class RemoteEjbClientIT {
 
         Context context = new InitialContext(contextProperties);
         EjbRemote ejb = (EjbRemote) context.lookup(String.format("java:global%sEjb", uri.getPath()));
-
-        Tracer tracer = GlobalTracer.get();
-
-        Span span = tracer.buildSpan("ExecuteEjb").start();
-        try(Scope scope = tracer.activateSpan(span)) {
-            String baggageItems = ejb.annotatedMethod();
-            Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
+        
+        String baggageItems = ejb.annotatedMethod();
+        Assert.assertTrue("Baggage items didn't contain transaction ID, received: " + baggageItems,
                     baggageItems.contains("TX-ID"));
-        } finally {
-            span.finish();
-        }
     }
-
+    
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class).addClasses(EjbRemote.class, Ejb.class);

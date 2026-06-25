@@ -60,6 +60,12 @@ import com.sun.logging.LogDomains;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
+import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -679,6 +685,14 @@ public class JavaEETransactionManagerSimplified
         }
 
         setCurrentTransaction(tx);
+
+        if (openTracingServiceProvider != null) {
+            OpenTracingService openTracingService = getOpenTracing();
+            if (openTracingService != null && openTracingService.isEnabled()) {
+                addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx);
+            }
+        }
+        
         return tx;
     }
 
@@ -965,6 +979,13 @@ public class JavaEETransactionManagerSimplified
                     }
                 }
             }
+
+            if (openTracingServiceProvider != null) {
+                OpenTracingService openTracingService = getOpenTracing();
+                if (openTracingService != null && openTracingService.isEnabled()) {
+                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
+                }
+            }
             
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
@@ -997,6 +1018,13 @@ public class JavaEETransactionManagerSimplified
                     if ( tx != null ) {
                         ((JavaEETransactionImpl)tx).onTxCompletion(false);
                     }
+                }
+            }
+
+            if (openTracingServiceProvider != null) {
+                OpenTracingService openTracingService = getOpenTracing();
+                if (openTracingService != null && openTracingService.isEnabled()) {
+                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
                 }
             }
         } finally {
@@ -1717,6 +1745,42 @@ public class JavaEETransactionManagerSimplified
         }
 
         return tx;
+    }
+
+    private void addJtaEventTraceLog(RequestTraceSpanLog spanLog, JavaEETransaction tx) {
+        Span span = Span.current();
+        if (span.isRecording()) {
+            AttributesBuilder attrsBuilder = Attributes.builder();
+            spanLog.getLogEntries().forEach(attrsBuilder::put);
+            String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
+            span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
+            // Add transaction ID as attribute item
+            if (tx != null) {
+                setTransactionAttribute(span, tx);
+            }
+        } else {
+            final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
+            final Tracer tracer = payaraTracingServices.getActiveTracer();
+            AttributesBuilder attrsBuilder = Attributes.builder();
+            spanLog.getLogEntries().forEach(attrsBuilder::put);
+            if (tx != null && tracer != null) {
+                span = tracer.spanBuilder("addJtaEventTraceLog").startSpan();
+                span.makeCurrent();
+                String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
+                span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
+                // Add transaction ID as attribute item
+                setTransactionAttribute(span, tx);
+            }
+            getRequestTracing().addSpanLog(spanLog);
+        }
+    }
+
+    private void setTransactionAttribute(Span span, JavaEETransaction tx) {
+        if (tx.getClass().equals(JavaEETransactionImpl.class)) {
+            span.setAttribute("TX-ID", ((JavaEETransactionImpl) tx).getTransactionId());
+        } else {
+            span.setAttribute("TransactionInfo", tx.toString());
+        }
     }
 
     private RequestTraceSpanLog constructJTABeginSpanLog(JavaEETransactionImpl transaction) {
