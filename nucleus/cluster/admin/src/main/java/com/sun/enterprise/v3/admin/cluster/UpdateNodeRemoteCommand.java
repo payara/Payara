@@ -52,6 +52,7 @@ import com.sun.enterprise.util.cluster.SshAuthType;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
@@ -68,6 +69,9 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTE_WINRM_PASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTE_WINRM_PORT;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTE_WINRM_USER;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHAUTHTYPE;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYPASSPHRASE;
@@ -122,6 +126,7 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
     private static final String NL = System.lineSeparator();
 
     protected abstract void populateParameters();
+    protected abstract void applyParameters(ParameterMap map);
     protected abstract RemoteType getType();
     protected abstract String getDefaultPort();
 
@@ -186,6 +191,8 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
         commandParameters.add(PARAM_SSHKEYPASSPHRASE, sshkeypassphrase);
         commandParameters.add(PARAM_WINDOWSDOMAINNAME, windowsdomain);
         commandParameters.add(PARAM_TYPE, getType().toString());
+        applyParameters(commandParameters);
+
         // Settings are valid. Now use the generic update-node command to
         // update the node.
         CommandInvocation ci = cr.getCommandInvocation("_update-node", report, context.getSubject());
@@ -241,6 +248,14 @@ public abstract class UpdateNodeRemoteCommand implements AdminCommand  {
                 parameters.insert(PARAM_SSHPASSWORD, remotepassword, getSupplier(ssha, ssha::getPassword));
             }
         }
+
+        WinrmConnector winrm = node.getWinrmConnector();
+        if (winrm != null) {
+            parameters.insert(PARAM_REMOTE_WINRM_USER, winrm.getWinrmUser());
+            parameters.insert(PARAM_REMOTE_WINRM_PASSWORD, winrm.getWinrmPassword());
+            parameters.insert(PARAM_REMOTE_WINRM_PORT, winrm.getWinrmPort());
+        }
+
         return parameters;
     }
 

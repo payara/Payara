@@ -44,6 +44,9 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.util.cluster.RemoteType;
 import com.sun.enterprise.util.cluster.SshAuthType;
 
+import fish.payara.api.admin.WinrmCommandExecutionException;
+import fish.payara.cluster.winrm.WinRMHelper;
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.universal.process.ProcessManagerException;
@@ -103,6 +106,7 @@ public class NodeUtils {
     private Logger logger = null;
     private ServiceLocator habitat = null;
     SSHLauncher sshL = null;
+    WinRMHelper winrm = null;
 
     NodeUtils(ServiceLocator habitat, Logger logger) {
         this.logger = logger;
@@ -113,6 +117,7 @@ public class NodeUtils {
                 new HashMap<String, String>((Map) (System.getProperties()));
         resolver = new TokenResolver(systemPropsMap);
         sshL = habitat.getService(SSHLauncher.class);
+        winrm = habitat.getService(WinRMHelper.class);
     }
 
     public static boolean isSSHNode(Node node) {
@@ -180,6 +185,14 @@ public class NodeUtils {
             map.add(NodeUtils.PARAM_TYPE, node.getType());
         }
 
+        WinrmConnector winrmc = node.getWinrmConnector();
+        if (winrmc != null) {
+            map.add(NodeUtils.PARAM_REMOTE_WINRM_USER, winrmc.getWinrmUser());
+            map.add(NodeUtils.PARAM_REMOTE_WINRM_PASSWORD, winrmc.getWinrmPassword());
+            map.add(NodeUtils.PARAM_REMOTE_WINRM_PORT, winrmc.getWinrmPort());
+            map.add(NodeUtils.PARAM_TYPE, node.getType());
+        }
+
         validate(map);
     }
 
@@ -205,6 +218,9 @@ public class NodeUtils {
 
         if (type == RemoteType.SSH) {
             validateSsh(map);
+        }
+        if (type == RemoteType.WINRM) {
+            validateWinRM(map);
         }
 
         // bn: shouldn't this be something more sophisticated than just the standard string?!?
@@ -255,6 +271,10 @@ public class NodeUtils {
                         kfile.getPath(), System.getProperty("user.name")));
             }
         }
+    }
+
+    private void validateWinRM(ParameterMap map) throws CommandValidationException {
+        // TODO: WinRM
     }
 
     void validateHostName(String hostName)
@@ -318,7 +338,23 @@ public class NodeUtils {
      */
     void pingRemoteConnection(Node node) throws CommandValidationException {
         validateHostName(node.getNodeHost());
-        pingSSHConnection(node);
+
+        String nodeType = node.getType();
+        if ("SSH".equals(nodeType)) {
+            pingSSHConnection(node);
+        }
+        else if ("WINRM".equals(nodeType)) {
+            pingWinRMConnection(node);
+        }
+    }
+
+    void pingWinRMConnection(Node node) throws CommandValidationException {
+        if (node.getWinrmConnector() == null) {
+            // TODO: WinRM ( string property translate this )
+            throw new CommandValidationException("no winrm connector for this node");
+        }
+        winrm.init(node);
+        winrm.pingConnection();
     }
 
     /**
@@ -349,7 +385,14 @@ public class NodeUtils {
     }
 
     private void validateRemoteConnection(ParameterMap map) throws CommandValidationException {
-        validateSSHConnection(map);
+        // guaranteed to either get a valid type -- or a CommandValidationException
+        RemoteType type = parseType(map);
+
+        if (type == RemoteType.SSH) {
+            validateSSHConnection(map);
+        } else if (type == RemoteType.WINRM) {
+            validateWinRMConnection(map);
+        }
     }
 
     private void validateSSHConnection(ParameterMap map) throws
@@ -403,6 +446,10 @@ public class NodeUtils {
             logger.warning(StringUtils.cat(": ", msg, m1, m2, sshL.toString()));
             throw new CommandValidationException(StringUtils.cat(NL, msg, m1, m2));
         }
+    }
+
+    private void validateWinRMConnection(ParameterMap map) throws CommandValidationException {
+        // TODO: WinRM
     }
 
     /**
@@ -498,6 +545,14 @@ public class NodeUtils {
             String msg = Strings.get("node.command.failed.ssh.details",
                     nodeName, nodeHost, ec.getCommandRun(), ec.getMessage(),
                     ec.getSSHSettings());
+            logger.warning(StringUtils.cat(": ", msg1, msg, msg3));
+        }
+        catch (WinrmCommandExecutionException e) {
+            msg2 = Strings.get("node.winrm.bad.connect",
+                    nodeName, nodeHost, e.getMessage());
+            // Log some extra info
+            String msg = Strings.get("node.command.failed.winrm.details",
+                    nodeName, nodeHost, e.getCommand(), e.getMessage());
             logger.warning(StringUtils.cat(": ", msg1, msg, msg3));
         }
         catch (ProcessManagerException ex) {

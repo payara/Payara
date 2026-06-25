@@ -101,6 +101,11 @@ public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
     }
 
     @Override
+    protected void applyParameters(ParameterMap map) {
+        // Nothing to do here, SSH parameter names are already hard-coded in the superclass.
+    }
+
+    @Override
     protected RemoteType getType() {
         return RemoteType.SSH;
     }
