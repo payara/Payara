@@ -77,6 +77,7 @@ import org.glassfish.cluster.ssh.connect.NodeRunner;
  */
 public class NodeUtils {
     public static final String NODE_DEFAULT_SSH_PORT = "22";
+    public static final String NODE_DEFAULT_WINRM_PORT = "5985";
     public static final String NODE_DEFAULT_REMOTE_USER = "${user.name}";
     public static final String NODE_DEFAULT_INSTALLDIR = "${com.sun.aas.productRoot}";
     // Command line option parameter names
@@ -90,6 +91,9 @@ public class NodeUtils {
     public static final String PARAM_SSHPASSWORD = "sshpassword";
     public static final String PARAM_SSHKEYPASSPHRASE = "sshkeypassphrase";
     public static final String PARAM_WINDOWSDOMAINNAME = "windowsdomain";
+    public static final String PARAM_REMOTE_WINRM_USER = "winrmuser";
+    public static final String PARAM_REMOTE_WINRM_PASSWORD = "winrmpassword";
+    public static final String PARAM_REMOTE_WINRM_PORT = "winrmport";
     public static final String PARAM_TYPE = "type";
     public static final String PARAM_INSTALL = "install";
     public static final String PARAM_WINDOWS_DOMAIN = "windowsdomain";
@@ -111,11 +115,18 @@ public class NodeUtils {
         sshL = habitat.getService(SSHLauncher.class);
     }
 
-    static boolean isSSHNode(Node node) {
+    public static boolean isSSHNode(Node node) {
         if (node == null) {
             return false;
         }
         return node.getType().equals("SSH");
+    }
+
+    public static boolean isWinRMNode(Node node) {
+        if (node == null) {
+            return false;
+        }
+        return node.getType().equals("WINRM");
     }
 
     /**
