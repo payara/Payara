@@ -43,7 +43,7 @@ import java.util.List;
 
 public class NoOpLlmBackend implements LlmBackend {
     @Override
-    public String chat(List<String> conversationHistory) {
+    public String chat(String systemPrompt, List<Turn> conversation) {
         return "";
     }
 }

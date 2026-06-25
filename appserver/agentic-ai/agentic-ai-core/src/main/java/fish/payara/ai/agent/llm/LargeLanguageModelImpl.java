@@ -54,7 +54,7 @@ public class LargeLanguageModelImpl implements LargeLanguageModel {
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\}");
     private final Jsonb jsonb = JsonbBuilder.create();
     private final LlmBackend backend;
-    private final List<String> conversationHistory = new ArrayList<>();
+    private final List<LlmBackend.Turn> conversation = new ArrayList<>();
 
     public LargeLanguageModelImpl(LlmBackend backend) {
         this.backend = backend;
@@ -159,12 +159,17 @@ public class LargeLanguageModelImpl implements LargeLanguageModel {
     }
 
     private String callBackend(String prompt) {
-        conversationHistory.add(prompt);
+        LlmBackend.Turn userTurn = new LlmBackend.Turn("user", prompt);
+        conversation.add(userTurn);
         try {
-            return backend.chat(List.copyOf(conversationHistory));
+            String response = backend.chat(null, List.copyOf(conversation));
+            conversation.add(new LlmBackend.Turn("assistant", response == null ? "" : response));
+            return response;
         } catch (LLMException e) {
+            conversation.remove(userTurn);
             throw e;
         } catch (Exception e) {
+            conversation.remove(userTurn);
             throw new LLMException("LLM backend error", e);
         }
     }
