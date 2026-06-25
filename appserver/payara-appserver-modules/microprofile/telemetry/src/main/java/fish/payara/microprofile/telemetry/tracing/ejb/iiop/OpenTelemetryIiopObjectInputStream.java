@@ -1,5 +1,3 @@
-package fish.payara.samples.remote.ejb.tracing;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,19 +37,38 @@ package fish.payara.samples.remote.ejb.tracing;
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.microprofile.telemetry.tracing.ejb.iiop;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InvalidClassException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.util.HashMap;
+
+import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryIiopInterceptorFactory.OPENTRACING_IIOP_SERIAL_VERSION_UID;
+
+/**
+ * Extension of ObjectInputStream for deserialising {@link OpenTelemetryIiopTextMap}
+ *
+ * @author Andrew Pielage <andrew.pielage@payara.fish>
+ */
+public class OpenTelemetryIiopObjectInputStream extends ObjectInputStream {
 
 
-import jakarta.ejb.Remote;
+    public OpenTelemetryIiopObjectInputStream(InputStream in) throws IOException {
+        super(in);
+    }
 
-@Remote
-public interface EjbRemote {
-
-    String nonAnnotatedMethod();
-
-    String annotatedMethod();
-
-    String shouldNotBeTraced();
-
-    String editBaggageItems();
-    
+    @Override
+    protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        // Only deserialise main transport class and its required field types
+        if ((desc.getName().equals(OpenTelemetryIiopTextMap.class.getName())
+                && desc.getSerialVersionUID() == OPENTRACING_IIOP_SERIAL_VERSION_UID)
+                || desc.getName().equals(HashMap.class.getName())) {
+            return super.resolveClass(desc);
+        } else {
+            throw new InvalidClassException("Not an authorised class", desc.getName());
+        }
+    }
 }

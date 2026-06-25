@@ -90,6 +90,10 @@ import fish.payara.cluster.DistributedLockType;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.ejb.AccessLocalException;
@@ -4094,6 +4098,39 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     private void addEjbMethodTraceLog(CallFlowInfo info, boolean callEnter) {
         if (openTracingService.isEnabled()) {
+            Tracer tracer = openTracingService.getTracer(openTracingService.getApplicationName(invocationManager));
+            if (tracer != null) {
+                String eventName = callEnter ? "enterEjbMethodEvent" : "exitEjbMethodEvent";
+                Span span = Span.current();
+                if (span.isRecording()) {
+                    span.addEvent(eventName, Attributes.builder()
+                            .put("ApplicationName", info.getApplicationName())
+                            .put("ComponentName", info.getComponentName())
+                            .put("ComponentType", info.getComponentType().toString())
+                            .put("ModuleName", info.getModuleName())
+                            .put("EJBClass", ejbClass.getCanonicalName())
+                            .put("EJBMethod", info.getMethod().getName())
+                            .put("CallerPrincipal", String.valueOf(info.getCallerPrincipal()))
+                            .put("TX-ID", String.valueOf(info.getTransactionId()))
+                            .build());
+                } else {
+                    span = tracer.spanBuilder(info.getMethod().getName()).startSpan();
+                    try (Scope scope = span.makeCurrent()) {
+                        span.addEvent(eventName, Attributes.builder()
+                                .put("ApplicationName", info.getApplicationName())
+                                .put("ComponentName", info.getComponentName())
+                                .put("ComponentType", info.getComponentType().toString())
+                                .put("ModuleName", info.getModuleName())
+                                .put("EJBClass", ejbClass.getCanonicalName())
+                                .put("EJBMethod", info.getMethod().getName())
+                                .put("CallerPrincipal", String.valueOf(info.getCallerPrincipal()))
+                                .put("TX-ID", String.valueOf(info.getTransactionId()))
+                                .build());
+                    } finally {
+                        span.end();
+                    }
+                }
+            }
             RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(info, callEnter);
             requestTracingService.addSpanLog(spanLog);
         }
