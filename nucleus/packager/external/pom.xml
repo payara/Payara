@@ -70,6 +70,7 @@
         <module>opentracing-repackaged</module>
         <module>opentelemetry-repackaged</module>
         <module>tiger-types</module>
+        <module>winrm-repackaged</module>
     </modules>
     <build>
         <plugins>

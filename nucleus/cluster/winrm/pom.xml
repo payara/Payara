@@ -39,15 +39,9 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.cloudsoft.windows</groupId>
-            <artifactId>winrm4j</artifactId>
-            <version>${winrm4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>33.6.0-jre</version>
-            <scope>compile</scope>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>winrm-repackaged</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
