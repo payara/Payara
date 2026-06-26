@@ -203,7 +203,6 @@ public abstract class ClassPathManager {
         String probeClassNames = System.getProperty("com.sun.aas.jar.probe.class.names",
                 "com.sun.enterprise.appclient.jws.boot.JWSACCMain," /* appserv-jwsacc */ +
                 "com.sun.enterprise.appclient.Main," /* appserv-rt */ +
-                "com.sun.jdo.api.persistence.enhancer.ByteCodeEnhancer," /* appserv-cmp */ +
                 "com.sun.enterprise.admin.servermgmt.DomainConfig," /* appserv-admin */ +
                 "com.sun.enterprise.deployment.client.DeploymentClientUtils," /* appserv-deployment-client */ +
                 "jakarta.ejb.EJB," /* jakarta ee */ +

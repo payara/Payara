@@ -150,9 +150,6 @@ public class Application extends CommonResourceBundleDescriptor
      */
     private Boolean passByReference = null;
 
-    // use a String object as lock so it can be serialized as part
-    // of the Application object
-    private String cmpDescriptorsLock = "cmp descriptors lock";
 
     // flag to indicate that the memory representation of this application
     // is not in sync with the disk representation

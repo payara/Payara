@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2018-2025 Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package org.glassfish.appclient.client;
 
@@ -993,12 +993,17 @@ public class CLIBootstrap {
         }
 
         File configxml() {
-            // Try using glassfish-acc.xml. If that does not exist then the user might have done an in-place upgrade from an earlier
-            // version that used sun-acc.xml.
-            
-            File configXMLFile = new File(new File(home, ACC_CONFIG_PREFIX), "glassfish-acc.xml");
+            // Try using payara-acc.xml. If that does not exist then the user might have done an in-place upgrade from an earlier
+            // version that used glassfish-acc.xml or sun-acc.xml.
+
+            File configXMLFile = new File(new File(home, ACC_CONFIG_PREFIX), "payara-acc.xml");
             if (configXMLFile.canRead()) {
                 return configXMLFile;
+            }
+
+            File glassfishACCXMLFile = new File(new File(home, ACC_CONFIG_PREFIX), "glassfish-acc.xml");
+            if (glassfishACCXMLFile.canRead()) {
+                return glassfishACCXMLFile;
             }
             
             File sunACCXMLFile = new File(new File(home, ACC_CONFIG_PREFIX), "sun-acc.xml");

@@ -69,9 +69,7 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
         // we do not care about our standard DDS handles
         handlers = null;
         registerElementHandler(new XMLElement(RuntimeTagNames.EJB), 
-                               EjbNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.CMP_RESOURCE), 
-                               CmpResourceNode.class);                    
+                               EjbNode.class);;
         registerElementHandler
             (new XMLElement(RuntimeTagNames.MESSAGE_DESTINATION), 
              MessageDestinationRuntimeNode.class);
@@ -128,13 +126,6 @@ public class EnterpriseBeansRuntimeNode extends RuntimeDescriptorNode {
         for (Iterator ejbIterator = bundleDescriptor.getEjbs().iterator();ejbIterator.hasNext();) {
             EjbDescriptor ejbDescriptor = (EjbDescriptor) ejbIterator.next();
             ejbNode.writeDescriptor(ejbs, RuntimeTagNames.EJB, ejbDescriptor);
-        }
-
-        // cmpresource?
-        ResourceReferenceDescriptor rrd = bundleDescriptor.getCMPResourceReference();
-        if ( rrd != null ) {
-            CmpResourceNode crn = new CmpResourceNode();
-            crn.writeDescriptor(ejbs, RuntimeTagNames.CMP_RESOURCE, rrd);
         }
         
 		// message-destination*

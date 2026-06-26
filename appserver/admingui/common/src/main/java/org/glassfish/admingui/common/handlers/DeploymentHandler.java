@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 /*
  * DeploymentHandler.java
@@ -255,6 +255,7 @@ public class DeploymentHandler {
              payload.put("verify", deployMap.get("verify"));
              payload.put("precompilejsp", deployMap.get("precompilejsp"));
              payload.put("availabilityEnabled", deployMap.get("availabilityEnabled"));
+             payload.put("warlibs", deployMap.get("warlibs"));
              if ("osgi".equals(deployMap.get("type"))){
                  payload.put("type", "osgi");
              }

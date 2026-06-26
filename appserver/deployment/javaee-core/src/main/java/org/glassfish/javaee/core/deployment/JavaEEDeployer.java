@@ -104,8 +104,7 @@ public abstract class   JavaEEDeployer<T extends Container, U extends Applicatio
 
     /**
      * Returns the classpath associated with this module
-     * Can be used to compile generated cmp classes,
-     * rmi stubs etc.
+     * Can be used to compile generated rmi stubs etc.
      *
      * @return the classpath for this module
      */

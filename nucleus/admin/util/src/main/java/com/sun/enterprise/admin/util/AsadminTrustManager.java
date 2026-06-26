@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -174,24 +174,17 @@ public class AsadminTrustManager implements X509TrustManager {
         }
 
         String result = null;
-        LineReader lineReader = null;
         try {
-            lineReader = LineReaderBuilder.builder()
+            // Do NOT close the terminal: DumbTerminal wraps System.in/System.out, and
+            // closing it closes those process-wide streams, which breaks any subsequent
+            // JLine read (e.g. the admin credential prompt that follows this dialog).
+            LineReader lineReader = LineReaderBuilder.builder()
                     .terminal(new DumbTerminal(System.in, System.out))
                     .build();
 
             result = lineReader.readLine(STRING_MANAGER.get("certificateTrustPrompt"));
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error instantiating console", ioe);
-        }
-        finally {
-            if (lineReader != null && lineReader.getTerminal() != null) {
-                try {
-                    lineReader.getTerminal().close();
-                } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error closing terminal", ioe);
-                }
-            }
         }
         return result != null && result.equalsIgnoreCase("y");
     }

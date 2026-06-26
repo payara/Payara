@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
@@ -70,8 +70,8 @@ public class ACCConfigContent {
     public ACCConfigContent(File domainConfig, File installLibAppclient) throws FileNotFoundException, IOException {
 
         sunACC = SunACCPairedFiles.newSunACCPairedFiles(
-                new File(domainConfig, "glassfish-acc.xml"),
-                new File(domainConfig, "glassfish-acc.jws.xml"));
+                new File(domainConfig, "payara-acc.xml"),
+                new File(domainConfig, "payara-acc.jws.xml"));
 
         appClientLogin = PairedFiles.newPairedFiles(
                 new File(installLibAppclient, "appclientlogin.conf"),

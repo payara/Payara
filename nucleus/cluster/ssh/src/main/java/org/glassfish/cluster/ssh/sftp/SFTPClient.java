@@ -37,155 +37,197 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or affiliates
 
 package org.glassfish.cluster.ssh.sftp;
 
-import com.trilead.ssh2.Connection;
-import com.trilead.ssh2.SFTPException;
-import com.trilead.ssh2.SFTPv3Client;
-import com.trilead.ssh2.SFTPv3FileAttributes;
-import com.trilead.ssh2.SFTPv3FileHandle;
-import com.trilead.ssh2.sftp.ErrorCodes;
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.sftp.client.SftpClient;
+import org.apache.sshd.sftp.client.SftpClientFactory;
+import org.apache.sshd.sftp.common.SftpConstants;
+import org.apache.sshd.sftp.common.SftpException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
-import org.glassfish.cluster.ssh.util.SSHUtil;
+import java.util.ArrayList;
+import java.util.List;
 
-public class SFTPClient extends SFTPv3Client {
+/**
+ * SFTP client wrapper around Apache MINA SSHD's {@link SftpClient}.
+ *
+ * <p>Manages the lifecycle of the underlying SshClient and ClientSession,
+ * closing both when this client is closed.
+ */
+public class SFTPClient implements AutoCloseable {
 
-    private Connection connection = null;
+    private final SshClient sshClient;
+    private final ClientSession session;
+    private final SftpClient delegate;
 
-    public SFTPClient(Connection conn) throws IOException {
-        super(conn);
-        this.connection = conn;
-        SSHUtil.register(connection);
+    public SFTPClient(SshClient sshClient, ClientSession session) throws IOException {
+        this.sshClient = sshClient;
+        this.session = session;
+        this.delegate = SftpClientFactory.instance().createSftpClient(session);
     }
 
     /**
-     * Close the SFTP connection and free any resources associated with it.
-     * close() should be called when you are done using the SFTPClient
+     * Creates an SFTP subsystem over an existing session.
+     * This client does NOT own the session lifecycle — the session will not be
+     * closed when this client is closed. Use this when the session is managed
+     * by an {@link SSHConnection}.
+     */
+    public SFTPClient(ClientSession session) throws IOException {
+        this.sshClient = null;
+        this.session = null;
+        this.delegate = SftpClientFactory.instance().createSftpClient(session);
+    }
+
+    /**
+     * Closes the SFTP connection and releases all underlying resources.
      */
     @Override
     public void close() {
-        if (connection != null) {
-            SSHUtil.unregister(connection);
-            connection = null;
+        try {
+            delegate.close();
+        } catch (IOException ignored) {
         }
-        super.close();
+        if (session != null) {
+            try {
+                session.close();
+            } catch (IOException ignored) {
+            }
+        }
+        if (sshClient != null) {
+            try {
+                sshClient.close();
+            } catch (IOException ignored) {
+            }
+        }
     }
 
     /**
-     * Checks if the given path exists.
+     * Normalizes a remote path for use with Windows OpenSSH SFTP.
+     *
+     * <ul>
+     *   <li>Backslashes are converted to forward slashes.
+     *   <li>{@code C:path} (drive-relative, typically caused by the Linux shell
+     *       stripping the backslash from {@code C:\path}) is promoted to the
+     *       absolute {@code C:/path} so the SFTP server sees the correct location.
+     * </ul>
+     */
+    public static String normalizePath(String path) {
+        path = path.replace('\\', '/');
+        // "C:path" → "C:/path": a Windows drive-relative path caused by the Linux
+        // shell stripping the backslash from "C:\path".  Only applied when the
+        // first character is a letter (Windows drive letter convention) so that
+        // Unix paths are never affected.
+        if (path.length() >= 2
+                && Character.isLetter(path.charAt(0))
+                && path.charAt(1) == ':'
+                && (path.length() == 2 || path.charAt(2) != '/')) {
+            path = path.substring(0, 2) + "/" + path.substring(2);
+        }
+        return path;
+    }
+
+    /**
+     * Returns {@code true} if the remote path exists.
      */
     public boolean exists(String path) throws IOException {
-        return _stat(normalizePath(path))!=null;
+        return _stat(normalizePath(path)) != null;
     }
 
     /**
-     * Graceful {@link #stat(String)} that returns null if the path doesn't exist.
+     * Stat that returns {@code null} when the path does not exist instead of
+     * throwing an exception.
      */
-    public SFTPv3FileAttributes _stat(String path) throws IOException {
+    public SftpClient.Attributes _stat(String path) throws IOException {
         try {
-            return stat(normalizePath(path));
-        } catch (SFTPException e) {
-            int c = e.getServerErrorCode();
-            if (c== ErrorCodes.SSH_FX_NO_SUCH_FILE || c==ErrorCodes.SSH_FX_NO_SUCH_PATH)
+            return delegate.stat(normalizePath(path));
+        } catch (SftpException e) {
+            if (e.getStatus() == SftpConstants.SSH_FX_NO_SUCH_FILE
+                    || e.getStatus() == SftpConstants.SSH_FX_NO_SUCH_PATH) {
                 return null;
-            else
-                throw e;
+            }
+            throw e;
         }
     }
 
     /**
-     * Makes sure that the directory exists, by creating it if necessary.
+     * Creates every missing directory component in {@code path} with
+     * {@code posixPermission}.
      */
     public void mkdirs(String path, int posixPermission) throws IOException {
-        path =normalizePath(path);
-        SFTPv3FileAttributes atts = _stat(path);
-        if (atts!=null && atts.isDirectory())
+        path = normalizePath(path);
+        SftpClient.Attributes atts = _stat(path);
+        if (atts != null && atts.isDirectory()) {
             return;
+        }
 
         int idx = path.lastIndexOf('/');
-        if (idx>0)
-            mkdirs(path.substring(0,idx), posixPermission);
+        if (idx > 0) {
+            mkdirs(path.substring(0, idx), posixPermission);
+        }
 
         try {
-            mkdir(path, posixPermission);
+            delegate.mkdir(path);
+            SftpClient.Attributes perms = new SftpClient.Attributes();
+            perms.setPermissions(posixPermission);
+            delegate.setStat(path, perms);
         } catch (IOException e) {
-            throw new IOException("Failed to mkdir "+path,e);
+            throw new IOException("Failed to mkdir " + path, e);
         }
     }
 
     /**
-     * Creates a new file and writes to it.
+     * Opens an {@link OutputStream} for the given remote path, creating the
+     * file if it does not exist (truncates if it already exists).
      */
     public OutputStream writeToFile(String path) throws IOException {
-        path =normalizePath(path);
-        final SFTPv3FileHandle h = createFile(path);
-        return new OutputStream() {
-            private long offset = 0;
-            public void write(int b) throws IOException {
-                write(new byte[]{(byte)b});
-            }
-
-            @Override
-            public void write(byte[] b, int off, int len) throws IOException {
-                SFTPClient.this.write(h,offset,b,off,len);
-                offset += len;
-            }
-
-            @Override
-            public void close() throws IOException {
-                closeFile(h);
-            }
-        };
+        return delegate.write(normalizePath(path));
     }
 
+    /**
+     * Opens an {@link InputStream} for the given remote file.
+     */
     public InputStream read(String file) throws IOException {
-        file =normalizePath(file);         
-        final SFTPv3FileHandle h = openFileRO(file);
-        return new InputStream() {
-            private long offset = 0;
-
-            public int read() throws IOException {
-                byte[] b = new byte[1];
-                if(read(b)<0)
-                    return -1;
-                return b[0];
-            }
-
-            @Override
-            public int read(byte[] b, int off, int len) throws IOException {
-                int r = SFTPClient.this.read(h,offset,b,off,len);
-                if (r<0)    return -1;
-                offset += r;
-                return r;
-            }
-
-            @Override
-            public long skip(long n) throws IOException {
-                offset += n;
-                return n;
-            }
-
-            @Override
-            public void close() throws IOException {
-                closeFile(h);
-            }
-        };
+        return delegate.read(normalizePath(file));
     }
 
+    /**
+     * Changes the POSIX permission bits of a remote path.
+     */
     public void chmod(String path, int permissions) throws IOException {
-        path =normalizePath(path);
-        SFTPv3FileAttributes atts = new SFTPv3FileAttributes();
-        atts.permissions = permissions;
-        setstat(path, atts);
+        path = normalizePath(path);
+        SftpClient.Attributes attrs = new SftpClient.Attributes();
+        attrs.setPermissions(permissions);
+        delegate.setStat(path, attrs);
     }
 
-    // Commands run in a shell on Windows need to have forward slashes.
-    public static String normalizePath(String path){
-        return path.replaceAll("\\\\","/");
+    public List<SftpClient.DirEntry> ls(String dir) throws IOException {
+        dir = normalizePath(dir);
+        List<SftpClient.DirEntry> result = new ArrayList<>();
+        for (SftpClient.DirEntry entry : delegate.readDir(dir)) {
+            result.add(entry);
+        }
+        return result;
     }
 
+    public void rm(String path) throws IOException {
+        delegate.remove(normalizePath(path));
+    }
+
+    public void rmdir(String path) throws IOException {
+        delegate.rmdir(normalizePath(path));
+    }
+
+    public SftpClient.Attributes lstat(String path) throws IOException {
+        return delegate.lstat(normalizePath(path));
+    }
+
+    public void setStat(String path, SftpClient.Attributes attrs) throws IOException {
+        delegate.setStat(normalizePath(path), attrs);
+    }
 }

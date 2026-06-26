@@ -36,11 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
-
-    Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
-
-
  */
+//Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.util.cluster;
 
 import com.sun.enterprise.admin.util.InstanceRestCommandExecutor;
@@ -195,7 +192,12 @@ public final class InstanceInfo {
 
     private void getFutureResult() {
         try {
-            InstanceCommandResult r = future.get(timeoutInMsec, TimeUnit.MILLISECONDS);
+            // Give the executor 2 extra seconds beyond the HTTP connect/read timeouts.
+            // On Windows, a stopped instance's port produces no RST, so the HTTP connect
+            // hangs for exactly connectTimeout ms before SocketTimeoutException fires.
+            // Without this buffer the future.get() deadline races with ice.run() completing,
+            // causing a spurious TimeoutException → UNKNOWN instead of NOT_RUNNING.
+            InstanceCommandResult r = future.get(timeoutInMsec + 2000, TimeUnit.MILLISECONDS);
             InstanceRestCommandExecutor res = (InstanceRestCommandExecutor) r.getInstanceCommand();
             String instanceLocation = res.getCommandOutput();
             // Remove the pesky \n out

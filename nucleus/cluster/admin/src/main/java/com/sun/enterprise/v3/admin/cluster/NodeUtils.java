@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.v3.admin.cluster;
 
@@ -459,9 +459,13 @@ public class NodeUtils {
         }
 
         NodeRunner nr = new NodeRunner(habitat, logger);
+        logger.fine("runAdminCommandOnNode: node=" + nodeName
+                + " host=" + nodeHost + " command=" + command);
         try {
             int status = nr.runAdminCommandOnNode(node, output, waitForReaderThreads,
                     command, context);
+            logger.fine("Command returned status=" + status
+                    + " output=[" + output.toString().trim() + "]");
             if (status != 0) {
                 // Command ran, but didn't succeed. Log full information
                 msg2 = Strings.get("node.command.failed", nodeName,

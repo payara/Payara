@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package fish.payara.microprofile.metrics.writer;
 import static fish.payara.microprofile.metrics.MetricUnitsUtils.scaleToBaseUnit;
 
 import fish.payara.microprofile.metrics.impl.HistogramImpl;
-import fish.payara.microprofile.metrics.impl.TimerImpl;
 import fish.payara.microprofile.metrics.impl.WeightedSnapshot;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -157,13 +156,17 @@ public class OpenMetricsExporter implements MetricExporter {
     private void exportSampling(MetricID metricID, Sampling sampling, LongSupplier count, Supplier<Number> sum, Metadata metadata) {
         Tag[] tags = metricID.getTagsAsArray();
         Snapshot snapshot = sampling.getSnapshot();
-        String mean = globalName(metricID, metadata, "_mean");
-        appendTYPE(mean, OpenMetricsType.gauge);
-        appendValue(mean, tags, scaleToBaseUnit(snapshot.getMean(), metadata));
         String max = globalName(metricID, metadata, "_max");
         appendTYPE(max, OpenMetricsType.gauge);
         appendHELP(max, metadata);
-        appendValue(max, tags, scaleToBaseUnit(snapshot.getMax(), metadata));
+        double maxValueToSet = 0.0;
+        if (sampling instanceof Timer) {
+            maxValueToSet = snapshot.getMax() / 1000000000D;
+        } else {
+            maxValueToSet = snapshot.getMax();
+        }
+
+        appendValue(max, tags, scaleToBaseUnit(maxValueToSet, metadata));
 
         String summary = globalName(metricID, metadata);
         appendHELP(summary, metadata);
@@ -173,12 +176,12 @@ public class OpenMetricsExporter implements MetricExporter {
             if (w.getConfigAdapter() != null) {
                 if (w.bucketValues() != null && w.bucketValues().length > 0) {
                     appendTYPE(summary, OpenMetricsType.histogram);
-                    printCustomPercentile(percentileValues, summary, tags, metadata);
+                    printCustomPercentile(percentileValues, sampling, summary, tags, metadata);
                     printBuckets(snapshot.bucketValues(), globalName(metricID, metadata, "_bucket"),
-                                tags, metadata, sampling, count);
+                            tags, metadata, sampling, count);
                 } else {
                     appendTYPE(summary, OpenMetricsType.summary);
-                    printCustomPercentile(percentileValues, summary, tags, metadata);
+                    printCustomPercentile(percentileValues, sampling, summary, tags, metadata);
                 }
             } else {
                 appendTYPE(summary, OpenMetricsType.summary);
@@ -190,12 +193,16 @@ public class OpenMetricsExporter implements MetricExporter {
         }
 
         appendValue(globalName(metricID, metadata, "_count"), tags, ((double) count.getAsLong()));
-        appendValue(globalName(metricID, metadata, "_sum"), tags, (sum.get()).doubleValue());
+        appendValue(globalName(metricID, metadata, "_sum"), tags, sum.get().doubleValue());
     }
 
-    public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, String summary, Tag[] tags, Metadata metadata) {
+    public void printCustomPercentile(Snapshot.PercentileValue[] pencentileValues, Sampling sampling, String summary, Tag[] tags, Metadata metadata) {
         for (Snapshot.PercentileValue value : pencentileValues) {
-            appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
+            if (sampling instanceof Timer) {
+                appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue() / 1000000000D);
+            } else {
+                appendValue(summary, tags("quantile", Double.toString(value.getPercentile()), tags), value.getValue());
+            }
         }
     }
 
@@ -224,7 +231,7 @@ public class OpenMetricsExporter implements MetricExporter {
             WeightedSnapshot weightedSnapshot = (WeightedSnapshot) snapshot;
             double[] conversionArray = null;
             long[] values = weightedSnapshot.getValues();
-            if (sampling instanceof TimerImpl) {
+            if (sampling instanceof Timer) {
                 conversionArray = Arrays.stream(values).mapToDouble(l -> l / 1000000000D).toArray();
             } else {
                 conversionArray = Arrays.stream(values).mapToDouble(l -> Long.valueOf(l).doubleValue()).toArray();

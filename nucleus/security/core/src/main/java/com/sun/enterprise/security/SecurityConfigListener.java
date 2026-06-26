@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security;
 
 import com.sun.enterprise.security.auth.realm.NoSuchRealmException;
@@ -51,11 +51,9 @@ import jakarta.inject.Inject;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
-import com.sun.enterprise.config.serverbeans.AuditModule;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 
-import com.sun.enterprise.security.audit.BaseAuditManager;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import java.beans.PropertyChangeEvent;
@@ -86,10 +84,7 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
     @Inject
     private RealmsManager realmsManager;
 
-    @Inject
-    BaseAuditManager auditManager;
 
-    private String auditEnabled = null;
     private String defaultRealm = null;
     private String jacc = null;
     private String activateDefaultP2RMapping = null;
@@ -146,8 +141,6 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
                     // inject PolicyLoader and try to call loadPolicy
                     // but policyLoader in V2 does not allow reloading of policy provider
                     // once installed. The only option is restart the server
-                } else if (instance instanceof AuditModule) {
-                    auditModuleCreated((AuditModule) instance);
                 } else if (instance instanceof MessageSecurityConfig) {
                     // do nothing since we have a Message security config listener
                 } else if (instance instanceof SecurityService) {
@@ -169,14 +162,12 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
                     // inject PolicyLoader and try to call loadPolicy
                     // but policyLoader in V2 does not allow reloading of policy provider
                     // once installed. The only option is restart the server
-                } else if (instance instanceof AuditModule) {
-                    auditModuleDeleted((AuditModule) instance);
                 } else if (instance instanceof MessageSecurityConfig) {
                     // do nothing since we have a message security config listener
                 } else if (instance instanceof SecurityService) {
                     // The only Attrs on securityService whose removal can affect the
                     // security code are those which are stored explicitly
-                    // they are getAuditEnabled, getDefaultRealm and getAuditModules
+                    // they are getDefaultRealm
                     // not sure what the effect of removing getDefaultRealm
                 } else {
                     np = new NotProcessed("unimplemented: unknown instance: " + instance.getClass().getName());
@@ -193,21 +184,15 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
                     // inject PolicyLoader and try to call loadPolicy
                     // but policyLoader in V2 does not allow reloading of policy provider
                     // once installed. The only option is restart the server
-                } else if (instance instanceof AuditModule) {
-                    auditModuleUpdated((AuditModule) instance);
                 } else if (instance instanceof MessageSecurityConfig) {
                     // do nothing since we have a message security config listener
                 } else if (instance instanceof SecurityService) {
                     // The only Attrs on securityService whose change in value can affect the
                     // security code are those which are stored explicitly
-                    // they are getAuditEnabled, getDefaultRealm and getAuditModules
+                    // they are, getDefaultRealm
                     if (defaultRealm != null && !defaultRealm.equals(((SecurityService) instance).getDefaultRealm())) {
                         defaultRealm = ((SecurityService) instance).getDefaultRealm();
                         Realm.setDefaultRealm(defaultRealm);
-                    }
-                    if ((auditEnabled != null) && !auditEnabled.equals(((SecurityService) instance).getAuditEnabled())) {
-                        boolean auditON = Boolean.parseBoolean(((SecurityService) instance).getAuditEnabled());
-                        auditManager.setAuditOn(auditON);
                     }
                     if (!jacc.equals(((SecurityService) instance).getJacc())) {
                         np = new NotProcessed("Cannot change JACC provider once installed, restart required");
@@ -379,7 +364,6 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
         // used from securityService instance available
         // even defaultPrincipal and defaultPrincipalPassword is directly being
         // read from securityService.
-        auditEnabled = securityService.getAuditEnabled();
         defaultRealm = securityService.getDefaultRealm();
         jacc = securityService.getJacc();
         if (jacc == null) {
@@ -389,57 +373,4 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
         mappedPrincipalClassName = securityService.getMappedPrincipalClass();
 
     }
-
-    /**
-     * New audit module created. It is called whenever a AuditModuleEvent with action of AuditModuleEvent.ACTION_CREATE is
-     * received.
-     */
-    public void auditModuleCreated(AuditModule instance) {
-        try {
-            String classname = instance.getClassname();
-            List<Property> props = instance.getProperty();
-            Properties properties = new Properties();
-            if (props != null) {
-                for (Property p : props) {
-                    properties.put(p.getName(), p.getValue());
-                }
-            }
-            auditManager.addAuditModule(instance.getName(), classname, properties);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * Audit module deleted. It is called whenever a AuditModuleEvent with action of AuditModuleEvent.ACTION_DELETE is
-     * received.
-     */
-    public void auditModuleDeleted(AuditModule instance) {
-
-        auditManager.removeAuditModule(instance.getName());
-    }
-
-    /**
-     * Audit module updated (attributes change). It is called whenever a AuditModuleEvent with action of
-     * AuditModuleEvent.ACTION_UPDATE is received.
-     */
-    public void auditModuleUpdated(AuditModule instance) {
-        try {
-
-            List<Property> props = instance.getProperty();
-            Properties properties = new Properties();
-            if (props != null) {
-                for (Property p : props) {
-                    properties.put(p.getName(), p.getValue());
-                }
-            }
-            // we don't have a way to get hold of the Old Module in V3
-            // so we would always delete and create new
-
-            auditManager.addAuditModule(instance.getName(), instance.getClassname(), properties);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
 }
