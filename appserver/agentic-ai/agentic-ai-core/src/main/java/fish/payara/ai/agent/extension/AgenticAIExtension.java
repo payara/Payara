@@ -47,7 +47,8 @@ import fish.payara.ai.agent.engine.PhaseType;
 import fish.payara.ai.agent.engine.ClassMethodOrder;
 import fish.payara.ai.agent.engine.WorkflowEngine;
 import fish.payara.ai.agent.llm.LargeLanguageModelImpl;
-import fish.payara.ai.agent.llm.NoOpLlmBackend;
+import fish.payara.ai.agent.llm.LlmBackend;
+import fish.payara.ai.agent.llm.LlmBackendFactory;
 import jakarta.ai.agent.Action;
 import jakarta.ai.agent.Agent;
 import jakarta.ai.agent.Decision;
@@ -75,6 +76,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import org.eclipse.microprofile.config.ConfigProvider;
 
 /**
  * CDI portable extension that wires Jakarta Agentic AI agents into the runtime.
@@ -178,10 +181,11 @@ public class AgenticAIExtension implements Extension {
         }
 
         if (!appProvidesLlm) {
+            LlmBackend backend = LlmBackendFactory.create(ConfigProvider.getConfig());
             afterBeanDiscovery.addBean()
                     .types(LargeLanguageModel.class, Object.class)
                     .scope(Dependent.class)
-                    .createWith(creationalContext -> new LargeLanguageModelImpl(new NoOpLlmBackend()));
+                    .createWith(creationalContext -> new LargeLanguageModelImpl(backend));
         }
     }
 

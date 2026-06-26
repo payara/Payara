@@ -41,6 +41,39 @@ package fish.payara.ai.agent.llm;
 
 import java.util.List;
 
+/**
+ * Internal SPI that adapts the Jakarta Agentic AI {@code LargeLanguageModel}
+ * facade to a concrete provider (Ollama, Anthropic, ...).
+ * <p>
+ * This type is <strong>not</strong> part of the specification &mdash; it is a
+ * Payara implementation detail, reachable from application code only through
+ * {@code LargeLanguageModel.unwrap(LlmBackend.class)}.
+ * <p>
+ * Conversation turns are role-tagged so the provider receives a correctly
+ * alternating user/assistant history. This is required both by multi-turn
+ * provider APIs (which reject consecutive same-role messages) and by the
+ * specification's requirement that conversational state be maintained per
+ * workflow context across {@code query} calls.
+ */
 public interface LlmBackend {
-    String chat(List<String> conversationHistory);
+
+    /**
+     * A single conversation turn.
+     *
+     * @param role    {@code "user"} or {@code "assistant"}
+     * @param content the turn text
+     */
+    record Turn(String role, String content) {}
+
+    /**
+     * Sends the conversation to the provider and returns the assistant reply.
+     *
+     * @param systemPrompt a stable system instruction the provider may also use
+     *                     as a prompt-cache prefix, or {@code null} when none is
+     *                     set (the facade has no system-prompt setter yet)
+     * @param conversation role-tagged turns, oldest first, ending with the
+     *                     current user turn
+     * @return the assistant's textual reply (never {@code null})
+     */
+    String chat(String systemPrompt, List<Turn> conversation);
 }
