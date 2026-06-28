@@ -134,12 +134,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
-            <version>${slf4j.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>com.bloxbean.cardano</groupId>
             <artifactId>net-i2p-crypto-eddsa</artifactId>
             <version>0.3.1</version>
