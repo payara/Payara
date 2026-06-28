@@ -198,10 +198,6 @@
             <sun:textField id="DefaultResponseType"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.DefaultResponseType']}" text="#{pageSession.httpMap['defaultResponseType']}" />
         </sun:property>
 
-        <sun:property id="ForcedResponseType"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.ForcedResponseType}" helpText="$resource{i18n_web.http.ForcedResponseTypeHelp}" >
-            <sun:textField id="ForcedResponseType"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['forcedResponseType']}" />
-        </sun:property>
-
         <sun:property id="adapter"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Adapter}" helpText="$resource{i18n_web.http.AdapterHelp}" >
             <sun:textField id="adapter"   columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.Adapter']}" text="#{pageSession.httpMap['adapter']}" />
         </sun:property>
@@ -213,10 +209,6 @@
 
         <sun:property id="DnsLookup"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.DnsLookup}" helpText="$resource{i18n_web.http.DnsLookupHelp}">
             <sun:checkbox id="dnsLookupEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['dnsLookupEnabled']}" selectedValue="true" />
-        </sun:property>
-
-        <sun:property id="RcmSupport"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.RcmSupport}" helpText="$resource{i18n_web.http.RcmSupportHelp}">
-            <sun:checkbox id="rcmSupportEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['rcmSupportEnabled']}" selectedValue="true" />
         </sun:property>
 
         <sun:property id="Trace"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.Trace}" helpText="$resource{i18n_web.http.TraceHelp}">
@@ -248,11 +240,11 @@
         </sun:property>
     
         <sun:property id="SchemeMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.SchemeMapping}" helpText="$resource{i18n_web.http.SchemeMappingHelp}" >
-            <sun:textField id="SchemeMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['schemeMapping']}" />
+            <sun:textField id="SchemeMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.DefaultResponseType']}" text="#{pageSession.httpMap['schemeMapping']}" />
         </sun:property>
     
         <sun:property id="RemoteUserMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.RemoteUserMapping}" helpText="$resource{i18n_web.http.RemoteUserMappingHelp}" >
-            <sun:textField id="RemoteUserMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['remoteUserMapping']}" />
+            <sun:textField id="RemoteUserMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.DefaultResponseType']}" text="#{pageSession.httpMap['remoteUserMapping']}" />
         </sun:property>
 
         <sun:property id="cookieSameSiteEnabled"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.EnableCookieSameSite}" helpText="$resource{i18n_web.http.EnableCookieSameSiteHelp}">
