@@ -113,11 +113,6 @@ public class LogDomains {
     /**
      * Field
      */
-    public static final String CMP_LOGGER = DOMAIN_ROOT + "enterprise.system.container.cmp";
-
-    /**
-     * Field
-     */
     public static final String JDO_LOGGER = DOMAIN_ROOT + "enterprise.resource.jdo";
 
     /**

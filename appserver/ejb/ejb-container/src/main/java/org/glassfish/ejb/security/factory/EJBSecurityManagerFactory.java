@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package org.glassfish.ejb.security.factory;
 
 import static java.util.logging.Level.FINE;
@@ -56,7 +56,6 @@ import org.glassfish.ejb.security.application.EJBSecurityManager;
 import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
 import org.jvnet.hk2.annotations.Service;
 
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
 import com.sun.logging.LogDomains;
 
@@ -73,9 +72,6 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
 
     @Inject
     private InvocationManager invocationManager;
-
-    @Inject
-    private AppServerAuditManager auditManager;
 
     private EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
 
@@ -130,9 +126,5 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
 
     public <T> void addManagerToApp(String ctxId, String name, String appName, EJBSecurityManager manager) {
         addManagerToApp(SECURITY_MANAGERS, CONTEXT_IDS, ctxId, name, appName, manager);
-    }
-
-    public final AppServerAuditManager getAuditManager() {
-        return auditManager;
     }
 }

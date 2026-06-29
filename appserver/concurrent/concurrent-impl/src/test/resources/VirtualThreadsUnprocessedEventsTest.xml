@@ -4,7 +4,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-     Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+     Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
      The contents of this file are subject to the terms of either the GNU
      General Public License Version 2 only ("GPL") or the Common Development
@@ -148,9 +148,6 @@
                     <property value="true" name="certificate-validation"/>
                 </auth-realm>
                 <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-                <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-                    <property value="false" name="auditOn" />
-                </audit-module>
                 <message-security-config auth-layer="SOAP">
                     <provider-config provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
                         <request-policy auth-source="content" />
@@ -382,9 +379,6 @@
                     <property name="certificate-validation" value="true" />
                 </auth-realm>
                 <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-                <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-                    <property value="false" name="auditOn" />
-                </audit-module>
                 <message-security-config auth-layer="SOAP">
                     <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
                         <request-policy auth-source="content" />

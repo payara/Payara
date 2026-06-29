@@ -107,12 +107,8 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     private Boolean disableNonportableJndiNames;
     private Set<EjbDescriptor> ejbs = new HashSet<EjbDescriptor>();
     private Set<Long> ejbIDs = null;
-    private Set<RelationshipDescriptor> relationships = new HashSet<RelationshipDescriptor>();
     private String relationshipsDescription;
     private String ejbClientJarUri;
-    // the resource (database) to be used for persisting CMP EntityBeans
-    // the same resource is used for all beans in this ejb jar.
-    private ResourceReferenceDescriptor cmpResourceReference;
     // Application exceptions defined for the ejbs in this module.
     private Map<String, EjbApplicationExceptionInfo> applicationExceptions =
             new HashMap<String, EjbApplicationExceptionInfo>();
@@ -148,31 +144,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     private Set<EntityManagerReferenceDescriptor>
             entityManagerReferences =
             new HashSet<EntityManagerReferenceDescriptor>();
-
-    public static int getIdFromEjbId(long ejbId) {
-        long id = ejbId >> 32;
-        return (int) id;
-    }
-
-    /**
-     * True if EJB version is 2.x.  This is the default
-     * for any new modules.
-     */
-    // XXX
-    // this method is not true anymore now we have ejb3.0, keep this
-    // method as it is for now, will revisit once ejb30 persistence
-    // is implemented
-    public boolean isEJB20() {
-        return !isEJB11();
-    }
-
-    /**
-     * True if EJB version is 1.x.
-     */
-    public boolean isEJB11() {
-        return getSpecVersion().startsWith("1");
-    }
-
     /**
      * @return the default version of the deployment descriptor
      * loaded by this descriptor
@@ -193,9 +164,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         return ejbClientJarUri;
     }
 
-    public void setEjbClientJarUri(String ejbClientJarUri) {
-        this.ejbClientJarUri = ejbClientJarUri;
-    }
 
     @Override
     public boolean isEmpty() {
@@ -207,19 +175,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     }
 
     public Map<String, EjbApplicationExceptionInfo> getApplicationExceptions() {
-        return new HashMap<String, EjbApplicationExceptionInfo>(applicationExceptions);
-    }
-
-    /**
-     * Return the set of NamedDescriptors that I have.
-     */
-    public Collection getNamedDescriptors() {
-        Collection namedDescriptors = new Vector();
-        for (EjbDescriptor ejbDescriptor : getEjbs()) {
-            namedDescriptors.add(ejbDescriptor);
-            namedDescriptors.addAll(super.getNamedDescriptorsFrom(ejbDescriptor));
-        }
-        return namedDescriptors;
+        return new HashMap<>(applicationExceptions);
     }
 
     /**
@@ -235,31 +191,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
             pairs.addAll(super.getNamedReferencePairsFrom(ejbDescriptor));
         }
         return pairs;
-    }
-
-    /**
-     * Return the set of references to resources held by ejbs defined in this module.
-     */
-    public Set<ResourceReferenceDescriptor> getEjbResourceReferenceDescriptors() {
-        Set<ResourceReferenceDescriptor> resourceReferences = new HashSet<ResourceReferenceDescriptor>();
-        for (Iterator itr = getEjbs().iterator(); itr.hasNext(); ) {
-            EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-            resourceReferences.addAll(ejbDescriptor.getResourceReferenceDescriptors());
-        }
-        return resourceReferences;
-    }
-
-    /**
-     * Return true if I reference other ejbs, false else.
-     */
-    public boolean hasEjbReferences() {
-        for (Iterator itr = getEjbs().iterator(); itr.hasNext(); ) {
-            EjbDescriptor nextEjbDescriptor = (EjbDescriptor) itr.next();
-            if (!nextEjbDescriptor.getEjbReferenceDescriptors().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -404,20 +335,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         ejbs.remove(ejbDescriptor);
     }
 
-    /**
-     * @return true if this bundle descriptor contains at least one CMP
-     * EntityBean
-     */
-    public boolean containsCMPEntity() {
-
-        Set ejbs = getEjbs();
-        for (Iterator ejbsItr = ejbs.iterator(); ejbsItr.hasNext(); ) {
-            if (ejbsItr.next() instanceof EjbCMPEntityDescriptor) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public void addInterceptor(EjbInterceptor interceptor) {
         EjbInterceptor ic =
@@ -532,88 +449,12 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     }
 
     /**
-     * Return true if I have roles, permissioned roles or container transactions.
-     */
-    public boolean hasAssemblyInformation() {
-        return (!getRoles().isEmpty()) || hasPermissionedRoles() || hasContainerTransactions();
-    }
-
-    /**
-     * Add a RelationshipDescriptor which describes a CMR field
-     * between a bean/DO/entityRef in this ejb-jar.
-     */
-    public void addRelationship(RelationshipDescriptor relDesc) {
-        relationships.add(relDesc);
-
-    }
-
-    /**
-     * Add a RelationshipDescriptor which describes a CMR field
-     * between a bean/DO/entityRef in this ejb-jar.
-     */
-    public void removeRelationship(RelationshipDescriptor relDesc) {
-        relationships.remove(relDesc);
-
-    }
-
-    /**
      * EJB2.0: get description for <relationships> element.
      */
     public String getRelationshipsDescription() {
         if (relationshipsDescription == null)
             relationshipsDescription = "";
         return relationshipsDescription;
-    }
-
-    /**
-     * EJB2.0: set description for <relationships> element.
-     */
-    public void setRelationshipsDescription(String relationshipsDescription) {
-        this.relationshipsDescription = relationshipsDescription;
-    }
-
-    /**
-     * Get all relationships in this ejb-jar.
-     *
-     * @return a Set of RelationshipDescriptors.
-     */
-    public Set<RelationshipDescriptor> getRelationships() {
-        return relationships;
-    }
-
-    public boolean hasRelationships() {
-        return (relationships.size() > 0);
-    }
-
-    /**
-     * Returns true if given relationship is already part of this
-     * ejb-jar.
-     */
-    public boolean hasRelationship(RelationshipDescriptor rd) {
-        return relationships.contains(rd);
-    }
-
-    /**
-     * Return the Resource I use for CMP.
-     */
-    public ResourceReferenceDescriptor getCMPResourceReference() {
-        return cmpResourceReference;
-    }
-
-    /**
-     * Sets the resource reference I use for CMP.
-     */
-    public void setCMPResourceReference(ResourceReferenceDescriptor resourceReference) {
-        this.cmpResourceReference = resourceReference;
-    }
-
-    public Descriptor getDescriptorByName(String name) {
-        try {
-            return getEjbByName(name);
-        } catch (IllegalArgumentException iae) {
-            // Bundle doesn't contain ejb with the given name.
-            return null;
-        }
     }
 
     // START OF IASRI 4645310
@@ -715,10 +556,6 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
     public void print(StringBuilder toStringBuilder) {
         toStringBuilder.append("EjbBundleDescriptor\n");
         super.print(toStringBuilder);
-        if (cmpResourceReference != null) {
-            toStringBuilder.append("\ncmp resource ");
-            cmpResourceReference.print(toStringBuilder);
-        }
         toStringBuilder.append("\nclient JAR ").append(getEjbClientJarUri());
         for (Descriptor o : getEjbs()) {
             toStringBuilder.append("\n------------\n");

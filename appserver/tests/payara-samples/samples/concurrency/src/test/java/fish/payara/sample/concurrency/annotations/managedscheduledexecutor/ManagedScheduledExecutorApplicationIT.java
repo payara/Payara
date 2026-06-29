@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022-2024] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -80,9 +80,8 @@ public class ManagedScheduledExecutorApplicationIT {
     public static Archive<?> createDeployment() {
         //Creating Jar ejb module
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar")
-                .addClasses(ManagedScheduledExecutorEJB.class, ManagedScheduledExecutorEJBFromConfig.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource("ejb-jar3.xml", "META-INF/ejb-jar.xml");
+                .addClasses(ManagedScheduledExecutorEJB.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         System.out.println(ejbJar.toString(true));
         //Creating web module
         WebArchive webWar = ShrinkWrap.create(WebArchive.class, "test.war")
@@ -117,23 +116,6 @@ public class ManagedScheduledExecutorApplicationIT {
         logger.log(Level.INFO, "Consuming service to test ManagedScheduledExecutor xml tag from application config{0}",
                 new Object[]{client});
         WebTarget target = this.client.target(new URL(this.base, "xml/application").toExternalForm());
-        String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
-        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
-        String[] data = message.split(":");
-        if(data[1] != null) {
-            int numberOfExecutions = Integer.parseInt(data[1]);
-            assertTrue(numberOfExecutions > 0 && numberOfExecutions <= 3, "Expected number of executions for 1.5 second is 1-3, was " + numberOfExecutions);
-        }
-        assertTrue(message.contains("CronTrigger Submitted"));
-    }
-
-    @Test
-    @DisplayName("testing ManagedScheduledExecutor tag from EJB config")
-    @RunAsClient
-    public void processManagedScheduledExecutorFromEJBConfig() throws MalformedURLException {
-        logger.log(Level.INFO, "Consuming service to test ManagedScheduledExecutor xml tag from ejb config {0}",
-                new Object[]{client});
-        WebTarget target = this.client.target(new URL(this.base, "xml/ejbconfig").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
         String[] data = message.split(":");

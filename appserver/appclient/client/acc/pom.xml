@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>7.2026.4-SNAPSHOT</version>
+        <version>7.2026.7-SNAPSHOT</version>
     </parent>
     
     
@@ -359,13 +359,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.persistence</groupId>
             <artifactId>jpa-container</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <scope>runtime</scope>
-            <groupId>fish.payara.server.internal.persistence.cmp</groupId>
-            <artifactId>cmp-internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

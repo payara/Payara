@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -97,17 +97,52 @@ public class MetricsWriterImpl implements MetricsWriter {
     }
 
     @Override
-    public void write() throws IOException {
-        MetricExporter exporter = this.exporter;
+    public void write() {
+        final MetricExporter exporter = this.exporter;
+
+        // Write standard scopes
+        writeScope(exporter, MetricRegistry.BASE_SCOPE);
+        writeScope(exporter, MetricRegistry.VENDOR_SCOPE);
+        writeScope(exporter, MetricRegistry.APPLICATION_SCOPE);
+
+        if (contextNames == null || getContextByName == null) {
+            exporter.exportComplete();
+            return;
+        }
+
         for (String contextName : contextNames) {
+            if (contextName == null) {
+                continue;
+            }
+
             MetricsContext context = getContextByName.apply(contextName);
+            if (context == null) {
+                continue;
+            }
+
             ConcurrentMap<String, MetricRegistry> registries = context.getRegistries();
-            for(String scope:registries.keySet()) {
-                exporter = exporter.in(scope);
-                writeRegistries(exporter, scope);
+            if (registries == null || registries.isEmpty()) {
+                continue;
+            }
+
+            for (String scope : registries.keySet()) {
+                if (scope == null ||
+                        MetricRegistry.BASE_SCOPE.equals(scope) ||
+                        MetricRegistry.VENDOR_SCOPE.equals(scope) ||
+                        MetricRegistry.APPLICATION_SCOPE.equals(scope)) {
+                    continue;
+                }
+
+                writeScope(exporter, scope);
             }
         }
+
         exporter.exportComplete();
+    }
+
+    private void writeScope(MetricExporter exporter, String scope) {
+        MetricExporter scopedExporter = exporter.in(scope);
+        writeRegistries(scopedExporter, scope);
     }
 
     private void writeRegistries(MetricExporter exporter, String scope) {

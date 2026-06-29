@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -353,7 +353,7 @@ public class QueryMethodParser {
     }
 
     public enum Action {
-        FIND, DELETE, COUNT, FIND_FOR_DELETE, EXISTS
+        FIND, DELETE, COUNT, EXISTS
     }
 
     private final String methodName;
@@ -365,14 +365,16 @@ public class QueryMethodParser {
     private List<OrderBy> orderBy = new ArrayList<>();
     private List<Condition> conditions = new ArrayList<>();
 
+    public record ParseResult(Action action, Integer limit, List<OrderBy> orderBy, List<Condition> conditions) {}
+
     public QueryMethodParser(String methodName) {
         this.methodName = methodName;
     }
 
-    public QueryMethodParser parse() throws QueryMethodSyntaxException {
+    public ParseResult parse() throws QueryMethodSyntaxException {
         splitTokens();
         grammarQuery();
-        return this; // for flow usage
+        return new ParseResult(action, limit, orderBy, conditions);
     }
 
     private void splitTokens() throws QueryMethodSyntaxException {
@@ -426,27 +428,11 @@ public class QueryMethodParser {
         }
     }
 
-    public Action getAction() {
-        return action;
-    }
-
-    public Integer getLimit() {
-        return limit;
-    }
-
     /**
      * @return list of tokens, only for testing
      */
     protected List<String> getTokens() {
         return tokens;
-    }
-
-    public List<OrderBy> getOrderBy() {
-        return orderBy;
-    }
-
-    public List<Condition> getConditions() {
-        return conditions;
     }
 
     /**

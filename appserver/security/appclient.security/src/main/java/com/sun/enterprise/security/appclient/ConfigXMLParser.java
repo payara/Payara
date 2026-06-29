@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2019-2024 Payara Foundation and/or its affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 // Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.security.appclient;
 
@@ -87,7 +87,8 @@ public class ConfigXMLParser implements ConfigParser {
     private final Map<String, AuthModulesLayerConfig> authModuleLayers = new HashMap<>();
     private Set<String> layersWithDefault = new HashSet<String>();
     private List<MessageSecurityConfig> msgSecConfigs = null;
-    private static final String ACC_XML = "glassfish-acc.xml.url";
+    private static final String ACC_XML = "payara-acc.xml.url";
+    private static final String ACC_XML_OLD = "glassfish-acc.xml.url";
 
     public ConfigXMLParser() {
     }
@@ -243,7 +244,10 @@ public class ConfigXMLParser implements ConfigParser {
     }
 
     public void initialize(Object config) throws IOException {
-        String sun_acc = System.getProperty(ACC_XML, "glassfish-acc.xml");
+        String sun_acc = System.getProperty(ACC_XML);
+        if (sun_acc == null) {
+            sun_acc = System.getProperty(ACC_XML_OLD, "payara-acc.xml");
+        }
         List<MessageSecurityConfig> msgconfigs = null;
         if (Globals.getDefaultHabitat() == null && sun_acc != null) {
             InputStream is = null;

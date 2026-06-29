@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>7.2026.4-SNAPSHOT</version>
+        <version>7.2026.7-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -70,12 +70,12 @@
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
-        <smallrye-config.version>3.16.0</smallrye-config.version>
-        <smallrye-common.version>2.17.0</smallrye-common.version>
+        <smallrye-config.version>3.17.2</smallrye-config.version>
+        <smallrye-common.version>2.19.0</smallrye-common.version>
         <jacc-provider.version>0.3</jacc-provider.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
-        <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
-        <arquillian.version>1.10.1.Final</arquillian.version>
+        <shrinkwrap.resolver.version>3.3.7</shrinkwrap.resolver.version>
+        <arquillian.version>1.10.2.Final</arquillian.version>
     </properties>
 
     <modules>
@@ -516,7 +516,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.17</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->

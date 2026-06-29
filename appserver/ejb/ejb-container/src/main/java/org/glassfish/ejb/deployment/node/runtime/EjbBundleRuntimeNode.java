@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package org.glassfish.ejb.deployment.node.runtime;
 
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
@@ -67,6 +67,7 @@ import org.w3c.dom.Node;
  * @author  Jerome Dochez
  * @version 
  */
+@Deprecated // When we remove support for sun-ejb-jar.xml files, we should roll all of this into PayaraEjbBundleRuntimeNode (or vice versa)
 public class EjbBundleRuntimeNode extends
         RuntimeBundleNode<EjbBundleDescriptorImpl> {
 

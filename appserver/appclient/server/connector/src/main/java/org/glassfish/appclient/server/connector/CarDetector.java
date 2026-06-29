@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2026 Payara Foundation and/or its affiliates
 
 
 package org.glassfish.appclient.server.connector;
@@ -53,7 +54,6 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ArchiveHandler;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
@@ -82,8 +82,11 @@ public class CarDetector implements ArchiveDetector {
     private Logger logger = Logger.getLogger(getClass().getPackage().getName());
 
     private static final String APPLICATION_CLIENT_XML = "META-INF/application-client.xml";
+    @Deprecated
     private static final String SUN_APPLICATION_CLIENT_XML = "META-INF/sun-application-client.xml";
+    @Deprecated
     private static final String GF_APPLICATION_CLIENT_XML = "META-INF/glassfish-application-client.xml";
+    private static final String PAYARA_APPLICATION_CLIENT_XML = "META-INF/payara-application-client.xml";
 
     @Override
     public int rank() {
@@ -93,9 +96,8 @@ public class CarDetector implements ArchiveDetector {
     @Override
     public boolean handles(ReadableArchive archive) throws IOException {
         try {
-            if (archive.exists(APPLICATION_CLIENT_XML) ||
-                archive.exists(SUN_APPLICATION_CLIENT_XML) ||
-                archive.exists(GF_APPLICATION_CLIENT_XML)) {
+            if (archive.exists(APPLICATION_CLIENT_XML) || archive.exists(SUN_APPLICATION_CLIENT_XML) ||
+                    archive.exists(GF_APPLICATION_CLIENT_XML) || archive.exists(PAYARA_APPLICATION_CLIENT_XML)) {
                 return true;
             }
 

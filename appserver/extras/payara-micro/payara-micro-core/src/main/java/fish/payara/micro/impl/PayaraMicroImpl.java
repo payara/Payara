@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -126,7 +126,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
     private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
 
-    private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
     private static final String USER_PROPS_FILE = "MICRO-INF/deploy/payaramicro.properties";
     private static final String CONTEXT_PROPS_FILE = "MICRO-INF/deploy/contexts.properties";
 
@@ -226,8 +225,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
     }
 
     public static PayaraMicroBoot create(String[] args) throws Exception {
-        // configure boot system properties
-        setBootProperties();
         PayaraMicroImpl main = getInstance();
         main.scanArgs(args);
         if (main.getUberJar() != null) {
@@ -2668,26 +2665,6 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
 
         if (alternateHZConfigFile != null) {
             runtimeDir.setHZConfigFile(alternateHZConfigFile);
-        }
-    }
-
-    private static void setBootProperties() {
-        Properties bootProperties = new Properties();
-
-        // First Read from embedded boot preoprties
-        try (InputStream is = PayaraMicroImpl.class
-                .getResourceAsStream(BOOT_PROPS_FILE)) {
-            if (is != null) {
-                bootProperties.load(is);
-                for (String key : bootProperties.stringPropertyNames()) {
-                    // do not override an existing system property
-                    if (System.getProperty(key) == null) {
-                        System.setProperty(key, bootProperties.getProperty(key));
-                    }
-                }
-            }
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
         }
     }
 

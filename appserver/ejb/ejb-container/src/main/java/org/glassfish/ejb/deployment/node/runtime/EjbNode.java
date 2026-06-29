@@ -64,7 +64,6 @@ import java.util.logging.Level;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
-import org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.BeanCacheDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.CheckpointAtEndOfMethodDescriptor;
 import org.glassfish.ejb.deployment.descriptor.runtime.FlushAtEndOfMethodDescriptor;
@@ -96,8 +95,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
                                MessageDestinationRefNode.class);
         registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF),
                                ServiceRefNode.class);
-        registerElementHandler(new XMLElement(RuntimeTagNames.CMP), 
-                               CmpNode.class);
         registerElementHandler(new XMLElement(RuntimeTagNames.MDB_CONNECTION_FACTORY), 
 				MDBConnectionFactoryNode.class);         
         registerElementHandler(new XMLElement(RuntimeTagNames.IOR_CONFIG), 
@@ -278,11 +275,6 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
 
 	appendTextChild(ejbNode, RuntimeTagNames.PASS_BY_REFERENCE, 
 		String.valueOf(ejbDescriptor.getIASEjbExtraDescriptors().getPassByReference()));
-
-	if (ejbDescriptor instanceof IASEjbCMPEntityDescriptor) {
-	    CmpNode cmpNode = new CmpNode();
-	    cmpNode.writeDescriptor(ejbNode, RuntimeTagNames.CMP, (IASEjbCMPEntityDescriptor) ejbDescriptor);
-	}
 	
         // principal
         if ( Boolean.FALSE.equals(ejbDescriptor.getUsesCallerIdentity()) ) {

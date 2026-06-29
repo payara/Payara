@@ -142,11 +142,6 @@
 	<class name="test.ejb.slsbnicmt.SlsbnicmtTestNG" />
 	<class name="test.ejb.sfulnoi.SfulnoiTestNG" />
     </classes>
-  </test> 
-  <test name="ejb_cmp_ear">
-    <classes>
-        <class name="test.CmpRosterTestNG" />
-    </classes>
   </test>
   <!-- MDB tests parameters -->
   <parameter name="MDB_APP_DIR" value="./dist/mdb/"/>

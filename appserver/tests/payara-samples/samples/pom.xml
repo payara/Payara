@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.4-SNAPSHOT</version>
+        <version>7.2026.7-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-samples-profiled-tests</artifactId>
@@ -62,7 +62,7 @@
         <module>formauth</module>
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
-        <!--module>jaxrs-rolesallowed-servlet</module-->
+        <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
         <!-- disabled until we have the new implementation using new MicroProfile OpenTelemetry Tracing-->
         <module>jaxws-tracing</module>

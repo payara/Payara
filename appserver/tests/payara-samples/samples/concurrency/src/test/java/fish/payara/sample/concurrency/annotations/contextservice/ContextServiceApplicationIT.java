@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -85,8 +85,7 @@ public class ContextServiceApplicationIT {
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar")
                 .addPackage("fish.payara.sample.concurrency.annotations.contextservice.util")
                 .addClasses(ContextServiceEJBFromConfig.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsResource("ejb-jar4.xml", "META-INF/ejb-jar.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         System.out.println(ejbJar.toString(true));
         //Creating web module
         WebArchive webWar = ShrinkWrap.create(WebArchive.class, "test.war")

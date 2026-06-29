@@ -66,9 +66,6 @@ public class UndeployCommandParameters extends OpsParams {
       return isredeploy;
     }
 
-    @Param(optional=true)
-    public Boolean droptables;
-
     @Param(optional=true, defaultValue="false")
     public Boolean cascade;
 

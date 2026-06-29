@@ -1,10 +1,21 @@
 version: 2
+
+registries:
+  payara-nexus-staging:
+    type: maven-repository
+    url: https://nexus.dev.payara.fish/repository/payara-staging
+    username: ${{ secrets.PAYARA_NEXUS_USERNAME }}
+    password: ${{ secrets.PAYARA_NEXUS_PASSWORD }}
+    
 updates:
   # Configuration for Maven
   - package-ecosystem: "maven"
     directory: "/" # Location of package manifests
+    registries:
+      - payara-nexus-staging
     schedule:
       interval: "daily"
+      time: "06:00"
     open-pull-requests-limit: 5
     target-branch: "main"
     ignore:

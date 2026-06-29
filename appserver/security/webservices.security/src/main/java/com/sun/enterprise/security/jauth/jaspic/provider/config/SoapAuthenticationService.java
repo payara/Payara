@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.security.jauth.jaspic.provider.config;
 
 import com.sun.enterprise.deployment.Application;
@@ -50,9 +50,7 @@ import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescri
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.appclient.ConfigXMLParser;
-import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.common.ClientSecurityContext;
-import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
 import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
@@ -104,7 +102,6 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
     
     protected static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(PipeConstants.class);
     
-    private AppServerAuditManager auditManager;
     private boolean isEjbEndpoint;
     private SEIModel seiModel;
     private SOAPVersion soapVersion;
@@ -126,8 +123,6 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
         }
         
         soapVersion = binding != null ? binding.getSOAPVersion() : SOAP_11;
-        AuditManager am = SecurityServicesUtil.getInstance() != null ? SecurityServicesUtil.getInstance().getAuditManager() : null;
-        auditManager = am instanceof AppServerAuditManager ? (AppServerAuditManager) am : new AppServerAuditManager();// workaround
                                                                                                                                         // habitat
         invManager = SecurityServicesUtil.getInstance() != null
                 ? SecurityServicesUtil.getInstance().getHabitat().<InvocationManager>getService(InvocationManager.class)
@@ -276,32 +271,6 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
         }
     }
 
-    public void auditInvocation(Packet request, AuthStatus status) {
-
-        if (auditManager.isAuditOn()) {
-            String uri = null;
-            if (!isEjbEndpoint && request != null && request.supports(MessageContext.SERVLET_REQUEST)) {
-                HttpServletRequest httpServletRequest = (HttpServletRequest) request.get(MessageContext.SERVLET_REQUEST);
-                uri = httpServletRequest.getRequestURI();
-            }
-            String endpointName = null;
-            if (map != null) {
-                WebServiceEndpoint endpoint = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
-                if (endpoint != null) {
-                    endpointName = endpoint.getEndpointName();
-                }
-            }
-            if (endpointName == null) {
-                endpointName = "(no endpoint)";
-            }
-
-            if (isEjbEndpoint) {
-                auditManager.ejbAsWebServiceInvocation(endpointName, AuthStatus.SUCCESS.equals(status));
-            } else {
-                auditManager.webServiceInvocation(((uri == null) ? "(no uri)" : uri), endpointName, AuthStatus.SUCCESS.equals(status));
-            }
-        }
-    }
 
     public Object getModelName() {
         WSDLPort wsdlModel = (WSDLPort) getProperty(PipeConstants.WSDL_MODEL);

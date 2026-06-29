@@ -134,21 +134,6 @@ public class DeployCommandParameters extends OpsParams {
       return dbvendorname;
     }
 
-    /**
-     * mutually exclusive with dropandcreatetables
-     */ 
-    @Param(optional=true)
-    public Boolean createtables;
-
-    /**
-     * mutually exclusive with createtables
-     */
-    @Param(optional=true)
-    public Boolean dropandcreatetables;
-
-    @Param(optional=true)
-    public Boolean uniquetablenames;
-
     @Param(name=ParameterNames.DEPLOYMENT_PLAN, optional=true)
     public File deploymentplan = null;
     public File getDeploymentPlan() {

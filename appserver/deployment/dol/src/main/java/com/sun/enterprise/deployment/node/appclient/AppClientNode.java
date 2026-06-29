@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.node.appclient;
 
@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import fish.payara.deployment.node.runtime.PayaraAppClientRuntimeNode;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.jvnet.hk2.annotations.Service;
 import org.w3c.dom.Node;
@@ -164,6 +165,7 @@ public class AppClientNode extends AbstractBundleNode<ApplicationClientDescripto
         Map<String,Class<?>> result = new HashMap<>();
         result.put(AppClientRuntimeNode.registerBundle(publicIDToDTD), AppClientRuntimeNode.class);
         result.put(GFAppClientRuntimeNode.registerBundle(publicIDToDTD), GFAppClientRuntimeNode.class);
+        result.put(PayaraAppClientRuntimeNode.registerBundle(publicIDToDTD), PayaraAppClientRuntimeNode.class);
         
         return result;
     }

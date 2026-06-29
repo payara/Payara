@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2025] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,6 +61,7 @@ import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
 import jakarta.transaction.SystemException;
 import jakarta.transaction.TransactionManager;
 import java.lang.reflect.Array;
@@ -82,8 +83,14 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import com.sun.enterprise.container.common.impl.PhysicalEntityManagerWrapper;
+import com.sun.enterprise.transaction.api.JavaEETransaction;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.transaction.api.SimpleResource;
 import jakarta.persistence.Entity;
+import jakarta.persistence.SynchronizationType;
 import jakarta.persistence.Table;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -159,9 +166,13 @@ public class DataCommonOperationUtility {
         ApplicationInfo applicationInfo = applicationRegistry.get(applicationName);
         List<EntityManagerFactory> factoryList = applicationInfo.getTransientAppMetaData(EntityManagerFactory.class.toString(), List.class);
 
+        if (factoryList == null || factoryList.isEmpty()) {
+            return () -> null;
+        }
+
         if (factoryList.size() == 1) {
             EntityManagerFactory entityManagerFactory = factoryList.getFirst();
-            return () -> entityManagerFactory.createEntityManager();
+            return () -> resolveEntityManager(entityManagerFactory);
         }
 
         if (dataStore != null && !dataStore.isEmpty()) {
@@ -169,7 +180,7 @@ public class DataCommonOperationUtility {
             Map<String, EntityManagerFactory> emfNameMap = applicationInfo.getTransientAppMetaData(EMF_NAME_KEY, Map.class);
             if (emfNameMap != null && emfNameMap.containsKey(dataStore)) {
                 EntityManagerFactory entityManagerFactory = emfNameMap.get(dataStore);
-                return () -> entityManagerFactory.createEntityManager();
+                return () -> resolveEntityManager(entityManagerFactory);
             }
 
             throw new AmbiguousPersistenceUnitException(String.format(
@@ -187,6 +198,37 @@ public class DataCommonOperationUtility {
     public static ApplicationRegistry getRegistry() {
         ApplicationRegistry registry = Globals.get(ApplicationRegistry.class);
         return registry;
+    }
+
+    /**
+     * Returns the EntityManager that participates in the current JTA transaction's
+     * shared persistence context (the same PC as any {@code @PersistenceContext} EM
+     * using the same persistence unit).  When no JTA transaction is active, a fresh
+     * app-managed EM is returned for data-core to begin its own transaction.
+     *
+     * The lookup/registration mirrors what GlassFish's EntityManagerWrapper does:
+     * the first caller within a tx creates and registers the EM; every subsequent
+     * caller (data-core or a container @PersistenceContext) reuses it, so all
+     * share one persistence context / L1 cache for the lifetime of the tx.
+     */
+    private static EntityManager resolveEntityManager(EntityManagerFactory emf) {
+        ServiceLocator locator = Globals.get(ServiceLocator.class);
+        if (locator != null) {
+            JavaEETransactionManager txMgr = locator.getService(JavaEETransactionManager.class);
+            if (txMgr != null) {
+                JavaEETransaction tx = txMgr.getCurrentTransaction();
+                if (tx != null) {
+                    SimpleResource resource = tx.getTxEntityManagerResource(emf);
+                    if (resource instanceof PhysicalEntityManagerWrapper wrapper) {
+                        return wrapper.getEM();
+                    }
+                    EntityManager em = emf.createEntityManager(SynchronizationType.SYNCHRONIZED, null);
+                    tx.addTxEntityManagerMapping(emf, new PhysicalEntityManagerWrapper(em, SynchronizationType.SYNCHRONIZED));
+                    return em;
+                }
+            }
+        }
+        return emf.createEntityManager();
     }
 
     public static EntityMetadata preprocesEntityMetadata(Map<Class<?>, EntityMetadata> mapOfMetaData, EntityManager entityManager, Class<?> declaredEntityClass,
@@ -442,22 +484,42 @@ public class DataCommonOperationUtility {
 
     public static void startTransactionAndJoin(TransactionManager transactionManager,
                                                EntityManager em, QueryData dataForQuery) throws SystemException, NotSupportedException {
-        
-        if (dataForQuery.isUserTransaction()) {
+        if (dataForQuery.isLifecycleManagedExternally()) {
+            if (transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+                em.joinTransaction();
+            }
             return;
         }
-        
+
+        if (dataForQuery.isUserTransaction()) {
+            em.joinTransaction();
+            return;
+        }
+
         if (transactionManager.getStatus() == jakarta.transaction.Status.STATUS_NO_TRANSACTION) {
             transactionManager.begin();
             dataForQuery.setNewTransaction(true);
-        } 
-        
+        }
+
         em.joinTransaction();
     }
 
     public static void endTransaction(TransactionManager transactionManager,
                                       EntityManager em, QueryData dataForQuery) throws HeuristicRollbackException, SystemException, HeuristicMixedException, RollbackException {
-        if(!dataForQuery.isUserTransaction()) {
+        if (dataForQuery.isLifecycleManagedExternally()) {
+            // When the lifecycle is owned by applyTransactionalSemantics, only flush
+            // if WE started the transaction (so we can surface JPA errors as exceptions
+            // of this operation rather than as RollbackException at commit time).
+            // For a user-managed transaction, leave flushing to the caller's commit so
+            // we don't change the L2 cache eviction timing or visibility semantics.
+            if (!dataForQuery.isUserTransaction()
+                    && transactionManager.getStatus() == Status.STATUS_ACTIVE) {
+                em.flush();
+            }
+            return;
+        }
+
+        if (!dataForQuery.isUserTransaction()) {
             em.flush();
             if (dataForQuery.isNewTransaction()) {
                 transactionManager.commit();

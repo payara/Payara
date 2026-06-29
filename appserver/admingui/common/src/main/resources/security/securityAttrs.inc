@@ -39,6 +39,7 @@
     holder.
 
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!-- securityAttrs.inc -->
 
@@ -53,9 +54,6 @@
                 getSecurityManagerValue(endpoint="#{pageSession.jvmOptionsUrl}" value="#{pageSession.securityManagerStatus}")
             />
             </sun:checkbox>
-        </sun:property>
-        <sun:property id="auditLoggingProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.AuditLogging}" helpText="$resource{i18nc.security.AuditLoggingHelp}">
-            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['auditEnabled']}" selectedValue="true" />
         </sun:property>
 
       <sun:property id="defaultRealmProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.DefaultRealm}" helpText="$resource{i18nc.security.DefaultRealmHelp}">
@@ -77,22 +75,6 @@
                 gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service/jacc-provider"
                     result="#{pageSession.jaccs}");
             />
-        </sun:property>
-     <sun:property id="auditModulesProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.AuditModules}" helpText="$resource{i18nc.security.AuditModulesHelp}">
-            <sun:listbox id="AuditModules" immediate="#{true}" multiple="#{true}"  rows="$int{4}"
-                labels="$pageSession{availableAudits}"
-                selected="#{pageSession.selectedAuditModules}" >
-                <!beforeCreate
-                    gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/security-service/audit-module"
-                        result="#{pageSession.audits}");
-                    getListBoxOptions(
-                        availableList="#{pageSession.audits}",
-                        selectedCommaString="#{pageSession.valueMap['auditModules']}",
-                        availableListResult="#{pageSession.availableAudits}",
-                        selectedOptions="#{pageSession.selectedAuditModules}"
-                        addEmptyFirstChoice="true");
-                />
-            </sun:listbox>
         </sun:property>
        <sun:property id="roleMappingProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.RoleMapping}" helpText="$resource{i18nc.security.RoleMappingHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['activateDefaultPrincipalToRoleMapping']}" selectedValue="true" />

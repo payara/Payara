@@ -803,9 +803,6 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             parameters.add(DeploymentProperties.TARGET, target);
             parameters.add(DeploymentProperties.KEEP_REPOSITORY_DIRECTORY, keepreposdir.toString());
             parameters.add(DeploymentProperties.IS_REDEPLOY, isredeploy.toString());
-            if (dropandcreatetables != null) {
-                parameters.add(DeploymentProperties.DROP_TABLES, dropandcreatetables.toString());
-            }
             parameters.add(DeploymentProperties.IGNORE_CASCADE, force.toString());
             if (keepstate != null) {
                 parameters.add(DeploymentProperties.KEEP_STATE, keepstate.toString());

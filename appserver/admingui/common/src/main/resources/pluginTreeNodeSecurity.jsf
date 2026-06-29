@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2019-2024] Payara Foundation and/or affiliates -->
+<!-- Portions Copyright 2019-2026 Payara Foundation and/or its affiliates -->
 
 <!-- pluginTreeNodeJVM.jsf -->
 
@@ -86,25 +86,6 @@
 	<!facet image>
 	    <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="#{request.contextPath}/common/security/realms/realms.jsf?configName=${configName}" 
 		alt="$resource{i18n.tree.realms}" border="0" immediate="true" />
-	</facet>
-    </dynamicTreeNode>
-
-    <dynamicTreeNode id="auditModules"
-	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
-	    children="#{requestScope.children}"
-	    childImageURL="/resource/common/security/images/security.gif"
-	    childExpanded="false"
-	    childURL="#{request.contextPath}/common/security/auditModules/auditModuleEdit.jsf?name=#{$this{valueBinding}.text}&configName=${configName}"
-	    text="$resource{i18n.tree.auditModules}"
-	    url="#{request.contextPath}/common/security/auditModules/auditModules.jsf?configName=${configName}"
-	>
-	<ui:event type="beforeCreate">
-	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/${configName}/security-service/audit-module.json" method="get" result="#{requestScope.resp}");
-	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
-	</ui:event>
-	<!facet image>
-	    <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="#{request.contextPath}/common/security/auditModules/auditModules.jsf?configName=${configName}" 
-		alt="$resource{i18n.tree.auditModules}" border="0" immediate="true" />
 	</facet>
     </dynamicTreeNode>
 

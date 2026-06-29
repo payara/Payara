@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2020-2022] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2020-2026 Payara Foundation and/or its affiliates -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="bnevins-private">
   <resources>
@@ -128,9 +128,6 @@
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
@@ -250,9 +247,6 @@
         </auth-realm>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" name="certificate" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
@@ -378,9 +372,6 @@
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
@@ -506,9 +497,6 @@
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
@@ -634,9 +622,6 @@
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
@@ -762,9 +747,6 @@
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
@@ -890,9 +872,6 @@
         </auth-realm>
         <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm" />
         <jacc-provider policy-provider="org.glassfish.exousia.modules.def.DefaultPolicy" name="default" policy-configuration-factory-provider="org.glassfish.exousia.modules.def.DefaultPolicyConfigurationFactory"></jacc-provider>
-        <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
-          <property name="auditOn" value="false" />
-        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
             <request-policy auth-source="content" />
