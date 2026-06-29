@@ -40,7 +40,6 @@
 
 package fish.payara.cluster.winrm;
 
-import com.google.common.io.BaseEncoding;
 import com.sun.enterprise.config.serverbeans.Node;
 import io.cloudsoft.winrm4j.winrm.WinRmTool;
 import io.cloudsoft.winrm4j.winrm.WinRmToolResponse;
@@ -57,6 +56,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 
 @Service(name = "WinRMHelper")
@@ -98,7 +98,7 @@ public class WinRMHelper {
                 }
                 winrm.executePs("If ((!(Test-Path " + destinationPath + ")) -or ((Get-Item '" + destinationPath + "').length -eq " +
                         expectedFileSize + ")) {Add-Content -Encoding Byte -path " + destinationPath +
-                        " -value ([System.Convert]::FromBase64String(\"" + BaseEncoding.base64().encode(chunk) + "\"))}");
+                        " -value ([System.Convert]::FromBase64String(\"" + Base64.getEncoder().encodeToString(chunk) + "\"))}");
                 expectedFileSize += bytesRead;
             }
         }

@@ -70,13 +70,15 @@
                 <configuration>
                     <instructions>
                         <Embed-Dependency>
-                            *;inline=true
+                            *;scope=compile;inline=true
                         </Embed-Dependency>
                         <Export-Package>
-                            io.cloudsoft.winrm4j.winrm,
-                            com.google.common.io
+                            io.cloudsoft.winrm4j.*
                         </Export-Package>
-                        <Private-Package>*</Private-Package>
+                        <Import-Package>
+                            *;resolution:=optional
+                        </Import-Package>
+                        <Private-Package>!*</Private-Package>
                     </instructions>
                     <unpackBundle>true</unpackBundle>
                 </configuration>
@@ -98,11 +100,6 @@
             <groupId>io.cloudsoft.windows</groupId>
             <artifactId>winrm4j</artifactId>
             <version>${winrm4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>33.6.0-jre</version>
         </dependency>
     </dependencies>
 </project>
