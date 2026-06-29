@@ -8,34 +8,127 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Azul Payara Server — Customer onboarding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
-        :root { --bg:#0f1420; --card:#161d2e; --line:#27314a; --ink:#e7ecf5; --muted:#9aa6bd; --accent:#3d7bff; }
+        :root {
+            --navy:   #0a1628;
+            --blue:   #0055cc;
+            --blue-h: #0044aa;
+            --bg:     #f0f4f8;
+            --card:   #ffffff;
+            --border: #dde3ed;
+            --ink:    #1a2535;
+            --muted:  #64748b;
+            --req:    #dc2626;
+        }
         * { box-sizing: border-box; }
-        body { margin:0; font-family: system-ui, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--ink); }
-        header { padding:20px 28px; border-bottom:1px solid var(--line); }
-        header h1 { margin:0; font-size:20px; }
-        header p { margin:4px 0 0; color:var(--muted); font-size:13px; }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; padding:18px 28px; align-items:start; }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; }
-        .card h2 { margin:0 0 14px; font-size:15px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
-        label { display:block; margin:12px 0 4px; font-size:13px; }
-        .req { color:#ff6b6b; }
-        input, select, textarea { width:100%; padding:9px 10px; background:#0d1320; color:var(--ink);
-            border:1px solid var(--line); border-radius:8px; font-size:14px; }
-        textarea { min-height:90px; resize:vertical; }
-        small.help { display:block; color:var(--muted); font-size:12px; margin-top:3px; }
-        .actions { margin-top:18px; display:flex; gap:10px; align-items:center; }
-        button { background:var(--accent); color:#fff; border:0; padding:10px 16px; border-radius:8px;
-            font-size:14px; cursor:pointer; }
-        button:disabled { opacity:.5; cursor:default; }
-        #tutorial { background:#0d1320; border:1px solid var(--line); border-radius:8px; padding:16px; min-height:160px; }
-        #tutorial .placeholder { color:var(--muted); }
-        .chat { padding:0 28px 28px; }
-        .chat .card { display:flex; flex-direction:column; gap:10px; }
+        body { margin:0; font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--ink); font-size:14px; }
+
+        /* ── Header ── */
+        header {
+            background: var(--navy);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            height: 64px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.5px;
+        }
+        .logo span { color: #3d9bff; }
+        .header-sub {
+            color: #8fa8c8;
+            font-size: 13px;
+            padding-left: 24px;
+            border-left: 1px solid #1e3256;
+        }
+
+        /* ── Layout ── */
+        .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; padding:24px 32px; align-items:start; }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(10,22,40,.06);
+        }
+        .card h2 {
+            margin: 0 0 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        /* ── Form controls ── */
+        label { display:block; margin: 14px 0 5px; font-size:13px; font-weight:500; color:var(--ink); }
+        label:first-of-type { margin-top: 0; }
+        .req { color: var(--req); }
+        input, select, textarea {
+            width: 100%;
+            padding: 9px 12px;
+            background: #fff;
+            color: var(--ink);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color .15s;
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,85,204,.1); }
+        textarea { min-height: 90px; resize: vertical; }
+        small.help { display:block; color:var(--muted); font-size:12px; margin-top:4px; }
+
+        /* ── Buttons ── */
+        .actions { margin-top: 20px; display:flex; gap:10px; align-items:center; }
+        button {
+            background: var(--blue);
+            color: #fff;
+            border: 0;
+            padding: 10px 22px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background .15s;
+        }
+        button:hover:not(:disabled) { background: var(--blue-h); }
+        button:disabled { opacity: .45; cursor: default; }
+        button.secondary {
+            background: transparent;
+            color: var(--blue);
+            border: 1.5px solid var(--blue);
+        }
+        button.secondary:hover:not(:disabled) { background: #e8f0fe; }
+
+        /* ── Tutorial pane ── */
+        #tutorial {
+            background: #f8fafc;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 160px;
+            line-height: 1.6;
+        }
+        #tutorial .placeholder { color: var(--muted); }
+
+        /* ── Chat ── */
+        .chat { padding: 0 32px 32px; }
+        .chat .card { display:flex; flex-direction:column; gap:12px; }
         .chatlog { display:flex; flex-direction:column; gap:8px; max-height:200px; overflow:auto; }
-        .msg { font-size:13px; padding:8px 10px; border-radius:8px; }
-        .msg.you { background:#1c2640; align-self:flex-end; }
-        .msg.agent { background:#13351f; align-self:flex-start; }
+        .msg { font-size:13px; padding:9px 13px; border-radius:20px; max-width:75%; }
+        .msg.you { background:var(--blue); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+        .msg.agent { background:#e8f0fe; color:var(--ink); align-self:flex-start; border-bottom-left-radius:4px; }
         .chatbar { display:flex; gap:10px; }
         .chatbar input { flex:1; }
         .status { color:var(--muted); font-size:13px; }
@@ -43,8 +136,8 @@
 </head>
 <body>
 <header>
-    <h1>Azul Payara Server — Customer onboarding</h1>
-    <p>The field guide on the right is generated by a Jakarta Agentic AI agent. Use the chat to refine it.</p>
+    <div class="logo">A<span>Z</span>UL</div>
+    <p class="header-sub">Customer onboarding &mdash; field guide powered by Jakarta Agentic AI</p>
 </header>
 
 <div class="grid">

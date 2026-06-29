@@ -49,14 +49,18 @@ import org.eclipse.microprofile.config.Config;
  * {@code payara.agentic.llm.} prefix:
  * <ul>
  *   <li>{@code provider} &mdash; {@code none} (default &rarr; {@link NoOpLlmBackend}),
- *       {@code ollama}, {@code anthropic}</li>
+ *       {@code ollama}, {@code anthropic}, {@code vertex}</li>
  *   <li>{@code model} &mdash; provider model name (Ollama default {@code gemma},
- *       Anthropic default {@code claude-opus-4-8})</li>
+ *       Anthropic/Vertex default {@code claude-opus-4-8})</li>
  *   <li>{@code ollama.base-url} &mdash; default {@code http://localhost:11434}</li>
  *   <li>{@code anthropic.base-url} &mdash; default {@code https://api.anthropic.com}</li>
  *   <li>{@code anthropic.api-key} &mdash; or the {@code ANTHROPIC_API_KEY} env var</li>
- *   <li>{@code max-tokens} &mdash; Anthropic response cap (default {@code 4096})</li>
- *   <li>{@code system} &mdash; optional system prompt used as the Anthropic cache prefix</li>
+ *   <li>{@code vertex.project-id} &mdash; GCP project ID; falls back to the
+ *       {@code ANTHROPIC_VERTEX_PROJECT_ID} env var</li>
+ *   <li>{@code vertex.region} &mdash; Vertex AI region (e.g. {@code us-east5},
+ *       {@code global}); falls back to the {@code CLOUD_ML_REGION} env var</li>
+ *   <li>{@code max-tokens} &mdash; response cap (default {@code 4096})</li>
+ *   <li>{@code system} &mdash; optional system prompt used as the cache prefix</li>
  * </ul>
  * Unknown providers fall back to the no-op backend so the runtime always
  * resolves a {@code LargeLanguageModel} without ambiguity.
@@ -81,6 +85,21 @@ public final class LlmBackendFactory {
                     config.getOptionalValue(PREFIX + "anthropic.base-url", String.class)
                             .orElse("https://api.anthropic.com"),
                     resolveAnthropicKey(config),
+                    config.getOptionalValue(PREFIX + "model", String.class)
+                            .orElse("claude-opus-4-8"),
+                    config.getOptionalValue(PREFIX + "max-tokens", Integer.class)
+                            .orElse(4096),
+                    config.getOptionalValue(PREFIX + "system", String.class)
+                            .orElse(null));
+            case "vertex" -> new VertexLlmBackend(
+                    config.getOptionalValue(PREFIX + "vertex.project-id", String.class)
+                            .or(() -> config.getOptionalValue("ANTHROPIC_VERTEX_PROJECT_ID", String.class))
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "Vertex provider selected but no project ID found; set "
+                                    + PREFIX + "vertex.project-id or the ANTHROPIC_VERTEX_PROJECT_ID env var")),
+                    config.getOptionalValue(PREFIX + "vertex.region", String.class)
+                            .or(() -> config.getOptionalValue("CLOUD_ML_REGION", String.class))
+                            .orElse("global"),
                     config.getOptionalValue(PREFIX + "model", String.class)
                             .orElse("claude-opus-4-8"),
                     config.getOptionalValue(PREFIX + "max-tokens", Integer.class)
