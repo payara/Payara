@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.6-SNAPSHOT</version>
+    <version>7.2026.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -244,7 +244,7 @@
         <snakeyaml.version>2.6</snakeyaml.version>
         <mojarra.version>4.1.7.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
-        <jakarta.mvc.version>3.0.0</jakarta.mvc.version>
+        <jakarta.mvc.version>3.0.1</jakarta.mvc.version>
         <krazo.version>4.0.1.payara-p1</krazo.version>
         <yasson.version>3.0.4</yasson.version>
         <eclipselink.version>5.0.0.payara-p1</eclipselink.version>
@@ -254,7 +254,7 @@
         <com.ibm.jbatch.spi.version>2.1.1</com.ibm.jbatch.spi.version>
         <webservices.version>4.0.4.payara-p1</webservices.version>
         <santuario.version>4.0.4</santuario.version>
-        <woodstox.version>7.2.0</woodstox.version>
+        <woodstox.version>7.2.1</woodstox.version>
         <woodstock-jsf.version>6.0.3.payara-p1</woodstock-jsf.version>
         <woodstock-jsf-suntheme.version>6.0.3.payara-p1</woodstock-jsf-suntheme.version>
         <woodstock-external.dojo.version>6.0.3</woodstock-external.dojo.version>
@@ -278,7 +278,7 @@
         <osgi.dto.version>1.1.1</osgi.dto.version>
         <soteria.version>4.0.1.payara-p1</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
-        <grizzly.version>4.1.0-M1.payara-p2</grizzly.version>
+        <grizzly.version>5.0.2</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>

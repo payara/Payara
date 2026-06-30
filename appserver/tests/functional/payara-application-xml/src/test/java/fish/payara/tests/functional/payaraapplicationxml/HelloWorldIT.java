@@ -42,6 +42,7 @@ package fish.payara.tests.functional.payaraapplicationxml;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -67,10 +68,39 @@ public class HelloWorldIT {
     @ArquillianResource
     private URI uri;
 
-    @Deployment
+    @Deployment(name = "helloPayara")
+    public static EnterpriseArchive createPayaraApplicationDeployment() {
+        return ShrinkWrap.create(EnterpriseArchive.class, "helloworld-payara.ear")
+                .addAsManifestResource(new File("src/test/META-INF", "payara-application.xml"))
+                .addAsModule(ShrinkWrap.create(WebArchive.class, "helloworld.war")
+                        .addClasses(Resources.class, HelloWorld.class)
+                        .addAsWebInfResource(new File("src/test/webapp/WEB-INF", "beans.xml")));
+    }
+
+    @Deployment(name = "helloGlassFish")
+    public static EnterpriseArchive createGlassFishApplicationDeployment() {
+        return ShrinkWrap.create(EnterpriseArchive.class, "helloworld-glassfish.ear")
+                .addAsManifestResource(new File("src/test/META-INF", "glassfish-application.xml"))
+                .addAsModule(ShrinkWrap.create(WebArchive.class, "helloworld.war")
+                        .addClasses(Resources.class, HelloWorld.class)
+                        .addAsWebInfResource(new File("src/test/webapp/WEB-INF", "beans.xml")));
+    }
+
+    @Deployment(name = "helloPayaraGlassFish")
+    public static EnterpriseArchive createBothApplicationDeployment() {
+        return ShrinkWrap.create(EnterpriseArchive.class, "helloworld-both.ear")
+                .addAsManifestResource(new File("src/test/META-INF", "payara-application-both.xml"),
+                        "payara-application.xml")
+                .addAsManifestResource(new File("src/test/META-INF", "glassfish-application-both.xml"),
+                        "glassfish-application.xml")
+                .addAsModule(ShrinkWrap.create(WebArchive.class, "helloworld.war")
+                        .addClasses(Resources.class, HelloWorld.class)
+                        .addAsWebInfResource(new File("src/test/webapp/WEB-INF", "beans.xml")));
+    }
+
+    @Deployment(name = "helloNeither")
     public static EnterpriseArchive createDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, "helloworld.ear")
-                .addAsManifestResource(new File("src/test/META-INF", "payara-application.xml"))
                 .addAsModule(ShrinkWrap.create(WebArchive.class, "helloworld.war")
                         .addClasses(Resources.class, HelloWorld.class)
                         .addAsWebInfResource(new File("src/test/webapp/WEB-INF", "beans.xml")));
@@ -78,17 +108,69 @@ public class HelloWorldIT {
 
     @Test
     @RunAsClient
-    public void checkFacesContextImplementationVersionApplicationXml() {
+    @OperateOnDeployment("helloPayara")
+    public void checkContextRootVersionPayaraApplicationXml() {
         WebTarget target = ClientBuilder.newClient().target(uri).path("resources").path("hello");
         Response response = target.request().get();
 
         System.out.println("Context root should be \"goodbye\" as defined by the EAR's payara-application.xml, " +
-                "overriding the default context root of \"helloworld\" obtained from the EAR's name: " + uri.getPath());
+                "overriding the default context root of \"helloworld-payara\" obtained from the EAR's name: " + uri.getPath());
 
         String message = response.readEntity(String.class);
 
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals("Hello World!", message);
         Assert.assertTrue(uri.getPath().equals("/goodbye/"));
+    }
+
+    @Test
+    @RunAsClient
+    @OperateOnDeployment("helloGlassFish")
+    public void checkContextRootGlassFishApplicationXml() {
+        WebTarget target = ClientBuilder.newClient().target(uri).path("resources").path("hello");
+        Response response = target.request().get();
+
+        System.out.println("Context root should be \"farewell\" as defined by the EAR's glassfish-application.xml, " +
+                "overriding the default context root of \"helloworld-glassfish\" obtained from the EAR's name: " + uri.getPath());
+
+        String message = response.readEntity(String.class);
+
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("Hello World!", message);
+        Assert.assertTrue(uri.getPath().equals("/farewell/"));
+    }
+
+    @Test
+    @RunAsClient
+    @OperateOnDeployment("helloPayaraGlassFish")
+    public void checkCheckContextBothApplicationXml() {
+        WebTarget target = ClientBuilder.newClient().target(uri).path("resources").path("hello");
+        Response response = target.request().get();
+
+        System.out.println("Context root should be \"sayonara\" as defined by the EAR's payara-application.xml, " +
+                "overriding the default context root of \"helloworld-both\" obtained from the EAR's name: " + uri.getPath() +
+                "and the value of \"aufwiedersehn\" defined in glassfish-application.xml");
+
+        String message = response.readEntity(String.class);
+
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("Hello World!", message);
+        Assert.assertTrue(uri.getPath().equals("/sayonara/"));
+    }
+
+    @Test
+    @RunAsClient
+    @OperateOnDeployment("helloNeither")
+    public void checkContextRootNoApplicationXml() {
+        WebTarget target = ClientBuilder.newClient().target(uri).path("resources").path("hello");
+        Response response = target.request().get();
+
+        System.out.println("Context root should be \"helloworld\" obtained from the EAR's name: " + uri.getPath());
+
+        String message = response.readEntity(String.class);
+
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("Hello World!", message);
+        Assert.assertTrue(uri.getPath().equals("/helloworld/"));
     }
 }
