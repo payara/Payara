@@ -131,11 +131,11 @@ public class ServerConfigProvider {
     private Map<Class<?>, Converter<?>> converters;
 
     @PostConstruct
-    public void init() {
+    void init() {
         // Eagerly build the config so it's ready when requested
-        serverConfig = buildConfig();
         configSources = buildConfigSources();
         converters = buildConverters();
+        serverConfig = buildConfig();
     }
 
     /**
