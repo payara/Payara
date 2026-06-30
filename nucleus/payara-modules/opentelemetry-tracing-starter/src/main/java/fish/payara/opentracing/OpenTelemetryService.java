@@ -39,7 +39,7 @@
  */
 package fish.payara.opentracing;
 
-import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
+import fish.payara.telemetry.service.OpenTelemetryBootstrap;
 import fish.payara.telemetry.service.PayaraTelemetryConstants;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
@@ -107,7 +107,7 @@ public class OpenTelemetryService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryService.class.getName());
 
-    private PayaraTelemetryBootstrapFactoryServiceImpl payaraTelemetryBootstrapFactoryServiceImpl;
+    private OpenTelemetryBootstrap payaraTelemetryBootstrapFactoryServiceImpl;
 
     @Inject
     Events events;
@@ -155,7 +155,7 @@ public class OpenTelemetryService implements EventListener {
             logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
-        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
+        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
         if(openTelemetry == null) {
             GlobalOpenTelemetry.set(new GlobalTelemetry());

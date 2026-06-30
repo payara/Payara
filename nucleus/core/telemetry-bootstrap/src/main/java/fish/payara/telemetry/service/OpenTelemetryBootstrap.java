@@ -73,7 +73,7 @@ import static fish.payara.telemetry.service.PayaraTelemetryConstants.PAYARA_OTEL
 @Service(name = "telemetry-runtime-config-service")
 @RunLevel(InitRunLevel.VAL)
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
-public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemetryBootstrapFactoryService {
+public class OpenTelemetryBootstrap {
     
     private OpenTelemetrySdk runtimeSdk = null;
     
@@ -86,7 +86,6 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         createTelemetryRuntimeInstance();
     }
 
-    @Override
     public void createTelemetryRuntimeInstance() {
         if (isRuntimeOtelDisabled()) {
             // need to read otel properties
@@ -121,17 +120,14 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         }
     }
 
-    @Override
     public Optional<OpenTelemetrySdk> getAvailableRuntimeReference() {
         return Optional.ofNullable(runtimeSdk);
     }
 
-    @Override
     public Optional<OpenTelemetrySdk> getAvailableNoopReference() {
         return Optional.ofNullable(noopInstance);
     }
 
-    @Override
     public boolean isRuntimeOtelDisabled() {
         if (System.getProperty(OTEL_SYSTEM_PROPERTY_NAME) != null) {
             return "false".equalsIgnoreCase(System.getProperty(OTEL_SYSTEM_PROPERTY_NAME, "true"));

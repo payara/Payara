@@ -42,7 +42,7 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
+import fish.payara.telemetry.service.OpenTelemetryBootstrap;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
@@ -78,13 +78,13 @@ import java.util.stream.StreamSupport;
 public class TelemetryCdiExtension implements Extension {
     private final OpenTelemetryService openTelemetryService;
     
-    private final PayaraTelemetryBootstrapFactoryServiceImpl payaraTelemetryBootstrapFactoryServiceImpl;
+    private final OpenTelemetryBootstrap payaraTelemetryBootstrapFactoryServiceImpl;
 
     private boolean appManagedOtel;
 
     public TelemetryCdiExtension() {
         openTelemetryService = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryService.class);
-        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
+        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
     }
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
