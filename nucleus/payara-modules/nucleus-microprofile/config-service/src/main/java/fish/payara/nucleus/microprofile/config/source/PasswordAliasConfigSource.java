@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,8 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import org.glassfish.config.support.TranslatedConfigView;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -47,16 +49,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.internal.api.Globals;
-
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Objects;
 
 /**
  *
@@ -66,13 +64,15 @@ public class PasswordAliasConfigSource extends PayaraConfigSource {
 
     private final DomainScopedPasswordAliasStore store;
 
-    public PasswordAliasConfigSource() {
-        store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
+    public PasswordAliasConfigSource(MicroprofileConfigConfiguration mpConfig,
+            DomainScopedPasswordAliasStore store) {
+        super(mpConfig);
+        this.store = store;
     }
 
     @Override
     public int getOrdinal() {
-        return Integer.parseInt(configService.getMPConfig().getPasswordOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getPasswordOrdinality);
     }
 
 

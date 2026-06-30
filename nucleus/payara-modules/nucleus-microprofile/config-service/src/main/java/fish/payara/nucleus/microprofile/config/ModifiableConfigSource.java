@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,36 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.nucleus.microprofile.config;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
+ * Abstraction for reading and writing individual config properties in a specific
+ * backing store. Obtained via {@link ConfigModificationService}.
  *
- * @author Steve Millidge (Payara Foundation)
+ * <p>Implementations are package-private; callers interact only through this interface.</p>
  */
-public class DottedNamesConfigSource extends PayaraConfigSource {
+public interface ModifiableConfigSource {
 
-    @Override
-    public Map<String, String> getProperties() {
-        // returns empty map as it is too musch to work out all dotted names and their values
-        return new HashMap<>();
-    }
+    /**
+     * Returns the value of the named property, or {@code null} if not found.
+     */
+    String getValue(String propertyName);
 
-    @Override
-    public int getOrdinal() {
-        return 50;
-    }
+    /**
+     * Sets the named property to the given value.
+     *
+     * @return {@code true} if the property was set successfully
+     */
+    boolean setValue(String propertyName, String propertyValue) throws TransactionFailure;
 
-    @Override
-    public String getValue(String propertyName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public String getName() {
-        return "DottedNames";
-    }
-    
+    /**
+     * Deletes the named property.
+     *
+     * @return {@code true} if the property was deleted successfully
+     */
+    boolean deleteValue(String propertyName) throws TransactionFailure;
 }

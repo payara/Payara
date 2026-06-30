@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,11 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
 
 /**
@@ -51,24 +52,14 @@ import org.glassfish.internal.api.ServerContext;
  */
 public class SystemPropertyConfigSource extends PayaraConfigSource {
 
-    // Provides access to information on the server including;
-    // command line, initial context, service locator, installation
-    // Classloaders, config root for the server
-    private ServerContext context;
+    private final Domain domainConfiguration;
+    private final ServerContext context;
 
-    public SystemPropertyConfigSource() {
-        context = Globals.getDefaultHabitat().getService(ServerContext.class);
+    public SystemPropertyConfigSource(Domain domain, MicroprofileConfigConfiguration mpConfig, ServerContext serverContext) {
+        super(mpConfig);
+        this.domainConfiguration = domain;
+        this.context = serverContext;
     }
-
-    /**
-     * Only use in unit tests
-     * @param test
-     */
-    SystemPropertyConfigSource(boolean test) {
-        super(test);
-    }
-
-
 
     @Override
     public Map<String, String> getProperties() {

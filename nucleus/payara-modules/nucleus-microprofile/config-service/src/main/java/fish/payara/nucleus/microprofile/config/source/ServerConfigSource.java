@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,10 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
+import fish.payara.nucleus.microprofile.config.ModifiableConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
@@ -54,17 +57,20 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ServerConfigSource extends PayaraConfigSource {
+public class ServerConfigSource extends PayaraConfigSource implements ModifiableConfigSource {
 
     private final String configurationName;
+    private final Domain domain;
 
-    public ServerConfigSource(String configurationName) {
+    public ServerConfigSource(String configurationName, Domain domain, MicroprofileConfigConfiguration mpConfig) {
+        super(mpConfig);
         this.configurationName = configurationName;
+        this.domain = domain;
     }
 
     @Override
     public Map<String, String> getProperties() {
-        Server config = domainConfiguration.getServerNamed(configurationName);
+        Server config = domain.getServerNamed(configurationName);
         HashMap<String, String> result = new HashMap<>();
         if (config != null) {
             List<Property> properties = config.getProperty();
@@ -83,13 +89,13 @@ public class ServerConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getServerOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getServerOrdinality);
     }
 
     @Override
     public String getValue(String propertyName) {
         String result = null;
-        Server config = domainConfiguration.getServerNamed(configurationName);
+        Server config = domain.getServerNamed(configurationName);
         if (config != null) {
             result = config.getPropertyValue(PROPERTY_PREFIX + propertyName);
         }
@@ -103,7 +109,7 @@ public class ServerConfigSource extends PayaraConfigSource {
 
     public boolean setValue(final String propertyName, final String propertyValue) throws TransactionFailure {
         boolean result = false;
-        Server config = domainConfiguration.getServerNamed(configurationName);
+        Server config = domain.getServerNamed(configurationName);
         if (config != null) {
             Property p = config.getProperty(PROPERTY_PREFIX + propertyName);
             if (p == null) {
@@ -134,7 +140,7 @@ public class ServerConfigSource extends PayaraConfigSource {
 
     public boolean deleteValue(String propertyName) throws TransactionFailure {
         boolean result = false;
-        Server config = domainConfiguration.getServerNamed(configurationName);
+        Server config = domain.getServerNamed(configurationName);
         if (config != null) {
             for (Property object : config.getProperty()) {
                 if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
