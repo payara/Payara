@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<!--
+  Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
+  Licensed under the GPL v2 with Classpath Exception / CDDL. See the project LICENSE.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Azul Payara Server — Customer onboarding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --navy:   #0a1628;
+            --blue:   #0055cc;
+            --blue-h: #0044aa;
+            --bg:     #f0f4f8;
+            --card:   #ffffff;
+            --border: #dde3ed;
+            --ink:    #1a2535;
+            --muted:  #64748b;
+            --req:    #dc2626;
+            --ease:   cubic-bezier(.4, 0, .2, 1);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; }
+
+        /* ── Header ── */
+        header {
+            background: var(--navy);
+            padding: 0 32px;
+            display: flex; align-items: center; gap: 24px;
+            height: 64px;
+        }
+        .logo { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -.5px; }
+        .logo span { color: #3d9bff; }
+        .header-sub { color: #8fa8c8; font-size: 13px; padding-left: 24px; border-left: 1px solid #1e3256; }
+
+        /* ── Two-column layout ── */
+        .page-grid {
+            display: flex;
+            gap: 20px;
+            padding: 28px 32px;
+            align-items: start;
+        }
+
+        /* ── Form column ── */
+        .form-col {
+            flex: 1; min-width: 0;
+            max-width: 560px;
+            margin: 0 auto;
+            transition: max-width .36s var(--ease), margin .36s var(--ease);
+        }
+        .page-grid.panel-open .form-col { max-width: none; margin: 0; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 1px 4px rgba(10,22,40,.06);
+        }
+        .card h2 { margin: 0 0 20px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+        /* Form controls */
+        .field-wrap { position: relative; margin-top: 16px; }
+        .field-wrap:first-of-type { margin-top: 0; }
+        label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500; color: var(--ink); }
+        .req { color: var(--req); }
+        input, select, textarea {
+            width: 100%; padding: 9px 12px; background: #fff; color: var(--ink);
+            border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: 14px; font-family: inherit; outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        input:focus, select:focus, textarea:focus,
+        input.active, select.active, textarea.active {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(0,85,204,.1);
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        small.help { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+        /* Field hint icon — appears when guide exists */
+        .field-hint {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--blue); color: #fff;
+            font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+            opacity: 0; transition: opacity .2s; pointer-events: none;
+            display: none;
+        }
+        .has-guide .field-hint { display: block; }
+        .field-wrap:hover .field-hint,
+        .field-wrap.selected .field-hint { opacity: 1; }
+
+        .actions { margin-top: 24px; display: flex; gap: 10px; align-items: center; }
+        button {
+            background: var(--blue); color: #fff; border: 0;
+            padding: 10px 22px; border-radius: 24px;
+            font-size: 14px; font-weight: 600; font-family: inherit;
+            cursor: pointer; transition: background .15s;
+        }
+        button:hover:not(:disabled) { background: var(--blue-h); }
+        button:disabled { opacity: .45; cursor: default; }
+        .status { color: var(--muted); font-size: 13px; }
+
+        /* ── Silver slide-in panel ── */
+        .guide-panel {
+            flex-shrink: 0;
+            width: 0; overflow: hidden;
+            transition: width .36s var(--ease);
+        }
+        .guide-panel.open { width: 400px; }
+
+        .guide-panel-inner {
+            width: 400px;
+            display: flex; flex-direction: column;
+            border-radius: 12px;
+            height: calc(100vh - 112px);
+            overflow: hidden;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(10,22,40,.06);
+            transform: translateX(20px); opacity: 0;
+            transition: transform .36s var(--ease), opacity .28s var(--ease);
+        }
+        .guide-panel.open .guide-panel-inner { transform: translateX(0); opacity: 1; }
+
+        /* Panel header */
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0; gap: 10px;
+        }
+        .panel-field-name {
+            font-size: 13px; font-weight: 600; color: var(--ink);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            flex: 1;
+        }
+        .panel-field-req { color: var(--req); }
+        .panel-close {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--muted); border-radius: 6px; width: 26px; height: 26px; padding: 0;
+            cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+            font-family: inherit; flex-shrink: 0;
+        }
+        .panel-close:hover { background: var(--bg); color: var(--ink); }
+
+        /* Description area */
+        .panel-body {
+            flex: 1; overflow-y: auto; padding: 20px;
+            scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+        }
+        .panel-body::-webkit-scrollbar { width: 4px; }
+        .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .field-desc {
+            font-size: 14px; color: var(--ink); line-height: 1.75;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--blue);
+        }
+        .field-desc.hint { color: var(--muted); font-style: italic; border-left-color: var(--border); }
+
+        /* Panel divider */
+        .panel-divider { height: 1px; background: var(--border); margin: 0; flex-shrink: 0; }
+
+        /* Chat */
+        .panel-chat { padding: 14px 20px 18px; display: flex; flex-direction: column; gap: 9px; flex-shrink: 0; }
+        .panel-chat-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+        .chatlog { display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; }
+        .msg { font-size: 13px; padding: 7px 11px; border-radius: 14px; max-width: 85%; line-height: 1.5; }
+        .msg.you { background: var(--blue); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+        .msg.agent { background: var(--bg); color: var(--ink); align-self: flex-start; border-bottom-left-radius: 3px; border: 1px solid var(--border); }
+        .chatbar { display: flex; gap: 7px; }
+        .chatbar input {
+            flex: 1; padding: 8px 12px;
+            background: #fff; color: var(--ink);
+            border: 1.5px solid var(--border); border-radius: 18px;
+            font-size: 13px; font-family: inherit; outline: none;
+        }
+        .chatbar input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(0,85,204,.1); }
+        .chatbar input::placeholder { color: var(--muted); }
+        .chatbar button { border-radius: 18px; padding: 8px 16px; font-size: 13px; }
+
+        /* ── Toast notification ── */
+        .toast {
+            position: fixed; top: 80px; left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: #1a2535; color: #fff;
+            padding: 10px 20px; border-radius: 24px;
+            font-size: 13px; font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none; z-index: 1000;
+            transition: opacity .22s, transform .22s;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">A<span>Z</span>UL</div>
+    <p class="header-sub">Customer onboarding &mdash; field guide powered by Jakarta Agentic AI</p>
+</header>
+
+<div class="toast" id="toast"></div>
+
+<div class="page-grid" id="pageGrid">
+
+    <!-- Left: registration form -->
+    <div class="form-col">
+        <div class="card" id="formCard">
+            <h2>Registration form</h2>
+            <form id="customerForm" onsubmit="return false;"></form>
+            <div class="actions">
+                <button id="genBtn" onclick="generate()">Generate field guide</button>
+                <span class="status" id="status"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: contextual silver panel -->
+    <div class="guide-panel" id="guidePanel">
+        <div class="guide-panel-inner">
+
+            <div class="panel-header">
+                <span class="panel-field-name" id="panelFieldName">—</span>
+                <button class="panel-close" onclick="closeGuide()" aria-label="Close">✕</button>
+            </div>
+
+            <div class="panel-body">
+                <div class="field-desc hint" id="fieldDesc">
+                    Click a field on the left to see its explanation.
+                </div>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <div class="panel-chat">
+                <div class="panel-chat-label">Refine this description</div>
+                <div class="chatlog" id="chatlog"></div>
+                <div class="chatbar">
+                    <input id="chatInput" type="text" placeholder="e.g. Add a format example…"/>
+                    <button id="refineBtn" onclick="refine()">Send</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+
+    let formSpec     = null;
+    let guideData    = null;
+    let selectedField = null;
+    const chatHistory = {};   // { fieldName: [{cls, text}] }
+
+    // ── Form ─────────────────────────────────────────────────────────────────
+
+    async function loadForm() {
+        formSpec = await (await fetch('api/form')).json();
+        buildForm();
+    }
+
+    function buildForm() {
+        const form = $('customerForm');
+        form.innerHTML = '';
+        for (const f of formSpec.fields) {
+            const wrap = document.createElement('div');
+            wrap.className = 'field-wrap';
+            wrap.dataset.name = f.name;
+
+            const lbl = document.createElement('label');
+            lbl.textContent = f.label;
+            if (f.required) { const r = document.createElement('span'); r.className = 'req'; r.textContent = ' *'; lbl.appendChild(r); }
+            wrap.appendChild(lbl);
+
+            let ctrl;
+            if (f.type === 'select') {
+                ctrl = document.createElement('select');
+                for (const o of f.options) { const opt = document.createElement('option'); opt.textContent = o; ctrl.appendChild(opt); }
+            } else if (f.type === 'textarea') {
+                ctrl = document.createElement('textarea');
+            } else {
+                ctrl = document.createElement('input'); ctrl.type = f.type;
+            }
+            ctrl.name = f.name;
+            ctrl.addEventListener('focus', () => selectField(f));
+            ctrl.addEventListener('click', () => selectField(f));
+            wrap.appendChild(ctrl);
+
+            if (f.help) { const h = document.createElement('small'); h.className = 'help'; h.textContent = f.help; wrap.appendChild(h); }
+
+            const hint = document.createElement('div');
+            hint.className = 'field-hint'; hint.textContent = 'i';
+            wrap.appendChild(hint);
+
+            form.appendChild(wrap);
+        }
+    }
+
+    // ── Field selection ───────────────────────────────────────────────────────
+
+    function selectField(field) {
+        if (selectedField && selectedField.name === field.name) return; // already selected
+
+        // Highlight the wrap
+        document.querySelectorAll('.field-wrap').forEach(w => w.classList.remove('selected'));
+        const wrap = document.querySelector(`.field-wrap[data-name="${field.name}"]`);
+        if (wrap) wrap.classList.add('selected');
+
+        selectedField = field;
+        updatePanel(field);
+        showPanel();
+    }
+
+    function updatePanel(field) {
+        // Header
+        const nameEl = $('panelFieldName');
+        nameEl.innerHTML = '';
+        nameEl.appendChild(document.createTextNode(field.label));
+        if (field.required) {
+            const r = document.createElement('span');
+            r.className = 'panel-field-req'; r.textContent = ' *';
+            nameEl.appendChild(r);
+        }
+
+        // Description
+        const descEl = $('fieldDesc');
+        const text = guideData && guideData[field.name];
+        if (text) {
+            descEl.textContent = text;
+            descEl.classList.remove('hint');
+        } else if (guideData) {
+            descEl.textContent = 'No explanation generated for this field.';
+            descEl.classList.add('hint');
+        } else {
+            descEl.textContent = 'Click "Generate field guide" to get AI-powered explanations.';
+            descEl.classList.add('hint');
+        }
+
+        // Restore chat history for this field
+        const log = $('chatlog');
+        log.innerHTML = '';
+        (chatHistory[field.name] || []).forEach(m => appendMsg(m.cls, m.text));
+    }
+
+    // ── Panel open/close ──────────────────────────────────────────────────────
+
+    function showPanel() {
+        $('guidePanel').classList.add('open');
+        $('pageGrid').classList.add('panel-open');
+    }
+
+    function closeGuide() {
+        $('guidePanel').classList.remove('open');
+        $('pageGrid').classList.remove('panel-open');
+        document.querySelectorAll('.field-wrap').forEach(w => w.classList.remove('selected'));
+        selectedField = null;
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeGuide(); });
+
+    // ── Agent calls ───────────────────────────────────────────────────────────
+
+    function busy(on, msg) {
+        $('genBtn').disabled = on;
+        $('refineBtn').disabled = on;
+        $('status').textContent = on ? (msg || '') : '';
+    }
+
+    async function generate() {
+        busy(true, 'Generating field guide…');
+        try {
+            const text = await (await fetch('api/tutorial/generate', { method: 'POST' })).text();
+            guideData = parseGuide(text);
+            if (guideData) {
+                $('formCard').classList.add('has-guide');
+                if (selectedField) updatePanel(selectedField);
+                showToast('✓ Field guide ready — click any field to see its explanation');
+            } else {
+                $('status').textContent = 'Unexpected response — try again.';
+            }
+        } catch (e) {
+            $('status').textContent = 'Error: ' + e;
+        } finally {
+            busy(false);
+        }
+    }
+
+    function showToast(msg, duration = 4000) {
+        const t = $('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), duration);
+    }
+
+    function parseGuide(text) {
+        try {
+            const d = JSON.parse(text);
+            if (d && typeof d === 'object' && !Array.isArray(d)) return d;
+        } catch (_) {}
+        return null;
+    }
+
+    function appendMsg(cls, text) {
+        const m = document.createElement('div');
+        m.className = 'msg ' + cls; m.textContent = text;
+        $('chatlog').appendChild(m);
+        $('chatlog').scrollTop = $('chatlog').scrollHeight;
+    }
+
+    function addMsg(cls, text) {
+        if (!selectedField) return;
+        if (!chatHistory[selectedField.name]) chatHistory[selectedField.name] = [];
+        chatHistory[selectedField.name].push({ cls, text });
+        appendMsg(cls, text);
+    }
+
+    async function refine() {
+        if (!selectedField) return;
+        const instruction = $('chatInput').value.trim();
+        if (!instruction) return;
+
+        addMsg('you', instruction);
+        $('chatInput').value = '';
+        busy(true, 'Refining…');
+        try {
+            const text = await (await fetch('api/tutorial/refine-field', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fieldName: selectedField.name, instruction })
+            })).text();
+            const parsed = parseGuide(text);
+            if (parsed) {
+                guideData = parsed;
+                updatePanel(selectedField);
+                // updatePanel restores chat history — re-append latest exchange
+                $('chatlog').innerHTML = '';
+                (chatHistory[selectedField.name] || []).forEach(m => appendMsg(m.cls, m.text));
+                addMsg('agent', 'Updated.');
+            } else {
+                addMsg('agent', text.length > 300 ? text.slice(0, 300) + '…' : text);
+            }
+        } catch (e) {
+            addMsg('agent', 'Error: ' + e);
+        } finally {
+            busy(false);
+        }
+    }
+
+    $('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') refine(); });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+
+    async function init() {
+        await loadForm();
+        const text = await (await fetch('api/tutorial')).text();
+        if (text && text.trim()) {
+            guideData = parseGuide(text);
+            if (guideData) $('formCard').classList.add('has-guide');
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

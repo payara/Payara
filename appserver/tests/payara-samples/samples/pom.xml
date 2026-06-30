@@ -93,6 +93,8 @@
         <module>data</module>
         <module>versioned-deployment</module>
         <module>microprofile-jwt-error-cache</module>
+        <module>agentic-ai-quickstart</module>
+        <module>agentic-ai</module>
     </modules>
 
     <dependencyManagement>
