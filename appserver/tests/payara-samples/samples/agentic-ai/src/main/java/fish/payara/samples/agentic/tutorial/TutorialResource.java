@@ -42,12 +42,18 @@ package fish.payara.samples.agentic.tutorial;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonReader;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+
+import java.io.StringReader;
 
 /**
  * REST API for the tutorial UI. Firing the {@link TutorialRequest} event is
@@ -93,17 +99,62 @@ public class TutorialResource {
         return store.get();
     }
 
-    /** Refine the current tutorial with a chat instruction. */
+    /** Refine the whole guide with a chat instruction. */
     @POST
     @Path("tutorial/refine")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_HTML)
+    @Produces(MediaType.APPLICATION_JSON)
     public String refine(RefineRequest request) {
         String instruction = request == null ? null : request.instruction();
         trigger.fire(new TutorialRequest(form.spec(), instruction, store.get()));
         return store.get();
     }
 
-    public record RefineRequest(String instruction) {
+    /**
+     * Refine the description of a single field. The agent receives only that
+     * field's current description, updates it, and the result is merged back
+     * into the full guide JSON so the other fields are preserved.
+     */
+    @POST
+    @Path("tutorial/refine-field")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String refineField(FieldRefineRequest request) {
+        if (request == null || request.fieldName() == null || request.instruction() == null) {
+            return store.get();
+        }
+        String fullJson = store.get();
+        String currentValue = extractField(fullJson, request.fieldName());
+        String fieldJson = Json.createObjectBuilder()
+                .add(request.fieldName(), currentValue)
+                .build().toString();
+        trigger.fire(new TutorialRequest(form.spec(), request.instruction(), fieldJson));
+        String updatedValue = extractField(store.get(), request.fieldName());
+        store.put(mergeField(fullJson, request.fieldName(), updatedValue));
+        return store.get();
     }
+
+    private String extractField(String json, String fieldName) {
+        if (json == null || json.isBlank()) return "";
+        try (JsonReader reader = Json.createReader(new StringReader(json))) {
+            return reader.readObject().getString(fieldName, "");
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String mergeField(String fullJson, String fieldName, String newValue) {
+        JsonObjectBuilder builder = Json.createObjectBuilder();
+        if (fullJson != null && !fullJson.isBlank()) {
+            try (JsonReader reader = Json.createReader(new StringReader(fullJson))) {
+                reader.readObject().forEach(builder::add);
+            } catch (Exception ignored) {}
+        }
+        builder.add(fieldName, newValue);
+        return builder.build().toString();
+    }
+
+    public record RefineRequest(String instruction) {}
+
+    public record FieldRefineRequest(String fieldName, String instruction) {}
 }

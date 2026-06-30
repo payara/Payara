@@ -84,15 +84,16 @@ public class TutorialAgent {
     void render(TutorialRequest request) {
         String html;
         if (request.currentHtml() == null || request.currentHtml().isBlank()) {
-            LOGGER.info("[ACTION] generating tutorial from the form spec...");
+            LOGGER.info("[ACTION] generating field-guide JSON from the form spec...");
             html = model.query(
-                    "Generate the tutorial HTML fragment for this form: {}", request.formSpec());
+                    "Generate the field-guide JSON for this form. "
+                            + "Use each field's name attribute as the JSON key: {}", request.formSpec());
         } else {
-            LOGGER.info("[ACTION] refining tutorial: " + request.instruction());
+            LOGGER.info("[ACTION] refining field-guide: " + request.instruction());
             html = model.query(
-                    "Current tutorial HTML fragment:\n{}\n\n"
-                            + "Apply this change requested by the developer: {}\n\n"
-                            + "Return the full updated HTML fragment.",
+                    "Current field-guide JSON:\n{}\n\n"
+                            + "Apply this change to the explanations: {}\n\n"
+                            + "Return the complete updated JSON object.",
                     request.currentHtml(), request.instruction());
         }
         store.put(stripCodeFences(html));
