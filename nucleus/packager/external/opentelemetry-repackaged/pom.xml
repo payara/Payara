@@ -111,12 +111,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk-extension-incubator</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>io.opentelemetry.semconv</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
             <scope>compile</scope>
@@ -125,12 +119,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-logging</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-runtime-telemetry-java17</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -176,12 +164,11 @@
                             !com.android.*,
                             !dalvik.*,
                             io.opentelemetry.exporter.prometheus;resolution:=optional,
-                            io.opentelemetry.sdk.extension.incubator.fileconfig;resolution:=optional,
+                            !io.opentelemetry.sdk.extension.incubator.*,
                             sun.security.ssl;resolution:=optional,
                             !kotlin.*,
                             !org.bouncycastle.*,
                             !org.openjsse.*,
-                            !org.snakeyaml.engine.*,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
@@ -190,8 +177,7 @@
                             *;groupId=io.opentelemetry;inline=true,
                             *;groupId=io.opentelemetry.instrumentation;inline=true,
                             *;groupId=io.opentelemetry.semconv;inline=true,
-                            *;groupId=org.jetbrains.kotlin.*;inline=true,
-                            *;groupId=org.snakeyaml;inline=true
+                            *;groupId=org.jetbrains.kotlin.*;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
@@ -224,7 +210,6 @@
                         <includes>
                             <include>com.squareup.*:*</include>
                             <include>org.jetbrains.kotlin.*:*</include>
-                            <include>org.snakeyaml.*:*</include>
                         </includes>
                     </artifactSet>
                     <filters>
@@ -237,12 +222,6 @@
                         </filter>
                         <filter>
                             <artifact>org.jetbrains.kotlin.*:*</artifact>
-                            <excludes>
-                                <exclude>**</exclude>
-                            </excludes>
-                        </filter>
-                        <filter>
-                            <artifact>org.snakeyaml.*:*</artifact>
                             <excludes>
                                 <exclude>**</exclude>
                             </excludes>
@@ -260,10 +239,6 @@
                         <relocation>
                             <pattern>kotlin.</pattern>
                             <shadedPattern>fish.payara.shaded.kotlin.</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>org.snakeyaml.engine.</pattern>
-                            <shadedPattern>fish.payara.shaded.snakeyaml.engine.</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
