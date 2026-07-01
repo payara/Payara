@@ -40,13 +40,14 @@
 package fish.payara.telemetry.service;
 
 
-import io.opentelemetry.instrumentation.runtimemetrics.java17.RuntimeMetrics;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -77,6 +78,8 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
     private OpenTelemetrySdk runtimeSdk = null;
     
     private OpenTelemetrySdk noopInstance = null;
+
+    private JvmMetrics jvmMetrics;
 
     @PostConstruct
     public void init() {
@@ -113,7 +116,8 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         }
 
         if (isRuntimeOtelDisabled() && runtimeSdk != null) {
-            RuntimeMetrics.builder(runtimeSdk).enableAllFeatures().build();
+            Meter meter = runtimeSdk.getMeterProvider().get("payara-runtime");
+            jvmMetrics = new JvmMetrics(meter);
         }
     }
 
@@ -179,5 +183,11 @@ public class PayaraTelemetryBootstrapFactoryServiceImpl implements PayaraTelemet
         builder.put("jvm.version", System.getProperty("java.version"));
         return builder;
     }
-    
+
+    @PreDestroy
+    public void shutdown() {
+        if (jvmMetrics != null) {
+            jvmMetrics.close();
+        }
+    }
 }
