@@ -112,8 +112,22 @@ public class WinRMHelper {
         executeCommand("echo ping");
     }
 
-    public boolean exists(String path) {
-        return false; // TODO: WinRM
+    public boolean exists(String path, boolean isDirectory) {
+        if (isDirectory && !path.endsWith("\\")) {
+            path += "\\";
+        }
+
+        return executeCommand("IF EXIST " + path + " (echo true) ELSE (echo false)")
+                .getStdOut()
+                .contains("true");
+    }
+
+    public boolean dirExists(String path) {
+        return exists(path, true);
+    }
+
+    public boolean fileExists(String path) {
+        return exists(path, false);
     }
 
     public WinRmToolResponse makeDirectory(String path) {

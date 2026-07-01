@@ -75,7 +75,7 @@ public class UninstallNodeWinrmCommand extends UninstallNodeBaseCommand {
             for (String host : hosts) {
                 winrm.init(getRemoteUser(), password, host, getRemotePort(), getInstallDir());
 
-                if (!winrm.exists(installDir)) {
+                if (!winrm.dirExists(installDir)) {
                     throw new IOException(installDir + " Directory does not exist");
                 }
 

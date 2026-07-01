@@ -96,7 +96,7 @@ public class InstallNodeWinrmCommand extends InstallNodeBaseCommand {
             winrm.init(getRemoteUser(), password, host, getRemotePort(), winrmInstallDir);
 
             try {
-                if (winrm.exists(winrmInstallDir)) {
+                if (winrm.dirExists(winrmInstallDir)) {
                     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
                     try {
                         String nadminBase = winrmInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin";
@@ -145,7 +145,7 @@ public class InstallNodeWinrmCommand extends InstallNodeBaseCommand {
             String winrmInstallDir = getInstallDir().replace("\\", "/");
             winrm.init(getRemoteUser(), password, host, port, winrmInstallDir);
 
-            if (!winrm.exists(getInstallDir())) {
+            if (!winrm.dirExists(winrmInstallDir)) {
                 winrm.makeDirectory(winrmInstallDir);
             }
 
