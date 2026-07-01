@@ -40,7 +40,6 @@
 package fish.payara.nucleus.microprofile.config;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
 import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
@@ -124,7 +123,7 @@ public class ServerConfigProvider {
     private PayaraExecutorService executorService;
 
     @Inject
-    private DomainScopedPasswordAliasStore passwordStore;
+    private RefreshingPasswordAliasStoreAccessor passwordStore;
 
     private PayaraConfig serverConfig;
     private Collection<ConfigSource> configSources;
@@ -161,7 +160,7 @@ public class ServerConfigProvider {
         sources.add(new JNDIConfigSource(mpConfig));
         sources.add(new PayaraServerProperties(mpConfig, serverEnvironment, serverContext));
         sources.add(new DirConfigSource(mpConfig, executorService));
-        sources.add(new PasswordAliasConfigSource(mpConfig, passwordStore));
+        sources.add(new PasswordAliasConfigSource(mpConfig, passwordStore::getCurrentStore));
         return List.copyOf(sources);
     }
 
