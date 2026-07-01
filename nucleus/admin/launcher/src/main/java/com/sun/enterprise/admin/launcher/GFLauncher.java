@@ -1009,21 +1009,16 @@ public abstract class GFLauncher {
         return ss;
     }
 
-    // Launches ASMain via WMI Win32_Process.Create() so it runs outside the SSH Job Object.
-    // Win32-OpenSSH puts every exec-channel process in a Job Object with KILL_ON_JOB_CLOSE;
-    // WMI delegates creation to WmiPrvSE.exe (a system service not in that Job Object),
-    // so the new JVM inherits no Job Object from the SSH session and survives channel close.
-    // PowerShell Start-Process cannot escape it: CREATE_NO_WINDOW doesn't break Job Object
-    // inheritance, and OpenSSH disallows CREATE_BREAKAWAY_FROM_JOB on its Job Objects.
-    // WMI doesn't support stream redirection, so a batch file lets cmd.exe wire up stdin.
-    // Returns a sentinel process that keeps waitForServer() alive while the JVM starts.
-    // Requires local administrator rights for Win32_Process.Create() to succeed.
+    // Launches ASMain via Windows Task Scheduler so it survives SSH channel close.
+    // Win32-OpenSSH kills every exec-channel process when the channel closes (Job Object with
+    // KILL_ON_JOB_CLOSE); the Task Scheduler service creates the JVM outside that Job Object.
+    // A user-level task (-RunLevel Limited) needs no admin rights. wscript.exe runs cmd.exe
+    // hidden (SW_HIDE) so no console appears. The batch writes its cmd.exe PID before starting
+    // Java; a sentinel polls that PID so waitForServer() detects failures without timing out.
     private Process launchDetachedOnWindows(List<String> cmds, ProcessBuilder pb) throws IOException, GFLauncherException {
 
         File tokenFile = File.createTempFile("payara-tokens-", ".tmp");
-        // Restrict access to owner before writing sensitive content.
-        // On Windows, java.io.tmpdir is typically the user's private AppData\Temp, but
-        // it can be overridden to a shared dir; removing inherited ACEs defends against that.
+        // Temp dir can be shared; remove inherited ACEs so only the owner can read the tokens.
         restrictToOwner(tokenFile);
         try (BufferedWriter writer = Files.newBufferedWriter(tokenFile.toPath(), StandardCharsets.UTF_8)) {
             for (String token : info.securityTokens) {
@@ -1045,32 +1040,49 @@ public abstract class GFLauncher {
             }
         }
 
-        // Batch wrapper so cmd.exe can redirect stdin with '<' (WMI Create() cannot)
+        // Batch: writes the cmd.exe PID before launching Java (via WMI query on $PID's parent,
+        // since PS 5.1 lacks Process.Parent), then redirects stdin from tokenFile with '<'.
+        File pidFile = File.createTempFile("payara-pid-", ".tmp");
         File batchFile = File.createTempFile("payara-start-", ".bat");
         try (BufferedWriter writer = Files.newBufferedWriter(batchFile.toPath(), StandardCharsets.UTF_8)) {
+            String pidFilePs = pidFile.getAbsolutePath().replace("'", "''");
             String javaQ = cmds.getFirst().replace("\"", "\"\"");
             String argQ = argFile.getAbsolutePath().replace("\"", "\"\"");
             String tokQ = tokenFile.getAbsolutePath().replace("\"", "\"\"");
             writer.write("@echo off\r\n");
+            writer.write("powershell -NoProfile -NonInteractive -Command "
+                    + "\"(Get-WmiObject Win32_Process -Filter ('ProcessId='+$PID)).ParentProcessId"
+                    + " | Out-File -FilePath '" + pidFilePs + "' -Encoding ascii -NoNewline\"\r\n");
             writer.write("\"" + javaQ + "\" \"@" + argQ + "\" < \"" + tokQ + "\"\r\n");
         }
 
-        // PowerShell is just a thin WMI client here; streams go to NUL so nothing is inherited
-        File psStderrFile = File.createTempFile("payara-ps-stderr-", ".log");
-        File wmiPidFile = File.createTempFile("payara-wmipid-", ".tmp");
+        // wscript.exe (GUI subsystem, no console) runs cmd.exe hidden via SW_HIDE; bWaitOnReturn=False
+        // so wscript exits immediately and cmd.exe runs independently.
+        File vbsFile = File.createTempFile("payara-launch-", ".vbs");
+        try (BufferedWriter writer = Files.newBufferedWriter(vbsFile.toPath(), StandardCharsets.UTF_8)) {
+            writer.write("CreateObject(\"WScript.Shell\").Run \"cmd.exe /c \"\"\" & WScript.Arguments(0) & \"\"\"\", 0, False\r\n");
+        }
+
+        String taskName = "PayaraStart-" + java.util.UUID.randomUUID().toString().replace("-", "");
         String batchPs = batchFile.getAbsolutePath().replace("'", "''");
+        String vbsPs = vbsFile.getAbsolutePath().replace("'", "''");
         String workDirPs = (pb.directory() != null ? pb.directory() : new File(".")).getAbsolutePath().replace("'", "''");
-        String pidFilePs = wmiPidFile.getAbsolutePath().replace("'", "''");
-        String psCmd = String.format(
-                "$bp='%s';$wd='%s';"
-                + "$r=([wmiclass]'Win32_Process').Create('cmd.exe /c \"'+$bp+'\"',$wd,$null);"
-                + "if($r.ReturnValue -ne 0){exit 1};"
-                + "$r.ProcessId|Out-File -FilePath '%s' -Encoding ascii -NoNewline",
-                batchPs, workDirPs, pidFilePs);
+        String taskNamePs = taskName.replace("'", "''");
+        String psRegisterCmd = String.format(
+                "$batch='%s';$vbs='%s';$wd='%s';$tn='%s';"
+                + "$arg='//nologo \"'+$vbs+'\" \"'+$batch+'\"';"
+                + "$a=New-ScheduledTaskAction -Execute 'wscript.exe' -Argument $arg -WorkingDirectory $wd;"
+                + "$t=New-ScheduledTaskTrigger -Once -At (Get-Date).AddDays(1);"
+                + "$s=New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 0)"
+                + " -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries;"
+                + "Register-ScheduledTask -TaskName $tn -Action $a -Trigger $t -Settings $s -RunLevel Limited -Force|Out-Null;"
+                + "Start-ScheduledTask -TaskName $tn",
+                batchPs, vbsPs, workDirPs, taskNamePs);
 
-        List<File> toClean = Arrays.asList(tokenFile, argFile, batchFile, psStderrFile, wmiPidFile);
+        File psStderrFile = File.createTempFile("payara-ps-stderr-", ".log");
+        List<File> toClean = Arrays.asList(tokenFile, argFile, batchFile, vbsFile, pidFile, psStderrFile);
 
-        ProcessBuilder psPb = new ProcessBuilder("powershell", "-NonInteractive", "-Command", psCmd);
+        ProcessBuilder psPb = new ProcessBuilder("powershell", "-NonInteractive", "-Command", psRegisterCmd);
         psPb.redirectInput(new File("NUL"));
         psPb.redirectOutput(new File("NUL"));
         psPb.redirectError(psStderrFile);
@@ -1081,7 +1093,7 @@ public abstract class GFLauncher {
             if (!finished) {
                 ps.destroyForcibly();
                 toClean.forEach(File::delete);
-                throw new GFLauncherException("WMI process creation timed out after 30 s");
+                throw new GFLauncherException("Task Scheduler process creation timed out after 30 s");
             }
             if (ps.exitValue() != 0) {
                 String psErr;
@@ -1091,18 +1103,50 @@ public abstract class GFLauncher {
                     psErr = "";
                 }
                 toClean.forEach(File::delete);
-                throw new GFLauncherException("Win32_Process.Create() failed (exit=" + ps.exitValue() + "): " + psErr);
+                throw new GFLauncherException("Task Scheduler registration failed (exit=" + ps.exitValue() + "): " + psErr);
             }
         } catch (InterruptedException ie) {
             ps.destroyForcibly();
             toClean.forEach(File::delete);
             Thread.currentThread().interrupt();
-            throw new GFLauncherException("WMI process creation interrupted");
+            throw new GFLauncherException("Task Scheduler process creation interrupted");
         }
-        GFLauncherLogger.fine("launchDetachedOnWindows", "WMI process created. batchFile=" + batchFile.getAbsolutePath());
 
-        // Delete temp files after 120 s — enough time for cmd.exe to open them at startup.
-        // wmiPidFile is read immediately by the sentinel at startup so it can also be cleaned here.
+        int cmdPid = -1;
+        long deadline = System.currentTimeMillis() + 30_000;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                String raw = new String(Files.readAllBytes(pidFile.toPath()), StandardCharsets.UTF_8).trim();
+                if (!raw.isEmpty()) {
+                    cmdPid = Integer.parseInt(raw);
+                    break;
+                }
+            } catch (Exception ignored) {
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("Interrupted waiting for Payara process PID");
+            }
+        }
+
+        // Unregister the task; the already-running process is unaffected.
+        new ProcessBuilder("powershell", "-NonInteractive", "-Command",
+                "Unregister-ScheduledTask -TaskName '" + taskNamePs + "' -Confirm:$false -ErrorAction SilentlyContinue")
+                .redirectInput(new File("NUL"))
+                .redirectOutput(new File("NUL"))
+                .redirectError(new File("NUL"))
+                .start();
+
+        if (cmdPid < 0) {
+            toClean.forEach(File::delete);
+            throw new GFLauncherException("Timed out waiting for Payara process PID file");
+        }
+
+        GFLauncherLogger.fine("launchDetachedOnWindows", "Task Scheduler process created. pid=" + cmdPid + " batchFile=" + batchFile.getAbsolutePath());
+
         Thread cleanup = new Thread(() -> {
             try {
                 Thread.sleep(120_000);
@@ -1114,13 +1158,9 @@ public abstract class GFLauncher {
         cleanup.setDaemon(true);
         cleanup.start();
 
-        // Sentinel monitors the WMI-created cmd.exe (which waits for java.exe to finish),
-        // so waitForServer() detects actual GF failures quickly instead of waiting for timeout.
-        // cmd.exe /c batch.bat blocks until java.exe exits, making its PID a reliable proxy
-        // for GF liveness. Exits with code 1 when GF dies; killed by shutdown hook on success.
-        String pidFileSentinel = wmiPidFile.getAbsolutePath().replace("'", "''");
+        // Sentinel polls cmd.exe (blocks until java.exe exits); exits with code 1 when GF dies.
         Process sentinel = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command",
-                "$p=[int](Get-Content '" + pidFileSentinel + "');"
+                "$p=" + cmdPid + ";"
                 + "while(Get-Process -Id $p -ErrorAction SilentlyContinue){Start-Sleep -Seconds 1};"
                 + "exit 1")
                 .redirectInput(new File("NUL"))
