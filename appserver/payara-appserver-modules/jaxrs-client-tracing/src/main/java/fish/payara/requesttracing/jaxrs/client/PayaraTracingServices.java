@@ -62,7 +62,6 @@ import fish.payara.opentracing.OpenTracingService;
 public final class PayaraTracingServices {
 
     private final RequestTracingService requestTracingService;
-    private final OpenTracingService openTracingService;
 
     private final InvocationManager invocationManager;
     private final Deployment deployment;
@@ -78,7 +77,6 @@ public final class PayaraTracingServices {
         final ServiceLocator baseServiceLocator = Globals.getStaticBaseServiceLocator();
 
         requestTracingService = getFromServiceHandle(baseServiceLocator, RequestTracingService.class);
-        openTracingService = getFromServiceHandle(baseServiceLocator, OpenTracingService.class);
         invocationManager = getFromServiceHandle(baseServiceLocator, InvocationManager.class);
         deployment = getFromServiceHandle(baseServiceLocator, Deployment.class);
         openTelemetryService = getFromServiceHandle(baseServiceLocator, OpenTelemetryService.class);
@@ -90,7 +88,6 @@ public final class PayaraTracingServices {
      */
     public boolean isTracingAvailable() {
         return requestTracingService != null
-                && openTracingService != null
                 && openTelemetryService != null;
     }
 
@@ -106,18 +103,7 @@ public final class PayaraTracingServices {
     }
 
     /**
-     * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
-     *         initialised.
-     */
-    public OpenTracingService getOpenTracingService() {
-        if (isTracingAvailable()) {
-            return openTracingService;
-        }
-        return null;
-    }
-
-    /**
-     * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
+     * @return {@link OpenTelemetryService}, or null if the HK2 service couldn't be
      *         initialised.
      */
     public OpenTelemetryService getOpenTelemetryService() {
@@ -147,7 +133,7 @@ public final class PayaraTracingServices {
      */
     public String getApplicationName() {
         if (isTracingAvailable()) {
-            return openTracingService.getApplicationName(invocationManager);
+            return openTelemetryService.getCurrentApplicationName();
         }
         return null;
     }
@@ -157,11 +143,7 @@ public final class PayaraTracingServices {
      *         if the tracing service is not available.
      */
     public Tracer getActiveTracer() {
-        final String applicationName = getApplicationName();
-        if (applicationName == null || !isTracingAvailable()) {
-            return null;
-        }
-        return openTracingService.getTracer(applicationName);
+        return openTelemetryService.getCurrentTracer();
     }
 
     /**

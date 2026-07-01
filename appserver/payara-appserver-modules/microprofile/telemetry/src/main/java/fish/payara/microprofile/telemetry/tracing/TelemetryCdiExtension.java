@@ -78,13 +78,13 @@ import java.util.stream.StreamSupport;
 public class TelemetryCdiExtension implements Extension {
     private final OpenTelemetryService openTelemetryService;
     
-    private final OpenTelemetryBootstrap payaraTelemetryBootstrapFactoryServiceImpl;
+    private final OpenTelemetryBootstrap openTelemetryBootstrap;
 
     private boolean appManagedOtel;
 
     public TelemetryCdiExtension() {
         openTelemetryService = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryService.class);
-        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
+        openTelemetryBootstrap = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
     }
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
@@ -107,19 +107,14 @@ public class TelemetryCdiExtension implements Extension {
     void initializeOpenTelemetry(@Observes AfterDeploymentValidation adv) {
         try {
             //verify if global config is available
-            if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().isEmpty()) {
+            if (openTelemetryBootstrap.isRuntimeTelemetryDisabled()) {
                 var config = ConfigProvider.getConfig();
-                config.getConfigSources().forEach(g -> System.out.println(g.getName()+ " -> values" +g.getProperties()));
                 if (config.getOptionalValue("otel.sdk.disabled", Boolean.class).orElse(true)) {
                     // app-specific OpenTelemetry is not configured
                     return;
                 }
-                // This is potentially expensive, but Autoconfigure SDK does not have lazy per-key provider, needs a map
-                var otelProps = StreamSupport.stream(config.getPropertyNames().spliterator(), false)
-                        .filter(key -> key.startsWith("otel."))
-                        .collect(Collectors.toMap(k -> k, k -> config.getValue(k, String.class)));
                 appManagedOtel = true;
-                openTelemetryService.initializeCurrentApplication(otelProps);
+                openTelemetryService.initializeCurrentApplication(config);
             }
         } catch (Exception e) {
             adv.addDeploymentProblem(e);

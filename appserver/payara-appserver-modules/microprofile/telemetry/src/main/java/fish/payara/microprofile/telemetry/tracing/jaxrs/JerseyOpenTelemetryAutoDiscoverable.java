@@ -52,11 +52,13 @@ public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverab
     @Override
     public void configure(FeatureContext context) {
         // Only register for application deployments (not the admin console)
-        final Deployment deployment = new PayaraTracingServices().getDeployment();
+        PayaraTracingServices tracingServices = new PayaraTracingServices();
+        final Deployment deployment = tracingServices.getDeployment();
         if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
             return;
         }
-        if (!context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
+        if (tracingServices.isTracingAvailable() &&
+                !context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
             context.register(OpenTelemetryApplicationEventListener.class);
         }
     }

@@ -39,75 +39,60 @@
  */
 package fish.payara.opentracing;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.telemetry.service.OpenTelemetryBootstrap;
 import fish.payara.telemetry.service.PayaraTelemetryConstants;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.resources.ResourceBuilder;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
-import io.opentelemetry.sdk.logs.SdkLoggerProvider;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.Config;
+import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.ATTRIBUTE_SERVICE_NAME;
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_LOGS_EXPORTER;
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_METRICS_EXPORTER;
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_RESOURCE_ATTRIBUTES;
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_SERVICE_NAME;
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_TRACES_EXPORTER;
-import static fish.payara.telemetry.service.PayaraTelemetryConstants.otelProperties;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Manages per-application OpenTelemetry SDK instances as well as export to
  * Payara Request Tracing Service.
  */
 @Service(name = "opentelemetry-service")
+@RunLevel(StartupRunLevel.VAL)
 public class OpenTelemetryService implements EventListener {
 
     public static final String INSTRUMENTATION_SCOPE_NAME = "fish.payara.telemetry";
 
     // The tracer instances
-    private static final Map<String, OpenTelemetryAppInfo> appTelemetries = new ConcurrentHashMap<>();
+    private static final Map<String, OpenTelemetrySdkHandle> appTelemetries = new ConcurrentHashMap<>();
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryService.class.getName());
 
-    private OpenTelemetryBootstrap payaraTelemetryBootstrapFactoryServiceImpl;
+    @Inject
+    OpenTelemetryBootstrap openTelemetryBootstrap;
 
     @Inject
     Events events;
@@ -121,18 +106,45 @@ public class OpenTelemetryService implements EventListener {
     @Inject
     ApplicationRegistry applicationRegistry;
 
+    private OpenTelemetrySdkHandle runtimeHandle;
+
+    private AppTelemetry appSpecificTelemetry;
+
     public Tracer getCurrentTracer() {
+        if (runtimeHandle != null) {
+            return runtimeHandle.tracer();
+        }
         String appName = initializeCurrentApplication();
         return getTracer(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
     }
     
     public Meter getCurrentMeter() {
+        if (runtimeHandle != null) {
+            return runtimeHandle.meter();
+        }
         String appName = initializeCurrentApplication();
         return getMeter(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
     }
 
-    public void initializeCurrentApplication(Map<String, String> otelProps) {
-        initializeApplication(currentApplication(), otelProps);
+    public OpenTelemetry getCurrentSdk() {
+        if (runtimeHandle != null) {
+            return runtimeHandle.sdk();
+        }
+        var appName = initializeCurrentApplication();
+        return getSdk(appName).orElseGet(OpenTelemetry::noop);
+    }
+
+    public void initializeCurrentApplication(Config appConfig) {
+        if (runtimeHandle != null) {
+            logger.log(Level.WARNING, "Runtime-level opentelemetry is configured, application configuration will be ignored");
+            return;
+        }
+        initializeApplication(currentApplication(), appConfig);
+        // runtime telemetry is disabled and we provably have app telemetry enabled. We'll route GlobalTelemetry over to us.
+        if (appSpecificTelemetry == null) {
+            appSpecificTelemetry = new AppTelemetry();
+            openTelemetryBootstrap.setGlobalDelegate(appSpecificTelemetry);
+        }
     }
 
     /**
@@ -140,11 +152,6 @@ public class OpenTelemetryService implements EventListener {
      */
     public void shutdownCurrentApplication() {
         shutdown(currentApplication());
-    }
-
-    public OpenTelemetry getCurrentSdk() {
-        var appName = initializeCurrentApplication();
-        return getSdk(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
     }
 
     @PostConstruct
@@ -155,16 +162,15 @@ public class OpenTelemetryService implements EventListener {
             logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
-        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
-        OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-        if(openTelemetry == null) {
-            GlobalOpenTelemetry.set(new GlobalTelemetry());
+        OpenTelemetrySdk runtimeSdk = openTelemetryBootstrap.getRuntimeSdk();
+        if (runtimeSdk != null) {
+            this.runtimeHandle = new OpenTelemetrySdkHandle(runtimeSdk);
         }
     }
 
     @PreDestroy
     void stopAll() {
-        appTelemetries.values().forEach(OpenTelemetryAppInfo::shutdown);
+        appTelemetries.values().forEach(OpenTelemetrySdkHandle::shutdown);
     }
 
     @Override
@@ -184,6 +190,7 @@ public class OpenTelemetryService implements EventListener {
         }
     }
 
+    @Deprecated
     public DoubleHistogram createMetricsHistogram(OpenTelemetry instance) {
         return instance.getMeterProvider().get(INSTRUMENTATION_SCOPE_NAME)
                 .histogramBuilder(PayaraTelemetryConstants.HTTP_SERVER_REQUEST_DURATION_NAME)
@@ -210,7 +217,7 @@ public class OpenTelemetryService implements EventListener {
      * @return
      */
     private Optional<Tracer> getTracer(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::tracer);
+        return get(applicationName, OpenTelemetrySdkHandle::tracer);
     }
 
     private static IllegalStateException currentAppNotInitializedException(String appName) {
@@ -253,24 +260,20 @@ public class OpenTelemetryService implements EventListener {
      * Initialize OpenTelemtry components for an application if they do not exist yet.
      *
      * @param appName
-     * @param properties
+     * @param config
      */
-    void ensureAppInitialized(String appName, Map<String, String> properties) {
-        appTelemetries.computeIfAbsent(appName, (k) -> new OpenTelemetryAppInfo(createSdk(appName, properties)));
+    private void ensureAppInitialized(String appName, Config config) {
+        appTelemetries.computeIfAbsent(appName, (k) -> new OpenTelemetrySdkHandle(createSdk(appName, config)));
     }
 
-    private <T> Optional<T> get(String applicationName, Function<OpenTelemetryAppInfo, T> getter) {
+    private <T> Optional<T> get(String applicationName, Function<OpenTelemetrySdkHandle, T> getter) {
         if (applicationName == null) {
             return Optional.empty();
         }
-        OpenTelemetryAppInfo appInfo = null;
-        if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().isPresent()) {
-            appInfo = new OpenTelemetryAppInfo(payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().get());
-        } else {
-            appInfo = appTelemetries.get(applicationName);
-            if (appInfo == null) {
-                return Optional.empty();
-            }
+        OpenTelemetrySdkHandle appInfo = null;
+        appInfo = appTelemetries.get(applicationName);
+        if (appInfo == null) {
+            return Optional.empty();
         }
         return Optional.ofNullable(getter.apply(appInfo));
     }
@@ -293,23 +296,11 @@ public class OpenTelemetryService implements EventListener {
      * @link
      * <a href="https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md">Autoconfigure documentation</a>
      */
-    private OpenTelemetrySdk createSdk(String applicationName, Map<String, String> configProperties) {
-
-
+    private OpenTelemetrySdk createSdk(String applicationName, Config configProperties) {
+        // TODO: Unify creation with bootstrap process for consistency between app and runtime instances
         if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
-            var props = new HashMap<>(configProperties != null ? configProperties : Map.of());
-            addDefault(props, OTEL_SERVICE_NAME, applicationName);
-            addDefault(props, OTEL_METRICS_EXPORTER, "none");
-            if (!props.containsKey(OTEL_LOGS_EXPORTER)) {
-                addDefault(props, OTEL_LOGS_EXPORTER, "none");
-            }
-            if (!props.containsKey(OTEL_TRACES_EXPORTER)) {
-                addDefault(props, OTEL_TRACES_EXPORTER, "none");
-            }
             try {
-                return AutoConfiguredOpenTelemetrySdk.builder()
-                        .addPropertiesCustomizer(p -> props)
-                        .addResourceCustomizer(provideResourceCustomizer(props))
+                return openTelemetryBootstrap.buildApplicationSdk(applicationName, configProperties)
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                         .addTracerProviderCustomizer((builder, config) -> {
                           if (isPayaraTracingEnabled()) {
@@ -326,67 +317,13 @@ public class OpenTelemetryService implements EventListener {
                 // Do not prevent application from working when things go awry in telemetry config
                 return OpenTelemetrySdk.builder().build();
             }
-        } else {
-            // noop
-            if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableNoopReference().isPresent()) {
-                return payaraTelemetryBootstrapFactoryServiceImpl.getAvailableNoopReference().get();
-            } 
         }
         //noop
         return OpenTelemetrySdk.builder().build();
     }
 
-    private BiFunction<? super Resource, ConfigProperties, ?extends Resource> provideResourceCustomizer(HashMap<String, String> readProperties) {
-        return (Resource resource, ConfigProperties configProperties) -> {
-            try {
-                return this.createResources(resource, configProperties, readProperties).build();
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-
-    private ResourceBuilder createResources(Resource resource, ConfigProperties configProperties, HashMap<String, String> readProperties) throws UnknownHostException {
-        ResourceBuilder builder = resource.toBuilder();
-        for (String otelProperty : otelProperties) {
-            builder.put(otelProperty, readProperties.get(otelProperty));
-        }
-        builder.put(ATTRIBUTE_SERVICE_NAME, readProperties.get(OTEL_SERVICE_NAME));
-        if (readProperties.containsKey(OTEL_RESOURCE_ATTRIBUTES)) {
-            String properties = readProperties.get(OTEL_RESOURCE_ATTRIBUTES);
-            processProperties(builder, properties);
-            builder.put(OTEL_RESOURCE_ATTRIBUTES, readProperties.get(OTEL_RESOURCE_ATTRIBUTES));
-        }
-        if (!readProperties.containsKey(OTEL_LOGS_EXPORTER)) {
-            builder.put(OTEL_LOGS_EXPORTER, "none");
-        }
-        if (!readProperties.containsKey(OTEL_TRACES_EXPORTER)) {
-            builder.put(OTEL_TRACES_EXPORTER, "none");
-        }
-        return builder;
-    }
-    
-    public void processProperties(ResourceBuilder builder, String properties) {
-        if(properties != null) {
-            String[] multipleProps = properties.split(",");
-            for (String p: multipleProps) {
-                String shorText = p.trim();
-                String key = shorText.substring(0, shorText.indexOf("="));
-                String value = shorText.substring(shorText.indexOf("=") + 1);
-                builder.put(key, value);
-            }
-        }
-    }
-
-    private boolean isOtelEnabled(Map<String, String> configProperties) {
-        boolean result = configProperties != null && !configProperties.isEmpty();
-        if (!result) {
-            result = "false".equalsIgnoreCase(System.getProperty("otel.sdk.disabled", "true"));
-        }
-        if (!result) {
-            result = "false".equalsIgnoreCase(System.getenv("OTEL_SDK_DISABLED"));
-        }
-        return result;
+    private boolean isOtelEnabled(Config configProperties) {
+        return configProperties != null && !configProperties.getOptionalValue(PayaraTelemetryConstants.OTEL_SDK_DISABLED, Boolean.class).orElse(true);
     }
 
     /**
@@ -401,27 +338,14 @@ public class OpenTelemetryService implements EventListener {
         return handle != null && handle.isActive() && handle.getService().isRequestTracingEnabled();
     }
 
-    private void addDefault(Map<String, String> props, String key, String value) {
-        if (props.containsKey(key)) {
-            return;
-        }
-        if (System.getProperty(key) != null) {
-            return;
-        }
-        if (System.getenv(key.toUpperCase().replace('.', '_')) != null) {
-            return;
-        }
-        props.put(key, value);
-    }
-
     /**
      * Return Meter builder for given application
      *
      * @param applicationName
-     * @return
+     *  @return
      */
     private Optional<Meter> getMeter(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::meter);
+        return get(applicationName, OpenTelemetrySdkHandle::meter);
     }
 
     /**
@@ -431,19 +355,19 @@ public class OpenTelemetryService implements EventListener {
      * @return
      */
     private Optional<io.opentelemetry.api.logs.Logger> getLogger(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::logger);
+        return get(applicationName, OpenTelemetrySdkHandle::logger);
     }
 
     /**
      * Create new OpenTelemetry components for application. Shutdown previous ones if such already existed.
      *
      * @param applicationName
-     * @param configProperties
+     * @param config application's MP Config instance
      * @return
      */
-    private OpenTelemetrySdk initializeApplication(String applicationName, Map<String, String> configProperties) {
-        OpenTelemetrySdk sdk = createSdk(applicationName, configProperties);
-        OpenTelemetryAppInfo previous = appTelemetries.put(applicationName, new OpenTelemetryAppInfo(sdk));
+    private OpenTelemetrySdk initializeApplication(String applicationName, Config config) {
+        OpenTelemetrySdk sdk = createSdk(applicationName, config);
+        OpenTelemetrySdkHandle previous = appTelemetries.put(applicationName, new OpenTelemetrySdkHandle(sdk));
         if (previous != null) {
             previous.shutdown();
         }
@@ -451,24 +375,23 @@ public class OpenTelemetryService implements EventListener {
     }
 
 
-    Optional<OpenTelemetrySdk> getSdk(String applicationName) {
-        return get(applicationName, OpenTelemetryAppInfo::sdk);
-    }
-
-    public Optional<OpenTelemetrySdk> getSdkDependency(String applicationName, Runnable shutdownListener) {
-        return get(applicationName, appInfo -> {
-            appInfo.addShutdownListener(shutdownListener);
-            return appInfo.sdk();
-        });
-
+    private Optional<OpenTelemetry> getSdk(String applicationName) {
+        return get(applicationName, OpenTelemetrySdkHandle::sdk);
     }
 
     public boolean isEnabled() {
+        if (runtimeHandle != null) {
+            return true;
+        }
         String application = currentApplication();
         return application != null && appTelemetries.containsKey(application) || isPayaraTracingEnabled();
     }
 
-    static class OpenTelemetryAppInfo {
+    public String getCurrentApplicationName() {
+        return currentApplication();
+    }
+
+    static class OpenTelemetrySdkHandle {
 
         private final OpenTelemetrySdk sdk;
 
@@ -478,9 +401,7 @@ public class OpenTelemetryService implements EventListener {
 
         private io.opentelemetry.api.logs.Logger logger;
 
-        private List<Runnable> shutdownListeners;
-
-        OpenTelemetryAppInfo(OpenTelemetrySdk sdk) {
+        OpenTelemetrySdkHandle(OpenTelemetrySdk sdk) {
             this.sdk = sdk;
         }
 
@@ -509,36 +430,12 @@ public class OpenTelemetryService implements EventListener {
             return sdk;
         }
 
-        synchronized void addShutdownListener(Runnable listener) {
-            if (shutdownListeners == null) {
-                // we don't expect many listeners
-                shutdownListeners = new ArrayList<>(2);
-            }
-            shutdownListeners.add(listener);
-        }
-
         synchronized void shutdown() {
-            if (shutdownListeners != null) {
-                shutdownListeners.forEach(Runnable::run);
-            }
-            // we need to shut it down properly. SDK providers offer both async shutdown meter as well as implement
-            // Closeable, where shutdown is invoked in sync fashion. Let's be optimistic and start with async shutdown
-            SdkTracerProvider tracerProvider = this.sdk.getSdkTracerProvider();
-            if (tracerProvider != null) {
-                tracerProvider.shutdown();
-            }
-            SdkMeterProvider meterProvider = this.sdk.getSdkMeterProvider();
-            if (meterProvider != null) {
-                meterProvider.shutdown();
-            }
-            SdkLoggerProvider logProvider = this.sdk.getSdkLoggerProvider();
-            if (logProvider != null) {
-                logProvider.shutdown();
-            }
+            sdk.close();
         }
     }
 
-    class GlobalTelemetry implements OpenTelemetry {
+    class AppTelemetry implements OpenTelemetry {
 
         @Override
         public TracerProvider getTracerProvider() {
@@ -548,6 +445,16 @@ public class OpenTelemetryService implements EventListener {
         @Override
         public ContextPropagators getPropagators() {
             return get(currentApplication(), appInfo -> appInfo.sdk().getPropagators()).orElse(ContextPropagators.noop());
+        }
+
+        @Override
+        public MeterProvider getMeterProvider() {
+            return get(currentApplication(), appInfo -> appInfo.sdk().getMeterProvider()).orElse(MeterProvider.noop());
+        }
+
+        @Override
+        public LoggerProvider getLogsBridge() {
+            return get(currentApplication(), appInfo -> appInfo.sdk().getLogsBridge()).orElse(LoggerProvider.noop());
         }
     }
 

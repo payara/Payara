@@ -62,12 +62,10 @@ package org.apache.catalina.core;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.opentracing.OpenTracingService;
 import fish.payara.telemetry.service.PayaraTelemetryConstants;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.ErrorAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
@@ -91,8 +89,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.web.valve.GlassFishValve;
 
@@ -155,7 +151,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private static final String[] DEFAULT_SERVLET_METHODS = { "GET", "HEAD", "POST" };
 
     private final RequestTracingService requestTracing;
-    private final OpenTracingService openTracing;
     private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -344,7 +339,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         swValve = new StandardWrapperValve();
         pipeline.setBasic(swValve);
         requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
-        openTracing = getDefaultHabitat().getService(OpenTracingService.class);
         openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
 
         // suppress PWC6117 file not found errors
@@ -1548,6 +1542,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
                 } else {
                     RequestTraceSpan span = null;
+
                     if (requestTracing.isRequestTracingEnabled()) {
                         if (servlet instanceof ServletContainer) {
                             span = constructWebServiceRequestSpan((HttpServletRequest) request);
@@ -1565,14 +1560,10 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                     }
                     finally {
                         elapsedNanos = System.nanoTime() - nanosStart;
-                        String applicationName = openTracing.getApplicationName(
-                                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
-
-                        Tracer tracer = openTracing.getTracer(applicationName);
-                        if (tracer != null && response.isCommitted()) {
+                        // TODO: We should be starting the span if we're finishing it.
+                        if (Span.current().isRecording() && response.isCommitted()) {
                             // If response is not committed, it is likely async
-                            SpanBuilder spanBuilder = tracer.spanBuilder(applicationName);
-                            spanBuilder.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus()).startSpan();
+                            Span.current().setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus()).end();
                         }
                         // TODO: clear OpenTelemetry context once we move to natively using it.
                         if (requestTracing.isRequestTracingEnabled() && span != null) {
