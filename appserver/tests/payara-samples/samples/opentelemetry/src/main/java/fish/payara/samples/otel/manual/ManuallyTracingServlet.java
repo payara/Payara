@@ -49,7 +49,8 @@ import java.util.concurrent.locks.LockSupport;
 
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -67,8 +68,8 @@ public class ManuallyTracingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try(Scope scope = span.makeCurrent()) {
-            span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
-            span.setAttribute(SemanticAttributes.HTTP_URL, req.getRequestURI());
+            span.setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, "GET");
+            span.setAttribute(UrlAttributes.URL_FULL, req.getRequestURI());
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(ThreadLocalRandom.current().nextInt(1000)));
         }
     }
