@@ -67,7 +67,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean COMET_SUPPORT_ENABLED = false;
     boolean ENCODED_SLASH_ENABLED = false;
     boolean DNS_LOOKUP_ENABLED = false;
-    boolean RCM_SUPPORT_ENABLED = false;
     boolean TIMEOUT_ENABLED = true;
     boolean TRACE_ENABLED = false;
     boolean UPLOAD_TIMEOUT_ENABLED = true;
