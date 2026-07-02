@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.agentic-ai</groupId>
         <artifactId>agentic-ai</artifactId>
-        <version>7.2026.6-SNAPSHOT</version>
+        <version>7.2026.7-SNAPSHOT</version>
     </parent>
     <artifactId>agentic-ai-core</artifactId>
     <packaging>glassfish-jar</packaging>
