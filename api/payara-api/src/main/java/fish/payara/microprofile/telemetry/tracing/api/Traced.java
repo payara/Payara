@@ -39,7 +39,7 @@
  *  holder.
  *
  */
-package fish.payara.microprofile.telemetry.tracing;
+package fish.payara.microprofile.telemetry.tracing.api;
 
 import jakarta.enterprise.util.Nonbinding;
 import jakarta.interceptor.InterceptorBinding;

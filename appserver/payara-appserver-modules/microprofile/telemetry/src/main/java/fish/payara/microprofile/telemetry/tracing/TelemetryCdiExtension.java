@@ -41,6 +41,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing;
 
+import fish.payara.microprofile.telemetry.tracing.api.Traced;
 import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
 import io.opentelemetry.instrumentation.annotations.WithSpan;

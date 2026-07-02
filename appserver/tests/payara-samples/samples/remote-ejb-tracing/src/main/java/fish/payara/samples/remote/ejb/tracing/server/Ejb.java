@@ -40,7 +40,7 @@
 package fish.payara.samples.remote.ejb.tracing.server;
 
 import fish.payara.samples.remote.ejb.tracing.EjbRemote;
-import fish.payara.microprofile.telemetry.tracing.Traced;
+import fish.payara.microprofile.telemetry.tracing.api.Traced;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;

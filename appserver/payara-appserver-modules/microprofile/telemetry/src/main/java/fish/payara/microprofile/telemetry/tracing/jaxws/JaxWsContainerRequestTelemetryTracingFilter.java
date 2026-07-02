@@ -43,7 +43,7 @@ package fish.payara.microprofile.telemetry.tracing.jaxws;
 
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
-import fish.payara.microprofile.telemetry.tracing.Traced;
+import fish.payara.microprofile.telemetry.tracing.api.Traced;
 import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;

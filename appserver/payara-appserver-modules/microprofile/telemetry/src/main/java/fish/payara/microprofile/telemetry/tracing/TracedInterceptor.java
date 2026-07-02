@@ -41,6 +41,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing;
 
+import fish.payara.microprofile.telemetry.tracing.api.Traced;
 import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
 import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 import io.opentelemetry.api.trace.Span;

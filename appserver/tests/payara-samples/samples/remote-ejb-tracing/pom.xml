@@ -101,15 +101,14 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>microprofile-telemetry</artifactId>
-            <version>${project.version}</version>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>${opentelemetry.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>jaxrs-client-tracing</artifactId>
-            <version>${project.version}</version>
+            <groupId>fish.payara.api</groupId>
+            <artifactId>payara-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

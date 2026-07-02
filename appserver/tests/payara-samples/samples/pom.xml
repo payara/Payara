@@ -64,7 +64,6 @@
         <module>jaxrs-rolesallowed</module>
         <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
-        <!-- disabled until we have the new implementation using new MicroProfile OpenTelemetry Tracing-->
         <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
         <module>microprofile-config</module>
@@ -80,6 +79,7 @@
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
+        <!-- Disabled under FISH-13013 - re-enable once the MicroProfile REST Client Fault Tolerance sample is stabilised -->
         <!--<module>microprofile-rc-ft</module>-->
         <module>multiple-keystores</module>
         <!--module>client-certificate-validator</module-->
@@ -88,6 +88,7 @@
         <module>microprofile-rest-client</module>
         <module>concurrency</module>
         <module>reproducers</module>
+        <!-- Disabled under FISH-13013 - re-enable once the OpenTelemetry sample is stabilised -->
         <!--<module>opentelemetry</module>-->
         <module>use-bundled-jsf-primefaces</module>
         <module>mvc</module>

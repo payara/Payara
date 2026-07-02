@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 
 import jakarta.jws.WebService;
 
-import fish.payara.microprofile.telemetry.tracing.Traced;
+import fish.payara.microprofile.telemetry.tracing.api.Traced;
 
 @WebService(
     endpointInterface = "fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointInterface",
