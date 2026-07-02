@@ -56,6 +56,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
@@ -65,14 +66,18 @@ import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.common.util.Constants;
+import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.UUID;
 
 import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_ENV_PREFIX;
@@ -100,6 +105,9 @@ public class OpenTelemetryBootstrap {
 
     private boolean runtimeSdkDisabled;
     private JvmMetrics jvmMetrics;
+
+    @Inject
+    IterableProvider<AutoConfigurationCustomizerProvider> serverCustomizations;
 
     @PostConstruct
     void init() {
@@ -167,12 +175,16 @@ public class OpenTelemetryBootstrap {
     }
 
     private AutoConfiguredOpenTelemetrySdkBuilder initializeSdk(Map<String, String> props) {
-        return AutoConfiguredOpenTelemetrySdk.builder()
+        AutoConfiguredOpenTelemetrySdkBuilder builder = AutoConfiguredOpenTelemetrySdk.builder()
                 .addPropertiesSupplier(() -> props)
                 .addPropertiesCustomizer(this::requireExplicitExporters)
                 .addResourceCustomizer(this::addDefaultResourceAttributes)
                 .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                 .disableShutdownHook();
+        TreeSet<AutoConfigurationCustomizerProvider> customizers = new TreeSet<>(Comparator.comparingInt(AutoConfigurationCustomizerProvider::order));
+        serverCustomizations.forEach(customizers::add);
+        customizers.forEach(c -> c.customize(builder));
+        return builder;
     }
 
     /** Require explicit specification of exporters for all signals; default to "none" if unset. */
