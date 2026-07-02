@@ -123,13 +123,13 @@
                     </transformers>
                     <artifactSet>
                         <includes>
-                            <include>org.slf4j*:*</include>
+                            <include>org.slf4j:*</include>
                         </includes>
                     </artifactSet>
                     <filters>
                         <!-- bundle plugin already inlined the classes, so we can skip the contents -->
                         <filter>
-                            <artifact>org.slf4j.*:*</artifact>
+                            <artifact>org.slf4j:*</artifact>
                             <excludes>
                                 <exclude>**</exclude>
                             </excludes>
@@ -138,7 +138,7 @@
                     <relocations>
                         <relocation>
                             <pattern>org.slf4j.</pattern>
-                            <shadedPattern>fish.payara.shaded.org.slf4j</shadedPattern>
+                            <shadedPattern>fish.payara.shaded.org.slf4j.</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
