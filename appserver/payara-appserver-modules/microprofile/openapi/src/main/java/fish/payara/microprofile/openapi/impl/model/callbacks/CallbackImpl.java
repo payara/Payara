@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,9 +65,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
     private static final long serialVersionUID = 5549098533131353142L;
 
     private String ref;
-    
     private String urlExpression;
-
     private List<Operation> operations = createList();
 
     public static Callback createInstance(AnnotationModel annotation, ApiContext context) {
@@ -83,6 +81,11 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
             List<Operation> operations = createList();
             extractAnnotations(annotation, context, "operations", OperationImpl::createInstance, operations::add);
             from.setOperations(operations);
+        }
+
+        String pathItemRef = annotation.getValue("pathItemRef", String.class);
+        if (pathItemRef != null && !pathItemRef.isEmpty()) {
+            from.addPathItem(urlExpression, new PathItemImpl().ref("#/components/pathItems/" + pathItemRef));
         }
         return from;
     }
@@ -116,7 +119,9 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
     @Override
     public void setPathItems(Map<String, PathItem> items) {
         clear();
-        putAll(items);
+        if (items != null) {
+            putAll(items);
+        }
     }
 
     @Override
@@ -148,8 +153,7 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
         this.operations = createList(operations);
     }
 
-    public static void merge(Callback from, Callback to,
-            boolean override, ApiContext context) {
+    public static void merge(Callback from, Callback to, boolean override, ApiContext context) {
         if (from == null) {
             return;
         }
@@ -158,16 +162,18 @@ public class CallbackImpl extends ExtensibleTreeMap<PathItem, Callback> implemen
             applyReference(to, from.getRef());
             return;
         }
-        if (from instanceof CallbackImpl) {
-            CallbackImpl fromImpl = (CallbackImpl) from;
+
+        if (from instanceof CallbackImpl fromImpl) {
             String urlExpression = fromImpl.getUrlExpression();
             if (urlExpression != null && !urlExpression.isEmpty()) {
-                PathItem pathItem = to.getPathItems().getOrDefault(urlExpression, new PathItemImpl());
-                to.addPathItem(urlExpression, pathItem);
+                PathItem fromPath = from.getPathItems().getOrDefault(urlExpression, new PathItemImpl());
+                PathItem toPath = to.getPathItems().getOrDefault(urlExpression, new PathItemImpl());
+                PathItemImpl.merge(fromPath, toPath, override);
+
+                to.addPathItem(urlExpression, toPath);
                 if (fromImpl.getOperations() != null) {
                     for (Operation callbackOperation : fromImpl.getOperations()) {
-                        applyCallbackOperationAnnotation(pathItem, callbackOperation,
-                                override, context);
+                        applyCallbackOperationAnnotation(toPath, callbackOperation, override, context);
                     }
                 }
             }
