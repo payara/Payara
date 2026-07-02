@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,8 @@ import org.eclipse.microprofile.openapi.models.media.Schema.SchemaType;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 /**
@@ -136,53 +138,53 @@ public class GenericSchemaMappingTest extends OpenApiApplicationTest {
         assertNotNull(jsonAnimalList);
         assertEquals(1, jsonAnimalList.getProperties().size());
         assertEquals("JSON wrapper for a list of animals", jsonAnimalList.getDescription());
-        assertEquals(SchemaType.OBJECT, jsonAnimalList.getType());
+        assertTrue(jsonAnimalList.getType().contains(SchemaType.OBJECT));
 
         Schema data = jsonAnimalList.getProperties().get("data");
         assertNotNull(data);
         assertEquals(5, data.getProperties().size());
-        assertEquals(SchemaType.OBJECT, data.getType());
+        assertTrue(data.getType().contains(SchemaType.OBJECT));
 
         Schema totalItems = data.getProperties().get("totalItems");
         assertNotNull(totalItems);
-        assertEquals(SchemaType.INTEGER, totalItems.getType());
+        assertTrue(totalItems.getType().contains(SchemaType.INTEGER));
 
         Schema items = data.getProperties().get("items");
         assertNotNull(items);
-        assertEquals(SchemaType.ARRAY, items.getType());
+        assertTrue(items.getType().contains(SchemaType.ARRAY));
         assertEquals("#/components/schemas/Animal", items.getItems().getRef());
 
         Schema itemMap = data.getProperties().get("itemMap");
         assertNotNull(itemMap);
-        assertEquals(SchemaType.OBJECT, itemMap.getType());
+        assertTrue(itemMap.getType().contains(SchemaType.OBJECT));
         assertNotNull(itemMap.getAdditionalPropertiesSchema());
         assertEquals("#/components/schemas/Animal", itemMap.getAdditionalPropertiesSchema().getRef());
 
         Schema textMap = data.getProperties().get("textMap");
         assertNotNull(textMap);
-        assertEquals(SchemaType.OBJECT, textMap.getType());
+        assertTrue(textMap.getType().contains(SchemaType.OBJECT));
         assertNotNull(textMap.getAdditionalPropertiesSchema());
-        assertEquals(SchemaType.STRING, textMap.getAdditionalPropertiesSchema().getType());
+        assertTrue(textMap.getAdditionalPropertiesSchema().getType().contains(SchemaType.STRING));
 
         Schema itemsMap = data.getProperties().get("itemsMap");
         assertNotNull(itemsMap);
-        assertEquals(SchemaType.OBJECT, itemsMap.getType());
+        assertTrue(itemsMap.getType().contains(SchemaType.OBJECT));
         assertNotNull(itemsMap.getAdditionalPropertiesSchema());
-        assertEquals(SchemaType.ARRAY, itemsMap.getAdditionalPropertiesSchema().getType());
+        assertTrue(itemsMap.getAdditionalPropertiesSchema().getType().contains(SchemaType.ARRAY));
         assertEquals("#/components/schemas/Animal", itemsMap.getAdditionalPropertiesSchema().getItems().getRef());
 
         Schema animal = schemas.get("Animal");
         assertNotNull(animal);
         assertEquals(2, animal.getProperties().size());
-        assertEquals(SchemaType.OBJECT, animal.getType());
+        assertTrue(animal.getType().contains(SchemaType.OBJECT));
 
         Schema name = animal.getProperties().get("name");
         assertNotNull(name);
-        assertEquals(SchemaType.STRING, name.getType());
+        assertTrue(name.getType().contains(SchemaType.STRING));
 
         Schema age = animal.getProperties().get("age");
         assertNotNull(age);
-        assertEquals(SchemaType.INTEGER, age.getType());
+        assertTrue(age.getType().contains(SchemaType.INTEGER));
     }
 
 }

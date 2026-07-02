@@ -46,7 +46,7 @@
   <parent>
     <groupId>fish.payara.samples</groupId>
     <artifactId>payara-samples-profiled-tests</artifactId>
-    <version>7.2026.6-SNAPSHOT</version>
+    <version>7.2026.7-SNAPSHOT</version>
   </parent>
 
   <artifactId>data</artifactId>
@@ -54,7 +54,7 @@
   <packaging>war</packaging>
 
   <properties>
-    <junit.jupiter.version>6.1.0</junit.jupiter.version>
+    <junit.jupiter.version>6.1.1</junit.jupiter.version>
     <!-- Use resolver to pull test libs (e.g., H2) into the deployment archive -->
   </properties>
 
