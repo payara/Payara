@@ -56,8 +56,10 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdkBuilder;
+import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizer;
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
+import io.opentelemetry.sdk.autoconfigure.spi.internal.AutoConfigureListener;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.resources.ResourceBuilder;
 import jakarta.annotation.PostConstruct;
@@ -73,12 +75,12 @@ import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_ENV_PREFIX;
 import static fish.payara.telemetry.service.PayaraTelemetryConstants.OTEL_LOGS_EXPORTER;
@@ -108,6 +110,9 @@ public class OpenTelemetryBootstrap {
 
     @Inject
     IterableProvider<AutoConfigurationCustomizerProvider> serverCustomizations;
+
+    @Inject
+    IterableProvider<AutoConfigureListener> sdkListeners;
 
     @PostConstruct
     void init() {
@@ -155,15 +160,18 @@ public class OpenTelemetryBootstrap {
         delegate.setDelegate(globalDelegate);
     }
 
-    public AutoConfiguredOpenTelemetrySdkBuilder buildApplicationSdk(String applicationName, Config configProperties) {
-        return initializeSdk(collectOtelProperties(configProperties))
-                .addResourceCustomizer((resource, config) -> addApplicationNameAsServiceName(resource, applicationName));
+    public OpenTelemetrySdk buildApplicationSdk(String applicationName, Config configProperties, Consumer<AutoConfigurationCustomizer> customizer) {
+        return initializeSdk(collectOtelProperties(configProperties), b -> {
+                b.addResourceCustomizer((resource, config) -> addApplicationNameAsServiceName(resource, applicationName));
+                if (customizer != null) {
+                    customizer.accept(b);
+                }
+        });
     }
 
     private void createTelemetryRuntimeInstance() {
-        runtimeSdk = initializeSdk(collectOtelProperties(serverConfig()))
-                .addResourceCustomizer(this::addEnvironmentAsServiceName)
-                .build().getOpenTelemetrySdk();
+        runtimeSdk = initializeSdk(collectOtelProperties(serverConfig()),
+                b -> b.addResourceCustomizer(this::addEnvironmentAsServiceName));
         delegate.setDelegate(runtimeSdk);
 
         bootstrapSignals();
@@ -174,7 +182,8 @@ public class OpenTelemetryBootstrap {
         jvmMetrics = new JvmMetrics(meter);
     }
 
-    private AutoConfiguredOpenTelemetrySdkBuilder initializeSdk(Map<String, String> props) {
+
+    private OpenTelemetrySdk initializeSdk(Map<String, String> props, Consumer<AutoConfigurationCustomizer> customizer) {
         AutoConfiguredOpenTelemetrySdkBuilder builder = AutoConfiguredOpenTelemetrySdk.builder()
                 .addPropertiesSupplier(() -> props)
                 .addPropertiesCustomizer(this::requireExplicitExporters)
@@ -184,7 +193,16 @@ public class OpenTelemetryBootstrap {
         TreeSet<AutoConfigurationCustomizerProvider> customizers = new TreeSet<>(Comparator.comparingInt(AutoConfigurationCustomizerProvider::order));
         serverCustomizations.forEach(customizers::add);
         customizers.forEach(c -> c.customize(builder));
-        return builder;
+        if (customizer != null) {
+            customizer.accept(builder);
+        }
+        var sdk = builder.build();
+        notifySdkCreated(sdk);
+        return sdk.getOpenTelemetrySdk();
+    }
+
+    private void notifySdkCreated(AutoConfiguredOpenTelemetrySdk sdk) {
+        sdkListeners.forEach(l -> l.afterAutoConfigure(sdk.getOpenTelemetrySdk()));
     }
 
     /** Require explicit specification of exporters for all signals; default to "none" if unset. */
