@@ -338,7 +338,7 @@
         <epicyro.version>3.1.1</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
-        <opentelemetry.version>1.48.0</opentelemetry.version>
+        <opentelemetry.version>1.63.0</opentelemetry.version>
         <opentelemetry-bom.version>2.14.0</opentelemetry-bom.version>
         <opentelemetry-semconv.version>1.42.0</opentelemetry-semconv.version>
         <opentelemetry-instrumentation-annotations.version>2.29.0</opentelemetry-instrumentation-annotations.version>
