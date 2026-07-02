@@ -162,5 +162,43 @@ public class NetUtilsTest {
         unlikelyName = "unlikely_name_" + s;
     }
 
+    private static NetUtils.RequestInfoProvider provider(String remoteHost, String xRealIp, String xForwardedFor) {
+        return new NetUtils.RequestInfoProvider() {
+            @Override
+            public String getHeader(String name) {
+                return switch (name) {
+                    case "X-Real-IP" -> xRealIp;
+                    case "X-Forwarded-For" -> xForwardedFor;
+                    default -> null;
+                };
+            }
+            @Override
+            public String getRemoteHost() { return remoteHost; }
+        };
+    }
 
+    @Test
+    public void getRemoteHost_notBehindProxy_returnsRemoteHost() {
+        assertEquals("10.0.0.1", NetUtils.getRemoteHost(provider("10.0.0.1", "1.2.3.4", null), false));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_xRealIpTakesPrecedence() {
+        assertEquals("1.2.3.4", NetUtils.getRemoteHost(provider("10.0.0.1", "1.2.3.4", "9.9.9.9"), true));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_xForwardedForMultipleHops_returnsFirst() {
+        assertEquals("5.5.5.5", NetUtils.getRemoteHost(provider("10.0.0.1", null, "5.5.5.5, 6.6.6.6, 7.7.7.7"), true));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_blankXRealIpFallsThrough() {
+        assertEquals("10.0.0.1", NetUtils.getRemoteHost(provider("10.0.0.1", "   ", null), true));
+    }
+
+    @Test
+    public void getRemoteHost_behindProxy_noProxyHeaders_returnsRemoteHost() {
+        assertEquals("10.0.0.1", NetUtils.getRemoteHost(provider("10.0.0.1", null, null), true));
+    }
 }
