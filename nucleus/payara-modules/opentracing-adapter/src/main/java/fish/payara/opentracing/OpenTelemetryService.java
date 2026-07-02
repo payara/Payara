@@ -302,13 +302,6 @@ public class OpenTelemetryService implements EventListener {
             try {
                 return openTelemetryBootstrap.buildApplicationSdk(applicationName, configProperties)
                         .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-                        .addTracerProviderCustomizer((builder, config) -> {
-                          if (isPayaraTracingEnabled()) {
-                              return builder.addSpanProcessor(new PayaraRequestTracingProcessor(locator.getService(RequestTracingService.class)));
-                          } else {
-                              return builder;
-                          }
-                        })
                         .disableShutdownHook()
                         .build().getOpenTelemetrySdk();
             } catch (ConfigurationException ce) {
