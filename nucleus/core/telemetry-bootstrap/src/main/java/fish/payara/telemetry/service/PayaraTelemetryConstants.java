@@ -46,9 +46,9 @@ import java.util.Set;
 
 public class PayaraTelemetryConstants {
 
-    public static final String OTEL_PROPERTIES_PREFIX = "otel";
-    public static final String OTEL_SYSTEM_PROPERTY_NAME = "otel.sdk.disabled";
-    public static final String OTEL_ENVIRONMENT_PROPERTY_NAME = "OTEL_SDK_DISABLED";
+    public static final String OTEL_PROPERTY_PREFIX = "otel.";
+    public static final String OTEL_ENV_PREFIX = "OTEL_";
+    public static final String OTEL_SDK_DISABLED = "otel.sdk.disabled";
     public static final String OTEL_SERVICE_NAME = "otel.service.name";
     public static final String ATTRIBUTE_SERVICE_NAME = "service.name";
     public static final String OTEL_METRICS_EXPORTER = "otel.metrics.exporter";

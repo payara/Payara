@@ -89,7 +89,7 @@ import com.sun.enterprise.util.Utility;
 import fish.payara.cluster.DistributedLockType;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -268,7 +268,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     protected ContainerType containerType;
 
     private final RequestTracingService requestTracingService;
-    private final OpenTracingService openTracingService;
+    private final OpenTelemetryService openTelemetryService;
 
     // constants for EJB(Local)Home/EJB(Local)Object methods,
     // used in authorizeRemoteMethod and authorizeLocalMethod
@@ -594,7 +594,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
         this.containerType = type;
         this.securityManager = sm;
         this.requestTracingService = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        this.openTracingService = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+        this.openTelemetryService = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
 
         try {
             this.loader = loader;
@@ -4097,8 +4097,8 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
     }
 
     private void addEjbMethodTraceLog(CallFlowInfo info, boolean callEnter) {
-        if (openTracingService.isEnabled()) {
-            Tracer tracer = openTracingService.getTracer(openTracingService.getApplicationName(invocationManager));
+        if (openTelemetryService.isEnabled()) {
+            Tracer tracer = openTelemetryService.getCurrentTracer();
             if (tracer != null) {
                 String eventName = callEnter ? "enterEjbMethodEvent" : "exitEjbMethodEvent";
                 Span span = Span.current();
