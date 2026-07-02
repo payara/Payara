@@ -48,14 +48,41 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Marks a class or method to be traced by the MicroProfile Telemetry tracing
+ * integration.
+ * <p>
+ * When applied to a class, every business method of that class is traced with
+ * its own span; when applied to a method, only that method is traced. A span
+ * is started when the method is invoked and finished when it completes, and is
+ * attached to any currently active trace context.
+ * <p>
+ * Placing {@code @Traced(false)} on a method excludes it from tracing, which
+ * can be used to opt individual methods out of a traced class.
+ *
+ * @author Payara Foundation
+ */
 @InterceptorBinding
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Traced {
-    
+
+    /**
+     * Whether the annotated class or method should be traced.
+     *
+     * @return {@code true} (the default) to trace the annotated element,
+     * {@code false} to exclude it from tracing
+     */
     @Nonbinding
     boolean value() default true;
-    
+
+    /**
+     * The operation name to use for the span created around the annotated
+     * method.
+     *
+     * @return the span's operation name, or an empty string (the default) to
+     * derive it from the fully qualified name of the traced method
+     */
     @Nonbinding
     String operationName() default "";
 }

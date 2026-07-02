@@ -79,8 +79,7 @@
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
-        <!-- Disabled under FISH-13013 - re-enable once the MicroProfile REST Client Fault Tolerance sample is stabilised -->
-        <!--<module>microprofile-rc-ft</module>-->
+        <module>microprofile-rc-ft</module>
         <module>multiple-keystores</module>
         <!--module>client-certificate-validator</module-->
         <!-- Skip - this test needs to be run repeatedly for around 60 minutes to be effective -->
