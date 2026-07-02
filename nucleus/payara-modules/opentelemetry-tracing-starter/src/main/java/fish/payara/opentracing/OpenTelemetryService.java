@@ -300,10 +300,7 @@ public class OpenTelemetryService implements EventListener {
         // TODO: Unify creation with bootstrap process for consistency between app and runtime instances
         if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
             try {
-                return openTelemetryBootstrap.buildApplicationSdk(applicationName, configProperties)
-                        .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
-                        .disableShutdownHook()
-                        .build().getOpenTelemetrySdk();
+                return openTelemetryBootstrap.buildApplicationSdk(applicationName, configProperties, null);
             } catch (ConfigurationException ce) {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
                         + Thread.currentThread().getContextClassLoader() +" will revert to no-op", ce);
