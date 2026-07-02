@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 -->
 <!--
 INSTRUCTIONS for running nucleus admin dev tests.
@@ -85,7 +86,6 @@ of COPY_LIB map constant.)
     <groupId>org.glassfish.tests</groupId>
     <artifactId>nucleus-admin</artifactId>
     <name>Nucleus Admin Devtests</name>
-    <version>4.1-SNAPSHOT</version>
     <description>This pom describes how to run admin developer tests on the Nucleus Bundle</description>
     <build>
         <plugins>
@@ -94,14 +94,6 @@ of COPY_LIB map constant.)
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <properties>
-                <property>
-                  <name>listener</name>
-                  <value>org.testng.reporters.VerboseReporter</value>
-                </property>
-                <property>
-                  <name>reporter</name>
-                  <value>listenReport.Reporter</value>
-                </property>
                 <runOrder>alphabetical</runOrder>
               </properties>
             </configuration>
@@ -182,7 +174,6 @@ of COPY_LIB map constant.)
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
-            <version>1.1</version>
         </dependency>
     </dependencies>
 </project>
