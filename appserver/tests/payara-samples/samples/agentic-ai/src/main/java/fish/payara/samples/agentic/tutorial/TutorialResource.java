@@ -103,7 +103,7 @@ public class TutorialResource {
     @POST
     @Path("tutorial/refine")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_HTML)
     public String refine(RefineRequest request) {
         String instruction = request == null ? null : request.instruction();
         trigger.fire(new TutorialRequest(form.spec(), instruction, store.get()));
