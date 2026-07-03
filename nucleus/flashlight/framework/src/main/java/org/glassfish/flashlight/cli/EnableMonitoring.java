@@ -51,14 +51,21 @@ import org.glassfish.api.Param;
 import org.glassfish.config.support.*;
 import org.glassfish.flashlight.impl.client.AgentAttacher;
 import org.glassfish.internal.api.*;
+import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
+import java.beans.PropertyChangeEvent;
 import java.io.File;
+import java.util.Collections;
+
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 import jakarta.inject.Inject;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * @author Sreenivas Munnangi (3.0)
@@ -80,6 +87,9 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
     private MonitoringService ms;
     @Inject
     private Target targetService;
+    @Inject
+    private UnprocessedConfigListener unprocessedConfigListener;
+
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
     @Param(optional = true)
@@ -92,6 +102,9 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
     private Boolean mbean;
     @Param(optional = true)
     private Boolean dtrace;
+    @Param(optional = true)
+    private Boolean otel;
+
     final private LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EnableMonitoring.class);
 
@@ -184,6 +197,17 @@ public class EnableMonitoring implements AdminCommand, AdminCommandSecurity.Prea
         // dtrace-enabled
         if (dtrace != null) {
             MonitoringConfig.setDTraceEnabled(ms, dtrace.toString(), report);
+        }
+
+        if (otel != null) {
+            boolean changed = MonitoringConfig.setOpenTelemetryEnabled(ms, otel.toString(), report);
+            if (changed) {
+                UnprocessedChangeEvent event = new UnprocessedChangeEvent(
+                        new PropertyChangeEvent(ms, "otelEnabled", !otel, otel),
+                        "Restart required due toggle of OpenTelemetry setting");
+                UnprocessedChangeEvents events = new UnprocessedChangeEvents(event);
+                unprocessedConfigListener.unprocessedTransactedEvents(Collections.singletonList(events));
+            }
         }
 
         // check and set monitoring-enabled to true

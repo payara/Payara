@@ -51,6 +51,8 @@ import org.jvnet.hk2.config.ConfigSupport;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import org.glassfish.api.monitoring.ContainerMonitoring;
 import org.jvnet.hk2.config.Dom;
+
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -82,6 +84,22 @@ public class MonitoringConfig {
         }
     }
 
+    static boolean setOpenTelemetryEnabled(MonitoringService ms,
+     final String enabled, final ActionReport report) {
+
+        try {
+            return (Boolean) ConfigSupport.apply((SingleConfigCode<MonitoringService>) param -> {
+                boolean changed = !Objects.equals(enabled, param.getOpenTelemetryEnabled());
+                param.setOpenTelemetryEnabled(enabled);
+                return changed;
+            }, ms);
+        } catch(TransactionFailure tfe) {
+            report.setMessage(localStrings.getLocalString("disable.monitoring.exception",
+                    "Encountered exception while setting openTelemetryEnabled {0}", tfe.getMessage()));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+    }
 
     static void setMBeanEnabled(MonitoringService ms, 
         final String enabled, final ActionReport report) {
