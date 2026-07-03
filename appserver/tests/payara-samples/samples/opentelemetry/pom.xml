@@ -55,7 +55,7 @@
     
     <properties>
         <script.extension></script.extension>
-        <payara.asadmin>..${file.separator}..${file.separator}target${file.separator}payara7${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
         <payara.domain.name>domain1</payara.domain.name>
     </properties>
 

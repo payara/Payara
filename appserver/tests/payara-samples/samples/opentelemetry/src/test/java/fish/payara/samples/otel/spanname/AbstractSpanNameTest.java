@@ -102,8 +102,8 @@ public class AbstractSpanNameTest {
             configProps.put("otel.sdk.disabled", "false");
             // enable our test exporter
             configProps.put("otel.traces.exporter", "in-memory");
-            // schedule export every 10 milliseconds
-            configProps.put("otel.bsp.schedule.delay", "10");
+            // schedule export every 20 milliseconds
+            configProps.put("otel.bsp.schedule.delay", "20");
             // anything else (possible overrides)
             configProps.putAll(additionalProps);
         }
