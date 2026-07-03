@@ -445,7 +445,7 @@ public class SSHLauncher {
         } catch (IOException ex) {
             throw ex;
         } finally {
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
         }
     }
 
@@ -486,7 +486,7 @@ public class SSHLauncher {
         } catch (GeneralSecurityException ex) {
             throw new IOException("Security error during SSH connection", ex);
         } finally {
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
         }
     }
 
@@ -549,11 +549,11 @@ public class SSHLauncher {
             return newSFTPClient(client, session);
         } catch (IOException ex) {
             if (session != null) { try { session.close(); } catch (IOException ignored) { } }
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
             throw ex;
         } catch (GeneralSecurityException ex) {
             if (session != null) { try { session.close(); } catch (IOException ignored) { } }
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
             throw new IOException("Security error opening SFTP connection", ex);
         }
     }
@@ -571,10 +571,10 @@ public class SSHLauncher {
             ClientSession session = openSession(client);
             return new SSHConnection(client, session, this);
         } catch (IOException ex) {
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
             throw ex;
         } catch (GeneralSecurityException ex) {
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
             throw new IOException("Security error opening SSH connection", ex);
         }
     }
@@ -587,7 +587,7 @@ public class SSHLauncher {
         } catch (GeneralSecurityException ex) {
             throw new IOException("Security error during ping", ex);
         } finally {
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
         }
     }
 
@@ -646,7 +646,7 @@ public class SSHLauncher {
             return false;
         } finally {
             if (client != null) {
-                try { client.close(); } catch (IOException ignored) { }
+                client.stop();
             }
         }
     }
@@ -677,7 +677,7 @@ public class SSHLauncher {
             this.keyFile = savedKeyFile;
             this.privateKey = savedPrivateKey;
             if (client != null) {
-                try { client.close(); } catch (IOException ignored) { }
+                client.stop();
             }
         }
     }
@@ -733,7 +733,7 @@ public class SSHLauncher {
             session = openSession(client);
         } catch (IOException | GeneralSecurityException ex) {
             if (client != null) {
-                try { client.close(); } catch (IOException ignored) { }
+                client.stop();
             }
             if (ex instanceof IOException) {
                 throw (IOException) ex;
@@ -750,7 +750,7 @@ public class SSHLauncher {
             sftp = new SFTPClient(client, session);
         } catch (IOException ex) {
             try { session.close(); } catch (IOException ignored) { }
-            try { client.close(); } catch (IOException ignored) { }
+            client.stop();
             throw ex;
         }
         try (sftp) {
