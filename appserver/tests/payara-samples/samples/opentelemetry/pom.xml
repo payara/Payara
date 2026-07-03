@@ -53,12 +53,6 @@
     <artifactId>opentelemetry</artifactId>
     <packaging>war</packaging>
     
-    <properties>
-        <script.extension></script.extension>
-        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin${script.extension}</payara.asadmin>
-        <payara.domain.name>domain1</payara.domain.name>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -66,19 +60,6 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.3</version>
                 <executions>
-                    <execution>
-                        <id>start-domain</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${payara.asadmin}</executable>
-                            <arguments>
-                                <argument>start-domain</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>delete-system-property</id>
                         <phase>pre-integration-test</phase>
@@ -93,27 +74,11 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>stop-domain</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${payara.asadmin}</executable>
-                            <arguments>
-                                <argument>stop-domain</argument>
-                                <argument>--kill=true</argument>
-                                <argument>${payara.domain.name}</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
-            
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <groupId>jakarta.platform</groupId>
@@ -148,31 +113,26 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk</artifactId>
-            <version>${opentelemetry.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
-            <version>${opentelemetry.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-otlp</artifactId>
-            <version>${opentelemetry.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>${opentelemetry-instrumentation-annotations.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.semconv</groupId>
             <artifactId>opentelemetry-semconv</artifactId>
-            <version>${opentelemetry-semconv.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

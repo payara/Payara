@@ -67,6 +67,8 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+        <payara.domain.name>test-domain</payara.domain.name>
+        <payara.asadmin>..${file.separator}..${file.separator}..${file.separator}..${file.separator}..${file.separator}payara7${file.separator}glassfish${file.separator}bin${file.separator}asadmin</payara.asadmin>
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>

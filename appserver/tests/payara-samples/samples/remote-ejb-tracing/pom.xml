@@ -103,7 +103,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk</artifactId>
-            <version>${opentelemetry.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
