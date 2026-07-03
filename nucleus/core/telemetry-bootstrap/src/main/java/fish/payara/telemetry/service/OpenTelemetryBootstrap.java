@@ -41,6 +41,7 @@ package fish.payara.telemetry.service;
 
 
 import com.sun.appserv.server.util.Version;
+import com.sun.enterprise.config.serverbeans.MonitoringService;
 import fish.payara.nucleus.microprofile.config.ServerConfigProvider;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
@@ -98,6 +99,9 @@ public class OpenTelemetryBootstrap {
 
     @Inject
     ServerEnvironment serverEnvironment;
+
+    @Inject
+    MonitoringService monitoringService;
 
     private OpenTelemetrySdk runtimeSdk = null;
     
@@ -221,7 +225,8 @@ public class OpenTelemetryBootstrap {
     }
 
     private boolean checkRuntimeTelemetryDisabled() {
-        return serverConfig().getOptionalValue(OTEL_SDK_DISABLED, Boolean.class).orElse(true);
+        return serverConfig().getOptionalValue(OTEL_SDK_DISABLED, Boolean.class)
+                .orElse(!Boolean.parseBoolean(monitoringService.getOpenTelemetryEnabled()));
     }
 
     private Config serverConfig() {

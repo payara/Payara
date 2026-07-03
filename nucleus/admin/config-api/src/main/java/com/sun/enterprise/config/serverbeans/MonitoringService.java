@@ -146,6 +146,17 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
      */
     public void setDtraceEnabled(String value) throws PropertyVetoException;
 
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    public String getOpenTelemetryEnabled();
+
+    /**
+     * Sets the value of the openTelemetryEnabled attribute.
+     *
+     * @param value allowed object is String
+     * @throws PropertyVetoException
+     */
+    public void setOpenTelemetryEnabled(String value) throws PropertyVetoException;
+
     /**
      * Get the monitoring configuration for containers that used the default ContainerMonitoring.
      *
