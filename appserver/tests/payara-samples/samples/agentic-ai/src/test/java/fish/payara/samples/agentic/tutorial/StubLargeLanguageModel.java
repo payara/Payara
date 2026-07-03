@@ -54,7 +54,7 @@ public class StubLargeLanguageModel implements LargeLanguageModel {
     static final String REFINED = "<section data-tutorial=\"refined\"><h3>Field guide</h3></section>";
 
     private String answer(String prompt) {
-        return prompt != null && prompt.contains("Apply this change requested") ? REFINED : GENERATED;
+        return prompt != null && prompt.contains("Apply this change") ? REFINED : GENERATED;
     }
 
     @Override
