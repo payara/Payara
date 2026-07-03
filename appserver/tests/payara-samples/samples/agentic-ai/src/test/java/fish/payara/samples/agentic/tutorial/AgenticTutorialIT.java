@@ -92,6 +92,20 @@ public class AgenticTutorialIT {
     }
 
     @Test
+    public void refinesField() {
+        ClientBuilder.newClient()
+                .target(url + "api/tutorial/generate")
+                .request(MediaType.TEXT_HTML)
+                .post(Entity.json(""));
+
+        Response response = ClientBuilder.newClient()
+                .target(url + "api/tutorial/refine-field")
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.json("{\"fieldName\":\"businessEmail\",\"instruction\":\"make it friendlier\"}"));
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    }
+
+    @Test
     public void generatesThenRefines() {
         String generated = ClientBuilder.newClient()
                 .target(url + "api/tutorial/generate")

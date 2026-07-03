@@ -82,21 +82,21 @@ public class TutorialAgent {
 
     @Action
     void render(TutorialRequest request) {
-        String html;
+        String content;
         if (request.currentHtml() == null || request.currentHtml().isBlank()) {
             LOGGER.info("[ACTION] generating field-guide JSON from the form spec...");
-            html = model.query(
+            content = model.query(
                     "Generate the field-guide JSON for this form. "
                             + "Use each field's name attribute as the JSON key: {}", request.formSpec());
         } else {
             LOGGER.info("[ACTION] refining field-guide: " + request.instruction());
-            html = model.query(
+            content = model.query(
                     "Current field-guide JSON:\n{}\n\n"
                             + "Apply this change to the explanations: {}\n\n"
                             + "Return the complete updated JSON object.",
                     request.currentHtml(), request.instruction());
         }
-        store.put(stripCodeFences(html));
+        store.put(stripCodeFences(content));
     }
 
     @Outcome

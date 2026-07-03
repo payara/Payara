@@ -42,8 +42,14 @@ package fish.payara.samples.agentic.tutorial;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * Holds the current tutorial HTML so the synchronous REST call can read back
- * what the agent's {@code @Action} phase produced.
+ * Holds the latest guide content produced by {@link TutorialAgent} so the
+ * synchronous REST call can read it back after the event fires.
+ *
+ * <p>{@code @ApplicationScoped} is intentional: the guide must survive across
+ * HTTP requests so a subsequent {@code /refine} call can read what a prior
+ * {@code /generate} call produced. {@code volatile} provides the visibility
+ * guarantee needed for the single-writer (agent action), single-reader
+ * (resource) access pattern of this demo.
  */
 @ApplicationScoped
 public class TutorialStore {

@@ -43,7 +43,6 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonReader;
 import jakarta.ws.rs.Consumes;
@@ -54,6 +53,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
 import java.io.StringReader;
+import java.util.logging.Logger;
 
 /**
  * REST API for the tutorial UI. Firing the {@link TutorialRequest} event is
@@ -64,6 +64,8 @@ import java.io.StringReader;
 @Path("")
 @RequestScoped
 public class TutorialResource {
+
+    private static final Logger LOGGER = Logger.getLogger(TutorialResource.class.getName());
 
     @Inject
     Event<TutorialRequest> trigger;
@@ -139,6 +141,7 @@ public class TutorialResource {
         try (JsonReader reader = Json.createReader(new StringReader(json))) {
             return reader.readObject().getString(fieldName, "");
         } catch (Exception e) {
+            LOGGER.warning("Could not extract field '" + fieldName + "' from guide JSON: " + e.getMessage());
             return "";
         }
     }
@@ -148,7 +151,9 @@ public class TutorialResource {
         if (fullJson != null && !fullJson.isBlank()) {
             try (JsonReader reader = Json.createReader(new StringReader(fullJson))) {
                 reader.readObject().forEach(builder::add);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                LOGGER.warning("Could not parse guide JSON when merging field '" + fieldName + "': " + e.getMessage());
+            }
         }
         builder.add(fieldName, newValue);
         return builder.build().toString();
