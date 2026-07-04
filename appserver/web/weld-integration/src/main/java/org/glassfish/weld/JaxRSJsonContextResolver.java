@@ -43,7 +43,6 @@ import jakarta.annotation.Priority;
 import jakarta.inject.Inject;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
-import jakarta.ws.rs.ConstrainedTo;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.FeatureContext;
 import jakarta.ws.rs.core.MediaType;
@@ -56,7 +55,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import static jakarta.ws.rs.RuntimeType.SERVER;
 import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORITY;
 
 /**
@@ -65,7 +63,6 @@ import static org.glassfish.jersey.internal.spi.AutoDiscoverable.DEFAULT_PRIORIT
  *
  * This includes creating {@link Jsonb} instances that contains correct {@link jakarta.enterprise.inject.spi.BeanManager}
  */
-@ConstrainedTo(SERVER)
 @Priority(DEFAULT_PRIORITY)
 @Produces(MediaType.APPLICATION_JSON)
 public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedAutoDiscoverable {
@@ -81,8 +78,9 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
         this.existingResolverClasses = Collections.emptyList();
     }
 
-    private JaxRSJsonContextResolver(List<ContextResolver<?>> existingResolvers,
+    private JaxRSJsonContextResolver(InjectionManager injectionManager, List<ContextResolver<?>> existingResolvers,
                                      List<Class<ContextResolver<?>>> existingResolverClasses) {
+        this.injectionManager = injectionManager;
         this.existingResolvers = existingResolvers;
         this.existingResolverClasses = existingResolverClasses;
     }
@@ -98,7 +96,7 @@ public class JaxRSJsonContextResolver implements ContextResolver<Jsonb>, ForcedA
                 .filter(ContextResolver.class::isAssignableFrom)
                 .map(cls -> (Class<ContextResolver<?>>) cls)
                 .collect(Collectors.toList());
-        context.register(new JaxRSJsonContextResolver(resolvers, resolverClasses));
+        context.register(new JaxRSJsonContextResolver(injectionManager, resolvers, resolverClasses));
     }
 
     @Override
