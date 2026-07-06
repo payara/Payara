@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -121,7 +121,7 @@ public class OpenApiValidator {
     }
 
     public static void validate(Field expected, JsonNode actual) {
-        if (expected.isArray() || (expected.isOptionalArray() && actual.isArray())) {
+        if (expected.isArray()) {
             assertJsonType(JsonNodeType.ARRAY, null, actual);
             validateArray(expected, (ArrayNode) actual);
             return;
