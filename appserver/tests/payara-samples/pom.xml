@@ -58,6 +58,8 @@
     <properties>
         <maven.min.version>3.5</maven.min.version>
 
+        <skipTests>false</skipTests>
+        <skipConfig>${skipTests}</skipConfig> <!-- Whether to skip applying server config during pre-integration-test phase -->
         <payara.version>${project.version}</payara.version>
         <payara.debug>false</payara.debug>
         <!-- remote host for payara to connect to -->
@@ -67,8 +69,9 @@
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
+        <payara.home>..${file.separator}..${file.separator}..${file.separator}..${file.separator}..${file.separator}payara7</payara.home>
+        <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin</payara.asadmin>
         <payara.domain.name>test-domain</payara.domain.name>
-        <payara.asadmin>..${file.separator}..${file.separator}..${file.separator}..${file.separator}..${file.separator}payara7${file.separator}glassfish${file.separator}bin${file.separator}asadmin</payara.asadmin>
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
@@ -242,6 +245,9 @@
             This profile requires you to start up a Payara server outside of the build.
             Each sample will then reuse this instance to run the tests.
             -->
+            <properties>
+                <payara.server.remote/>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>fish.payara.arquillian</groupId>

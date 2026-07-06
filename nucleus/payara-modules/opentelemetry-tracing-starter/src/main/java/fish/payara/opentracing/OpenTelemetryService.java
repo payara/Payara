@@ -77,6 +77,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -171,8 +172,9 @@ public class OpenTelemetryService implements EventListener {
         }
         try {
             return defaultLocator.getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
-        } catch (IllegalStateException e) {
-            // The @RunLevel(1) service has not been started yet; will be retried lazily.
+        } catch (MultiException | IllegalStateException e) {
+            // The @RunLevel(1) service has not been started yet.
+            // ServiceLocatorImpl wraps the IllegalStateException in a MultiException before propagating.
             logger.log(Level.FINE, "Telemetry bootstrap service not yet available during OpenTelemetryService initialisation", e);
             return null;
         }
