@@ -155,11 +155,34 @@ public class OpenTelemetryService implements EventListener {
             logger.log(Level.WARNING, "OpenTelemetry service not registered to Payara Events: "
                     + "The Tracer for an application won't be removed upon undeployment");
         }
-        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
+        // Attempt early resolution; may be null if the run-level service has not started yet.
+        // Callers go through bootstrapFactory() which retries lazily.
+        payaraTelemetryBootstrapFactoryServiceImpl = resolveBootstrapFactory();
         OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
         if(openTelemetry == null) {
             GlobalOpenTelemetry.set(new GlobalTelemetry());
         }
+    }
+
+    private PayaraTelemetryBootstrapFactoryServiceImpl resolveBootstrapFactory() {
+        ServiceLocator defaultLocator = Globals.getDefaultBaseServiceLocator();
+        if (defaultLocator == null) {
+            return null;
+        }
+        try {
+            return defaultLocator.getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
+        } catch (IllegalStateException e) {
+            // The @RunLevel(1) service has not been started yet; will be retried lazily.
+            logger.log(Level.FINE, "Telemetry bootstrap service not yet available during OpenTelemetryService initialisation", e);
+            return null;
+        }
+    }
+
+    private PayaraTelemetryBootstrapFactoryServiceImpl bootstrapFactory() {
+        if (payaraTelemetryBootstrapFactoryServiceImpl == null) {
+            payaraTelemetryBootstrapFactoryServiceImpl = resolveBootstrapFactory();
+        }
+        return payaraTelemetryBootstrapFactoryServiceImpl;
     }
 
     @PreDestroy
@@ -264,8 +287,9 @@ public class OpenTelemetryService implements EventListener {
             return Optional.empty();
         }
         OpenTelemetryAppInfo appInfo = null;
-        if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().isPresent()) {
-            appInfo = new OpenTelemetryAppInfo(payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().get());
+        PayaraTelemetryBootstrapFactoryServiceImpl factory = bootstrapFactory();
+        if (factory != null && factory.getAvailableRuntimeReference().isPresent()) {
+            appInfo = new OpenTelemetryAppInfo(factory.getAvailableRuntimeReference().get());
         } else {
             appInfo = appTelemetries.get(applicationName);
             if (appInfo == null) {
@@ -328,9 +352,10 @@ public class OpenTelemetryService implements EventListener {
             }
         } else {
             // noop
-            if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableNoopReference().isPresent()) {
-                return payaraTelemetryBootstrapFactoryServiceImpl.getAvailableNoopReference().get();
-            } 
+            PayaraTelemetryBootstrapFactoryServiceImpl factory = bootstrapFactory();
+            if (factory != null && factory.getAvailableNoopReference().isPresent()) {
+                return factory.getAvailableNoopReference().get();
+            }
         }
         //noop
         return OpenTelemetrySdk.builder().build();
