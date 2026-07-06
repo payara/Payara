@@ -49,7 +49,7 @@
    - Property security.config in message-security-config
 -->
 
-<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-application-client-container_1_4.dtd">
+<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-application-client-container_1_4.dtd">
 
 <client-container>
   <target-server name="glassfish.dev.java.net" address="glassfish.dev.java.net" port="3701"/>
