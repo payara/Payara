@@ -104,7 +104,7 @@ public class OpenTelemetryBootstrap {
     MonitoringService monitoringService;
 
     private OpenTelemetrySdk runtimeSdk = null;
-    
+
     private static final OpenTelemetry noopInstance = OpenTelemetry.noop();
 
     private final DelegatedSdk delegate = new DelegatedSdk(noopInstance);
@@ -143,6 +143,7 @@ public class OpenTelemetryBootstrap {
      * The logic may seem slightly inverted, but user needs to explicitly set {@code otel.sdk.disabled} to {@code false}
      * in order to enable runtime telemetry.
      * </p>
+     *
      * @return {@code true} if runtime telemetry is disabled (the default); {@code false} if it is enabled.
      */
     public boolean isRuntimeTelemetryDisabled() {
@@ -151,6 +152,7 @@ public class OpenTelemetryBootstrap {
 
     /**
      * Return server-wide (aka runtime) SDK if available
+     *
      * @return configured OpenTelemetry SDK instance or {@code null} if runtime telemetry is not enabled.
      */
     public OpenTelemetrySdk getRuntimeSdk() {
@@ -166,10 +168,17 @@ public class OpenTelemetryBootstrap {
 
     public OpenTelemetrySdk buildApplicationSdk(String applicationName, Config configProperties, Consumer<AutoConfigurationCustomizer> customizer) {
         return initializeSdk(collectOtelProperties(configProperties), b -> {
-                b.addResourceCustomizer((resource, config) -> addApplicationNameAsServiceName(resource, applicationName));
-                if (customizer != null) {
-                    customizer.accept(b);
-                }
+            // Application level exporters should be always executed in context of application to have proper access to CDI and other resources.
+            // OTEL's batch processors reset the context class loaders, and thus we need to restore them before invocation.
+            ClassLoader otelClassloader = Config.class.getClassLoader();
+            b.addResourceCustomizer((resource, config) -> addApplicationNameAsServiceName(resource, applicationName))
+                    .addSpanExporterCustomizer((e, c) -> ContextClassLoaderInterceptor.wrapIfOtherClassloader(e, otelClassloader))
+                    .addLogRecordExporterCustomizer((e, config) -> ContextClassLoaderInterceptor.wrapIfOtherClassloader(e, otelClassloader))
+                    .addMetricExporterCustomizer((e, config) -> ContextClassLoaderInterceptor.wrapIfOtherClassloader(e, otelClassloader));
+            // Yte consider replacing executor in PeriodicMetricReader, if problems arise in metrics collection
+            if (customizer != null) {
+                customizer.accept(b);
+            }
         });
     }
 
@@ -209,7 +218,9 @@ public class OpenTelemetryBootstrap {
         sdkListeners.forEach(l -> l.afterAutoConfigure(sdk.getOpenTelemetrySdk()));
     }
 
-    /** Require explicit specification of exporters for all signals; default to "none" if unset. */
+    /**
+     * Require explicit specification of exporters for all signals; default to "none" if unset.
+     */
     private Map<String, String> requireExplicitExporters(ConfigProperties configProperties) {
         Map<String, String> defaults = new HashMap<>();
         if (configProperties.getString(OTEL_LOGS_EXPORTER) == null) {
