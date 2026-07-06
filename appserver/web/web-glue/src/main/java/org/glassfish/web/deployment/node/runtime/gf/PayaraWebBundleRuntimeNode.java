@@ -44,6 +44,8 @@ package org.glassfish.web.deployment.node.runtime.gf;
 
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_PUBLIC_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_SYSTEM_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_600_DTD_PUBLIC_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_600_DTD_SYSTEM_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_610_DTD_PUBLIC_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_610_DTD_SYSTEM_ID;
 import static com.sun.enterprise.deployment.xml.RuntimeTagNames.PAYARA_WEB_RUNTIME_TAG;
@@ -94,6 +96,7 @@ public class PayaraWebBundleRuntimeNode extends GFWebBundleRuntimeNode {
      */
     public static String registerBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
         publicIDToDTD.put(PAYARA_WEBAPP_4_DTD_PUBLIC_ID, PAYARA_WEBAPP_4_DTD_SYSTEM_ID);
+        publicIDToDTD.put(PAYARA_WEBAPP_600_DTD_PUBLIC_ID, PAYARA_WEBAPP_600_DTD_SYSTEM_ID);
         publicIDToDTD.put(PAYARA_WEBAPP_610_DTD_PUBLIC_ID, PAYARA_WEBAPP_610_DTD_SYSTEM_ID);
 
         return PAYARA_WEB_RUNTIME_TAG;

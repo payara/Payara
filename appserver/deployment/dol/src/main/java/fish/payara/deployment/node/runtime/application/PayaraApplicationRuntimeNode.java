@@ -88,6 +88,7 @@ public class PayaraApplicationRuntimeNode extends ApplicationRuntimeNode {
      * @return the doctype tag name
      */
     public static String registerBundle(Map publicIDToDTD) {
+        publicIDToDTD.put(DTDRegistry.PAYARA_APPLICATION_100_DTD_PUBLIC_ID, DTDRegistry.PAYARA_APPLICATION_100_DTD_SYSTEM_ID);
         publicIDToDTD.put(DTDRegistry.PAYARA_APPLICATION_110_DTD_PUBLIC_ID, DTDRegistry.PAYARA_APPLICATION_110_DTD_SYSTEM_ID);
         return RuntimeTagNames.PAYARA_APPLICATION_RUNTIME_TAG;
     }

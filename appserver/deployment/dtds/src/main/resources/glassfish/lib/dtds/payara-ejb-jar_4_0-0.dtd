@@ -47,7 +47,7 @@
 
   It must include a DOCTYPE of the following form:
 
-  <!DOCTYPE payara-ejb-jar PUBLIC "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-ejb-jar_4_0-0.dtd">
+  <!DOCTYPE payara-ejb-jar PUBLIC "-//Payara.fish//DTD Payara Application Server 6 EJB 4.0//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-ejb-jar_4_0-0.dtd">
 
 -->
 
