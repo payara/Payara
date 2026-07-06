@@ -119,6 +119,7 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-logging</artifactId>
+            <version>${opentelemetry.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -163,8 +164,8 @@
                             !javax.annotation.*,
                             !com.android.*,
                             !dalvik.*,
-                            io.opentelemetry.exporter.prometheus;resolution:=optional,
-                            !io.opentelemetry.sdk.extension.incubator.*,
+                            io.opentelemetry.**;resolution:=optional,
+                            org.jspecify.annotations;resolution:=optional,
                             sun.security.ssl;resolution:=optional,
                             !kotlin.*,
                             !org.bouncycastle.*,
