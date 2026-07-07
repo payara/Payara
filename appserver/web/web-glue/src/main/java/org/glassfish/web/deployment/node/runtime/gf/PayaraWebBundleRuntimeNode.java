@@ -42,10 +42,12 @@
  */
 package org.glassfish.web.deployment.node.runtime.gf;
 
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA7_WEBAPP_611_DTD_PUBLIC_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA7_WEBAPP_611_DTD_SYSTEM_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_PUBLIC_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_4_DTD_SYSTEM_ID;
-import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_600_DTD_PUBLIC_ID;
-import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_600_DTD_SYSTEM_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA6_WEBAPP_600_DTD_PUBLIC_ID;
+import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA6_WEBAPP_600_DTD_SYSTEM_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_610_DTD_PUBLIC_ID;
 import static com.sun.enterprise.deployment.xml.DTDRegistry.PAYARA_WEBAPP_610_DTD_SYSTEM_ID;
 import static com.sun.enterprise.deployment.xml.RuntimeTagNames.PAYARA_WEB_RUNTIME_TAG;
@@ -79,12 +81,12 @@ public class PayaraWebBundleRuntimeNode extends GFWebBundleRuntimeNode {
 
     @Override
     public String getDocType() {
-        return PAYARA_WEBAPP_610_DTD_PUBLIC_ID;
+        return PAYARA7_WEBAPP_611_DTD_PUBLIC_ID;
     }
 
     @Override
     public String getSystemID() {
-        return PAYARA_WEBAPP_610_DTD_SYSTEM_ID;
+        return PAYARA7_WEBAPP_611_DTD_SYSTEM_ID;
     }
 
     /**
@@ -96,8 +98,9 @@ public class PayaraWebBundleRuntimeNode extends GFWebBundleRuntimeNode {
      */
     public static String registerBundle(Map<String, String> publicIDToDTD, Map<String, List<Class<?>>> versionUpgrades) {
         publicIDToDTD.put(PAYARA_WEBAPP_4_DTD_PUBLIC_ID, PAYARA_WEBAPP_4_DTD_SYSTEM_ID);
-        publicIDToDTD.put(PAYARA_WEBAPP_600_DTD_PUBLIC_ID, PAYARA_WEBAPP_600_DTD_SYSTEM_ID);
+        publicIDToDTD.put(PAYARA6_WEBAPP_600_DTD_PUBLIC_ID, PAYARA6_WEBAPP_600_DTD_SYSTEM_ID);
         publicIDToDTD.put(PAYARA_WEBAPP_610_DTD_PUBLIC_ID, PAYARA_WEBAPP_610_DTD_SYSTEM_ID);
+        publicIDToDTD.put(PAYARA7_WEBAPP_611_DTD_PUBLIC_ID, PAYARA7_WEBAPP_611_DTD_SYSTEM_ID);
 
         return PAYARA_WEB_RUNTIME_TAG;
     }

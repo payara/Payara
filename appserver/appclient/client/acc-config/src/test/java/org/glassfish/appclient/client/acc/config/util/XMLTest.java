@@ -72,7 +72,7 @@ import static org.junit.Assert.*;
  */
 public class XMLTest {
 
-    private static final String[] SAMPLE_XML_PATH = {"/sun-acc.xml", "/glassfish-acc.xml", "/payara-acc.xml"};
+    private static final String[] SAMPLE_XML_PATH = {"/sun-acc.xml", "/glassfish-acc.xml", "/payara6-acc.xml", "/payara-acc.xml", "/payara7-acc-p1.xml"};
     
     private static final String FIRST_HOST = "glassfish.dev.java.net";
     private static final int FIRST_PORT = 3701;
@@ -175,9 +175,15 @@ public class XMLTest {
             GLASSFISH_ACC(
                 "-//GlassFish.org//DTD GlassFish Application Server 3.1 Application Client Container//EN",
                 "dtds/glassfish-application-client-container_1_3.dtd"),
+            PAYARA6_ACC(
+                    "-//Payara.fish//DTD Payara Application Server 6 Application Client Container//EN",
+                    "dtds/payara6-application-client-container_1_4-0.dtd"),
             PAYARA_ACC(
                 "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN",
-                        "dtds/payara-application-client-container_1_4.dtd");
+                        "dtds/payara-application-client-container_1_4.dtd"),
+            PAYARA7_ACC(
+                    "-//Payara.fish//DTD Payara Application Server 7 Application Client Container Patch 1//EN",
+                    "dtds/payara7-application-client-container_1_4-1.dtd");
             
             private static final String SYSTEM_ID_PREFIX = "http://glassfish.org/";
             

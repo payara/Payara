@@ -74,14 +74,14 @@ public class PayaraAppClientRuntimeNode extends AppClientRuntimeNode {
      * @return the DOCTYPE that should be written to the XML file
      */
     public String getDocType() {
-        return DTDRegistry.PAYARA_APPCLIENT_110_DTD_PUBLIC_ID;
+        return DTDRegistry.PAYARA7_APPCLIENT_111_DTD_PUBLIC_ID;
     }
 
     /**
      * @return the SystemID of the XML file
      */
     public String getSystemID() {
-        return DTDRegistry.PAYARA_APPCLIENT_110_DTD_SYSTEM_ID;
+        return DTDRegistry.PAYARA7_APPCLIENT_111_DTD_SYSTEM_ID;
     }
 
     /**
@@ -91,8 +91,9 @@ public class PayaraAppClientRuntimeNode extends AppClientRuntimeNode {
      * @return the doctype tag name
      */
     public static String registerBundle(Map publicIDToDTD) {
-        publicIDToDTD.put(DTDRegistry.PAYARA_APPCLIENT_100_DTD_PUBLIC_ID, DTDRegistry.PAYARA_APPCLIENT_100_DTD_SYSTEM_ID);
+        publicIDToDTD.put(DTDRegistry.PAYARA6_APPCLIENT_100_DTD_PUBLIC_ID, DTDRegistry.PAYARA6_APPCLIENT_100_DTD_SYSTEM_ID);
         publicIDToDTD.put(DTDRegistry.PAYARA_APPCLIENT_110_DTD_PUBLIC_ID, DTDRegistry.PAYARA_APPCLIENT_110_DTD_SYSTEM_ID);
+        publicIDToDTD.put(DTDRegistry.PAYARA7_APPCLIENT_111_DTD_PUBLIC_ID, DTDRegistry.PAYARA7_APPCLIENT_111_DTD_SYSTEM_ID);
         return RuntimeTagNames.PAYARA_APPCLIENT_RUNTIME_TAG;
     }
 }

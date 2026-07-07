@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2004-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,11 @@
    - Property security.config in message-security-config
 -->
 
-<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Application Client Container Patch 1//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-application-client-container_1_4-1.dtd">
+<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 6 Application Client Container//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara6-application-client-container_1_4-0.dtd">
 
 <client-container>
-  <target-server name="%%%SERVER_NAME%%%" address="localhost" port="%%%ORB_LISTENER1_PORT%%%"/>
+  <target-server name="glassfish.dev.java.net" address="glassfish.dev.java.net" port="3701"/>
+  <target-server name="other.dev.java.net" address="other.dev.java.net" port="4701"/>
   <log-service file="" level="WARNING"/>
   <message-security-config auth-layer="SOAP">
     <!-- turned off by default -->
@@ -71,7 +72,9 @@
       <property name="signature.key.alias" value="s1as"/>
       <property name="dynamic.username.password" value="false"/>
       <property name="debug" value="false"/>
-      <property name="security.config" value="${com.sun.aas.installRoot}/lib/appclient/wss-client-config-1.0.xml"/>
+      <property name="security.config" value="/Users/dochez/java/cvs/v3/publish/lib/appclient/wss-client-config-1.0.xml"/> 
     </provider-config>
   </message-security-config>
+  <property name="firstProp" value="firstValue"/>
+  <property name="secondProp" value="secondValue"/>
 </client-container>

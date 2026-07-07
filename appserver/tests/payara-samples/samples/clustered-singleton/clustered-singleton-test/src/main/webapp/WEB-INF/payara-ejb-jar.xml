@@ -1,4 +1,4 @@
-<!DOCTYPE payara-ejb-jar PUBLIC "-//Payara.fish//DTD Payara Application Server 6 EJB 4.0//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-ejb-jar_4_0-0.dtd">
+<!DOCTYPE payara-ejb-jar PUBLIC "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-ejb-jar_4_0-1.dtd">
 <payara-ejb-jar>
     <enterprise-beans>
         <ejb>

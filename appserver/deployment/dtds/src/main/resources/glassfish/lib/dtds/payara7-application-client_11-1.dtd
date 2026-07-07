@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -38,59 +38,24 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright 2026 Payara Foundation and/or its affiliates
 -->
+<!-- Portions Copyright 2026 Payara Foundation and/or its affiliates -->
 
 <!--
-  XML DTD for Payara Application Server specific Jakarta EE Application
-  deployment descriptor. This is a companion DTD to application_10.xsd
+  XML DTD for Payara Application Server specific Jakarta EE Client Application
+  deployment descriptor. This is a companion DTD to application-client_11.xsd
 
   It must include a DOCTYPE of the following form:
 
-  <!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 6 Jakarta EE Application 10//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-6/content_shared/appendix/schemas/payara-application_10-0.dtd">
+  <!DOCTYPE payara-application-client PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application Client 11 Patch 1//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-application-client_11-1.dtd">
 
 -->
 
 <!--
-This is the root element of the runtime descriptor document.
+payara-application-client is the root element describing all the runtime bindings of a single application client
 -->
-<!ELEMENT payara-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?, classloading-delegate?, enable-implicit-cdi?, scanning-exclude*, scanning-include*, whitelist-package*, property*) >
-
-<!ELEMENT web (web-uri, context-root)>
-<!ELEMENT web-uri (#PCDATA)>
-<!ELEMENT context-root (#PCDATA)>
-
-<!-- Pass by Reference semantics:  EJB spec requires pass by value,
-     which will be the default mode of operation. This can be set
-     to true for non-compliant and possibly higher performance.
-     For a stand-alone, this can be set at this level. By setting
-     a similarly named element at payara-application, it can apply to
-     all the enclosed ejb modules. Allowed values are true and
-     false. Default will be false.
- -->
-<!ELEMENT pass-by-reference (#PCDATA)>
-
-<!-- Automatically generated and updated at deployment/redeployment
-     Needs to be unqiue in the system.
-  -->
-<!ELEMENT unique-id (#PCDATA)>
-
-<!ELEMENT security-role-mapping (role-name, (principal-name | group-name)+)>
-
-<!ELEMENT role-name (#PCDATA)>
-<!ELEMENT principal-name (#PCDATA)>
-<!ATTLIST principal-name class-name CDATA #IMPLIED>
-<!ELEMENT group-name (#PCDATA)>
-
-<!--
-  realm: Allows specifying an optional authentication realm name which will
-    be used to process all authentication requests associated with this
-    application. If this element is not specified (or if it is given but
-    does not match the name of a configured realm) then the default realm
-    set in the server instances security-service element will be used
-    instead.
--->
-<!ELEMENT realm (#PCDATA)>
+<!ELEMENT payara-application-client (ejb-ref*, resource-ref*, resource-env-ref*, service-ref*,
+	message-destination-ref*, message-destination*, java-web-start-access?, version-identifier?)>
 
 <!--
 name of a resource reference.
@@ -167,7 +132,13 @@ name of a message-destination reference.
 <!ELEMENT message-destination-ref-name (#PCDATA)>
 
 <!--
-                        W E B   S E R V I C E S
+Specifies the name of a durable subscription associated with a message-driven bean's
+destination.  Required for a Topic destination, if subscription-durability is set to
+Durable (in ejb-jar.xml)
+-->
+
+<!--
+  			W E B   S E R V I C E S
 -->
 <!--
 Runtime settings for a web service reference.  In the simplest case,
@@ -179,7 +150,7 @@ is only needed in the following cases :
 the one packaged with a service-ref
 -->
 <!ELEMENT service-ref ( service-ref-name, port-info*, call-property*,
-                wsdl-override?, service-impl-class?, service-qname? )>
+		wsdl-override?, service-impl-class?, service-qname? )>
 
 <!--
 Coded name (relative to java:comp/env) for a service-reference
@@ -436,11 +407,11 @@ Used in: message-security
  * by the contained method-params or part-name-list sub-elements.
  *
  * The content-auth-policy element would be defined as follows:
-*
+ *
  * content-auth-policy ( method-params | part-name-list )
  * ATTLIST content-auth-policy
  *         auth-source (sender | content) #IMPLIED
- *         auth-recipient (before-content | after-content) #IMPLIED
+ *	   auth-recipient (before-content | after-content) #IMPLIED
  *
  * The part-name-list and part-name elements would be defined as follows:
  *
@@ -451,7 +422,7 @@ Used in: message-security
 <!ELEMENT request-protection EMPTY >
 <!ATTLIST request-protection
           auth-source (sender | content) #IMPLIED
-          auth-recipient (before-content | after-content) #IMPLIED>
+	  auth-recipient (before-content | after-content) #IMPLIED>
 
 <!--
 The response-protection element describes the authentication requirements
@@ -487,7 +458,7 @@ Used in: message-security
 <!ELEMENT response-protection EMPTY >
 <!ATTLIST response-protection
           auth-source (sender | content) #IMPLIED
-          auth-recipient (before-content | after-content) #IMPLIED>
+	  auth-recipient (before-content | after-content) #IMPLIED>
 
 <!--
 The method-name element contains the name of a service method of a web service
@@ -512,64 +483,77 @@ Used in: method-params
 -->
 <!ELEMENT method-param (#PCDATA)>
 
+<!--
+                            J A V A   W E B   S T A R T    A C C E S S
+-->
 
 <!--
-  The value of the archive-name element will be used to derive the default
-name of the app-name when app-name is not present in application.xml.
-  The default app name will be archive-name value minus the file extension.
-For example, if archive-name is foo.ear, the default app-name will be foo.
+The java-web-start-access element contains all information relevant to Java
+Web Start access to the app client.
+
+Note that all elements that support Java Web Start access appear below
+the java-web-start-access definition alphabetically by tag name.
+
+The context-root subelement allows the developer to specify what context root
+will be used for addressing the app client via Java Web Start.  If absent, the
+app server uses a default context root value.
+
+The eligible subelement allows the developer to control whether this app client
+should allow Java Web Start access.  If this value is false, then Java Web Start
+will never be allowed access.  Default: true.
+
+The vendor subelement allows the developer to specify the vendor name that Java
+Web Start should display to the end-user as the app client is downloaded and launched.
+
+The jnlp-doc subelement gives the developer a way to direct the generation of
+the JNLP document describing the app client launch.
+
+Used in: payara-application-client
 -->
-<!ELEMENT archive-name (#PCDATA)>
+<!ELEMENT java-web-start-access (context-root?, eligible?, vendor?, jnlp-doc?)>
 
 <!--
-Specifies the Enterprise Server release with which to be backward compatible
-in terms of JAR visibility requirements for applications.
-The current allowed value is v2, which refers to GlassFish version 2 or
-Enterprise Server version 9.1 or 9.1.1. The Java EE 6 platform specification
-imposes stricter requirements than Java EE 5 did on which JAR files can be
-visible to various modules within an EAR file. Setting this element to v2
-removes these Java EE 6 restrictions.
+The context-root element allows the developer to specify the context root
+with which Java Web Start should access the app client.  The app server
+provides a default value if the developer omits this.
+
+Used in: java-web-start-access
 -->
-<!ELEMENT compatibility (#PCDATA)>
+<!ELEMENT context-root (#PCDATA)>
 
 <!--
-The keep-state element indicates whether the state information should be
-preserved across redeployment.
+The eligible element allows the developer to indicate whether Java Web Start
+access should ever be permitted to launch this app client.
+
+Used in: java-web-start-access
 -->
-<!ELEMENT keep-state (#PCDATA)>
+<!ELEMENT eligible (#PCDATA)>
+
+<!--
+The vendor element allows the developer to indicate what vendor name Java Web Start
+should display in the splash screen as the app client is downloaded and/or launched.
+
+Used in: java-web-start-access
+-->
+<!ELEMENT vendor (#PCDATA)>
+
+<!--
+The jnlp-doc element's href attribute refers to a JNLP file in the app
+client or in the EAR which is merged with the generated JNLP to create the final
+JNLP which is used to launch the app client.  This href must be a relative
+URI.  Note that the path may instead be specified as the text value of the
+jnlp-doc element. Using the text value is described in the published documentation 
+so we need to allow either.  Users should not specify both; if they do results 
+are unpredictable.
+
+Used in: java-web-start-access
+-->
+<!ELEMENT jnlp-doc (#PCDATA)>
+<!ATTLIST jnlp-doc 
+          href CDATA #IMPLIED>
 
 <!--
 The version-identifier element contains the version information. The value is
  retrieved at deployment.
 -->
 <!ELEMENT version-identifier (#PCDATA)>
-
-<!--
-Payara flag to delegate classloader to parent class or not
--->
-<!ELEMENT classloading-delegate (#PCDATA)>
-
-<!--
-Payara flag to enable / disable implicit CDI for EAR file
--->
-<!ELEMENT enable-implicit-cdi (#PCDATA)>
-
-<!--
-Payara flag to include / exclude specific JARs for CDI scanning inside EAR files
--->
-<!ELEMENT scanning-exclude (#PCDATA)>
-<!ELEMENT scanning-include (#PCDATA)>
-
-<!--
-Payara flag to enable / specify whitelist for extreme ClassLoader isolation
--->
-<!ELEMENT whitelist-package (#PCDATA)>
-
-<!--
-Syntax for supplying properties as name value pairs
--->
-<!ELEMENT property (description?)>
-<!ATTLIST property name  CDATA  #REQUIRED
-                   value CDATA  #REQUIRED>
-
-<!ELEMENT description (#PCDATA)>
