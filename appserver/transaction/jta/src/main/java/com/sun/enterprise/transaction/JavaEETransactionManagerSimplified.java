@@ -58,22 +58,23 @@ import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
-import io.opentelemetry.api.baggage.Baggage;
+import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import jakarta.inject.Inject;
+import jakarta.resource.spi.XATerminator;
+import jakarta.resource.spi.work.WorkException;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.Synchronization;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import jakarta.transaction.TransactionManager;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
@@ -82,21 +83,23 @@ import org.glassfish.api.invocation.ResourceHandler;
 import org.glassfish.common.util.Constants;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
-import jakarta.resource.spi.XATerminator;
-import jakarta.resource.spi.work.WorkException;
-import jakarta.transaction.*;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -126,9 +129,8 @@ public class JavaEETransactionManagerSimplified
 
     @Inject protected InvocationManager invMgr;
 
-    @Inject private Provider<OpenTracingService> openTracingServiceProvider;
-
-    @Inject private Provider<RequestTracingService> requestTracing;
+    @Inject private IterableProvider<OpenTelemetryService> openTelemetryServiceHandle;
+    private OpenTelemetryService openTelemetryService;
 
     private JavaEETransactionManagerDelegate delegate;
 
@@ -214,24 +216,18 @@ public class JavaEETransactionManagerSimplified
         initProperties();
     }
 
-    private OpenTracingService getOpenTracing() {
-        OpenTracingService openTracingService = openTracingServiceProvider.get();
-        if (openTracingService == null) {
-            _logger.log(Level.INFO, "Error retrieving OpenTracing "
-                    + "service during initialisation of "
-                    + "JavaEETransactionManagerSimplified - NullPointerException");
+    private OpenTelemetryService getOpenTelemetry() {
+        if (openTelemetryService == null && openTelemetryServiceHandle != null) {
+            if (openTelemetryServiceHandle.getHandle().isActive()) {
+                openTelemetryService = openTelemetryServiceHandle.get();
+            }
         }
-        return openTracingService;
+        return openTelemetryService;
     }
 
-    private RequestTracingService getRequestTracing() {
-        RequestTracingService requestTracingService = requestTracing.get();
-        if (requestTracingService == null) {
-            _logger.log(Level.INFO, "Error retrieving Request Tracing "
-                    + "service during initialisation of "
-                    + "JavaEETransactionManagerSimplified - NullPointerException");
-        }
-        return requestTracingService;
+    private boolean isOpenTelemetryEnabled() {
+        OpenTelemetryService service = getOpenTelemetry();
+        return service != null && service.isEnabled();
     }
 
     private void initProperties() {
@@ -688,11 +684,8 @@ public class JavaEETransactionManagerSimplified
 
         setCurrentTransaction(tx);
 
-        if (openTracingServiceProvider != null) {
-            OpenTracingService openTracingService = getOpenTracing();
-            if (openTracingService != null && openTracingService.isEnabled()) {
+        if (isOpenTelemetryEnabled()) {
                 addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx);
-            }
         }
         
         return tx;
@@ -982,11 +975,8 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
-            if (openTracingServiceProvider != null) {
-                OpenTracingService openTracingService = getOpenTracing();
-                if (openTracingService != null && openTracingService.isEnabled()) {
-                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
-                }
+            if (isOpenTelemetryEnabled()) {
+                addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
             }
             
         } finally {
@@ -1023,11 +1013,8 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
-            if (openTracingServiceProvider != null) {
-                OpenTracingService openTracingService = getOpenTracing();
-                if (openTracingService != null && openTracingService.isEnabled()) {
-                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
-                }
+            if (isOpenTelemetryEnabled()) {
+                addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
             }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
