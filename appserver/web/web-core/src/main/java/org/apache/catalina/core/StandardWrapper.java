@@ -1581,20 +1581,21 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             }
 
             //here to add a process to get histogram and instrument http endpoints results evaluated in TCK
-            io.opentelemetry.context.Context ctx = io.opentelemetry.context.Context.current();
-            DoubleHistogram doubleHistogram = openTelemetryService.createMetricsHistogram(openTelemetryService.getCurrentSdk());
-            double seconds = elapsedNanos * PayaraTelemetryConstants.NANO_CONVERSION;
-            Attributes attributes =
-                    Attributes.builder()
-                            .put(HttpAttributes.HTTP_REQUEST_METHOD, ((HttpServletRequest) request).getMethod())
-                            .put(UrlAttributes.URL_SCHEME, (request.getScheme()))
-                            .put(HttpAttributes.HTTP_ROUTE, ((HttpServletRequest) request).getRequestURI())
-                            .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus())
-                            .put(ErrorAttributes.ERROR_TYPE,
-                                    ((HttpServletResponse) response).getStatus() >= 500 ?
-                                            Integer.toString(((HttpServletResponse) response).getStatus()) : "").build();
-            doubleHistogram.record(seconds, attributes, ctx);
-
+            if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+                io.opentelemetry.context.Context ctx = io.opentelemetry.context.Context.current();
+                DoubleHistogram doubleHistogram = openTelemetryService.createMetricsHistogram(openTelemetryService.getCurrentSdk());
+                double seconds = elapsedNanos * PayaraTelemetryConstants.NANO_CONVERSION;
+                Attributes attributes =
+                        Attributes.builder()
+                                .put(HttpAttributes.HTTP_REQUEST_METHOD, ((HttpServletRequest) request).getMethod())
+                                .put(UrlAttributes.URL_SCHEME, (request.getScheme()))
+                                .put(HttpAttributes.HTTP_ROUTE, ((HttpServletRequest) request).getRequestURI())
+                                .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus())
+                                .put(ErrorAttributes.ERROR_TYPE,
+                                        ((HttpServletResponse) response).getStatus() >= 500 ?
+                                                Integer.toString(((HttpServletResponse) response).getStatus()) : "").build();
+                doubleHistogram.record(seconds, attributes, ctx);
+            }
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response);
         } catch (IOException | ServletException | RuntimeException | Error e) {
             // Set response status before firing event, see IT 10022
