@@ -67,8 +67,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Extension class that adds a Producer for OpenTracing Tracers, allowing injection.

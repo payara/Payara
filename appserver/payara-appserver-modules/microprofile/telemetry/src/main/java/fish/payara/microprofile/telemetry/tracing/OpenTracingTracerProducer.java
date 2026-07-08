@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,39 +41,28 @@
  */
 package fish.payara.microprofile.telemetry.tracing;
 
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
+import jakarta.enterprise.util.Nonbinding;
+import jakarta.interceptor.InterceptorBinding;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Producer class for OpenTracing Tracers.
- * 
- * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * Migration artifact from Microprofile Opentracing.
+ *
+ * @deprecated Public facing API for this feature will be {@link io.opentelemetry.instrumentation.annotations.WithSpan} annotation. Solution for
+ *     usage with @{code value=false} is yet to be finalized, easiest is to just not putting the annotation on the method.
  */
-@ApplicationScoped
-public class OpenTracingTracerProducer {
+@Deprecated(forRemoval = true)
+@InterceptorBinding
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Traced {
     
-    private OpenTracingService openTracing;
+    @Nonbinding
+    boolean value() default true;
     
-    /**
-     * Constructor that initialises the OpenTracing HK2 service variable.
-     */
-    public OpenTracingTracerProducer() {
-        openTracing = Globals.getDefaultBaseServiceLocator().getService(OpenTracingService.class);
-    }
-    
-    /**
-     * Gets a Tracer object for injection into the application.
-     * 
-     * @return An OpenTracing tracer
-     */
-    @Produces
-    @ApplicationScoped
-    public Tracer getTracer() {
-        return openTracing.getTracer(openTracing.getApplicationName(
-                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class)));
-    }
+    @Nonbinding
+    String operationName() default "";
 }
