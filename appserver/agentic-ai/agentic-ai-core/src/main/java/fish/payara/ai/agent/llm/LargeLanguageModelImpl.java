@@ -126,7 +126,7 @@ public class LargeLanguageModelImpl implements LargeLanguageModel {
                     "Prompt has " + placeholderCount + " {} placeholders but "
                             + parameters.length + " parameters were supplied");
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Matcher matcher = PLACEHOLDER.matcher(prompt);
         int idx = 0;
         while (matcher.find()) {
