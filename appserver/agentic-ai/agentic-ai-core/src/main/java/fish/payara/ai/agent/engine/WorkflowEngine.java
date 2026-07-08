@@ -177,7 +177,9 @@ public class WorkflowEngine {
                 }
             }
         }
-        if (best == null) return false;
+        if (best == null)  { 
+             return false;
+        }
         try {
             invokePhase(best, agent, ctx, llm, exception);
             return true;
