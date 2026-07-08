@@ -733,11 +733,6 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
-                <artifactId>org.eclipse.persistence.moxy</artifactId>
-                <version>${eclipselink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.sdo</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
