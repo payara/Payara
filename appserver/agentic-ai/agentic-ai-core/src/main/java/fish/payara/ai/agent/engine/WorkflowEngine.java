@@ -252,7 +252,9 @@ public class WorkflowEngine {
 
     private Class<?> findExceptionParamType(Method handler) {
         for (Class<?> parameterType : handler.getParameterTypes()) {
-            if (Throwable.class.isAssignableFrom(parameterType)) return parameterType;
+            if (Throwable.class.isAssignableFrom(parameterType))  {
+                 return parameterType;
+            }
         }
         return null;
     }
