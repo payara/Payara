@@ -685,7 +685,7 @@ public class JavaEETransactionManagerSimplified
         setCurrentTransaction(tx);
 
         if (isOpenTelemetryEnabled()) {
-                addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx);
+            addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx);
         }
         
         return tx;
