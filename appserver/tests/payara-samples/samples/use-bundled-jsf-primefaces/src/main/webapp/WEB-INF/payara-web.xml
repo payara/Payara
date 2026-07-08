@@ -38,7 +38,7 @@
      only if the new code is made subject to such option by the copyright
      holder.
 -->
-<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 7 Servlet 6.1 Patch 1//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-web-app_6_1-1.dtd">
+<!DOCTYPE payara-web-app PUBLIC "-//Payara.fish//DTD Payara Server 7 Servlet 6.1 Revision 1//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-web-app_6_1-1.dtd">
 <payara-web-app error-url="">
     <context-root>usebundledjsfsample</context-root>
     <class-loader delegate="false"/>

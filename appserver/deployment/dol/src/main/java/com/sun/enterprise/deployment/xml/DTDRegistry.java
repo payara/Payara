@@ -287,7 +287,7 @@ public final class DTDRegistry {
     public static final String PAYARA_WEBAPP_610_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 7 Servlet 6.1//EN";
     @Deprecated
     public static final String PAYARA_WEBAPP_610_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-web-app_6_1-0.dtd";
-    public static final String PAYARA7_WEBAPP_611_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 7 Servlet 6.1 Patch 1//EN";
+    public static final String PAYARA7_WEBAPP_611_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 7 Servlet 6.1 Revision 1//EN";
     public static final String PAYARA7_WEBAPP_611_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-web-app_6_1-1.dtd";
 
     @Deprecated
@@ -298,7 +298,7 @@ public final class DTDRegistry {
     public static final String PAYARA_APPCLIENT_110_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application Client 11//EN";
     @Deprecated
     public static final String PAYARA_APPCLIENT_110_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-application-client_11-0.dtd";
-    public static final String PAYARA7_APPCLIENT_111_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application Client 11 Patch 1//EN";
+    public static final String PAYARA7_APPCLIENT_111_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application Client 11 Revision 1//EN";
     public static final String PAYARA7_APPCLIENT_111_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-application-client_11-1.dtd";
 
     @Deprecated
@@ -309,7 +309,7 @@ public final class DTDRegistry {
     public static final String PAYARA_APPLICATION_110_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11//EN";
     @Deprecated
     public static final String PAYARA_APPLICATION_110_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-application_11-0.dtd";
-    public static final String PAYARA7_APPLICATION_111_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11 Patch 1//EN";
+    public static final String PAYARA7_APPLICATION_111_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11 Revision 1//EN";
     public static final String PAYARA7_APPLICATION_111_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-application_11-1.dtd";
 
     @Deprecated
@@ -320,7 +320,7 @@ public final class DTDRegistry {
     public static final String PAYARA_EJBJAR_400_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0//EN";
     @Deprecated
     public static final String PAYARA_EJBJAR_400_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-ejb-jar_4_0-0.dtd";
-    public static final String PAYARA7_EJBJAR_401_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0 Patch 1//EN";
+    public static final String PAYARA7_EJBJAR_401_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0 Revision 1//EN";
     public static final String PAYARA7_EJBJAR_401_DTD_SYSTEM_ID = "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-ejb-jar_4_0-1.dtd";
 
 }

@@ -47,7 +47,7 @@
 
   It must include a DOCTYPE of the following form:
 
-  <!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11 Patch 1//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-application_11-1.dtd">
+  <!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11 Revision 1//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara7-application_11-1.dtd">
 
 -->
 

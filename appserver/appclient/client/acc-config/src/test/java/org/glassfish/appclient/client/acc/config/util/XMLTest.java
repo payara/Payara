@@ -182,7 +182,7 @@ public class XMLTest {
                 "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN",
                         "dtds/payara-application-client-container_1_4.dtd"),
             PAYARA7_ACC(
-                    "-//Payara.fish//DTD Payara Application Server 7 Application Client Container Patch 1//EN",
+                    "-//Payara.fish//DTD Payara Application Server 7 Application Client Container Revision 1//EN",
                     "dtds/payara7-application-client-container_1_4-1.dtd");
             
             private static final String SYSTEM_ID_PREFIX = "http://glassfish.org/";
