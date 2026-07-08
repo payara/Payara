@@ -117,7 +117,9 @@ public class ClassMethodOrder {
         // Skip fields
         int fieldCount = dis.readUnsignedShort();
         for (int i = 0; i < fieldCount; i++) {
-            dis.readUnsignedShort(); dis.readUnsignedShort(); dis.readUnsignedShort();
+            dis.readUnsignedShort(); 
+            dis.readUnsignedShort(); 
+            dis.readUnsignedShort();
             skipAttributes(dis);
         }
 
