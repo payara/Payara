@@ -185,7 +185,9 @@ public class WorkflowEngine {
             return true;
         } catch (Exception handlerEx) {
             Throwable cause = unwrap(handlerEx);
-            if (cause instanceof RuntimeException re) throw re;
+            if (cause instanceof RuntimeException re)  {
+                throw re;
+            }
             throw new RuntimeException(cause);
         }
     }
