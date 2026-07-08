@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,10 +55,13 @@ import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fish.payara.microprofile.openapi.impl.model.responses.APIResponseImpl;
 
+import fish.payara.microprofile.openapi.impl.model.tags.TagImpl;
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.callbacks.Callback;
@@ -68,6 +71,7 @@ import org.eclipse.microprofile.openapi.models.responses.APIResponse;
 import org.eclipse.microprofile.openapi.models.responses.APIResponses;
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.models.servers.Server;
+import org.eclipse.microprofile.openapi.models.tags.Tag;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
 public class OperationImpl extends ExtensibleImpl<Operation> implements Operation {
@@ -110,6 +114,19 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         extractAnnotations(annotation, context, "securitySets", SecurityRequirementImpl::createInstances, from::addSecurityRequirement);
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         from.setMethod(annotation.getValue("method", String.class));
+        extractAnnotations(annotation, context, "tags", TagImpl::createInstance, tag -> {
+            from.addTag(tag);
+
+            // Tags can be defined within the Operation annotation and those need to be saved to the API doc
+            if (tag.getName() != null
+                    && !tag.getName().isEmpty()
+                    && context.getApi().getTags()
+                    .stream()
+                    .noneMatch(apiTag -> tag.getName().equals(apiTag.getName()))) {
+
+                context.getApi().addTag(tag);
+            }
+        });
         return from;
     }
 
@@ -345,32 +362,25 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         exceptionTypes.add(type);
     }
 
-    public static void merge(Operation from, Operation to,
-            boolean override) {
+    private void addTag(Tag tag) {
+        if (tag.getName() != null && !tag.getName().isEmpty()) {
+            addTag(tag.getName());
+        }
+        else if (tag instanceof TagImpl impl && impl.getRef() != null && !impl.getRef().isEmpty()) {
+            addTag(impl.getRef());
+        }
+    }
+
+    public static void merge(Operation from, Operation to, boolean override) {
         if (from == null) {
             return;
         }
         to.setOperationId(mergeProperty(to.getOperationId(), from.getOperationId(), override));
-        to.setSummary(mergeProperty(to.getSummary(), from.getSummary(), override));
-        to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
-        to.setExtensions(mergeProperty(to.getExtensions(), from.getExtensions(), override));
         to.setDeprecated(mergeProperty(to.getDeprecated(), from.getDeprecated(), override));
-        // Handle @SecurityRequirement
-        if (from.getSecurity() != null) {
-            for (SecurityRequirement requirement : from.getSecurity()) {
-                if (requirement != null) {
-                    SecurityRequirement newRequirement = new SecurityRequirementImpl();
-                    SecurityRequirementImpl.merge(requirement, newRequirement);
-                    if (!to.getSecurity().contains(newRequirement)) {
-                        to.addSecurityRequirement(newRequirement);
-                    }
-                }
-            }
-        }
+        merge(from, to, override, null);
     }
 
-    public static void merge(Operation from, Operation to,
-            boolean override, ApiContext context) {
+    public static void merge(Operation from, Operation to, boolean override, ApiContext context) {
         if (from == null) {
             return;
         }
@@ -387,8 +397,19 @@ public class OperationImpl extends ExtensibleImpl<Operation> implements Operatio
         }
         if (from.getParameters() != null) {
             for (Parameter parameter : from.getParameters()) {
-                Parameter newParameter = new ParameterImpl();
-                ParameterImpl.merge(parameter, newParameter, override, context);
+                Optional<Parameter> toParam = Optional.empty();
+                if (to.getParameters() != null) {
+                    toParam = to.getParameters()
+                            .stream()
+                            .filter(param -> Objects.equals(param.getName(), parameter.getName()))
+                            .findFirst();
+                }
+
+                if (toParam.isPresent()) {
+                    ParameterImpl.merge(parameter, toParam.get(), override, context);
+                } else {
+                    to.addParameter(parameter);
+                }
             }
         }
         if (from.getRequestBody() != null) {

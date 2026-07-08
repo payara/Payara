@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -84,6 +84,7 @@ import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.grizzly.V3Mapper;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.config.types.Property;
 
 public class GlassfishNetworkListener extends GenericGrizzlyListener {
@@ -433,14 +434,19 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         }
 
         @Override
-        protected boolean onHttpHeaderParsed(final HttpHeader httpHeader,
-                final Buffer buffer,
-                final FilterChainContext ctx) {
-
-            final boolean result = super.onHttpHeaderParsed(httpHeader,
-                    buffer, ctx);
+        protected boolean onHttpHeaderParsed(final HttpHeader httpHeader, final Buffer buffer, final FilterChainContext ctx) {
+            boolean result = super.onHttpHeaderParsed(httpHeader, buffer, ctx);
 
             final HttpRequestPacket request = (HttpRequestPacket) httpHeader;
+
+            // Here we can add extra validation to prevent Http Server invalid use of headers
+            if (request.containsHeader(Header.ContentLength) && request.containsHeader(Header.TransferEncoding)) {
+                KernelLoggerInfo.getLogger().log(Level.SEVERE,
+                        "Can't use both headers Content-Length and Transfer-Encoding from the same request");
+                request.getProcessingState().setError(true);
+                result = true;
+            }
+
             final HttpResponsePacket response = request.getResponse();
 
             // Set response "Server" header

@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.instrumentation.api.annotation.support.MethodSpanAttributesExtractor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.InvocationContext;
@@ -334,9 +334,10 @@ public class WithSpanMethodInterceptor {
     private void markSpanAsFailed(Span span, Throwable ex) {
         LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
         span.setAttribute("error", true);
-        span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
-        span.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
-                Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
+        
+        span.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+        span.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
+                Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
         span.recordException(ex);
     }
 }
