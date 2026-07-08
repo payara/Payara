@@ -271,8 +271,7 @@ public class WorkflowEngine {
         if (executableValidator == null) {
             return;
         }
-        var violations =
-                executableValidator.validateParameters(instance, method, args);
+        var violations = executableValidator.validateParameters(instance, method, args);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
