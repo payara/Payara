@@ -314,7 +314,9 @@ public class AgenticAIExtension implements Extension {
 
     private Class<?> findExceptionParamType(Method method) {
         for (Class<?> pt : method.getParameterTypes()) {
-            if (Throwable.class.isAssignableFrom(pt)) return pt;
+            if (Throwable.class.isAssignableFrom(pt))  {
+                 return pt;
+            }
         }
         return null;
     }
