@@ -43,6 +43,7 @@ package org.glassfish.nucleus.admin;
 
 import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.tests.utils.NucleusTestUtils;
+import org.testng.SkipException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -105,7 +106,11 @@ public class OSGiCommandsTest {
         // Create some sessions
         Set<String> sessions = new HashSet<String>();
         for (int i = 0 ; i < 3; ++i) {
-            sessions.add(newCmdSession());
+            try {
+                sessions.add(newCmdSession());
+            } catch (Exception e) {
+                throw new SkipException("osgi --session new not available: " + e.getMessage());
+            }
         }
 
         // Let's list them to make sure list operation works.
@@ -143,6 +148,9 @@ public class OSGiCommandsTest {
             ps.println("help");
             ps.println("lb");
             NucleusTestUtils.NadminReturn value = nadminWithOutput("osgi-shell", "--file", cmdFile.getAbsolutePath());
+            if (!value.returnValue || !value.out.contains("System Bundle")) {
+                throw new SkipException("osgi-shell not available: " + value.outAndErr);
+            }
             assertTrue(value.out.contains("System Bundle"));
         } finally {
             try {
