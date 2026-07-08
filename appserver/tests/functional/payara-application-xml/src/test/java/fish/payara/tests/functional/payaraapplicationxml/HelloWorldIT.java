@@ -187,7 +187,7 @@ public class HelloWorldIT {
     @Test
     @RunAsClient
     @OperateOnDeployment("helloPayara6")
-    public void checkContextRootVersionPayaraApplicationXml() {
+    public void checkContextRootVersionPayara6ApplicationXml() {
         WebTarget target = ClientBuilder.newClient().target(uri).path("resources").path("hello");
         Response response = target.request().get();
 
