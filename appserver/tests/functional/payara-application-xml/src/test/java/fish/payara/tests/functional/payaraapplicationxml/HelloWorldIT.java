@@ -106,6 +106,16 @@ public class HelloWorldIT {
                         .addAsWebInfResource(new File("src/test/webapp/WEB-INF", "beans.xml")));
     }
 
+    @Deployment(name = "helloPayara6")
+    public static EnterpriseArchive createPayaraApplicationDeployment() {
+        return ShrinkWrap.create(EnterpriseArchive.class, "helloworld-payara6.ear")
+                .addAsManifestResource(new File("src/test/META-INF", "payara6-application.xml"),
+                        "payara-application.xml")
+                .addAsModule(ShrinkWrap.create(WebArchive.class, "helloworld.war")
+                        .addClasses(Resources.class, HelloWorld.class)
+                        .addAsWebInfResource(new File("src/test/webapp/WEB-INF", "beans.xml")));
+    }
+
     @Test
     @RunAsClient
     @OperateOnDeployment("helloPayara")
@@ -172,5 +182,22 @@ public class HelloWorldIT {
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals("Hello World!", message);
         Assert.assertTrue(uri.getPath().equals("/helloworld/"));
+    }
+
+    @Test
+    @RunAsClient
+    @OperateOnDeployment("helloPayara6")
+    public void checkContextRootVersionPayaraApplicationXml() {
+        WebTarget target = ClientBuilder.newClient().target(uri).path("resources").path("hello");
+        Response response = target.request().get();
+
+        System.out.println("Context root should be \"adios\" as defined by the EAR's payara-application.xml, " +
+                "overriding the default context root of \"helloworld-payara6\" obtained from the EAR's name: " + uri.getPath());
+
+        String message = response.readEntity(String.class);
+
+        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals("Hello World!", message);
+        Assert.assertTrue(uri.getPath().equals("/adios/"));
     }
 }
