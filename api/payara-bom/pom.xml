@@ -726,6 +726,14 @@
                 <artifactId>org.eclipse.persistence.asm</artifactId>
                 <version>${eclipselink.asm.version}</version>
             </dependency>
+            <!-- No longer shipped with server, but version managed, so that users of jersey-media-moxy
+                 would fetch correct version of moxy, 5.0.0-B1 advertised by it is incompatible -->
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.moxy</artifactId>
+                <version>${eclipselink.version}</version>
+                <scope>compile</scope>
+            </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
