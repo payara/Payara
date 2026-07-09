@@ -63,6 +63,7 @@ import org.jvnet.hk2.config.types.PropertyBag;
 @Configured
 public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean AUTH_PASS_THROUGH_ENABLED = false;
+    boolean BEHIND_PROXY = false;
     boolean CHUNKING_ENABLED = true;
     boolean COMET_SUPPORT_ENABLED = false;
     boolean ENCODED_SLASH_ENABLED = false;
@@ -545,6 +546,15 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getHttp2PushEnabled();
 
     void setHttp2PushEnabled(String pushEnabled);
+
+    /**
+     * If set to true, the server is configured behind a reverse proxy and will trust
+     * X-Real-IP and X-Forwarded-For headers to determine the client's real IP address.
+     */
+    @Attribute(defaultValue = "" + BEHIND_PROXY, dataType = Boolean.class)
+    boolean isBehindProxy();
+
+    void setBehindProxy(boolean behindProxy);
 
     @DuckTyped
     @Override

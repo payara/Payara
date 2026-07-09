@@ -261,9 +261,9 @@
         <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
         <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>3.30.13</jline.version>
+        <jline.version>3.30.15</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
-        <microprofile-release.version>6.1</microprofile-release.version>
+        <microprofile-release.version>7.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
         <h2db.version>2.2.224</h2db.version>
         <concurro.version>3.1.0</concurro.version>
@@ -286,7 +286,7 @@
         <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.5</jaxb-api.version>
-        <jackson.version>2.22.0</jackson.version>
+        <jackson.version>2.22.1</jackson.version>
         <jersey.version>4.0.2.payara-p1</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
@@ -306,18 +306,16 @@
         <json.bind-api.version>3.0.2</json.bind-api.version>
         <jakarta-persistence-api.version>3.2.0</jakarta-persistence-api.version>
         <jakarta.batch-api.version>2.1.1</jakarta.batch-api.version>
-        <microprofile-opentracing.version>3.0</microprofile-opentracing.version>
-        <microprofile-fault-tolerance.version>4.0.2.payara-p1</microprofile-fault-tolerance.version>
+        <microprofile-fault-tolerance.version>4.1.2</microprofile-fault-tolerance.version>
         <microprofile-jwt-auth.version>2.1</microprofile-jwt-auth.version>
         <microprofile-healthcheck.version>4.0.1</microprofile-healthcheck.version>
         <microprofile-metrics.version>5.1.2</microprofile-metrics.version>
-        <microprofile-rest-client.version>3.0.1</microprofile-rest-client.version>
-        <microprofile-openapi.version>3.1.2</microprofile-openapi.version>
+        <microprofile-rest-client.version>4.0</microprofile-rest-client.version>
+        <microprofile-openapi.version>4.1.1</microprofile-openapi.version>
         <jakarta.enterprise.deploy-api.version>1.7.2</jakarta.enterprise.deploy-api.version>
         <jakarta.resource-api.version>2.1.0</jakarta.resource-api.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <exousia.version>3.0.1</exousia.version>
-        <opentracing.version>0.33.0</opentracing.version>
         <jsp-api.version>4.0.0</jsp-api.version>
         <javax.cache-api.version>1.1.1.payara-p1</javax.cache-api.version>
         <hazelcast.version>5.3.8-payara-1</hazelcast.version>
@@ -340,8 +338,11 @@
         <epicyro.version>3.1.1</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
-        <opentelemetry.version>1.29.0</opentelemetry.version>
-        <opentelemetry.alpha.version>1.29.0-alpha</opentelemetry.alpha.version>
+        <opentelemetry.version>1.48.0</opentelemetry.version>
+        <opentelemetry-bom.version>2.14.0</opentelemetry-bom.version>
+        <opentelemetry-semconv.version>1.42.0</opentelemetry-semconv.version>
+        <opentelemetry-instrumentation-annotations.version>2.29.0</opentelemetry-instrumentation-annotations.version>
+        <opentelemetry-instrumentation-annotation-support.version>2.29.0-alpha</opentelemetry-instrumentation-annotation-support.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>

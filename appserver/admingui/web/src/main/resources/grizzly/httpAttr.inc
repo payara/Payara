@@ -56,6 +56,10 @@
             <sun:textField id="ServerName" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.serverName']}" text="#{pageSession.httpMap['serverName']}" />
         </sun:property>
 
+        <sun:property id="behindProxy"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.BehindProxy}" helpText="$resource{i18n_web.http.BehindProxyHelp}" >
+            <sun:checkbox id="behindProxyEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['behindProxy']}" selectedValue="true" />
+        </sun:property>
+
         <sun:property id="DefaultVirtServersProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.defVirtualServerLabel}" helpText="$resource{i18n_web.http.defVirtualServerLabelHelp}">
             <sun:dropDown id="vs" selected="#{pageSession.httpMap['defaultVirtualServer']}" labels="$pageSession{vsList}"  values="$pageSession{vsList}" />
         </sun:property>
