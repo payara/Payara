@@ -49,6 +49,7 @@ import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.util.io.FileUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -144,6 +145,8 @@ public final class PEAccessLogValve
      * The prefix that is added to log file filenames.
      */
     private String prefix = "";
+
+    private String filter = "";
 
     /**
      * Should we rotate our log file?
@@ -429,6 +432,10 @@ public final class PEAccessLogValve
         }
     }
 
+    public void setFilter(String regex) {
+        filter = Objects.requireNonNullElse(regex, "");
+    }
+
     /**
      * Should we rotate the logs
      * @return
@@ -572,6 +579,10 @@ public final class PEAccessLogValve
             return;
         }
 
+        if (!filter.isEmpty() && request instanceof HttpServletRequest hreq && hreq.getRequestURI().matches(filter)) {
+            return;
+        }
+
         synchronized (lock){
             // Reset properly the buffer in case of an unexpected
             // exception.
@@ -668,6 +679,7 @@ public final class PEAccessLogValve
             String globalAccessLogWriteInterval, String globalAccessLogPrefix) {
             
         setPrefix(vsId + fac.getDefaultAccessLogPrefix());
+        setFilter(httpService.getAccessLog().getFilter());
         
         boolean start = updateVirtualServerProperties(
                 vsId, vsBean, domain, habitat, globalAccessLogBufferSize,
@@ -896,6 +908,8 @@ public final class PEAccessLogValve
 
         // log to console
         accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
+
+        setFilter(httpService.getAccessLog().getFilter());
     }
 
     // -------------------------------------------------------- Private Methods
