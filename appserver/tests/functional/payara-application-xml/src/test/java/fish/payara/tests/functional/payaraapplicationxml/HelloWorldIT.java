@@ -107,7 +107,7 @@ public class HelloWorldIT {
     }
 
     @Deployment(name = "helloPayara6")
-    public static EnterpriseArchive createPayaraApplicationDeployment() {
+    public static EnterpriseArchive createPayara6ApplicationDeployment() {
         return ShrinkWrap.create(EnterpriseArchive.class, "helloworld-payara6.ear")
                 .addAsManifestResource(new File("src/test/META-INF", "payara6-application.xml"),
                         "payara-application.xml")
