@@ -65,7 +65,7 @@
         <module>jmxremote_optional</module>
         <module>ldapbp</module>
         <module>vboxjws</module>
-        <module>apache-mina</module>
+        <module>apache-mina-repackaged</module>
     	<module>antlr</module>
         <module>opentelemetry-repackaged</module>
         <module>tiger-types</module>
