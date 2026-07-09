@@ -38,7 +38,7 @@
      only if the new code is made subject to such option by the copyright
      holder.
 -->
-<!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11//EN" "https://gitlab.azulsystems.com/docs/payara/-/raw/main-7/content_shared/appendix/schemas/payara-application_11-0.dtd">
+<!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11//EN" "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-application_11-0.dtd">
 <payara-application>
     <web>
         <!-- This aligns to the name of the WAR defined in the test itself -->
