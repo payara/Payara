@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2023-2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,29 +37,43 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.telemetry.tracing.jaxrs;
+package fish.payara.telemetry.service;
 
-import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
-import jakarta.ws.rs.core.FeatureContext;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
-/**
- * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
- */
-public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
+final class ContextClassLoaderInterceptor implements InvocationHandler {
+    private final ClassLoader contextClassLoader;
+    private final Object target;
+
+    ContextClassLoaderInterceptor(Object target) {
+        this.contextClassLoader = Thread.currentThread().getContextClassLoader();
+        this.target = target;
+    }
 
     @Override
-    public void configure(FeatureContext context) {
-        // Only register for application deployments (not the admin console)
-        PayaraTracingServices tracingServices = new PayaraTracingServices();
-        final Deployment deployment = tracingServices.getDeployment();
-        if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
-            return;
-        }
-        if (tracingServices.isTracingAvailable() &&
-                !context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
-            context.register(OpenTelemetryApplicationEventListener.class);
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(contextClassLoader);
+            return method.invoke(target, args);
+        } catch (InvocationTargetException e) {
+            throw e.getTargetException();
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
     }
+
+    @SuppressWarnings("unchecked")
+    static <T> T wrap(T target) {
+        return (T) Proxy.newProxyInstance(target.getClass().getClassLoader(), target.getClass().getInterfaces(),
+                new ContextClassLoaderInterceptor(target));
+    }
+
+    static <T> T wrapIfOtherClassloader(T e, ClassLoader otelClassloader) {
+        return e.getClass().getClassLoader() == otelClassloader ? e : wrap(e);
+    }
+
 }

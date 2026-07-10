@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,18 +37,57 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.telemetry.service;
+package fish.payara.nucleus.microprofile.config;
 
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import java.util.Optional;
 
-public interface PayaraTelemetryBootstrapFactoryService {
-    
-    public void createTelemetryRuntimeInstance();
-    
-    public Optional<OpenTelemetrySdk> getAvailableRuntimeReference();
-    
-    public Optional<OpenTelemetrySdk> getAvailableNoopReference();
-    
-    public boolean isRuntimeOtelDisabled();
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.deployment.Deployment;
+import org.jvnet.hk2.annotations.Service;
+
+@Service
+class RefreshingPasswordAliasStoreAccessor implements EventListener {
+    // HK2 doesn't inject ServiceHandle<T>
+    @Inject
+    ServiceLocator locator;
+
+    @Inject
+    Events events;
+
+    private volatile DomainScopedPasswordAliasStore currentStore;
+
+    @PostConstruct
+    void postConstruct() {
+        events.register(this);
+    }
+
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(Deployment.DEPLOYMENT_START)) {
+            DomainScopedPasswordAliasStore previousStore = currentStore;
+            // we have no clear indication when a password alias is changed, but a good heuristics is
+            // that it might get updated before deployment of an application. That way it is also
+            // compatible with the previous behavior where the source would be created per application
+            currentStore = null;
+            if (previousStore != null) {
+                locator.preDestroy(previousStore);
+            }
+        }
+    }
+
+    DomainScopedPasswordAliasStore getCurrentStore() {
+        if (currentStore == null) {
+            synchronized (this) {
+                if (currentStore == null) {
+                    currentStore = locator.getService(DomainScopedPasswordAliasStore.class);
+                }
+            }
+        }
+        return currentStore;
+    }
 }

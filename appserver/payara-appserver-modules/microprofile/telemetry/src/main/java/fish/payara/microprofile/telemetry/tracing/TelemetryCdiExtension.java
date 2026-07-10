@@ -42,7 +42,7 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.telemetry.service.PayaraTelemetryBootstrapFactoryServiceImpl;
+import fish.payara.telemetry.service.OpenTelemetryBootstrap;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
@@ -67,8 +67,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Extension class that adds a Producer for OpenTracing Tracers, allowing injection.
@@ -78,13 +76,13 @@ import java.util.stream.StreamSupport;
 public class TelemetryCdiExtension implements Extension {
     private final OpenTelemetryService openTelemetryService;
     
-    private final PayaraTelemetryBootstrapFactoryServiceImpl payaraTelemetryBootstrapFactoryServiceImpl;
+    private final OpenTelemetryBootstrap openTelemetryBootstrap;
 
     private boolean appManagedOtel;
 
     public TelemetryCdiExtension() {
         openTelemetryService = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryService.class);
-        payaraTelemetryBootstrapFactoryServiceImpl = Globals.getDefaultBaseServiceLocator().getService(PayaraTelemetryBootstrapFactoryServiceImpl.class);
+        openTelemetryBootstrap = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
     }
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
@@ -107,19 +105,14 @@ public class TelemetryCdiExtension implements Extension {
     void initializeOpenTelemetry(@Observes AfterDeploymentValidation adv) {
         try {
             //verify if global config is available
-            if (payaraTelemetryBootstrapFactoryServiceImpl.getAvailableRuntimeReference().isEmpty()) {
+            if (openTelemetryBootstrap.isRuntimeTelemetryDisabled()) {
                 var config = ConfigProvider.getConfig();
-                config.getConfigSources().forEach(g -> System.out.println(g.getName()+ " -> values" +g.getProperties()));
                 if (config.getOptionalValue("otel.sdk.disabled", Boolean.class).orElse(true)) {
                     // app-specific OpenTelemetry is not configured
                     return;
                 }
-                // This is potentially expensive, but Autoconfigure SDK does not have lazy per-key provider, needs a map
-                var otelProps = StreamSupport.stream(config.getPropertyNames().spliterator(), false)
-                        .filter(key -> key.startsWith("otel."))
-                        .collect(Collectors.toMap(k -> k, k -> config.getValue(k, String.class)));
                 appManagedOtel = true;
-                openTelemetryService.initializeCurrentApplication(otelProps);
+                openTelemetryService.initializeCurrentApplication(config);
             }
         } catch (Exception e) {
             adv.addDeploymentProblem(e);

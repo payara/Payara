@@ -49,6 +49,7 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
+import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -76,7 +77,6 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.opentracing.OpenTracingService;
 
 import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import java.util.ArrayList;
@@ -128,7 +128,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private final Set<String> allRemaining;
 
     private transient RequestTracingService requestTracing;
-    private transient OpenTracingService openTracing;
+    private transient OpenTelemetryService openTelemetry;
     private transient StuckThreadsStore stuckThreads;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
@@ -315,7 +315,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
 
-        if (requestTracing != null && openTracing != null && requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && openTelemetry != null && requestTracing.isRequestTracingEnabled()) {
             startConcurrentContextSpan(invocation, handle);
         }
         
@@ -336,7 +336,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
-        Tracer tracer = openTracing.getTracer(openTracing.getApplicationName(invocationManager));
+        Tracer tracer = openTelemetry.getCurrentTracer();
         SpanBuilder builder = tracer.spanBuilder("executeConcurrentContext");
         Context parentContext = handle.getParentTraceContext();
         if (parentContext != null) {
@@ -582,7 +582,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     + "during initialisation of Concurrent Context - NullPointerException", ex);
         }
         try {
-            this.openTracing = Globals.getDefaultHabitat().getService(OpenTracingService.class);
+            this.openTelemetry = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
         } catch (NullPointerException ex) {
             logger.log(Level.INFO, "Error retrieving OpenTracing service "
                     + "during initialisation of Concurrent Context - NullPointerException", ex);

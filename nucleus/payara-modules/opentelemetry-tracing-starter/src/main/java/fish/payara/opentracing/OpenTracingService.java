@@ -70,6 +70,7 @@ import java.util.logging.Logger;
  * @author Andrew Pielage <andrew.pielage@payara.fish>
  */
 @Service(name = "opentracing-service")
+@Deprecated(forRemoval = true)
 public class OpenTracingService implements EventListener {
 
     // The name of the Corba RMI Tracer
@@ -109,42 +110,6 @@ public class OpenTracingService implements EventListener {
         }
     }
 
-    /**
-     * Gets the tracer instance for the given application, or creates one if there isn't one.
-     *
-     * @param applicationName The name of the application to get or create the Tracer for
-     * @return The Tracer instance for the given application
-     */
-    public Tracer getTracer(String applicationName) {
-        if (applicationName == null) {
-            return null;
-        }
-
-        // Get the tracer if there is one
-        Tracer tracer = tracers.get(applicationName);
-
-        // If there isn't a tracer for the application, create one
-        if (tracer == null) {
-            tracer = createTracer(applicationName);
-        }
-
-        return tracer;
-    }
-
-    private Tracer createTracer(String applicationName) {
-        // Double-checked locking - potentially naughty
-        Tracer tracer = tracers.computeIfAbsent(applicationName, (appName) -> {
-            // required for direct interaction with OpenTracing, i. e. in MP TCK
-            if (otel == null) {
-                return null;
-            }
-            // create default implementation (env / system property based) for the application
-            otel.ensureAppInitialized(appName, null);
-            return (Tracer) otel.getSdkDependency(applicationName, () -> tracers.remove(applicationName)).map(op -> op.getTracer(applicationName)).orElse(OpenTelemetry.noop().getTracer(applicationName));
-        });
-
-        return tracer;
-    }
 
     /**
      * Pass-through method that checks if Request Tracing is enabled.

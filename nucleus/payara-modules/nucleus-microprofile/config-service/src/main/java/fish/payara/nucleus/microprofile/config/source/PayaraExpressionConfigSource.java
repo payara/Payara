@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package fish.payara.nucleus.microprofile.config.source;
 
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import org.glassfish.config.support.TranslatedConfigView;
 
 import java.util.Map;
@@ -56,14 +57,19 @@ public class PayaraExpressionConfigSource extends PayaraConfigSource {
 
     private final Properties properties;
 
-    public PayaraExpressionConfigSource(Properties properties) {
-        super();
+    public PayaraExpressionConfigSource(Properties properties, MicroprofileConfigConfiguration mpConfig) {
+        super(mpConfig);
         this.properties = properties;
+    }
+
+    /** For testing only — no ordinals used. */
+    PayaraExpressionConfigSource(boolean testOnly, Properties properties) {
+        this(properties, null);
     }
 
     @Override
     public int getOrdinal() {
-        return Integer.parseInt(configService.getMPConfig().getPayaraExpressionPropertiesOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getPayaraExpressionPropertiesOrdinality);
     }
 
     @Override
@@ -92,8 +98,4 @@ public class PayaraExpressionConfigSource extends PayaraConfigSource {
         return "Payara Expression Properties";
     }
 
-    PayaraExpressionConfigSource(boolean test, Properties properties) {
-        super(test);
-        this.properties = properties;
-    }
 }
