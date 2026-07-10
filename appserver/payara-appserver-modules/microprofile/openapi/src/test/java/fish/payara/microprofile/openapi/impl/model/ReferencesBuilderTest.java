@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,11 +56,7 @@ import org.eclipse.microprofile.openapi.models.OpenAPI;
 import org.eclipse.microprofile.openapi.models.Reference;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
-
-import java.util.Set;
 
 /**
  * Checks the JSON rendering of all types that can be used as {@link Reference}.
@@ -151,17 +147,14 @@ public class ReferencesBuilderTest extends OpenApiBuilderTest {
 
     @Test
     public void pathItemReferenceHasExpectedFields() {
-        assertReference("#/components/pathItems/NameRef", "paths.pathItemRef");
+        assertReference("NameRef", "paths.pathItemRef");
         assertReference(url, "paths.pathItemUrlRef");
     }
 
     private void assertReference(String expected, String actualPath) {
         JsonNode actual = path(getOpenAPIJson(), actualPath);
         assertNotNull(actual);
-        actual.forEachEntry((key, field) -> {
-            assertTrue("References can only contain \"$ref\", \"description\", and \"summary\". Found key: " + key,
-                    Set.of("$ref", "description", "summary").contains(key));
-        });
+        assertEquals("References should only have one field", 1, actual.size());
         assertEquals(expected, actual.get("$ref").textValue());
     }
 }

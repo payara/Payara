@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2021-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2021-2025] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,22 +39,10 @@
  */
 package fish.payara.microprofile.openapi.impl.model.media;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
-import com.fasterxml.jackson.databind.ser.ResolvableSerializer;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 import fish.payara.microprofile.openapi.impl.model.ExtensibleImpl;
 import fish.payara.microprofile.openapi.impl.model.ExternalDocumentationImpl;
@@ -67,8 +55,6 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeI
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.mergeProperty;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 import fish.payara.microprofile.openapi.impl.rest.app.provider.ObjectMapperFactory;
-
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -76,12 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import static java.util.logging.Level.WARNING;
-
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.logging.Logger;
-
 import org.eclipse.microprofile.openapi.models.ExternalDocumentation;
 import org.eclipse.microprofile.openapi.models.media.Discriminator;
 import org.eclipse.microprofile.openapi.models.media.Schema;
@@ -96,62 +77,6 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
-    private static final Map<String, GetterSetter<?>> METHODS = Map.<String, GetterSetter<?>>ofEntries(
-            Map.entry("discriminator", new GetterSetter<>(Schema::getDiscriminator, Schema::setDiscriminator)),
-            Map.entry("title", new GetterSetter<>(Schema::getTitle, Schema::setTitle)),
-            Map.entry("default", new GetterSetter<>(Schema::getDefaultValue, Schema::setDefaultValue)),
-            Map.entry("enum", new GetterSetter<>(Schema::getEnumeration, Schema::setEnumeration)),
-            Map.entry("multipleOf", new GetterSetter<>(Schema::getMultipleOf, Schema::setMultipleOf)),
-            Map.entry("maximum", new GetterSetter<>(Schema::getMaximum, Schema::setMaximum)),
-            Map.entry("exclusiveMaximum", new GetterSetter<>(Schema::getExclusiveMaximum, Schema::setExclusiveMaximum)),
-            Map.entry("minimum", new GetterSetter<>(Schema::getMinimum, Schema::setMinimum)),
-            Map.entry("exclusiveMinimum", new GetterSetter<>(Schema::getExclusiveMinimum, Schema::setExclusiveMinimum)),
-            Map.entry("maxLength", new GetterSetter<>(Schema::getMaxLength, Schema::setMaxLength)),
-            Map.entry("minLength", new GetterSetter<>(Schema::getMinLength, Schema::setMinLength)),
-            Map.entry("pattern", new GetterSetter<>(Schema::getPattern, Schema::setPattern)),
-            Map.entry("maxItems", new GetterSetter<>(Schema::getMaxItems, Schema::setMaxItems)),
-            Map.entry("minItems", new GetterSetter<>(Schema::getMinItems, Schema::setMinItems)),
-            Map.entry("uniqueItems", new GetterSetter<>(Schema::getUniqueItems, Schema::setUniqueItems)),
-            Map.entry("maxProperties", new GetterSetter<>(Schema::getMaxProperties, Schema::setMaxProperties)),
-            Map.entry("minProperties", new GetterSetter<>(Schema::getMinProperties, Schema::setMinProperties)),
-            Map.entry("required", new GetterSetter<>(Schema::getRequired, Schema::setRequired)),
-            Map.entry("type", new GetterSetter<>(Schema::getType, Schema::setType)),
-            Map.entry("not", new GetterSetter<>(Schema::getNot, Schema::setNot)),
-            Map.entry("properties", new GetterSetter<>(Schema::getProperties, Schema::setProperties)),
-            Map.entry("additionalProperties", new GetterSetter<>(Schema::getAdditionalPropertiesSchema, Schema::setAdditionalPropertiesSchema)),
-            Map.entry("description", new GetterSetter<>(Schema::getDescription, Schema::setDescription)),
-            Map.entry("format", new GetterSetter<>(Schema::getFormat, Schema::setFormat)),
-            Map.entry("readOnly", new GetterSetter<>(Schema::getReadOnly, Schema::setReadOnly)),
-            Map.entry("writeOnly", new GetterSetter<>(Schema::getWriteOnly, Schema::setWriteOnly)),
-            Map.entry("example", new GetterSetter<>(Schema::getExample, Schema::setExample)),
-            Map.entry("externalDocs", new GetterSetter<>(Schema::getExternalDocs, Schema::setExternalDocs)),
-            Map.entry("deprecated", new GetterSetter<>(Schema::getDeprecated, Schema::setDeprecated)),
-            Map.entry("xml", new GetterSetter<>(Schema::getXml, Schema::setXml)),
-            Map.entry("items", new GetterSetter<>(Schema::getItems, Schema::setItems)),
-            Map.entry("allOf", new GetterSetter<>(Schema::getAllOf, Schema::setAllOf)),
-            Map.entry("anyOf", new GetterSetter<>(Schema::getAnyOf, Schema::setAnyOf)),
-            Map.entry("oneOf", new GetterSetter<>(Schema::getOneOf, Schema::setOneOf)),
-            Map.entry("$schema", new GetterSetter<>(Schema::getSchemaDialect, Schema::setSchemaDialect)),
-            Map.entry("$comment", new GetterSetter<>(Schema::getComment, Schema::setComment)),
-            Map.entry("if", new GetterSetter<>(Schema::getIfSchema, Schema::setIfSchema)),
-            Map.entry("then", new GetterSetter<>(Schema::getThenSchema, Schema::setThenSchema)),
-            Map.entry("else", new GetterSetter<>(Schema::getElseSchema, Schema::setElseSchema)),
-            Map.entry("dependentSchemas", new GetterSetter<>(Schema::getDependentSchemas, Schema::setDependentSchemas)),
-            Map.entry("prefixItems", new GetterSetter<>(Schema::getPrefixItems, Schema::setPrefixItems)),
-            Map.entry("contains", new GetterSetter<>(Schema::getContains, Schema::setContains)),
-            Map.entry("patternProperties", new GetterSetter<>(Schema::getPatternProperties, Schema::setPatternProperties)),
-            Map.entry("propertyNames", new GetterSetter<>(Schema::getPropertyNames, Schema::setPropertyNames)),
-            Map.entry("unevaluatedItems", new GetterSetter<>(Schema::getUnevaluatedItems, Schema::setUnevaluatedItems)),
-            Map.entry("unevaluatedProperties", new GetterSetter<>(Schema::getUnevaluatedProperties, Schema::setUnevaluatedProperties)),
-            Map.entry("const", new GetterSetter<>(Schema::getConstValue, Schema::setConstValue)),
-            Map.entry("maxContains", new GetterSetter<>(Schema::getMaxContains, Schema::setMaxContains)),
-            Map.entry("minContains", new GetterSetter<>(Schema::getMinContains, Schema::setMinContains)),
-            Map.entry("dependentRequired", new GetterSetter<>(Schema::getDependentRequired, Schema::setDependentRequired)),
-            Map.entry("contentEncoding", new GetterSetter<>(Schema::getContentEncoding, Schema::setContentEncoding)),
-            Map.entry("contentMediaType", new GetterSetter<>(Schema::getContentMediaType, Schema::setContentMediaType)),
-            Map.entry("contentSchema", new GetterSetter<>(Schema::getContentSchema, Schema::setContentSchema)),
-            Map.entry("examples", new GetterSetter<>(Schema::getExamples, Schema::setExamples))
-    );
 
     private Object defaultValue;
 
@@ -159,9 +84,9 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private String title;
     private BigDecimal multipleOf;
     private BigDecimal maximum;
-    private BigDecimal exclusiveMaximum;
+    private Boolean exclusiveMaximum;
     private BigDecimal minimum;
-    private BigDecimal exclusiveMinimum;
+    private Boolean exclusiveMinimum;
     private Integer maxLength;
     private Integer minLength;
     private String pattern;
@@ -171,11 +96,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private Integer maxProperties;
     private Integer minProperties;
     private List<String> required = createList();
-    private List<SchemaType> type;
+    private SchemaType type;
     private Map<String, Schema> properties = createMap();
     private String description;
     private String format;
     private String ref;
+    private Boolean nullable;
     private Boolean readOnly;
     private Boolean writeOnly;
     private Object example;
@@ -184,39 +110,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     private XML xml;
     private List<Object> enumeration = createList();
     private Discriminator discriminator;
-    private Object constValue;
-    private Integer maxContains;
-    private Integer minContains;
-    @JsonProperty(value = "$schema")
-    private String schemaDialect;
-    @JsonProperty(value = "$comment")
-    private String comment;
-    private Map<String, List<String>> dependentRequired = createMap();
-    private String contentEncoding;
-    private String contentMediaType;
-    private Boolean booleanSchema;
-    private List<Object> examples = createList();
-    @JsonIgnore
-    private Map<String, Object> values = createMap();
-     
-    private Schema ifSchema;
-    private Schema thenSchema;
-    private Schema elseSchema;
-    private Map<String, Schema> dependent = createMap();
-    private Schema contains;
+
     private Schema not;
-    private Schema propertyNames;
-    private Schema unevaluatedItems;
-    private Schema unevaluatedProperties;
-    private Schema content;
-    private List<Schema> prefixItems = createList();
     private List<Schema> anyOf = createList();
     private List<Schema> allOf = createList();
     private List<Schema> oneOf = createList();
 
-    private Map<String, Schema> patternProperties = createMap();
-    @JsonIgnore
-    private Schema additionalPropertiesSchema;
+    private Object additionalProperties;
     private Schema items;
     @JsonIgnore
     private String implementation;
@@ -226,22 +126,11 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     public static SchemaImpl valueOf(String content) throws JsonMappingException, JsonProcessingException {
         return ObjectMapperFactory
                 .createJson()
-                .configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true)
                 .readValue(content, SchemaImpl.class);
     }
 
     public static SchemaImpl createInstance(AnnotationModel annotation, ApiContext context) {
         SchemaImpl from = new SchemaImpl();
-
-        BiConsumer<String, Consumer<Schema>> handleSchema = (name, setter) -> {
-            String schemaString = annotation.getValue(name, String.class);
-            if (schemaString != null) {
-                Schema schema = from.getSchemaInstance(schemaString, context);
-                if (schema != null) {
-                    setter.accept(schema);
-                }
-            }
-        };
 
         if (annotation == null) {
             return from;
@@ -261,7 +150,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
         EnumModel typeEnum = annotation.getValue("type", EnumModel.class);
         if (typeEnum != null) {
-            from.setType(List.of(SchemaType.valueOf(typeEnum.getValue())));
+            from.setType(SchemaType.valueOf(typeEnum.getValue()));
         }
 
         final String implementationClass = annotation.getValue("implementation", String.class);
@@ -277,27 +166,16 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         if (multipleOf != null) {
             from.setMultipleOf(BigDecimal.valueOf(multipleOf));
         }
-
         String maximum = annotation.getValue("maximum", String.class);
         if (maximum != null && !maximum.isEmpty()) {
-            Boolean isExclusiveMaximum = annotation.getValue("exclusiveMaximum", Boolean.class);
-            BigDecimal max = new BigDecimal(maximum);
-            from.setMaximum(max);
-            if (Boolean.TRUE.equals(isExclusiveMaximum)) {
-                from.setExclusiveMaximum(max);
-            }
+            from.setMaximum(new BigDecimal(maximum));
         }
-
+        from.setExclusiveMaximum(annotation.getValue("exclusiveMaximum", Boolean.class));
         String minimum = annotation.getValue("minimum", String.class);
         if (minimum != null && !minimum.isEmpty()) {
-            Boolean isExclusiveMinimum = annotation.getValue("exclusiveMinimum", Boolean.class);
-            BigDecimal min = new BigDecimal(minimum);
-            from.setMinimum(min);
-            if (Boolean.TRUE.equals(isExclusiveMinimum)) {
-                from.setExclusiveMinimum(min);
-            }
+            from.setMinimum(new BigDecimal(minimum));
         }
-
+        from.setExclusiveMinimum(annotation.getValue("exclusiveMinimum", Boolean.class));
         from.setMaxLength(annotation.getValue("maxLength", Integer.class));
         from.setMinLength(annotation.getValue("minLength", Integer.class));
         from.setPattern(annotation.getValue("pattern", String.class));
@@ -328,15 +206,10 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
         from.setDescription(annotation.getValue("description", String.class));
         from.setFormat(annotation.getValue("format", String.class));
+        from.setNullable(annotation.getValue("nullable", Boolean.class));
         from.setReadOnly(annotation.getValue("readOnly", Boolean.class));
         from.setWriteOnly(annotation.getValue("writeOnly", Boolean.class));
-
-        Object example = annotation.getValue("example", Object.class);
-        if (example != null) {
-            from.setExample(example);
-            from.setExamples(List.of(example));
-        }
-
+        from.setExample(annotation.getValue("example", Object.class));
         AnnotationModel externalDocs = annotation.getValue("externalDocs", AnnotationModel.class);
         if (externalDocs != null) {
             from.setExternalDocs(ExternalDocumentationImpl.createInstance(externalDocs));
@@ -374,65 +247,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         List<String> oneOf = annotation.getValue("oneOf", List.class);
         if (oneOf != null) {
             mergeImmutableList(from.getOneOf(), from.getSchemaInstances(oneOf, context), from::setOneOf);
-        }
-
-        if (from.getType() != null && from.getType().contains(SchemaType.STRING)) {
-            from.setConstValue(annotation.getValue("constValue", String.class));
-        } else {
-            String constValue = annotation.getValue("constValue", String.class);
-            if (constValue != null) {
-                if (constValue.equals("true") || constValue.equals("false")) {
-                    from.setConstValue(Boolean.valueOf(constValue));
-                } else {
-                    try {
-                        Double numericalConst = Double.parseDouble(constValue);
-                        from.setConstValue(numericalConst);
-                    } catch (NumberFormatException e) {
-                        from.setConstValue(constValue);
-                    }
-                }
-            }
-        }
-
-        from.setMaxContains(annotation.getValue("maxContains", Integer.class));
-        from.setMinContains(annotation.getValue("minContains", Integer.class));
-        from.setComment(annotation.getValue("comment", String.class));
-
-        List<AnnotationModel> dependentRequiredAnnotations = annotation.getValue("dependentRequired", List.class);
-        if (dependentRequiredAnnotations != null) {
-            for (AnnotationModel dependentRequiredAnnotation : dependentRequiredAnnotations) {
-                from.addDependentRequired(
-                        dependentRequiredAnnotation.getValue("name", String.class),
-                        dependentRequiredAnnotation.getValue("requires", List.class));
-            }
-        }
-
-        from.setContentEncoding(annotation.getValue("contentEncoding", String.class));
-        from.setContentMediaType(annotation.getValue("contentMediaType", String.class));
-
-        List<Object> examples = annotation.getValue("examples", List.class);
-        if (examples != null) {
-            examples.forEach(from::addExample);
-        }
-
-        handleSchema.accept("ifSchema", from::setIfSchema);
-        handleSchema.accept("thenSchema", from::setThenSchema);
-        handleSchema.accept("elseSchema", from::setElseSchema);
-        extractClassSchemas(annotation, context, "dependentSchemas", "name", "schema", from::addDependentSchema);
-        handleSchema.accept("contains", from::setContains);
-        handleSchema.accept("propertyNames", from::setPropertyNames);
-        handleSchema.accept("contentSchema", from::setContentSchema);
-        extractClassSchemas(annotation, context, "patternProperties", "regex", "schema", from::addPatternProperty);
-        handleSchema.accept("additionalProperties", from::setAdditionalPropertiesSchema);
-
-        List<String> prefixItems = annotation.getValue("prefixItems", List.class);
-        if (prefixItems != null) {
-            mergeImmutableList(from.getPrefixItems(), from.getSchemaInstances(prefixItems, context), from::setPrefixItems);
-        }
-
-        Boolean isNullable = annotation.getValue("nullable", Boolean.class);
-        if (Boolean.TRUE.equals(isNullable)) {
-            from.addType(SchemaType.NULL);
         }
 
         return from;
@@ -550,12 +364,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
-    public BigDecimal getExclusiveMaximum() {
+    public Boolean getExclusiveMaximum() {
         return exclusiveMaximum;
     }
 
     @Override
-    public void setExclusiveMaximum(BigDecimal exclusiveMaximum) {
+    public void setExclusiveMaximum(Boolean exclusiveMaximum) {
         this.exclusiveMaximum = exclusiveMaximum;
     }
 
@@ -570,12 +384,12 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
-    public BigDecimal getExclusiveMinimum() {
+    public Boolean getExclusiveMinimum() {
         return exclusiveMinimum;
     }
 
     @Override
-    public void setExclusiveMinimum(BigDecimal exclusiveMinimum) {
+    public void setExclusiveMinimum(Boolean exclusiveMinimum) {
         this.exclusiveMinimum = exclusiveMinimum;
     }
 
@@ -699,32 +513,13 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
-    @JsonFormat(with = JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED)
-    public List<SchemaType> getType() {
-        return readOnlyView(type);
+    public SchemaType getType() {
+        return type;
     }
 
     @Override
-    public void setType(List<SchemaType> type) {
-        this.type = createList(type);
-    }
-
-    @Override
-    public Schema addType(SchemaType schemaType) {
-        if (schemaType != null) {
-            if (type == null) {
-                type = createList();
-            }
-            type.add(schemaType);
-        }
-        return this;
-    }
-
-    @Override
-    public void removeType(SchemaType schemaType) {
-        if (type != null) {
-            type.remove(schemaType);
-        }
+    public void setType(SchemaType type) {
+        this.type = type;
     }
 
     @Override
@@ -765,33 +560,26 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
     }
 
+    @JsonIgnore
     @Override
-    @JsonProperty("additionalProperties")
     public Schema getAdditionalPropertiesSchema() {
-        return additionalPropertiesSchema;
+        return additionalProperties instanceof Schema ? (Schema) additionalProperties : null;
     }
 
     @JsonIgnore
-    @Deprecated
+    @Override
     public Boolean getAdditionalPropertiesBoolean() {
-        return additionalPropertiesSchema != null ? additionalPropertiesSchema.getBooleanSchema() : null;
+        return additionalProperties instanceof Boolean ? (Boolean) additionalProperties : null;
     }
 
     @Override
     public void setAdditionalPropertiesSchema(Schema additionalProperties) {
-        this.additionalPropertiesSchema = additionalProperties;
+        this.additionalProperties = additionalProperties;
     }
 
     @Override
-    @Deprecated
     public void setAdditionalPropertiesBoolean(Boolean additionalProperties) {
-        if (additionalProperties == null) {
-            this.additionalPropertiesSchema = null;
-        }
-        else {
-            this.additionalPropertiesSchema = new SchemaImpl();
-            this.additionalPropertiesSchema.setBooleanSchema(additionalProperties);
-        }
+        this.additionalProperties = additionalProperties;
     }
 
     @Override
@@ -828,6 +616,16 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    public Boolean getNullable() {
+        return nullable;
+    }
+
+    @Override
+    public void setNullable(Boolean nullable) {
+        this.nullable = nullable;
+    }
+
+    @Override
     public Boolean getReadOnly() {
         return readOnly;
     }
@@ -848,13 +646,11 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
-    @Deprecated
     public Object getExample() {
         return example;
     }
 
     @Override
-    @Deprecated
     public void setExample(Object example) {
         this.example = example;
     }
@@ -989,375 +785,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
     }
 
-    @Override
-    @JsonProperty("$schema")
-    public String getSchemaDialect() {
-        return schemaDialect;
-    }
-
-    @Override
-    @JsonProperty("$schema")
-    public void setSchemaDialect(String schemaDialect) {
-        this.schemaDialect = schemaDialect;
-    }
-
-    @Override
-    @JsonProperty("$comment")
-    public String getComment() {
-        return comment;
-    }
-
-    @Override
-    @JsonProperty("$comment")
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    @Override
-    public Schema getIfSchema() {
-        return ifSchema;
-    }
-
-    @Override
-    public void setIfSchema(Schema schema) {
-        ifSchema = schema;
-    }
-
-    @Override
-    public Schema getThenSchema() {
-        return thenSchema;
-    }
-
-    @Override
-    public void setThenSchema(Schema schema) {
-        thenSchema = schema;
-    }
-
-    @Override
-    public Schema getElseSchema() {
-        return elseSchema;
-    }
-
-    @Override
-    public void setElseSchema(Schema schema) {
-        elseSchema = schema;
-    }
-
-    @Override
-    public Map<String, Schema> getDependentSchemas() {
-        return readOnlyView(dependent);
-    }
-
-    @Override
-    public void setDependentSchemas(Map<String, Schema> schemas) {
-        dependent = createMap(schemas);
-    }
-
-    @Override
-    public Schema addDependentSchema(String key, Schema schema) {
-        if (schema != null) {
-            if (dependent == null) {
-                dependent = createMap();
-            }
-            dependent.put(key, schema);
-        }
-        return this;
-    }
-
-    @Override
-    public void removeDependentSchema(String key) {
-        if (dependent != null) {
-            dependent.remove(key);
-        }
-    }
-
-    @Override
-    public List<Schema> getPrefixItems() {
-        return readOnlyView(prefixItems);
-    }
-
-    @Override
-    public void setPrefixItems(List<Schema> prefixItems) {
-        this.prefixItems = createList(prefixItems);
-    }
-
-    @Override
-    public Schema addPrefixItem(Schema schema) {
-        if (schema != null) {
-            if (prefixItems == null) {
-                prefixItems = createList();
-            }
-            prefixItems.add(schema);
-        }
-        return this;
-    }
-
-    @Override
-    public void removePrefixItem(Schema schema) {
-        if (prefixItems != null) {
-            prefixItems.remove(schema);
-        }
-    }
-
-    @Override
-    public Schema getContains() {
-        return contains;
-    }
-
-    @Override
-    public void setContains(Schema schema) {
-        contains = schema;
-    }
-
-    @Override
-    public Map<String, Schema> getPatternProperties() {
-        return readOnlyView(patternProperties);
-    }
-
-    @Override
-    public void setPatternProperties(Map<String, Schema> patternProperties) {
-        this.patternProperties = createMap(patternProperties);
-    }
-
-    @Override
-    public Schema addPatternProperty(String key, Schema schema) {
-        if (schema != null) {
-            if (patternProperties == null) {
-                patternProperties = createMap();
-            }
-            patternProperties.put(key, schema);
-        }
-        return this;
-    }
-
-    @Override
-    public void removePatternProperty(String key) {
-        if (patternProperties != null) {
-            patternProperties.remove(key);
-        }
-    }
-
-    @Override
-    public Schema getPropertyNames() {
-        return propertyNames;
-    }
-
-    @Override
-    public void setPropertyNames(Schema schema) {
-        propertyNames = schema;
-    }
-
-    @Override
-    public Schema getUnevaluatedItems() {
-        return unevaluatedItems;
-    }
-
-    @Override
-    public void setUnevaluatedItems(Schema schema) {
-        unevaluatedItems = schema;
-    }
-
-    @Override
-    public Schema getUnevaluatedProperties() {
-        return unevaluatedProperties;
-    }
-
-    @Override
-    public void setUnevaluatedProperties(Schema schema) {
-        unevaluatedProperties = schema;
-    }
-
-    @Override
-    @JsonProperty("const")
-    public Object getConstValue() {
-        return constValue;
-    }
-
-    @Override
-    @JsonProperty("const")
-    public void setConstValue(Object constValue) {
-        this.constValue = constValue;
-    }
-
-    @Override
-    public Integer getMaxContains() {
-        return maxContains;
-    }
-
-    @Override
-    public void setMaxContains(Integer maxContains) {
-        this.maxContains = maxContains;
-    }
-
-    @Override
-    public Integer getMinContains() {
-        return minContains;
-    }
-
-    @Override
-    public void setMinContains(Integer minContains) {
-        this.minContains = minContains;
-    }
-
-    @Override
-    public Map<String, List<String>> getDependentRequired() {
-        return readOnlyView(dependentRequired);
-    }
-
-    @Override
-    public void setDependentRequired(Map<String, List<String>> dependentRequired) {
-        this.dependentRequired = createMap(dependentRequired);
-    }
-
-    @Override
-    public Schema addDependentRequired(String key, List<String> list) {
-        if (list != null) {
-            if (dependentRequired == null) {
-                dependentRequired = createMap();
-            }
-            dependentRequired.put(key, list);
-        }
-        return this;
-    }
-
-    @Override
-    public void removeDependentRequired(String key) {
-        if (dependentRequired != null) {
-            dependentRequired.remove(key);
-        }
-    }
-
-    @Override
-    public String getContentEncoding() {
-        return contentEncoding;
-    }
-
-    @Override
-    public void setContentEncoding(String contentEncoding) {
-        this.contentEncoding = contentEncoding;
-    }
-
-    @Override
-    public String getContentMediaType() {
-        return contentMediaType;
-    }
-
-    @Override
-    public void setContentMediaType(String contentMediaType) {
-        this.contentMediaType = contentMediaType;
-    }
-
-    @Override
-    public Schema getContentSchema() {
-        return content;
-    }
-
-    @Override
-    public void setContentSchema(Schema schema) {
-        content = schema;
-    }
-
-    @JsonIgnore
-    @Override
-    public Boolean getBooleanSchema() {
-        return booleanSchema;
-    }
-
-    @Override
-    public void setBooleanSchema(Boolean booleanSchema) {
-        this.booleanSchema = booleanSchema;
-    }
-
-    @Override
-    public List<Object> getExamples() {
-        return readOnlyView(examples);
-    }
-
-    @Override
-    public void setExamples(List<Object> examples) {
-        this.examples = createList(examples);
-    }
-
-    @Override
-    public Schema addExample(Object example) {
-        if (example != null) {
-            if (examples == null) {
-                examples = createList();
-            }
-            examples.add(example);
-        }
-        return this;
-    }
-
-    @Override
-    public void removeExample(Object example) {
-        if (examples != null) {
-            examples.remove(example);
-        }
-    }
-    
-    @Override
-    public Object get(String key) {
-        if (METHODS.containsKey(key)) {
-            return METHODS.get(key).getter.apply(this);
-        }
-        
-        if (values == null) {
-            values = createMap();
-        }
-        return values.get(key);
-    }
-
-    @Override
-    public Schema set(String key, Object value) {
-        if (key != null) {
-            if (METHODS.containsKey(key)) {
-                METHODS.get(key).set(this, value);
-                return this;
-            }
-            
-            if (values == null) {
-                values = createMap();
-            }
-            values.put(key, value);
-        }
-        return this;
-    }
-
-    @Override
-    public Map<String, ?> getAll() {
-        return readOnlyView(values);
-    }
-
-    @Override
-    public void setAll(Map<String, ?> values) {
-        this.values = createMap(values);
-    }
-    
-    @JsonAnyGetter
-    public Map<String, Object> getArbitraryValues() {
-        Map<String, Object> combinedValues = createMap();
-
-        if (getAll() != null) {
-            combinedValues.putAll(getAll());
-        }
-        if (super.getExtensions() != null) {
-            combinedValues.putAll(super.getExtensions());
-        }
-
-        return readOnlyView(combinedValues);
-    }
-
-    @JsonAnySetter
-    public void setArbitraryValue(String key, Object value) {
-        if (key.startsWith("x-")) {
-            addExtension(key, value);
-        }
-        else {
-            set(key, value);
-        }
-    }
-
     public String getImplementation() {
         return implementation;
     }
@@ -1445,6 +872,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         }
         to.setDescription(mergeProperty(to.getDescription(), from.getDescription(), override));
         to.setFormat(mergeProperty(to.getFormat(), from.getFormat(), override));
+        to.setNullable(mergeProperty(to.getNullable(), from.getNullable(), override));
         to.setReadOnly(mergeProperty(to.getReadOnly(), from.getReadOnly(), override));
         to.setWriteOnly(mergeProperty(to.getWriteOnly(), from.getWriteOnly(), override));
         to.setExample(mergeProperty(to.getExample(), from.getExample(), override));
@@ -1489,56 +917,6 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         mergeImmutableList(from.getAnyOf(), to.getAnyOf(), to::setAnyOf);
         mergeImmutableList(from.getAllOf(), to.getAllOf(), to::setAllOf);
         mergeImmutableList(from.getOneOf(), to.getOneOf(), to::setOneOf);
-        mergeImmutableList(from.getPrefixItems(), to.getPrefixItems(), to::setPrefixItems);
-
-        to.setConstValue(mergeProperty(to.getConstValue(), from.getConstValue(), override));
-        to.setMaxContains(mergeProperty(to.getMaxContains(), from.getMaxContains(), override));
-        to.setMinContains(mergeProperty(to.getMinContains(), from.getMinContains(), override));
-        to.setSchemaDialect(mergeProperty(to.getSchemaDialect(), from.getSchemaDialect(), override));
-        to.setComment(mergeProperty(to.getComment(), from.getComment(), override));
-
-        if (from.getDependentRequired() != null && !from.getDependentRequired().isEmpty()) {
-            from.getDependentRequired().forEach((key, value) -> to.addDependentRequired(key, value));
-        }
-
-        to.setContentEncoding(mergeProperty(to.getContentEncoding(), from.getContentEncoding(), override));
-        to.setContentMediaType(mergeProperty(to.getContentMediaType(), from.getContentMediaType(), override));
-        to.setBooleanSchema(mergeProperty(to.getBooleanSchema(), from.getBooleanSchema(), override));
-
-        if (from.getExample() != null && (to.getExamples() == null || !to.getExamples().contains(from.getExample()))) {
-            to.setExamples(List.of(from.getExample()));
-        }
-        if (from.getExamples() != null) {
-            to.setExamples(from.getExamples());
-        }
-
-        if (from.getIfSchema() != null) {
-            to.setIfSchema(from.getIfSchema());
-        }
-        if (from.getThenSchema() != null) {
-            to.setThenSchema(from.getThenSchema());
-        }
-        if (from.getElseSchema() != null) {
-            to.setElseSchema(from.getElseSchema());
-        }
-        if (from.getDependentSchemas() != null && !from.getDependentSchemas().isEmpty()) {
-            from.getDependentSchemas().forEach(to::addDependentSchema);
-        }
-        if (from.getContains() != null) {
-            to.setContains(from.getContains());
-        }
-        if (from.getPropertyNames() != null) {
-            to.setPropertyNames(from.getPropertyNames());
-        }
-        if (from.getUnevaluatedItems() != null) {
-            to.setUnevaluatedItems(from.getUnevaluatedItems());
-        }
-        if (from.getUnevaluatedProperties() != null) {
-            to.setUnevaluatedProperties(from.getUnevaluatedProperties());
-        }
-        if (from.getContentSchema() != null) {
-            to.setContentSchema(from.getContentSchema());
-        }
     }
 
     private static void setImplementation(SchemaImpl schema, String implementationClass, boolean override, ApiContext context) {
@@ -1551,7 +929,7 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 implementationClass = implementationClass.substring(0, implementationClass.length() - 2);
                 final SchemaImpl itemSchema = new SchemaImpl();
                 schema.setItems(itemSchema);
-                schema.setType(List.of(SchemaType.ARRAY));
+                schema.setType(SchemaType.ARRAY);
                 schema = itemSchema;
             }
             
@@ -1567,22 +945,16 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 Schema copyFrom = context.getApi().getComponents().getSchemas().get(schemaName);
                 if (copyFrom == null) {
                     // If the class hasn't been parsed
-                    List<SchemaType> schemaType = ModelUtils.getSchemaType(implementationClass, context);
+                    SchemaType schemaType = ModelUtils.getSchemaType(implementationClass, context);
                     copyFrom = new SchemaImpl().type(schemaType);
                 }
-                if (schema.getType() != null && schema.getType().contains(SchemaType.ARRAY)) {
+                if (schema.getType() == SchemaType.ARRAY) {
                     schema.setItems(new SchemaImpl());
                     ModelUtils.merge(copyFrom, schema.getItems(), false);
                 } else {
                     ModelUtils.merge(copyFrom, schema, false);
                 }
                 schema.setRef(null);
-
-                if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$True")) {
-                    schema.setBooleanSchema(true);
-                } else if (implementationClass.equals("org.eclipse.microprofile.openapi.annotations.media.Schema$False")) {
-                    schema.setBooleanSchema(false);
-                }
             }
         }
     }
@@ -1593,66 +965,4 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
         return schema;
     }
 
-    private static void extractClassSchemas(
-            AnnotationModel annotation,
-            ApiContext context,
-            String parameterName,
-            String nameKey,
-            String classKey,
-            BiConsumer<String, Schema> setter) {
-
-        List<AnnotationModel> annotations = annotation.getValue(parameterName, List.class);
-        if (annotations != null) {
-            for (AnnotationModel subannotation : annotations) {
-                String name = subannotation.getValue(nameKey, String.class);
-                String className = subannotation.getValue(classKey, String.class);
-                Schema schema = fromImplementation(className, context);
-                setter.accept(name, schema);
-            }
-        }
-    }
-    
-    private record GetterSetter<T> (Function<Schema, T> getter, BiConsumer<Schema, T> setter) {
-        private static final GetterSetter<Object> DEFAULT = new GetterSetter<>(schema -> null, (schema, value) -> {});
-        
-        private void set (Schema schema, Object value) {
-            setter.accept(schema, (T)value);
-        }
-    }
-
-    public static class SchemaSerialiserModifier extends BeanSerializerModifier {
-        @Override
-        public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
-            if (SchemaImpl.class.isAssignableFrom(beanDesc.getBeanClass())) {
-                return new SchemaBooleanSerialiser((JsonSerializer<SchemaImpl>)serializer);
-            }
-
-            return super.modifySerializer(config, beanDesc, serializer);
-        }
-    }
-
-    private static class SchemaBooleanSerialiser extends JsonSerializer<SchemaImpl> implements ResolvableSerializer {
-        private final JsonSerializer<SchemaImpl> defaultSerialiser;
-
-        private SchemaBooleanSerialiser (JsonSerializer<SchemaImpl> serialiser) {
-            defaultSerialiser = serialiser;
-        }
-
-        @Override
-        public void serialize(SchemaImpl value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-            if (value.booleanSchema != null) {
-                gen.writeBoolean(value.booleanSchema);
-                return;
-            }
-
-            defaultSerialiser.serialize(value, gen, provider);
-        }
-
-        @Override
-        public void resolve(SerializerProvider provider) throws JsonMappingException {
-            if (defaultSerialiser instanceof ResolvableSerializer resolvable) {
-                resolvable.resolve(provider);
-            }
-        }
-    }
 }

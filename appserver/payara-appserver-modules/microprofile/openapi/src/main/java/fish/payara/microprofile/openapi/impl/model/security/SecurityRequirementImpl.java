@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,29 +40,23 @@
 package fish.payara.microprofile.openapi.impl.model.security;
 
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createMap;
 import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.microprofile.openapi.models.security.SecurityRequirement;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 
-public class SecurityRequirementImpl implements SecurityRequirement {
+public class SecurityRequirementImpl extends LinkedHashMap<String, List<String>> implements SecurityRequirement {
 
     private static final long serialVersionUID = -677783376083861245L;
-
-    @JsonIgnore
-    private Map<String, List<String>> contents = createMap();
 
     public static SecurityRequirement createInstance(AnnotationModel annotation, ApiContext context) {
         SecurityRequirement from = new SecurityRequirementImpl();
@@ -89,62 +83,42 @@ public class SecurityRequirementImpl implements SecurityRequirement {
         super();
     }
 
+    public SecurityRequirementImpl(Map<? extends String, ? extends List<String>> items) {
+        super(items);
+    }
+
     @Override
     public SecurityRequirement addScheme(String name, String item) {
-        if (item == null) {
-            return addScheme(name, createList());
-        }
-        return addScheme(name, List.of(item));
+        this.put(name, item == null ? createList() : Arrays.asList(item));
+        return this;
     }
 
     @Override
     public SecurityRequirement addScheme(String name, List<String> item) {
-        if (item == null) {
-            item = createList();
-        }
-        if (contents == null) {
-            contents = createMap();
-        }
-
-        contents.put(name, item);
+        this.put(name, item == null ? createList() : item);
         return this;
     }
 
     @Override
     public SecurityRequirement addScheme(String name) {
-        return addScheme(name, createList());
+        this.put(name, createList());
+        return this;
     }
 
     @Override
     public void removeScheme(String securitySchemeName) {
-        if (contents != null) {
-            contents.remove(securitySchemeName);
-        }
+        this.remove(securitySchemeName);
     }
 
     @Override
-    @JsonAnyGetter
-    @JsonInclude(value = JsonInclude.Include.NON_ABSENT, content = JsonInclude.Include.NON_ABSENT)
     public Map<String, List<String>> getSchemes() {
-        return readOnlyView(contents);
+        return readOnlyView(this);
     }
 
     @Override
     public void setSchemes(Map<String, List<String>> items) {
-        contents = createMap();
-        if (items != null) {
-            contents.putAll(items);
-        }
-    }
-
-    @JsonAnySetter
-    public void addAnyScheme(String name, Object item) {
-        if (item instanceof String schemeName) {
-            addScheme(name, schemeName);
-        }
-        else if (item instanceof List<?> schemeNames) {
-            addScheme(name, schemeNames.stream().map(Object::toString).toList());
-        }
+        clear();
+        putAll(items);
     }
 
     public static void merge(SecurityRequirement from, SecurityRequirement to) {

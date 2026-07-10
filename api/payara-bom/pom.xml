@@ -181,6 +181,11 @@
                 <version>${microprofile-config.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.microprofile.opentracing</groupId>
+                <artifactId>microprofile-opentracing-api</artifactId>
+                <version>${microprofile-opentracing.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-api</artifactId>
                 <version>${microprofile-fault-tolerance.version}</version>
@@ -519,7 +524,7 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry-bom.version}</version>
+                <version>${opentelemetry.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -567,9 +572,15 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>io.opentelemetry.semconv</groupId>
+                <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
-                <version>${opentelemetry-semconv.version}</version>
+                <version>${opentelemetry.alpha.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-opentracing-shim</artifactId>
+                <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -605,15 +616,34 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-                <version>${opentelemetry-instrumentation-annotations.version}</version>
+                <version>${opentelemetry.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-                <version>${opentelemetry-instrumentation-annotation-support.version}</version>
+                <version>${opentelemetry.alpha.version}</version>
                 <scope>provided</scope>
             </dependency>
+
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-api</artifactId>
+                <version>${opentracing.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-util</artifactId>
+                <version>${opentracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-noop</artifactId>
+                <version>${opentracing.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
             <!-- Implementations -->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
