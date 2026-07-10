@@ -47,6 +47,7 @@ import fish.payara.microprofile.telemetry.tracing.Traced;
 import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
+import fish.payara.telemetry.service.PayaraTelemetryConstants;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -131,6 +132,13 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
                 // Get the application's tracer instance
                 Tracer tracer = getTracer();
                 HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
+
+                // If StandardWrapper already created the SERVER span for this request, do not
+                // create a second one. The existing span covers this request end-to-end.
+                if (httpRequest != null
+                        && httpRequest.getAttribute(PayaraTelemetryConstants.PAYARA_OTEL_SERVER_SPAN) != null) {
+                    return;
+                }
                 Map<String, String> headers = getHeaders(httpRequest);
                 Context extractedContext = GlobalOpenTelemetry.getPropagators().getTextMapPropagator()
                         .extract(Context.current(), headers, getter);

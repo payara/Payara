@@ -190,6 +190,24 @@ public class OpenTelemetryService implements EventListener {
         }
     }
 
+    /**
+     * Returns the cached per-SDK {@code http.server.request.duration} histogram.
+     * Must be called while the application invocation is active (i.e. inside
+     * {@code StandardWrapper.service()}) so that app-mode resolution via
+     * {@code InvocationManager} succeeds. The returned instance is safe to cache in
+     * a request attribute and use later on any thread.
+     *
+     * @throws IllegalStateException if called in app-mode with no active invocation
+     */
+    public DoubleHistogram getRequestDurationHistogram() {
+        if (runtimeHandle != null) {
+            return runtimeHandle.requestDurationHistogram();
+        }
+        String appName = initializeCurrentApplication();
+        return get(appName, OpenTelemetrySdkHandle::requestDurationHistogram)
+                .orElseThrow(() -> currentAppNotInitializedException(appName));
+    }
+
     @Deprecated
     public DoubleHistogram createMetricsHistogram(OpenTelemetry instance) {
         return instance.getMeterProvider().get(INSTRUMENTATION_SCOPE_NAME)
@@ -391,6 +409,8 @@ public class OpenTelemetryService implements EventListener {
 
         private io.opentelemetry.api.logs.Logger logger;
 
+        private DoubleHistogram requestDurationHistogram;
+
         OpenTelemetrySdkHandle(OpenTelemetrySdk sdk) {
             this.sdk = sdk;
         }
@@ -414,6 +434,23 @@ public class OpenTelemetryService implements EventListener {
                 this.logger = sdk.getSdkLoggerProvider().get(INSTRUMENTATION_SCOPE_NAME);
             }
             return this.logger;
+        }
+
+        /**
+         * Returns a cached {@link DoubleHistogram} for {@code http.server.request.duration}.
+         * Built once per SDK instance; reused on every request. Never call
+         * {@code createMetricsHistogram} per-request — that is the bug this replaces.
+         */
+        DoubleHistogram requestDurationHistogram() {
+            if (this.requestDurationHistogram == null) {
+                this.requestDurationHistogram = meter()
+                        .histogramBuilder(PayaraTelemetryConstants.HTTP_SERVER_REQUEST_DURATION_NAME)
+                        .setUnit(PayaraTelemetryConstants.OTEL_SECONDS_UNIT)
+                        .setDescription(PayaraTelemetryConstants.HTTP_SERVER_REQUEST_DURATION_DESC)
+                        .setExplicitBucketBoundariesAdvice(PayaraTelemetryConstants.BUCKET_BOUNDARIES_LIST)
+                        .build();
+            }
+            return this.requestDurationHistogram;
         }
 
         OpenTelemetrySdk sdk() {

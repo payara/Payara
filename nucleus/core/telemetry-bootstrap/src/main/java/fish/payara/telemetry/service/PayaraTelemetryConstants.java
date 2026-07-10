@@ -78,8 +78,40 @@ public class PayaraTelemetryConstants {
     public static final String OTEL_BLRP_MAX_QUEUE_SIZE = "otel.blrp.max.queue.size";
     public static final String OTEL_BLRP_MAX_EXPORT_BATCH_SIZE = "otel.blrp.max.export.batch.size";
     public static final String OTEL_BLRP_EXPORT_TIMEOUT = "otel.blrp.export.timeout";
-    public static final String PAYARA_OTEL_RUNTIME_INSTANCE_NAME = "fish.payara.otel.runtime.intance";
     public static final String HTTP_SERVER_REQUEST_DURATION_NAME = "http.server.request.duration";
+
+    // ---- Per-request servlet attribute keys (stash-and-record pattern) ----
+
+    /**
+     * Servlet request attribute: {@code Long} nanosecond timestamp captured at the outermost
+     * server entry point ({@code CoyoteAdapter.service()}) for measuring full request duration.
+     */
+    public static final String PAYARA_OTEL_START_NANOS = "fish.payara.otel.start.nanos";
+
+    /**
+     * Servlet request attribute: the active {@link io.opentelemetry.api.trace.Span} started by
+     * {@code StandardWrapper} for the inbound SERVER span. Presence of this attribute also serves
+     * as the first-entry guard — nested servlet invocations (forward/include) must skip span
+     * creation when this is set.
+     */
+    public static final String PAYARA_OTEL_SERVER_SPAN = "fish.payara.otel.server.span";
+
+    /**
+     * Servlet request attribute: the {@link io.opentelemetry.context.Context} that was made
+     * current when the SERVER span was started. Stored so the async completion callback can
+     * restore it on a different thread and correctly link metric exemplars.
+     */
+    public static final String PAYARA_OTEL_SERVER_CONTEXT = "fish.payara.otel.server.context";
+
+    /**
+     * Servlet request attribute: the cached {@link io.opentelemetry.api.metrics.DoubleHistogram}
+     * resolved during the application invocation window. Stored so the async completion callback
+     * can record the measurement without needing to re-resolve the app's SDK off-invocation.
+     */
+    public static final String PAYARA_OTEL_REQUEST_HISTOGRAM = "fish.payara.otel.request.histogram";
+
+    // Route state is carried in the OTel Context as an ImplicitContextKeyed (OtelRouteState),
+    // not as a servlet attribute. No constant needed here.
     public static final String OTEL_SECONDS_UNIT = "s";
     public static final String HTTP_SERVER_REQUEST_DURATION_DESC = "HTTP Server Request Duration";
     public static final Set<String> otelProperties;

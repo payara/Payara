@@ -39,6 +39,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
+import fish.payara.opentracing.OtelRouteState;
 import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.opentracing.PropagationHelper;
 import io.opentelemetry.api.common.Attributes;
@@ -135,8 +136,9 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
                     if (helper != null) {
                         finish(requestEvent);
                     } else {
-                        LOG.log(Level.FINE, "Request finished but there was no active span");
-                        activeSpan.end();
+                        // helper == null means StandardWrapper owns the SERVER span lifecycle;
+                        // do NOT end it here — StandardWrapper's finally/AsyncListener will.
+                        LOG.log(Level.FINE, "Request finished; SERVER span is owned by StandardWrapper");
                     }
                     break;
             }
@@ -195,9 +197,31 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
         LOG.fine(() -> "onIncomingRequest(event=" + event.getType() + ", operationName=" + operationName + ")");
 
         final ContainerRequest requestContext = event.getContainerRequest();
-        final Tracer tracer = openTelemetryService.getCurrentTracer();
 
-        // Create a Span and instrument it with details about the request
+        // Detect whether StandardWrapper already owns the SERVER span for this request.
+        // Presence of OtelRouteState in Context.current() is the signal — StandardWrapper
+        // folds it into the span context, so it is visible to any code running under that scope.
+        OtelRouteState routeState = OtelRouteState.fromContext(Context.current());
+
+        if (routeState != null) {
+            // Fast path: StandardWrapper owns the span
+            // Contribute the full JAX-RS route (baseUri path + matched @Path template).
+            // StandardWrapper reads it from the stashed context at span-end via OtelRouteState.
+            String httpRoute = openTracingHelper.getHttpRoute(requestContext, resourceInfo);
+            if (httpRoute != null && !httpRoute.isEmpty()) {
+                routeState.setFullRoute(httpRoute);
+            }
+            // helper remains null. All event-handler branches guard on helper != null;
+            // activeSpan falls back to Span.current() which is the StandardWrapper SERVER span.
+            LOG.fine(() -> "JAX-RS deferring to existing SERVER span for uri=" + toString(requestContext.getUriInfo()));
+            return;
+        }
+
+        // Fallback path: no StandardWrapper span (e.g. OTel disabled for server but enabled
+        // for app, or in a non-standard deployment). Create a SERVER span as before.
+        final Tracer tracer = openTelemetryService.getCurrentTracer();
+        final String httpRoute = openTracingHelper.getHttpRoute(requestContext, resourceInfo);
+
         var queryParam = requestContext.getRequestUri().getQuery() == null
                 ? null : requestContext.getRequestUri().getQuery();
         final SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
@@ -209,7 +233,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
                 .setAttribute(UrlAttributes.URL_QUERY, queryParam)
                 .setAttribute(UrlAttributes.URL_SCHEME, requestContext.getRequestUri().getScheme())
                 .setAttribute(ServerAttributes.SERVER_ADDRESS, requestContext.getRequestUri().getHost())
-                .setAttribute(HttpAttributes.HTTP_ROUTE, openTracingHelper.getHttpRoute(requestContext, resourceInfo))
+                .setAttribute(HttpAttributes.HTTP_ROUTE, httpRoute)
                 .setAttribute("component", "jaxrs");
 
         if (requestContext.getRequestUri().getPort() != -1) {
@@ -218,11 +242,11 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
         openTracingHelper.augmentSpan(spanBuilder);
 
-        // If there was a context injected into the tracer, add it as a parent of the new span
+        // Fallback path: StandardWrapper did not create a SERVER span (OTel disabled or
+        // non-standard deployment), so Context.current() has no extracted remote parent.
+        // Extract from headers here so the span is correctly parented to the remote caller.
         var spanContext = extractContext(requestContext);
         spanBuilder.setParent(spanContext);
-        // Start the span and continue on to the targeted method
-        // please make sure to close the scope
 
         final Span span = spanBuilder.startSpan();
         helper = PropagationHelper.start(span, spanContext);
@@ -239,8 +263,9 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
     }
 
     private Context extractContext(ContainerRequest request) {
-        // extract any propagation headers from request. Use empty, root context as this surely starts the new context
-        return openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator().extract(Context.root(),
+        // Extract remote trace context from inbound headers, continuing from the current context
+        // (not Context.root()) so that a parent StandardWrapper SERVER span is preserved.
+        return openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator().extract(Context.current(),
                 request, new TextMapGetter<ContainerRequest>() {
                     @Override
                     public Iterable<String> keys(ContainerRequest containerRequest) {
