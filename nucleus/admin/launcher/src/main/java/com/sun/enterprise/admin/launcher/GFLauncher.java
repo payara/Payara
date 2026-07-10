@@ -77,6 +77,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -1009,21 +1010,22 @@ public abstract class GFLauncher {
         return ss;
     }
 
-    // Launches ASMain via WMI Win32_Process.Create() so it runs outside the SSH Job Object.
-    // Win32-OpenSSH puts every exec-channel process in a Job Object with KILL_ON_JOB_CLOSE;
-    // WMI delegates creation to WmiPrvSE.exe (a system service not in that Job Object),
-    // so the new JVM inherits no Job Object from the SSH session and survives channel close.
-    // PowerShell Start-Process cannot escape it: CREATE_NO_WINDOW doesn't break Job Object
-    // inheritance, and OpenSSH disallows CREATE_BREAKAWAY_FROM_JOB on its Job Objects.
-    // WMI doesn't support stream redirection, so a batch file lets cmd.exe wire up stdin.
-    // Returns a sentinel process that keeps waitForServer() alive while the JVM starts.
-    // Requires local administrator rights for Win32_Process.Create() to succeed.
+    // Launches ASMain via Windows Task Scheduler so it survives SSH channel close.
+    // Win32-OpenSSH kills every exec-channel process when the channel closes (Job Object with
+    // KILL_ON_JOB_CLOSE); the Task Scheduler service creates the JVM outside that Job Object.
+    // PowerShell ScheduledTask cmdlets (New-ScheduledTask*) use CIM/WMI internally; WMI
+    // treats SSH network-logon (NTLM Type-3) sessions as remote, which non-admin users are
+    // denied on ROOT\Microsoft\Windows\TaskScheduler. The COM Schedule.Service API also denies
+    // RegisterTaskDefinition for non-admin SSH sessions. schtasks.exe uses a legacy RPC path
+    // to the service that non-admin users can access. The task is interactive (/rl limited,
+    // no /ru), so it runs in the user's logged-on session. wscript.exe (GUI subsystem) runs
+    // cmd.exe hidden (SW_HIDE, bWaitOnReturn=False) so no console appears. The batch sets the
+    // working directory, writes its cmd.exe PID via WMI before starting Java; a sentinel polls
+    // that PID so waitForServer() detects failures without timing out.
     private Process launchDetachedOnWindows(List<String> cmds, ProcessBuilder pb) throws IOException, GFLauncherException {
 
         File tokenFile = File.createTempFile("payara-tokens-", ".tmp");
-        // Restrict access to owner before writing sensitive content.
-        // On Windows, java.io.tmpdir is typically the user's private AppData\Temp, but
-        // it can be overridden to a shared dir; removing inherited ACEs defends against that.
+        // Temp dir can be shared; remove inherited ACEs so only the owner can read the tokens.
         restrictToOwner(tokenFile);
         try (BufferedWriter writer = Files.newBufferedWriter(tokenFile.toPath(), StandardCharsets.UTF_8)) {
             for (String token : info.securityTokens) {
@@ -1045,64 +1047,150 @@ public abstract class GFLauncher {
             }
         }
 
-        // Batch wrapper so cmd.exe can redirect stdin with '<' (WMI Create() cannot)
+        // Batch: sets working directory, writes cmd.exe PID via WMI before starting Java,
+        // and redirects stdin from tokenFile with '<'. cd /d is needed because schtasks.exe
+        // does not expose a working-directory field for the task action.
+        File pidFile = File.createTempFile("payara-pid-", ".tmp");
         File batchFile = File.createTempFile("payara-start-", ".bat");
         try (BufferedWriter writer = Files.newBufferedWriter(batchFile.toPath(), StandardCharsets.UTF_8)) {
+            String pidFilePs = pidFile.getAbsolutePath().replace("'", "''");
             String javaQ = cmds.getFirst().replace("\"", "\"\"");
             String argQ = argFile.getAbsolutePath().replace("\"", "\"\"");
             String tokQ = tokenFile.getAbsolutePath().replace("\"", "\"\"");
+            String workDirQ = (pb.directory() != null ? pb.directory() : new File(".")).getAbsolutePath().replace("\"", "\"\"");
             writer.write("@echo off\r\n");
+            writer.write("cd /d \"" + workDirQ + "\"\r\n");
+            writer.write("powershell -NoProfile -NonInteractive -Command "
+                    + "\"(Get-WmiObject Win32_Process -Filter ('ProcessId='+$PID)).ParentProcessId"
+                    + " | Out-File -FilePath '" + pidFilePs + "' -Encoding ascii -NoNewline\"\r\n");
             writer.write("\"" + javaQ + "\" \"@" + argQ + "\" < \"" + tokQ + "\"\r\n");
         }
 
-        // PowerShell is just a thin WMI client here; streams go to NUL so nothing is inherited
-        File psStderrFile = File.createTempFile("payara-ps-stderr-", ".log");
-        File wmiPidFile = File.createTempFile("payara-wmipid-", ".tmp");
-        String batchPs = batchFile.getAbsolutePath().replace("'", "''");
-        String workDirPs = (pb.directory() != null ? pb.directory() : new File(".")).getAbsolutePath().replace("'", "''");
-        String pidFilePs = wmiPidFile.getAbsolutePath().replace("'", "''");
-        String psCmd = String.format(
-                "$bp='%s';$wd='%s';"
-                + "$r=([wmiclass]'Win32_Process').Create('cmd.exe /c \"'+$bp+'\"',$wd,$null);"
-                + "if($r.ReturnValue -ne 0){exit 1};"
-                + "$r.ProcessId|Out-File -FilePath '%s' -Encoding ascii -NoNewline",
-                batchPs, workDirPs, pidFilePs);
+        // wscript.exe (GUI subsystem, no console) runs cmd.exe hidden via SW_HIDE; bWaitOnReturn=False
+        // so wscript exits immediately and cmd.exe runs independently.
+        File vbsFile = File.createTempFile("payara-launch-", ".vbs");
+        try (BufferedWriter writer = Files.newBufferedWriter(vbsFile.toPath(), StandardCharsets.UTF_8)) {
+            writer.write("CreateObject(\"WScript.Shell\").Run \"cmd.exe /c \"\"\" & WScript.Arguments(0) & \"\"\"\", 0, False\r\n");
+        }
 
-        List<File> toClean = Arrays.asList(tokenFile, argFile, batchFile, psStderrFile, wmiPidFile);
+        // schtasks.exe works for non-admin SSH users where both the PowerShell CIM-based
+        // cmdlets and the COM Schedule.Service RegisterTaskDefinition API are denied.
+        // The task XML explicitly sets DisallowStartIfOnBatteries=false and
+        // StopIfGoingOnBatteries=false; schtasks command-line flags do not expose these
+        // settings, which default to true and silently block execution on battery power.
+        String taskName = "PayaraStart-" + UUID.randomUUID().toString().replace("-", "");
 
-        ProcessBuilder psPb = new ProcessBuilder("powershell", "-NonInteractive", "-Command", psCmd);
-        psPb.redirectInput(new File("NUL"));
-        psPb.redirectOutput(new File("NUL"));
-        psPb.redirectError(psStderrFile);
+        File xmlFile = File.createTempFile("payara-task-", ".xml");
+        writeTaskXml(xmlFile, vbsFile.getAbsolutePath(), batchFile.getAbsolutePath());
 
-        Process ps = psPb.start();
+        File stderrFile = File.createTempFile("payara-schtasks-stderr-", ".log");
+        List<File> toClean = new ArrayList<>(Arrays.asList(tokenFile, argFile, batchFile, vbsFile, pidFile, xmlFile, stderrFile));
+
+        ProcessBuilder createPb = new ProcessBuilder(
+                "schtasks", "/create",
+                "/xml", xmlFile.getAbsolutePath(),
+                "/tn", taskName,
+                "/f");
+        createPb.redirectInput(new File("NUL"));
+        createPb.redirectOutput(new File("NUL"));
+        createPb.redirectError(stderrFile);
+
+        Process createPs = createPb.start();
         try {
-            boolean finished = ps.waitFor(30, TimeUnit.SECONDS);
+            boolean finished = createPs.waitFor(30, TimeUnit.SECONDS);
             if (!finished) {
-                ps.destroyForcibly();
+                createPs.destroyForcibly();
+                String err = readSilently(stderrFile);
                 toClean.forEach(File::delete);
-                throw new GFLauncherException("WMI process creation timed out after 30 s");
+                throw new GFLauncherException("schtasks /create timed out after 30 s"
+                        + (err.isEmpty() ? "" : ": " + err));
             }
-            if (ps.exitValue() != 0) {
-                String psErr;
-                try {
-                    psErr = new String(Files.readAllBytes(psStderrFile.toPath()), StandardCharsets.UTF_8).trim();
-                } catch (Exception ignored) {
-                    psErr = "";
-                }
+            if (createPs.exitValue() != 0) {
+                String err = readSilently(stderrFile);
                 toClean.forEach(File::delete);
-                throw new GFLauncherException("Win32_Process.Create() failed (exit=" + ps.exitValue() + "): " + psErr);
+                throw new GFLauncherException("schtasks /create failed (exit=" + createPs.exitValue() + ")"
+                        + (err.isEmpty() ? "" : ": " + err));
             }
         } catch (InterruptedException ie) {
-            ps.destroyForcibly();
+            createPs.destroyForcibly();
             toClean.forEach(File::delete);
             Thread.currentThread().interrupt();
-            throw new GFLauncherException("WMI process creation interrupted");
+            throw new GFLauncherException("schtasks /create interrupted");
         }
-        GFLauncherLogger.fine("launchDetachedOnWindows", "WMI process created. batchFile=" + batchFile.getAbsolutePath());
 
-        // Delete temp files after 120 s — enough time for cmd.exe to open them at startup.
-        // wmiPidFile is read immediately by the sentinel at startup so it can also be cleaned here.
+        File runStderrFile = File.createTempFile("payara-schtasks-run-stderr-", ".log");
+        toClean.add(runStderrFile);
+        Process runPs;
+        try {
+            runPs = new ProcessBuilder("schtasks", "/run", "/tn", taskName)
+                    .redirectInput(new File("NUL"))
+                    .redirectOutput(new File("NUL"))
+                    .redirectError(runStderrFile)
+                    .start();
+        } catch (IOException ioe) {
+            deleteTaskSilently(taskName);
+            toClean.forEach(File::delete);
+            throw ioe;
+        }
+        try {
+            boolean runFinished = runPs.waitFor(30, TimeUnit.SECONDS);
+            if (!runFinished) {
+                runPs.destroyForcibly();
+                String err = readSilently(runStderrFile);
+                deleteTaskSilently(taskName);
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("schtasks /run timed out after 30 s"
+                        + (err.isEmpty() ? "" : ": " + err));
+            }
+            if (runPs.exitValue() != 0) {
+                String err = readSilently(runStderrFile);
+                deleteTaskSilently(taskName);
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("schtasks /run failed (exit=" + runPs.exitValue() + ")"
+                        + (err.isEmpty() ? "" : ": " + err));
+            }
+        } catch (InterruptedException ie) {
+            runPs.destroyForcibly();
+            deleteTaskSilently(taskName);
+            toClean.forEach(File::delete);
+            Thread.currentThread().interrupt();
+            throw new GFLauncherException("schtasks /run interrupted");
+        }
+
+        int cmdPid = -1;
+        long deadline = System.currentTimeMillis() + 30_000;
+        while (System.currentTimeMillis() < deadline) {
+            try {
+                String raw = new String(Files.readAllBytes(pidFile.toPath()), StandardCharsets.UTF_8).trim();
+                if (!raw.isEmpty()) {
+                    cmdPid = Integer.parseInt(raw);
+                    break;
+                }
+            } catch (IOException | NumberFormatException ignored) {
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                toClean.forEach(File::delete);
+                throw new GFLauncherException("Interrupted waiting for Payara process PID");
+            }
+        }
+
+        // Unregister the task; the already-running process is unaffected.
+        new ProcessBuilder("schtasks", "/delete", "/tn", taskName, "/f")
+                .redirectInput(new File("NUL"))
+                .redirectOutput(new File("NUL"))
+                .redirectError(new File("NUL"))
+                .start();
+
+        if (cmdPid < 0) {
+            toClean.forEach(File::delete);
+            throw new GFLauncherException("Timed out waiting for Payara process PID file");
+        }
+
+        GFLauncherLogger.fine("launchDetachedOnWindows", "Task launched via schtasks. pid=" + cmdPid + " batchFile=" + batchFile.getAbsolutePath());
+
         Thread cleanup = new Thread(() -> {
             try {
                 Thread.sleep(120_000);
@@ -1114,13 +1202,9 @@ public abstract class GFLauncher {
         cleanup.setDaemon(true);
         cleanup.start();
 
-        // Sentinel monitors the WMI-created cmd.exe (which waits for java.exe to finish),
-        // so waitForServer() detects actual GF failures quickly instead of waiting for timeout.
-        // cmd.exe /c batch.bat blocks until java.exe exits, making its PID a reliable proxy
-        // for GF liveness. Exits with code 1 when GF dies; killed by shutdown hook on success.
-        String pidFileSentinel = wmiPidFile.getAbsolutePath().replace("'", "''");
+        // Sentinel polls cmd.exe (blocks until java.exe exits); exits with code 1 when GF dies.
         Process sentinel = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command",
-                "$p=[int](Get-Content '" + pidFileSentinel + "');"
+                "$p=" + cmdPid + ";"
                 + "while(Get-Process -Id $p -ErrorAction SilentlyContinue){Start-Sleep -Seconds 1};"
                 + "exit 1")
                 .redirectInput(new File("NUL"))
@@ -1137,6 +1221,73 @@ public abstract class GFLauncher {
     // with whatever permissions the OS assigned at creation time.
     private static boolean isRunningUnderSsh() {
         return System.getenv("SSH_CLIENT") != null || System.getenv("SSH_CONNECTION") != null;
+    }
+
+    private static String readSilently(File file) {
+        try {
+            return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private static void deleteTaskSilently(String taskName) {
+        try {
+            new ProcessBuilder("schtasks", "/delete", "/tn", taskName, "/f")
+                    .redirectInput(new File("NUL"))
+                    .redirectOutput(new File("NUL"))
+                    .redirectError(new File("NUL"))
+                    .start();
+        } catch (IOException ignored) {
+        }
+    }
+
+    private static void writeTaskXml(File xmlFile, String vbsPath, String batchPath) throws IOException {
+        String vbs = escapeXml(vbsPath);
+        String bat = escapeXml(batchPath);
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n"
+                + "<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n"
+                + "  <RegistrationInfo/>\r\n"
+                + "  <Triggers><TimeTrigger><StartBoundary>2000-01-01T00:00:00</StartBoundary>"
+                + "<Enabled>true</Enabled></TimeTrigger></Triggers>\r\n"
+                + "  <Principals><Principal id=\"Author\">"
+                + "<LogonType>InteractiveToken</LogonType>"
+                + "<RunLevel>LeastPrivilege</RunLevel>"
+                + "</Principal></Principals>\r\n"
+                + "  <Settings>\r\n"
+                + "    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n"
+                + "    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>\r\n"
+                + "    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>\r\n"
+                + "    <AllowHardTerminate>true</AllowHardTerminate>\r\n"
+                + "    <StartWhenAvailable>false</StartWhenAvailable>\r\n"
+                + "    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>\r\n"
+                + "    <IdleSettings/>\r\n"
+                + "    <AllowStartOnDemand>true</AllowStartOnDemand>\r\n"
+                + "    <Enabled>true</Enabled>\r\n"
+                + "    <Hidden>false</Hidden>\r\n"
+                + "    <RunOnlyIfIdle>false</RunOnlyIfIdle>\r\n"
+                + "    <WakeToRun>false</WakeToRun>\r\n"
+                + "    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>\r\n"
+                + "    <Priority>7</Priority>\r\n"
+                + "  </Settings>\r\n"
+                + "  <Actions Context=\"Author\"><Exec>"
+                + "<Command>wscript.exe</Command>"
+                + "<Arguments>//nologo &quot;" + vbs + "&quot; &quot;" + bat + "&quot;</Arguments>"
+                + "</Exec></Actions>\r\n"
+                + "</Task>\r\n";
+        byte[] bom = {(byte) 0xFF, (byte) 0xFE};
+        byte[] content = xml.getBytes(StandardCharsets.UTF_16LE);
+        byte[] withBom = new byte[bom.length + content.length];
+        System.arraycopy(bom, 0, withBom, 0, bom.length);
+        System.arraycopy(content, 0, withBom, bom.length, content.length);
+        Files.write(xmlFile.toPath(), withBom);
+    }
+
+    private static String escapeXml(String s) {
+        return s.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     private static void restrictToOwner(File file) {

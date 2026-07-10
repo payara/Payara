@@ -100,10 +100,7 @@ public class SFTPClient implements AutoCloseable {
             }
         }
         if (sshClient != null) {
-            try {
-                sshClient.close();
-            } catch (IOException ignored) {
-            }
+            sshClient.stop();
         }
     }
 

@@ -118,7 +118,19 @@ public class SSHConnection implements AutoCloseable {
      */
     @Override
     public void close() {
-        try { session.close(); } catch (IOException ignored) { }
-        try { client.close(); } catch (IOException ignored) { }
+        // May throw an exception if closed too early on Windows due to async file reading.
+        try {
+            session.close(false).await(5000L);
+        } catch (Exception ignored) {
+        }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+        try {
+            client.close(false).await(5000L);
+        } catch (Exception ignored) {
+        }
     }
 }
