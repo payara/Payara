@@ -43,11 +43,11 @@
 
 <!--
   XML DTD for Payara Application Server specific Jakarta EE Application
-  deployment descriptor. This is a companion DTD to application_11.xsd
+  deployment descriptor. This is a companion DTD to application_10.xsd
 
   It must include a DOCTYPE of the following form:
 
-  <!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11//EN" "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-application_11-0.dtd">
+  <!DOCTYPE payara-application PUBLIC "-//Payara.fish//DTD Payara Application Server 6 Jakarta EE Application 10//EN" "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara6-application_10-0.dtd">
 
 -->
 
@@ -61,16 +61,16 @@ This is the root element of the runtime descriptor document.
 <!ELEMENT context-root (#PCDATA)>
 
 <!-- Pass by Reference semantics:  EJB spec requires pass by value,
-     which will be the default mode of operation. This can be set 
-     to true for non-compliant and possibly higher performance. 
-     For a stand-alone, this can be set at this level. By setting 
+     which will be the default mode of operation. This can be set
+     to true for non-compliant and possibly higher performance.
+     For a stand-alone, this can be set at this level. By setting
      a similarly named element at payara-application, it can apply to
-     all the enclosed ejb modules. Allowed values are true and 
+     all the enclosed ejb modules. Allowed values are true and
      false. Default will be false.
  -->
 <!ELEMENT pass-by-reference (#PCDATA)>
 
-<!-- Automatically generated and updated at deployment/redeployment 
+<!-- Automatically generated and updated at deployment/redeployment
      Needs to be unqiue in the system.
   -->
 <!ELEMENT unique-id (#PCDATA)>
@@ -82,7 +82,7 @@ This is the root element of the runtime descriptor document.
 <!ATTLIST principal-name class-name CDATA #IMPLIED>
 <!ELEMENT group-name (#PCDATA)>
 
-<!-- 
+<!--
   realm: Allows specifying an optional authentication realm name which will
     be used to process all authentication requests associated with this
     application. If this element is not specified (or if it is given but
@@ -514,20 +514,20 @@ Used in: method-params
 
 
 <!--
-  The value of the archive-name element will be used to derive the default 
+  The value of the archive-name element will be used to derive the default
 name of the app-name when app-name is not present in application.xml.
-  The default app name will be archive-name value minus the file extension. 
+  The default app name will be archive-name value minus the file extension.
 For example, if archive-name is foo.ear, the default app-name will be foo.
 -->
-<!ELEMENT archive-name (#PCDATA)> 
+<!ELEMENT archive-name (#PCDATA)>
 
 <!--
-Specifies the Enterprise Server release with which to be backward compatible 
-in terms of JAR visibility requirements for applications. 
-The current allowed value is v2, which refers to GlassFish version 2 or 
-Enterprise Server version 9.1 or 9.1.1. The Java EE 6 platform specification 
-imposes stricter requirements than Java EE 5 did on which JAR files can be 
-visible to various modules within an EAR file. Setting this element to v2 
+Specifies the Enterprise Server release with which to be backward compatible
+in terms of JAR visibility requirements for applications.
+The current allowed value is v2, which refers to GlassFish version 2 or
+Enterprise Server version 9.1 or 9.1.1. The Java EE 6 platform specification
+imposes stricter requirements than Java EE 5 did on which JAR files can be
+visible to various modules within an EAR file. Setting this element to v2
 removes these Java EE 6 restrictions.
 -->
 <!ELEMENT compatibility (#PCDATA)>
@@ -565,8 +565,8 @@ Payara flag to enable / specify whitelist for extreme ClassLoader isolation
 -->
 <!ELEMENT whitelist-package (#PCDATA)>
 
-<!-- 
-Syntax for supplying properties as name value pairs 
+<!--
+Syntax for supplying properties as name value pairs
 -->
 <!ELEMENT property (description?)>
 <!ATTLIST property name  CDATA  #REQUIRED
