@@ -48,6 +48,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Migration artifact from Microprofile Opentracing.
+ *
+ * @deprecated Public facing API for this feature will be {@link io.opentelemetry.instrumentation.annotations.WithSpan} annotation. Solution for
+ *     usage with @{code value=false} is yet to be finalized, easiest is to just not putting the annotation on the method.
+ */
+@Deprecated(forRemoval = true)
 @InterceptorBinding
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

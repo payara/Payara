@@ -59,10 +59,6 @@ public class EjbRequestTracingTest {
                     "--enabled", "true", "--dynamic", "true") != 0) {
                 throw new IllegalStateException("Can't enable request tracing");
             }
-            
-            if (CliCommands.payaraGlassFish("create-system-properties", "otel.sdk.disabled=false") != 0) {
-                throw new IllegalStateException("Can't set system property");
-            }
         }
     }
 }

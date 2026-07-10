@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,9 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.microprofile.config.ModifiableConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
@@ -55,12 +58,15 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ApplicationConfigSource extends PayaraConfigSource {
+public class ApplicationConfigSource extends PayaraConfigSource implements ModifiableConfigSource {
 
     private final String configurationName;
+    private final Domain domainConfiguration;
 
-    public ApplicationConfigSource(String configurationName) {
+    public ApplicationConfigSource(String configurationName, Domain domain, MicroprofileConfigConfiguration mpConfig) {
+        super(mpConfig);
         this.configurationName = configurationName;
+        this.domainConfiguration = domain;
     }
 
     @Override
@@ -84,7 +90,7 @@ public class ApplicationConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getApplicationOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getApplicationOrdinality);
     }
 
     @Override

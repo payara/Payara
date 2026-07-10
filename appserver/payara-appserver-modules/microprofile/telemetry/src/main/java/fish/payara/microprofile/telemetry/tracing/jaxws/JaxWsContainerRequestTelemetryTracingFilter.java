@@ -46,7 +46,7 @@ import com.sun.xml.ws.api.message.Packet;
 import fish.payara.microprofile.telemetry.tracing.Traced;
 import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -70,21 +70,23 @@ import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.soap.SOAPException;
-import java.util.Map;
-import java.util.Optional;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.webservices.monitoring.MonitorContext;
 import org.glassfish.webservices.monitoring.MonitorFilter;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
-import static jakarta.xml.ws.handler.MessageContext.*;
+import static jakarta.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
+import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
 import static java.util.Collections.list;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
@@ -102,7 +104,7 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     private RequestTracingService requestTracing;
 
     @Inject
-    private OpenTracingService openTracing;
+    private OpenTelemetryService openTelemetry;
 
     @Override
     public void filterRequest(Packet pipeRequest, MonitorContext monitorContext) {
@@ -377,7 +379,7 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     }
 
     private Tracer getTracer() {
-        return openTracing.getTracer(openTracing.getApplicationName(serviceLocator.getService(InvocationManager.class)));
+        return openTelemetry.getCurrentTracer();
     }
 
     private Response.StatusType getResponseStatus(Packet pipeRequest, Packet pipeResponse) {

@@ -75,6 +75,7 @@
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Temporary until @Traced annotation is removed -->
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>microprofile-telemetry</artifactId>
