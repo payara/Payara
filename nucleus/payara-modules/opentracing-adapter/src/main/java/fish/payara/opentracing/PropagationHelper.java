@@ -60,6 +60,8 @@ public class PropagationHelper implements Scope {
 
     private boolean errorReported;
 
+    private boolean ended;
+
     private PropagationHelper(Span span, Context propagatedContext) {
         this.span = span;
         this.propagatedContext = propagatedContext;
@@ -115,9 +117,9 @@ public class PropagationHelper implements Scope {
      *
      */
     public void end() {
-        if (!errorReported) {
+        if (!ended) {
+            ended = true;
             span.end();
-            span.setStatus(StatusCode.OK);
         }
     }
 
@@ -129,17 +131,18 @@ public class PropagationHelper implements Scope {
     public void end(Throwable error) {
         if (error == null) {
             end();
-        } else {
+        } else if (!ended) {
             errorReported = true;
             span.setStatus(StatusCode.ERROR, error.getMessage());
             span.recordException(error);
+            end();
         }
     }
 
     @Override
     public void close() {
         closeContext();
-        if (singleThreaded && !errorReported) {
+        if (singleThreaded) {
             end();
         }
     }
@@ -170,10 +173,12 @@ public class PropagationHelper implements Scope {
         }
         @Override
         public void close() {
-            if (localContext != null) {
-                localContext.close();
+            if (this.localSpan != null) {
+                this.localSpan.close();
             }
-            this.localSpan.close();
+            if (this.localContext != null) {
+                this.localContext.close();
+            }
         }
     }
 }
