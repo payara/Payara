@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2023-2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -159,11 +159,12 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
             activeSpan.setStatus(StatusCode.ERROR);
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
-                activeSpan.recordException((Throwable) response.getEntity());
-                activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+                Throwable throwable = (Throwable) response.getEntity();
+                activeSpan.recordException(throwable);
+                activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, throwable.getClass().getName());
                 activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
-                        Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
-                activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
+                        Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, throwable.getMessage()));
+                activeSpan.setStatus(StatusCode.ERROR, throwable.getMessage());
             }
         }
     }
