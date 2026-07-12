@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -285,6 +285,9 @@ final class OtelSupport {
                              HttpServletResponse response, Throwable error) {
         try {
             int status = response.getStatus();
+            if (error != null && status < 400) {
+                status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            }
 
             // Read route/span-name from OtelRouteState embedded in the stashed context.
             // Framework layers (JAX-RS etc.) contributed to it via Context.current() during request.

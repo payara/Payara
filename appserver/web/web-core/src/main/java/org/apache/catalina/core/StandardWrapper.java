@@ -1524,45 +1524,51 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
                 HttpServletRequest httpRequest = (HttpServletRequest) request;
                 HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-                if ( SecurityUtil.executeUnderSubjectDoAs() ){
-                    final ServletRequest req = request;
-                    final ServletResponse res = response;
-                    Principal principal = httpRequest.getUserPrincipal();
+                // OTel: null scope = not owner (disabled, re-entry, or error). No-op for finish.
+                Scope otelScope = OtelSupport.startServerSpan(openTelemetryService, httpRequest);
+                Throwable error = null;
 
-                    Object[] serviceType = new Object[2];
-                    serviceType[0] = req;
-                    serviceType[1] = res;
+                try {
+                    if ( SecurityUtil.executeUnderSubjectDoAs() ){
+                        final ServletRequest req = request;
+                        final ServletResponse res = response;
+                        Principal principal = httpRequest.getUserPrincipal();
 
-                    SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
-                } else {
-                    RequestTraceSpan span = null;
-                    if (requestTracing.isRequestTracingEnabled()) {
-                        if (servlet instanceof ServletContainer) {
-                            span = constructWebServiceRequestSpan(httpRequest);
-                        } else if (servlet instanceof Servlet) {
-                            span = constructServletRequestSpan(httpRequest, servlet);
+                        Object[] serviceType = new Object[2];
+                        serviceType[0] = req;
+                        serviceType[1] = res;
+
+                        SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
+                    } else {
+                        RequestTraceSpan span = null;
+                        if (requestTracing.isRequestTracingEnabled()) {
+                            if (servlet instanceof ServletContainer) {
+                                span = constructWebServiceRequestSpan(httpRequest);
+                            } else if (servlet instanceof Servlet) {
+                                span = constructServletRequestSpan(httpRequest, servlet);
+                            }
+                        }
+
+                        try {
+                            if (isJspServlet) {
+                                isInSuppressFFNFThread.set(true);
+                            }
+
+                            servlet.service(httpRequest, httpResponse);
+                        } finally {
+                            if (requestTracing.isRequestTracingEnabled() && span != null) {
+                                span.addSpanTag("ResponseStatus", Integer.toString(httpResponse.getStatus()));
+                                requestTracing.traceSpan(span);
+                            }
+                            isInSuppressFFNFThread.set(false);
                         }
                     }
-
-                    // OTel: null scope = not owner (disabled, re-entry, or error). No-op for finish.
-                    Scope otelScope = OtelSupport.startServerSpan(openTelemetryService, httpRequest);
-
-                    try {
-                        if (isJspServlet) {
-                            isInSuppressFFNFThread.set(true);
-                        }
-
-                        servlet.service(httpRequest, httpResponse);
-                    } finally {
-                        if (requestTracing.isRequestTracingEnabled() && span != null) {
-                            span.addSpanTag("ResponseStatus", Integer.toString(httpResponse.getStatus()));
-                            requestTracing.traceSpan(span);
-                        }
-                        isInSuppressFFNFThread.set(false);
-
-                        // Closes scope on this thread and ends/records span (or registers AsyncListener).
-                        OtelSupport.finishServerSpan(otelScope, httpRequest, httpResponse, null);
-                    }
+                } catch (Throwable t) {
+                    error = t;
+                    throw t;
+                } finally {
+                    // Closes scope on this thread and ends/records span (or registers AsyncListener).
+                    OtelSupport.finishServerSpan(otelScope, httpRequest, httpResponse, error);
                 }
             } else {
                 servlet.service(request, response);
