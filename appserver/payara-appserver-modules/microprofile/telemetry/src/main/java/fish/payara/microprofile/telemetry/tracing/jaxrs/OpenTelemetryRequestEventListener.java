@@ -211,6 +211,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
             if (httpRoute != null && !httpRoute.isEmpty()) {
                 routeState.setFullRoute(httpRoute);
             }
+            routeState.overrideSpanName(operationName);
             // helper remains null. All event-handler branches guard on helper != null;
             // activeSpan falls back to Span.current() which is the StandardWrapper SERVER span.
             LOG.fine(() -> "JAX-RS deferring to existing SERVER span for uri=" + toString(requestContext.getUriInfo()));
