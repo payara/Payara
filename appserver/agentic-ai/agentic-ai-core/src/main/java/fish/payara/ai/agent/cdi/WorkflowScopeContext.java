@@ -79,7 +79,9 @@ public class WorkflowScopeContext implements AlterableContext {
         checkActive();
         Map<Contextual<?>, BeanInstance<?>> map = STORE.get();
         BeanInstance<T> existing = (BeanInstance<T>) map.get(contextual);
-        if (existing != null) return existing.instance;
+        if (existing != null) { 
+            return existing.instance;
+        }
         T instance = contextual.create(creationalContext);
         map.put(contextual, new BeanInstance<>(contextual, instance, creationalContext));
         return instance;

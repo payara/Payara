@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,13 +45,10 @@ import fish.payara.microprofile.openapi.impl.model.OpenAPIImpl;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import static java.util.logging.Level.WARNING;
-
-import java.util.Set;
 import java.util.logging.Logger;
 import org.eclipse.microprofile.openapi.OASFilter;
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -75,7 +72,6 @@ import org.eclipse.microprofile.openapi.models.tags.Tag;
 public class FilterProcessor implements OASProcessor {
 
     private static final Logger LOGGER = Logger.getLogger(FilterProcessor.class.getName());
-    private final Set<Object> filterCache = new HashSet<>();
 
     /**
      * The OASFilter implementation provided by the application.
@@ -109,85 +105,79 @@ public class FilterProcessor implements OASProcessor {
 
     @SuppressWarnings("unchecked")
     private Object filterObject(Object object) {
-        if (object == null) {
-            return null;
-        }
+        if (object != null) {
 
-        // Prevent infinite recursion for circular references
-        if (filterCache.contains(object)) {
+            // If the object is a map
+            if (object instanceof Map) {
+                List<Object> resultsToRemove = new ArrayList<>();
+
+                // Filter each object in the value list
+                for (Object item : Map.class.cast(object).values()) {
+                    Object result = filterObject(item);
+
+                    if (result == null) {
+                        resultsToRemove.add(item);
+                    }
+                }
+
+                // Remove all the null values
+                for (Object removeTarget : resultsToRemove) {
+                    Map.class.cast(object).values().remove(removeTarget);
+                }
+            }
+
+            // If the object is iterable
+            if (object instanceof Iterable) {
+                List<Object> resultsToRemove = new ArrayList<>();
+
+                // Filter each object in the list
+                for (Object item : Iterable.class.cast(object)) {
+                    Object result = filterObject(item);
+
+                    if (result == null) {
+                        resultsToRemove.add(item);
+                    }
+                }
+
+                for (Object removeTarget : resultsToRemove) {
+                    Iterator<Object> iterator = Iterable.class.cast(object).iterator();
+                    while (iterator.hasNext()) {
+                        if (iterator.next().equals(removeTarget)) {
+                            iterator.remove();
+                        }
+                    }
+                }
+            }
+
+            // If the object is a model item
+            Package pkg = object.getClass().getPackage();
+            if (pkg != null && pkg.getName().startsWith(OpenAPIImpl.class.getPackage().getName())) {
+
+                // Visit each field
+                for (Field field : object.getClass().getDeclaredFields()) {
+                    try {
+                        field.setAccessible(true);
+                        Object fieldValue = field.get(object);
+
+                        // Filter the object
+                        Object result = filterObject(fieldValue);
+
+                        // Remove it if it's null
+                        if (result == null) {
+                            field.set(object, null);
+                        }
+                    } catch (IllegalArgumentException | IllegalAccessException ex) {
+                        LOGGER.log(WARNING, "Unable to access field in OpenAPI model.", ex);
+                    }
+                }
+
+                // Visit the object
+                object = visitObject(object);
+            }
+
             return object;
         }
-        filterCache.add(object);
-
-        // If the object is a map
-        if (object instanceof Map) {
-            List<Object> resultsToRemove = new ArrayList<>();
-
-            // Filter each object in the value list
-            for (Object item : Map.class.cast(object).values()) {
-                Object result = filterObject(item);
-
-                if (result == null) {
-                    resultsToRemove.add(item);
-                }
-            }
-
-            // Remove all the null values
-            for (Object removeTarget : resultsToRemove) {
-                Map.class.cast(object).values().remove(removeTarget);
-            }
-        }
-
-        // If the object is iterable
-        if (object instanceof Iterable) {
-            List<Object> resultsToRemove = new ArrayList<>();
-
-            // Filter each object in the list
-            for (Object item : Iterable.class.cast(object)) {
-                Object result = filterObject(item);
-
-                if (result == null) {
-                    resultsToRemove.add(item);
-                }
-            }
-
-            for (Object removeTarget : resultsToRemove) {
-                Iterator<Object> iterator = Iterable.class.cast(object).iterator();
-                while (iterator.hasNext()) {
-                    if (iterator.next().equals(removeTarget)) {
-                        iterator.remove();
-                    }
-                }
-            }
-        }
-
-        // If the object is a model item
-        Package pkg = object.getClass().getPackage();
-        if (pkg != null && pkg.getName().startsWith(OpenAPIImpl.class.getPackage().getName())) {
-            // Visit each field
-            for (Field field : object.getClass().getDeclaredFields()) {
-                try {
-                    field.setAccessible(true);
-                    Object fieldValue = field.get(object);
-
-                    // Filter the object
-                    Object result = filterObject(fieldValue);
-
-                    // Remove it if it's null
-                    if (result == null) {
-                        field.set(object, null);
-                    }
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    LOGGER.log(WARNING, "Unable to access field in OpenAPI model.", ex);
-                }
-            }
-
-            // Visit the object
-            object = visitObject(object);
-        }
-
-        filterCache.remove(object);
-        return object;
+        return null;
     }
 
     private Object visitObject(Object object) {

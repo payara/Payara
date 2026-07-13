@@ -110,12 +110,16 @@ public class ClassMethodOrder {
 
         // Skip interfaces
         int ifCount = dis.readUnsignedShort();
-        for (int i = 0; i < ifCount; i++) dis.readUnsignedShort();
+        for (int i = 0; i < ifCount; i++)  {
+           dis.readUnsignedShort();
+        }
 
         // Skip fields
         int fieldCount = dis.readUnsignedShort();
         for (int i = 0; i < fieldCount; i++) {
-            dis.readUnsignedShort(); dis.readUnsignedShort(); dis.readUnsignedShort();
+            dis.readUnsignedShort(); 
+            dis.readUnsignedShort(); 
+            dis.readUnsignedShort();
             skipAttributes(dis);
         }
 

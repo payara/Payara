@@ -116,7 +116,9 @@ public class WorkflowEngine {
             for (PhaseMethod phase : agentMetadata.getSortedPhases()) {
                 Object result = invokePhase(phase.getMethod(), agentInstance, workflowContext, llm, null);
                 if (phase.getType() == PhaseType.DECISION) {
-                    if (!shouldContinue(result)) return;
+                    if (!shouldContinue(result))  {
+                       return;
+                    }
                     addDecisionResultToContext(result, workflowContext);
                 } else {
                     workflowContext.add(result);
@@ -131,7 +133,9 @@ public class WorkflowEngine {
             Throwable cause = unwrap(e);
             boolean handled = dispatchException(agentMetadata, agentInstance, workflowContext, llm, cause);
             if (!handled) {
-                if (cause instanceof RuntimeException re) throw re;
+                if (cause instanceof RuntimeException re)  {
+                  throw re;
+               }
                 throw new RuntimeException(cause);
             }
             // Handler completed normally: run @Outcome as the recovery closure phase,
@@ -141,7 +145,9 @@ public class WorkflowEngine {
                     invokePhase(agentMetadata.getOutcomeMethod(), agentInstance, workflowContext, llm, null);
                 } catch (Exception outcomeEx) {
                     Throwable outcomeCause = unwrap(outcomeEx);
-                    if (outcomeCause instanceof RuntimeException re) throw re;
+                    if (outcomeCause instanceof RuntimeException re) { 
+                       throw re;
+                    }
                     throw new RuntimeException(outcomeCause);
                 }
             }
@@ -177,13 +183,17 @@ public class WorkflowEngine {
                 }
             }
         }
-        if (best == null) return false;
+        if (best == null)  { 
+             return false;
+        }
         try {
             invokePhase(best, agent, ctx, llm, exception);
             return true;
         } catch (Exception handlerEx) {
             Throwable cause = unwrap(handlerEx);
-            if (cause instanceof RuntimeException re) throw re;
+            if (cause instanceof RuntimeException re)  {
+                throw re;
+            }
             throw new RuntimeException(cause);
         }
     }
@@ -248,7 +258,9 @@ public class WorkflowEngine {
 
     private Class<?> findExceptionParamType(Method handler) {
         for (Class<?> parameterType : handler.getParameterTypes()) {
-            if (Throwable.class.isAssignableFrom(parameterType)) return parameterType;
+            if (Throwable.class.isAssignableFrom(parameterType))  {
+                 return parameterType;
+            }
         }
         return null;
     }
@@ -265,8 +277,7 @@ public class WorkflowEngine {
         if (executableValidator == null) {
             return;
         }
-        var violations =
-                executableValidator.validateParameters(instance, method, args);
+        var violations = executableValidator.validateParameters(instance, method, args);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }

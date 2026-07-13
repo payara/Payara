@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE payara-application-client PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application Client 11//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-application-client_11-0.dtd">
+<!DOCTYPE payara-application-client PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application Client 11 Revision 1//EN" "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-application-client_11-1.dtd">
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.

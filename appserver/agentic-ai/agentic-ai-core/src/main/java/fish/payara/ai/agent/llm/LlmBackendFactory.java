@@ -69,6 +69,12 @@ public final class LlmBackendFactory {
 
     static final String PREFIX = "payara.agentic.llm.";
 
+    static final String DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434";
+    static final String DEFAULT_OLLAMA_MODEL = "gemma";
+    static final String DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com";
+    static final String DEFAULT_ANTHROPIC_MODEL = "claude-opus-4-8";
+    static final int DEFAULT_ANTHROPIC_MAX_TOKENS = 4096;
+
     private LlmBackendFactory() {
     }
 
@@ -78,17 +84,17 @@ public final class LlmBackendFactory {
         return switch (provider) {
             case "ollama" -> new OllamaLlmBackend(
                     config.getOptionalValue(PREFIX + "ollama.base-url", String.class)
-                            .orElse("http://localhost:11434"),
+                            .orElse(DEFAULT_OLLAMA_BASE_URL),
                     config.getOptionalValue(PREFIX + "model", String.class)
-                            .orElse("gemma"));
+                            .orElse(DEFAULT_OLLAMA_MODEL));
             case "anthropic", "claude" -> new AnthropicLlmBackend(
                     config.getOptionalValue(PREFIX + "anthropic.base-url", String.class)
-                            .orElse("https://api.anthropic.com"),
+                            .orElse(DEFAULT_ANTHROPIC_BASE_URL),
                     resolveAnthropicKey(config),
                     config.getOptionalValue(PREFIX + "model", String.class)
-                            .orElse("claude-opus-4-8"),
+                            .orElse(DEFAULT_ANTHROPIC_MODEL),
                     config.getOptionalValue(PREFIX + "max-tokens", Integer.class)
-                            .orElse(4096),
+                            .orElse(DEFAULT_ANTHROPIC_MAX_TOKENS),
                     config.getOptionalValue(PREFIX + "system", String.class)
                             .orElse(null));
             case "vertex" -> new VertexLlmBackend(

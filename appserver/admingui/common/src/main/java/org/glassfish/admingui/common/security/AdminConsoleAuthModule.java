@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 
 package org.glassfish.admingui.common.security;
 
@@ -78,12 +79,16 @@ import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.util.net.NetUtils;
+
 
 /**
  * <p>
@@ -143,12 +148,26 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
                 throw new AuthException(
                         "'loginErrorPage' " + "must be supplied as a property in the provider-config " + "in the domain.xml file!");
             }
-            
+
+            ServiceLocator habitat = getServiceLocator();
+            NetworkListener adminListener = getAdminListener();
+            SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
+
             // Save the REST URL we need to authenticate the user.
             restURL = getAuthenticationURL();
         }
     }
-    
+
+    private static ServiceLocator getServiceLocator() {
+        return SecurityServicesUtil.getInstance().getHabitat();
+    }
+
+    private static NetworkListener getAdminListener() {
+        Config config = getServiceLocator().getService(Domain.class)
+                .getServerNamed("server").getConfig();
+        return config.getAdminListener();
+    }
+
     @Override
     @SuppressWarnings("rawtypes")
     public Class[] getSupportedMessageTypes() {
@@ -291,14 +310,18 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
                                    .build()
                                    .target(restURL)
                                    .register(HttpAuthenticationFeature.basic(username, new String(password)));
-        
+
+
+        // Get the real remote host, checking for proxy headers if behind a reverse proxy
+        String remoteHost = getRemoteHost(request);
         MultivaluedMap<String, String> payLoad = new MultivaluedHashMap<>();
-        payLoad.putSingle("remoteHostName", request.getRemoteHost());
+        payLoad.putSingle("remoteHostName", remoteHost);
 
         // Username and Password sent in... validate them!
         
         return RestResponse.getRestResponse(
                 target.request(RESPONSE_TYPE)
+                      .header("X-GlassFish-Remote-Host", remoteHost)
                       .post(Entity.entity(payLoad, APPLICATION_FORM_URLENCODED), Response.class));
     }
     
@@ -338,7 +361,11 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     }
     
     private AuthStatus forwardToErrorPage(RestResponse validationResult, HttpServletRequest request, HttpServletResponse response) throws AuthException {
-        if (validationResult.getResponseCode() == 403) {
+        if (validationResult.getResponseCode() == 429) {
+            // Too many concurrent requests - rate limited
+            request.setAttribute("errorText", GuiUtil.getMessage("alert.AuthenticationFailed"));
+            request.setAttribute("messageText", GuiUtil.getMessage("alert.TryAgainLater"));
+        } else if (validationResult.getResponseCode() == 403) {
             request.setAttribute("errorText", GuiUtil.getMessage("alert.ConfigurationError"));
             request.setAttribute("messageText", GuiUtil.getMessage("alert.EnableSecureAdmin"));
         }
@@ -387,6 +414,31 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     private boolean isMandatory(MessageInfo messageInfo) {
         return Boolean.valueOf((String) messageInfo.getMap().get("jakarta.security.auth.message.MessagePolicy.isMandatory"));
     }
-    
+    /**
+     * Gets the real remote host, checking for proxy headers if behind a reverse proxy.
+     * Only uses proxy headers when behindProxy is enabled in configuration.
+     */
+    private String getRemoteHost(HttpServletRequest request) {
+        // Check if behind proxy is enabled
+        Protocol protocol = getAdminListener().findHttpProtocol();
+        boolean behindProxy = protocol != null && protocol.getHttp() != null
+                && protocol.getHttp().isBehindProxy();
+
+        return NetUtils.getRemoteHost(
+                new NetUtils.RequestInfoProvider() {
+                    @Override
+                    public String getHeader(String name) {
+                        return request.getHeader(name);
+                    }
+
+                    @Override
+                    public String getRemoteHost() {
+                        return request.getRemoteHost();
+                    }
+
+                },
+                behindProxy
+        );
+    }
     
 }

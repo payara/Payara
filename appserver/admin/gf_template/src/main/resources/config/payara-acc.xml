@@ -49,7 +49,7 @@
    - Property security.config in message-security-config
 -->
 
-<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Application Client Container//EN" "https://raw.githubusercontent.com/payara/Payara-Documentation/main-7/docs/modules/ROOT/pages/Appendix/Schemas/payara-application-client-container_1_4.dtd">
+<!DOCTYPE client-container PUBLIC "-//Payara.fish//DTD Payara Application Server 7 Application Client Container Revision 1//EN" "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-application-client-container_1_4-1.dtd">
 
 <client-container>
   <target-server name="%%%SERVER_NAME%%%" address="localhost" port="%%%ORB_LISTENER1_PORT%%%"/>

@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright 2016-2026 [Payara Foundation and/or its affiliates.]
+// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
 
 package com.sun.enterprise.transaction;
 
@@ -60,18 +60,8 @@ import com.sun.logging.LogDomains;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTracingService;
-import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationException;
@@ -95,6 +85,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.rmi.RemoteException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -689,10 +680,9 @@ public class JavaEETransactionManagerSimplified
         if (openTracingServiceProvider != null) {
             OpenTracingService openTracingService = getOpenTracing();
             if (openTracingService != null && openTracingService.isEnabled()) {
-                addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx);
+                addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx, openTracingService);
             }
         }
-        
         return tx;
     }
 
@@ -983,10 +973,9 @@ public class JavaEETransactionManagerSimplified
             if (openTracingServiceProvider != null) {
                 OpenTracingService openTracingService = getOpenTracing();
                 if (openTracingService != null && openTracingService.isEnabled()) {
-                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
+                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx, openTracingService);
                 }
             }
-            
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
@@ -1024,7 +1013,7 @@ public class JavaEETransactionManagerSimplified
             if (openTracingServiceProvider != null) {
                 OpenTracingService openTracingService = getOpenTracing();
                 if (openTracingService != null && openTracingService.isEnabled()) {
-                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
+                    addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx, openTracingService);
                 }
             }
         } finally {
@@ -1747,39 +1736,29 @@ public class JavaEETransactionManagerSimplified
         return tx;
     }
 
-    private void addJtaEventTraceLog(RequestTraceSpanLog spanLog, JavaEETransaction tx) {
-        Span span = Span.current();
-        if (span.isRecording()) {
-            AttributesBuilder attrsBuilder = Attributes.builder();
-            spanLog.getLogEntries().forEach(attrsBuilder::put);
-            String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
-            span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
-            // Add transaction ID as attribute item
-            if (tx != null) {
-                setTransactionAttribute(span, tx);
-            }
-        } else {
-            final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
-            final Tracer tracer = payaraTracingServices.getActiveTracer();
-            AttributesBuilder attrsBuilder = Attributes.builder();
-            spanLog.getLogEntries().forEach(attrsBuilder::put);
-            if (tx != null && tracer != null) {
-                span = tracer.spanBuilder("addJtaEventTraceLog").startSpan();
-                span.makeCurrent();
-                String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
-                span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
-                // Add transaction ID as attribute item
-                setTransactionAttribute(span, tx);
-            }
-            getRequestTracing().addSpanLog(spanLog);
-        }
-    }
+    private void addJtaEventTraceLog(RequestTraceSpanLog spanLog, JavaEETransaction tx,
+            OpenTracingService openTracingService) {
+        Tracer tracer = openTracingService.getTracer(openTracingService.getApplicationName(invMgr));
 
-    private void setTransactionAttribute(Span span, JavaEETransaction tx) {
-        if (tx.getClass().equals(JavaEETransactionImpl.class)) {
-            span.setAttribute("TX-ID", ((JavaEETransactionImpl) tx).getTransactionId());
+        if (tracer != null) {
+            Span span = tracer.activeSpan();
+
+            if (span != null) {
+                span.log(spanLog.getTimeMillis(), spanLog.getLogEntries());
+
+                // Add transaction ID as baggage item
+                if (tx != null) {
+                    if (tx.getClass().equals(JavaEETransactionImpl.class)) {
+                        span.setBaggageItem("TX-ID", ((JavaEETransactionImpl) tx).getTransactionId());
+                    } else {
+                        span.setBaggageItem("TransactionInfo", tx.toString());
+                    }
+                }
+            }
         } else {
-            span.setAttribute("TransactionInfo", tx.toString());
+            // If we couldn't get a tracer here, it's because we couldn't get a name from the invocation manager.
+            // In such a case, just try to add the span log to the currently active thread local request trace
+            getRequestTracing().addSpanLog(spanLog);
         }
     }
 
