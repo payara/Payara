@@ -104,7 +104,7 @@ public class AnthropicLlmBackend implements LlmBackend {
                 .build();
         try {
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() / 100 != 2) {
+           if (response.statusCode() != HttpURLConnection.HTTP_OK) {
                 throw new LLMException("Anthropic HTTP " + response.statusCode() + ": " + response.body());
             }
             return jsonb.fromJson(response.body(), AnthropicResponse.class).firstText();
