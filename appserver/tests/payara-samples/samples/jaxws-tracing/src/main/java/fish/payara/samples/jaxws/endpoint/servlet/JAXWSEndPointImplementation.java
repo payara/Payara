@@ -59,4 +59,9 @@ public class JAXWSEndPointImplementation implements JAXWSEndPointInterface {
         return "Hi " + name;
     }
 
+    @Override
+    public String sayHiWithFault(String name) {
+        throw new RuntimeException("Deliberate fault for " + name);
+    }
+
 }
