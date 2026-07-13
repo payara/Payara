@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,13 +42,13 @@
 
 package fish.payara.samples.otel.spanname;
 
+import io.opentelemetry.api.common.AttributeKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.LockSupport;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
@@ -60,42 +60,61 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+/**
+ * In-memory {@link SpanExporter} for test assertions.
+ *
+ * <h3>Waiting strategy</h3>
+ * <p>{@link #getSpans(Predicate)} accepts a {@code isNoise} predicate that identifies
+ * spans which should not affect the wait logic (e.g. Arquillian runner spans or Payara
+ * infrastructure spans). The method uses a <em>quiet-period</em> strategy:
+ * <ol>
+ *   <li>Wait until at least one <em>interesting</em> (non-noise) span has arrived.</li>
+ *   <li>Once seen, restart a {@code 2 × bsp.schedule.delay} clock each time another
+ *       interesting span lands.</li>
+ *   <li>Return when that clock expires (quiet period elapsed) or after 2 seconds total.</li>
+ * </ol>
+ * Only interesting spans reset the clock, so pure-noise batches (e.g. background
+ * concurrent-waiting spans from server infrastructure) do not delay the return.
+ */
 @ApplicationScoped
 public class InMemoryExporter implements SpanExporter {
 
-    private volatile boolean stopped;
-    private List<SpanData> exported = new ArrayList<>();
-    private AtomicInteger batches = new AtomicInteger(0);
-
     private static final Logger LOGGER = Logger.getLogger(InMemoryExporter.class.getName());
+
+    private volatile boolean stopped;
+    private final List<SpanData> exported = new ArrayList<>();
 
     @Inject
     @ConfigProperty(name = "otel.bsp.schedule.delay")
-    long batchProcessorScheduleMS;
+    long bspScheduleDelayMs;
 
-    public void reset() {
-        exported.clear();
-        batches.set(0);
-    }
+    // -------------------------------------------------------------------------
+    // Default noise predicate
+    // -------------------------------------------------------------------------
 
-    public List<SpanData> getSpans() {
-        waitForNextExport();
-        synchronized (exported) {
-            var spanData = new ArrayList<SpanData>(exported);
-            exported.clear();
-            LOGGER.info(() -> "Passing exported list: "+spanData);
-            return spanData;
-        }
-    }
+    private static final AttributeKey<String> PAYARA_SUBSYSTEM =
+            AttributeKey.stringKey("payara.subsystem");
 
-    private void waitForNextExport() {
-        int currentGen;
-        do {
-            currentGen = batches.get();
-            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(batchProcessorScheduleMS * 2));
-            // no export in two periods means that we're out of fresh spans now.
-        } while (currentGen != batches.get());
-    }
+    /**
+     * Standard noise predicate: Arquillian runner spans and Payara Jakarta Concurrency
+     * waiting spans ({@code payara.subsystem = "jakarta-concurrency"}) are considered
+     * infrastructure noise for most tests. Override per call-site via {@link #getSpans(Predicate)}.
+     */
+    public static final Predicate<SpanData> DEFAULT_NOISE =
+            span -> span.getName().contains("ArquillianServletRunnerEE9")
+                 || "jakarta-concurrency".equals(span.getAttributes().get(PAYARA_SUBSYSTEM));
+
+    /**
+     * Noise predicate that only suppresses Arquillian runner spans, allowing
+     * Payara's Jakarta Concurrency waiting spans through. Use this in tests
+     * that specifically assert concurrent instrumentation.
+     */
+    public static final Predicate<SpanData> ARQUILLIAN_ONLY_NOISE =
+            span -> span.getName().contains("ArquillianServletRunnerEE9");
+
+    // -------------------------------------------------------------------------
+    // SpanExporter
+    // -------------------------------------------------------------------------
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {
@@ -103,13 +122,7 @@ public class InMemoryExporter implements SpanExporter {
             return CompletableResultCode.ofFailure();
         }
         synchronized (exported) {
-            for (var span : spans) {
-                if (span.getName().contains("ArquillianServletRunnerEE9")) {
-                    continue;
-                }
-                exported.add(span);
-            }
-            batches.incrementAndGet();
+            exported.addAll(spans);
         }
         return CompletableResultCode.ofSuccess();
     }
@@ -122,9 +135,82 @@ public class InMemoryExporter implements SpanExporter {
     @Override
     public CompletableResultCode shutdown() {
         stopped = true;
-        flush();
         return CompletableResultCode.ofSuccess();
     }
+
+    // -------------------------------------------------------------------------
+    // Test API
+    // -------------------------------------------------------------------------
+
+    /**
+     * Resets collected spans and the internal state. Call from {@code @Before} / {@code @BeforeMethod}.
+     */
+    public void reset() {
+        synchronized (exported) {
+            exported.clear();
+        }
+    }
+
+    /**
+     * Waits until interesting (non-noise) spans stop arriving, then returns them.
+     *
+     * @param isNoise predicate identifying spans that should not influence the wait
+     *                clock or appear in the returned list
+     * @return all non-noise spans collected since the last {@link #reset()}
+     */
+    public List<SpanData> getSpans(Predicate<SpanData> isNoise) {
+        long deadline        = System.currentTimeMillis() + 2_000;
+        long lastInteresting = -1;
+        int  highWatermark   = 0;   // how many exported entries we checked last iteration
+
+        while (System.currentTimeMillis() < deadline) {
+            synchronized (exported) {
+                int currentSize = exported.size();
+                if (currentSize > highWatermark) {
+                    // Check newly arrived spans
+                    boolean sawInteresting = exported.subList(highWatermark, currentSize)
+                            .stream().anyMatch(isNoise.negate());
+                    highWatermark = currentSize;
+                    if (sawInteresting) {
+                        lastInteresting = System.currentTimeMillis();
+                    }
+                }
+            }
+            // Once we have seen at least one interesting span, wait for quiet period
+            if (lastInteresting >= 0
+                    && System.currentTimeMillis() - lastInteresting > bspScheduleDelayMs * 2) {
+                break;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        synchronized (exported) {
+            List<SpanData> result = exported.stream()
+                    .filter(isNoise.negate())
+                    .collect(Collectors.toList());
+            LOGGER.info(() -> "Returning spans: " + result.stream()
+                    .map(s -> s.getName() + "(" + s.getKind() + ")").toList());
+            exported.clear();
+            return result;
+        }
+    }
+
+    /**
+     * Convenience overload using {@link #DEFAULT_NOISE} — filters out Arquillian runner
+     * spans and Payara concurrent waiting spans ({@code concurrent/* run}).
+     */
+    public List<SpanData> getSpans() {
+        return getSpans(DEFAULT_NOISE);
+    }
+
+    // -------------------------------------------------------------------------
+    // Provider
+    // -------------------------------------------------------------------------
 
     public static class Provider implements ConfigurableSpanExporterProvider {
 
