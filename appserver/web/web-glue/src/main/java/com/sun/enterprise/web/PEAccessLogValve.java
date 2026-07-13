@@ -71,6 +71,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
 import org.glassfish.internal.api.LogManager;
 
 /**
@@ -146,7 +148,7 @@ public final class PEAccessLogValve
      */
     private String prefix = "";
 
-    private String filter = "";
+    private Pattern filter = null;
 
     /**
      * Should we rotate our log file?
@@ -433,7 +435,7 @@ public final class PEAccessLogValve
     }
 
     public void setFilter(String regex) {
-        filter = Objects.requireNonNullElse(regex, "");
+        filter = Objects.requireNonNullElse(Pattern.compile(regex), null);
     }
 
     /**
@@ -579,7 +581,7 @@ public final class PEAccessLogValve
             return;
         }
 
-        if (!filter.isEmpty() && request instanceof HttpServletRequest hreq && hreq.getRequestURI().matches(filter)) {
+        if (filter != null && request instanceof HttpServletRequest hreq && filter.matcher(hreq.getRequestURI()).matches()) {
             return;
         }
 
