@@ -138,7 +138,7 @@ pipeline {
                             string(name: 'buildProject', value: "Build"),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
                             string(name: 'suites', value: 'Config'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -146,25 +146,25 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Config TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-                 stage('MicroProfile Fault Tolerance TCK') {
-                     agent {
-                         label 'general-purpose'
-                     }
-                     steps {
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         build job: 'TCKs/MP-TCKs',
-                         parameters: [
-                             string(name: 'buildProject', value: 'Build'),
-                             string(name: 'payaraBuildNumber', value: buildId),
-                             string(name: 'repoOrg', value: 'payara'),
-                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-                             string(name: 'suites', value: 'Fault-Tolerance'),
-                             string(name: 'jdkVer', value: 'zulu-21'),
-                             string(name: 'distribution', value: 'full')
-                         ]
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                 }
+                stage('MicroProfile Fault Tolerance TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Fault-Tolerance'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Fault Tolerance TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
                 stage('MicroProfile Health TCK') {
                     agent {
                         label 'general-purpose'
@@ -176,7 +176,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
                             string(name: 'suites', value: 'Health'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -195,7 +195,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
                             string(name: 'suites', value: 'JWT-Auth'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -214,7 +214,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
                             string(name: 'suites', value: 'Metrics'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -222,101 +222,82 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-                 stage('MicroProfile OpenAPI TCK') {
-                     agent {
-                         label 'general-purpose'
-                     }
-                     steps {
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         build job: 'TCKs/MP-TCKs',
-                         parameters: [
-                             string(name: 'buildProject', value: 'Build'),
-                             string(name: 'payaraBuildNumber', value: buildId),
-                             string(name: 'repoOrg', value: 'payara'),
-                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-                             string(name: 'suites', value: 'OpenAPI'),
-                             string(name: 'jdkVer', value: 'zulu-21'),
-                             string(name: 'distribution', value: 'full')
-                         ]
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                 }
-                 stage('MicroProfile OpenTelemetry JVM Metrics TCK') {
-                     agent {
-                         label 'general-purpose'
-                     }
-                     steps {
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         build job: 'TCKs/MP-TCKs',
-                         parameters: [
-                             string(name: 'buildProject', value: 'Build'),
-                             string(name: 'payaraBuildNumber', value: buildId),
-                             string(name: 'repoOrg', value: 'payara'),
-                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-                             string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Runtime'),
-                             string(name: 'jdkVer', value: 'zulu-21'),
-                             string(name: 'distribution', value: 'full')
-                         ]
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                 }
-                 stage('MicroProfile OpenTelemetry JVM Metrics Application TCK') {
-                     agent {
-                         label 'general-purpose'
-                     }
-                     steps {
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics Application TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         build job: 'TCKs/MP-TCKs',
-                         parameters: [
-                             string(name: 'buildProject', value: 'Build'),
-                             string(name: 'payaraBuildNumber', value: buildId),
-                             string(name: 'repoOrg', value: 'payara'),
-                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-                             string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Application'),
-                             string(name: 'jdkVer', value: 'zulu-21'),
-                             string(name: 'distribution', value: 'full')
-                         ]
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics Application TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                 }
-                 stage('MicroProfile OpenTelemetry Tracing Logging TCK') {
-                     agent {
-                         label 'general-purpose'
-                     }
-                     steps {
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing Logging TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         build job: 'TCKs/MP-TCKs',
-                         parameters: [
-                             string(name: 'buildProject', value: 'Build'),
-                             string(name: 'payaraBuildNumber', value: buildId),
-                             string(name: 'repoOrg', value: 'payara'),
-                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-                             string(name: 'suites', value: 'OpenTelemetry-Tracing-Logging'),
-                             string(name: 'jdkVer', value: 'zulu-21'),
-                             string(name: 'distribution', value: 'full')
-                         ]
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing Logging TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                 }
-                 stage('MicroProfile REST Client TCK') {
-                     agent {
-                         label 'general-purpose'
-                     }
-                     steps {
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                         build job: 'TCKs/MP-TCKs',
-                         parameters: [
-                             string(name: 'buildProject', value: 'Build'),
-                             string(name: 'payaraBuildNumber', value: buildId),
-                             string(name: 'repoOrg', value: 'payara'),
-                             string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
-                             string(name: 'suites', value: 'Rest-Client'),
-                             string(name: 'jdkVer', value: 'zulu-21'),
-                             string(name: 'distribution', value: 'full')
-                         ]
-                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                     }
-                 }
+                stage('MicroProfile OpenAPI TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'OpenAPI'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenTelemetry Tracing TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'OpenTelemetry-Tracing'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenTracing TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'OpenTracing'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile REST Client TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'suites', value: 'Rest-Client'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
                 stage('EE8 Tests') {
                     agent {
                         label 'general-purpose'

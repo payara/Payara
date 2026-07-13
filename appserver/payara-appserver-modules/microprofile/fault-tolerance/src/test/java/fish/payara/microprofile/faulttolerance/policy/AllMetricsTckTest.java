@@ -93,7 +93,7 @@ public class AllMetricsTckTest extends AbstractMetricTest {
     /**
      * Scenario is inspired by the TCK test of same name but more strict
      */
-   @Test
+    @Test
     public void testMetricUnits() throws Exception  {
         Future<?> res = (Future<?>) callMethodDirectly(null);
         assertNoExceptionsThrown();

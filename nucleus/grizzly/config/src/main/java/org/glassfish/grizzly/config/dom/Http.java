@@ -38,6 +38,7 @@
  * holder.
  *
  * Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+ * Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
  */
 
 
@@ -63,11 +64,11 @@ import org.jvnet.hk2.config.types.PropertyBag;
 @Configured
 public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean AUTH_PASS_THROUGH_ENABLED = false;
+    boolean BEHIND_PROXY = false;
     boolean CHUNKING_ENABLED = true;
     boolean COMET_SUPPORT_ENABLED = false;
     boolean ENCODED_SLASH_ENABLED = false;
     boolean DNS_LOOKUP_ENABLED = false;
-    boolean RCM_SUPPORT_ENABLED = false;
     boolean TIMEOUT_ENABLED = true;
     boolean TRACE_ENABLED = false;
     boolean UPLOAD_TIMEOUT_ENABLED = true;
@@ -546,6 +547,15 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getHttp2PushEnabled();
 
     void setHttp2PushEnabled(String pushEnabled);
+
+    /**
+     * If set to true, the server is configured behind a reverse proxy and will trust
+     * X-Real-IP and X-Forwarded-For headers to determine the client's real IP address.
+     */
+    @Attribute(defaultValue = "" + BEHIND_PROXY, dataType = Boolean.class)
+    boolean isBehindProxy();
+
+    void setBehindProxy(boolean behindProxy);
 
     @DuckTyped
     @Override

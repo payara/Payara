@@ -48,7 +48,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.eclipse.microprofile.openapi.models.OpenAPI;
@@ -91,7 +90,6 @@ public class FileProcessor implements OASProcessor {
                 } else {
                     mapper = ObjectMapperFactory.createYaml();
                 }
-                mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
             } else {
                 LOGGER.fine("No static OpenAPI document provided.");
             }

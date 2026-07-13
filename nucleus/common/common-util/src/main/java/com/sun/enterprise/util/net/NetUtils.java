@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -816,6 +817,59 @@ public class NetUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Interface for accessing HTTP headers, allowing different request types to be used
+     * with the getRemoteHost method.
+     */
+    public interface RequestInfoProvider {
+        /**
+         * Gets the value of an HTTP header.
+         *
+         * @param name the header name
+         * @return the header value, or null if not present
+         */
+        String getHeader(String name);
+
+        /**
+         * Gets the value of the remote host.
+         *
+         * @return remote host of the HTTP request
+         */
+        String getRemoteHost();
+    }
+
+    /**
+     * Gets the real remote host based on proxy headers.
+     * <p>
+     * If behindProxy is true, checks X-Real-IP and X-Forwarded-For headers
+     * to get the original client IP when behind a reverse proxy.
+     * Otherwise, returns the remote host.
+     *
+     * @param requestInfoProvider provides access to request info
+     * @param behindProxy true if the server is behind a reverse proxy
+     * @return the real remote host IP/hostname
+     */
+    public static String getRemoteHost(RequestInfoProvider requestInfoProvider, boolean behindProxy) {
+        if (behindProxy) {
+
+            // Check X-Real-IP first (set by closest proxy like nginx)
+            String xRealIP = requestInfoProvider.getHeader("X-Real-IP");
+            if (xRealIP != null && !xRealIP.isBlank()) {
+                return xRealIP;
+            }
+
+            // Check X-Forwarded-For (can contain multiple IPs in format "client, proxy1, proxy2")
+            String xForwardedFor = requestInfoProvider.getHeader("X-Forwarded-For");
+            if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+                int commaIndex = xForwardedFor.indexOf(',');
+                return commaIndex > 0 ? xForwardedFor.substring(0, commaIndex).trim() : xForwardedFor.trim();
+            }
+        }
+
+        // Fall back to the remote host
+        return requestInfoProvider.getRemoteHost();
     }
 
     ///////////////////////////////////////////////////////////////////////////

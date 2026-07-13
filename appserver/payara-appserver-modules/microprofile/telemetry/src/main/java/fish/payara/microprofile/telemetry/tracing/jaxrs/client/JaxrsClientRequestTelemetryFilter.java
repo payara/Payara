@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2023-2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2023] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,10 +52,7 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.semconv.ExceptionAttributes;
-import io.opentelemetry.semconv.HttpAttributes;
-import io.opentelemetry.semconv.ServerAttributes;
-import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.client.ClientResponseContext;
@@ -112,21 +109,21 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
 
         // ***** OpenTracing Instrumentation *****
         // Check if we should trace this client call
-        if (openTelemetryService != null && openTelemetryService.isEnabled()) {
+        if (openTelemetryService != null && openTelemetryService.isEnabled() && shouldTrace(requestContext)) {
             // Get or create the tracer instance for this application
             final Tracer tracer = payaraTracingServices.getActiveTracer();
 
             // Build a span with the required MicroProfile Telemetry attributes
             SpanBuilder spanBuilder = tracer.spanBuilder(requestContext.getMethod())
-                    .setAttribute(UrlAttributes.URL_FULL, requestContext.getUri().toString())
-                    .setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, requestContext.getMethod())
-                    .setAttribute(ServerAttributes.SERVER_ADDRESS, requestContext.getUri().getHost())
+                    .setAttribute(SemanticAttributes.HTTP_URL, requestContext.getUri().toString())
+                    .setAttribute(SemanticAttributes.HTTP_METHOD, requestContext.getMethod())
+                    .setAttribute(SemanticAttributes.NET_PEER_NAME, requestContext.getUri().getHost())
                     .setAttribute("component", "jaxrs")
                     .setAttribute("span.kind", "client")
                     .setSpanKind(SpanKind.CLIENT);
 
             if (requestContext.getUri().getPort() != -1) {
-                spanBuilder.setAttribute(ServerAttributes.SERVER_PORT, (long)requestContext.getUri().getPort());
+                spanBuilder.setAttribute(SemanticAttributes.NET_PEER_PORT, (long)requestContext.getUri().getPort());
             }
 
             // Get the propagated span context from the request if present
@@ -162,14 +159,14 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
 
             // Get the response status and add it to the active span
             Response.StatusType statusInfo = responseContext.getStatusInfo();
-            activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, statusInfo.getStatusCode());
+            activeSpan.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, statusInfo.getStatusCode());
 
             // If the response status is an error, add error info to the active span
             if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
                 activeSpan.setAttribute("error", true);
                 activeSpan.setStatus(StatusCode.ERROR);
-                activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
-                        Attributes.of(ExceptionAttributes.EXCEPTION_TYPE, statusInfo.getFamily().name()));
+                activeSpan.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
+                        Attributes.of(SemanticAttributes.EXCEPTION_TYPE, statusInfo.getFamily().name()));
             }
             helper.end();
             helper.close();

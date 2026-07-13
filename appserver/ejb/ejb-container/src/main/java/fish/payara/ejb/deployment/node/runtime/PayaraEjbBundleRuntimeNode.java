@@ -71,12 +71,12 @@ public class PayaraEjbBundleRuntimeNode extends EjbBundleRuntimeNode {
 
     @Override
     public String getDocType() {
-        return DTDRegistry.PAYARA_EJBJAR_400_DTD_PUBLIC_ID;
+        return DTDRegistry.PAYARA7_EJBJAR_401_DTD_PUBLIC_ID;
     }
 
     @Override
     public String getSystemID() {
-        return DTDRegistry.PAYARA_EJBJAR_400_DTD_SYSTEM_ID;
+        return DTDRegistry.PAYARA7_EJBJAR_401_DTD_SYSTEM_ID;
     }
 
     /**
@@ -86,7 +86,9 @@ public class PayaraEjbBundleRuntimeNode extends EjbBundleRuntimeNode {
      * @return the doctype tag name
      */
     public static String registerBundle(Map publicIDToDTD) {
+        publicIDToDTD.put(DTDRegistry.PAYARA6_EJBJAR_400_DTD_PUBLIC_ID, DTDRegistry.PAYARA6_EJBJAR_400_DTD_SYSTEM_ID);
         publicIDToDTD.put(DTDRegistry.PAYARA_EJBJAR_400_DTD_PUBLIC_ID, DTDRegistry.PAYARA_EJBJAR_400_DTD_SYSTEM_ID);
+        publicIDToDTD.put(DTDRegistry.PAYARA7_EJBJAR_401_DTD_PUBLIC_ID, DTDRegistry.PAYARA7_EJBJAR_401_DTD_SYSTEM_ID);
         return RuntimeTagNames.PAYARA_EJB_RUNTIME_TAG;
     }
 }

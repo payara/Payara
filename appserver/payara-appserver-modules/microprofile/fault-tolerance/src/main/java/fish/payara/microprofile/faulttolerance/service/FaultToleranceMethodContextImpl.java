@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -284,19 +284,5 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
     @Override
     public String toString() {
         return super.toString()+"[method="+context.getMethod()+", target="+ context.getTarget()+", sharedState=" + shared + "]";
-    }
-    
-    public String getMethodName() {
-        if (context != null) {
-            return context.getMethod().getName();
-        }
-        return null;
-    }
-    
-    public String getClassName() {
-        if (context != null) {
-            return context.getMethod().getDeclaringClass().getName();
-        }
-        return null;
     }
 }

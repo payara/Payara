@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,21 +40,20 @@
 package fish.payara.samples.remote.ejb.tracing.server;
 
 import fish.payara.samples.remote.ejb.tracing.EjbRemote;
-import fish.payara.microprofile.telemetry.tracing.Traced;
-import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.common.AttributeKey;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import org.eclipse.microprofile.opentracing.Traced;
+
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import java.util.Map;
 import java.util.Random;
 
-
 @Stateless
 public class Ejb implements EjbRemote {
+
+    @Inject
+    Tracer tracer;
 
     /**
      * This method should not be traced, but the baggage items should still be available.
@@ -64,14 +63,12 @@ public class Ejb implements EjbRemote {
     @Override
     public String nonAnnotatedMethod() {
         randomSleep();
-        Baggage baggage = Baggage.builder()
-                .put("Wibbles", "Wobbles")
-                .put("Nibbles", "Nobbles")
-                .build();
-        try (Scope scope = baggage.storeInContext(Context.current()).makeCurrent()) {
-            return getBaggageItems();
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
         }
-
     }
 
     /**
@@ -83,11 +80,11 @@ public class Ejb implements EjbRemote {
     @Traced(operationName = "customName")
     public String annotatedMethod() {
         randomSleep();
-        Baggage baggage = Baggage.builder()
-                .put("Wibbles", "Wobbles")
-                .build();
-        try (Scope scope = baggage.storeInContext(Context.current()).makeCurrent()) {
-            return getBaggageItems();
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
         }
     }
 
@@ -100,33 +97,25 @@ public class Ejb implements EjbRemote {
     @Traced(false)
     public String shouldNotBeTraced() {
         randomSleep();
-        Baggage baggage = Baggage.builder()
-                .put("Wibbles", "Wobbles")
-                .put("Nibbles", "Nobbles")
-                .put("Bibbles", "Bobbles")
-                .build();
-        try (Scope scope = baggage.storeInContext(Context.current()).makeCurrent()) {
-            return getBaggageItems();
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
         }
     }
 
     @Override
     public String editBaggageItems() {
         randomSleep();
-        Baggage initial = Baggage.builder()
-                .put("Wibbles", "Wobbles")
-                .put("Nibbles", "Nobbles")
-                .put("Bibbles", "Bobbles")
-                .build();
-        try (Scope scope = initial.storeInContext(Context.current()).makeCurrent()) {
-            Baggage edited = Baggage.current().toBuilder()
-                    .put("Wibbles", "Wabbles")
-                    .put("Nibbles", "Nabbles")
-                    .put("Bibbles", "Babbles")
-                    .build();
-            try (Scope scope2 = edited.storeInContext(Context.current()).makeCurrent()) {
-                return getBaggageItems();
-            }
+        Span activeSpan = tracer.activeSpan();
+        if (activeSpan != null) {
+            activeSpan.setBaggageItem("Wibbles", "Wabbles");
+            activeSpan.setBaggageItem("Nibbles", "Nabbles");
+            activeSpan.setBaggageItem("Bibbles", "Babbles");
+            return getBaggageItems(activeSpan);
+        } else {
+            return "Nothing found!";
         }
     }
 
@@ -138,20 +127,11 @@ public class Ejb implements EjbRemote {
         }
     }
 
-    private String getBaggageItems() {
-        StringBuilder sb = new StringBuilder("\n");
-        Baggage.current().asMap().forEach((key, entry) ->
-                sb.append(key).append(" : ").append(entry.getValue()).append("\n"));
-        Span currentSpan = Span.current();
-        if (currentSpan.isRecording()) {
-            if (currentSpan instanceof ReadableSpan) {
-                ReadableSpan readableSpan = (ReadableSpan) currentSpan;
-                String tcID = readableSpan.getAttribute(AttributeKey.stringKey("TX-ID"));
-                if (tcID != null) {
-                    sb.append("TX-ID : ").append(tcID).append("\n");
-                }
-            }
+    private String getBaggageItems(Span activeSpan) {
+        String baggageItems = "\n";
+        for (Map.Entry<String, String> baggageItem : activeSpan.context().baggageItems()) {
+            baggageItems += baggageItem.getKey() + " : " + baggageItem.getValue() + "\n";
         }
-        return sb.toString();
+        return baggageItems;
     }
 }
