@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,9 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.ejb.opentracing;
+package fish.payara.microprofile.telemetry.tracing.ejb.iiop;
 
-import fish.payara.opentracing.OpenTracingService;
+import jakarta.inject.Singleton;
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -49,74 +49,48 @@ import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import org.omg.PortableInterceptor.ORBInitInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
-import jakarta.inject.Singleton;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
- * Factory for creating IIOP client and server interceptors that propagate OpenTracing SpanContext.
+ * Factory for creating IIOP client and server interceptors that propagate OTel
+ * context and create CLIENT/SERVER spans for remote EJB calls.
  *
- * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * <p>Note: these interceptors are registered in the <em>server</em> ORB only.
+ * A plain IIOP naming client (e.g. a {@code @RunAsClient} test JVM) does not
+ * have these interceptors registered, so no CLIENT span is created on the
+ * client side for externally-initiated calls.</p>
  */
-@Service(name = "OpenTracingIiopInterceptorFactory")
+@Service(name = "OpenTelemetryIiopInterceptorFactory")
 @Singleton
-public class OpenTracingIiopInterceptorFactory implements IIOPInterceptorFactory {
+public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFactory {
 
-    private static final Logger logger = Logger.getLogger(OpenTracingIiopInterceptorFactory.class.getName());
-
-    public static final int OPENTRACING_IIOP_ID = 3226428;
+    public static final int OPENTELEMETRY_IIOP_ID = 3226428;
+    /** Serial version used by {@link OpenTelemetryIiopTextMap} for wire compatibility. */
     public static final long OPENTRACING_IIOP_SERIAL_VERSION_UID = 20200731171822L;
-
 
     private ClientRequestInterceptor clientRequestInterceptor;
     private ServerRequestInterceptor serverRequestInterceptor;
 
-    private OpenTracingService openTracingService;
     private ServiceLocator serviceLocator;
 
     @Override
-    public ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
-        if (clientRequestInterceptor == null) {
-            if (attemptCreation()) {
-                try {
-                    clientRequestInterceptor = new OpenTracingIiopClientInterceptor(openTracingService);
-                } catch (NullPointerException nullPointerException) {
-                    logger.log(Level.WARNING, "Could not create OpenTracing IIOP Client Interceptor - Remote EJBs will not be traced");
-                    return null;
-                }
-            }
+    public synchronized ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
+        if (clientRequestInterceptor == null && attemptCreation()) {
+            clientRequestInterceptor = new OpenTelemetryIiopClientInterceptor(serviceLocator);
         }
-
         return clientRequestInterceptor;
     }
 
     @Override
-    public ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
-        if (serverRequestInterceptor == null) {
-            if (attemptCreation()) {
-                serverRequestInterceptor = new OpenTracingIiopServerInterceptor(openTracingService);
-            }
+    public synchronized ServerRequestInterceptor createServerRequestInterceptor(ORBInitInfo info, Codec codec) {
+        if (serverRequestInterceptor == null && attemptCreation()) {
+            serverRequestInterceptor = new OpenTelemetryIiopServerInterceptor(serviceLocator);
         }
-
         return serverRequestInterceptor;
     }
 
     private boolean attemptCreation() {
         if (serviceLocator == null) {
             serviceLocator = Globals.getStaticBaseServiceLocator();
-            if (serviceLocator == null) {
-                return false;
-            }
         }
-
-        if (openTracingService == null) {
-            openTracingService = serviceLocator.getService(OpenTracingService.class);
-            if (openTracingService == null) {
-                return false;
-            }
-        }
-
-        return true;
+        return serviceLocator != null;
     }
-
 }
