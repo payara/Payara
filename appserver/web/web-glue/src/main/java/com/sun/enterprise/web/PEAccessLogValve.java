@@ -436,7 +436,7 @@ public final class PEAccessLogValve
     }
 
     public void setFilter(String regex) {
-        if (regex == null) {
+        if (regex == null || regex.trim().isEmpty()) {
             filter = null;
         } else {
             try {
