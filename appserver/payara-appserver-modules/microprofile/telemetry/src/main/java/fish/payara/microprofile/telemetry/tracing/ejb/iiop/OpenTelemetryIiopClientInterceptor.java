@@ -39,15 +39,10 @@
  */
 package fish.payara.microprofile.telemetry.tracing.ejb.iiop;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Span;
+import fish.payara.opentracing.OpenTelemetryService;
+import fish.payara.opentracing.PropagationHelper;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.ServiceContext;
@@ -55,27 +50,60 @@ import org.omg.PortableInterceptor.ClientRequestInfo;
 import org.omg.PortableInterceptor.ClientRequestInterceptor;
 import org.omg.PortableInterceptor.ForwardRequest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryIiopInterceptorFactory.OPENTELEMETRY_IIOP_ID;
 
 /**
- * IIOP Client Interceptor for propagating OpenTracing SpanContext to Payara Server.
+ * IIOP Client Interceptor that creates a CLIENT span for outbound IIOP calls and
+ * propagates the active OTel context to the remote server via an IIOP service context.
  *
- * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * <p>The CLIENT span is started in {@code send_request} (where the application
+ * invocation is still on the stack), injected as a W3C carrier into the IIOP service
+ * context so the remote server interceptor can extract it, and ended in
+ * {@code receive_reply} or {@code receive_exception}.</p>
  */
 public class OpenTelemetryIiopClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
     private static final Logger logger = Logger.getLogger(OpenTelemetryIiopClientInterceptor.class.getName());
-    
+
+    private final ServiceLocator serviceLocator;
+    private final ThreadLocal<PropagationHelper> currentCall = new ThreadLocal<>();
+
+    public OpenTelemetryIiopClientInterceptor(ServiceLocator serviceLocator) {
+        this.serviceLocator = serviceLocator;
+    }
+
     @Override
     public void send_request(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
-        Span currentSpan = Span.current();
-        if (!currentSpan.getSpanContext().isValid()) {
+        OpenTelemetryService openTelemetryService = serviceLocator.getService(OpenTelemetryService.class);
+        if (openTelemetryService == null || !openTelemetryService.isEnabled()) {
             return;
         }
 
-        OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
+        String operation = clientRequestInfo.operation();
+
+        // Start the CLIENT span — invocation is on the stack at this point, so
+        // getCurrentTracer() resolves the correct per-app tracer.
+        var span = openTelemetryService.getCurrentTracer()
+                .spanBuilder(operation)
+                .setParent(Context.current())
+                .setSpanKind(SpanKind.CLIENT)
+                .setAttribute("rpc.system.name", "corba")
+                .setAttribute("rpc.method", operation)
+                .startSpan();
+
+        PropagationHelper helper = PropagationHelper.start(span, Context.current());
+        currentCall.set(helper);
+
+        // Inject the now-current context (which includes the CLIENT span) into the
+        // IIOP service context so the server interceptor can extract it.
         OpenTelemetryIiopTextMap contextMap = new OpenTelemetryIiopTextMap();
-        openTelemetry.getPropagators().getTextMapPropagator()
+        openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator()
                 .inject(Context.current(), contextMap, OpenTelemetryIiopTextMap::put);
 
         if (contextMap.isEmpty()) {
@@ -89,28 +117,30 @@ public class OpenTelemetryIiopClientInterceptor extends LocalObject implements C
             clientRequestInfo.add_request_service_context(
                     new ServiceContext(OPENTELEMETRY_IIOP_ID, bos.toByteArray()), true);
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, "Exception propagating OTel span context over IIOP");
+            logger.log(Level.SEVERE, "Exception propagating OTel span context over IIOP", ex);
         }
     }
 
     @Override
     public void send_poll(ClientRequestInfo clientRequestInfo) {
-
+        // Noop
     }
 
     @Override
     public void receive_reply(ClientRequestInfo clientRequestInfo) {
-
+        endCall(null);
     }
 
     @Override
     public void receive_exception(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
-
+        // received_exception_id() gives the CORBA exception type string,
+        // e.g. "IDL:omg.org/CORBA/COMM_FAILURE:1.0"
+        endCall(new RuntimeException(clientRequestInfo.received_exception_id()));
     }
 
     @Override
     public void receive_other(ClientRequestInfo clientRequestInfo) throws ForwardRequest {
-
+        endCall(null);
     }
 
     @Override
@@ -120,6 +150,14 @@ public class OpenTelemetryIiopClientInterceptor extends LocalObject implements C
 
     @Override
     public void destroy() {
+    }
 
+    private void endCall(Throwable error) {
+        PropagationHelper helper = currentCall.get();
+        if (helper != null) {
+            currentCall.remove();
+            helper.end(error);
+            helper.close();
+        }
     }
 }

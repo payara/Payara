@@ -1964,6 +1964,13 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                 // etc
                 invocationManager.preInvoke(inv);
 
+                // Invocation context is now on the stack: promote any deferred
+                // IIOP context into a live SERVER span using the app's tracer.
+                // Note: the fast path (useFastPath=true) skips this call, so
+                // cached-transaction IIOP invocations produce no SERVER span.
+                // endDeferredSpan() handles the missing spanHelper cleanly.
+                openTelemetryService.applyDeferredContext();
+
                 // Do Tx machinery
                 preInvokeTx(inv);
 

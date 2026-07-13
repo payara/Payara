@@ -138,6 +138,11 @@ public class Ejb implements EjbRemote {
         }
     }
 
+    @Override
+    public void throwsException() {
+        throw new RuntimeException("deliberate IIOP test exception");
+    }
+
     private String getBaggageItems() {
         StringBuilder sb = new StringBuilder("\n");
         Baggage.current().asMap().forEach((key, entry) ->

@@ -1,9 +1,7 @@
-package fish.payara.samples.remote.ejb.tracing;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +37,11 @@ package fish.payara.samples.remote.ejb.tracing;
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples.remote.ejb.tracing.web;
 
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.core.Application;
 
-import jakarta.ejb.Remote;
-
-@Remote
-public interface EjbRemote {
-
-    String nonAnnotatedMethod();
-
-    String annotatedMethod();
-
-    String shouldNotBeTraced();
-
-    String editBaggageItems();
-
-    /**
-     * Method that deliberately throws a RuntimeException (wrapped as EJBException by the container).
-     * Used to verify that the IIOP server interceptor sets ERROR status and records the exception.
-     */
-    void throwsException();
-
+@ApplicationPath("/api")
+public class JaxrsApp extends Application {
 }
