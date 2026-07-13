@@ -72,6 +72,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.glassfish.internal.api.LogManager;
 
@@ -435,7 +436,16 @@ public final class PEAccessLogValve
     }
 
     public void setFilter(String regex) {
-        filter = Objects.requireNonNullElse(Pattern.compile(regex), null);
+        if (regex == null) {
+            filter = null;
+        } else {
+            try {
+                filter = Pattern.compile(regex);
+            } catch (PatternSyntaxException e) {
+                _logger.log(Level.WARNING, "Couldn't create regex matcher due to syntax error: ", e);
+                filter = null;
+            }
+        }
     }
 
     /**
