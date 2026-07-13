@@ -143,7 +143,9 @@ public class WorkflowEngine {
                     invokePhase(agentMetadata.getOutcomeMethod(), agentInstance, workflowContext, llm, null);
                 } catch (Exception outcomeEx) {
                     Throwable outcomeCause = unwrap(outcomeEx);
-                    if (outcomeCause instanceof RuntimeException re) throw re;
+                    if (outcomeCause instanceof RuntimeException re) { 
+                       throw re;
+                    }
                     throw new RuntimeException(outcomeCause);
                 }
             }
