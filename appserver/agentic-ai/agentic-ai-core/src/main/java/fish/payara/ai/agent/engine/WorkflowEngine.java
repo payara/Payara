@@ -116,7 +116,9 @@ public class WorkflowEngine {
             for (PhaseMethod phase : agentMetadata.getSortedPhases()) {
                 Object result = invokePhase(phase.getMethod(), agentInstance, workflowContext, llm, null);
                 if (phase.getType() == PhaseType.DECISION) {
-                    if (!shouldContinue(result)) return;
+                    if (!shouldContinue(result))  {
+                       return;
+                    }
                     addDecisionResultToContext(result, workflowContext);
                 } else {
                     workflowContext.add(result);
