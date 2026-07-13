@@ -131,7 +131,9 @@ public class WorkflowEngine {
             Throwable cause = unwrap(e);
             boolean handled = dispatchException(agentMetadata, agentInstance, workflowContext, llm, cause);
             if (!handled) {
-                if (cause instanceof RuntimeException re) throw re;
+                if (cause instanceof RuntimeException re)  {
+                  throw re;
+               }
                 throw new RuntimeException(cause);
             }
             // Handler completed normally: run @Outcome as the recovery closure phase,
