@@ -298,6 +298,41 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
+                stage('Jakarta Agentic AI TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    options {
+                        retry(3)
+                    }
+                    steps {
+                        processPayaraArtifacts(buildId, true)
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        dir('jakartaee-10-tck-runners') {
+                            git branch: 'EE11-with-Jakarta-Agentic-AI',
+                                url: 'https://github.com/payara/jakartaee-10-tck-runners.git'
+
+                            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                            sh """mvn -V -B -ff clean install --strict-checksums \
+                            -pl . -pl tck-download -pl tck-download/jakarta-agentic-ai-tck \
+                            -Dpayara.version=${pom.version}"""
+
+                            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Agentic AI TCK (managed)  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                            sh """mvn -V -B -ff clean verify --strict-checksums -Ppayara-server-managed \
+                            -Dpayara.version=${pom.version} \
+                            -Dsurefire.rerunFailingTestsCount=2 \
+                            -Dfailsafe.rerunFailingTestsCount=2 \
+                            -pl . -pl agentic-ai-tck"""
+                        }
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                    post {
+                        success {
+                            junit '**/target/*-reports/*.xml'
+                        }
+                    }
+                }
                 stage('EE8 Tests') {
                     agent {
                         label 'general-purpose'
