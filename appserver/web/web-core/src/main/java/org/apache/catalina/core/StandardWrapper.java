@@ -62,13 +62,7 @@ package org.apache.catalina.core;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.telemetry.service.PayaraTelemetryConstants;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.DoubleHistogram;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.semconv.ErrorAttributes;
-import io.opentelemetry.semconv.HttpAttributes;
-import io.opentelemetry.semconv.UrlAttributes;
+import io.opentelemetry.context.Scope;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -1516,8 +1510,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      */
     void service(ServletRequest request, ServletResponse response, Servlet servlet) throws IOException, ServletException {
         InstanceSupport supp = getInstanceSupport();
-        long nanosStart = System.nanoTime();
-        long elapsedNanos = 0;
         try {
             supp.fireInstanceEvent(BEFORE_SERVICE_EVENT, servlet, request, response);
 
@@ -1529,73 +1521,59 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             }
 
             if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+                HttpServletRequest httpRequest = (HttpServletRequest) request;
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-                if ( SecurityUtil.executeUnderSubjectDoAs() ){
-                    final ServletRequest req = request;
-                    final ServletResponse res = response;
-                    Principal principal = ((HttpServletRequest) req).getUserPrincipal();
+                // OTel: null scope = not owner (disabled, re-entry, or error). No-op for finish.
+                Scope otelScope = OtelSupport.startServerSpan(openTelemetryService, httpRequest);
+                Throwable error = null;
 
-                    Object[] serviceType = new Object[2];
-                    serviceType[0] = req;
-                    serviceType[1] = res;
+                try {
+                    if ( SecurityUtil.executeUnderSubjectDoAs() ){
+                        final ServletRequest req = request;
+                        final ServletResponse res = response;
+                        Principal principal = httpRequest.getUserPrincipal();
 
-                    SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
-                } else {
-                    RequestTraceSpan span = null;
+                        Object[] serviceType = new Object[2];
+                        serviceType[0] = req;
+                        serviceType[1] = res;
 
-                    if (requestTracing.isRequestTracingEnabled()) {
-                        if (servlet instanceof ServletContainer) {
-                            span = constructWebServiceRequestSpan((HttpServletRequest) request);
-                        } else if (servlet instanceof Servlet) {
-                            span = constructServletRequestSpan((HttpServletRequest) request, servlet);
+                        SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
+                    } else {
+                        RequestTraceSpan span = null;
+                        if (requestTracing.isRequestTracingEnabled()) {
+                            if (servlet instanceof ServletContainer) {
+                                span = constructWebServiceRequestSpan(httpRequest);
+                            } else if (servlet instanceof Servlet) {
+                                span = constructServletRequestSpan(httpRequest, servlet);
+                            }
+                        }
+
+                        try {
+                            if (isJspServlet) {
+                                isInSuppressFFNFThread.set(true);
+                            }
+
+                            servlet.service(httpRequest, httpResponse);
+                        } finally {
+                            if (requestTracing.isRequestTracingEnabled() && span != null) {
+                                span.addSpanTag("ResponseStatus", Integer.toString(httpResponse.getStatus()));
+                                requestTracing.traceSpan(span);
+                            }
+                            isInSuppressFFNFThread.set(false);
                         }
                     }
-
-                    try {
-                        if (isJspServlet) {
-                            isInSuppressFFNFThread.set(true);
-                        }
-
-                        servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
-                    }
-                    finally {
-                        elapsedNanos = System.nanoTime() - nanosStart;
-                        // TODO: We should be starting the span if we're finishing it.
-                        if (Span.current().isRecording() && response.isCommitted()) {
-                            // If response is not committed, it is likely async
-                            Span.current().setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus()).end();
-                        }
-                        // TODO: clear OpenTelemetry context once we move to natively using it.
-                        if (requestTracing.isRequestTracingEnabled() && span != null) {
-                            span.addSpanTag("ResponseStatus", Integer.toString(
-                                    ((HttpServletResponse) response).getStatus()));
-                            requestTracing.traceSpan(span);
-                        }
-
-                        isInSuppressFFNFThread.set(false);
-                    }
+                } catch (Throwable t) {
+                    error = t;
+                    throw t;
+                } finally {
+                    // Closes scope on this thread and ends/records span (or registers AsyncListener).
+                    OtelSupport.finishServerSpan(otelScope, httpRequest, httpResponse, error);
                 }
             } else {
                 servlet.service(request, response);
-                elapsedNanos = System.nanoTime() - nanosStart;
             }
 
-            //here to add a process to get histogram and instrument http endpoints results evaluated in TCK
-            if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-                io.opentelemetry.context.Context ctx = io.opentelemetry.context.Context.current();
-                DoubleHistogram doubleHistogram = openTelemetryService.createMetricsHistogram(openTelemetryService.getCurrentSdk());
-                double seconds = elapsedNanos * PayaraTelemetryConstants.NANO_CONVERSION;
-                Attributes attributes =
-                        Attributes.builder()
-                                .put(HttpAttributes.HTTP_REQUEST_METHOD, ((HttpServletRequest) request).getMethod())
-                                .put(UrlAttributes.URL_SCHEME, (request.getScheme()))
-                                .put(HttpAttributes.HTTP_ROUTE, ((HttpServletRequest) request).getRequestURI())
-                                .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, ((HttpServletResponse) response).getStatus())
-                                .put(ErrorAttributes.ERROR_TYPE,
-                                        ((HttpServletResponse) response).getStatus() >= 500 ?
-                                                Integer.toString(((HttpServletResponse) response).getStatus()) : "").build();
-                doubleHistogram.record(seconds, attributes, ctx);
-            }
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response);
         } catch (IOException | ServletException | RuntimeException | Error e) {
             // Set response status before firing event, see IT 10022
@@ -1610,7 +1588,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
             throw new ServletException(rb.getString(SERVLET_EXECUTION_EXCEPTION), e);
         }
-
     }
     // END IASRI 4665318
 

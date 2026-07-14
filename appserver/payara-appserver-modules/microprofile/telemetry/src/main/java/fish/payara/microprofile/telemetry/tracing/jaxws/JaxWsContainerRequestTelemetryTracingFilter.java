@@ -46,29 +46,15 @@ import com.sun.xml.ws.api.message.Packet;
 import fish.payara.microprofile.telemetry.tracing.Traced;
 import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTelemetryService;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
+import fish.payara.opentracing.OtelRouteState;
+import fish.payara.telemetry.service.PayaraTelemetryConstants;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.semconv.ErrorAttributes;
-import io.opentelemetry.semconv.HttpAttributes;
-import io.opentelemetry.semconv.UrlAttributes;
 import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.inject.Inject;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.core.MultivaluedHashMap;
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Response;
 import jakarta.xml.soap.SOAPException;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -77,17 +63,10 @@ import org.glassfish.webservices.monitoring.MonitorContext;
 import org.glassfish.webservices.monitoring.MonitorFilter;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
-import static jakarta.ws.rs.core.Response.Status.Family.SERVER_ERROR;
-import static jakarta.xml.ws.handler.MessageContext.HTTP_RESPONSE_CODE;
 import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
-import static jakarta.xml.ws.handler.MessageContext.SERVLET_RESPONSE;
-import static java.util.Collections.list;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
@@ -103,133 +82,43 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
     @Inject
     private RequestTracingService requestTracing;
 
-    @Inject
-    private OpenTelemetryService openTelemetry;
-
     @Override
     public void filterRequest(Packet pipeRequest, MonitorContext monitorContext) {
         // If request tracing is enabled, and there's a trace in progress (which there should be!)
         if (isTraceInProgress()) {
-            TextMapGetter<Map<String, String>> getter = new TextMapGetter<Map<String, String>>() {
-                @Override
-                public Iterable<String> keys(Map<String, String> carrier) {
-                    return carrier.keySet();
-                }
-
-                @Override
-                public String get(Map<String, String> carrier, String key) {
-                    return carrier.get(key);
-                }
-            };
             // Get the Traced annotation from the target method if CDI is initialised
             Traced tracedAnnotation = getTraceAnnotation(monitorContext);
 
             // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
             // pattern and a traced annotation set to true (via annotation or config override)
             if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
-
-                // Get the application's tracer instance
-                Tracer tracer = getTracer();
                 HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-                Map<String, String> headers = getHeaders(httpRequest);
-                Context extractedContext = GlobalOpenTelemetry.getPropagators().getTextMapPropagator()
-                        .extract(Context.current(), headers, getter);
-                SpanBuilder spanBuilder = null;
-                if (extractedContext != null) {
-                    // Create a Span and instrument it with details about the request
-                     spanBuilder = tracer.spanBuilder(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
-                            .setSpanKind(SpanKind.SERVER).setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, httpRequest.getMethod())
-                            .setAttribute(UrlAttributes.URL_FULL, httpRequest.getRequestURL().toString())
-                            .setAttribute("component", "jaxws").setParent(extractedContext);
-                } else {
-                    spanBuilder = tracer.spanBuilder(determineOperationName(pipeRequest, monitorContext, tracedAnnotation))
-                            .setSpanKind(SpanKind.SERVER).setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, httpRequest.getMethod())
-                            .setAttribute(UrlAttributes.URL_FULL, httpRequest.getRequestURL().toString())
-                            .setAttribute("component", "jaxws");
+
+                // If StandardWrapper already created the SERVER span for this request, do not
+                // create a second one. The existing span covers this request end-to-end.
+                if (httpRequest != null
+                        && httpRequest.getAttribute(PayaraTelemetryConstants.PAYARA_OTEL_SERVER_SPAN) != null) {
+                    OtelRouteState routeState = OtelRouteState.fromContext(Context.current());
+                    if (routeState != null) {
+                        routeState.overrideSpanName(determineOperationName(pipeRequest, monitorContext, tracedAnnotation));
+                    }
                 }
-                
-                Span span = spanBuilder.startSpan();
-                Scope scope = span.makeCurrent();
-                httpRequest.setAttribute(Scope.class.getName(), scope);
-                httpRequest.setAttribute(Span.class.getName(), span);
             }
         }
     }
 
     @Override
     public void filterResponse(Packet pipeRequest, Packet pipeResponse, MonitorContext monitorContext) {
-        // Try block so that we can always attach error info if there is any
-        try {
-            // If request tracing is enabled, and there is a trace in progress (which there should be!)
-            if (isTraceInProgress()) {
+        // If there's an attached error on the response, log the exception
+        Message message = pipeResponse.getMessage();
 
-                // Get the Traced annotation from the target method if CDI is initialised
-                Traced tracedAnnotation = getTraceAnnotation(monitorContext);
+        if (message != null && message.isFault()) {
+            Object errorObject = getErrorObject(message);
 
-                // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
-                // pattern and a traced annotation set to true (via annotation or config override)
-                if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
-                    HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-                    Object httpSpan = httpRequest.getAttribute(Span.class.getName());
-                    if (httpSpan == null || !(httpSpan instanceof Span)) {
-                        return;
-                    }
-
-                    Span activeSpan = (Span) httpSpan;
-
-                    if (!activeSpan.getSpanContext().isValid()) {
-                        return;
-                    }
-
-                    try {
-
-                        // Get and add the response status to the active span
-                        Response.StatusType statusInfo = getResponseStatus(pipeRequest, pipeResponse);
-
-                        activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, statusInfo.getStatusCode());
-
-                        // If the response status is an error, add error information to the span
-                        if (statusInfo.getFamily() == CLIENT_ERROR || statusInfo.getFamily() == SERVER_ERROR) {
-                            activeSpan.setStatus(StatusCode.ERROR, statusInfo.getReasonPhrase());
-                            activeSpan.setAttribute(ErrorAttributes.ERROR_TYPE, String.valueOf(statusInfo.getStatusCode()));
-
-                            // If there's an attached exception, add it to the span
-
-                            Message message = pipeResponse.getMessage();
-                            if (message != null && message.isFault()) {
-                                Object errorObject = getErrorObject(message);
-                                if (errorObject instanceof Throwable) {
-                                    activeSpan.recordException((Throwable) errorObject);
-                                } else if (errorObject != null) {
-                                    activeSpan.addEvent("error.object:" + errorObject.toString());
-                                }
-                            }
-                        }
-                    } finally {
-                        activeSpan.end();
-                        Object scopeObj = httpRequest.getAttribute(Scope.class.getName());
-                        if (scopeObj instanceof Scope) {
-                            try (Scope scope = (Scope) scopeObj) {
-                                httpRequest.removeAttribute(Scope.class.getName());
-                            }
-                        }
-                        httpRequest.removeAttribute(Span.class.getName());
-                    }
-                }
+            if (errorObject != null) {
+                // TODO: have an actual detail formatter for fault
+                logger.log(SEVERE, getErrorObject(message).toString());
             }
-        } finally {
-            // If there's an attached error on the response, log the exception
-            Message message = pipeResponse.getMessage();
-
-            if (message != null && message.isFault()) {
-                Object errorObject = getErrorObject(message);
-
-                if (errorObject != null) {
-                    // TODO: have an actual detail formatter for fault
-                    logger.log(SEVERE, getErrorObject(message).toString());
-                }
-            }
-
         }
     }
 
@@ -378,26 +267,6 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
         return null;
     }
 
-    private Tracer getTracer() {
-        return openTelemetry.getCurrentTracer();
-    }
-
-    private Response.StatusType getResponseStatus(Packet pipeRequest, Packet pipeResponse) {
-        Integer statusCode = (Integer) pipeResponse.get(HTTP_RESPONSE_CODE);
-
-        if (statusCode == null || statusCode.equals(0)) {
-            HttpServletResponse httpResponse = (HttpServletResponse) pipeRequest.get(SERVLET_RESPONSE);
-            statusCode = httpResponse.getStatus();
-        }
-
-        return Response.Status.fromStatusCode(statusCode);
-    }
-
-    private Throwable getResponseException(MonitorContext monitorContext, Packet pipeResponse) {
-        return monitorContext.getSeiModel().getDatabinding().deserializeResponse(pipeResponse.copy(true), 
-                monitorContext.getCallInfo()).getException();
-    }
-
     private BeanManager getBeanManager() {
         try {
             return CDI.current().getBeanManager();
@@ -407,16 +276,5 @@ public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilte
         }
 
         return null;
-    }
-
-    private Map<String, String> getHeaders(HttpServletRequest httpRequest) {
-        MultivaluedMap<String, String> headerMap = new MultivaluedHashMap<>();
-
-        for (String headerName : list(httpRequest.getHeaderNames())) {
-            headerMap.addAll(headerName, list(httpRequest.getHeaders(headerName)));
-        }
-
-        return headerMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                entry -> String.join(",", entry.getValue())));
     }
 }

@@ -72,6 +72,12 @@ public class AsyncResource {
     @Inject
     Tracer tracer;
 
+    @Path("/fail")
+    @GET
+    public String fail() {
+        throw new RuntimeException("Intentional test exception");
+    }
+
     @Path("/compute")
     @GET
     public String computation(@QueryParam("propagation") @DefaultValue("none") String propagation) throws ExecutionException, InterruptedException {

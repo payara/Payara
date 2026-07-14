@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2023-2026] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -39,20 +39,14 @@
  */
 package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
+import fish.payara.opentracing.OtelRouteState;
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.opentracing.PropagationHelper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.semconv.ExceptionAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
-import io.opentelemetry.semconv.ServerAttributes;
-import io.opentelemetry.semconv.UrlAttributes;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
@@ -76,8 +70,6 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
     private final OpenTelemetryService openTelemetryService;
 
     private final OpenTracingHelper openTracingHelper;
-
-    private PropagationHelper helper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
                                              final OpenTelemetryService openTelemetryService,
@@ -112,7 +104,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
                 return;
             }
 
-            final Span activeSpan = helper != null ? helper.span() : Span.current();
+            final Span activeSpan = Span.current();
             if (!activeSpan.isRecording()) {
                 LOG.finest(() -> "Could not find any active span, nothing to do.");
                 return;
@@ -122,22 +114,13 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
                 case ON_EXCEPTION:
                     onException(requestEvent, activeSpan);
                     break;
-                case RESOURCE_METHOD_FINISHED:
-                    // remove scope from processing thread
-                    if (helper != null) {
-                        helper.closeContext();
-                    }
-                    break;
                 case RESP_FILTERS_FINISHED:
                     onOutgoingResponse(requestEvent, activeSpan);
                     break;
                 case FINISHED:
-                    if (helper != null) {
-                        finish(requestEvent);
-                    } else {
-                        LOG.log(Level.FINE, "Request finished but there was no active span");
-                        activeSpan.end();
-                    }
+                    // StandardWrapper owns the SERVER span lifecycle;
+                    // do NOT end it here — StandardWrapper's finally/AsyncListener will.
+                    LOG.log(Level.FINE, "Request finished; SERVER span is owned by StandardWrapper");
                     break;
             }
         } catch (final RuntimeException e) {
@@ -176,58 +159,39 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
             activeSpan.setStatus(StatusCode.ERROR);
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
-                activeSpan.recordException((Throwable) response.getEntity());
-                activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+                Throwable throwable = (Throwable) response.getEntity();
+                activeSpan.recordException(throwable);
+                activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, throwable.getClass().getName());
                 activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
-                        Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
-                activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
+                        Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, throwable.getMessage()));
+                activeSpan.setStatus(StatusCode.ERROR, throwable.getMessage());
             }
         }
-    }
-
-    private void finish(final RequestEvent event) {
-        LOG.fine(() -> "finish(event=" + event.getType() + ")");
-        helper.close();
-        LOG.finest("Finished.");
     }
 
     private void onIncomingRequest(final RequestEvent event, final String operationName) {
         LOG.fine(() -> "onIncomingRequest(event=" + event.getType() + ", operationName=" + operationName + ")");
 
         final ContainerRequest requestContext = event.getContainerRequest();
-        final Tracer tracer = openTelemetryService.getCurrentTracer();
 
-        // Create a Span and instrument it with details about the request
-        var queryParam = requestContext.getRequestUri().getQuery() == null
-                ? null : requestContext.getRequestUri().getQuery();
-        final SpanBuilder spanBuilder = tracer.spanBuilder(operationName)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, requestContext.getMethod())
-                .setAttribute(UrlAttributes.URL_FULL, requestContext.getRequestUri().toString())
-                .setAttribute(UrlAttributes.URL_PATH,
-                        requestContext.getUriInfo().getRequestUri().getPath())
-                .setAttribute(UrlAttributes.URL_QUERY, queryParam)
-                .setAttribute(UrlAttributes.URL_SCHEME, requestContext.getRequestUri().getScheme())
-                .setAttribute(ServerAttributes.SERVER_ADDRESS, requestContext.getRequestUri().getHost())
-                .setAttribute(HttpAttributes.HTTP_ROUTE, openTracingHelper.getHttpRoute(requestContext, resourceInfo))
-                .setAttribute("component", "jaxrs");
+        // StandardWrapper always owns the SERVER span for this request.
+        // Presence of OtelRouteState in Context.current() is the signal — StandardWrapper
+        // folds it into the span context, so it is visible to any code running under that scope.
+        OtelRouteState routeState = OtelRouteState.fromContext(Context.current());
 
-        if (requestContext.getRequestUri().getPort() != -1) {
-            spanBuilder.setAttribute(ServerAttributes.SERVER_PORT, (long)requestContext.getRequestUri().getPort());
+        if (routeState != null) {
+            // Contribute the full JAX-RS route (baseUri path + matched @Path template).
+            // StandardWrapper reads it from the stashed context at span-end via OtelRouteState.
+            String httpRoute = openTracingHelper.getHttpRoute(requestContext, resourceInfo);
+            if (httpRoute != null && !httpRoute.isEmpty()) {
+                routeState.setFullRoute(httpRoute);
+            }
+            routeState.overrideSpanName(operationName);
+            LOG.fine(() -> "JAX-RS deferring to existing SERVER span for uri=" + toString(requestContext.getUriInfo()));
+        } else {
+            LOG.warning(() -> "No active SERVER span found in Context for JAX-RS request. "
+                    + "Verify that StandardWrapper OTel tracing is enabled.");
         }
-
-        openTracingHelper.augmentSpan(spanBuilder);
-
-        // If there was a context injected into the tracer, add it as a parent of the new span
-        var spanContext = extractContext(requestContext);
-        spanBuilder.setParent(spanContext);
-        // Start the span and continue on to the targeted method
-        // please make sure to close the scope
-
-        final Span span = spanBuilder.startSpan();
-        helper = PropagationHelper.start(span, spanContext);
-        requestContext.setProperty(PropagationHelper.class.getName(), helper);
-        LOG.fine(() -> "Request tracing enabled for request=" + requestContext.getRequest() + " on uri=" + toString(requestContext.getUriInfo()));
     }
 
     private String toString(final UriInfo uriInfo) {
@@ -236,22 +200,6 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
         } catch (final MalformedURLException e) {
             throw new IllegalArgumentException("Invalid uriInfo: " + uriInfo, e);
         }
-    }
-
-    private Context extractContext(ContainerRequest request) {
-        // extract any propagation headers from request. Use empty, root context as this surely starts the new context
-        return openTelemetryService.getCurrentSdk().getPropagators().getTextMapPropagator().extract(Context.root(),
-                request, new TextMapGetter<ContainerRequest>() {
-                    @Override
-                    public Iterable<String> keys(ContainerRequest containerRequest) {
-                        return containerRequest.getHeaders().keySet();
-                    }
-
-                    @Override
-                    public String get(ContainerRequest containerRequest, String s) {
-                        return containerRequest.getHeaderString(s);
-                    }
-                });
     }
 
 }
