@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2026] Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.security.cli;
 
 import com.sun.enterprise.config.serverbeans.AdminService;
+import java.security.Principal;
 import java.util.Enumeration;
+import javax.security.auth.Subject;
+import org.glassfish.security.common.UserNameAndPassword;
 
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -212,6 +215,34 @@ public class ChangeAdminPassword implements AdminCommand, AdminCommandSecurity.P
                 "  " + e.getLocalizedMessage());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
+            return;
+        }
+
+        // FISH-12645: Re-verify the authenticated caller's current password to defeat
+        // CSRF/XSS. The attacker can ride the admin session but cannot supply the correct password.
+        Subject subject = context.getSubject();
+        String callerName = null;
+        if (subject != null) {
+            for (Principal p : subject.getPrincipals()) {
+                if (p instanceof UserNameAndPassword) {
+                    callerName = p.getName();
+                    break;
+                }
+            }
+        }
+        if (callerName == null) {
+            report.setMessage(localStrings.getLocalString(
+                    "change.admin.password.callernotfound",
+                    "Unable to determine the authenticated caller identity."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        char[] currentPassword = (oldpassword != null) ? oldpassword.toCharArray() : new char[0];
+        if (fr.authenticate(callerName, currentPassword) == null) {
+            report.setMessage(localStrings.getLocalString(
+                    "change.admin.password.invalidcurrentpassword",
+                    "The current password provided is not valid."));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
