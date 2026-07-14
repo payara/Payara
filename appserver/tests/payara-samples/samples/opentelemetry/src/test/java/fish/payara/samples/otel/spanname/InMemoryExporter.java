@@ -103,7 +103,12 @@ public class InMemoryExporter implements SpanExporter {
             return CompletableResultCode.ofFailure();
         }
         synchronized (exported) {
-            exported.addAll(spans);
+            for (var span : spans) {
+                if (span.getName().contains("ArquillianServletRunnerEE9")) {
+                    continue;
+                }
+                exported.add(span);
+            }
             batches.incrementAndGet();
         }
         return CompletableResultCode.ofSuccess();
