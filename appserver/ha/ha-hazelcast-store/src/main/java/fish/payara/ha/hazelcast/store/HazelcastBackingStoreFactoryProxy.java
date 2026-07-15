@@ -91,6 +91,7 @@ public class HazelcastBackingStoreFactoryProxy implements PostConstruct, Backing
     @Override
     public void postConstruct() {
         BackingStoreFactoryRegistry.register("hazelcast", this);
+        BackingStoreFactoryRegistry.register("replicated", this);
         Logger.getLogger(HazelcastBackingStoreFactory.class.getName()).log(Level.FINE, "Registered Hazelcast BackingStoreFactory with persistence-type = hazelcast");
     }
 
