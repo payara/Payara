@@ -47,8 +47,12 @@ import io.opentelemetry.api.logs.LoggerProvider;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
+
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TracerProvider;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.autoconfigure.spi.ConfigurationException;
@@ -69,8 +73,8 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -86,10 +90,12 @@ public class OpenTelemetryService implements EventListener {
 
     public static final String INSTRUMENTATION_SCOPE_NAME = "fish.payara.telemetry";
 
-    // The tracer instances
-    private static final Map<String, OpenTelemetrySdkHandle> appTelemetries = new ConcurrentHashMap<>();
-
     private static final Logger logger = Logger.getLogger(OpenTelemetryService.class.getName());
+
+    /***
+     * Application Otel SDKs
+     */
+    private final Map<String, OpenTelemetrySdkHandle> appTelemetries = new ConcurrentHashMap<>();
 
     @Inject
     OpenTelemetryBootstrap openTelemetryBootstrap;
@@ -110,28 +116,65 @@ public class OpenTelemetryService implements EventListener {
 
     private AppTelemetry appSpecificTelemetry;
 
-    public Tracer getCurrentTracer() {
+    private static final OpenTelemetry NOOP = OpenTelemetry.noop();
+    private static final Meter NOOP_METER = NOOP.getMeter("noop");
+    private static final Tracer NOOP_TRACER = NOOP.getTracer("noop");
+
+    /**
+     * Check if OpenTelemetry SDK is active in current application context.
+     * @return true if OpenTelemetry is enabled on runtime level or in currently invoking application.
+     */
+    public boolean isEnabled() {
         if (runtimeHandle != null) {
-            return runtimeHandle.tracer();
+            return true;
         }
-        String appName = initializeCurrentApplication();
-        return getTracer(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
+        String application = currentApplication();
+        return application != null && appTelemetries.containsKey(application) || isPayaraTracingEnabled();
+    }
+
+    public Tracer getCurrentTracer() {
+        return getCurrent(OpenTelemetrySdkHandle::tracer, NOOP_TRACER);
     }
     
     public Meter getCurrentMeter() {
-        if (runtimeHandle != null) {
-            return runtimeHandle.meter();
-        }
-        String appName = initializeCurrentApplication();
-        return getMeter(appName).orElseThrow(() -> currentAppNotInitializedException(appName));
+        return getCurrent(OpenTelemetrySdkHandle::meter, NOOP_METER);
     }
 
     public OpenTelemetry getCurrentSdk() {
-        if (runtimeHandle != null) {
-            return runtimeHandle.sdk();
+        return getCurrent(OpenTelemetrySdkHandle::sdk, NOOP);
+    }
+
+    /**
+     * Returns the cached per-SDK {@code http.server.request.duration} histogram.
+     * Must be called while the application invocation is active (i.e. inside
+     * {@code StandardWrapper.service()}) so that app-mode resolution via
+     * {@code InvocationManager} succeeds. The returned instance is safe to cache in
+     * a request attribute and use later on any thread.
+     *
+     * @throws IllegalStateException if called in app-mode with no active invocation
+     */
+    public DoubleHistogram getRequestDurationHistogram() {
+        var current = getCurrent(OpenTelemetrySdkHandle::requestDurationHistogram, null);
+        if (current == null) {
+            throw new IllegalStateException("OpenTelemetry is not initialized, but OTEL metric write was requested");
         }
-        var appName = initializeCurrentApplication();
-        return getSdk(appName).orElseGet(OpenTelemetry::noop);
+        return current;
+    }
+
+    private <T> T getCurrent(Function<OpenTelemetrySdkHandle, T> getter, T fallback) {
+        OpenTelemetrySdkHandle handle = runtimeHandle;
+        if  (handle == null) {
+            var appName = requiredApplicationName();
+            handle = appTelemetries.get(appName);
+        }
+        if (handle == null) {
+            return fallback;
+        }
+        T result = getter.apply(handle);
+        if (result == null) {
+            return fallback;
+        }
+        return result;
     }
 
     public void initializeCurrentApplication(Config appConfig) {
@@ -152,6 +195,63 @@ public class OpenTelemetryService implements EventListener {
      */
     public void shutdownCurrentApplication() {
         shutdown(currentApplication());
+    }
+
+
+    /**
+     * Stores a raw W3C propagation carrier, operation name, span kind, and
+     * span attributes for deferred span creation.  The carrier must NOT be
+     * extracted here — the correct SDK may not be available yet.
+     * Must be followed by {@link #applyDeferredContext()} once the application
+     * invocation context is on the stack.
+     *
+     * @param carrier   raw W3C propagation headers (may be empty if no context was propagated)
+     * @param operation logical operation/method name, used as the span name
+     * @param spanKind  span kind ({@link SpanKind#SERVER} or {@link SpanKind#CLIENT})
+     * @param attributes additional span attributes supplied by the caller
+     */
+    public void collectDeferredContext(HashMap<String, String> carrier, String operation,
+                                       SpanKind spanKind, Attributes attributes) {
+        DeferredContext.set(carrier, operation, spanKind, attributes);
+    }
+
+    /**
+     * Extracts the OTel context from the stored carrier using the correct
+     * per-application propagator (the application invocation must be on the stack),
+     * then creates and activates a span with the kind and attributes provided to
+     * {@link #collectDeferredContext}.
+     *
+     * @return {@code true} if a span was started and the caller is responsible for
+     *         calling {@link #endDeferredSpan(Throwable)} when the operation completes;
+     *         {@code false} if nothing was done (no deferred context, or OTel not
+     *         enabled for the current application)
+     */
+    public boolean applyDeferredContext() {
+        DeferredContext ctx = DeferredContext.get();
+        if (ctx == null) {
+            return false;
+        }
+        if (!isEnabled()) {
+            DeferredContext.remove();
+            return false;
+        }
+        // Use getCurrentSdk() rather than GlobalOpenTelemetry.get() so that both
+        // extraction and span creation use the same per-app SDK instance consistently.
+        ctx.apply(getCurrentSdk().getPropagators(), getCurrentTracer(), Context.current());
+        return true;
+    }
+
+    /**
+     * Ends the span previously started by {@link #applyDeferredContext()}.
+     *
+     * @param error the exception that caused the failure, or {@code null} on success
+     */
+    public void endDeferredSpan(Throwable error) {
+        DeferredContext ctx = DeferredContext.get();
+        DeferredContext.remove();
+        if (ctx != null) {
+            ctx.end(error);
+        }
     }
 
     @PostConstruct
@@ -190,23 +290,6 @@ public class OpenTelemetryService implements EventListener {
         }
     }
 
-    /**
-     * Returns the cached per-SDK {@code http.server.request.duration} histogram.
-     * Must be called while the application invocation is active (i.e. inside
-     * {@code StandardWrapper.service()}) so that app-mode resolution via
-     * {@code InvocationManager} succeeds. The returned instance is safe to cache in
-     * a request attribute and use later on any thread.
-     *
-     * @throws IllegalStateException if called in app-mode with no active invocation
-     */
-    public DoubleHistogram getRequestDurationHistogram() {
-        if (runtimeHandle != null) {
-            return runtimeHandle.requestDurationHistogram();
-        }
-        String appName = initializeCurrentApplication();
-        return get(appName, OpenTelemetrySdkHandle::requestDurationHistogram)
-                .orElseThrow(() -> currentAppNotInitializedException(appName));
-    }
 
     @Deprecated
     public DoubleHistogram createMetricsHistogram(OpenTelemetry instance) {
@@ -217,29 +300,12 @@ public class OpenTelemetryService implements EventListener {
                 .setExplicitBucketBoundariesAdvice(PayaraTelemetryConstants.BUCKET_BOUNDARIES_LIST).build();
     }
 
-    private String initializeCurrentApplication() {
+    private String requiredApplicationName() {
         var appName = currentApplication();
         if (appName == null) {
             throw new IllegalStateException("No application code is executing. Cannot determine current application scope");
         }
-        // if no application-level initialization took place, initialize with defaults
-        ensureAppInitialized(appName, null);
         return appName;
-    }
-
-    /**
-     * Return existing tracer for a given application.
-     * <p>Because Telemetry SDKs are configurable per app, the tracer need to be explicitly created for an application</p>
-     *
-     * @param applicationName
-     * @return
-     */
-    private Optional<Tracer> getTracer(String applicationName) {
-        return get(applicationName, OpenTelemetrySdkHandle::tracer);
-    }
-
-    private static IllegalStateException currentAppNotInitializedException(String appName) {
-        return new IllegalStateException("Application " + appName + " should have initialized, but it didn't");
     }
 
     private String currentApplication() {
@@ -275,28 +341,6 @@ public class OpenTelemetryService implements EventListener {
     }
 
     /**
-     * Initialize OpenTelemtry components for an application if they do not exist yet.
-     *
-     * @param appName
-     * @param config
-     */
-    private void ensureAppInitialized(String appName, Config config) {
-        appTelemetries.computeIfAbsent(appName, (k) -> new OpenTelemetrySdkHandle(createSdk(appName, config)));
-    }
-
-    private <T> Optional<T> get(String applicationName, Function<OpenTelemetrySdkHandle, T> getter) {
-        if (applicationName == null) {
-            return Optional.empty();
-        }
-        OpenTelemetrySdkHandle appInfo = null;
-        appInfo = appTelemetries.get(applicationName);
-        if (appInfo == null) {
-            return Optional.empty();
-        }
-        return Optional.ofNullable(getter.apply(appInfo));
-    }
-
-    /**
      * Set up SDK to be used by application. The SDK instance will be configured using auto-configuration using contents of provided
      * Map, system properties and environment variables (in this precedence) if
      * <ul>
@@ -315,7 +359,6 @@ public class OpenTelemetryService implements EventListener {
      * <a href="https://github.com/open-telemetry/opentelemetry-java/blob/main/sdk-extensions/autoconfigure/README.md">Autoconfigure documentation</a>
      */
     private OpenTelemetrySdk createSdk(String applicationName, Config configProperties) {
-        // TODO: Unify creation with bootstrap process for consistency between app and runtime instances
         if (isOtelEnabled(configProperties) || isPayaraTracingEnabled()) {
             try {
                 return openTelemetryBootstrap.buildApplicationSdk(applicationName, configProperties, null);
@@ -323,7 +366,6 @@ public class OpenTelemetryService implements EventListener {
                 logger.log(Level.SEVERE, "Failed to configure OpenTelemetry for " + applicationName + " using classlaoder "
                         + Thread.currentThread().getContextClassLoader() +" will revert to no-op", ce);
                 // Do not prevent application from working when things go awry in telemetry config
-                return OpenTelemetrySdk.builder().build();
             }
         }
         //noop
@@ -347,54 +389,21 @@ public class OpenTelemetryService implements EventListener {
     }
 
     /**
-     * Return Meter builder for given application
-     *
-     * @param applicationName
-     *  @return
-     */
-    private Optional<Meter> getMeter(String applicationName) {
-        return get(applicationName, OpenTelemetrySdkHandle::meter);
-    }
-
-    /**
-     * Return logger for given application.
-     *
-     * @param applicationName
-     * @return
-     */
-    private Optional<io.opentelemetry.api.logs.Logger> getLogger(String applicationName) {
-        return get(applicationName, OpenTelemetrySdkHandle::logger);
-    }
-
-    /**
      * Create new OpenTelemetry components for application. Shutdown previous ones if such already existed.
      *
      * @param applicationName
      * @param config application's MP Config instance
      * @return
      */
-    private OpenTelemetrySdk initializeApplication(String applicationName, Config config) {
+    private void initializeApplication(String applicationName, Config config) {
         OpenTelemetrySdk sdk = createSdk(applicationName, config);
         OpenTelemetrySdkHandle previous = appTelemetries.put(applicationName, new OpenTelemetrySdkHandle(sdk));
         if (previous != null) {
             previous.shutdown();
         }
-        return sdk;
     }
 
-
-    private Optional<OpenTelemetry> getSdk(String applicationName) {
-        return get(applicationName, OpenTelemetrySdkHandle::sdk);
-    }
-
-    public boolean isEnabled() {
-        if (runtimeHandle != null) {
-            return true;
-        }
-        String application = currentApplication();
-        return application != null && appTelemetries.containsKey(application) || isPayaraTracingEnabled();
-    }
-
+    @Deprecated
     public String getCurrentApplicationName() {
         return currentApplication();
     }
@@ -466,22 +475,22 @@ public class OpenTelemetryService implements EventListener {
 
         @Override
         public TracerProvider getTracerProvider() {
-            return get(currentApplication(), appInfo -> appInfo.sdk().getTracerProvider()).orElse(TracerProvider.noop());
+            return getCurrentSdk().getTracerProvider();
         }
 
         @Override
         public ContextPropagators getPropagators() {
-            return get(currentApplication(), appInfo -> appInfo.sdk().getPropagators()).orElse(ContextPropagators.noop());
+            return getCurrentSdk().getPropagators();
         }
 
         @Override
         public MeterProvider getMeterProvider() {
-            return get(currentApplication(), appInfo -> appInfo.sdk().getMeterProvider()).orElse(MeterProvider.noop());
+            return getCurrentSdk().getMeterProvider();
         }
 
         @Override
         public LoggerProvider getLogsBridge() {
-            return get(currentApplication(), appInfo -> appInfo.sdk().getLogsBridge()).orElse(LoggerProvider.noop());
+            return getCurrentSdk().getLogsBridge();
         }
     }
 

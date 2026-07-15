@@ -76,10 +76,12 @@ import org.glassfish.internal.api.InitRunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -175,7 +177,7 @@ public class OpenTelemetryBootstrap {
                     .addSpanExporterCustomizer((e, c) -> ContextClassLoaderInterceptor.wrapIfOtherClassloader(e, otelClassloader))
                     .addLogRecordExporterCustomizer((e, config) -> ContextClassLoaderInterceptor.wrapIfOtherClassloader(e, otelClassloader))
                     .addMetricExporterCustomizer((e, config) -> ContextClassLoaderInterceptor.wrapIfOtherClassloader(e, otelClassloader));
-            // Yte consider replacing executor in PeriodicMetricReader, if problems arise in metrics collection
+            // Yet consider replacing executor in PeriodicMetricReader, if problems arise in metrics collection
             if (customizer != null) {
                 customizer.accept(b);
             }
@@ -203,8 +205,9 @@ public class OpenTelemetryBootstrap {
                 .addResourceCustomizer(this::addDefaultResourceAttributes)
                 .setServiceClassLoader(Thread.currentThread().getContextClassLoader())
                 .disableShutdownHook();
-        TreeSet<AutoConfigurationCustomizerProvider> customizers = new TreeSet<>(Comparator.comparingInt(AutoConfigurationCustomizerProvider::order));
+        List<AutoConfigurationCustomizerProvider> customizers = new ArrayList<>();
         serverCustomizations.forEach(customizers::add);
+        Collections.sort(customizers, Comparator.comparing(AutoConfigurationCustomizerProvider::order));
         customizers.forEach(c -> c.customize(builder));
         if (customizer != null) {
             customizer.accept(builder);
