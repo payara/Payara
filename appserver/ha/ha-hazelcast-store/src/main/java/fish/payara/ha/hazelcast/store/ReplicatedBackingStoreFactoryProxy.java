@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,13 +56,14 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
- * @author steve
- * @since 4.1.151
+ * Registers Hazelcast as the backing store for the legacy "replicated"
+ * persistence type, enabling components that still reference that type
+ * (Metro WS-SecureConversation, Digest Auth nonce cache, SFSB container
+ * with old-style "ha" config) to resolve to the Hazelcast store.
  */
-@Service(name = "hazelcast")
+@Service(name = "replicated")
 @RunLevel(StartupRunLevel.VAL)
-public class HazelcastBackingStoreFactoryProxy implements PostConstruct, BackingStoreFactory {
+public class ReplicatedBackingStoreFactoryProxy implements PostConstruct, BackingStoreFactory {
 
     @Inject
     ServiceLocator habitat;
@@ -73,8 +74,8 @@ public class HazelcastBackingStoreFactoryProxy implements PostConstruct, Backing
             BackingStoreFactory storeFactory = habitat.getService(BackingStoreFactory.class, "hazelcast-factory");
             return storeFactory.createBackingStore(bsc);
         } catch (Exception ex) {
-            Logger.getLogger(HazelcastBackingStoreFactoryProxy.class.getName()).log(Level.WARNING, "Exception while creating hazelcast cache", ex);
-            throw new BackingStoreException("Exception while creating hazelcast cache", ex);
+            Logger.getLogger(ReplicatedBackingStoreFactoryProxy.class.getName()).log(Level.WARNING, "Exception while creating hazelcast cache for replicated store type", ex);
+            throw new BackingStoreException("Exception while creating hazelcast cache for replicated store type", ex);
         }
     }
 
@@ -84,14 +85,14 @@ public class HazelcastBackingStoreFactoryProxy implements PostConstruct, Backing
             BackingStoreFactory storeFactory = habitat.getService(BackingStoreFactory.class, "hazelcast-factory");
             return storeFactory.createBackingStoreTransaction();
         } catch (Exception ex) {
-            throw new RuntimeException("Exception while creating hazelcast transaction", ex);
+            throw new RuntimeException("Exception while creating hazelcast transaction for replicated store type", ex);
         }
     }
 
     @Override
     public void postConstruct() {
-        BackingStoreFactoryRegistry.register("hazelcast", this);
-        Logger.getLogger(HazelcastBackingStoreFactory.class.getName()).log(Level.FINE, "Registered Hazelcast BackingStoreFactory with persistence-type = hazelcast");
+        BackingStoreFactoryRegistry.register("replicated", this);
+        Logger.getLogger(ReplicatedBackingStoreFactoryProxy.class.getName()).log(Level.FINE, "Registered Hazelcast BackingStoreFactory with persistence-type = replicated");
     }
 
 }
