@@ -48,6 +48,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -333,9 +334,8 @@ public class WithSpanMethodInterceptor {
 
     private void markSpanAsFailed(Span span, Throwable ex) {
         LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
-        span.setAttribute("error", true);
-        
-        span.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+        span.setStatus(StatusCode.ERROR, ex.getMessage());
+        span.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, ex.getClass().getName());
         span.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
                 Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
         span.recordException(ex);

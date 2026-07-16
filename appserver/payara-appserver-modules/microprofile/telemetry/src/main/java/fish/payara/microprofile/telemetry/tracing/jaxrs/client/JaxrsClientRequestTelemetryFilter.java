@@ -45,14 +45,12 @@ import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.PropagationHeaders;
 import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.opentracing.PropagationHelper;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.semconv.ExceptionAttributes;
 import io.opentelemetry.semconv.HttpAttributes;
 import io.opentelemetry.semconv.ServerAttributes;
 import io.opentelemetry.semconv.UrlAttributes;
@@ -121,8 +119,7 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
                     .setAttribute(UrlAttributes.URL_FULL, requestContext.getUri().toString())
                     .setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, requestContext.getMethod())
                     .setAttribute(ServerAttributes.SERVER_ADDRESS, requestContext.getUri().getHost())
-                    .setAttribute("component", "jaxrs")
-                    .setAttribute("span.kind", "client")
+                    .setAttribute("payara.subsystem", "jakarta-rest")
                     .setSpanKind(SpanKind.CLIENT);
 
             if (requestContext.getUri().getPort() != -1) {
@@ -166,10 +163,7 @@ public class JaxrsClientRequestTelemetryFilter implements ClientRequestFilter, C
 
             // If the response status is an error, add error info to the active span
             if (statusInfo.getFamily() == Response.Status.Family.CLIENT_ERROR || statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
-                activeSpan.setAttribute("error", true);
                 activeSpan.setStatus(StatusCode.ERROR);
-                activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
-                        Attributes.of(ExceptionAttributes.EXCEPTION_TYPE, statusInfo.getFamily().name()));
             }
             helper.end();
             helper.close();
