@@ -244,6 +244,8 @@ public final class OtelMetricRegistry implements MetricRegistry, AutoCloseable {
     /**
      * Converts MP Metrics unit to the OTel unit string.
      * FT histograms store nanoseconds but {@link OtelHistogram#update} converts them to seconds.
+     * The MP Fault Tolerance spec mandates exact unit strings for its OTel metrics (e.g. "seconds",
+     * "nanoseconds") — these are spec-required, not UCUM, and must not be changed without a spec update.
      */
     private static String otelUnit(String mpUnit) {
         if (MetricUnits.NANOSECONDS.equals(mpUnit)) {
