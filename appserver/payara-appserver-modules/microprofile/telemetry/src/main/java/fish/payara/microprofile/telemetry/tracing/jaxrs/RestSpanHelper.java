@@ -293,11 +293,6 @@ final class RestSpanHelper {
 
         abstract String determineSpanName(ContainerRequestContext request, ResourceInfo resourceInfo);
 
-        void augmentSpan(SpanBuilder spanBuilder) {
-            if (this == OPENTRACING_CLASS_METHOD || this == OPENTRACING_PATH) {
-                spanBuilder.setAttribute("span.kind", "server");
-            }
-        }
     }
 
     public WithSpan getWithSpanAnnotation(ResourceInfo resourceInfo) {
