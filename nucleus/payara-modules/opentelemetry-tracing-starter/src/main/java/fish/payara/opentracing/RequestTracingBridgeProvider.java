@@ -52,12 +52,14 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.IterableProvider;
+import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
 /**
  * Bridge OTEL traces to Payara Request Service if the service is enabled at time of Sdk creation
  */
 @Service
+@ContractsProvided(AutoConfigurationCustomizerProvider.class)
 class RequestTracingBridgeProvider implements AutoConfigurationCustomizerProvider {
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)

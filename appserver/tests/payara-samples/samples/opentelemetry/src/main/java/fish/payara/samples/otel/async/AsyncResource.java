@@ -48,29 +48,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
 
 @Path("/async")
 @RequestScoped
 public class AsyncResource {
+
     @Resource
     ManagedExecutorService mes;
-
-
-    @Inject
-    Tracer tracer;
 
     @Path("/fail")
     @GET
@@ -80,22 +69,10 @@ public class AsyncResource {
 
     @Path("/compute")
     @GET
-    public String computation(@QueryParam("propagation") @DefaultValue("none") String propagation) throws ExecutionException, InterruptedException {
+    public String computation() throws ExecutionException, InterruptedException {
         List<CompletableFuture<Integer>> tasks = new ArrayList<>();
-        for(int i=0; i<10; i++) {
-            switch (propagation.toLowerCase()) {
-                case "traced":
-                    // with manual span
-                    tasks.add(mes.supplyAsync(this::tracedTask));
-                    break;
-                case "wrap":
-                    // with manual span and context wrapping
-                    tasks.add(mes.supplyAsync(Context.current().wrapSupplier(this::tracedTask)));
-                    break;
-                default:
-                    // without explicit span
-                    tasks.add(mes.supplyAsync(this::task));
-            }
+        for (int i = 0; i < 10; i++) {
+            tasks.add(mes.supplyAsync(this::task));
         }
         CompletableFuture.allOf(tasks.toArray(CompletableFuture[]::new));
         int result = 0;
@@ -106,27 +83,11 @@ public class AsyncResource {
     }
 
     private int task() {
-
         try {
             Thread.sleep(ThreadLocalRandom.current().nextInt(200));
-        } catch (InterruptedException e) {
-            // anyway...
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
         }
-        return ThreadLocalRandom.current().nextInt();
-    }
-
-    private int tracedTask() {
-        var span = tracer.spanBuilder("tracedTask").startSpan();
-
-        try (var scope = span.makeCurrent()){
-            var sleep = ThreadLocalRandom.current().nextInt(200);
-            Thread.sleep(sleep);
-            span.addEvent("sleep", Attributes.of(AttributeKey.longKey("sleeping"), (long)sleep));
-        } catch (InterruptedException e) {
-            // anyway...
-        }
-        span.setStatus(StatusCode.OK);
-        span.end();
         return ThreadLocalRandom.current().nextInt();
     }
 }

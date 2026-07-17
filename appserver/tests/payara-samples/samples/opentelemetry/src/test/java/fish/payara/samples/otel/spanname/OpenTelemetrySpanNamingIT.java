@@ -44,8 +44,6 @@ package fish.payara.samples.otel.spanname;
 
 import java.util.Map;
 
-import fish.payara.samples.PayaraArquillianTestRunner;
-import org.assertj.core.api.Assertions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -92,4 +90,5 @@ public class OpenTelemetrySpanNamingIT extends AbstractSpanNameTest {
             });
         });
     }
+
 }

@@ -55,13 +55,13 @@ import java.util.logging.Logger;
 
 public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
-    private transient JavaEETransactionManager transactionManager;
+    private transient InvocationFacade transactionManager;
 
     static final long serialVersionUID = -856400645253308289L;
     private final boolean keepTransactionUnchanged;
     private final boolean clearTransaction;
 
-    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager, boolean keepTransactionUnchanged, boolean clearTransaction) {
+    public TransactionSetupProviderImpl(InvocationFacade transactionManager, boolean keepTransactionUnchanged, boolean clearTransaction) {
         this.transactionManager = transactionManager;
         this.keepTransactionUnchanged = keepTransactionUnchanged;
         this.clearTransaction = clearTransaction;
@@ -111,7 +111,7 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         in.defaultReadObject();
         // re-initialize these fields
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
-        transactionManager = concurrentRuntime.getTransactionManager();
+        transactionManager = concurrentRuntime.getInvocationFacade();
     }
 
 }
