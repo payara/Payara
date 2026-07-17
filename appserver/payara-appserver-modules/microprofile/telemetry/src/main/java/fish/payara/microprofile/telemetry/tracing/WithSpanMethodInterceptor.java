@@ -42,6 +42,7 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
+import fish.payara.opentracing.OtelRouteState;
 import fish.payara.opentracing.PropagationHelper;
 import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 import io.opentelemetry.api.common.Attributes;
@@ -100,32 +101,37 @@ public class WithSpanMethodInterceptor implements Serializable {
         extractSpanAttributes(invocationContext, builder);
         var attributes = builder.build();
 
-        // If Request Tracing is enabled, and this isn't a JaxRs method
-        if (openTelemetryService == null || !openTelemetryService.isEnabled() //
-                || isJaxRsMethod(invocationContext) || isWebServiceMethod(invocationContext, invocationManager)) {
-            // If request tracing was turned off, or this is a JaxRs method, just carry on
-            LOG.finest("The call is already monitored by some different component, proceeding the invocation.");
-            var currentSpan = Span.current();
-            currentSpan.setAllAttributes(attributes);
+        if (openTelemetryService == null || !openTelemetryService.isEnabled()) {
             return invocationContext.proceed();
         }
 
-        // Get the WithSpan annotation present on the method
+        // JAX-RS methods are traced by the container/client filters — skip.
+        if (isJaxRsMethod(invocationContext)) {
+            Span.current().setAllAttributes(attributes);
+            return invocationContext.proceed();
+        }
+
+        // JAX-WS methods already have a SERVER span created by the JAX-WS infrastructure.
+        // Enrich that span with the @WithSpan name override and @SpanAttribute parameters
+        // instead of creating a redundant child span.
+        if (isWebServiceMethod(invocationContext, invocationManager)) {
+            enrichCurrentSpan(invocationContext.getMethod(), attributes);
+            return invocationContext.proceed();
+        }
+
+        // CDI bean method: check for @WithSpan and create a new span.
         final WithSpan withSpan = invocationContext.getMethod().getAnnotation(WithSpan.class);
 
-        // If WithSpan is not present, proceed without creating a span
         if (withSpan == null) {
             LOG.finest("No @WithSpan annotation found on method, proceeding without creating a span.");
             return invocationContext.proceed();
         }
 
-        // Check if tracing has been disabled for this method via config
         if (WithSpanEnabledLookup.isDisabled(invocationContext.getMethod())) {
             LOG.finest("Tracing is disabled for this method via configuration, proceeding without creating a span.");
             return invocationContext.proceed();
         }
 
-        // If we *have* been told to, get the application's Tracer instance and start an active span.
         SpanBuilder spanBuilder = openTelemetryService.getCurrentTracer()
                 .spanBuilder(getWithSpanValue(invocationContext, withSpan))
                 .setSpanKind(withSpan.kind())
@@ -160,17 +166,52 @@ public class WithSpanMethodInterceptor implements Serializable {
     }
 
     /**
-     * Helper method that determines if the annotated method is the monitored JAX-WS method or not by inspecting the invocation manager.
-     * <p>
-     * JaxWs method tracing is handled by the JAX-WS monitoring pipe/tube, so we don't process them using this
-     * interceptor.
-     *
-     * @param invocationContext The invocation context from the AroundInvoke method.
-     * @param invocationManager The current invocation manager for this thread
-     * @return True if the method is a JaxRs method.
+     * Returns {@code true} if the intercepted method is currently executing as a JAX-WS web service method.
+     * The SERVER span for JAX-WS is owned by the JAX-WS infrastructure; the interceptor enriches it
+     * rather than creating a new child span.
      */
     private boolean isWebServiceMethod(InvocationContext invocationContext, InvocationManager invocationManager) {
         return invocationContext.getMethod().equals(invocationManager.peekWebServiceMethod());
+    }
+
+    /**
+     * Enriches the current JAX-WS SERVER span with {@link WithSpan} name and {@link SpanAttribute} parameters.
+     *
+     * <p>The SERVER span is already created by the JAX-WS infrastructure. If the method carries
+     * {@link WithSpan} with a non-empty value, the span name is updated. Parameter attributes are
+     * always applied when {@link WithSpan} is present and tracing is not disabled via config.
+     *
+     * <p>Two span-ownership paths are handled:
+     * <ul>
+     *   <li><b>Servlet endpoint</b> ({@code StandardWrapper} owns the span): an
+     *       {@link OtelRouteState} is present in {@link Context#current()}. The name override is
+     *       written there so that {@code OtelSupport.endAndRecord} applies it last — calling
+     *       {@link Span#updateName} directly would be overwritten at span-end.</li>
+     *   <li><b>EJB endpoint</b> (deferred span owned by {@link fish.payara.opentracing.OpenTelemetryService}):
+     *       no {@code OtelRouteState} is present; {@link Span#updateName} is called directly.</li>
+     * </ul>
+     *
+     * @param method     the intercepted business method
+     * @param attributes span attributes extracted from {@link SpanAttribute}-annotated parameters
+     */
+    private void enrichCurrentSpan(Method method, Attributes attributes) {
+        WithSpan withSpan = method.getAnnotation(WithSpan.class);
+        if (withSpan != null && !WithSpanEnabledLookup.isDisabled(method)) {
+            String name = withSpan.value();
+            if (!name.isEmpty()) {
+                OtelRouteState routeState = OtelRouteState.fromContext(Context.current());
+                if (routeState != null) {
+                    // Servlet path: StandardWrapper reads spanName() at span-end via OtelSupport.endAndRecord.
+                    routeState.overrideSpanName(name);
+                } else {
+                    // EJB path: the deferred span is already the current span; update it directly.
+                    Span.current().updateName(name);
+                }
+            }
+        }
+        // Always apply @SpanAttribute parameter attributes — mirrors JAX-RS behaviour where
+        // parameter attributes are set on the SERVER span regardless of @WithSpan presence.
+        Span.current().setAllAttributes(attributes);
     }
 
     /**

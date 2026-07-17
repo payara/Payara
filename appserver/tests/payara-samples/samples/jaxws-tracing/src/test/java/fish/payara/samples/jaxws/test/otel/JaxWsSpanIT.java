@@ -63,6 +63,7 @@ import javax.xml.namespace.QName;
 import jakarta.xml.ws.Service;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,6 +80,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(Arquillian.class)
 @NotMicroCompatible("JAX-WS not supported on Micro")
 public class JaxWsSpanIT {
+
+    private static final Logger LOG = Logger.getLogger(JaxWsSpanIT.class.getName());
 
     @ArquillianResource
     private URL baseUrl;
@@ -122,12 +125,12 @@ public class JaxWsSpanIT {
         ejbEndpoint().sayHi("Payara");
 
         List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_serverSpanCreated", spans);
         SpanData server = findServer(spans);
 
         assertThat(server)
                 .describedAs("Expected a SERVER span for EJB endpoint, got: %s", names(spans))
                 .isNotNull();
-        assertThat(server.getName()).startsWith("POST /");
     }
 
     @Test
@@ -137,6 +140,7 @@ public class JaxWsSpanIT {
         } catch (Exception ignored) { }
 
         List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_serverSpanIsErrorOnSoapFault", spans);
         SpanData server = findServer(spans);
 
         assertThat(server)
@@ -157,12 +161,12 @@ public class JaxWsSpanIT {
         servletEndpoint().sayHi("Payara");
 
         List<SpanData> spans = exporter.getSpans();
+        logSpans("servletEndpoint_serverSpanCreated", spans);
         SpanData server = findServer(spans);
 
         assertThat(server)
                 .describedAs("Expected a SERVER span for servlet endpoint, got: %s", names(spans))
                 .isNotNull();
-        assertThat(server.getName()).startsWith("POST /");
     }
 
     @Test
@@ -172,6 +176,7 @@ public class JaxWsSpanIT {
         } catch (Exception ignored) { }
 
         List<SpanData> spans = exporter.getSpans();
+        logSpans("servletEndpoint_serverSpanIsErrorOnSoapFault", spans);
         SpanData server = findServer(spans);
 
         assertThat(server)
@@ -181,6 +186,48 @@ public class JaxWsSpanIT {
                 .describedAs("Servlet endpoint SERVER span should be ERROR on SOAP fault")
                 .isEqualTo(StatusCode.ERROR);
         assertSoapFaultAttributes(server);
+    }
+
+    // -------------------------------------------------------------------------
+    // @WithSpan name enrichment — the SERVER span should be renamed
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void ejbEndpoint_withSpanRenamesServerSpan() throws Exception {
+        ejbEndpoint().sayHi("Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_withSpanRenamesServerSpan", spans);
+        SpanData server = findServer(spans);
+
+        assertThat(server)
+                .describedAs("Expected a SERVER span for EJB endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(server.getName())
+                .describedAs("@WithSpan(\"customOperation\") should rename the SERVER span, got: %s", names(spans))
+                .isEqualTo("customOperation");
+        assertThat(spans.stream().anyMatch(s -> s.getKind() == SpanKind.INTERNAL))
+                .describedAs("No INTERNAL child span should be created for JAX-WS methods")
+                .isFalse();
+    }
+
+    @Test
+    public void servletEndpoint_withSpanRenamesServerSpan() throws Exception {
+        servletEndpoint().sayHi("Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("servletEndpoint_withSpanRenamesServerSpan", spans);
+        SpanData server = findServer(spans);
+
+        assertThat(server)
+                .describedAs("Expected a SERVER span for servlet endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(server.getName())
+                .describedAs("@WithSpan(\"customOperation\") should rename the SERVER span, got: %s", names(spans))
+                .isEqualTo("customOperation");
+        assertThat(spans.stream().anyMatch(s -> s.getKind() == SpanKind.INTERNAL))
+                .describedAs("No INTERNAL child span should be created for JAX-WS methods")
+                .isFalse();
     }
 
     // -------------------------------------------------------------------------
@@ -220,10 +267,19 @@ public class JaxWsSpanIT {
                 .isNotEmpty();
     }
 
+    private static final AttributeKey<String> HTTP_REQUEST_METHOD =
+            AttributeKey.stringKey("http.request.method");
+
+    /**
+     * Finds the SERVER span for the SOAP POST request.
+     * Filters by {@code http.request.method=POST} attribute so that WSDL GET spans
+     * (which share the same SERVER kind) are excluded, and so that post-enrichment
+     * span names (e.g. {@code "customOperation"}) are still found correctly.
+     */
     private SpanData findServer(List<SpanData> spans) {
         return spans.stream()
                 .filter(s -> s.getKind() == SpanKind.SERVER)
-                .filter(s -> s.getName().startsWith("POST "))
+                .filter(s -> "POST".equals(s.getAttributes().get(HTTP_REQUEST_METHOD)))
                 .findFirst().orElse(null);
     }
 
@@ -231,5 +287,19 @@ public class JaxWsSpanIT {
         return spans.stream()
                 .map(s -> s.getName() + "(" + s.getKind() + ")")
                 .toList().toString();
+    }
+
+    private void logSpans(String label, List<SpanData> spans) {
+        StringBuilder sb = new StringBuilder("\n=== ").append(label).append(" (").append(spans.size()).append(" spans) ===");
+        for (SpanData span : spans) {
+            sb.append("\n  name=").append(span.getName())
+              .append(" kind=").append(span.getKind())
+              .append(" status=").append(span.getStatus().getStatusCode())
+              .append(" traceId=").append(span.getTraceId())
+              .append(" spanId=").append(span.getSpanId())
+              .append(" parentSpanId=").append(span.getParentSpanId())
+              .append(" attrs=").append(span.getAttributes());
+        }
+        LOG.fine(sb.toString());
     }
 }
