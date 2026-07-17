@@ -82,7 +82,53 @@
             <sun:form id="form1">
 #include "/common/shared/alertMsg.inc"
 <sun:title id="propertyContentPage" title="$resource{i18n_web.httpService.pageTitle}" helpText="$resource{i18n_web.httpService.pageTitleHelp}" >
-#include "/common/shared/editPageButtons.inc"
+#include "/common/shared/editPageLoadDefaultButton.inc"
+<!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}', '#{reqRegex}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                <!command
+                   if (#{pageSession['rest-api']}) {
+                        if(#{pageSession.hasPropertySheet}){
+                            gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                                attrs="#{pageSession.valueMap}"
+                                skipAttrs="#{pageSession.skipAttrsList}"
+                                convertToFalse="#{pageSession.convertToFalseList}"
+                                onlyUseAttrs="#{pageSession.onlyUseAttrs}"
+                            );
+                        if(#{pageSession.has2Objects}){
+                                gf.createEntity(endpoint="#{pageSession.selfUrl2}"
+                                    attrs="#{pageSession.valueMap2}"
+                                    skipAttrs="#{pageSession.skipAttrsList2}"
+                                    convertToFalse="#{pageSession.convertToFalseList2}"
+                                    onlyUseAttrs="#{pageSession.onlyUseAttrs2}"
+                                );
+                            }
+                        }
+                   }
+
+                    // Save properties...
+                    if (#{pageSession.hasPropertyTable}) {
+                        removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
+                        javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                    }
+
+                    if (#{pageSession.additionalSaveHandler}) {
+                        gf.invokeHandler(handler="#{pageSession.additionalSaveHandler}", args="#{pageSession.additionalSaveHandlerArgs}" );
+                    }
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
+                <!command
+                    gf.redirect(page="#{parentPage}?configName=#{configName}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
 </sun:title>
     <sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
@@ -104,7 +150,7 @@
         </sun:property>
 
         <sun:property id="filterProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Filter}" helpText="$resource{i18n_web.access.FilterHelp}">
-            <sun:textField id="Filter" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.RotationSuffix']}" text="#{pageSession.valueMap2['filter']}" />
+            <sun:textField id="Filter" styleClass="regex" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.RotationSuffix']}" text="#{pageSession.valueMap2['filter']}" />
         </sun:property>
 
         <sun:property id="rotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Rotation}" helpText="$resource{i18n_web.access.RotationHelp}">
