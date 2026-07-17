@@ -42,25 +42,46 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Context;
 import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.concurro.spi.ContextHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationInfo;
-import org.glassfish.internal.data.ApplicationRegistry;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Captured context handle used by {@link ContextSetupProviderImpl} to propagate
+ * thread context across managed-executor boundaries.
+ *
+ * <h3>Serialization</h3>
+ * <p>This class is {@link java.io.Serializable} for two distinct purposes, both
+ * confined to the <em>same JVM</em> with the <em>same Payara version</em>:
+ *
+ * <ol>
+ *   <li><strong>Duplication / contextual-proxy cloning</strong> — when
+ *       {@link jakarta.enterprise.concurrent.ContextService#createContextualProxy} wraps
+ *       an object with a captured context, the underlying
+ *       {@code ContextProxyInvocationHandler} holds a reference to this handle. The
+ *       handler may be serialized to produce a deep copy of the captured context, for
+ *       example when the proxy itself is passed across component boundaries within the
+ *       same application.</li>
+ *
+ *   <li><strong>EJB passivation</strong> — a contextual proxy held inside a
+ *       {@code @Stateful} EJB may be serialized to disk by the container and restored
+ *       later in the same JVM.</li>
+ * </ol>
+ *
+ * <p>Remote calls and rolling upgrades are not a concern: serialized instances are
+ * always read back by the same JVM and the same Payara version. The
+ * {@code serialVersionUID} is intentionally bumped when the serialized form changes
+ * because same-JVM same-version round-trips are always safe to break.
+ */
 public class InvocationContext implements ContextHandle {
-    static final long serialVersionUID = 5642415011655486579L;
+
+    /** Bumped when the serialized form changes; same-JVM same-version round-trips only. */
+    static final long serialVersionUID = 1L;
 
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
@@ -70,10 +91,9 @@ public class InvocationContext implements ContextHandle {
     private List<ThreadContextSnapshot> threadContextSnapshots;
     private List<ThreadContextRestorer> threadContextRestorers;
 
-    private Context parentTraceContext;
-
-    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
-            boolean useTransactionOfExecutionThread, List<ThreadContextSnapshot> threadContextSnapshots,
+    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader,
+            SecurityContext securityContext, boolean useTransactionOfExecutionThread,
+            List<ThreadContextSnapshot> threadContextSnapshots,
             List<ThreadContextRestorer> threadContextRestorers) {
         this.invocation = invocation;
         this.contextClassLoader = contextClassLoader;
@@ -81,72 +101,27 @@ public class InvocationContext implements ContextHandle {
         this.useTransactionOfExecutionThread = useTransactionOfExecutionThread;
         this.threadContextSnapshots = threadContextSnapshots;
         this.threadContextRestorers = threadContextRestorers;
-        saveTracingContext();
     }
 
-    private void saveTracingContext() {
-        ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+    public ComponentInvocation getInvocation() { return invocation; }
+    public ClassLoader getContextClassLoader() { return contextClassLoader; }
+    public SecurityContext getSecurityContext() { return securityContext; }
+    public boolean isUseTransactionOfExecutionThread() { return useTransactionOfExecutionThread; }
+    public List<ThreadContextSnapshot> getThreadContextSnapshots() { return threadContextSnapshots; }
+    public List<ThreadContextRestorer> getThreadContextRestorers() { return threadContextRestorers; }
 
-        if (serviceLocator != null) {
-            RequestTracingService requestTracing = serviceLocator.getService(RequestTracingService.class);
-            OpenTracingService openTracing = serviceLocator.getService(OpenTracingService.class);
-
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()
-                    && requestTracing.isTraceInProgress() && openTracing != null) {
-                Span currentSpan = Span.current();
-                if (currentSpan.isRecording()) {
-                    this.parentTraceContext = Context.current();
-                }
-            }
-        }
-    }
-    
-    public ComponentInvocation getInvocation() {
-        return invocation;
-    }
-
-    public ClassLoader getContextClassLoader() {
-        return contextClassLoader;
-    }
-
-    public SecurityContext getSecurityContext() {
-        return securityContext;
-    }
-
-    public boolean isUseTransactionOfExecutionThread() {
-        return useTransactionOfExecutionThread;
-    }
-
-    public List<ThreadContextSnapshot> getThreadContextSnapshots() {
-        return threadContextSnapshots;
-    }
-
-    public List<ThreadContextRestorer> getThreadContextRestorers() {
-        return threadContextRestorers;
-    }
-
-    public Context getParentTraceContext() {
-        return parentTraceContext;
-    }
-    
-    /**
-     * Used to make duplicate of the InvocationContext.
-     */
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeBoolean(useTransactionOfExecutionThread);
-        // write values for invocation
-        String componentId = null;
-        String appName = null;
-        String moduleName = null;
+        String componentId = null, appName = null, moduleName = null;
         if (invocation != null) {
             componentId = invocation.getComponentId();
-            appName = invocation.getAppName();
-            moduleName = invocation.getModuleName();
+            appName     = invocation.getAppName();
+            moduleName  = invocation.getModuleName();
         }
         out.writeObject(componentId);
         out.writeObject(appName);
         out.writeObject(moduleName);
-        // write values for securityContext
+
         String principalName = null;
         boolean defaultSecurityContext = false;
         Subject subject = null;
@@ -155,12 +130,9 @@ public class InvocationContext implements ContextHandle {
                 principalName = securityContext.getCallerPrincipal().getName();
                 subject = securityContext.getSubject();
                 // Clear principal set to avoid ClassNotFoundException during deserialization.
-                // It will be set by new SecurityContext in readObject().
                 subject.getPrincipals().clear();
             }
-            if (securityContext == SecurityContext.getDefaultSecurityContext()) {
-                defaultSecurityContext = true;
-            }
+            defaultSecurityContext = (securityContext == SecurityContext.getDefaultSecurityContext());
         }
         out.writeObject(principalName);
         out.writeBoolean(defaultSecurityContext);
@@ -169,53 +141,33 @@ public class InvocationContext implements ContextHandle {
         out.writeObject(threadContextRestorers);
     }
 
-    /**
-     * Used to make duplicate of the InvocationContext.
-     */
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         useTransactionOfExecutionThread = in.readBoolean();
-        // reconstruct invocation
         String componentId = (String) in.readObject();
-        String appName = (String) in.readObject();
-        String moduleName = (String) in.readObject();
+        String appName     = (String) in.readObject();
+        String moduleName  = (String) in.readObject();
         invocation = createComponentInvocation(componentId, appName, moduleName);
-        // reconstruct securityContext
-        String principalName = (String) in.readObject();
-        boolean defaultSecurityContext = in.readBoolean();
-        Subject subject = (Subject) in.readObject();
+
+        String  principalName        = (String)  in.readObject();
+        boolean defaultSecurityCtx   = in.readBoolean();
+        Subject subject              = (Subject) in.readObject();
         if (principalName != null) {
-            if (defaultSecurityContext) {
-                securityContext = SecurityContext.getDefaultSecurityContext();
-            }
-            else {
-                securityContext = new SecurityContext(principalName, subject, null);
-            }
+            securityContext = defaultSecurityCtx
+                    ? SecurityContext.getDefaultSecurityContext()
+                    : new SecurityContext(principalName, subject, null);
         }
-        // reconstruct contextClassLoader
-        ApplicationRegistry applicationRegistry = ConcurrentRuntime.getRuntime().getApplicationRegistry();
-        if (appName != null) {
-            ApplicationInfo applicationInfo = applicationRegistry.get(appName);
-            if (applicationInfo != null) {
-                contextClassLoader = applicationInfo.getAppClassLoader();
-            }
-        }
-        threadContextSnapshots = (List<ThreadContextSnapshot>) in.readObject();
-        threadContextRestorers = (List<ThreadContextRestorer>) in.readObject();
+        contextClassLoader = ConcurrentRuntime.getRuntime().getInvocationFacade().getContextClassLoader(appName);
+        threadContextSnapshots  = (List<ThreadContextSnapshot>)  in.readObject();
+        threadContextRestorers  = (List<ThreadContextRestorer>)  in.readObject();
     }
 
     private ComponentInvocation createComponentInvocation(String componentId, String appName, String moduleName) {
         if (componentId == null && appName == null && moduleName == null) {
             return null;
         }
-        ComponentInvocation newInv = new ComponentInvocation(
+        return new ComponentInvocation(
                 componentId,
                 ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
-                null,
-                appName,
-                moduleName,
-                appName
-        );
-        return newInv;
+                null, appName, moduleName, appName);
     }
-
 }

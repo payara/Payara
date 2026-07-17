@@ -41,70 +41,45 @@
 
 package org.glassfish.concurrent.runtime;
 
-import com.sun.enterprise.config.serverbeans.Application;
-import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
-import fish.payara.opentracing.OpenTelemetryService;
-import io.opentelemetry.api.baggage.Baggage;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanBuilder;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
+
+
 import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurro.spi.ContextHandle;
 import org.glassfish.concurro.spi.ContextSetupProvider;
-import org.glassfish.internal.deployment.Deployment;
 
 import jakarta.enterprise.concurrent.ContextService;
 import jakarta.enterprise.concurrent.ManagedTask;
 import jakarta.enterprise.concurrent.spi.ThreadContextProvider;
 import jakarta.enterprise.concurrent.spi.ThreadContextRestorer;
 import jakarta.enterprise.concurrent.spi.ThreadContextSnapshot;
-import jakarta.transaction.Status;
-import jakarta.transaction.Transaction;
 import java.io.IOException;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-
-import jakarta.enterprise.concurrent.ContextServiceDefinition;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.data.ApplicationRegistry;
+import jakarta.enterprise.concurrent.ContextServiceDefinition;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
-    private transient InvocationManager invocationManager;
-    private transient Deployment deployment;
-    private transient ComponentEnvManager compEnvMgr;
-    private transient ApplicationRegistry applicationRegistry;
-    private transient Applications applications;
-    // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
-    private transient JavaEETransactionManager transactionManager;
 
     private static final Logger logger  = LogFacade.getLogger();
 
-    static final long serialVersionUID = -1095988075917755802L;
+    /** Bumped when the serialized form changes; same-JVM same-version round-trips only. */
+    static final long serialVersionUID = 1L;
 
     // Predefined handlers for context propagation
     // TODO: replace with ConcurrentRuntime.CONTEXT_INFO_* ?
@@ -113,8 +88,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     public static final String CONTEXT_TYPE_NAMING = "NAMING"; // Concurrency 3.0: APPLICATION
     public static final String CONTEXT_TYPE_WORKAREA = "WORKAREA"; // Concurrency 3.0: TRANSACTION
 
-    private static final ThreadLocal<Span> currentConcurrentSpan = new ThreadLocal<>();
-    private static final ThreadLocal<Scope> currentConcurrentScope = new ThreadLocal<>();
 
     // TODO: do we need these booleans if we have sets?
     private boolean classloading, security, naming, workArea;
@@ -126,26 +99,27 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
      * Points to the context, which contains ALL_REMAINING.
      */
     private final Set<String> allRemaining;
+    private transient InvocationFacade invocationFacade;
+    private transient MonitoringFacade monitoringFacade;
+    /** JNDI name of the owning executor/context-service; used as the OTel pool name. */
+    private final String poolName;
+    /**
+     * Built-in OTel waiting-span provider — always active, not user-configurable.
+     * Transient because {@link MonitoringFacade} is not serializable; restored in
+     * {@link #readObject} from {@link ConcurrentRuntime} after passivation round-trip.
+     */
+    private transient OtelContextProvider otelContextProvider;
 
-    private transient RequestTracingService requestTracing;
-    private transient OpenTelemetryService openTelemetry;
-    private transient StuckThreadsStore stuckThreads;
-
-    public ContextSetupProviderImpl(InvocationManager invocationManager,
-            Deployment deployment,
-            ComponentEnvManager compEnvMgr,
-            ApplicationRegistry applicationRegistry,
-            Applications applications,
-            JavaEETransactionManager transactionManager,
+    public ContextSetupProviderImpl(InvocationFacade invocationFacade,
+            MonitoringFacade monitoringFacade,
+            String poolName,
             Set<String> propagated,
             Set<String> cleared,
             Set<String> unchanged) {
-        this.invocationManager = invocationManager;
-        this.deployment = deployment;
-        this.compEnvMgr = compEnvMgr;
-        this.applicationRegistry = applicationRegistry;
-        this.applications = applications;
-        this.transactionManager = transactionManager;
+        this.invocationFacade = invocationFacade;
+        this.monitoringFacade = monitoringFacade;
+        this.poolName = poolName;
+        this.otelContextProvider = new OtelContextProvider(monitoringFacade, poolName);
 
         contextPropagate = new HashSet<>(propagated);
         contextClear = new HashSet<>(cleared);
@@ -167,8 +141,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         addToRemainingIfNotPresent(CONTEXT_TYPE_SECURITY);
         addToRemainingIfNotPresent(CONTEXT_TYPE_NAMING);
         addToRemainingIfNotPresent(CONTEXT_TYPE_WORKAREA);
-
-        initialiseServices();
 
         for (String contextType : contextPropagate) {
             switch (contextType) {
@@ -224,7 +196,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         Set<String> verifiedContextClear = filterVerifiedProviders(contextClear);
         Set<String> verifiedContextUnchanged = filterVerifiedProviders(contextUnchanged);
 
-        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
+        ComponentInvocation currentInvocation = invocationFacade.getCurrentInvocation();
         if (currentInvocation != null) {
             if (verifiedContextPropagate.contains(CONTEXT_TYPE_NAMING)) {
                 savedInvocation = createComponentInvocation(currentInvocation);
@@ -233,7 +205,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 savedInvocation = new ComponentInvocation();
             }
         }
-        boolean useTransactionOfExecutionThread = (transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties))
+        boolean useTransactionOfExecutionThread = (!invocationFacade.isContextService() && useTransactionOfExecutionThread(contextObjectProperties))
                 || verifiedContextUnchanged.contains(CONTEXT_TYPE_WORKAREA);
 
         // store the snapshots of the current state
@@ -249,6 +221,10 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 .filter(snapshot -> snapshot != null)
                 .map(snapshot -> snapshot.clearedContext(contextObjectProperties))
                 .forEach(snapshot -> threadContextSnapshots.add(snapshot));
+
+        // Built-in OTel waiting-span context: always captured at submit time,
+        // regardless of the executor's context-type propagation configuration.
+        threadContextSnapshots.add(otelContextProvider.currentContext(contextObjectProperties));
 
         return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread,
                 threadContextSnapshots, Collections.EMPTY_LIST);
@@ -272,8 +248,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
             if (appName == null) {
                 // try to get environment from component ID
-                if (invocation.getComponentId() != null && compEnvMgr != null) {
-                    JndiNameEnvironment currJndiEnv = compEnvMgr.getJndiNameEnvironment(invocation.getComponentId());
+                if (invocation.getComponentId() != null) {
+                    JndiNameEnvironment currJndiEnv = invocationFacade.getJndiNameEnvironment(invocation.getComponentId());
                     if (currJndiEnv != null) {
                         com.sun.enterprise.deployment.Application appInfo = DOLUtils.getApplicationFromEnv(currJndiEnv);
                         if (appInfo != null) {
@@ -288,7 +264,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         // Check whether the application component submitting the task is still running. Throw IllegalStateException if not.
-        if (appName != null && !isApplicationEnabled(appName)) { // appName == null in case of the server context
+        if (appName != null && !invocationFacade.isApplicationEnabled(appName)) { // appName == null in case of the server context
             throw new IllegalStateException("Module " + appName + " is disabled");
         }
 
@@ -308,19 +284,11 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (invocation != null) {
             // Each invocation needs a ResourceTableKey that returns a unique hashCode for TransactionManager
             invocation.setResourceTableKey(new PairKey(invocation.getInstance(), Thread.currentThread()));
-            invocationManager.preInvoke(invocation);
+            invocationFacade.preInvoke(invocation);
         }
         // Ensure that there is no existing transaction in the current thread
-        if (transactionManager != null && contextClear.contains(CONTEXT_TYPE_WORKAREA)) {
-            transactionManager.clearThreadTx();
-        }
-
-        if (requestTracing != null && openTelemetry != null && requestTracing.isRequestTracingEnabled()) {
-            startConcurrentContextSpan(invocation, handle);
-        }
-        
-        if (stuckThreads != null) {
-            stuckThreads.registerThread(Thread.currentThread().threadId());
+        if (contextClear.contains(CONTEXT_TYPE_WORKAREA)) {
+            invocationFacade.cleanupTransaction(false);
         }
 
         // execute thread contexts snapshots to begin
@@ -331,51 +299,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                     .collect(Collectors.toList());
         }
 
-        return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
+        InvocationContext restorerHandle = new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread(),
                 Collections.EMPTY_LIST, restorers);
-    }
 
-    private void startConcurrentContextSpan(ComponentInvocation invocation, InvocationContext handle) {
-        Tracer tracer = openTelemetry.getCurrentTracer();
-        SpanBuilder builder = tracer.spanBuilder("executeConcurrentContext");
-        Context parentContext = handle.getParentTraceContext();
-        if (parentContext != null) {
-            builder.setParent(parentContext);
+        monitoringFacade.registerStuckThread(Thread.currentThread().threadId());
 
-            String parentOperationName = Baggage.fromContext(parentContext).getEntryValue("operation.name");
-            if (parentOperationName != null) {
-                builder.setAttribute("Parent Operation Name", parentOperationName);
-            }
-        }
-
-        if (invocation != null) {
-            builder.setAttribute("App Name", invocation.getAppName())
-                    .setAttribute("Component ID", invocation.getComponentId())
-                    .setAttribute("Module Name", invocation.getModuleName());
-
-            Object instance = invocation.getInstance();
-            if (instance != null) {
-                builder.setAttribute("Class Name", instance.getClass().getName());
-            }
-        }
-
-        builder.setAttribute("Thread Name", Thread.currentThread().getName());
-        Span span = builder.startSpan();
-        currentConcurrentSpan.set(span);
-        currentConcurrentScope.set(span.makeCurrent());
-    }
-
-    private void stopConcurrentContextSpan() {
-        Scope scope = currentConcurrentScope.get();
-        Span span = currentConcurrentSpan.get();
-        if (scope != null) {
-            scope.close();
-            currentConcurrentScope.remove();
-        }
-        if (span != null) {
-            span.end();
-            currentConcurrentSpan.remove();
-        }
+        return restorerHandle;
     }
 
     @Override
@@ -396,54 +325,16 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             SecurityContext.setCurrent(handle.getSecurityContext());
         }
         if (handle.getInvocation() != null) {
-            invocationManager.postInvoke(((InvocationContext) contextHandle).getInvocation());
+            invocationFacade.postInvoke(handle.getInvocation());
         }
-        if (contextClear.contains(CONTEXT_TYPE_WORKAREA) && transactionManager != null) {
-            // clean up after user if a transaction is still active
-            // This is not required by the Concurrency spec
-            Transaction transaction = transactionManager.getCurrentTransaction();
-            if (transaction != null) {
-                try {
-                    int status = transaction.getStatus();
-                    if (status == Status.STATUS_ACTIVE) {
-                        transactionManager.commit();
-                    } else if (status == Status.STATUS_MARKED_ROLLBACK) {
-                        transactionManager.rollback();
-                    }
-                } catch (Exception ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, ex.toString());
-                }
-            }
-            transactionManager.clearThreadTx();
+        if (contextClear.contains(CONTEXT_TYPE_WORKAREA)) {
+            invocationFacade.cleanupTransaction(true);
         }
 
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-            stopConcurrentContextSpan();
-            requestTracing.endTrace();
+        if (monitoringFacade.isRequestTracingEnabled()) {
+            monitoringFacade.endTrace();
         }
-        if (stuckThreads != null) {
-            stuckThreads.deregisterThread(Thread.currentThread().threadId());
-        }
-    }
-
-    private boolean isApplicationEnabled(String appId) {
-        boolean result = false;
-        if (appId != null) {
-            Application app = applications.getApplication(appId);
-            if (app != null) {
-                result = deployment.isAppEnabled(app);
-            } else {
-                // if app is null then it is likely that appId is still deploying
-                // and its enabled status has not been written to the domain.xml yet
-                // this can happen for example with a Startup EJB submitting something
-                // it its startup method, and since Aug 2021 CDI deployment in general. Reference Payara GitHub issue 204
-                if(applicationRegistry.get(appId) != null){
-                    logger.log(Level.FINE, "Job submitted for {0} likely during deployment. Continuing...", appId);
-                    result = true;
-                }
-            }
-        }
-        return result;
+        monitoringFacade.deregisterStuckThread(Thread.currentThread().threadId());
     }
 
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
@@ -458,7 +349,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private boolean useTransactionOfExecutionThread(Map<String, String> executionProperties) {
-        return (ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(getTransactionExecutionProperty(executionProperties)));
+        return ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(getTransactionExecutionProperty(executionProperties));
     }
 
     private String getTransactionExecutionProperty(Map<String, String> executionProperties) {
@@ -470,9 +361,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private Set<String> filterVerifiedProviders(Set<String> providers) {
         HashSet<String> filtered = new HashSet<>();
-        Iterator<String> providerIter = providers.iterator();
-        while (providerIter.hasNext()) {
-            String provider = providerIter.next();
+        for (String provider : providers) {
             switch (provider) {
                 case CONTEXT_TYPE_CLASSLOADING:
                 case CONTEXT_TYPE_SECURITY:
@@ -500,24 +389,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
     }
 
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-        out.writeBoolean(transactionManager == null);
-    }
-
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        boolean nullTransactionManager = in.readBoolean();
+        // Re-initialize transient facade fields from the runtime singleton.
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
-        // re-initialize these fields
-        invocationManager = concurrentRuntime.getInvocationManager();
-        deployment = concurrentRuntime.getDeployment();
-        applications = concurrentRuntime.getApplications();
-        compEnvMgr = concurrentRuntime.getCompEnvMgr();
-        if (!nullTransactionManager) {
-            transactionManager = concurrentRuntime.getTransactionManager();
-        }
-        initialiseServices();
+        invocationFacade     = concurrentRuntime.getInvocationFacade();
+        monitoringFacade     = concurrentRuntime.getMonitoringFacade();
+        otelContextProvider  = new OtelContextProvider(monitoringFacade, poolName);
     }
 
     private static class PairKey {
@@ -566,28 +444,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
             return eq;
         }
-    }
-    
-    private void initialiseServices() {
-        try {
-            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException", ex);
-        }
-        try {
-            this.stuckThreads = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Stuck Threads Store Healthcheck service "
-                    + "during initialisation of Concurrent Context - NullPointerException", ex);
-        }
-        try {
-            this.openTelemetry = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving OpenTracing service "
-                    + "during initialisation of Concurrent Context - NullPointerException", ex);
-        }
-
     }
 }
 
