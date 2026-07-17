@@ -44,29 +44,27 @@ package fish.payara.microprofile.telemetry.tracing.jaxrs;
 import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.CDI;
+
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.UriInfo;
-import java.lang.annotation.Annotation;
 import org.eclipse.microprofile.config.Config;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A helper class for OpenTracing instrumentation in JAX-RS resources.
+ * A helper class for OpenTelemetry instrumentation in JAX-RS resources.
  */
-final class OpenTracingHelper {
+final class RestSpanHelper {
 
-    private static final Logger LOG = Logger.getLogger(OpenTracingHelper.class.getName());
+    private static final Logger LOG = Logger.getLogger(RestSpanHelper.class.getName());
     public static final String SPAN_CONVENTION_MP_KEY = "payara.telemetry.span-convention";
     
     private static final WithSpan NULL_WITHSPAN = new WithSpan() {
@@ -98,16 +96,14 @@ final class OpenTracingHelper {
     private ResourceCache<String> routeCache = new ResourceCache<>();
     private ResourceCache<String> operationNameCache = new ResourceCache<>();
 
-    private ResourceCache<Tracer> tracedCache = new ResourceCache<>();
-
     private ResourceCache<WithSpan> withSpanCache = new ResourceCache<>();
 
-    public OpenTracingHelper() {
+    public RestSpanHelper() {
         this.mpConfig = PayaraTracingServices.getConfig();
     }
 
     /**
-     * Determines the operation name of the span based on the given ContainerRequestContext and Traced annotation.
+     * Determines the operation name of the span based on the given ContainerRequestContext and WithSpan annotation.
      *
      * @param request          the ContainerRequestContext object for this request
      * @return the name to use as the span's operation name
@@ -116,7 +112,7 @@ final class OpenTracingHelper {
         return operationNameCache.get(resourceInfo, () -> computeOperationName(resourceInfo, request));
     }
 
-    public String computeOperationName(final ResourceInfo resourceInfo, final ContainerRequestContext request) {
+    private String computeOperationName(final ResourceInfo resourceInfo, final ContainerRequestContext request) {
         var withSpanAnnotation = getWithSpanAnnotation(resourceInfo);
         if (withSpanAnnotation != null) {
             if (!"".equals(withSpanAnnotation.value())) {
@@ -166,10 +162,6 @@ final class OpenTracingHelper {
         }
 
         return SpanStrategy.OTEL_SEM_CONV;
-    }
-
-    public void augmentSpan(SpanBuilder spanBuilder) {
-        determineSpanStrategy().augmentSpan(spanBuilder);
     }
 
     public String getHttpRoute(ContainerRequest request, ResourceInfo resourceInfo) {
@@ -309,29 +301,15 @@ final class OpenTracingHelper {
     }
 
     public WithSpan getWithSpanAnnotation(ResourceInfo resourceInfo) {
-        final BeanManager bm = getBeanManager();
-        if (bm == null) {
-            return null;
-        }
-        WithSpan cached = withSpanCache.get(resourceInfo, () -> computeWithSpanAnnotation(resourceInfo, bm));
+        WithSpan cached = withSpanCache.get(resourceInfo, () -> computeWithSpanAnnotation(resourceInfo));
         return cached == NULL_WITHSPAN ? null : cached;
     }
-    private WithSpan computeWithSpanAnnotation(ResourceInfo resourceInfo, BeanManager bm) {
-        var result = OpenTracingCdiUtils.getAnnotation(bm, WithSpan.class, resourceInfo);
+
+    private WithSpan computeWithSpanAnnotation(ResourceInfo resourceInfo) {
+        var result = resourceInfo.getResourceMethod().getAnnotation(WithSpan.class);
         return result == null ? NULL_WITHSPAN : result;
     }
 
     static ResourceCache<Boolean> canTraceCache = new ResourceCache<>();
 
-    private BeanManager getBeanManager() {
-        try {
-            return CDI.current().getBeanManager();
-        } catch (final IllegalStateException ise) {
-            // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
-            LOG.log(Level.FINE, "Error getting Bean Manager, presumably due to this application not using CDI",
-                    ise);
-            return null;
-        }
-    }
-    
 }

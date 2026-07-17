@@ -40,7 +40,7 @@
 package fish.payara.samples.remote.ejb.tracing.server;
 
 import fish.payara.samples.remote.ejb.tracing.EjbRemote;
-import fish.payara.microprofile.telemetry.tracing.Traced;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.api.baggage.Baggage;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
@@ -80,7 +80,7 @@ public class Ejb implements EjbRemote {
      * @return The current baggage items
      */
     @Override
-    @Traced(operationName = "customName")
+    @WithSpan("customName")
     public String annotatedMethod() {
         randomSleep();
         Baggage baggage = Baggage.builder()
@@ -97,7 +97,6 @@ public class Ejb implements EjbRemote {
      * @return The current baggage items
      */
     @Override
-    @Traced(false)
     public String shouldNotBeTraced() {
         randomSleep();
         Baggage baggage = Baggage.builder()

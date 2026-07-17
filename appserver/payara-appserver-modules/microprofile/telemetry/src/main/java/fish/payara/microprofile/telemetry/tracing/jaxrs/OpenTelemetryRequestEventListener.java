@@ -69,14 +69,14 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private final OpenTelemetryService openTelemetryService;
 
-    private final OpenTracingHelper openTracingHelper;
+    private final RestSpanHelper restSpanHelper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
                                              final OpenTelemetryService openTelemetryService,
-                                             final OpenTracingHelper openTracingHelper) {
+                                             final RestSpanHelper restSpanHelper) {
         this.resourceInfo = resourceInfo;
         this.openTelemetryService = openTelemetryService;
-        this.openTracingHelper = openTracingHelper;
+        this.restSpanHelper = restSpanHelper;
     }
 
     @Override
@@ -99,7 +99,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
             if (requestEvent.getType() == RequestEvent.Type.REQUEST_MATCHED) {
                 final ContainerRequest requestContext = requestEvent.getContainerRequest();
-                final String operationName = openTracingHelper.determineOperationName(resourceInfo, requestContext);
+                final String operationName = restSpanHelper.determineOperationName(resourceInfo, requestContext);
                 onIncomingRequest(requestEvent, operationName);
                 return;
             }
@@ -179,7 +179,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
         if (routeState != null) {
             // Contribute the full JAX-RS route (baseUri path + matched @Path template).
             // StandardWrapper reads it from the stashed context at span-end via OtelRouteState.
-            String httpRoute = openTracingHelper.getHttpRoute(requestContext, resourceInfo);
+            String httpRoute = restSpanHelper.getHttpRoute(requestContext, resourceInfo);
             if (httpRoute != null && !httpRoute.isEmpty()) {
                 routeState.setFullRoute(httpRoute);
             }

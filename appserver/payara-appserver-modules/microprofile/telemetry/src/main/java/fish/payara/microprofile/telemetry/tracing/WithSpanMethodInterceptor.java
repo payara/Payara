@@ -54,7 +54,6 @@ import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.instrumentation.api.annotation.support.MethodSpanAttributesExtractor;
 import io.opentelemetry.semconv.ExceptionAttributes;
-import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.InvocationContext;
 import jakarta.ws.rs.DELETE;
@@ -65,128 +64,27 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import org.glassfish.api.invocation.InvocationManager;
-import org.jboss.weld.interceptor.WeldInvocationContext;
 
-import java.lang.annotation.Annotation;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.util.Arrays.asList;
-import static java.util.logging.Level.FINER;
 
 /**
  * Interceptor for CDI beans that adds tracing spans using OpenTelemetry.
  */
-public class WithSpanMethodInterceptor {
+public class WithSpanMethodInterceptor implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = Logger.getLogger(WithSpanMethodInterceptor.class.getName());
 
     private static final Class[] HTTP_METHODS = //
             new Class[] {GET.class, POST.class, DELETE.class, PUT.class, HEAD.class, PATCH.class, OPTIONS.class};
 
-    private final BeanManager bm;
-
-    public WithSpanMethodInterceptor(final BeanManager bm) {
-        this.bm = bm;
-    }
-
-    /**
-     * Gets the annotation from the method that triggered the interceptor.
-     *
-     * @param <A> The annotation type to return
-     * @param beanManager The invoking interceptor's BeanManager
-     * @param annotationClass The class of the annotation to get
-     * @param invocationContext The context of the method invocation
-     * @return The annotation that triggered the interceptor.
-     */
-    private static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, InvocationContext invocationContext) {
-        A annotation = getInterceptedAnnotation(annotationClass, invocationContext);
-
-        if (annotation == null) {
-            annotation = getAnnotation(beanManager, annotationClass, invocationContext.getMethod().getDeclaringClass(), invocationContext.getMethod());
-        }
-
-        return annotation;
-    }
-
-    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, Class<?> annotatedClass, Method method) {
-        logGetAnnotation(annotationClass, method);
-        Objects.requireNonNull(annotatedClass, "annotatedClass");
-        Objects.requireNonNull(method, "method");
-
-        // Try to get the annotation from the method, otherwise attempt to get it from the class
-        if (method.isAnnotationPresent(annotationClass)) {
-            LOG.log(FINER, "Annotation was directly present on the method");
-            return method.getAnnotation(annotationClass);
-        }
-
-        if (annotatedClass.isAnnotationPresent(annotationClass)) {
-            LOG.log(FINER, "Annotation was directly present on the class");
-            return annotatedClass.getAnnotation(annotationClass);
-        }
-
-        LOG.log(FINER, "Annotation wasn't directly present on the method or class, checking stereotypes");
-
-        // Account for Stereotypes
-        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
-
-        // Loop over each individual annotation
-        while (!annotations.isEmpty()) {
-            Annotation a = annotations.remove();
-
-            // Check if this is the annotation we're looking for
-            if (a.annotationType().equals(annotationClass)) {
-                LOG.log(FINER, "Annotation was found in a stereotype");
-                return annotationClass.cast(a);
-            }
-
-            // If the found annotation is a stereotype, get the individual annotations and add them to the list
-            // to be iterated over
-            if (beanManager.isStereotype(a.annotationType())) {
-                annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Uses Weld to find an annotation. The annotation must be an intercepted annotation that has a binding
-     * @param <A>
-     * @param annotationClass {@link Annotation} to look for
-     * @param invocationContext
-     * @return the {@link Annotation} that the interceptor is inceptoring,or null if it cannot be found
-     */
-    private static <A extends Annotation> A getInterceptedAnnotation(Class<A> annotationClass, InvocationContext invocationContext){
-         if (invocationContext instanceof WeldInvocationContext) {
-            Set<Annotation> interceptorBindings = ((WeldInvocationContext) invocationContext).getInterceptorBindings();
-            for (Annotation annotationBound : interceptorBindings) {
-                if (annotationBound.annotationType().equals(annotationClass)) {
-                    return (A) annotationBound;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static void logGetAnnotation(Class<?> annotatedClass, Method method) {
-        LOG.log(FINER, "Attempting to get annotation {0} from {1}",
-            new String[] {getString(annotatedClass, Class::getSimpleName), getString(method, Method::getName)});
-    }
-
-    private static <T> String getString(final T object, Function<T, String> toString) {
-        if (object == null) {
-            return null;
-        }
-        return toString.apply(object);
+    public WithSpanMethodInterceptor() {
     }
 
     @AroundInvoke
@@ -213,7 +111,19 @@ public class WithSpanMethodInterceptor {
         }
 
         // Get the WithSpan annotation present on the method
-        final WithSpan withSpan = getAnnotation(bm, WithSpan.class, invocationContext);
+        final WithSpan withSpan = invocationContext.getMethod().getAnnotation(WithSpan.class);
+
+        // If WithSpan is not present, proceed without creating a span
+        if (withSpan == null) {
+            LOG.finest("No @WithSpan annotation found on method, proceeding without creating a span.");
+            return invocationContext.proceed();
+        }
+
+        // Check if tracing has been disabled for this method via config
+        if (WithSpanEnabledLookup.isDisabled(invocationContext.getMethod())) {
+            LOG.finest("Tracing is disabled for this method via configuration, proceeding without creating a span.");
+            return invocationContext.proceed();
+        }
 
         // If we *have* been told to, get the application's Tracer instance and start an active span.
         SpanBuilder spanBuilder = openTelemetryService.getCurrentTracer()
@@ -241,7 +151,7 @@ public class WithSpanMethodInterceptor {
     private boolean isJaxRsMethod(InvocationContext invocationContext) {
         // Check if any of the HTTP Method annotations are present on the intercepted method
         for (Class httpMethod : HTTP_METHODS) {
-            if (getAnnotation(bm, httpMethod, invocationContext) != null) {
+            if (invocationContext.getMethod().isAnnotationPresent(httpMethod)) {
                 return true;
             }
         }

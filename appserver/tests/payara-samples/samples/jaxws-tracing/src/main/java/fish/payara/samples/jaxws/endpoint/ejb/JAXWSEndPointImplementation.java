@@ -45,7 +45,7 @@ import java.util.logging.Logger;
 import jakarta.ejb.Stateless;
 import jakarta.jws.WebService;
 
-import fish.payara.microprofile.telemetry.tracing.Traced;
+
 
 
 @Stateless
@@ -54,7 +54,6 @@ public class JAXWSEndPointImplementation implements JAXWSEndPointInterface {
     private static final Logger LOG = Logger.getLogger(JAXWSEndPointImplementation.class.getName());
 
     @Override
-    @Traced(operationName = "customOperation")
     public String sayHi(String name) {
         LOG.log(Level.INFO, "sayHi(name={0})", name);
         return "Hi " + name;
