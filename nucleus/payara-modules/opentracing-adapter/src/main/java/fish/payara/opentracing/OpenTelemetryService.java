@@ -129,7 +129,7 @@ public class OpenTelemetryService implements EventListener {
             return true;
         }
         String application = currentApplication();
-        return application != null && appTelemetries.containsKey(application) || isPayaraTracingEnabled();
+        return application != null && appTelemetries.containsKey(application);
     }
 
     public Tracer getCurrentTracer() {
