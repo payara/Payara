@@ -212,11 +212,12 @@ public class EjbWebServiceServlet extends HttpServlet {
     }
 
     private SecurityService securityService;
-    private OpenTelemetryService openTelemetryService;
+    private EjbWsTelemetry telemetry;
 
     public EjbWebServiceServlet() {
         securityService = Globals.get(SecurityService.class);
-        openTelemetryService = Globals.get(OpenTelemetryService.class);
+        OpenTelemetryService openTelemetryService = Globals.get(OpenTelemetryService.class);
+        telemetry = openTelemetryService != null ? new OtelEjbWsTelemetry(openTelemetryService) : NOOP;
     }
 
     @Override
@@ -284,9 +285,6 @@ public class EjbWebServiceServlet extends HttpServlet {
 
                 if (dispatch) {
                     String method = request.getMethod() != null ? request.getMethod().toUpperCase() : "POST";
-                    EjbWsTelemetry telemetry = openTelemetryService.isEnabled()
-                            ? new OtelEjbWsTelemetry(openTelemetryService)
-                            : NOOP;
                     telemetry.beforeDispatch(request, method, request.getRequestURI());
                     dispatchToEjbEndpoint(request, response, ejbEndpoint, telemetry);
                 }

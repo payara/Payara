@@ -39,6 +39,7 @@
  */
 package fish.payara.samples.jaxws.endpoint.ejb;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +55,7 @@ public class JAXWSEndPointImplementation implements JAXWSEndPointInterface {
     private static final Logger LOG = Logger.getLogger(JAXWSEndPointImplementation.class.getName());
 
     @Override
+    @WithSpan("customOperation")
     public String sayHi(String name) {
         LOG.log(Level.INFO, "sayHi(name={0})", name);
         return "Hi " + name;
