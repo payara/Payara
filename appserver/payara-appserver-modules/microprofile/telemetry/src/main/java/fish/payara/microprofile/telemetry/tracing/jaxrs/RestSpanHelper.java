@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023-2024 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -45,51 +45,37 @@ import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.CDI;
+
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.UriInfo;
-import java.lang.annotation.Annotation;
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.opentracing.Traced;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 
+import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A helper class for OpenTracing instrumentation in JAX-RS resources.
+ * A helper class for OpenTelemetry instrumentation in JAX-RS resources.
  */
-final class OpenTracingHelper {
+final class RestSpanHelper {
 
-    private static final Logger LOG = Logger.getLogger(OpenTracingHelper.class.getName());
+    private static final Logger LOG = Logger.getLogger(RestSpanHelper.class.getName());
     public static final String SPAN_CONVENTION_MP_KEY = "payara.telemetry.span-convention";
-
-    // Cache cannot store null
-    private static final Traced NULL_TRACED = new Traced() {
-        @Override
-        public boolean value() {
-            return false;
-        }
-
-        @Override
-        public String operationName() {
-            return null;
-        }
-
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return Traced.class;
-        }
-    };
+    
     private static final WithSpan NULL_WITHSPAN = new WithSpan() {
         @Override
         public SpanKind kind() {
             return null; // something to trigger sync
+        }
+
+        @Override
+        public boolean inheritContext() {
+            return false;
         }
 
         @Override
@@ -110,16 +96,14 @@ final class OpenTracingHelper {
     private ResourceCache<String> routeCache = new ResourceCache<>();
     private ResourceCache<String> operationNameCache = new ResourceCache<>();
 
-    private ResourceCache<Traced> tracedCache = new ResourceCache<>();
-
     private ResourceCache<WithSpan> withSpanCache = new ResourceCache<>();
 
-    public OpenTracingHelper() {
+    public RestSpanHelper() {
         this.mpConfig = PayaraTracingServices.getConfig();
     }
 
     /**
-     * Determines the operation name of the span based on the given ContainerRequestContext and Traced annotation.
+     * Determines the operation name of the span based on the given ContainerRequestContext and WithSpan annotation.
      *
      * @param request          the ContainerRequestContext object for this request
      * @return the name to use as the span's operation name
@@ -128,25 +112,10 @@ final class OpenTracingHelper {
         return operationNameCache.get(resourceInfo, () -> computeOperationName(resourceInfo, request));
     }
 
-    public String computeOperationName(final ResourceInfo resourceInfo, final ContainerRequestContext request) {
-        Traced tracedAnnotation = getTracedAnnotation(resourceInfo);
-        if (tracedAnnotation != null) {
-            String operationName = OpenTracingCdiUtils.getConfigOverrideValue(
-                            Traced.class, "operationName", resourceInfo, String.class)
-                    .orElse(tracedAnnotation.operationName());
-            // If the annotation or config override providing an empty name, just set it equal to the HTTP Method,
-            // followed by the method signature
-            if (operationName.equals("")) {
-                operationName = request.getMethod() + ":"
-                        + resourceInfo.getResourceClass().getCanonicalName() + "."
-                        + resourceInfo.getResourceMethod().getName();
-            }
-            return operationName;
-        }
+    private String computeOperationName(final ResourceInfo resourceInfo, final ContainerRequestContext request) {
         var withSpanAnnotation = getWithSpanAnnotation(resourceInfo);
         if (withSpanAnnotation != null) {
             if (!"".equals(withSpanAnnotation.value())) {
-                // if non-default value is provided, then use it, otherwise just use the default
                 return withSpanAnnotation.value();
             }
         }
@@ -193,10 +162,6 @@ final class OpenTracingHelper {
         }
 
         return SpanStrategy.OTEL_SEM_CONV;
-    }
-
-    public void augmentSpan(SpanBuilder spanBuilder) {
-        determineSpanStrategy().augmentSpan(spanBuilder);
     }
 
     public String getHttpRoute(ContainerRequest request, ResourceInfo resourceInfo) {
@@ -335,106 +300,16 @@ final class OpenTracingHelper {
         }
     }
 
-    /**
-     * Checks if CDI has been initialized by trying to get the BeanManager. If CDI is initialized,
-     * gets the Traced annotation from the target method.
-     *
-     * @return the Traced annotation object for this request, or null if CDI has not been initialized
-     */
-    private Traced getTracedAnnotation(ResourceInfo resourceInfo) {
-        final BeanManager beanManager = getBeanManager();
-        if (beanManager == null) {
-            return null;
-        }
-        Traced cached = tracedCache.get(resourceInfo, () -> computeTracedAnnotation(resourceInfo, beanManager));
-        return cached == NULL_TRACED ? null : cached;
-    }
-
     public WithSpan getWithSpanAnnotation(ResourceInfo resourceInfo) {
-        final BeanManager bm = getBeanManager();
-        if (bm == null) {
-            return null;
-        }
-        WithSpan cached = withSpanCache.get(resourceInfo, () -> computeWithSpanAnnotation(resourceInfo, bm));
+        WithSpan cached = withSpanCache.get(resourceInfo, () -> computeWithSpanAnnotation(resourceInfo));
         return cached == NULL_WITHSPAN ? null : cached;
     }
-    private WithSpan computeWithSpanAnnotation(ResourceInfo resourceInfo, BeanManager bm) {
-        var result = OpenTracingCdiUtils.getAnnotation(bm, WithSpan.class, resourceInfo);
+
+    private WithSpan computeWithSpanAnnotation(ResourceInfo resourceInfo) {
+        var result = resourceInfo.getResourceMethod().getAnnotation(WithSpan.class);
         return result == null ? NULL_WITHSPAN : result;
     }
 
-    private Traced computeTracedAnnotation(ResourceInfo resourceInfo, BeanManager beanManager) {
-        Traced result = OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, resourceInfo);
-        return result == null ? NULL_TRACED : result;
-    }
-
     static ResourceCache<Boolean> canTraceCache = new ResourceCache<>();
-    /**
-     * Helper method that checks if any specified skip patterns match this method name
-     *
-     * @param request the request to check if we should skip
-     * @return
-     */
-    public boolean canTrace(ResourceInfo resourceInfo, final ContainerRequest request) {
-        // we cannot trace if we don't have enough information.
-        // this can occur on early request processing stages
-        if (request == null || resourceInfo.getResourceClass() == null || resourceInfo.getResourceMethod() == null) {
-            return false;
-        }
-        return canTraceCache.get(resourceInfo, () -> computeCanTrace(resourceInfo, request, getTracedAnnotation(resourceInfo)));
-    }
-
-    private boolean computeCanTrace(ResourceInfo resourceInfo, final ContainerRequest request, final Traced tracedAnnotation) {
-        // Prepend a slash for safety (so that a pattern of "/blah" or just "blah" will both match)
-        final String uriPath = "/" + request.getUriInfo().getPath();
-        // Because the openapi resource path is always empty we need to use the base path
-        final String baseUriPath = request.getUriInfo().getBaseUri().getPath();
-        // First, check for the mandatory skips
-        if (uriPath.equals("/health")
-                || uriPath.equals("/metrics")
-                || uriPath.contains("/metrics/base")
-                || uriPath.contains("/metrics/vendor")
-                || uriPath.contains("/metrics/application")
-                || baseUriPath.equals("/openapi/")) {
-            return false;
-        }
-
-        // If a skip pattern property has been given, check if any of them match the method
-        final Optional<String> skipPatternOptional = mpConfig.getOptionalValue("mp.opentracing.server.skip-pattern",
-                String.class);
-        if (skipPatternOptional.isPresent()) {
-            final String skipPatterns = skipPatternOptional.get();
-
-            final String[] splitSkipPatterns = skipPatterns.split("\\|");
-
-            for (final String skipPattern : splitSkipPatterns) {
-                if (uriPath.matches(skipPattern)) {
-                    return false;
-                }
-            }
-        }
-
-        return tracedAnnotation == null || getTracingFromConfig(resourceInfo).orElse(tracedAnnotation.value());
-    }
-
-    private BeanManager getBeanManager() {
-        try {
-            return CDI.current().getBeanManager();
-        } catch (final IllegalStateException ise) {
-            // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
-            LOG.log(Level.FINE, "Error getting Bean Manager, presumably due to this application not using CDI",
-                    ise);
-            return null;
-        }
-    }
-
-    /**
-     * Gets the value of the "value" parameter in the Traced annotation from configuration, if available.
-     *
-     * @return an Optional<Boolean> indicating whether or not tracing is enabled for this request
-     */
-    private Optional<Boolean> getTracingFromConfig(ResourceInfo resourceInfo) {
-        return OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "value", resourceInfo, Boolean.class);
-    }
 
 }

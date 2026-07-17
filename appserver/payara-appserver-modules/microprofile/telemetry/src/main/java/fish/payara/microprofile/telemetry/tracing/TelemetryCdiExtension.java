@@ -89,12 +89,10 @@ public class TelemetryCdiExtension implements Extension {
         addAnnotatedType(bbd, bm, OpenTelemetryTracerProducer.class);
         addAnnotatedType(bbd, bm, OpenTelemetryMeterProducer.class);
         bbd.addInterceptorBinding(new WithSpanAnnotatedType(bm.createAnnotatedType(WithSpan.class)));
-        bbd.addInterceptorBinding(Traced.class);
-        addAnnotatedType(bbd, bm, TracedInterceptor.class);
     }
 
-    void afterBeanDiscovery(@Observes AfterBeanDiscovery abd, BeanManager bm) {
-        abd.addBean(new WithSpanMethodInterceptorBean(bm));
+    void afterBeanDiscovery(@Observes AfterBeanDiscovery abd) {
+        abd.addBean(new WithSpanMethodInterceptorBean());
     }
 
     static void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<?> beanClass) {
