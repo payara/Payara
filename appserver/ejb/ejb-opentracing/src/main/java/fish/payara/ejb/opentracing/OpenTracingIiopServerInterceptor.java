@@ -43,6 +43,7 @@ import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -91,7 +92,7 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
 
     @Override
     public void receive_request(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
-        OpenTelemetryService openTelemetryService = serviceLocator.getService(OpenTelemetryService.class);
+        OpenTelemetryService openTelemetryService = getOpenTelemetryService();
         if (openTelemetryService == null) {
             return;
         }
@@ -165,9 +166,17 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
     }
 
     private void endSpan(Throwable error) {
-        OpenTelemetryService openTelemetryService = serviceLocator.getService(OpenTelemetryService.class);
+        OpenTelemetryService openTelemetryService = getOpenTelemetryService();
         if (openTelemetryService != null) {
             openTelemetryService.endDeferredSpan(error);
         }
+    }
+
+    private OpenTelemetryService getOpenTelemetryService() {
+        ServiceHandle<OpenTelemetryService> handle = serviceLocator.getServiceHandle(OpenTelemetryService.class);
+        if (handle != null && handle.isActive()) {
+            return handle.getService();
+        }
+        return null;
     }
 }
