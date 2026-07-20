@@ -102,10 +102,11 @@ public class RestTest {
     private int createNode() {
         HttpURLConnection connection = null;
         try {
-            String parameters = "name=myConfigNode";
+            String parameters = "id=myConfigNode";
             connection = getConnection("http://localhost:4848/management/domain/nodes/create-node-config");
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty("Accept", "application/json");
             connection.setRequestProperty("Content-Length", "" + Integer.toString(parameters.getBytes().length));
             connection.setUseCaches(false);
             connection.setDoInput(true);
@@ -146,10 +147,8 @@ public class RestTest {
     private int deleteNode() {
         HttpURLConnection connection = null;
         try {
-            connection = getConnection("http://localhost:4848/management/domain/nodes/delete-node-config?name=myConfigNode");
+            connection = getConnection("http://localhost:4848/management/domain/nodes/node/myConfigNode");
             connection.setRequestMethod("DELETE");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            connection.setDoOutput(true);
             return connection.getResponseCode();
         } catch (Exception ex) {
             fail(ex.getMessage());

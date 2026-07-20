@@ -44,7 +44,6 @@ package org.glassfish.nucleus.admin.rest;
 
 import java.util.HashMap;
 import java.util.Map;
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.core.Response;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
@@ -174,8 +173,8 @@ public class NetworkListenerTest extends RestTestBase {
         assertTrue(isSuccess(response));
         response = get(URL_SSL, params);
         entity = this.getEntityValues(response);
-        assertEquals(JsonObject.NULL.toString(), entity.get("keyStore"));
-        assertEquals(JsonObject.NULL.toString(), entity.get("trustAlgorithm"));
-        assertEquals(JsonObject.NULL.toString(), entity.get("trustStore"));
+        assertNull(entity.get("keyStore"));
+        assertNull(entity.get("trustAlgorithm"));
+        assertNull(entity.get("trustStore"));
     }
 }
