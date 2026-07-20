@@ -519,7 +519,7 @@ Parent is ${project.parent}</echo>
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathLayoutType>custom</classpathLayoutType>
-                            <customClasspathLayout>${artifact.artifactId}.${artifact.extension}</customClasspathLayout>
+                            <customClasspathLayout>${artifact.artifactId}${artifact.dashClassifier?}.${artifact.extension}</customClasspathLayout>
                         </manifest>
 
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -856,6 +856,7 @@ Parent is ${project.parent}</echo>
                 <groupId>org.jline</groupId>
                 <artifactId>jline</artifactId>
                 <version>${jline.version}</version>
+                <classifier>jdk11</classifier>
             </dependency>
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
