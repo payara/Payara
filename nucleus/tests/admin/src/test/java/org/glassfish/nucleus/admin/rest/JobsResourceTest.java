@@ -67,7 +67,6 @@ public class JobsResourceTest extends RestTestBase {
         if (!isSuccess(response)) {
             throw new SkipException("/management/jobs returned HTTP " + response.getStatus() + " — server endpoint not available");
         }
-        assertTrue(isSuccess(response));
     }
 
     public void testGetJob() throws JsonException {
@@ -79,7 +78,6 @@ public class JobsResourceTest extends RestTestBase {
         if (!isSuccess(response)) {
             throw new SkipException("/management/jobs returned HTTP " + response.getStatus() + " — server endpoint not available");
         }
-        assertTrue(isSuccess(response));
 
         // verify the overall structure
         JsonObject json = response.readEntity(JsonObject.class);
