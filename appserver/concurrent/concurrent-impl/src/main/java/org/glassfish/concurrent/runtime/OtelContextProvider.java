@@ -53,6 +53,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -129,7 +130,7 @@ class OtelContextProvider implements ThreadContextProvider {
         if (!current.getSpanContext().isValid()) {
             return new RestoreOnlySnapshot(Context.current(), monitoringFacade);
         }
-        return new WaitingSpanSnapshot(System.nanoTime(), Context.current(), poolName, monitoringFacade);
+        return new WaitingSpanSnapshot(System.nanoTime(), System.currentTimeMillis(), Context.current(), poolName, monitoringFacade);
     }
 
     @Override
@@ -148,6 +149,7 @@ class OtelContextProvider implements ThreadContextProvider {
 
         private final long submitNanos;
         private final String poolName;
+        private final long submitWallclock;
         /** W3C headers encoding the parent OTel context; null in normal use, set by writeObject. */
         private Map<String, String> w3cHeaders;
 
@@ -156,9 +158,10 @@ class OtelContextProvider implements ThreadContextProvider {
         /** Monitoring facade — transient, valid at write time, null after deserialization. */
         private transient MonitoringFacade monitoringFacade;
 
-        WaitingSpanSnapshot(long submitNanos, Context parentContext, String poolName,
+        WaitingSpanSnapshot(long submitNanos, long submitWallClock, Context parentContext, String poolName,
                 MonitoringFacade monitoringFacade) {
             this.submitNanos = submitNanos;
+            this.submitWallclock = submitWallClock;
             this.parentContext = parentContext;
             this.poolName = poolName;
             this.monitoringFacade = monitoringFacade;
@@ -212,7 +215,7 @@ class OtelContextProvider implements ThreadContextProvider {
                             .spanBuilder("concurrent/" + poolName + " wait")
                             .setSpanKind(SpanKind.INTERNAL)
                             .setParent(ctx)
-                            .setStartTimestamp(submitNanos, TimeUnit.NANOSECONDS)
+                            .setStartTimestamp(submitWallclock, TimeUnit.MILLISECONDS)
                             .setAttribute("payara.subsystem", "jakarta-concurrency")
                             .setAttribute("thread.id", Thread.currentThread().threadId())
                             .setAttribute("thread.name", Thread.currentThread().getName())
