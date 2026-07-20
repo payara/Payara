@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,10 +46,12 @@ import java.util.logging.Logger;
 
 import com.sun.enterprise.module.HK2Module;
 
+import jakarta.inject.Inject;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.web.sniffer.WarType;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -58,8 +60,16 @@ public abstract class MicroProfileSniffer implements Sniffer {
 
     private static final Logger LOGGER = Logger.getLogger(MicroProfileSniffer.class.getName());
 
+    @Inject
+    private ServiceLocator serviceLocator;
+
     @Override
     public boolean handles(DeploymentContext context) {
+        ArchiveType archiveType = serviceLocator.getService(ArchiveType.class,
+                context.getArchiveHandler().getArchiveType());
+        if (archiveType != null && !supportsArchiveType(archiveType)) {
+            return false;
+        }
         final ReadableArchive archive = context.getSource();
 
         final String archivePath = archive.getURI().getPath();
