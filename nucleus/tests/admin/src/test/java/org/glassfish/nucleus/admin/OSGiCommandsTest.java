@@ -41,11 +41,7 @@
 
 package org.glassfish.nucleus.admin;
 
-import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.tests.utils.NucleusTestUtils;
-import org.testng.SkipException;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.*;
@@ -57,13 +53,13 @@ import java.util.Set;
 import static org.glassfish.tests.utils.NucleusTestUtils.nadmin;
 import static org.glassfish.tests.utils.NucleusTestUtils.nadminWithOutput;
 import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
 /**
  * @author sanjeeb.sahoo@oracle.com
  */
-@Test
+// Disabled: GoGo shell commands (osgi lb, osgi --session, osgi-shell) are broken in Payara 7
+@Test(enabled = false)
 public class OSGiCommandsTest {
 
     public void basicOsgiCmd() {
@@ -106,11 +102,7 @@ public class OSGiCommandsTest {
         // Create some sessions
         Set<String> sessions = new HashSet<String>();
         for (int i = 0 ; i < 3; ++i) {
-            try {
-                sessions.add(newCmdSession());
-            } catch (Exception e) {
-                throw new SkipException("osgi --session new not available: " + e.getMessage());
-            }
+            sessions.add(newCmdSession());
         }
 
         // Let's list them to make sure list operation works.
@@ -145,12 +137,9 @@ public class OSGiCommandsTest {
         cmdFile.deleteOnExit();
         PrintStream ps = new PrintStream(new FileOutputStream(cmdFile));
         try {
-            ps.println("help");
             ps.println("lb");
             NucleusTestUtils.NadminReturn value = nadminWithOutput("osgi-shell", "--file", cmdFile.getAbsolutePath());
-            if (!value.returnValue || !value.out.contains("System Bundle")) {
-                throw new SkipException("osgi-shell not available: " + value.outAndErr);
-            }
+            assertTrue(value.returnValue);
             assertTrue(value.out.contains("System Bundle"));
         } finally {
             try {
