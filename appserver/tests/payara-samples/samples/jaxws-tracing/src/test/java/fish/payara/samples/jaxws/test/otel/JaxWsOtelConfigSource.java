@@ -1,9 +1,7 @@
-package fish.payara.samples.remote.ejb.tracing;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +37,24 @@ package fish.payara.samples.remote.ejb.tracing;
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples.jaxws.test.otel;
 
+import org.eclipse.microprofile.config.spi.ConfigSource;
 
-import jakarta.ejb.Remote;
+import java.util.Map;
+import java.util.Set;
 
-@Remote
-public interface EjbRemote {
+public class JaxWsOtelConfigSource implements ConfigSource {
 
-    String nonAnnotatedMethod();
+    private static final Map<String, String> PROPS = Map.of(
+            "otel.sdk.disabled", "false",
+            "otel.traces.exporter", "in-memory-jaxws",
+            "otel.bsp.schedule.delay", "10"
+    );
 
-    String annotatedMethod();
-
-    String shouldNotBeTraced();
-
-    String editBaggageItems();
-
-    /**
-     * Method that deliberately throws a RuntimeException (wrapped as EJBException by the container).
-     * Used to verify that the IIOP server interceptor sets ERROR status and records the exception.
-     */
-    void throwsException();
-
+    @Override public Map<String, String> getProperties() { return PROPS; }
+    @Override public Set<String> getPropertyNames() { return PROPS.keySet(); }
+    @Override public String getValue(String key) { return PROPS.get(key); }
+    @Override public String getName() { return "jaxws-otel-test-config"; }
+    @Override public int getOrdinal() { return 500; }
 }

@@ -43,238 +43,75 @@ package fish.payara.microprofile.telemetry.tracing.jaxws;
 
 import com.sun.xml.ws.api.message.Message;
 import com.sun.xml.ws.api.message.Packet;
-import fish.payara.microprofile.telemetry.tracing.Traced;
-import fish.payara.microprofile.telemetry.tracing.jaxrs.OpenTracingCdiUtils;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OtelRouteState;
-import fish.payara.telemetry.service.PayaraTelemetryConstants;
-import io.opentelemetry.context.Context;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.CDI;
-import jakarta.inject.Inject;
-import jakarta.jws.WebMethod;
-import jakarta.jws.WebService;
-import jakarta.servlet.http.HttpServletRequest;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import jakarta.xml.soap.SOAPException;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.glassfish.hk2.api.ServiceLocator;
+import jakarta.xml.soap.SOAPFault;
 import org.glassfish.webservices.monitoring.MonitorContext;
 import org.glassfish.webservices.monitoring.MonitorFilter;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.Optional;
 import java.util.logging.Logger;
 
-import static jakarta.xml.ws.handler.MessageContext.SERVLET_REQUEST;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+
 
 @Service(name = "jaxws-telemetry-tracing-filter")
 public class JaxWsContainerRequestTelemetryTracingFilter implements MonitorFilter {
 
     private static final Logger logger = Logger.getLogger(JaxWsContainerRequestTelemetryTracingFilter.class.getName());
 
-    @Inject
-    private ServiceLocator serviceLocator;
-
-    @Inject
-    private RequestTracingService requestTracing;
-
     @Override
     public void filterRequest(Packet pipeRequest, MonitorContext monitorContext) {
-        // If request tracing is enabled, and there's a trace in progress (which there should be!)
-        if (isTraceInProgress()) {
-            // Get the Traced annotation from the target method if CDI is initialised
-            Traced tracedAnnotation = getTraceAnnotation(monitorContext);
-
-            // If there is no matching skip pattern and no traced annotation, or if there is there is no matching skip
-            // pattern and a traced annotation set to true (via annotation or config override)
-            if (shouldTrace(pipeRequest) && shouldTrace(monitorContext, tracedAnnotation)) {
-                HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-
-                // If StandardWrapper already created the SERVER span for this request, do not
-                // create a second one. The existing span covers this request end-to-end.
-                if (httpRequest != null
-                        && httpRequest.getAttribute(PayaraTelemetryConstants.PAYARA_OTEL_SERVER_SPAN) != null) {
-                    OtelRouteState routeState = OtelRouteState.fromContext(Context.current());
-                    if (routeState != null) {
-                        routeState.overrideSpanName(determineOperationName(pipeRequest, monitorContext, tracedAnnotation));
-                    }
-                }
-            }
-        }
+        // Nothing to do on the request path: the SERVER span is either owned by StandardWrapper
+        // (servlet-based JAX-WS endpoints) or by EjbWebServiceServlet (EJB-based endpoints).
+        // Both stash the span in PAYARA_OTEL_SERVER_SPAN before the JAX-WS pipeline runs.
+        // Span name is kept as the HTTP route ("POST /path") — no SOAP-specific overrides.
     }
 
     @Override
     public void filterResponse(Packet pipeRequest, Packet pipeResponse, MonitorContext monitorContext) {
-        // If there's an attached error on the response, log the exception
         Message message = pipeResponse.getMessage();
 
         if (message != null && message.isFault()) {
-            Object errorObject = getErrorObject(message);
+            SOAPFault fault = extractFault(message);
 
-            if (errorObject != null) {
-                // TODO: have an actual detail formatter for fault
-                logger.log(SEVERE, getErrorObject(message).toString());
+            String description = fault != null ? fault.getFaultString() : "SOAP fault";
+            Span span = Span.current();
+            // Include the fault string as the ERROR status description so it
+            // appears directly in the trace without needing to open the span detail.
+            span.setStatus(StatusCode.ERROR, description);
+
+            if (fault != null) {
+                // fault code (e.g. "SOAP-ENV:Server") as a low-cardinality attribute
+                span.setAttribute(AttributeKey.stringKey("soap.fault.code"), fault.getFaultCode());
+                span.setAttribute(AttributeKey.stringKey("soap.fault.string"), fault.getFaultString());
             }
         }
     }
 
     /**
-     * Helper method that determines what the operation name of the span.
+     * Extracts the {@link SOAPFault} from the response message, or {@code null}
+     * if the message cannot be parsed as a SOAP message.
      *
-     * @param tracedAnnotation The Traced annotation obtained from the target method
-     * @return The name to use as the Span's operation name
+     * <p>Key fields on {@link SOAPFault}:
+     * <ul>
+     *   <li>{@code getFaultCode()} — qualified fault code, e.g. {@code "SOAP-ENV:Server"}
+     *       or {@code "env:Receiver"} (SOAP 1.2)</li>
+     *   <li>{@code getFaultString()} — human-readable description, typically the
+     *       exception message from the endpoint implementation</li>
+     *   <li>{@code getDetail()} — optional XML detail element with application-specific
+     *       information (e.g. serialised exception, error codes)</li>
+     * </ul>
      */
-    private String determineOperationName(Packet pipeRequest, MonitorContext monitorContext, Traced tracedAnnotation) {
-        HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-
-        if (tracedAnnotation != null) {
-            String operationName = OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "operationName",
-                    monitorContext, String.class).orElse(tracedAnnotation.operationName());
-
-            // If the annotation or config override providing an empty name, just set it equal to the HTTP Method,
-            // followed by the method signature
-            if (operationName.equals("")) {
-                operationName = createFallbackName(httpRequest, monitorContext);
-            }
-
-            return operationName;
-        }
-
-        // If there is no @Traced annotation
-        Config config = getConfig();
-
-        // Determine if an operation name provider has been given
-        Optional<String> operationNameProviderOptional = config.getOptionalValue("mp.opentracing.server.operation-name-provider", String.class);
-        if (operationNameProviderOptional.isPresent()) {
-            String operationNameProvider = operationNameProviderOptional.get();
-
-            // TODO: Take webservices.xml into account
-            WebService classLevelAnnotation = monitorContext.getImplementationClass().getAnnotation(WebService.class);
-            WebMethod methodLevelAnnotation = monitorContext.getCallInfo().getMethod().getAnnotation(WebMethod.class);
-
-            // If the provider is set to "http-path" and the class-level @WebService annotation is actually present
-            if (operationNameProvider.equals("http-path") && classLevelAnnotation != null) {
-
-                String operationName = httpRequest.getMethod() + ":";
-
-                operationName += "/" + classLevelAnnotation.name();
-
-                // If the method-level WebMethod annotation is present, use its value
-                if (methodLevelAnnotation != null) {
-                    operationName += "/" + methodLevelAnnotation.operationName();
-                }
-
-                return operationName;
-            }
-        }
-
-        // TODO: consider the WSDL info in MonitorContext?
-
-
-        // If we haven't returned by now, just go with the default ("class-method")
-        return createFallbackName(httpRequest, monitorContext);
-    }
-
-    private String createFallbackName(HttpServletRequest httpRequest, MonitorContext monitorContext) {
-        return httpRequest.getMethod() + ":" + monitorContext.getImplementationClass().getCanonicalName() + "." + 
-                monitorContext.getCallInfo().getMethod().getName();
-    }
-
-
-    private boolean shouldTrace(Packet pipeRequest) {
-        HttpServletRequest httpRequest = (HttpServletRequest) pipeRequest.get(SERVLET_REQUEST);
-
-        return shouldTrace(httpRequest.getContextPath());
-    }
-
-    private boolean shouldTrace(MonitorContext monitorContext, Traced tracedAnnotation) {
-        if (tracedAnnotation == null) {
-            // No annotation present means we trace
-            return true;
-        }
-
-        return OpenTracingCdiUtils.getConfigOverrideValue(Traced.class, "value", monitorContext, 
-                boolean.class).orElse(tracedAnnotation.value());
-    }
-
-    private Object getErrorObject(Message message) {
+    private SOAPFault extractFault(Message message) {
         try {
             return message.copy().readAsSOAPMessage().getSOAPBody().getFault();
         } catch (SOAPException e) {
-            logger.log(SEVERE, "Error while reading fault from message ", e);
+            logger.log(WARNING, "Could not extract SOAP fault from response message", e);
             return null;
         }
     }
 
-    /**
-     * Helper method that checks if any specified skip patterns match this method name
-     *
-     * @return
-     */
-    private boolean shouldTrace(String path) {
-        // Prepend a slash for safety (so that a pattern of "/blah" or just "blah" will both match)
-        String uriPath = "/" + path;
-
-        // First, check for the mandatory skips
-        if (uriPath.equals("/health") || uriPath.equals("/metrics") || uriPath.contains("/metrics/base") || uriPath.contains("/metrics/vendor") || uriPath.contains("/metrics/application")) {
-            return false;
-        }
-
-        Config config = getConfig();
-
-        if (config != null) {
-            // If a skip pattern property has been given, check if any of them match the method
-            Optional<String> skipPatternOptional = config.getOptionalValue("mp.opentracing.server.skip-pattern", String.class);
-            if (skipPatternOptional.isPresent()) {
-                for (String skipPattern : skipPatternOptional.get().split("\\|")) {
-                    if (uriPath.matches(skipPattern)) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private boolean isTraceInProgress() {
-        return requestTracing != null && requestTracing.isRequestTracingEnabled() && requestTracing.isTraceInProgress();
-    }
-
-    private Config getConfig() {
-        try {
-            return ConfigProvider.getConfig();
-        } catch (IllegalArgumentException ex) {
-            logger.log(INFO, "No config could be found", ex);
-        }
-
-        return null;
-    }
-
-    private Traced getTraceAnnotation(MonitorContext monitorContext) {
-        // Check if CDI has been initialised by trying to get the BeanManager
-        BeanManager beanManager = getBeanManager();
-
-        // Get the Traced annotation from the target method if CDI is initialised
-        if (beanManager != null) {
-            return OpenTracingCdiUtils.getAnnotation(beanManager, Traced.class, monitorContext);
-        }
-
-        return null;
-    }
-
-    private BeanManager getBeanManager() {
-        try {
-            return CDI.current().getBeanManager();
-        } catch (IllegalStateException ise) {
-            // *Should* only get here if CDI hasn't been initialised, indicating that the app isn't using it
-            logger.log(FINE, "Error getting Bean Manager, presumably due to this application not using CDI", ise);
-        }
-
-        return null;
-    }
 }

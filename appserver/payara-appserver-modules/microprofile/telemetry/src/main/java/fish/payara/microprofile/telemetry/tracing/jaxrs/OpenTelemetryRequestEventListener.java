@@ -69,14 +69,14 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private final OpenTelemetryService openTelemetryService;
 
-    private final OpenTracingHelper openTracingHelper;
+    private final RestSpanHelper restSpanHelper;
 
     public OpenTelemetryRequestEventListener(final ResourceInfo resourceInfo,
                                              final OpenTelemetryService openTelemetryService,
-                                             final OpenTracingHelper openTracingHelper) {
+                                             final RestSpanHelper restSpanHelper) {
         this.resourceInfo = resourceInfo;
         this.openTelemetryService = openTelemetryService;
-        this.openTracingHelper = openTracingHelper;
+        this.restSpanHelper = restSpanHelper;
     }
 
     @Override
@@ -99,7 +99,7 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
             if (requestEvent.getType() == RequestEvent.Type.REQUEST_MATCHED) {
                 final ContainerRequest requestContext = requestEvent.getContainerRequest();
-                final String operationName = openTracingHelper.determineOperationName(resourceInfo, requestContext);
+                final String operationName = restSpanHelper.determineOperationName(resourceInfo, requestContext);
                 onIncomingRequest(requestEvent, operationName);
                 return;
             }
@@ -135,13 +135,11 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
     private void onException(final RequestEvent event, final Span activeSpan) {
         LOG.fine(() -> "onException(event=" + event.getType() + ")");
-        activeSpan.setStatus(StatusCode.ERROR, event.getException().getMessage());
-        activeSpan.setAttribute("error", true);
-        activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, Throwable.class.getName());
+        Throwable ex = event.getException();
+        activeSpan.setStatus(StatusCode.ERROR, ex.getMessage());
+        activeSpan.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, ex.getClass().getName());
         activeSpan.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        activeSpan.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
-                Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, event.getException().getMessage()));
-        activeSpan.recordException(event.getException());
+        activeSpan.recordException(ex);
     }
 
     private void onOutgoingResponse(final RequestEvent event, final Span activeSpan) {
@@ -155,7 +153,6 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
 
         // If the response status is an error, add error information to the span
         if (statusInfo.getFamily() == Response.Status.Family.SERVER_ERROR) {
-            activeSpan.setAttribute("error", true);
             activeSpan.setStatus(StatusCode.ERROR);
             // If there's an attached exception, add it to the span
             if (response.hasEntity() && response.getEntity() instanceof Throwable) {
@@ -182,11 +179,12 @@ class OpenTelemetryRequestEventListener implements RequestEventListener {
         if (routeState != null) {
             // Contribute the full JAX-RS route (baseUri path + matched @Path template).
             // StandardWrapper reads it from the stashed context at span-end via OtelRouteState.
-            String httpRoute = openTracingHelper.getHttpRoute(requestContext, resourceInfo);
+            String httpRoute = restSpanHelper.getHttpRoute(requestContext, resourceInfo);
             if (httpRoute != null && !httpRoute.isEmpty()) {
                 routeState.setFullRoute(httpRoute);
             }
             routeState.overrideSpanName(operationName);
+            Span.current().setAttribute("payara.subsystem", "jakarta-rest");
             LOG.fine(() -> "JAX-RS deferring to existing SERVER span for uri=" + toString(requestContext.getUriInfo()));
         } else {
             LOG.warning(() -> "No active SERVER span found in Context for JAX-RS request. "

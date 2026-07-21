@@ -39,10 +39,7 @@
  */
 package fish.payara.microprofile.telemetry.tracing.ejb.iiop;
 
-import fish.payara.opentracing.OpenTracingService;
 import jakarta.inject.Singleton;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.enterprise.iiop.api.IIOPInterceptorFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
@@ -53,17 +50,20 @@ import org.omg.PortableInterceptor.ORBInitInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
 /**
- * Factory for creating IIOP client and server interceptors that propagate OpenTracing SpanContext.
+ * Factory for creating IIOP client and server interceptors that propagate OTel
+ * context and create CLIENT/SERVER spans for remote EJB calls.
  *
- * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * <p>Note: these interceptors are registered in the <em>server</em> ORB only.
+ * A plain IIOP naming client (e.g. a {@code @RunAsClient} test JVM) does not
+ * have these interceptors registered, so no CLIENT span is created on the
+ * client side for externally-initiated calls.</p>
  */
 @Service(name = "OpenTelemetryIiopInterceptorFactory")
 @Singleton
 public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFactory {
 
-    private static final Logger logger = Logger.getLogger(OpenTelemetryIiopInterceptorFactory.class.getName());
-
     public static final int OPENTELEMETRY_IIOP_ID = 3226428;
+    /** Serial version used by {@link OpenTelemetryIiopTextMap} for wire compatibility. */
     public static final long OPENTRACING_IIOP_SERIAL_VERSION_UID = 20200731171822L;
 
     private ClientRequestInterceptor clientRequestInterceptor;
@@ -74,7 +74,7 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
     @Override
     public synchronized ClientRequestInterceptor createClientRequestInterceptor(ORBInitInfo info, Codec codec) {
         if (clientRequestInterceptor == null && attemptCreation()) {
-            clientRequestInterceptor = new OpenTelemetryIiopClientInterceptor();
+            clientRequestInterceptor = new OpenTelemetryIiopClientInterceptor(serviceLocator);
         }
         return clientRequestInterceptor;
     }
@@ -91,7 +91,6 @@ public class OpenTelemetryIiopInterceptorFactory implements IIOPInterceptorFacto
         if (serviceLocator == null) {
             serviceLocator = Globals.getStaticBaseServiceLocator();
         }
-        
         return serviceLocator != null;
     }
 }

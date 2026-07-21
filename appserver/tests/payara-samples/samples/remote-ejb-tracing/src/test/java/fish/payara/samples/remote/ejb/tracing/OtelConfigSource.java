@@ -1,9 +1,7 @@
-package fish.payara.samples.remote.ejb.tracing;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,25 +37,51 @@ package fish.payara.samples.remote.ejb.tracing;
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package fish.payara.samples.remote.ejb.tracing;
 
+import org.eclipse.microprofile.config.spi.ConfigSource;
 
-import jakarta.ejb.Remote;
+import java.util.Map;
+import java.util.Set;
 
-@Remote
-public interface EjbRemote {
+/**
+ * MicroProfile Config source that enables app-scoped OTel and wires in the
+ * {@link InMemorySpanExporter} so tests can inspect exported spans.
+ */
+public class OtelConfigSource implements ConfigSource {
 
-    String nonAnnotatedMethod();
+    private static final Map<String, String> PROPS = Map.of(
+            // Enable app-scoped OTel (overrides the default sdk.disabled=true)
+            "otel.sdk.disabled", "false",
+            // Route all traces to the in-memory exporter
+            "otel.traces.exporter", "in-memory-iiop",
+            // Export batches every 10 ms so tests don't wait long
+            "otel.bsp.schedule.delay", "10"
+    );
 
-    String annotatedMethod();
+    @Override
+    public Map<String, String> getProperties() {
+        return PROPS;
+    }
 
-    String shouldNotBeTraced();
+    @Override
+    public Set<String> getPropertyNames() {
+        return PROPS.keySet();
+    }
 
-    String editBaggageItems();
+    @Override
+    public String getValue(String propertyName) {
+        return PROPS.get(propertyName);
+    }
 
-    /**
-     * Method that deliberately throws a RuntimeException (wrapped as EJBException by the container).
-     * Used to verify that the IIOP server interceptor sets ERROR status and records the exception.
-     */
-    void throwsException();
+    @Override
+    public String getName() {
+        return "iiop-test-otel-config";
+    }
 
+    @Override
+    public int getOrdinal() {
+        // Higher than default (100) so these values take precedence
+        return 500;
+    }
 }

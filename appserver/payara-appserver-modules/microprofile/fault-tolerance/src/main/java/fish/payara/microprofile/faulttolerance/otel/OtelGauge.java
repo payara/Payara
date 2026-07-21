@@ -1,9 +1,7 @@
-package fish.payara.samples.remote.ejb.tracing;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,28 +34,28 @@ package fish.payara.samples.remote.ejb.tracing;
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
  * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * only if the code is changed by the third party and used as a new code
+ * in combination with Open Source Software developed by Glassfish/Payara
+ * or its successors.
  */
+package fish.payara.microprofile.faulttolerance.otel;
 
+import org.eclipse.microprofile.metrics.Gauge;
 
-import jakarta.ejb.Remote;
+/**
+ * OpenTelemetry-backed implementation of MicroProfile Metrics {@link Gauge}.
+ * This is a wrapper around a user-provided gauge implementation that delegates
+ * to the OTel observable gauge callback mechanism.
+ * Tags from MetricID are converted to OTel attributes.
+ * 
+ * Note: This class itself is stateless; all state is maintained by the underlying
+ * OTel observable gauge registration via a callback.
+ */
+final class OtelGauge<T extends Number> implements Gauge<T> {
 
-@Remote
-public interface EjbRemote {
-
-    String nonAnnotatedMethod();
-
-    String annotatedMethod();
-
-    String shouldNotBeTraced();
-
-    String editBaggageItems();
-
-    /**
-     * Method that deliberately throws a RuntimeException (wrapped as EJBException by the container).
-     * Used to verify that the IIOP server interceptor sets ERROR status and records the exception.
-     */
-    void throwsException();
+    @Override
+    public T getValue() {
+        throw new UnsupportedOperationException("OTEL Observable metrics cannot be read");
+    }
 
 }
