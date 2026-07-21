@@ -40,20 +40,10 @@
 package fish.payara.microprofile.telemetry.tracing.ejb.iiop;
 
 import fish.payara.opentracing.OpenTelemetryService;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.TextMapGetter;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.util.HashMap;
-import java.util.logging.Logger;
+import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -62,39 +52,38 @@ import org.omg.PortableInterceptor.ForwardRequest;
 import org.omg.PortableInterceptor.ServerRequestInfo;
 import org.omg.PortableInterceptor.ServerRequestInterceptor;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.util.HashMap;
+import java.util.logging.Logger;
+
 import static fish.payara.microprofile.telemetry.tracing.ejb.iiop.OpenTelemetryIiopInterceptorFactory.OPENTELEMETRY_IIOP_ID;
 
 
 /**
- * IIOP Server Interceptor for propagating OpenTracing SpanContext to Payara Server.
+ * IIOP Server Interceptor that defers SERVER span creation to
+ * {@link OpenTelemetryService#applyDeferredContext()}, called from
+ * {@code BaseContainer.preInvoke()} once the application invocation context is
+ * on the stack and the correct per-app tracer is available.
  *
- * @author Andrew Pielage <andrew.pielage@payara.fish>
+ * <p><b>Remote calls only.</b> This interceptor only fires for genuinely remote
+ * IIOP calls originating from a separate JVM. Same-JVM calls to a co-located
+ * EJB are dispatched directly by the ORB's collocation optimisation and bypass
+ * the PortableInterceptor stack entirely, so no span is created for those.
+ * To force full IIOP dispatch for same-JVM calls (useful during testing),
+ * set the JVM property
+ * {@code com.sun.corba.ee.ORBAllowLocalOptimization=false} on the server.
  */
 public class OpenTelemetryIiopServerInterceptor extends LocalObject implements ServerRequestInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(OpenTelemetryIiopServerInterceptor.class.getName());
 
-    private static final TextMapGetter<HashMap<String, String>> getter = new TextMapGetter<HashMap<String, String>>() {
-        @Override
-        public Iterable<String> keys(HashMap<String, String> carrier) {
-            return carrier.keySet();
-        }
-
-        @Override
-        public String get(HashMap<String, String> carrier, String key) {
-            return carrier.get(key);
-        }
-    };
-    
-    private ServiceLocator serviceLocator;
-    private OpenTracingService openTracingService;
-    private final ThreadLocal<Scope> currentScope = new ThreadLocal<>();
-    private final ThreadLocal<Span> currentSpan = new ThreadLocal<>();
+    private final ServiceLocator serviceLocator;
 
     public OpenTelemetryIiopServerInterceptor(ServiceLocator serviceLocator) {
         this.serviceLocator = serviceLocator;
     }
-
 
     @Override
     public void receive_request_service_contexts(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
@@ -103,63 +92,68 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
 
     @Override
     public void receive_request(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
-        ServiceContext serviceContext;
-        
-        if (!tracerAvailable()) {
+        OpenTelemetryService openTelemetryService = getOpenTelemetryService();
+        if (openTelemetryService == null) {
             return;
         }
 
+        // Extract the W3C carrier from the OTel service context if the client propagated one.
+        // An empty carrier is used when the client did not propagate any context — in that case
+        // applyDeferredContext() will create a root (parentless) SERVER span.
+        HashMap<String, String> carrier = new HashMap<>();
         try {
-            serviceContext = serverRequestInfo.get_request_service_context(OPENTELEMETRY_IIOP_ID);
-            if (serviceContext == null) {
-                return;
+            ServiceContext serviceContext = serverRequestInfo.get_request_service_context(OPENTELEMETRY_IIOP_ID);
+            if (serviceContext != null) {
+                try (ByteArrayInputStream bis = new ByteArrayInputStream(serviceContext.context_data);
+                     ObjectInput in = new OpenTelemetryIiopObjectInputStream(bis)) {
+                    OpenTelemetryIiopTextMap textMap = (OpenTelemetryIiopTextMap) in.readObject();
+                    carrier.putAll(textMap);
+                } catch (IOException | ClassNotFoundException e) {
+                    LOGGER.warning("Failed to deserialise IIOP OTel context: " + e.getMessage());
+                    // Continue with empty carrier — still create a root span
+                }
             }
-        } catch (BAD_PARAM e) {
-            // No OTel context was propagated by the client
-            return;
+        } catch (BAD_PARAM ignored) {
+            // No OTel service context propagated by the client — proceed with empty carrier
         }
 
-        OpenTelemetryIiopTextMap openTelemetryIiopTextMap = null;
-        try (ByteArrayInputStream bis = new ByteArrayInputStream(serviceContext.context_data);
-             ObjectInput in = new OpenTelemetryIiopObjectInputStream(bis)) {
-            openTelemetryIiopTextMap =  (OpenTelemetryIiopTextMap) in.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new ForwardRequest(e.getMessage(), serverRequestInfo);
-        }
-
-        OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();
-        
-
-        Context parentContext = openTelemetry.getPropagators().getTextMapPropagator()
-                .extract(Context.current(), openTelemetryIiopTextMap, getter);
-        Tracer tracer = openTelemetry.getTracerProvider().get(OpenTelemetryService.INSTRUMENTATION_SCOPE_NAME);
-        Span span = tracer.spanBuilder("rmi")
-                .setParent(parentContext)
-                .setSpanKind(SpanKind.SERVER)
-                .setAttribute("component", "ejb")
-                .startSpan();
-
-        if (currentScope.get() != null) {
-            LOGGER.warning("Overlapping traced RMI operations identified, please report");
-        }
-
-        currentSpan.set(span);
-        currentScope.set(span.makeCurrent());
+        // Defer span creation: the application invocation context is not yet on the stack.
+        // BaseContainer.preInvoke() will call applyDeferredContext() after
+        // invocationManager.preInvoke() establishes it.
+        String operation = serverRequestInfo.operation();
+        openTelemetryService.collectDeferredContext(
+                carrier,
+                operation,
+                SpanKind.SERVER,
+                Attributes.of(
+                        AttributeKey.stringKey("rpc.system.name"), "corba",
+                        AttributeKey.stringKey("rpc.method"), operation));
     }
 
     @Override
     public void send_reply(ServerRequestInfo serverRequestInfo) {
-        closeScope();
+        endSpan(null);
     }
 
     @Override
     public void send_exception(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
-        closeScope();
+        // sending_exception() is the server-side API; extract the CORBA type ID
+        // from the Any's TypeCode, e.g. "IDL:omg.org/CORBA/COMM_FAILURE:1.0"
+        String exceptionId = exceptionId(serverRequestInfo);
+        endSpan(new RuntimeException(exceptionId));
+    }
+
+    private static String exceptionId(ServerRequestInfo info) {
+        try {
+            return info.sending_exception().type().id();
+        } catch (Exception e) {
+            return "unknown";
+        }
     }
 
     @Override
     public void send_other(ServerRequestInfo serverRequestInfo) throws ForwardRequest {
-        closeScope();
+        endSpan(null);
     }
 
     @Override
@@ -169,27 +163,20 @@ public class OpenTelemetryIiopServerInterceptor extends LocalObject implements S
 
     @Override
     public void destroy() {
-
     }
 
-    private void closeScope() {
-        Scope scope = currentScope.get();
-        if (scope != null) {
-            scope.close();
-            currentScope.remove();
-        }
-        Span span = currentSpan.get();
-        if (span != null) {
-            span.end();
-            currentSpan.remove();
+    private void endSpan(Throwable error) {
+        OpenTelemetryService openTelemetryService = getOpenTelemetryService();
+        if (openTelemetryService != null) {
+            openTelemetryService.endDeferredSpan(error);
         }
     }
 
-    private boolean tracerAvailable() {
-        openTracingService = serviceLocator.getService(OpenTracingService.class);
-        if (openTracingService == null) {
-            return false;
+    private OpenTelemetryService getOpenTelemetryService() {
+        ServiceHandle<OpenTelemetryService> handle = serviceLocator.getServiceHandle(OpenTelemetryService.class);
+        if (handle != null && handle.isActive()) {
+            return handle.getService();
         }
-        return openTracingService.isEnabled();
+        return null;
     }
 }

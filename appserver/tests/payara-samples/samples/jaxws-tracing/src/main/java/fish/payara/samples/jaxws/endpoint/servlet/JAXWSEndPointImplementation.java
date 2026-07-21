@@ -39,12 +39,13 @@
  */
 package fish.payara.samples.jaxws.endpoint.servlet;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.jws.WebService;
 
-import fish.payara.microprofile.telemetry.tracing.Traced;
+
 
 @WebService(
     endpointInterface = "fish.payara.samples.jaxws.endpoint.servlet.JAXWSEndPointInterface",
@@ -53,10 +54,15 @@ public class JAXWSEndPointImplementation implements JAXWSEndPointInterface {
     private static final Logger LOG = Logger.getLogger(JAXWSEndPointImplementation.class.getName());
 
     @Override
-    @Traced(operationName = "customOperation")
+    @WithSpan("customOperation")
     public String sayHi(String name) {
         LOG.log(Level.INFO, "sayHi(name={0})", name);
         return "Hi " + name;
+    }
+
+    @Override
+    public String sayHiWithFault(String name) {
+        throw new RuntimeException("Deliberate fault for " + name);
     }
 
 }
