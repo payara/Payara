@@ -141,8 +141,17 @@
 
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>requesttracing-core</artifactId>
+            <artifactId>opentelemetry-tracing-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

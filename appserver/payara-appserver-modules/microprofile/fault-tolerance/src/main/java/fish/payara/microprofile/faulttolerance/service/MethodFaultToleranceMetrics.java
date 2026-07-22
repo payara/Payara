@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import java.util.function.LongSupplier;
 import org.eclipse.microprofile.metrics.Counter;
 import org.eclipse.microprofile.metrics.Histogram;
 import org.eclipse.microprofile.metrics.Metadata;
+
 import org.eclipse.microprofile.metrics.MetricID;
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.eclipse.microprofile.metrics.MetricUnits;
@@ -68,17 +69,19 @@ import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
  */
 public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics {
 
+    private static final Tag[] NO_TAGS = new Tag[0];
+
     private final MetricRegistry registry;
-    /**
-     * This is "cached" as soon as an instance is bound using the
-     * {@link #FaultToleranceMetricsFactory(MetricRegistry, String)} constructor.
-     */
     private final String canonicalMethodName;
     private final AtomicBoolean registered;
     private final Map<MetricID, Counter> countersByMetricID;
     private final Map<MetricID, Histogram> histogramsByMetricID;
     private FallbackUsage fallbackUsage;
     private boolean retried;
+    private String classAndMethodName = null;
+    private LongSupplier executionRunningCountSupplier = null;
+    private LongSupplier executionWaitingCountSupplier = null;
+
 
     public MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName) {
         this(registry, canonicalMethodName, FallbackUsage.notDefined, new AtomicBoolean(), new ConcurrentHashMap<>(),
@@ -86,7 +89,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     }
 
     private MethodFaultToleranceMetrics(MetricRegistry registry, String canonicalMethodName, FallbackUsage fallbackUsage,
-            AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
+                                        AtomicBoolean registered, Map<MetricID, Counter> countersByMetricID, Map<MetricID, Histogram> histogramsByMetricID) {
         this.registry = registry;
         this.canonicalMethodName = canonicalMethodName;
         this.fallbackUsage = fallbackUsage;
@@ -94,7 +97,7 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         this.countersByMetricID = countersByMetricID;
         this.histogramsByMetricID = histogramsByMetricID;
     }
-
+    
     /**
      * The first thread calling creates the metrics all thread calling the same method work with. Other threads have to
      * wait until these metrics actually exist. The easiest to make that happen was to make this method synchronised.
@@ -106,15 +109,17 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         if (registered.compareAndSet(false, true)) {
             FaultToleranceMetrics.super.boundTo(context, policy); // trigger registration if needed
         }
-        return new MethodFaultToleranceMetrics(registry, canonicalMethodName,
+
+        MethodFaultToleranceMetrics bound = new MethodFaultToleranceMetrics(registry, canonicalMethodName,
                 policy.isFallbackPresent() ? FallbackUsage.notApplied : FallbackUsage.notDefined,
                 registered, countersByMetricID, histogramsByMetricID);
+        // Propagate state set during registration so the per-invocation instance is fully populated.
+        bound.classAndMethodName = this.classAndMethodName;
+        bound.executionRunningCountSupplier = this.executionRunningCountSupplier;
+        bound.executionWaitingCountSupplier = this.executionWaitingCountSupplier;
+        return bound;
     }
-
-    /*
-     * General Metrics
-     */
-
+    
 
     @Override
     public void register(String metric, String unit, LongSupplier gauge, String... tag) {
@@ -166,8 +171,15 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         throw new UnsupportedOperationException("Only 0 to 2 tags supported but got: " + tags.length);
     }
 
-    private static Tag[] asTag(String... tag) {
-        return tag.length == 0 ? NO_TAGS : new Tag[] { new Tag(tag[0], tag[1])};
+    @Override
+    public void incrementRetryRetriesTotal() {
+        retried = true;
+        FaultToleranceMetrics.super.incrementRetryRetriesTotal();
+    }
+
+    @Override
+    public void incrementFallbackCallsTotal() {
+        fallbackUsage = FallbackUsage.applied;
     }
 
     @Override
@@ -178,6 +190,50 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
     @Override
     public void addToHistogram(String metric, long duration, Tag... tags) {
         histogramsByMetricID.get(withMethodTag(metric, tags)).update(duration);
+    }
+
+    @Override
+    public FallbackUsage getFallbackUsage() {
+        return fallbackUsage;
+    }
+
+    @Override
+    public boolean isRetried() {
+        return retried;
+    }
+
+    @Override
+    public LongSupplier getExecutionBulkheadRunningSupplier() {
+        return executionRunningCountSupplier;
+    }
+
+    @Override
+    public LongSupplier getExecutionBulkheadWaitingSupplier() {
+        return executionWaitingCountSupplier;
+    }
+
+    @Override
+    public void setExecutionBulkheadRunningSupplier(LongSupplier executionRunningCountSupplier) {
+        this.executionRunningCountSupplier = executionRunningCountSupplier;
+    }
+
+    @Override
+    public void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingCountSupplier) {
+        this.executionWaitingCountSupplier = executionWaitingCountSupplier;
+    }
+
+    @Override
+    public void setClassAndMethodName(String classAndMethodName) {
+        this.classAndMethodName = classAndMethodName;
+    }
+
+    @Override
+    public String getClassAndMethodName() {
+        return classAndMethodName;
+    }
+
+    private static Tag[] asTag(String... tag) {
+        return tag.length == 0 ? NO_TAGS : new Tag[] { new Tag(tag[0], tag[1])};
     }
 
     private static Metadata withUnit(MetricID key, String unit) {
@@ -193,38 +249,5 @@ public final class MethodFaultToleranceMetrics implements FaultToleranceMetrics 
         newTags[0] = method;
         arraycopy(tags, 0, newTags, 1, tags.length);
         return new MetricID(metric, newTags);
-    }
-
-    /*
-     * @Retry, @Timeout, @CircuitBreaker, @Bulkhead and @Fallback
-     */
-
-    @Override
-    public FallbackUsage getFallbackUsage() {
-        return fallbackUsage;
-    }
-
-    /*
-     * @Fallback
-     */
-
-    @Override
-    public void incrementFallbackCallsTotal() {
-        fallbackUsage = FaultToleranceMetrics.FallbackUsage.applied;
-    }
-
-    /*
-     * @Retry
-     */
-
-    @Override
-    public void incrementRetryRetriesTotal() {
-        retried = true;
-        FaultToleranceMetrics.super.incrementRetryRetriesTotal();
-    }
-
-    @Override
-    public boolean isRetried() {
-        return retried;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -34,39 +34,67 @@
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
  * and therefore, elected the GPL Version 2 license, then the option applies
- * only if the new code is made subject to such option by the copyright
- * holder.
+ * only if the code is changed by the third party and used as a new code
+ * in combination with Open Source Software developed by Glassfish/Payara
+ * or its successors.
  */
-package fish.payara.nucleus.microprofile.config.source;
+package fish.payara.microprofile.faulttolerance.otel;
 
-import java.util.HashMap;
 import java.util.Map;
+import org.eclipse.microprofile.metrics.Counter;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.LongCounter;
 
 /**
- *
- * @author Steve Millidge (Payara Foundation)
+ * OpenTelemetry-backed implementation of MicroProfile Metrics {@link Counter}.
+ * Delegates all counter operations to an underlying OTel {@link LongCounter}.
+ * Tags from MetricID are converted to OTel attributes.
  */
-public class DottedNamesConfigSource extends PayaraConfigSource {
+final class OtelCounter implements Counter {
 
-    @Override
-    public Map<String, String> getProperties() {
-        // returns empty map as it is too musch to work out all dotted names and their values
-        return new HashMap<>();
+    private final LongCounter delegate;
+    private final Attributes attributes;
+
+    OtelCounter(LongCounter delegate) {
+        this.delegate = delegate;
+        this.attributes = Attributes.empty();
+    }
+
+    OtelCounter(LongCounter delegate, String scope, Map<String, String> tags) {
+        this.delegate = delegate;
+        this.attributes = tagsAndScopeToAttributes(scope, tags);
+    }
+
+    private static Attributes tagsAndScopeToAttributes(String scope, Map<String, String> tags) {
+        AttributesBuilder builder = Attributes.builder();
+        if (scope != null) {
+            builder.put("mp.scope", scope);
+        }
+        if (tags != null && !tags.isEmpty()) {
+            tags.forEach(builder::put);
+        }
+        return builder.build();
     }
 
     @Override
-    public int getOrdinal() {
-        return 50;
+    public void inc() {
+        delegate.add(1, attributes);
     }
 
     @Override
-    public String getValue(String propertyName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void inc(long n) {
+        delegate.add(n, attributes);
     }
 
+
+
     @Override
-    public String getName() {
-        return "DottedNames";
+    public long getCount() {
+        throw new UnsupportedOperationException(
+            "Synchronous counter reads are not supported in the OpenTelemetry bridge. "
+            + "Use a monitoring backend to query exported metrics."
+        );
     }
-    
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2018-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *     The contents of this file are subject to the terms of either the GNU
  *     General Public License Version 2 only ("GPL") or the Common Development
@@ -37,26 +37,57 @@
  *     only if the new code is made subject to such option by the copyright
  *     holder.
  */
-package fish.payara.microprofile.opentracing.cdi;
+package fish.payara.nucleus.microprofile.config;
 
-import jakarta.enterprise.event.Observes;
-import jakarta.enterprise.inject.spi.AnnotatedType;
-import jakarta.enterprise.inject.spi.BeanManager;
-import jakarta.enterprise.inject.spi.BeforeBeanDiscovery;
-import jakarta.enterprise.inject.spi.Extension;
-import org.eclipse.microprofile.opentracing.Traced;
 
-/**
- * CDI Extension that adds the interceptor binding for the Traced annotation.
- *
- * @author Andrew Pielage <andrew.pielage@payara.fish>
- */
-public class OpenTracingCdiExtension implements Extension {
+import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.deployment.Deployment;
+import org.jvnet.hk2.annotations.Service;
 
-    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery, BeanManager beanManager) {
-        // Add an interceptor binding for the Traced annotation
-        beforeBeanDiscovery.addInterceptorBinding(Traced.class);
-        AnnotatedType<TracedInterceptor> tracedInterceptor = beanManager.createAnnotatedType(TracedInterceptor.class);
-        beforeBeanDiscovery.addAnnotatedType(tracedInterceptor, TracedInterceptor.class.getName());
+@Service
+class RefreshingPasswordAliasStoreAccessor implements EventListener {
+    // HK2 doesn't inject ServiceHandle<T>
+    @Inject
+    ServiceLocator locator;
+
+    @Inject
+    Events events;
+
+    private volatile DomainScopedPasswordAliasStore currentStore;
+
+    @PostConstruct
+    void postConstruct() {
+        events.register(this);
+    }
+
+    @Override
+    public void event(Event<?> event) {
+        if (event.is(Deployment.DEPLOYMENT_START)) {
+            DomainScopedPasswordAliasStore previousStore = currentStore;
+            // we have no clear indication when a password alias is changed, but a good heuristics is
+            // that it might get updated before deployment of an application. That way it is also
+            // compatible with the previous behavior where the source would be created per application
+            currentStore = null;
+            if (previousStore != null) {
+                locator.preDestroy(previousStore);
+            }
+        }
+    }
+
+    DomainScopedPasswordAliasStore getCurrentStore() {
+        if (currentStore == null) {
+            synchronized (this) {
+                if (currentStore == null) {
+                    currentStore = locator.getService(DomainScopedPasswordAliasStore.class);
+                }
+            }
+        }
+        return currentStore;
     }
 }

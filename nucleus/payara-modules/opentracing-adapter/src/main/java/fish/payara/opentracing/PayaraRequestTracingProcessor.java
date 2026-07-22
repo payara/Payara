@@ -71,7 +71,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
  *
  * </ul>
  */
-public class PayaraRequestTracingProcessor implements SpanProcessor {
+class PayaraRequestTracingProcessor implements SpanProcessor {
     private final RequestTracingService requestTracingService;
 
     private ConcurrentMap<ReadableSpan, RequestTraceSpan> rootInProgressSpans = new ConcurrentHashMap<>();

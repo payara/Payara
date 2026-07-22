@@ -3,7 +3,7 @@ package fish.payara.samples.remote.ejb.tracing;
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2020-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,4 +53,11 @@ public interface EjbRemote {
     String shouldNotBeTraced();
 
     String editBaggageItems();
+
+    /**
+     * Method that deliberately throws a RuntimeException (wrapped as EJBException by the container).
+     * Used to verify that the IIOP server interceptor sets ERROR status and records the exception.
+     */
+    void throwsException();
+
 }

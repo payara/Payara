@@ -63,7 +63,7 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
     @Context
     private ResourceInfo resourceInfo;
 
-    private OpenTracingHelper openTracingHelper;
+    private RestSpanHelper restSpanHelper;
 
     /**
      * Initialization of internal services.
@@ -73,7 +73,7 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
         LOG.finest("postConstruct()");
         final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
         this.openTelemetryService = payaraTracingServices.getOpenTelemetryService();
-        this.openTracingHelper = new OpenTracingHelper();
+        this.restSpanHelper = new RestSpanHelper();
     }
 
 
@@ -82,7 +82,7 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
         switch (event.getType()) {
             case DESTROY_FINISHED:
             case RELOAD_FINISHED:
-                openTracingHelper.canTraceCache.clear(event.getResourceConfig().getClassLoader());
+                restSpanHelper.canTraceCache.clear(event.getResourceConfig().getClassLoader());
                 break;
         }
         LOG.config(() -> "onEvent(event.type=" + event.getType() + ")");
@@ -96,7 +96,7 @@ public class OpenTelemetryApplicationEventListener implements ApplicationEventLi
             LOG.finest("isRequestTracingInProgress() returned false, nothing to do.");
             return null;
         }
-        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService, this.openTracingHelper);
+        return new OpenTelemetryRequestEventListener(this.resourceInfo, this.openTelemetryService, this.restSpanHelper);
     }
 
 
