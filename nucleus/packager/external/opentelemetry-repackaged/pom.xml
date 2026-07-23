@@ -97,13 +97,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- we will rely on transitive dependencies of our leaf ones -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-opentracing-shim</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-otlp</artifactId>
