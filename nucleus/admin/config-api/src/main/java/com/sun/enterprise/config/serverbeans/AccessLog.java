@@ -270,8 +270,20 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      */
     void setDateStampToFirstAccessLogFileEnabled(String tf) throws PropertyVetoException;
 
+    /**
+     * Gets the RegEx used for filtering the access logs
+     *
+     * @return the RegEx filter
+     */
     @Attribute(defaultValue="")
     String getFilter();
+
+    /**
+     * Specifies a RegEx for filtering the access logs
+     *
+     * @param filter request URIs that match this regex will be filtered out from the logs
+     * @throws PropertyVetoException if a listener vetoes the change
+     */
     void setFilter(String filter) throws PropertyVetoException;
 }
 
