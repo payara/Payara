@@ -442,7 +442,7 @@ public final class PEAccessLogValve
             try {
                 filter = Pattern.compile(regex);
             } catch (PatternSyntaxException e) {
-                _logger.log(Level.WARNING, "Couldn't create regex matcher due to syntax error: ", e);
+                _logger.log(Level.WARNING, "Couldn't create access log filter due to RegEx syntax error: " + e.getMessage(), e);
                 filter = null;
             }
         }
