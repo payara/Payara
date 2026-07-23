@@ -87,8 +87,10 @@ pipeline {
                     }
                     post {
                         always {
-                            junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                             stopDomain()
+                        }
+                        success {
+                            junit 'appserver/tests/quicklook/test-output/QuickLookTests/*.xml'
                         }
                         cleanup {
                             saveLogsAndCleanup 'quicklook-log.zip'
@@ -118,7 +120,10 @@ pipeline {
                     }
                     post {
                         always {
-                            processReportAndStopDomain()
+                            stopDomain()
+                        }
+                        success {
+                            junit '**/target/*-reports/*.xml'
                         }
                         cleanup {
                             saveLogsAndCleanup 'samples-log.zip'
