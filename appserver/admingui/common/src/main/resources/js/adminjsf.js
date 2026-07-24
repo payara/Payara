@@ -1210,7 +1210,7 @@ function checkPSW(ps1Id, ps2Id, notMatchMsg, emptyMsg) {
 
 
 
-function guiValidate(reqMsg, reqInt, reqPort) {
+function guiValidate(reqMsg, reqInt, reqPort, reqRegex) {
     var inputs = document.getElementsByTagName("input");
     var styleClass = null;
     var component = null;
@@ -1271,6 +1271,14 @@ function guiValidate(reqMsg, reqInt, reqPort) {
                 component.select();
                 component.focus();
                 return showAlert(reqPort + ' ' + getLabel( component ));
+            }
+        }
+
+        if (styleClass.match("regex") && reqRegex !== undefined) {
+            if (!checkForValidRegex(component.value)) {
+                component.select();
+                component.focus();
+                return showAlert(reqRegex + ' ' + getLabel( component ));
             }
         }
     }
@@ -1373,6 +1381,16 @@ function checkForPort(value) {
     if (value.indexOf('${') == 0) return true;
     if (checkForIntValue(value) == false) return false;
     return checkNumbericRange(value, 1, 65535);
+}
+
+function checkForValidRegex(value) {
+    if (value === '') return true;
+    try {
+        new RegExp(value);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 function checkNumbericRange(value, min, max) {
