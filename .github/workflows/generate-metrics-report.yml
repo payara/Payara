@@ -28,7 +28,7 @@ jobs:
 
       - name: Run issue-metrics action, raised issues
         id: issue-metrics-raised
-        uses: github/issue-metrics@v3
+        uses: github-community-projects/issue-metrics@v3
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABELS_TO_MEASURE: 'Status: Open,Status: Accepted,Status: Pending'
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run issue-metrics action, closed issues
         id: issue-metrics-closed
-        uses: github/issue-metrics@v3
+        uses: github-community-projects/issue-metrics@v3
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABELS_TO_MEASURE: 'Status: Open,Status: Accepted,Status: Pending'
