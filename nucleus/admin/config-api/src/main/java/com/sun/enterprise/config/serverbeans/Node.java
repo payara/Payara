@@ -47,6 +47,7 @@ import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.enterprise.util.StringUtils;
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -201,6 +202,10 @@ public interface Node extends ConfigBeanProxy, Named, ReferenceContainer, RefCon
     SshConnector getSshConnector();
 
     void setSshConnector(SshConnector connector);
+
+    @Element
+    WinrmConnector getWinrmConnector();
+    void setWinrmConnector(WinrmConnector connector);
 
     @Attribute
     String getDockerPasswordFile();
