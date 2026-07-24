@@ -120,6 +120,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
+            <classifier>jdk11</classifier>
             <optional>true</optional>
         </dependency>
         <dependency>

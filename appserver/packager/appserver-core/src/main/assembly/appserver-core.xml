@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) [2019] Payara Foundation and/or its affiliates. All rights reserved.
+ Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
  The contents of this file are subject to the terms of either the GNU
  General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@
                 <exclude>modules/cli-optional*.jar</exclude>
                 <exclude>modules/appserver-cli*.jar</exclude>
                 <exclude>modules/jna*.jar</exclude>
-                <exclude>modules/jline-terminal-jna*.jar</exclude>
+                <exclude>modules/jline-terminal-jni*.jar</exclude>
                 <exclude>bin/*</exclude>
                 <exclude>pkg_proto.py</exclude>
             </excludes>
@@ -84,7 +84,7 @@
             <includes>
                 <include>appserver-cli*.jar</include>
                 <include>jna*.jar</include>
-                <include>jline-terminal-jna*.jar</include>
+                <include>jline-terminal-jni*.jar</include>
             </includes>
         </fileSet>
         <fileSet>
