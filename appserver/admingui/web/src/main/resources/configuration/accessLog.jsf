@@ -104,7 +104,7 @@
         </sun:property>
 
         <sun:property id="filterProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Filter}" helpText="$resource{i18n_web.access.FilterHelp}">
-            <sun:textField id="Filter" styleClass="regex" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.RotationSuffix']}" text="#{pageSession.valueMap2['filter']}" />
+            <sun:textField id="Filter" styleClass="regex" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.accessLogFilter']}" text="#{pageSession.valueMap2['filter']}" />
         </sun:property>
 
         <sun:property id="rotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Rotation}" helpText="$resource{i18n_web.access.RotationHelp}">
