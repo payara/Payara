@@ -67,7 +67,6 @@
         <module>vboxjws</module>
         <module>apache-mina-repackaged</module>
     	<module>antlr</module>
-        <module>opentracing-repackaged</module>
         <module>opentelemetry-repackaged</module>
         <module>tiger-types</module>
     </modules>

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -342,9 +342,9 @@ public final class ModelUtils {
         return "get" + firstCharacter + fieldName.substring(1);
     }
 
-    public static SchemaType getSchemaType(ParameterizedType type, ApiContext context) {
+    public static List<SchemaType> getSchemaType(ParameterizedType type, ApiContext context) {
         if(type.isArray()) {
-            return SchemaType.ARRAY;
+            return List.of(SchemaType.ARRAY);
         } else {
             return getSchemaType(type.getTypeName(), context);
         }
@@ -356,15 +356,15 @@ public final class ModelUtils {
      * @param typeName the class to map.
      * @return the schema type the class corresponds to.
      */
-    public static SchemaType getSchemaType(String typeName, ApiContext context) {
+    public static List<SchemaType> getSchemaType(String typeName, ApiContext context) {
         if (String.class.getName().equals(typeName)) {
-            return SchemaType.STRING;
+            return List.of(SchemaType.STRING);
         }
         if ("boolean".equals(typeName) || Boolean.class.getName().equals(typeName)) {
-            return SchemaType.BOOLEAN;
+            return List.of(SchemaType.BOOLEAN);
         }
         if ("int".equals(typeName) || Integer.class.getName().equals(typeName)) {
-            return SchemaType.INTEGER;
+            return List.of(SchemaType.INTEGER);
         }
         if ("short".equals(typeName)
                 || "long".equals(typeName)
@@ -376,10 +376,10 @@ public final class ModelUtils {
                 || Float.class.getName().equals(typeName)
                 || Double.class.getName().equals(typeName)
                 || BigDecimal.class.getName().equals(typeName)) {
-            return SchemaType.NUMBER;
+            return List.of(SchemaType.NUMBER);
         }
         if (typeName != null && typeName.endsWith("[]")) {
-            return SchemaType.ARRAY;
+            return List.of(SchemaType.ARRAY);
         }
         Class clazz = null;
         try {
@@ -391,9 +391,9 @@ public final class ModelUtils {
             }
         }
         if (clazz != null && (clazz.isArray() || Iterable.class.isAssignableFrom(clazz))) {
-            return SchemaType.ARRAY;
+            return List.of(SchemaType.ARRAY);
         }
-        return SchemaType.OBJECT;
+        return List.of(SchemaType.OBJECT);
     }
 
     public static boolean isMap(String typeName, ApiContext context) {
@@ -418,7 +418,8 @@ public final class ModelUtils {
      * @param type2 the second schema type.
      * @return a {@link SchemaType} that can represent both.
      */
-    public static SchemaType getParentSchemaType(SchemaType type1, SchemaType type2) {
+    // TODO: Not sure how to combine these now that they are lists
+    public static List<SchemaType> getParentSchemaType(List<SchemaType> type1, List<SchemaType> type2) {
         if (type1 == null && type2 == null) {
             return null;
         }
@@ -428,16 +429,19 @@ public final class ModelUtils {
         if (type2 == null) {
             return type1;
         }
-        if (type1 == SchemaType.OBJECT || type2 == SchemaType.OBJECT) {
-            return SchemaType.OBJECT;
-        }
-        if (type1 == SchemaType.STRING || type2 == SchemaType.STRING) {
-            return SchemaType.STRING;
-        }
-        if (type1 != type2) {
-            return SchemaType.STRING;
-        }
-        return type1;
+        List<SchemaType> combined = createList(type1);
+        combined.addAll(type2);
+        return combined;
+//        if (type1 == SchemaType.OBJECT || type2 == SchemaType.OBJECT) {
+//            return SchemaType.OBJECT;
+//        }
+//        if (type1 == SchemaType.STRING || type2 == SchemaType.STRING) {
+//            return SchemaType.STRING;
+//        }
+//        if (type1 != type2) {
+//            return SchemaType.STRING;
+//        }
+//        return type1;
     }
 
     public static boolean isRequestBody(ApiContext context, org.glassfish.hk2.classmodel.reflect.Parameter parameter) {

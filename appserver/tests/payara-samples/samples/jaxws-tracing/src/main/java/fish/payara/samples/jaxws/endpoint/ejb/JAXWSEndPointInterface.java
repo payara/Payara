@@ -1,7 +1,7 @@
 /*
  *    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *    Copyright (c) [2019-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ *    Copyright (c) [2019-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  *    The contents of this file are subject to the terms of either the GNU
  *    General Public License Version 2 only ("GPL") or the Common Development
@@ -52,5 +52,9 @@ public interface JAXWSEndPointInterface {
 
     @WebMethod
     String sayHi(String name);
+
+    /** Deliberately throws to produce a SOAP fault — used for error-span testing. */
+    @WebMethod
+    String sayHiWithFault(String name);
 
 }

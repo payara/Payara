@@ -55,15 +55,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2023] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.context.Scope;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
@@ -84,8 +83,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.web.valve.GlassFishValve;
 
@@ -148,7 +145,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
     private static final String[] DEFAULT_SERVLET_METHODS = { "GET", "HEAD", "POST" };
 
     private final RequestTracingService requestTracing;
-    private final OpenTracingService openTracing;
     private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -323,6 +319,8 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     private boolean osgi;
 
+    private final OpenTelemetryService openTelemetryService;
+
 
     // ----------------------------------------------------------- Constructors
 
@@ -335,7 +333,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         swValve = new StandardWrapperValve();
         pipeline.setBasic(swValve);
         requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
-        openTracing = getDefaultHabitat().getService(OpenTracingService.class);
+        openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
 
         // suppress PWC6117 file not found errors
         Logger jspLog = Logger.getLogger("org.glassfish.wasp.servlet.JspServlet");
@@ -1511,9 +1509,7 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
      * @see Servlet#service(ServletRequest, ServletResponse)
      */
     void service(ServletRequest request, ServletResponse response, Servlet servlet) throws IOException, ServletException {
-
         InstanceSupport supp = getInstanceSupport();
-
         try {
             supp.fireInstanceEvent(BEFORE_SERVICE_EVENT, servlet, request, response);
 
@@ -1525,56 +1521,54 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             }
 
             if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+                HttpServletRequest httpRequest = (HttpServletRequest) request;
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-                if ( SecurityUtil.executeUnderSubjectDoAs() ){
-                    final ServletRequest req = request;
-                    final ServletResponse res = response;
-                    Principal principal = ((HttpServletRequest) req).getUserPrincipal();
+                // OTel: null scope = not owner (disabled, re-entry, or error). No-op for finish.
+                Scope otelScope = OtelSupport.startServerSpan(openTelemetryService, httpRequest);
+                Throwable error = null;
 
-                    Object[] serviceType = new Object[2];
-                    serviceType[0] = req;
-                    serviceType[1] = res;
+                try {
+                    if ( SecurityUtil.executeUnderSubjectDoAs() ){
+                        final ServletRequest req = request;
+                        final ServletResponse res = response;
+                        Principal principal = httpRequest.getUserPrincipal();
 
-                    SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
-                } else {
-                    RequestTraceSpan span = null;
-                    if (requestTracing.isRequestTracingEnabled()) {
-                        if (servlet instanceof ServletContainer) {
-                            span = constructWebServiceRequestSpan((HttpServletRequest) request);
-                        } else if (servlet instanceof Servlet) {
-                            span = constructServletRequestSpan((HttpServletRequest) request, servlet);
+                        Object[] serviceType = new Object[2];
+                        serviceType[0] = req;
+                        serviceType[1] = res;
+
+                        SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
+                    } else {
+                        RequestTraceSpan span = null;
+                        if (requestTracing.isRequestTracingEnabled()) {
+                            if (servlet instanceof ServletContainer) {
+                                span = constructWebServiceRequestSpan(httpRequest);
+                            } else if (servlet instanceof Servlet) {
+                                span = constructServletRequestSpan(httpRequest, servlet);
+                            }
+                        }
+
+                        try {
+                            if (isJspServlet) {
+                                isInSuppressFFNFThread.set(true);
+                            }
+
+                            servlet.service(httpRequest, httpResponse);
+                        } finally {
+                            if (requestTracing.isRequestTracingEnabled() && span != null) {
+                                span.addSpanTag("ResponseStatus", Integer.toString(httpResponse.getStatus()));
+                                requestTracing.traceSpan(span);
+                            }
+                            isInSuppressFFNFThread.set(false);
                         }
                     }
-
-                    try {
-                        if (isJspServlet) {
-                            isInSuppressFFNFThread.set(true);
-                        }
-
-                        servlet.service((HttpServletRequest) request, (HttpServletResponse) response);
-                    }
-                    finally {
-                        String applicationName = openTracing.getApplicationName(
-                                Globals.getDefaultBaseServiceLocator().getService(InvocationManager.class));
-
-                        Tracer tracer = openTracing.getTracer(applicationName);
-                        if (tracer != null && tracer.activeSpan() != null && response.isCommitted()) {
-                            // If response is not committed, it is likely async
-                            tracer.activeSpan().setTag(
-                                    Tags.HTTP_STATUS.getKey(),
-                                    ((HttpServletResponse) response).getStatus());
-                            tracer.activeSpan().finish();
-                        }
-                        // TODO: clear OpenTelemetry context once we move to natively using it.
-
-                        if (requestTracing.isRequestTracingEnabled() && span != null) {
-                            span.addSpanTag("ResponseStatus", Integer.toString(
-                                    ((HttpServletResponse) response).getStatus()));
-                            requestTracing.traceSpan(span);
-                        }
-
-                        isInSuppressFFNFThread.set(false);
-                    }
+                } catch (Throwable t) {
+                    error = t;
+                    throw t;
+                } finally {
+                    // Closes scope on this thread and ends/records span (or registers AsyncListener).
+                    OtelSupport.finishServerSpan(otelScope, httpRequest, httpResponse, error);
                 }
             } else {
                 servlet.service(request, response);
@@ -1594,7 +1588,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
             supp.fireInstanceEvent(AFTER_SERVICE_EVENT, servlet, request, response, e);
             throw new ServletException(rb.getString(SERVLET_EXECUTION_EXCEPTION), e);
         }
-
     }
     // END IASRI 4665318
 

@@ -44,8 +44,6 @@ package fish.payara.samples.otel.spanname;
 
 import java.util.Map;
 
-import fish.payara.samples.PayaraArquillianTestRunner;
-import org.assertj.core.api.Assertions;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -76,4 +74,21 @@ public class OpenTelemetrySpanNamingIT extends AbstractSpanNameTest {
         var expected = "GET " + baseUri.getPath() + "jaxrs/async/compute";
         assertThat(spans).describedAs("Expecting span name of "+expected).anySatisfy(span -> assertThat(span.getName()).isEqualTo(expected));
     }
+
+    @Test
+    public void testSpanNameOnException() {
+        var response = target(null, "async", "fail").request().get();
+        assertEquals(500, response.getStatus());
+        var spans = exporter.getSpans();
+
+        var expected = "GET " + baseUri.getPath() + "jaxrs/async/fail";
+        assertThat(spans).describedAs("Expecting span name of " + expected).anySatisfy(span -> {
+            assertThat(span.getName()).isEqualTo(expected);
+            assertThat(span.getStatus().getStatusCode()).isEqualTo(io.opentelemetry.api.trace.StatusCode.ERROR);
+            assertThat(span.getEvents()).anySatisfy(event -> {
+                assertThat(event.getName()).isEqualTo("exception");
+            });
+        });
+    }
+
 }

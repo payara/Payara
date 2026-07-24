@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package fish.payara.microprofile.faulttolerance;
 
 import static java.util.Arrays.asList;
 
+import fish.payara.microprofile.faulttolerance.service.FaultToleranceMethodContextImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -72,7 +73,37 @@ public interface FaultToleranceMetrics {
     /**
      * Can be used as NULL object when metrics are disabled so avoid testing for enabled but still do essentially NOOPs.
      */
-    FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() { /* does nothing */ };
+    FaultToleranceMetrics DISABLED = new FaultToleranceMetrics() {
+        @Override
+        public LongSupplier getExecutionBulkheadRunningSupplier() {
+            return null;
+        }
+
+        @Override
+        public LongSupplier getExecutionBulkheadWaitingSupplier() {
+            return null;
+        }
+
+        @Override
+        public void setExecutionBulkheadRunningSupplier(LongSupplier concurrentExecutionCountSupplier) {
+
+        }
+
+        @Override
+        public void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingSupplier) {
+
+        }
+
+        @Override
+        public void setClassAndMethodName(String classAndMethodName) {
+
+        }
+
+        @Override
+        public String getClassAndMethodName() {
+            return "";
+        }
+    };
 
     Tag[] NO_TAGS = new Tag[0];
 
@@ -87,10 +118,14 @@ public interface FaultToleranceMetrics {
     default FaultToleranceMetrics boundTo(FaultToleranceMethodContext context, FaultTolerancePolicy policy) {
         if (policy.isMetricsEnabled) {
             String[] fallbackTag = policy.isFallbackPresent()
-                    ? new String[] {"fallback", "applied", "notApplied"}
-                    : new String[] {"fallback", "notDefined"};
+                    ? new String[]{"fallback", "applied", "notApplied"}
+                    : new String[]{"fallback", "notDefined"};
             register(Counter.class.getTypeName(), "ft.invocations.total", new String[][]{
-                {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
+                    {"result", "valueReturned", "exceptionThrown"}, fallbackTag});
+            if(context instanceof FaultToleranceMethodContextImpl faultToleranceMethodContext) {
+                setClassAndMethodName(faultToleranceMethodContext.getClassName() + "." + faultToleranceMethodContext.getMethodName());
+            }
+
             if (policy.isRetryPresent()) {
                 List<String> retryResultTag = new ArrayList<>(asList("retryResult", "valueReturned", "exceptionNotRetryable"));
                 if (policy.retry.isMaxRetriesSet()) {
@@ -100,17 +135,17 @@ public interface FaultToleranceMetrics {
                     retryResultTag.add("maxDurationReached");
                 }
                 register(Counter.class.getTypeName(), "ft.retry.calls.total", new String[][]{
-                    {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
+                        {"retried", "true", "false"}, retryResultTag.toArray(new String[0])});
                 register(Counter.class.getTypeName(), "ft.retry.retries.total");
             }
             if (policy.isTimeoutPresent()) {
-                register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][] {
-                    {"timedOut", "true", "false"}});
+                register(Counter.class.getTypeName(), "ft.timeout.calls.total", new String[][]{
+                        {"timedOut", "true", "false"}});
                 register(Histogram.class.getTypeName(), "ft.timeout.executionDuration");
             }
             if (policy.isCircuitBreakerPresent()) {
-                register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][] {
-                    {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
+                register(Counter.class.getTypeName(), "ft.circuitbreaker.calls.total", new String[][]{
+                        {"circuitBreakerResult", "success", "failure", "circuitBreakerOpen"}});
                 CircuitBreakerState state = context.getState();
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosOpen, "state", "open");
                 register("ft.circuitbreaker.state.total", MetricUnits.NANOSECONDS, state::nanosHalfOpen, "state", "halfOpen");
@@ -118,24 +153,27 @@ public interface FaultToleranceMetrics {
                 register(Counter.class.getTypeName(), "ft.circuitbreaker.opened.total");
             }
             if (policy.isBulkheadPresent()) {
-                register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][] {
-                    {"bulkheadResult", "accepted", "rejected"}});
+                register(Counter.class.getTypeName(), "ft.bulkhead.calls.total", new String[][]{
+                        {"bulkheadResult", "accepted", "rejected"}});
                 register(Histogram.class.getTypeName(), "ft.bulkhead.runningDuration");
                 if (policy.isAsynchronous()) {
                     BlockingQueue<Thread> running = context.getConcurrentExecutions();
                     register("ft.bulkhead.executionsRunning", null, running::size);
+                    this.setExecutionBulkheadRunningSupplier(running::size);
                     AtomicInteger queuingOrRunning = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsWaiting", null, () -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
+                    this.setExecutionBulkheadWaitingSupplier(() -> Math.max(0, queuingOrRunning.get() - policy.bulkhead.value));
                     register(Histogram.class.getTypeName(), "ft.bulkhead.waitingDuration");
                 } else {
                     AtomicInteger running = context.getQueuingOrRunningPopulation();
                     register("ft.bulkhead.executionsRunning", null, running::get);
+                    this.setExecutionBulkheadRunningSupplier(running::get);
                 }
             }
         }
         return this;
     }
-
+    
     /*
      * Generic (to be implemented/overridden)
      */
@@ -178,6 +216,7 @@ public interface FaultToleranceMetrics {
 
     default void incrementCounter(String metric) {
         incrementCounter(metric, NO_TAGS);
+        
     }
 
     /**
@@ -239,6 +278,7 @@ public interface FaultToleranceMetrics {
                 new Tag("retried", String.valueOf(isRetried())),
                 new Tag("retryResult", "valueReturned"));
     }
+    
 
     /**
      * The number of times the retry logic was run. This will always be once per method call.
@@ -300,6 +340,7 @@ public interface FaultToleranceMetrics {
         addToHistogram("ft.timeout.executionDuration", nanos);
     }
 
+
     /**
      * The number of times the timeout logic was run. This will usually be once per method call, but may be zero times
      * if the circuit breaker prevents execution or more than once if the method is retried.
@@ -310,6 +351,7 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.timeout.calls.total",
                 new Tag("timedOut", "true"));
     }
+    
 
     /**
      * The number of times the timeout logic was run. This will usually be once per method call, but may be zero times
@@ -322,6 +364,7 @@ public interface FaultToleranceMetrics {
                 new Tag("timedOut", "false"));
     }
 
+    
 
     /*
      * @CircuitBreaker
@@ -337,7 +380,7 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.circuitbreaker.calls.total",
                 new Tag("circuitBreakerResult", "success"));
     }
-
+    
     /**
      * The number of times the circuit breaker logic was run. This will usually be once per method call, but may be more
      * than once if the method call is retried.
@@ -381,6 +424,7 @@ public interface FaultToleranceMetrics {
         incrementCounter("ft.bulkhead.calls.total",
                 new Tag("bulkheadResult", "accepted"));
     }
+    
 
     /**
      * The number of times the bulkhead logic was run. This will usually be once per method call, but may be zero times
@@ -421,4 +465,16 @@ public interface FaultToleranceMetrics {
     default void incrementFallbackCallsTotal() {
         //NOOP
     }
+
+    LongSupplier getExecutionBulkheadRunningSupplier();
+
+    LongSupplier getExecutionBulkheadWaitingSupplier();
+
+    void setExecutionBulkheadRunningSupplier(LongSupplier executionRunningSupplier);
+
+    void setExecutionBulkheadWaitingSupplier(LongSupplier executionWaitingSupplier);
+
+    void setClassAndMethodName(String classAndMethodName);
+
+    String getClassAndMethodName();
 }

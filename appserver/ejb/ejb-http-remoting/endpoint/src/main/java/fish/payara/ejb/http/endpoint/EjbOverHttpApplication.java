@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2019-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,10 +39,28 @@
  */
 package fish.payara.ejb.http.endpoint;
 
+import fish.payara.ejb.http.protocol.rs.ErrorResponseExceptionMapper;
+import fish.payara.ejb.http.protocol.rs.JsonbInvokeMethodMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.JsonbLookupMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.ObjectStreamInvokeMethodMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyReader;
+import fish.payara.ejb.http.protocol.rs.ObjectStreamMessageBodyWriter;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
+import java.util.Set;
 
 @ApplicationPath("/")
 public class EjbOverHttpApplication extends Application {
-    // required to trigger JAX-RS
+
+    @Override
+    public Set<Class<?>> getClasses() {
+        return Set.of(EjbOverHttpResource.class,
+                ErrorResponseExceptionMapper.class,
+                JsonbInvokeMethodMessageBodyReader.class,
+                JsonbLookupMessageBodyReader.class,
+                ObjectStreamInvokeMethodMessageBodyReader.class,
+                ObjectStreamMessageBodyReader.class,
+                ObjectStreamMessageBodyWriter.class
+        );
+    }
 }
