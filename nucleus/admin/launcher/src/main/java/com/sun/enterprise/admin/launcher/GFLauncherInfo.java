@@ -628,6 +628,25 @@ public class GFLauncherInfo {
     private static final String CONFIG_FILENAME = "domain.xml";
     //password tokens -- could be multiple -- launcher should *just* write them onto stdin of server
     final List<String> securityTokens = new ArrayList<String>(); // note: it's package private
+    // Windows-only: password for schtasks /rp when launching under SSH
+    private String windowsPassword;
+    private boolean sshNode;
+
+    public void setWindowsPassword(String password) {
+        windowsPassword = password;
+    }
+
+    public String getWindowsPassword() {
+        return windowsPassword;
+    }
+
+    public void setSshNode(boolean sshNode) {
+        this.sshNode = sshNode;
+    }
+
+    public boolean isSshNode() {
+        return sshNode;
+    }
 
     boolean isVerboseOrWatchdog() {
         return verbose || watchdog;
