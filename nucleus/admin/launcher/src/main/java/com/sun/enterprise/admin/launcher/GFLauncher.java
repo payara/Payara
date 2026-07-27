@@ -521,12 +521,14 @@ public abstract class GFLauncher {
         try {
             closeStandardStreamsMaybe();
 
-            // Under SSH on Windows, the child JVM inherits the SSH session's Job Object and
-            // is killed when the exec channel closes. Use a detached launch to escape it.
+            // Under SSH on Windows, an instance's child JVM inherits the SSH session's
+            // Job Object and is killed when the exec channel closes. Use a detached launch
+            // via schtasks (Password logon) to escape it. Restricted to instances: domain
+            // starts via SSH use the regular pb.start() path.
             // SSH_CLIENT / SSH_CONNECTION are set by sshd for every exec channel and are
             // absent for local subprocess launches (e.g. admin console start-instance),
             // making them a reliable discriminator over System.console() == null alone.
-            if (OS.isWindows() && !info.isVerboseOrWatchdog() && isRunningUnderSsh()) {
+            if (OS.isWindows() && info.isInstance() && info.isSshNode() && !info.isVerboseOrWatchdog() && isRunningUnderSsh()) {
                 process = launchDetachedOnWindows(cmds, pb);
             } else {
                 process = pb.start();
@@ -1010,22 +1012,20 @@ public abstract class GFLauncher {
         return ss;
     }
 
-    // Launches ASMain via Windows Task Scheduler so it survives SSH channel close.
-    // Win32-OpenSSH kills every exec-channel process when the channel closes (Job Object with
-    // KILL_ON_JOB_CLOSE); the Task Scheduler service creates the JVM outside that Job Object.
-    // PowerShell ScheduledTask cmdlets (New-ScheduledTask*) use CIM/WMI internally; WMI
-    // treats SSH network-logon (NTLM Type-3) sessions as remote, which non-admin users are
-    // denied on ROOT\Microsoft\Windows\TaskScheduler. The COM Schedule.Service API also denies
-    // RegisterTaskDefinition for non-admin SSH sessions. schtasks.exe uses a legacy RPC path
-    // to the service that non-admin users can access. The task is interactive (/rl limited,
-    // no /ru), so it runs in the user's logged-on session. wscript.exe (GUI subsystem) runs
-    // cmd.exe hidden (SW_HIDE, bWaitOnReturn=False) so no console appears. The batch sets the
-    // working directory, writes its cmd.exe PID via WMI before starting Java; a sentinel polls
-    // that PID so waitForServer() detects failures without timing out.
     private Process launchDetachedOnWindows(List<String> cmds, ProcessBuilder pb) throws IOException, GFLauncherException {
 
+        String windowsPassword = info.getWindowsPassword();
+        if (windowsPassword == null || windowsPassword.isBlank()) {
+            throw new GFLauncherException(
+                    "A Windows user password is required to launch a Payara instance via SSH on Windows. "
+                    + "Either pass it directly: asadmin start-local-instance --windowspassword <password> ..., "
+                    + "or set it on the node so start-instance supplies it automatically: "
+                    + "asadmin --passwordfile <file> create-node-ssh --nodehost <host> <node>");
+        }
+
+        String fullUser = resolveWindowsUser();
+
         File tokenFile = File.createTempFile("payara-tokens-", ".tmp");
-        // Temp dir can be shared; remove inherited ACEs so only the owner can read the tokens.
         restrictToOwner(tokenFile);
         try (BufferedWriter writer = Files.newBufferedWriter(tokenFile.toPath(), StandardCharsets.UTF_8)) {
             for (String token : info.securityTokens) {
@@ -1048,8 +1048,7 @@ public abstract class GFLauncher {
         }
 
         // Batch: sets working directory, writes cmd.exe PID via WMI before starting Java,
-        // and redirects stdin from tokenFile with '<'. cd /d is needed because schtasks.exe
-        // does not expose a working-directory field for the task action.
+        // and redirects stdin from tokenFile with '<'.
         File pidFile = File.createTempFile("payara-pid-", ".tmp");
         File batchFile = File.createTempFile("payara-start-", ".bat");
         try (BufferedWriter writer = Files.newBufferedWriter(batchFile.toPath(), StandardCharsets.UTF_8)) {
@@ -1066,31 +1065,25 @@ public abstract class GFLauncher {
             writer.write("\"" + javaQ + "\" \"@" + argQ + "\" < \"" + tokQ + "\"\r\n");
         }
 
-        // wscript.exe (GUI subsystem, no console) runs cmd.exe hidden via SW_HIDE; bWaitOnReturn=False
-        // so wscript exits immediately and cmd.exe runs independently.
-        File vbsFile = File.createTempFile("payara-launch-", ".vbs");
-        try (BufferedWriter writer = Files.newBufferedWriter(vbsFile.toPath(), StandardCharsets.UTF_8)) {
-            writer.write("CreateObject(\"WScript.Shell\").Run \"cmd.exe /c \"\"\" & WScript.Arguments(0) & \"\"\"\", 0, False\r\n");
-        }
-
-        // schtasks.exe works for non-admin SSH users where both the PowerShell CIM-based
-        // cmdlets and the COM Schedule.Service RegisterTaskDefinition API are denied.
-        // The task XML explicitly sets DisallowStartIfOnBatteries=false and
-        // StopIfGoingOnBatteries=false; schtasks command-line flags do not expose these
-        // settings, which default to true and silently block execution on battery power.
         String taskName = "PayaraStart-" + UUID.randomUUID().toString().replace("-", "");
 
         File xmlFile = File.createTempFile("payara-task-", ".xml");
-        writeTaskXml(xmlFile, vbsFile.getAbsolutePath(), batchFile.getAbsolutePath());
+        writeTaskXml(xmlFile, batchFile.getAbsolutePath());
 
         File stderrFile = File.createTempFile("payara-schtasks-stderr-", ".log");
-        List<File> toClean = new ArrayList<>(Arrays.asList(tokenFile, argFile, batchFile, vbsFile, pidFile, xmlFile, stderrFile));
+        List<File> toClean = new ArrayList<>(Arrays.asList(tokenFile, argFile, batchFile, pidFile, xmlFile, stderrFile));
 
-        ProcessBuilder createPb = new ProcessBuilder(
+        List<String> createCmd = new ArrayList<>(Arrays.asList(
                 "schtasks", "/create",
                 "/xml", xmlFile.getAbsolutePath(),
                 "/tn", taskName,
-                "/f");
+                "/f"));
+        createCmd.add("/ru");
+        createCmd.add(fullUser);
+        createCmd.add("/rp");
+        createCmd.add(windowsPassword);
+
+        ProcessBuilder createPb = new ProcessBuilder(createCmd);
         createPb.redirectInput(new File("NUL"));
         createPb.redirectOutput(new File("NUL"));
         createPb.redirectError(stderrFile);
@@ -1177,7 +1170,6 @@ public abstract class GFLauncher {
             }
         }
 
-        // Unregister the task; the already-running process is unaffected.
         new ProcessBuilder("schtasks", "/delete", "/tn", taskName, "/f")
                 .redirectInput(new File("NUL"))
                 .redirectOutput(new File("NUL"))
@@ -1189,7 +1181,8 @@ public abstract class GFLauncher {
             throw new GFLauncherException("Timed out waiting for Payara process PID file");
         }
 
-        GFLauncherLogger.fine("launchDetachedOnWindows", "Task launched via schtasks. pid=" + cmdPid + " batchFile=" + batchFile.getAbsolutePath());
+        GFLauncherLogger.fine("launchDetachedOnWindows",
+                "Task launched via schtasks (Password logon). pid=" + cmdPid + " user=" + fullUser);
 
         Thread cleanup = new Thread(() -> {
             try {
@@ -1202,7 +1195,6 @@ public abstract class GFLauncher {
         cleanup.setDaemon(true);
         cleanup.start();
 
-        // Sentinel polls cmd.exe (blocks until java.exe exits); exits with code 1 when GF dies.
         Process sentinel = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command",
                 "$p=" + cmdPid + ";"
                 + "while(Get-Process -Id $p -ErrorAction SilentlyContinue){Start-Sleep -Seconds 1};"
@@ -1215,10 +1207,26 @@ public abstract class GFLauncher {
         return sentinel;
     }
 
-    // Replaces the file's ACL with a single owner-only ALLOW entry so that other
-    // local accounts cannot read the file even if java.io.tmpdir is a shared directory.
-    // Best-effort: if the platform or file system does not support ACLs, we proceed
-    // with whatever permissions the OS assigned at creation time.
+    private static String resolveWindowsUser() throws GFLauncherException {
+        try {
+            Process p = new ProcessBuilder("whoami").redirectErrorStream(true).start();
+            String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim();
+            p.waitFor(5, TimeUnit.SECONDS);
+            if (!out.isEmpty()) {
+                return out;
+            }
+        } catch (Exception ignored) {
+        }
+        // whoami unavailable — fall back to env vars
+        String userDomain = System.getenv("USERDOMAIN");
+        String userName = System.getenv("USERNAME");
+        if (userName == null || userName.isBlank()) {
+            throw new GFLauncherException(
+                    "Cannot determine Windows user identity: USERNAME environment variable is not set");
+        }
+        return (userDomain != null && !userDomain.isBlank()) ? userDomain + "\\" + userName : userName;
+    }
+
     private static boolean isRunningUnderSsh() {
         return System.getenv("SSH_CLIENT") != null || System.getenv("SSH_CONNECTION") != null;
     }
@@ -1242,8 +1250,7 @@ public abstract class GFLauncher {
         }
     }
 
-    private static void writeTaskXml(File xmlFile, String vbsPath, String batchPath) throws IOException {
-        String vbs = escapeXml(vbsPath);
+    static void writeTaskXml(File xmlFile, String batchPath) throws IOException {
         String bat = escapeXml(batchPath);
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-16\"?>\r\n"
                 + "<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\r\n"
@@ -1251,8 +1258,7 @@ public abstract class GFLauncher {
                 + "  <Triggers><TimeTrigger><StartBoundary>2000-01-01T00:00:00</StartBoundary>"
                 + "<Enabled>true</Enabled></TimeTrigger></Triggers>\r\n"
                 + "  <Principals><Principal id=\"Author\">"
-                + "<LogonType>InteractiveToken</LogonType>"
-                + "<RunLevel>LeastPrivilege</RunLevel>"
+                + "<LogonType>Password</LogonType><RunLevel>LeastPrivilege</RunLevel>"
                 + "</Principal></Principals>\r\n"
                 + "  <Settings>\r\n"
                 + "    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>\r\n"
@@ -1271,8 +1277,8 @@ public abstract class GFLauncher {
                 + "    <Priority>7</Priority>\r\n"
                 + "  </Settings>\r\n"
                 + "  <Actions Context=\"Author\"><Exec>"
-                + "<Command>wscript.exe</Command>"
-                + "<Arguments>//nologo &quot;" + vbs + "&quot; &quot;" + bat + "&quot;</Arguments>"
+                + "<Command>cmd.exe</Command>"
+                + "<Arguments>/c &quot;" + bat + "&quot;</Arguments>"
                 + "</Exec></Actions>\r\n"
                 + "</Task>\r\n";
         byte[] bom = {(byte) 0xFF, (byte) 0xFE};
