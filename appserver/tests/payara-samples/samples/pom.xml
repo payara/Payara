@@ -99,12 +99,6 @@
         <dependencies>
             <dependency>
                 <groupId>fish.payara.samples</groupId>
-                <artifactId>samples-test-utils</artifactId>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-            <groupId>fish.payara.samples</groupId>
                 <artifactId>test-domain-setup</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
