@@ -41,6 +41,7 @@ package fish.payara.samples.jaxws.test.otel;
 
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointImplementation;
+import jakarta.ejb.EJB;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -94,6 +95,9 @@ public class JaxWsSpanIT {
     @Inject
     private InMemoryMetricExporter metricExporter;
 
+    @EJB
+    private JaxWsRefClientBean refBean;
+
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class, "jaxws-span-it.war")
@@ -106,7 +110,9 @@ public class JaxWsSpanIT {
                         InMemorySpanExporter.Provider.class,
                         InMemoryMetricExporter.class,
                         InMemoryMetricExporter.Provider.class,
-                        JaxWsOtelConfigSource.class)
+                        JaxWsOtelConfigSource.class,
+                        JAXWSEjbEndPointService.class,
+                        JaxWsRefClientBean.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsServiceProvider(ConfigurableSpanExporterProvider.class, InMemorySpanExporter.Provider.class)
                 .addAsServiceProvider(ConfigurableMetricExporterProvider.class, InMemoryMetricExporter.Provider.class)
@@ -240,6 +246,131 @@ public class JaxWsSpanIT {
     }
 
     // -------------------------------------------------------------------------
+    // Outbound JAX-WS client — CLIENT span and trace context propagation
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void ejbEndpoint_clientSpanCreated() throws Exception {
+        ejbEndpoint().sayHi("Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_clientSpanCreated", spans);
+        SpanData client = findClient(spans);
+
+        assertThat(client)
+                .describedAs("Expected a CLIENT span for outbound JAX-WS call to EJB endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(client.getAttributes().get(HTTP_REQUEST_METHOD))
+                .describedAs("CLIENT span must have http.request.method=POST")
+                .isEqualTo("POST");
+    }
+
+    @Test
+    public void servletEndpoint_clientSpanCreated() throws Exception {
+        servletEndpoint().sayHi("Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("servletEndpoint_clientSpanCreated", spans);
+        SpanData client = findClient(spans);
+
+        assertThat(client)
+                .describedAs("Expected a CLIENT span for outbound JAX-WS call to servlet endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(client.getAttributes().get(HTTP_REQUEST_METHOD))
+                .describedAs("CLIENT span must have http.request.method=POST")
+                .isEqualTo("POST");
+    }
+
+    @Test
+    public void ejbEndpoint_clientSpanPropagatesTraceContext() throws Exception {
+        ejbEndpoint().sayHi("Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_clientSpanPropagatesTraceContext", spans);
+        SpanData client = findClient(spans);
+        SpanData server = findServer(spans);
+
+        assertThat(client)
+                .describedAs("Expected a CLIENT span for outbound JAX-WS call, got: %s", names(spans))
+                .isNotNull();
+        assertThat(server)
+                .describedAs("Expected a SERVER span for EJB endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(client.getTraceId())
+                .describedAs("CLIENT and SERVER spans must share the same trace ID — W3C traceparent must be propagated")
+                .isEqualTo(server.getTraceId());
+        assertThat(server.getParentSpanId())
+                .describedAs("SERVER span's parent must be the CLIENT span")
+                .isEqualTo(client.getSpanId());
+    }
+
+    @Test
+    public void servletEndpoint_clientSpanPropagatesTraceContext() throws Exception {
+        servletEndpoint().sayHi("Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("servletEndpoint_clientSpanPropagatesTraceContext", spans);
+        SpanData client = findClient(spans);
+        SpanData server = findServer(spans);
+
+        assertThat(client)
+                .describedAs("Expected a CLIENT span for outbound JAX-WS call, got: %s", names(spans))
+                .isNotNull();
+        assertThat(server)
+                .describedAs("Expected a SERVER span for servlet endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(client.getTraceId())
+                .describedAs("CLIENT and SERVER spans must share the same trace ID — W3C traceparent must be propagated")
+                .isEqualTo(server.getTraceId());
+        assertThat(server.getParentSpanId())
+                .describedAs("SERVER span's parent must be the CLIENT span")
+                .isEqualTo(client.getSpanId());
+    }
+
+    // -------------------------------------------------------------------------
+    // @WebServiceRef pattern — container-managed port, dynamic endpoint address
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void ejbEndpoint_webServiceRef_clientSpanCreated() throws Exception {
+        refBean.callEndpoint(ejbEndpointAddress(), "Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_webServiceRef_clientSpanCreated", spans);
+        SpanData client = findClient(spans);
+
+        assertThat(client)
+                .describedAs("Expected a CLIENT span for @WebServiceRef outbound JAX-WS call, got: %s", names(spans))
+                .isNotNull();
+        assertThat(client.getAttributes().get(HTTP_REQUEST_METHOD))
+                .describedAs("CLIENT span must have http.request.method=POST")
+                .isEqualTo("POST");
+    }
+
+    @Test
+    public void ejbEndpoint_webServiceRef_clientSpanPropagatesTraceContext() throws Exception {
+        refBean.callEndpoint(ejbEndpointAddress(), "Payara");
+
+        List<SpanData> spans = exporter.getSpans();
+        logSpans("ejbEndpoint_webServiceRef_clientSpanPropagatesTraceContext", spans);
+        SpanData client = findClient(spans);
+        SpanData server = findServer(spans);
+
+        assertThat(client)
+                .describedAs("Expected a CLIENT span for @WebServiceRef call, got: %s", names(spans))
+                .isNotNull();
+        assertThat(server)
+                .describedAs("Expected a SERVER span for EJB endpoint, got: %s", names(spans))
+                .isNotNull();
+        assertThat(client.getTraceId())
+                .describedAs("CLIENT and SERVER spans must share the same trace ID")
+                .isEqualTo(server.getTraceId());
+        assertThat(server.getParentSpanId())
+                .describedAs("SERVER span's parent must be the CLIENT span")
+                .isEqualTo(client.getSpanId());
+    }
+
+    // -------------------------------------------------------------------------
     // http.server.request.duration histogram
     // -------------------------------------------------------------------------
 
@@ -282,6 +413,11 @@ public class JaxWsSpanIT {
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private String ejbEndpointAddress() {
+        return baseUrl.getProtocol() + "://" + baseUrl.getHost() + ":" + baseUrl.getPort()
+                + "/JAXWSEndPointImplementationService/JAXWSEndPointImplementation";
+    }
 
     /** EJB endpoints are published at the server root (not under the WAR context path). */
     private fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointInterface ejbEndpoint() throws Exception {
@@ -328,6 +464,14 @@ public class JaxWsSpanIT {
     private SpanData findServer(List<SpanData> spans) {
         return spans.stream()
                 .filter(s -> s.getKind() == SpanKind.SERVER)
+                .filter(s -> "POST".equals(s.getAttributes().get(HTTP_REQUEST_METHOD)))
+                .findFirst().orElse(null);
+    }
+
+    /** Finds the CLIENT span for an outbound SOAP POST request. */
+    private SpanData findClient(List<SpanData> spans) {
+        return spans.stream()
+                .filter(s -> s.getKind() == SpanKind.CLIENT)
                 .filter(s -> "POST".equals(s.getAttributes().get(HTTP_REQUEST_METHOD)))
                 .findFirst().orElse(null);
     }

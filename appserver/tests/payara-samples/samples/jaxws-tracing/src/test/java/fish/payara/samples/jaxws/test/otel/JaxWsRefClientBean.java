@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -29,7 +29,7 @@
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
+ * Version 2] license."  If you don't indicate a single license of license, a
  * recipient has the option to distribute your version of this file under
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
@@ -37,39 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022-2026] [Payara Foundation and/or its affiliates]
+package fish.payara.samples.jaxws.test.otel;
 
-package org.glassfish.webservices;
+import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointInterface;
+import jakarta.ejb.Stateless;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.WebServiceRef;
 
-import com.sun.xml.ws.api.server.Container;
-import com.sun.xml.ws.api.client.ServiceInterceptor;
+import java.util.Map;
 
-import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
-import org.glassfish.internal.api.Globals;
+/**
+ * Stateless EJB that receives a JAX-WS client port via {@code @WebServiceRef} injection
+ * and overrides the endpoint address at runtime via {@link BindingProvider#ENDPOINT_ADDRESS_PROPERTY}.
+ *
+ * <p>This is the canonical Jakarta EE pattern for consuming a JAX-WS service whose
+ * URL is not known at deployment time (e.g. changes per environment).</p>
+ */
+@Stateless
+public class JaxWsRefClientBean {
 
-public class WSClientContainer extends Container {
+    @WebServiceRef(wsdlLocation = "http://localhost:8080/JAXWSEndPointImplementationService/JAXWSEndPointImplementation?wsdl")
+    JAXWSEjbEndPointService service;
 
-    ServiceReferenceDescriptor svcRef;
-    private org.glassfish.webservices.SecurityService  secServ;
-
-    public WSClientContainer(ServiceReferenceDescriptor ref) {
-        svcRef = ref;
-        if (Globals.getDefaultHabitat() != null) {
-            secServ = Globals.get(org.glassfish.webservices.SecurityService.class);
-        }
+    public String callEndpoint(String endpointAddress, String name) {
+        JAXWSEndPointInterface port = service.getPort();
+        Map<String, Object> context = ((BindingProvider) port).getRequestContext();
+        context.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
+        return port.sayHi(name);
     }
-
-    public <T> T getSPI(Class<T> spiType) {
-
-        if (spiType == com.sun.xml.ws.assembler.metro.dev.ClientPipelineHook.class) {
-            if (secServ != null) {
-                return((T)(secServ.getClientPipelineHook(svcRef)));
-            }
-        }
-        if(spiType == ServiceInterceptor.class) {
-            return (T) ServiceInterceptor.aggregate(new PortCreationCallbackImpl(svcRef), WSContainerResolver.otelInterceptor());
-        }
-        return null;
-    }
-
 }
