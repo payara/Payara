@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,9 @@
 package fish.payara.microprofile.openapi.activation;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,6 +67,9 @@ public class OpenApiSniffer extends MicroProfileSniffer {
         "WEB-INF/classes/META-INF/openapi.yml",
     };
 
+    private static final String OPENAPI_PROPERTY_PREFIX = "mp.openapi.";
+    private static final String MICROPROFILE_CONFIG = "META-INF/microprofile-config.properties";
+
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Annotation>[] getAnnotationTypes() {
@@ -84,6 +89,16 @@ public class OpenApiSniffer extends MicroProfileSniffer {
         try {
             for (String openApiFile : OPENAPI_YAML_FILE_PATHS) {
                 if (archive.exists(openApiFile)) {
+                    return true;
+                }
+            }
+
+            if (archive.exists(MICROPROFILE_CONFIG)) {
+                InputStream inputStream = archive.getEntry(MICROPROFILE_CONFIG);
+                Properties properties = new Properties();
+                properties.load(inputStream);
+
+                if (properties.keySet().stream().anyMatch(key -> key.toString().startsWith(OPENAPI_PROPERTY_PREFIX))) {
                     return true;
                 }
             }

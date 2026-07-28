@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,7 +43,6 @@ import static fish.payara.nucleus.microprofile.config.spi.PayaraConfigBuilder.ge
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,9 +51,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalDouble;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -62,6 +58,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fish.payara.nucleus.microprofile.config.ServerConfigProvider;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -77,6 +74,8 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.common.util.Constants;
+import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -86,35 +85,14 @@ import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
-import fish.payara.nucleus.microprofile.config.converters.BooleanConverter;
-import fish.payara.nucleus.microprofile.config.converters.ByteConverter;
-import fish.payara.nucleus.microprofile.config.converters.CharacterConverter;
-import fish.payara.nucleus.microprofile.config.converters.ClassConverter;
-import fish.payara.nucleus.microprofile.config.converters.DoubleConverter;
-import fish.payara.nucleus.microprofile.config.converters.FloatConverter;
-import fish.payara.nucleus.microprofile.config.converters.InetAddressConverter;
-import fish.payara.nucleus.microprofile.config.converters.IntegerConverter;
-import fish.payara.nucleus.microprofile.config.converters.LongConverter;
-import fish.payara.nucleus.microprofile.config.converters.OptionalDoubleConverter;
-import fish.payara.nucleus.microprofile.config.converters.OptionalIntConverter;
-import fish.payara.nucleus.microprofile.config.converters.OptionalLongConverter;
-import fish.payara.nucleus.microprofile.config.converters.ShortConverter;
-import fish.payara.nucleus.microprofile.config.converters.StringConverter;
-import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
+import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.microprofile.config.source.ApplicationConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ClusterConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ConfigConfigSource;
-import fish.payara.nucleus.microprofile.config.source.DomainConfigSource;
-import fish.payara.nucleus.microprofile.config.source.EnvironmentConfigSource;
-import fish.payara.nucleus.microprofile.config.source.JNDIConfigSource;
+import fish.payara.nucleus.microprofile.config.source.JDBCConfigSource;
 import fish.payara.nucleus.microprofile.config.source.ModuleConfigSource;
-import fish.payara.nucleus.microprofile.config.source.PasswordAliasConfigSource;
 import fish.payara.nucleus.microprofile.config.source.PayaraExpressionConfigSource;
-import fish.payara.nucleus.microprofile.config.source.PayaraServerProperties;
 import fish.payara.nucleus.microprofile.config.source.PropertiesConfigSource;
-import fish.payara.nucleus.microprofile.config.source.DirConfigSource;
-import fish.payara.nucleus.microprofile.config.source.ServerConfigSource;
-import fish.payara.nucleus.microprofile.config.source.SystemPropertyConfigSource;
+import fish.payara.nucleus.store.ClusteredStore;
 import fish.payara.nucleus.microprofile.config.source.extension.ExtensionConfigSourceService;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
@@ -124,11 +102,18 @@ import org.glassfish.api.event.Events;
  * This Service implements the Microprofile Config API and provides integration
  * into the guts of Payara Server.
  *
+ * <p>The service is usually accessed via MP Config API ({@link ConfigProviderResolver#getConfig()}) and thus
+ * HK2 cannot safely estabilish the dependency chain. We therefore start it as soon as possible ot startup
+ * run level.</p>
+ *
+ * <p>Use {@link ServerConfigProvider} for server-global configuration that should be used on earlier run levels</p>
+ *
  * @author Steve Millidge (Payara Foundation)
  */
 @Service(name = "microprofile-config-provider")
 @ContractsProvided({ConfigProviderResolver.class, ConfigProviderResolverImpl.class})
-@RunLevel(StartupRunLevel.IMPLICITLY_RELIED_ON)
+@RunLevel(StartupRunLevel.VAL)
+@Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
 public class ConfigProviderResolverImpl extends ConfigProviderResolver implements EventListener {
 
     private static final Logger LOG = Logger.getLogger(ConfigProviderResolverImpl.class.getName());
@@ -156,14 +141,25 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     // and for the correct server configuation
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    @Optional // PAYARA-2255 make optional due to race condition writing a missing entry into domain.xml
     private MicroprofileConfigConfiguration configuration;
 
     // a config used at the server level when there is no application associated with the thread
     private PayaraConfig serverLevelConfig;
 
     @Inject
+    private Domain domain;
+
+    @Inject
+    private ClusteredStore clusterStore;
+
+    @Inject
+    private JDBCConfigSourceConfiguration jdbcConfigSourceConfiguration;
+
+    @Inject
     private ExtensionConfigSourceService extensionService;
+
+    @Inject
+    private ServerConfigProvider serverConfigProvider;
     
     @Inject
     private Events events;
@@ -193,11 +189,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
         }
     }
 
-    public MicroprofileConfigConfiguration getMPConfig() {
-        if (configuration == null) {
-            LOG.config("getMPConfig() - initialization of the configuration field (not set by @Inject annotation).");
-            configuration = context.getConfigBean().getConfig().getExtensionByType(MicroprofileConfigConfiguration.class);
-        }
+    private MicroprofileConfigConfiguration getMPConfig() {
         return configuration;
     }
 
@@ -329,28 +321,18 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     }
 
     private List<ConfigSource> getDefaultSources(String appName, String moduleName) {
-        LinkedList<ConfigSource> sources = new LinkedList<>();
-        String serverName = context.getInstanceName();
-        String configName = context.getConfigBean().getConfig().getName();
-        sources.add(new DomainConfigSource());
-        sources.add(new ClusterConfigSource());
-        sources.add(new ConfigConfigSource(configName));
-        sources.add(new ServerConfigSource(serverName));
-        sources.add(new EnvironmentConfigSource());
-        sources.add(new SystemPropertyConfigSource());
-        sources.add(new JNDIConfigSource());
-        sources.add(new PayaraServerProperties());
-        sources.add(new DirConfigSource());
-        sources.add(new PasswordAliasConfigSource());
-        sources.add(new JDBCConfigSource());
+        MicroprofileConfigConfiguration mpConfig = getMPConfig();
+        LinkedList<ConfigSource> sources = new LinkedList<>(serverConfigProvider.getDefaultSources());
+        sources.add(new ClusterConfigSource(mpConfig, clusterStore));
+        sources.add(new JDBCConfigSource(mpConfig, jdbcConfigSourceConfiguration));
         if (appName != null) {
-            sources.add(new ApplicationConfigSource(appName));
-            sources.add(new ModuleConfigSource(appName, moduleName));
+            sources.add(new ApplicationConfigSource(appName, domain, mpConfig));
+            sources.add(new ModuleConfigSource(appName, moduleName, domain, mpConfig));
             for (Properties props : getDeployedApplicationProperties(appName)) {
                 sources.add(new PropertiesConfigSource(props));
             }
             for (Properties props : getDeployedApplicationPayaraExpressionConfigProperties(appName)) {
-                sources.add(new PayaraExpressionConfigSource(props));
+                sources.add(new PayaraExpressionConfigSource(props, mpConfig));
             }
         }
         return sources;
@@ -458,22 +440,7 @@ public class ConfigProviderResolverImpl extends ConfigProviderResolver implement
     }
 
     Map<Class<?>,Converter<?>> getDefaultConverters() {
-        Map<Class<?>,Converter<?>> result = new HashMap<>();
-        result.put(Boolean.class, new BooleanConverter());
-        result.put(Byte.class, new ByteConverter());
-        result.put(Integer.class, new IntegerConverter());
-        result.put(Long.class, new LongConverter());
-        result.put(Float.class, new FloatConverter());
-        result.put(Double.class, new DoubleConverter());
-        result.put(InetAddress.class, new InetAddressConverter());
-        result.put(Class.class, new ClassConverter());
-        result.put(String.class, new StringConverter());
-        result.put(Character.class, new CharacterConverter());
-        result.put(Short.class, new ShortConverter());
-        result.put(OptionalInt.class, new OptionalIntConverter());
-        result.put(OptionalDouble.class, new OptionalDoubleConverter());
-        result.put(OptionalLong.class, new OptionalLongConverter());
-        return result;
+        return serverConfigProvider.getDefaultConverters();
     }
 
     Map<Class<?>, Converter<?>> getDiscoveredConverters(ApplicationInfo appInfo) {

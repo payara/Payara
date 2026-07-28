@@ -4,7 +4,7 @@
   "content": {
     "application/json": {
       "schema": {
-        "type": "array",
+        "type": ["array"],
         "items": {
           "$ref": "#/components/schemas/VeryComplexType"
         }
@@ -17,7 +17,7 @@
   "content": {
     "text/plain": {
       "schema": {
-        "type": "string"
+        "type": ["string"]
       }
     }
   }
@@ -27,7 +27,7 @@
   "content": {
     "text/plain": {
       "schema": {
-        "type": "string"
+        "type": ["string"]
       }
     }
   },
@@ -35,19 +35,19 @@
     "X-Rate-Limit-Limit": {
       "description": "The number of allowed requests in the current period",
       "schema": {
-        "type": "integer"
+        "type": ["integer"]
       }
     },
     "X-Rate-Limit-Remaining": {
       "description": "The number of remaining requests in the current period",
       "schema": {
-        "type": "integer"
+        "type": ["integer"]
       }
     },
     "X-Rate-Limit-Reset": {
       "description": "The number of seconds left in the current period",
       "schema": {
-        "type": "integer"
+        "type": ["integer"]
       }
     }
   }

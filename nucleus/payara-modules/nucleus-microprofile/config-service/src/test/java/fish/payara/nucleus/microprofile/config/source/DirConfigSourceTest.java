@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.util.OS;
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -76,16 +75,14 @@ public class DirConfigSourceTest {
     private static Path testDirectory;
     private static DirConfigSource source;
     private static ScheduledExecutorService exec = Executors.newScheduledThreadPool(3);
-    private static ConfigProviderResolverImpl configService;
     private final int DELAY_MILLISECONDS = 10;
     private final int TIMEOUT_MILLISECONDS = 10000;
 
     @BeforeClass
     public static void setUp() throws IOException {
         testDirectory = Files.createTempDirectory("microprofile-config-test-");
-        configService = mock(ConfigProviderResolverImpl.class);
-        // create & load
-        source = new DirConfigSource(testDirectory, configService);
+        // create & load with null domain/mpConfig – tests only exercise directory scanning logic
+        source = new DirConfigSource(testDirectory, null);
     }
 
     @AfterClass
@@ -104,28 +101,30 @@ public class DirConfigSourceTest {
         source.setProperties(Collections.emptyMap());
     }
     
+    private static DirConfigSource sourceWithMpConfig(String secretDir) {
+        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
+        when(config.getSecretDir()).thenReturn(secretDir);
+        return new DirConfigSource(testDirectory, config);
+    }
+
     @Test
     public void testFindDir_NullPath() throws IOException {
         // given
-        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
-        when(configService.getMPConfig()).thenReturn(config);
-        when(config.getSecretDir()).thenReturn(null);
+        DirConfigSource src = sourceWithMpConfig(null);
         // when
-        Optional<Path> sut = source.findDir();
+        Optional<Path> sut = src.findDir();
         // then
         assertFalse(sut.isPresent());
     }
     
     @Test
     public void testFindDir_NotExistingPath() throws IOException {
-        // given
-        // Need to set instanceRoot property to something else we hit a NPE - this property Should™ always be set
+        // Need to set instanceRoot property to something else we hit a NPE
         System.setProperty("com.sun.aas.instanceRoot", testDirectory.toString());
-        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
-        when(configService.getMPConfig()).thenReturn(config);
-        when(config.getSecretDir()).thenReturn(DirConfigSource.DEFAULT_DIR);
+        // given
+        DirConfigSource src = sourceWithMpConfig(DirConfigSource.DEFAULT_DIR);
         // when
-        Optional<Path> sut = source.findDir();
+        Optional<Path> sut = src.findDir();
         // then
         assertFalse(sut.isPresent());
     }
@@ -133,26 +132,20 @@ public class DirConfigSourceTest {
     @Test
     public void testFindDir_AbsolutePath() throws IOException {
         // given
-        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
-        when(configService.getMPConfig()).thenReturn(config);
-        when(config.getSecretDir()).thenReturn(testDirectory.toString());
+        DirConfigSource src = sourceWithMpConfig(testDirectory.toString());
         // when
-        Optional<Path> sut = source.findDir();
+        Optional<Path> sut = src.findDir();
         // then
         assertEquals(testDirectory, sut.get());
     }
     
     @Test
     public void testFindDir_RelativePath() throws IOException {
-        // given
         System.setProperty("com.sun.aas.instanceRoot", testDirectory.toString());
-        MicroprofileConfigConfiguration config = mock(MicroprofileConfigConfiguration.class);
-        when(configService.getMPConfig()).thenReturn(config);
-        when(config.getSecretDir()).thenReturn(".");
-        
+        // given
+        DirConfigSource src = sourceWithMpConfig(".");
         // when
-        Optional<Path> sut = source.findDir();
-        
+        Optional<Path> sut = src.findDir();
         // then
         assertEquals(testDirectory, sut.get());
     }

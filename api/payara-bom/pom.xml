@@ -181,11 +181,6 @@
                 <version>${microprofile-config.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-api</artifactId>
-                <version>${microprofile-opentracing.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
                 <artifactId>microprofile-fault-tolerance-api</artifactId>
                 <version>${microprofile-fault-tolerance.version}</version>
@@ -524,7 +519,7 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-bom</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -572,15 +567,9 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>io.opentelemetry</groupId>
+                <groupId>io.opentelemetry.semconv</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-opentracing-shim</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-semconv.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -616,34 +605,15 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-instrumentation-annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry-instrumentation-annotation-support.version}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-api</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-util</artifactId>
-                <version>${opentracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-noop</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
             <!-- Implementations -->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
@@ -733,11 +703,6 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
-                <artifactId>org.eclipse.persistence.moxy</artifactId>
-                <version>${eclipselink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.sdo</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
@@ -760,6 +725,14 @@
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
                 <version>${eclipselink.asm.version}</version>
+            </dependency>
+            <!-- No longer shipped with server, but version managed, so that users of jersey-media-moxy
+                 would fetch correct version of moxy, 5.0.0-B1 advertised by it is incompatible -->
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.moxy</artifactId>
+                <version>${eclipselink.version}</version>
+                <scope>compile</scope>
             </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>

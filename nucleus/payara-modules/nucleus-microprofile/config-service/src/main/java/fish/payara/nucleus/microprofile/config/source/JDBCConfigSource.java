@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,18 +44,19 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.internal.api.Globals;
-
+import fish.payara.nucleus.microprofile.config.ModifiableConfigSource;
 import fish.payara.nucleus.microprofile.config.spi.JDBCConfigSourceConfiguration;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
-public class JDBCConfigSource extends PayaraConfigSource {
+public class JDBCConfigSource extends PayaraConfigSource implements ModifiableConfigSource {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCConfigSource.class.getName());
 
     private final JDBCConfigSourceConfiguration config;
 
-    public JDBCConfigSource() {
-        this.config = Globals.getDefaultHabitat().getService(JDBCConfigSourceConfiguration.class);
+    public JDBCConfigSource(MicroprofileConfigConfiguration mpConfig, JDBCConfigSourceConfiguration config) {
+        super(mpConfig);
+        this.config = config;
     }
 
     @Override
@@ -81,7 +82,7 @@ public class JDBCConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getJdbcOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getJdbcOrdinality);
     }
 
     @Override
@@ -104,6 +105,16 @@ public class JDBCConfigSource extends PayaraConfigSource {
     @Override
     public String getName() {
         return "JDBC";
+    }
+
+    @Override
+    public boolean setValue(String propertyName, String propertyValue) {
+        return false; // JDBC config source is read-only
+    }
+
+    @Override
+    public boolean deleteValue(String propertyName) {
+        return false; // JDBC config source is read-only
     }
 
     private JDBCConfigSourceHelper getHelper() {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]]
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -145,6 +145,17 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
      * @throws PropertyVetoException
      */
     public void setDtraceEnabled(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    public String getOpenTelemetryEnabled();
+
+    /**
+     * Sets the value of the openTelemetryEnabled attribute.
+     *
+     * @param value allowed object is String
+     * @throws PropertyVetoException
+     */
+    public void setOpenTelemetryEnabled(String value) throws PropertyVetoException;
 
     /**
      * Get the monitoring configuration for containers that used the default ContainerMonitoring.

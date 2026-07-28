@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2020 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package fish.payara.notification.requesttracing;
 
-import io.opentracing.tag.Tag;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -178,25 +177,6 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
         }
     }
     
-    /**
-     * Adds more information about a span
-     *
-     * @param tag
-     * @param value
-     */
-    public void addSpanTag(Tag tag, String value) {
-        if (value != null) {
-            // Escape any quotes
-            spanTags.put(tag, value.replaceAll("\"", "\\\\\""));
-        } else {
-            spanTags.put(tag, value);
-        }
-    }
-    
-    public String getSpanTag(Object tag) {
-        return spanTags.get(tag);
-    }
-    
     public Map<Object, String> getSpanTags() {
         return spanTags;
     }
@@ -216,15 +196,12 @@ public class RequestTraceSpan implements Serializable, Comparable<RequestTraceSp
                 break;
             }
         }
-        
+
         spanReferences.add(new SpanReference(spanContext, relationshipType));
-        for (Map.Entry<String, String> baggageItem : spanContext.baggageItems()) {
+        Map<String, String> baggageItems = spanContext.getBaggageItems();
+        for (Map.Entry<String, String> baggageItem : baggageItems.entrySet()) {
             this.spanContext.addBaggageItem(baggageItem.getKey(), baggageItem.getValue());
         }
-    }
-    
-    public List<SpanReference> getSpanReferences() {
-        return spanReferences;
     }
     
     public Instant getTraceEndTime() {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- * Copyright (c) 2016-2023 Payara Foundation. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -71,11 +71,6 @@
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>microprofile-telemetry</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.ejb</groupId>
-            <artifactId>ejb-opentracing</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

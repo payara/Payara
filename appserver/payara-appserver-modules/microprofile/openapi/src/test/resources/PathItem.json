@@ -9,7 +9,7 @@
         "content": {
           "*/*": {
             "schema": {
-              "type": "array",
+              "type": ["array"],
               "items": {
                 "$ref": "#/components/schemas/Pet"
               }
@@ -36,9 +36,9 @@
       "description": "ID of pet to use",
       "required": true,
       "schema": {
-        "type": "array",
+        "type": ["array"],
         "items": {
-          "type": "string"
+          "type": ["string"]
         }
       },
       "style": "simple"

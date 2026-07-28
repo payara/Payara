@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,13 +40,11 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import java.util.Set;
-
-import com.sun.enterprise.config.serverbeans.Domain;
+import java.util.function.Function;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.glassfish.internal.api.Globals;
 
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 
 /**
  *
@@ -55,34 +53,18 @@ import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
 public abstract class PayaraConfigSource implements ConfigSource {
     
     public final static String PROPERTY_PREFIX = "payara.microprofile.";
-    protected final Domain domainConfiguration;
-    protected final ConfigProviderResolverImpl configService;
-    
-    public PayaraConfigSource() {
-        domainConfiguration = Globals.getDefaultHabitat().getService(Domain.class);
-        configService = Globals.getDefaultHabitat().getService(ConfigProviderResolverImpl.class);
-    }
-    
-    /**
-     * Should only be used for test purposes
-     * @param test 
-     */
-    PayaraConfigSource(boolean test) {
-        domainConfiguration = null;
-        configService = null;
+    protected final MicroprofileConfigConfiguration mpConfig;
+
+    protected PayaraConfigSource(MicroprofileConfigConfiguration mpConfig) {
+        this.mpConfig = mpConfig;
     }
 
     @Override
     public Set<String> getPropertyNames() {
         return getProperties().keySet();
     }
-    
-    /**
-     * Should only be used for test purposes
-     * @param configService Usually a mocked implementation
-     */
-    PayaraConfigSource(ConfigProviderResolverImpl configService) {
-        this.domainConfiguration = null;
-        this.configService = configService;
+
+    protected int getOrdinal(Function<MicroprofileConfigConfiguration, String> ordinalGetter) {
+        return Integer.parseInt(ordinalGetter.apply(mpConfig));
     }
 }

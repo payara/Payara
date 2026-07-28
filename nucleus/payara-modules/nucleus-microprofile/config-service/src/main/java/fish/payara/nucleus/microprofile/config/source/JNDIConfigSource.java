@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,27 +39,12 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.config.serverbeans.ServerTags;
-import java.beans.PropertyVetoException;
+import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
-import org.glassfish.resourcebase.resources.api.ResourceStatus;
-import org.glassfish.resources.admin.cli.CustomResourceManager;
-import org.glassfish.resources.admin.cli.ResourceConstants;
-import static org.glassfish.resources.admin.cli.ResourceConstants.JNDI_NAME;
-import org.glassfish.resources.config.CustomResource;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  * A Configuration source that retrieved a String property from JNDI If the JNDI
@@ -68,6 +53,11 @@ import org.jvnet.hk2.config.TransactionFailure;
  * @author Steve Millidge (Payara Foundation)
  */
 public class JNDIConfigSource extends PayaraConfigSource {
+
+
+    public JNDIConfigSource(MicroprofileConfigConfiguration mpConfig) {
+        super(mpConfig);
+    }
 
     @Override
     public Map<String, String> getProperties() {
@@ -80,7 +70,7 @@ public class JNDIConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getJndiOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getJndiOrdinality);
     }
 
     @Override
@@ -101,51 +91,6 @@ public class JNDIConfigSource extends PayaraConfigSource {
         return "JNDI";
     }
 
-    public boolean setValue(String propertyName, String propertyValue, String target) {
-        boolean result = false;
-        HashMap<String, String> attrList = new HashMap<>();
-        attrList.put("factory-class", "org.glassfish.resources.custom.factory.PrimitivesAndStringFactory");
-        attrList.put("res-type", "java.lang.String");
-        attrList.put(ResourceConstants.ENABLED, Boolean.TRUE.toString());
-        attrList.put(JNDI_NAME, propertyName);
-        attrList.put(ServerTags.DESCRIPTION, "MicroProfile Config property for " + propertyName);
 
-        Properties props = new Properties();
-
-        props.put("value", propertyValue);
-
-        try {
-            CustomResourceManager customResMgr = Globals.getDefaultHabitat().getService(CustomResourceManager.class);
-            ResourceStatus status = customResMgr.create(domainConfiguration.getResources(), attrList, props, target);
-            if (status.getStatus() == ResourceStatus.SUCCESS) {
-                result = true;
-            } else {
-                if (status.isAlreadyExists()) {
-                    Logger.getLogger(JNDIConfigSource.class.getName()).log(Level.WARNING, "Unable to set MicroProfile JNDI Config property as it already exists please delete it using delete-config-property --source jndi --propertyname {0}", propertyName);                    
-                }
-            }
-        } catch (Exception ex) {
-            Logger.getLogger(JNDIConfigSource.class.getName()).log(Level.WARNING, "Unable to set MicroProfile JNDI Config property " + propertyName, ex);
-        }
-        return result;
-    }
-
-    public void deleteValue(final String propertyName, String target) throws TransactionFailure {
-        // remove the resource reference
-        ResourceUtil resourceUtil = Globals.getDefaultHabitat().getService(ResourceUtil.class);
-        resourceUtil.deleteResourceRef(propertyName, target);
-
-        ConfigSupport.apply(new SingleConfigCode<Resources>() {
-
-            public Object run(Resources param) throws PropertyVetoException,
-                    TransactionFailure {
-                CustomResource resource = (CustomResource) domainConfiguration.getResources().getResourceByName(CustomResource.class, propertyName);
-                if (resource != null && resource.getJndiName().equals(propertyName)) {
-                    return param.getResources().remove(resource);
-                }
-                return null;
-            }
-        }, domainConfiguration.getResources());
-    }
 
 }

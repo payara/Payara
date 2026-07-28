@@ -159,7 +159,6 @@
         <module>cdi-auth-roles</module>
         <module>docker</module>
         <module>microprofile-package</module>
-        <module>opentracing-jaxws-package</module>
         <module>data</module>
         <module>payara-mvc</module>
     </modules>

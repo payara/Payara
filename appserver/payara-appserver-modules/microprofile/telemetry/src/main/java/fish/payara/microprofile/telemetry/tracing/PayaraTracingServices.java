@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -41,24 +41,22 @@
  */
 package fish.payara.microprofile.telemetry.tracing;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.trace.Tracer;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.Deployment;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.opentracing.OpenTracingService;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * This is a class hiding internal mechanism of lookup of HK2 services. The
@@ -121,7 +119,6 @@ public final class PayaraTracingServices {
     }
 
     private final RequestTracingService requestTracingService;
-    private final OpenTracingService openTracingService;
 
     private final Deployment deployment;
     
@@ -136,7 +133,6 @@ public final class PayaraTracingServices {
         final ServiceLocator baseServiceLocator = Globals.getStaticBaseServiceLocator();
 
         requestTracingService = getFromServiceHandle(baseServiceLocator, RequestTracingService.class);
-        openTracingService = getFromServiceHandle(baseServiceLocator, OpenTracingService.class);
         deployment = getFromServiceHandle(baseServiceLocator, Deployment.class);
         openTelemetryService = getFromServiceHandle(baseServiceLocator, OpenTelemetryService.class);
     }
@@ -147,7 +143,6 @@ public final class PayaraTracingServices {
      */
     public boolean isTracingAvailable() {
         return requestTracingService != null
-                && openTracingService != null
                 && openTelemetryService != null;
     }
 
@@ -163,7 +158,7 @@ public final class PayaraTracingServices {
     }
 
     /**
-     * @return {@link OpenTracingService}, or null if the HK2 service couldn't be
+     * @return {@link OpenTelemetryService}, or null if the HK2 service couldn't be
      *         initialised.
      */
     public OpenTelemetryService getOpenTelemetryService() {

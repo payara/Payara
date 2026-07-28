@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,8 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.nucleus.microprofile.config.ModifiableConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +56,14 @@ import org.jvnet.hk2.config.types.Property;
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class DomainConfigSource extends PayaraConfigSource {
+public class DomainConfigSource extends PayaraConfigSource implements ModifiableConfigSource {
+
+    private final Domain domainConfiguration;
+
+    public DomainConfigSource(Domain domain, MicroprofileConfigConfiguration mpConfig) {
+        super(mpConfig);
+        this.domainConfiguration = domain;
+    }
 
     @Override
     public Map<String, String> getProperties() {
@@ -74,7 +83,7 @@ public class DomainConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getDomainOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getDomainOrdinality);
     }
 
     @Override
@@ -87,7 +96,8 @@ public class DomainConfigSource extends PayaraConfigSource {
         return "Domain";
     }
 
-    public void setValue(final String propertyName, final String propertyValue) throws TransactionFailure {
+    @Override
+    public boolean setValue(final String propertyName, final String propertyValue) throws TransactionFailure {
         Property p = domainConfiguration.getProperty(PROPERTY_PREFIX + propertyName);
         if (p == null) {
             ConfigSupport.apply(new SingleConfigCode<Domain>() {
@@ -109,14 +119,17 @@ public class DomainConfigSource extends PayaraConfigSource {
                 }
             }, p);
         }
+        return true;
     }
 
-    public void deleteValue(String propertyName) throws TransactionFailure {
+    @Override
+    public boolean deleteValue(String propertyName) throws TransactionFailure {
         for (Property object : domainConfiguration.getProperty()) {
             if ((PROPERTY_PREFIX + propertyName).equals(object.getName())) {
                 ConfigSupport.deleteChild((ConfigBean) ConfigBean.unwrap(domainConfiguration), (ConfigBean) ConfigBean.unwrap(object));
             }
         }
+        return true;
     }
 
 }

@@ -3,7 +3,7 @@
   ~
   ~  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~  Copyright (c) 2023-2025 Payara Foundation and/or its affiliates. All rights reserved.
+  ~  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~  The contents of this file are subject to the terms of either the GNU
   ~  General Public License Version 2 only ("GPL") or the Common Development
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>${opentelemetry.version}</version>
+            <version>${opentelemetry-instrumentation-annotations.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
             <exclusions>
@@ -83,11 +83,10 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-            <version>${opentelemetry.alpha.version}</version>
+            <version>${opentelemetry-instrumentation-annotation-support.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
-            <exclusions>
-                <!-- we already have it, so it is unnecessary to bring it in -->
+            <exclusions>               
                 <exclusion>
                     <groupId>io.opentelemetry</groupId>
                     <artifactId>opentelemetry-api</artifactId>
@@ -97,13 +96,6 @@
                     <artifactId>opentelemetry-semconv</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <!-- we will rely on transitive dependencies of our leaf ones -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-opentracing-shim</artifactId>
-            <scope>compile</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
@@ -117,6 +109,19 @@
                     <artifactId>okhttp</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-logging</artifactId>
+            <version>${opentelemetry.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <!-- Not a perfect solution to the problem, but we need to wait for OTEL project
              to decouple their exporter from OkHttp so that we can replace HTTP transport -->
@@ -159,7 +164,8 @@
                             !javax.annotation.*,
                             !com.android.*,
                             !dalvik.*,
-                            io.opentelemetry.exporter.prometheus;resolution:=optional,
+                            io.opentelemetry.**;resolution:=optional,
+                            org.jspecify.annotations;resolution:=optional,
                             sun.security.ssl;resolution:=optional,
                             !kotlin.*,
                             !org.bouncycastle.*,
@@ -171,6 +177,7 @@
                             *;groupId=com.squareup.*;inline=true,
                             *;groupId=io.opentelemetry;inline=true,
                             *;groupId=io.opentelemetry.instrumentation;inline=true,
+                            *;groupId=io.opentelemetry.semconv;inline=true,
                             *;groupId=org.jetbrains.kotlin.*;inline=true
                         </Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
@@ -203,7 +210,7 @@
                     <artifactSet>
                         <includes>
                             <include>com.squareup.*:*</include>
-                            <inclue>org.jetbrains.kotlin.*:*</inclue>
+                            <include>org.jetbrains.kotlin.*:*</include>
                         </includes>
                     </artifactSet>
                     <filters>
