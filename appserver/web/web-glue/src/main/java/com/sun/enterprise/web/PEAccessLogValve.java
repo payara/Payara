@@ -59,7 +59,6 @@ import org.glassfish.web.LogFacade;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -74,7 +73,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.glassfish.internal.api.LogManager;
 
 /**
  * <p>Implementation of the <b>Valve</b> interface that generates a web server
@@ -97,7 +95,6 @@ public final class PEAccessLogValve
     private static final Logger _logger = LogFacade.getLogger();
 
     private static final ResourceBundle _resourceBundle = _logger.getResourceBundle();
-    private final LogManager logManager = org.glassfish.internal.api.Globals.get(LogManager.class);
 
     // Predefined patterns
     private static final String COMMON_PATTERN = "common";
@@ -649,9 +646,12 @@ public final class PEAccessLogValve
             try{
                 charBuffer.flip();
                 String bufString = charBuffer.toString();
-                if (accessLogToConsole && !bufString.isEmpty()) {
-                    PrintStream outStream = logManager != null ? logManager.getOutStream() : System.out;
-                    outStream.print(bufString.replaceAll("(?m)^", "AccessLog: "));
+                if (accessLogToConsole && !bufString.isEmpty() && _logger.isLoggable(Level.INFO)) {
+                    for (String line : bufString.split("\n")) {
+                        if (!line.isEmpty()) {
+                            _logger.info("AccessLog: " + line);
+                        }
+                    }
                 }
                 ByteBuffer byteBuffer =
                     ByteBuffer.wrap(bufString.getBytes(Charset.defaultCharset()));
