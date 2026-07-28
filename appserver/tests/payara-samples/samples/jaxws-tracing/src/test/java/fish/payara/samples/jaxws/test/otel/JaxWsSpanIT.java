@@ -44,7 +44,9 @@ import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointImplementation;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.sdk.autoconfigure.spi.metrics.ConfigurableMetricExporterProvider;
 import io.opentelemetry.sdk.autoconfigure.spi.traces.ConfigurableSpanExporterProvider;
+import io.opentelemetry.sdk.metrics.data.HistogramPointData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.spi.ConfigSource;
@@ -89,6 +91,9 @@ public class JaxWsSpanIT {
     @Inject
     private InMemorySpanExporter exporter;
 
+    @Inject
+    private InMemoryMetricExporter metricExporter;
+
     @Deployment
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class, "jaxws-span-it.war")
@@ -99,9 +104,12 @@ public class JaxWsSpanIT {
                 .addClasses(
                         InMemorySpanExporter.class,
                         InMemorySpanExporter.Provider.class,
+                        InMemoryMetricExporter.class,
+                        InMemoryMetricExporter.Provider.class,
                         JaxWsOtelConfigSource.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsServiceProvider(ConfigurableSpanExporterProvider.class, InMemorySpanExporter.Provider.class)
+                .addAsServiceProvider(ConfigurableMetricExporterProvider.class, InMemoryMetricExporter.Provider.class)
                 .addAsServiceProvider(ConfigSource.class, JaxWsOtelConfigSource.class)
                 .addAsLibraries(
                         Maven.resolver()
@@ -114,6 +122,7 @@ public class JaxWsSpanIT {
     @Before
     public void reset() {
         exporter.reset();
+        metricExporter.reset();
     }
 
     // -------------------------------------------------------------------------
@@ -228,6 +237,46 @@ public class JaxWsSpanIT {
         assertThat(spans.stream().anyMatch(s -> s.getKind() == SpanKind.INTERNAL))
                 .describedAs("No INTERNAL child span should be created for JAX-WS methods")
                 .isFalse();
+    }
+
+    // -------------------------------------------------------------------------
+    // http.server.request.duration histogram
+    // -------------------------------------------------------------------------
+
+    private static final String HTTP_SERVER_REQUEST_DURATION = "http.server.request.duration";
+
+    @Test
+    public void ejbEndpoint_httpDurationHistogramRecorded() throws Exception {
+        ejbEndpoint().sayHi("Payara");
+
+        // The JAX-WS client fetches the WSDL (GET) before the SOAP POST — filter to POST only.
+        HistogramPointData post = metricExporter.getHistogramPoints(HTTP_SERVER_REQUEST_DURATION).stream()
+                .filter(p -> "POST".equals(p.getAttributes().get(HTTP_REQUEST_METHOD)))
+                .findFirst().orElse(null);
+
+        assertThat(post)
+                .describedAs("EJB JAX-WS endpoint must emit an http.server.request.duration histogram point for POST")
+                .isNotNull();
+        assertThat(post.getSum())
+                .describedAs("Histogram duration must be positive")
+                .isGreaterThan(0.0);
+    }
+
+    @Test
+    public void servletEndpoint_httpDurationHistogramRecorded() throws Exception {
+        servletEndpoint().sayHi("Payara");
+
+        // The JAX-WS client fetches the WSDL (GET) before the SOAP POST — filter to POST only.
+        HistogramPointData post = metricExporter.getHistogramPoints(HTTP_SERVER_REQUEST_DURATION).stream()
+                .filter(p -> "POST".equals(p.getAttributes().get(HTTP_REQUEST_METHOD)))
+                .findFirst().orElse(null);
+
+        assertThat(post)
+                .describedAs("Servlet JAX-WS endpoint must emit an http.server.request.duration histogram point for POST")
+                .isNotNull();
+        assertThat(post.getSum())
+                .describedAs("Histogram duration must be positive")
+                .isGreaterThan(0.0);
     }
 
     // -------------------------------------------------------------------------

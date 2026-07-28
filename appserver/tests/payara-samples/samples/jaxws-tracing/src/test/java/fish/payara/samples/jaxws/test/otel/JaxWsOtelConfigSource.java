@@ -49,7 +49,10 @@ public class JaxWsOtelConfigSource implements ConfigSource {
     private static final Map<String, String> PROPS = Map.of(
             "otel.sdk.disabled", "false",
             "otel.traces.exporter", "in-memory-jaxws",
-            "otel.bsp.schedule.delay", "10"
+            "otel.bsp.schedule.delay", "10",
+            "otel.metrics.exporter", "in-memory-jaxws",
+            "otel.metric.export.interval", "100",
+            "otel.logs.exporter", "none"
     );
 
     @Override public Map<String, String> getProperties() { return PROPS; }

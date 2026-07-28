@@ -237,7 +237,8 @@ public class OpenTelemetryService implements EventListener {
         }
         // Use getCurrentSdk() rather than GlobalOpenTelemetry.get() so that both
         // extraction and span creation use the same per-app SDK instance consistently.
-        ctx.apply(getCurrentSdk().getPropagators(), getCurrentTracer(), Context.current());
+        ctx.apply(getCurrentSdk().getPropagators(), getCurrentTracer(), Context.current(),
+                getRequestDurationHistogram());
         return true;
     }
 
@@ -251,6 +252,21 @@ public class OpenTelemetryService implements EventListener {
         DeferredContext.remove();
         if (ctx != null) {
             ctx.end(error);
+        }
+    }
+
+    /**
+     * Ends the deferred span and records the {@code http.server.request.duration} histogram.
+     * Safe to call when no deferred context exists (no-op).
+     *
+     * @param error      the exception that caused the failure, or {@code null} on success
+     * @param httpStatus the HTTP response status code
+     */
+    public void endDeferredSpanWithDuration(Throwable error, int httpStatus) {
+        DeferredContext ctx = DeferredContext.get();
+        DeferredContext.remove();
+        if (ctx != null) {
+            ctx.endWithDuration(error, httpStatus);
         }
     }
 
