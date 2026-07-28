@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>7.2026.7-SNAPSHOT</version>
+        <version>7.2026.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -95,7 +95,7 @@
         <!-- Javassist (JAVA programming ASSISTant) makes Java bytecode manipulation simple. It is a class library for editing bytecodes in Java. -->
         <javassist.version>3.32.0-GA</javassist.version>
 
-        <apache.sshd.version>2.18.0</apache.sshd.version>
+        <apache.sshd.version>2.19.0</apache.sshd.version>
         <slf4j.version>2.0.18</slf4j.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
@@ -150,7 +150,7 @@
         <awaitility.version>4.3.0</awaitility.version>
 
         <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.4.0</kotlin-version>
+        <kotlin-version>2.4.10</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>

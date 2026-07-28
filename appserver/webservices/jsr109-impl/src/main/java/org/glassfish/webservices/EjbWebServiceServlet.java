@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.webservices;
 
@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -73,11 +74,23 @@ import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.ServerAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
 
 /**
  * Servlet responsible for invoking EJB webservice endpoint.
+ *
+ * <p>EJB web-service endpoints are deployed as a bare Grizzly {@code ServletHandler}
+ * ({@link EjbWSAdapter}), bypassing {@code StandardWrapper} and its OTel instrumentation.
+ * Telemetry is handled via the {@link EjbWsTelemetry} callback interface, which decouples
+ * span lifecycle management from the dispatch logic. The active implementation is chosen
+ * once at construction time; when OTel is unavailable a no-op is used.
  *
  * @author Qingqing Ouyang
  * @author Kenneth Saks
@@ -88,12 +101,123 @@ public class EjbWebServiceServlet extends HttpServlet {
     private static final long serialVersionUID = -4415390589000169371L;
     private static final Logger logger = LogUtils.getLogger();
 
+    // -------------------------------------------------------------------------
+    // Telemetry callback interface
+    // -------------------------------------------------------------------------
+
+    /**
+     * Callback interface that separates OTel span lifecycle from dispatch logic.
+     *
+     * <p>EJB JAX-WS span creation is deferred: {@link #beforeDispatch} snapshots the
+     * propagation carrier and calls {@link OpenTelemetryService#collectDeferredContext},
+     * then {@link EjbEndpointFacadeImpl#startInvocation()} calls
+     * {@link OpenTelemetryService#applyDeferredContext()} once the EJB invocation context
+     * is on the stack and the correct per-app tracer is available.
+     *
+     * <p>Known limitation: authentication failures ({@link #authFailed}) never reach the
+     * message dispatcher, so {@code applyDeferredContext} is never called and no SERVER
+     * span is produced for 401 responses. The deferred thread-local is cleaned up via
+     * {@code endDeferredSpan} regardless.
+     */
+    interface EjbWsTelemetry {
+        /** Called before dispatch; snapshots headers and registers deferred span context. */
+        void beforeDispatch(HttpServletRequest request, String method, String uri);
+
+        /** Called when authentication fails; response already has 401 written. */
+        void authFailed(HttpServletResponse response);
+
+        /** Called after the message dispatcher returns normally. */
+        void afterDispatch(HttpServletResponse response);
+
+        /** Called when an exception escapes the message dispatcher. */
+        void dispatchFailed(HttpServletResponse response, Throwable t);
+    }
+
+    private static final EjbWsTelemetry NOOP = new EjbWsTelemetry() {
+        @Override public void beforeDispatch(HttpServletRequest r, String m, String u) {}
+        @Override public void authFailed(HttpServletResponse r) {}
+        @Override public void afterDispatch(HttpServletResponse r) {}
+        @Override public void dispatchFailed(HttpServletResponse r, Throwable t) {}
+    };
+
+    /**
+     * Active OTel implementation of {@link EjbWsTelemetry}.
+     *
+     * <p>Span attributes follow HTTP server semantic conventions. Span name is
+     * {@code "METHOD /requestUri"} — the same low-cardinality form used by
+     * {@code OtelSupport} for servlet endpoints.
+     */
+    private static final class OtelEjbWsTelemetry implements EjbWsTelemetry {
+
+        private final OpenTelemetryService otelService;
+
+        OtelEjbWsTelemetry(OpenTelemetryService otelService) {
+            this.otelService = otelService;
+        }
+
+        @Override
+        public void beforeDispatch(HttpServletRequest request, String method, String uri) {
+            // Snapshot headers into a plain map; lowercase keys to match W3C propagator
+            // expectations (e.g. "traceparent") — the Servlet spec does not mandate lowercase.
+            HashMap<String, String> carrier = new HashMap<>();
+            Collections.list(request.getHeaderNames())
+                    .forEach(h -> carrier.put(h.toLowerCase(), request.getHeader(h)));
+
+            otelService.collectDeferredContext(
+                    carrier,
+                    method + " " + uri,
+                    SpanKind.SERVER,
+                    Attributes.builder()
+                            .put(HttpAttributes.HTTP_REQUEST_METHOD, method)
+                            .put(UrlAttributes.URL_SCHEME, request.getScheme())
+                            .put(UrlAttributes.URL_PATH, uri)
+                            .put(ServerAttributes.SERVER_ADDRESS, request.getServerName())
+                            .put(ServerAttributes.SERVER_PORT, (long) request.getServerPort())
+                            .build());
+        }
+
+        @Override
+        public void authFailed(HttpServletResponse response) {
+            // applyDeferredContext() was never called — spanHelper is null.
+            // endDeferredSpan() is a no-op but cleans up the thread-local.
+            otelService.endDeferredSpan(null);
+        }
+
+        @Override
+        public void afterDispatch(HttpServletResponse response) {
+            Span current = Span.current();
+            if (current.isRecording()) {
+                int status = response.getStatus();
+                current.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, (long) status);
+                // SOAP faults are marked ERROR by JaxWsContainerRequestTelemetryTracingFilter.
+                // This covers non-SOAP error responses (e.g. 503 from the container).
+                if (status >= 400) {
+                    current.setStatus(StatusCode.ERROR);
+                }
+            }
+            otelService.endDeferredSpan(null);
+        }
+
+        @Override
+        public void dispatchFailed(HttpServletResponse response, Throwable t) {
+            Span current = Span.current();
+            if (current.isRecording()) {
+                current.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE,
+                        (long) response.getStatus());
+                current.recordException(t);
+                current.setStatus(StatusCode.ERROR);
+            }
+            otelService.endDeferredSpan(t);
+        }
+    }
+
     private SecurityService securityService;
-    private RequestTracingService requestTracing;
+    private EjbWsTelemetry telemetry;
 
     public EjbWebServiceServlet() {
         securityService = Globals.get(SecurityService.class);
-        requestTracing = Globals.get(RequestTracingService.class);
+        OpenTelemetryService openTelemetryService = Globals.get(OpenTelemetryService.class);
+        telemetry = openTelemetryService != null ? new OtelEjbWsTelemetry(openTelemetryService) : NOOP;
     }
 
     @Override
@@ -160,18 +284,9 @@ public class EjbWebServiceServlet extends HttpServlet {
                 }
 
                 if (dispatch) {
-                    RequestTraceSpan span = null;
-                    try {
-                        if (requestTracing.isRequestTracingEnabled()) {
-                            span = constructWsRequestSpan(request, ejbEndpoint);
-                        }
-
-                        dispatchToEjbEndpoint(request, response, ejbEndpoint);
-                    } finally {
-                        if (requestTracing.isRequestTracingEnabled() && span != null) {
-                            requestTracing.traceSpan(span);
-                        }
-                    }
+                    String method = request.getMethod() != null ? request.getMethod().toUpperCase() : "POST";
+                    telemetry.beforeDispatch(request, method, request.getRequestURI());
+                    dispatchToEjbEndpoint(request, response, ejbEndpoint, telemetry);
                 }
             }
         } else {
@@ -179,24 +294,8 @@ public class EjbWebServiceServlet extends HttpServlet {
         }
     }
 
-    private RequestTraceSpan constructWsRequestSpan(HttpServletRequest httpServletRequest, EjbRuntimeEndpointInfo ejbEndpoint) {
-        RequestTraceSpan span = new RequestTraceSpan("processSoapWebserviceRequest");
-        span.addSpanTag("URI", ejbEndpoint.getEndpoint().getEndpointAddressUri());
-        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            span.addSpanTag(headerName, headers.toString());
-        }
-
-        span.addSpanTag("Method", httpServletRequest.getMethod());
-
-        return span;
-    }
-
-    private void dispatchToEjbEndpoint(HttpServletRequest request, HttpServletResponse response, EjbRuntimeEndpointInfo ejbEndpoint) {
+    private void dispatchToEjbEndpoint(HttpServletRequest request, HttpServletResponse response,
+            EjbRuntimeEndpointInfo ejbEndpoint, EjbWsTelemetry telemetry) {
         EjbEndpointFacade container = ejbEndpoint.getContainer();
         ClassLoader savedClassLoader = null;
 
@@ -236,14 +335,17 @@ public class EjbWebServiceServlet extends HttpServlet {
             if (!authenticated) {
                 response.setHeader("WWW-Authenticate", "Basic realm=\"" + realmName + "\"");
                 response.sendError(SC_UNAUTHORIZED);
+                telemetry.authFailed(response);
                 return;
             }
 
             // Depending on the jaxrpc or jax-ws version, this will return the
             // right dispatcher.
             ejbEndpoint.getMessageDispatcher().invoke(request, response, getServletContext(), ejbEndpoint);
+            telemetry.afterDispatch(response);
 
         } catch (Throwable t) {
+            telemetry.dispatchFailed(response, t);
             logger.log(WARNING, EXCEPTION_THROWN, t);
         } finally {
             // Remove any security context from the thread local before returning

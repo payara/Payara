@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples-profiled-tests</artifactId>
-        <version>7.2026.7-SNAPSHOT</version>
+        <version>7.2026.8-SNAPSHOT</version>
     </parent>
 
     <name>Payara Samples - OpenTelemetry</name>
@@ -105,7 +105,13 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>${opentelemetry.version}</version>
+            <version>${opentelemetry-instrumentation-annotations.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+            <version>${opentelemetry-semconv.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

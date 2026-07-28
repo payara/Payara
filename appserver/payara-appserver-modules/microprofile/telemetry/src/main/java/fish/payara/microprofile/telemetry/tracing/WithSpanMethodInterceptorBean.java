@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.context.spi.CreationalContext;
-import jakarta.enterprise.inject.spi.BeanManager;
 import jakarta.enterprise.inject.spi.InjectionPoint;
 import jakarta.enterprise.inject.spi.InterceptionType;
 import jakarta.enterprise.inject.spi.Interceptor;
@@ -64,17 +63,6 @@ import java.util.Set;
  */
 public class WithSpanMethodInterceptorBean implements Interceptor<WithSpanMethodInterceptor>, Prioritized {
 
-    private final BeanManager bm;
-
-    /**
-     * Constructs a new instance of this class with the given {@link BeanManager}.
-     *
-     * @param bm the {@link BeanManager} to use
-     */
-    public WithSpanMethodInterceptorBean(final BeanManager bm) {
-        this.bm = bm;
-    }
-
     @Override
     public Set<Annotation> getInterceptorBindings() {
         return Collections.singleton(WithSpanLiteral.INSTANCE);
@@ -92,7 +80,7 @@ public class WithSpanMethodInterceptorBean implements Interceptor<WithSpanMethod
 
     @Override
     public Class<?> getBeanClass() {
-        return WithSpanMethodInterceptorBean.class;
+        return WithSpanMethodInterceptor.class;
     }
 
     @Override
@@ -102,7 +90,7 @@ public class WithSpanMethodInterceptorBean implements Interceptor<WithSpanMethod
 
     @Override
     public WithSpanMethodInterceptor create(CreationalContext<WithSpanMethodInterceptor> creationalContext) {
-        return new WithSpanMethodInterceptor(bm);
+        return new WithSpanMethodInterceptor();
     }
 
     @Override
@@ -112,7 +100,7 @@ public class WithSpanMethodInterceptorBean implements Interceptor<WithSpanMethod
 
     @Override
     public Set<Type> getTypes() {
-        return Collections.singleton(this.getBeanClass());
+        return Collections.singleton(WithSpanMethodInterceptor.class);
     }
 
     @Override
@@ -160,6 +148,11 @@ public class WithSpanMethodInterceptorBean implements Interceptor<WithSpanMethod
         @Override
         public SpanKind kind() {
             return null;
+        }
+
+        @Override
+        public boolean inheritContext() {
+            return false;
         }
     }
 }

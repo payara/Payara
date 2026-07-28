@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>7.2026.7-SNAPSHOT</version>
+        <version>7.2026.8-SNAPSHOT</version>
     </parent>
     <artifactId>jsr109-impl</artifactId>
     <packaging>glassfish-jar</packaging>
@@ -141,8 +141,17 @@
 
         <dependency>
             <groupId>fish.payara.server.internal.payara-modules</groupId>
-            <artifactId>requesttracing-core</artifactId>
+            <artifactId>opentelemetry-tracing-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.semconv</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

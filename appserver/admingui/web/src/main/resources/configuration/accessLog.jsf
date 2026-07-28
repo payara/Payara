@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <!-- configuration/accessLog.jsf -->
 
@@ -101,6 +101,10 @@
         <sun:property id="logToConsoleProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.LogToConsole}" helpText="$resource{i18n_web.access.LogToConsoleHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap2['logToConsoleEnabled']}" selectedValue="true" >
            </sun:checkbox>
+        </sun:property>
+
+        <sun:property id="filterProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Filter}" helpText="$resource{i18n_web.access.FilterHelp}">
+            <sun:textField id="Filter" styleClass="regex" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.accessLogFilter']}" text="#{pageSession.valueMap2['filter']}" />
         </sun:property>
 
         <sun:property id="rotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Rotation}" helpText="$resource{i18n_web.access.RotationHelp}">

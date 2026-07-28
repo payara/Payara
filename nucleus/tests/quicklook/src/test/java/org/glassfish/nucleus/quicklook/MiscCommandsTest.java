@@ -59,7 +59,7 @@ public class MiscCommandsTest {
     }
 
     public void version2() {
-        assertTrue(nadmin("stop-domain"));
+        assertTrue(nadmin("stop-domain", "--kill=true"));
         assertTrue(nadmin("version", "--local"));
         assertTrue(nadmin("start-domain"));
     }

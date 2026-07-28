@@ -81,13 +81,14 @@ public class NucleusStartStopTest {
                     entry.getValue()), testLibs);
         }
         //Start
+        nadmin("stop-domain", "--kill=true"); // kill any leftover domain from a previous run
         assertTrue(nadmin("start-domain"));
     }
 
     @AfterSuite(alwaysRun = true)
     public void tearDown() {
         try {
-            assertTrue(nadmin("stop-domain"));
+            assertTrue(nadmin("stop-domain", "--kill=true"));
         } finally {
             for (File lib : testLibs) {
                 if (lib.exists()) {

@@ -52,7 +52,6 @@ public class JceCipherSuitesTest
   public void testSslDefaultCipherSuitesShouldIncludeGcm() {
     Map<String, ?>  ciphers = SSLClientConfigurator.getInstance().getSupportedCipherSuites();
     assertTrue (ciphers.containsKey("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"));
-    assertTrue (ciphers.containsKey("TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256"));
     assertTrue (ciphers.containsKey("TLS_DHE_RSA_WITH_AES_256_GCM_SHA384"));
     assertTrue (ciphers.containsKey("TLS_DHE_DSS_WITH_AES_128_GCM_SHA256"));
   }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,24 +39,26 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
+import fish.payara.nucleus.microprofile.config.ModifiableConfigSource;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import fish.payara.nucleus.store.ClusteredStore;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.glassfish.internal.api.Globals;
 
 /**
  *
  * @author Steve Millidge (Payara Foundation)
  */
-public class ClusterConfigSource extends PayaraConfigSource {
+public class ClusterConfigSource extends PayaraConfigSource implements ModifiableConfigSource {
     
     public final static String CLUSTERED_CONFIG_STORE = "payara.microprofile.config";
     private final ClusteredStore clusterStore;
 
-    public ClusterConfigSource() {
-        clusterStore = Globals.getDefaultHabitat().getService(ClusteredStore.class);
+    public ClusterConfigSource(MicroprofileConfigConfiguration mpConfig, ClusteredStore clusterStore) {
+        super(mpConfig);
+        this.clusterStore = clusterStore;
     }
     
     @Override
@@ -75,7 +77,7 @@ public class ClusterConfigSource extends PayaraConfigSource {
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getClusterOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getClusterOrdinality);
     }
 
     @Override
@@ -88,12 +90,16 @@ public class ClusterConfigSource extends PayaraConfigSource {
         return "Cluster";
     }
 
-    public void setValue(String propertyName, String propertyValue) {
+    @Override
+    public boolean setValue(String propertyName, String propertyValue) {
         clusterStore.set(CLUSTERED_CONFIG_STORE, propertyName, propertyValue);
+        return true;
     }
 
-    public void deleteValue(String propertyName) {
+    @Override
+    public boolean deleteValue(String propertyName) {
         clusterStore.remove(CLUSTERED_CONFIG_STORE, propertyName);
+        return true;
     }
     
 }

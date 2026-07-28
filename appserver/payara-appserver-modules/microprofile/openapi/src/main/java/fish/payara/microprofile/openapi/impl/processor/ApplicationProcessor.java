@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,6 +73,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
@@ -82,7 +84,6 @@ import java.util.stream.Collectors;
 
 import fish.payara.microprofile.openapi.util.BeanValidationType;
 import jakarta.validation.groups.Default;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
@@ -183,17 +184,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setGET(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.GET);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
+        visitJaxRSMethodHandler(get, element, context, HttpMethod.GET, PathItem::getGET, PathItem::setGET);
     }
 
     @Override
@@ -202,20 +193,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setPOST(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.POST);
+        OperationImpl operation = visitJaxRSMethodHandler(post, element, context,
+                HttpMethod.POST, PathItem::getPOST, PathItem::setPOST);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -224,20 +206,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setPUT(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.PUT);
+        OperationImpl operation = visitJaxRSMethodHandler(put, element, context,
+                HttpMethod.PUT, PathItem::getPUT, PathItem::setPUT);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -246,17 +219,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setDELETE(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.DELETE);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
+        visitJaxRSMethodHandler(delete, element, context, HttpMethod.DELETE, PathItem::getDELETE, PathItem::setDELETE);
     }
 
     @Override
@@ -265,20 +228,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setHEAD(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.HEAD);
+        OperationImpl operation = visitJaxRSMethodHandler(head, element, context,
+                HttpMethod.HEAD, PathItem::getHEAD, PathItem::setHEAD);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -287,20 +241,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setOPTIONS(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.OPTIONS);
+        OperationImpl operation = visitJaxRSMethodHandler(options, element, context,
+                HttpMethod.OPTIONS, PathItem::getOPTIONS, PathItem::setOPTIONS);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -309,20 +254,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             return;
         }
 
-        // Get or create the path item
-        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
-        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
-
-        OperationImpl operation = new OperationImpl();
-        pathItem.setPATCH(operation);
-        operation.setOperationId(element.getName());
-        operation.setMethod(HttpMethod.PATCH);
+        OperationImpl operation = visitJaxRSMethodHandler(patch, element, context,
+                HttpMethod.PATCH, PathItem::getPATCH, PathItem::setPATCH);
 
         // Add the default request
         insertDefaultRequestBody(context, operation, element);
-
-        // Add the default response
-        insertDefaultResponse(context, operation, element);
     }
 
     @Override
@@ -397,7 +333,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     @Override
     public void visitFormParam(AnnotationModel param, AnnotatedElement element, ApiContext context) {
         // Find the aggregate schema type of all the parameters
-        SchemaType formSchemaType = null;
+        List<SchemaType> formSchemaType = null;
 
         if (element instanceof org.glassfish.hk2.classmodel.reflect.Parameter) {
             List<org.glassfish.hk2.classmodel.reflect.Parameter> parameters = ((org.glassfish.hk2.classmodel.reflect.Parameter) element)
@@ -424,7 +360,12 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             for (MediaType mediaType : workingOperation.getRequestBody().getContent().getMediaTypes().values()) {
                 final Schema schema = mediaType.getSchema();
                 if (schema != null) {
-                    schema.setType(formSchemaType);
+                    if (formSchemaType == null) {
+                        schema.setType(null);
+                    }
+                    else {
+                        schema.setType(formSchemaType);
+                    }
                 }
             }
         }
@@ -646,19 +587,19 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 handleSizeProperty(property, param);
                 break;
             case DECIMAL_MAX:
-                if (property.getMaximum() == null) {
-                    property.setMaximum(new BigDecimal(param.getValue("value", String.class)));
+                if (Boolean.FALSE.equals(param.getValue("inclusive", Boolean.class)) && property.getMaximum() == null) {
+                    property.setExclusiveMaximum(new BigDecimal(param.getValue("value", String.class)));
                 }
-                if (param.getValue("inclusive", Boolean.class) != null && property.getExclusiveMaximum() == null) {
-                    property.setExclusiveMaximum((!param.getValue("inclusive", Boolean.class)));
+                else if (property.getExclusiveMaximum() == null) {
+                    property.setMaximum(new BigDecimal(param.getValue("value", String.class)));
                 }
                 break;
             case DECIMAL_MIN:
-                if (property.getMinimum() == null) {
-                    property.setMinimum(new BigDecimal(param.getValue("value", String.class)));
+                if (Boolean.FALSE.equals(param.getValue("inclusive", Boolean.class)) && property.getMinimum() == null) {
+                    property.setExclusiveMinimum(new BigDecimal(param.getValue("value", String.class)));
                 }
-                if (param.getValue("inclusive", Boolean.class) != null && property.getExclusiveMinimum() == null) {
-                    property.setExclusiveMinimum((!param.getValue("inclusive", Boolean.class)));
+                else if (property.getExclusiveMinimum() == null) {
+                    property.setMinimum(new BigDecimal(param.getValue("value", String.class)));
                 }
                 break;
             case MAX:
@@ -672,11 +613,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 }
                 break;
             case NEGATIVE:
-                if (property.getMaximum() == null) {
-                    property.setMaximum(BigDecimal.ZERO);
-                }
                 if (property.getExclusiveMaximum() == null) {
-                    property.setExclusiveMaximum(true);
+                    property.setExclusiveMaximum(BigDecimal.ZERO);
                 }
                 break;
             case NEGATIVE_OR_ZERO:
@@ -685,11 +623,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 }
                 break;
             case POSITIVE:
-                if (property.getMinimum() == null) {
-                    property.setMinimum(BigDecimal.ZERO);
-                }
                 if (property.getExclusiveMinimum() == null) {
-                    property.setExclusiveMinimum(true);
+                    property.setExclusiveMinimum(BigDecimal.ZERO);
                 }
                 break;
             case POSITIVE_OR_ZER0:
@@ -701,53 +636,62 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
     }
 
     private void handleNotEmptyProperty(Schema property, AnnotationModel param) {
-        switch (property.getType()){
-            case STRING:
-                List<?> groupList = param.getValue("groups", List.class);
-                if ((groupList == null || groupList.contains(Default.class.getName())) && property.getMinLength() == null) {
-                    property.setMinLength(1);
-                }
-                break;
-            case ARRAY:
-                if (property.getMinItems() == null) {
-                    property.setMinItems(1);
-                }
-                break;
-            case OBJECT:
-                if (property.getMinProperties() == null) {
-                    property.setMinProperties(1);
-                }
-                break;
+        List<SchemaType> type = property.getType();
+        if (type == null) {
+            return;
+        }
+        
+        if (type.contains(SchemaType.STRING)) {
+            List<?> groupList = param.getValue("groups", List.class);
+            if ((groupList == null || groupList.contains(Default.class.getName())) && property.getMinLength() == null) {
+                property.setMinLength(1);
+            }
+        }
+        
+        if (type.contains(SchemaType.ARRAY)) {
+            if (property.getMinItems() == null) {
+                property.setMinItems(1);
+            }
+        }
+        
+        if (type.contains(SchemaType.OBJECT)) {
+            if (property.getMinProperties() == null) {
+                property.setMinProperties(1);
+            }
         }
     }
-    private  void handleSizeProperty(Schema property, AnnotationModel param) {
-        switch (property.getType()){
-            case STRING:
-                if (property.getMinLength() == null) {
-                    property.setMinLength(param.getValue("min", Integer.class));
-                }
+    private void handleSizeProperty(Schema property, AnnotationModel param) {
+        List<SchemaType> type = property.getType();
+        if (type == null) {
+            return;
+        }
+        
+        if (type.contains(SchemaType.STRING)) {
+            if (property.getMinLength() == null) {
+                property.setMinLength(param.getValue("min", Integer.class));
+            }
 
-                if (property.getMaxLength() == null) {
-                    property.setMaxLength(param.getValue("max", Integer.class));
-                }
-                break;
-            case ARRAY:
-                if(property.getMinItems() == null) {
-                    property.setMinItems(param.getValue("min", Integer.class));
-                }
+            if (property.getMaxLength() == null) {
+                property.setMaxLength(param.getValue("max", Integer.class));
+            }
+        }
+        if (type.contains(SchemaType.ARRAY)) {
+            if(property.getMinItems() == null) {
+                property.setMinItems(param.getValue("min", Integer.class));
+            }
 
-                if(property.getMaxItems() == null) {
-                    property.setMaxItems(param.getValue("max", Integer.class));
-                }
-                break;
-            case OBJECT:
-                if(property.getMinProperties() == null) {
-                    property.setMinProperties(param.getValue("min", Integer.class));
-                }
-                if(property.getMaxProperties() == null) {
-                    property.setMaxProperties(param.getValue("max", Integer.class));
-                }
-                break;
+            if(property.getMaxItems() == null) {
+                property.setMaxItems(param.getValue("max", Integer.class));
+            }
+        }
+        if (type.contains(SchemaType.OBJECT)) {
+            if(property.getMinProperties() == null) {
+                property.setMinProperties(param.getValue("min", Integer.class));
+            }
+            
+            if(property.getMaxProperties() == null) {
+                property.setMaxProperties(param.getValue("max", Integer.class));
+            }
         }
     }
 
@@ -783,7 +727,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                 schema.setType(ModelUtils.getSchemaType(field.getTypeName(), context));
             }
 
-            if (schema.getType() == SchemaType.ARRAY) {
+            if (schema.getType().contains(SchemaType.ARRAY)) {
                 schema.setItems(getArraySchema(element, context));
                 if (defaultValue != null) {
                     schema.getItems().setDefaultValue(defaultValue);
@@ -1309,7 +1253,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     && !matchedParam.getContent().getMediaTypes().isEmpty()
                     && matchedParam.getSchema() != null
                     && matchedParam.getSchema().getType() != null) {
-                SchemaType type = matchedParam.getSchema().getType();
+                List<SchemaType> type = matchedParam.getSchema().getType();
                 matchedParam.setSchema(null);
 
                 for (MediaType mediaType : matchedParam.getContent().getMediaTypes().values()) {
@@ -1320,6 +1264,8 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                             .setType(ModelUtils.mergeProperty(mediaType.getSchema().getType(), type, false));
                 }
             }
+        } else {
+            context.getWorkingOperation().addParameter(parameter);
         }
     }
 
@@ -1608,7 +1554,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
 
         String typeName = type.getTypeName();
         List<ParameterizedType> genericTypes = type.getParameterizedTypes();
-        SchemaType schemaType = ModelUtils.getSchemaType(type, context);
+        List<SchemaType> schemaType = ModelUtils.getSchemaType(type, context);
 
         if (schema == null) {
             schema = new SchemaImpl();
@@ -1616,7 +1562,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // Set the subtype if it's an array (for example an array of ints)
-        if (schemaType == SchemaType.ARRAY) {
+        if (schemaType != null && schemaType.contains(SchemaType.ARRAY)) {
             if (type.isArray()) {
                 schemaType = ModelUtils.getSchemaType(type.getTypeName(), context);
                 schema.setType(schemaType);
@@ -1626,7 +1572,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         }
 
         // If the schema is an object, insert the reference
-        if (schemaType == SchemaType.OBJECT) {
+        if (schemaType != null && schemaType.contains(SchemaType.OBJECT)) {
             if (insertObjectReference(context, schema, context.getType(typeName), typeName)) {
                 schema.setType(null);
                 schema.setItems(null);
@@ -1654,10 +1600,10 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         if (schema == null) {
             schema = new SchemaImpl();
         }
-        SchemaType schemaType = ModelUtils.getSchemaType(type, context);
+        List<SchemaType> schemaType = ModelUtils.getSchemaType(type, context);
 
         // If the annotated element is the same type as the reference class, return a null schema
-        if (schemaType == SchemaType.OBJECT && type.getType() != null && type.getType().equals(clazz)) {
+        if (schemaType != null && schemaType.contains(SchemaType.OBJECT) && type.getType() != null && type.getType().equals(clazz)) {
             schema.setType(null);
             schema.setItems(null);
             return schema;
@@ -1683,7 +1629,7 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
             }
 
             Schema containerSchema = schema;
-            if (schemaType == SchemaType.ARRAY) {
+            if (schemaType.contains(SchemaType.ARRAY)) {
                 containerSchema = new SchemaImpl();
                 schema.setItems(containerSchema);
             }
@@ -1807,4 +1753,25 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         return false;
     }
 
+    private OperationImpl visitJaxRSMethodHandler(AnnotationModel model, MethodModel element, ApiContext context,
+              String httpMethod, Function<PathItem, Operation> getter, BiConsumer<PathItem, Operation> setter) {
+        // Get or create the path item
+        PathItem pathItem = context.getApi().getPaths().getPathItems().getOrDefault(context.getPath(), new PathItemImpl());
+        context.getApi().getPaths().addPathItem(context.getPath(), pathItem);
+
+        OperationImpl operation = new OperationImpl();
+        operation.setOperationId(element.getName());
+        operation.setMethod(httpMethod);
+
+        Operation existing = getter.apply(pathItem);
+        if (existing != null) {
+            OperationImpl.merge(existing, operation, true);
+        }
+        setter.accept(pathItem, operation);
+
+        // Add the default response
+        insertDefaultResponse(context, operation, element);
+
+        return operation;
+    }
 }

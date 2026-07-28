@@ -39,24 +39,23 @@
  */
 package fish.payara.microprofile.faulttolerance.service;
 
-import fish.payara.microprofile.faulttolerance.*;
+import fish.payara.microprofile.faulttolerance.FaultToleranceConfig;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMethodContext;
+import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
+import fish.payara.microprofile.faulttolerance.FaultToleranceService;
+import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguration;
+import fish.payara.microprofile.faulttolerance.otel.OtelMetricsContext;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.metrics.MetricsService;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-
+import fish.payara.opentracing.OpenTelemetryService;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import jakarta.enterprise.context.control.RequestContextController;
 import jakarta.inject.Inject;
 import jakarta.interceptor.InvocationContext;
-
 import org.eclipse.microprofile.metrics.MetricRegistry;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
@@ -72,8 +71,13 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 
 /**
  * Base Service for MicroProfile Fault Tolerance.
@@ -104,8 +108,12 @@ public class FaultToleranceServiceImpl
     @Inject
     private MetricsService metricsService;
 
+    @Inject
+    OpenTelemetryService openTelemetryService;
+
     private final ConcurrentMap<MethodKey, FaultToleranceMethodContextImpl> contextByMethod = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, BindableFaultToleranceConfig> configByAppName = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, OtelMetricsContext> metricBridgeByName = new ConcurrentHashMap<>();
     private ExecutorService asyncExecutorService;
     private ScheduledExecutorService delayExecutorService;
 
@@ -120,7 +128,9 @@ public class FaultToleranceServiceImpl
             asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
             delayExecutorService = (ManagedScheduledExecutorService) context.lookup(config.getManagedScheduledExecutorService());
         } catch (NamingException namingException) {
-            throw new RuntimeException("Error initialising Fault Tolerance Service: could not perform lookup for configured managed-executor-service or managed-scheduled-executor-service.", namingException);
+            throw new RuntimeException(
+                    "Error initialising Fault Tolerance Service: could not perform lookup for configured managed-executor-service or managed-scheduled-executor-service.",
+                    namingException);
         }
     }
 
@@ -139,8 +149,17 @@ public class FaultToleranceServiceImpl
                 key -> new BindableFaultToleranceConfig(stereotypes)).bindTo(context);
     }
 
+    private String currentApplicationName() {
+        return invocationManager.getCurrentInvocation().getAppName();
+    }
+
     private MetricsService.MetricsContext getMetricsContext() {
         try {
+            if (openTelemetryService.isEnabled()) {
+                var appName = currentApplicationName();
+                return metricBridgeByName.computeIfAbsent(appName,
+                        name -> new OtelMetricsContext("OTEL Bridge " + name, openTelemetryService.getCurrentMeter()));
+            }
             return metricsService.getContext(true);
         } catch (Exception e) {
             return null;
@@ -156,6 +175,10 @@ public class FaultToleranceServiceImpl
         configByAppName.remove(appInfo.getName());
         contextByMethod.keySet().removeIf(methodKey ->
                 methodKey.targetClass.getClassLoader().equals(appInfo.getAppClassLoader()));
+        var bridge = metricBridgeByName.remove(appInfo.getName());
+        if (bridge != null) {
+            bridge.close();
+        }
     }
 
     /**
@@ -187,7 +210,7 @@ public class FaultToleranceServiceImpl
     }
 
     private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span,
-            InvocationContext context) {
+                                                               InvocationContext context) {
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         span.addSpanTag("App Name", currentInvocation.getAppName());
         span.addSpanTag("Component ID", currentInvocation.getComponentId());
@@ -198,13 +221,13 @@ public class FaultToleranceServiceImpl
 
     @Override
     public FaultToleranceMethodContext getMethodContext(InvocationContext context, FaultTolerancePolicy policy,
-            RequestContextController requestContextController) {
+                                                        RequestContextController requestContextController) {
         return contextByMethod.computeIfAbsent(new MethodKey(context),
                 methodKey -> createMethodContext(methodKey, context, requestContextController)).boundTo(context, policy);
     }
 
     private FaultToleranceMethodContextImpl createMethodContext(MethodKey methodKey, InvocationContext context,
-            RequestContextController requestContextController) {
+                                                                RequestContextController requestContextController) {
         MetricsService.MetricsContext metricsContext = getMetricsContext();
         MetricRegistry metricRegistry = metricsContext != null ? metricsContext.getBaseRegistry() : null;
         String appName = metricsContext != null ? metricsContext.getName() : "";

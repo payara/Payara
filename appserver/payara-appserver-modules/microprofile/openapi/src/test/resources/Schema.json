@@ -1,48 +1,48 @@
 [
 {
-  "type": "string",
+  "type": ["string"],
   "format": "email"
 },
 {
-  "type": "object",
+  "type": ["object"],
   "required": [
     "name"
   ],
   "properties": {
     "name": {
-      "type": "string"
+      "type": ["string"]
     },
     "address": {
       "$ref": "#/components/schemas/Address"
     },
     "age": {
-      "type": "integer",
+      "type": ["integer"],
       "format": "int32",
       "minimum": 0
     }
   }
 },
 {
-  "type": "object",
+  "type": ["object"],
   "additionalProperties": {
-    "type": "string"
+    "type": ["string"]
   }
 },
 {
-  "type": "object",
+  "type": ["object"],
   "additionalProperties": {
     "$ref": "#/components/schemas/ComplexModel"
   }
 },
 {
-  "type": "object",
+  "type": ["object"],
   "properties": {
     "id": {
-      "type": "integer",
+      "type": ["integer"],
       "format": "int64"
     },
     "name": {
-      "type": "string"
+      "type": ["string"]
     }
   },
   "required": [
@@ -54,17 +54,17 @@
   }
 },
 {
-        "type": "object",
+        "type": ["object"],
         "required": [
           "message",
           "code"
         ],
         "properties": {
           "message": {
-            "type": "string"
+            "type": ["string"]
           },
           "code": {
-            "type": "integer",
+            "type": ["integer"],
             "minimum": 100,
             "maximum": 600
           }
@@ -76,29 +76,29 @@
             "$ref": "#/components/schemas/ErrorModel"
           },
           {
-            "type": "object",
+            "type": ["object"],
             "required": [
               "rootCause"
             ],
             "properties": {
               "rootCause": {
-                "type": "string"
+                "type": ["string"]
               }
             }
           }
         ]
 },
 {
-        "type": "object",
+        "type": ["object"],
         "discriminator": {
           "propertyName": "petType"
         },
         "properties": {
           "name": {
-            "type": "string"
+            "type": ["string"]
           },
           "petType": {
-            "type": "string"
+            "type": ["string"]
           }
         },
         "required": [
@@ -113,10 +113,10 @@
             "$ref": "#/components/schemas/Pet"
           },
           {
-            "type": "object",
+            "type": ["object"],
             "properties": {
               "huntingSkill": {
-                "type": "string",
+                "type": ["string"],
                 "description": "The measured skill for hunting",
                 "default": "lazy",
                 "enum": [
@@ -140,10 +140,10 @@
             "$ref": "#/components/schemas/Pet"
           },
           {
-            "type": "object",
+            "type": ["object"],
             "properties": {
               "packSize": {
-                "type": "integer",
+                "type": ["integer"],
                 "format": "int32",
                 "description": "the size of the pack the dog is from",
                 "default": 0,

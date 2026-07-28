@@ -144,10 +144,14 @@ public class SystemPropertiesTest extends RestTestBase {
             put("node", "localhost-domain1");
         }});
         checkStatusForSuccess(cr);
-        
-        createAndTestConfigProperty(propertyName, PROP_VALUE, instanceName + "-config");
 
-        createAndTestInstanceOverride(propertyName, PROP_VALUE, PROP_VALUE + "-instance", instanceName);
+        try {
+            createAndTestConfigProperty(propertyName, PROP_VALUE, instanceName + "-config");
+            createAndTestInstanceOverride(propertyName, PROP_VALUE, PROP_VALUE + "-instance", instanceName);
+        } finally {
+            delete("/domain/servers/server/" + instanceName + "/delete-instance");
+            delete("/domain/configs/config/" + instanceName + "-config");
+        }
     }
     
     @Test()

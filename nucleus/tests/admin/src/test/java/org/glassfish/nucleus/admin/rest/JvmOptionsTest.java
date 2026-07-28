@@ -40,6 +40,7 @@
 
 package org.glassfish.nucleus.admin.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,8 +212,18 @@ public class JvmOptionsTest extends RestTestBase {
 
     protected List<String> getJvmOptions(Response response) {
         Map<String, Object> responseMap = MarshallingUtils.buildMapFromDocument(response.readEntity(String.class));
-        List<String> jvmOptions = (List<String>)((Map)responseMap.get("extraProperties")).get("leafList");
-
+        List<Object> leafList = (List<Object>)((Map)responseMap.get("extraProperties")).get("leafList");
+        List<String> jvmOptions = new ArrayList<>();
+        for (Object entry : leafList) {
+            if (entry instanceof Map) {
+                Object jvmOption = ((Map) entry).get("jvmOption");
+                if (jvmOption != null) {
+                    jvmOptions.add(jvmOption.toString());
+                }
+            } else if (entry instanceof String) {
+                jvmOptions.add((String) entry);
+            }
+        }
         return jvmOptions;
     }
   
