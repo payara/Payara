@@ -54,6 +54,7 @@ import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.ee.authentication.jakarta.AuthMessagePolicy;
 import com.sun.enterprise.security.ee.authentication.jakarta.ConfigDomainParser;
 import com.sun.enterprise.security.ee.authentication.jakarta.WebServicesDelegate;
+import com.sun.enterprise.security.ee.authentication.jakarta.callback.ServerContainerCallbackHandler;
 import com.sun.enterprise.security.ee.authorization.EJBPolicyContextDelegate;
 import com.sun.enterprise.security.webservices.PipeConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -129,6 +130,22 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
                 : null;
 
         this.ejbDelegate = new EJBPolicyContextDelegate();
+    }
+
+    @Override
+    protected CallbackHandler getCallbackHandler() {
+        String realmName = null;
+        WebServiceEndpoint wse = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
+        if (wse != null) {
+            Application app = wse.getBundleDescriptor().getApplication();
+            if (app != null) {
+                realmName = app.getRealm();
+            }
+            if (realmName == null) {
+                realmName = wse.getRealm();
+            }
+        }
+        return new ServerContainerCallbackHandler(realmName);
     }
 
     @Override
