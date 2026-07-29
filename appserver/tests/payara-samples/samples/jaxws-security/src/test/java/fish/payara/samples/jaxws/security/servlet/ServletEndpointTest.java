@@ -101,33 +101,29 @@ public class ServletEndpointTest extends JAXWSEndpointTest {
         insecureSSLConfigurator.revertSSLConfiguration();
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testUnrestrictedSoapRequest() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request.xml");
         assertResponseOK(serviceConnection);
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testPermittedSoapRequest() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-restricted.xml");
         assertResponseOK(serviceConnection);
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testSoapRequestWithIncorrectCredentials() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-with-bad-password.xml");
         assertResponseFailedWithMessage(serviceConnection, "Authentication of Username Password Token Failed");
     }
 
-    //@Test
-    // TODO - uncomment after solving problem: "MustUnderstand headers:[{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}Security] are not understood"
-    //@RunAsClient
+    @Test
+    @RunAsClient
     public void testSoapRequestUserNotAllowedExecution() throws IOException, URISyntaxException {
         serviceConnection = sendSoapHttpRequest("request-not-allowed.xml");
         assertResponseFailedWithMessage(serviceConnection, "Caller was not permitted access");
