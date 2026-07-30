@@ -208,7 +208,7 @@
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-        <maven.jar.plugin.version>3.5.0</maven.jar.plugin.version>
+        <maven.jar.plugin.version>3.5.1</maven.jar.plugin.version>
         <maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
         <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
@@ -221,6 +221,7 @@
         <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
         <maven.bundle.plugin.version>6.0.2</maven.bundle.plugin.version>
         <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
+        <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
         <maven.site.plugin.version>3.22.0</maven.site.plugin.version>
         <maven.enforcer.plugin.version>3.6.3</maven.enforcer.plugin.version>
         <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
@@ -341,9 +342,9 @@
         <angus.mail.version>2.0.5</angus.mail.version>
         <opentelemetry.version>1.64.0</opentelemetry.version>
         <opentelemetry-bom.version>2.14.0</opentelemetry-bom.version>
-        <opentelemetry-semconv.version>1.30.0</opentelemetry-semconv.version>
-        <opentelemetry-instrumentation-annotations.version>2.14.0</opentelemetry-instrumentation-annotations.version>
-        <opentelemetry-instrumentation-annotation-support.version>2.14.0-alpha</opentelemetry-instrumentation-annotation-support.version>
+        <opentelemetry-semconv.version>1.42.0</opentelemetry-semconv.version>
+        <opentelemetry-instrumentation-annotations.version>2.30.0</opentelemetry-instrumentation-annotations.version>
+        <opentelemetry-instrumentation-annotation-support.version>2.30.0-alpha</opentelemetry-instrumentation-annotation-support.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
         <jakarta.xml.rpc-api.version>1.1.4</jakarta.xml.rpc-api.version>
         <jakarta.xml.registry-api.version>1.0.10</jakarta.xml.registry-api.version>
@@ -516,26 +517,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
                 <version>${maven.site.plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>fish.payara.maven.plugins</groupId>
-                <artifactId>dynamic-build-properties-maven-plugin</artifactId>
-                <version>${dynamic-build-properties-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>split-version-by-delimiter</goal>
-                        </goals>
-                        <configuration>
-                            <parameterNames>
-                                <param>major_version</param>
-                                <param>minor_version</param>
-                                <param>update_version</param>
-                            </parameterNames>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
 
