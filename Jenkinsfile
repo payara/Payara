@@ -332,7 +332,7 @@ pipeline {
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         dir('jakartaee-10-tck-runners') {
-                            git branch: 'EE11-with-Jakarta-Agentic-AI',
+                            git branch: 'EE11',
                                 url: 'https://github.com/payara/jakartaee-10-tck-runners.git'
 
                             echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
