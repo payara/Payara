@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.osgi.cli.interactive;
 
@@ -268,7 +268,6 @@ public class LocalOSGiShellCommand extends CLICommand {
                 Terminal osgiShellTerminal = TerminalBuilder.builder()
                         .name(REMOTE_COMMAND)
                         .system(true)
-                        .streams(new FileInputStream(FileDescriptor.in), System.out)
                         .build();
 
                  reader = LineReaderBuilder.builder()
