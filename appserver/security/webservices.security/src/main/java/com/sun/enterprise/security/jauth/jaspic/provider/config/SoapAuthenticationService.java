@@ -135,14 +135,13 @@ public class SoapAuthenticationService extends BaseAuthenticationService {
     @Override
     protected CallbackHandler getCallbackHandler() {
         String realmName = null;
-        WebServiceEndpoint wse = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
-        if (wse != null) {
-            Application app = wse.getBundleDescriptor().getApplication();
-            if (app != null) {
-                realmName = app.getRealm();
-            }
+        WebServiceEndpoint webServiceEndpoint = (WebServiceEndpoint) map.get(PipeConstants.SERVICE_ENDPOINT);
+        if (webServiceEndpoint != null) {
+            BundleDescriptor bundleDescriptor = webServiceEndpoint.getBundleDescriptor();
+            Application app = bundleDescriptor != null ? bundleDescriptor.getApplication() : null;
+            realmName = app != null ? app.getRealm() : null;
             if (realmName == null) {
-                realmName = wse.getRealm();
+                realmName = webServiceEndpoint.getRealm();
             }
         }
         return new ServerContainerCallbackHandler(realmName);
