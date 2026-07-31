@@ -322,6 +322,8 @@ public final class DTDRegistry {
     public static final String PAYARA_EJBJAR_400_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara-ejb-jar_4_0-0.dtd";
     public static final String PAYARA7_EJBJAR_401_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0 Revision 1//EN";
     public static final String PAYARA7_EJBJAR_401_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-ejb-jar_4_0-1.dtd";
+    public static final String PAYARA7_EJBJAR_402_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 EJB 4.0 Revision 2//EN";
+    public static final String PAYARA7_EJBJAR_402_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-ejb-jar_4_0-2.dtd";
 
 }
 
