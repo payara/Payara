@@ -37,43 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
+package fish.payara.sample.concurrency.annotations.managedthreadfactory;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ejb.EJB;
-
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.RecursiveTask;
+import java.util.stream.LongStream;
+import java.util.Arrays;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
 
-@Path("xml")
-public class ManagedScheduledExecutorEJBRest {
+@Stateless
+public class ManagedThreadFactoryEJBFromConfig {
+    public static final Logger logger = Logger.getLogger(ManagedThreadFactoryEJBFromConfig.class.getName());
 
-    private static final Logger logger = Logger.getLogger(ManagedScheduledExecutorEJBRest.class.getName());
+    @Resource(lookup = "java:app/jakartaee/ManagedThreadFactoryE")
+    ManagedThreadFactory managedThreadFactoryE;
 
-    @EJB
-    ManagedScheduledExecutorEJB managedScheduledExecutorEJB;
-
-    @EJB
-    ManagedScheduledExecutorEJBFromConfig managedScheduledExecutorEJBFromConfig;
-
-    @GET
-    @Path("application")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedScheduledExecutorEJB.processCustomManagedScheduled();
+    public String submitJob() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, String.format("ManagedThreadFactory:%s", managedThreadFactoryE));
+        final long[] numbers = LongStream.rangeClosed(1, 500_000).toArray();
+        ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), managedThreadFactoryE, null, false);
+        ForkJoinTask<Long> totals = pool.submit(() -> Arrays.stream(numbers).parallel().reduce(0L, Long::sum));
+        Long t = totals.join();
+        String message = String.format("Counting numbers total:%d", t);
+        logger.log(Level.INFO, message);
+        pool.shutdown();
+        return message;
     }
-
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutorFromEJBConfig() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedScheduledExecutorEJBFromConfig.processCustomManagedScheduled();
-    }
-
 }
