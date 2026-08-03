@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Converter;
 import org.apache.felix.shell.ShellService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -285,7 +286,10 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                 } else if("execute".equals(sessionOp)) {
                     RemoteCommandSession remote = sessions.get(sessionId);
                     CommandSession session = remote.attach(in, out, err);
-                    session.execute(cmd);
+                    Object result = session.execute(cmd);
+                    if (result != null) {
+                        out.println(session.format(result, Converter.INSPECT));
+                    }
                     remote.detach();
                 } else if("stop".equals(sessionOp)) {
                     RemoteCommandSession remote = sessions.remove(sessionId);
