@@ -53,9 +53,7 @@ import static org.glassfish.webservices.LogUtils.INVALID_REQUEST_SCHEME;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.logging.Logger;
 
 import jakarta.servlet.ServletException;
@@ -185,9 +183,9 @@ public class EjbWebServiceServlet extends HttpServlet {
 
         @Override
         public void afterDispatch(HttpServletResponse response) {
+            int status = response.getStatus();
             Span current = Span.current();
             if (current.isRecording()) {
-                int status = response.getStatus();
                 current.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, (long) status);
                 // SOAP faults are marked ERROR by JaxWsContainerRequestTelemetryTracingFilter.
                 // This covers non-SOAP error responses (e.g. 503 from the container).
@@ -195,19 +193,23 @@ public class EjbWebServiceServlet extends HttpServlet {
                     current.setStatus(StatusCode.ERROR);
                 }
             }
-            otelService.endDeferredSpan(null);
+            otelService.endDeferredSpanWithDuration(null, status);
         }
 
         @Override
         public void dispatchFailed(HttpServletResponse response, Throwable t) {
+            int status = response.getStatus();
+            // If the dispatcher threw before writing any status, default to 500.
+            if (status < 400) {
+                status = 500;
+            }
             Span current = Span.current();
             if (current.isRecording()) {
-                current.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE,
-                        (long) response.getStatus());
+                current.setAttribute(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, (long) status);
                 current.recordException(t);
                 current.setStatus(StatusCode.ERROR);
             }
-            otelService.endDeferredSpan(t);
+            otelService.endDeferredSpanWithDuration(t, status);
         }
     }
 

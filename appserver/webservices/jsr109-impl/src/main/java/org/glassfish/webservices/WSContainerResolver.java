@@ -37,11 +37,19 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright (c) 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.webservices;
 
+import com.sun.xml.ws.api.client.ServiceInterceptor;
 import com.sun.xml.ws.api.server.Container;
 import com.sun.xml.ws.api.server.ContainerResolver;
+import com.sun.xml.ws.developer.WSBindingProvider;
+import jakarta.xml.ws.Binding;
+import org.glassfish.internal.api.Globals;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 
@@ -51,8 +59,8 @@ import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
  * @author Bhakti Mehta
  */
 public class WSContainerResolver extends ContainerResolver {
-   
-     
+
+
     private static final ThreadLocal<ServiceReferenceDescriptor> refs;
 
     static {
@@ -60,28 +68,54 @@ public class WSContainerResolver extends ContainerResolver {
         WSContainerResolver resolver = new WSContainerResolver();
         ContainerResolver.setInstance(resolver);
     }
-    
+
     private  WSContainerResolver() {
     }
 
-    
+
     public static void set(ServiceReferenceDescriptor ref) {
         refs.set(ref);
     }
-    
+
     public static void unset() {
         refs.set(null);
     }
-      
-    
+
+
     @Override
     public Container getContainer() {
         ServiceReferenceDescriptor svcRef = refs.get();
-        
+
         if (svcRef != null) {
             return new WSClientContainer(svcRef);
-        } else {
-            return Container.NONE;
         }
+        if (Globals.getDefaultHabitat() != null) {
+            return otelContainer();
+        }
+        return Container.NONE;
+    }
+
+    private static Container otelContainer() {
+        return new Container() {
+            @Override
+            public <T> T getSPI(Class<T> spiType) {
+                if (spiType == ServiceInterceptor.class) {
+                    return spiType.cast(otelInterceptor());
+                }
+                return null;
+            }
+        };
+    }
+
+    static ServiceInterceptor otelInterceptor() {
+        return new ServiceInterceptor() {
+            @Override
+            public void postCreateProxy(WSBindingProvider bp, Class<?> serviceEndpointInterface) {
+                Binding binding = bp.getBinding();
+                List<jakarta.xml.ws.handler.Handler> handlers = new ArrayList<>(binding.getHandlerChain());
+                handlers.add(new JaxWsClientTelemetryHandler());
+                binding.setHandlerChain(handlers);
+            }
+        };
     }
 }
