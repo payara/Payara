@@ -29,7 +29,7 @@
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
+ * Version 2] license."  If you don't indicate a single license of license, a
  * recipient has the option to distribute your version of this file under
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
@@ -39,25 +39,47 @@
  */
 package fish.payara.samples.jaxws.test.otel;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
+import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointInterface;
 
-import java.util.Map;
-import java.util.Set;
+import javax.xml.namespace.QName;
+import jakarta.xml.ws.Service;
+import jakarta.xml.ws.WebEndpoint;
+import jakarta.xml.ws.WebServiceClient;
+import jakarta.xml.ws.WebServiceFeature;
+import java.net.URL;
 
-public class JaxWsOtelConfigSource implements ConfigSource {
+/**
+ * Hand-written JAX-WS service client for the EJB-based JAX-WS endpoint.
+ *
+ * <p>This follows the same pattern as a {@code wsimport}-generated service class:
+ * it extends {@link Service} and exposes a typed {@link WebEndpoint} method so that
+ * container-managed {@code @WebServiceRef} injection can work without needing an
+ * external WSDL tool at build time.</p>
+ */
+@WebServiceClient(
+        name = "JAXWSEndPointImplementationService",
+        targetNamespace = "http://ejb.endpoint.jaxws.samples.payara.fish/",
+        wsdlLocation = "http://localhost:8080/JAXWSEndPointImplementationService/JAXWSEndPointImplementation?wsdl")
+public class JAXWSEjbEndPointService extends Service {
 
-    private static final Map<String, String> PROPS = Map.of(
-            "otel.sdk.disabled", "false",
-            "otel.traces.exporter", "in-memory-jaxws",
-            "otel.bsp.schedule.delay", "10",
-            "otel.metrics.exporter", "in-memory-jaxws",
-            "otel.metric.export.interval", "100",
-            "otel.logs.exporter", "none"
-    );
+    private static final QName SERVICE_QNAME = new QName(
+            "http://ejb.endpoint.jaxws.samples.payara.fish/",
+            "JAXWSEndPointImplementationService");
 
-    @Override public Map<String, String> getProperties() { return PROPS; }
-    @Override public Set<String> getPropertyNames() { return PROPS.keySet(); }
-    @Override public String getValue(String key) { return PROPS.get(key); }
-    @Override public String getName() { return "jaxws-otel-test-config"; }
-    @Override public int getOrdinal() { return 500; }
+    public JAXWSEjbEndPointService(URL wsdlLocation) {
+        super(wsdlLocation, SERVICE_QNAME);
+    }
+
+    public JAXWSEjbEndPointService(URL wsdlLocation, QName serviceName) {
+        super(wsdlLocation, serviceName);
+    }
+
+    public JAXWSEjbEndPointService(URL wsdlLocation, WebServiceFeature... features) {
+        super(wsdlLocation, SERVICE_QNAME, features);
+    }
+
+    @WebEndpoint(name = "JAXWSEndPointImplementationPort")
+    public JAXWSEndPointInterface getPort() {
+        return super.getPort(JAXWSEndPointInterface.class);
+    }
 }

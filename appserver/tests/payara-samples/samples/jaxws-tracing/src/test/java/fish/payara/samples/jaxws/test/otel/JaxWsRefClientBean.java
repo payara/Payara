@@ -29,7 +29,7 @@
  * If you wish your version of this file to be governed by only the CDDL or
  * only the GPL Version 2, indicate your decision by adding "[Contributor]
  * elects to include this software in this distribution under the [CDDL or GPL
- * Version 2] license."  If you don't indicate a single choice of license, a
+ * Version 2] license."  If you don't indicate a single license of license, a
  * recipient has the option to distribute your version of this file under
  * either the CDDL, the GPL Version 2 or to extend the choice of license to
  * its licensees as provided above.  However, if you add GPL Version 2 code
@@ -39,25 +39,30 @@
  */
 package fish.payara.samples.jaxws.test.otel;
 
-import org.eclipse.microprofile.config.spi.ConfigSource;
+import fish.payara.samples.jaxws.endpoint.ejb.JAXWSEndPointInterface;
+import jakarta.ejb.Stateless;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.WebServiceRef;
 
 import java.util.Map;
-import java.util.Set;
 
-public class JaxWsOtelConfigSource implements ConfigSource {
+/**
+ * Stateless EJB that receives a JAX-WS client port via {@code @WebServiceRef} injection
+ * and overrides the endpoint address at runtime via {@link BindingProvider#ENDPOINT_ADDRESS_PROPERTY}.
+ *
+ * <p>This is the canonical Jakarta EE pattern for consuming a JAX-WS service whose
+ * URL is not known at deployment time (e.g. changes per environment).</p>
+ */
+@Stateless
+public class JaxWsRefClientBean {
 
-    private static final Map<String, String> PROPS = Map.of(
-            "otel.sdk.disabled", "false",
-            "otel.traces.exporter", "in-memory-jaxws",
-            "otel.bsp.schedule.delay", "10",
-            "otel.metrics.exporter", "in-memory-jaxws",
-            "otel.metric.export.interval", "100",
-            "otel.logs.exporter", "none"
-    );
+    @WebServiceRef(wsdlLocation = "http://localhost:8080/JAXWSEndPointImplementationService/JAXWSEndPointImplementation?wsdl")
+    JAXWSEjbEndPointService service;
 
-    @Override public Map<String, String> getProperties() { return PROPS; }
-    @Override public Set<String> getPropertyNames() { return PROPS.keySet(); }
-    @Override public String getValue(String key) { return PROPS.get(key); }
-    @Override public String getName() { return "jaxws-otel-test-config"; }
-    @Override public int getOrdinal() { return 500; }
+    public String callEndpoint(String endpointAddress, String name) {
+        JAXWSEndPointInterface port = service.getPort();
+        Map<String, Object> context = ((BindingProvider) port).getRequestContext();
+        context.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
+        return port.sayHi(name);
+    }
 }
