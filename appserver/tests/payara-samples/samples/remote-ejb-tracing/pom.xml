@@ -126,13 +126,6 @@
             <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Temporary until @Traced annotation is removed -->
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>microprofile-telemetry</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
             <artifactId>jaxrs-client-tracing</artifactId>
