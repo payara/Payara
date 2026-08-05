@@ -324,35 +324,20 @@ pipeline {
                     agent {
                         label 'general-purpose'
                     }
-                    options {
-                        retry(3)
-                    }
                     steps {
-                        processPayaraArtifacts(buildId, true)
-
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        dir('jakartaee-10-tck-runners') {
-                            git branch: 'EE11',
-                                url: 'https://github.com/payara/jakartaee-10-tck-runners.git'
-
-                            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Installing Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                            sh """mvn -V -B -ff clean install --strict-checksums \
-                            -pl . -pl tck-download -pl tck-download/jakarta-agentic-ai-tck \
-                            -Dpayara.version=${pom.version}"""
-
-                            echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Agentic AI TCK (managed)  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                            sh """mvn -V -B -ff clean verify --strict-checksums -Ppayara-server-managed \
-                            -Dpayara.version=${pom.version} \
-                            -Dsurefire.rerunFailingTestsCount=2 \
-                            -Dfailsafe.rerunFailingTestsCount=2 \
-                            -pl . -pl agentic-ai-tck"""
-                        }
+                        build job: 'TCKs/JakartaEE-11-TCK',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'payaraDistribution', value: 'Full'),
+                            string(name: 'tck_profile', value: 'Full'),
+                            string(name: 'jdk_version', value: 'zulu-21'),
+                            string(name: 'tck_suites', value: 'agentic-ai'),
+                            string(name: 'specificRunnerBranchCommitOrTag', value: 'EE11'),
+                            string(name: 'runnerRepoOrg', value: 'payara')
+                        ]
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                    post {
-                        success {
-                            junit '**/target/*-reports/*.xml'
-                        }
                     }
                 }
                 stage('EE8 Tests') {
