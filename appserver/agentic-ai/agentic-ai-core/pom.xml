@@ -64,7 +64,7 @@
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- JSON-B (Yasson já está no Payara) -->
+        <!-- JSON-B (Yasson is already provided by Payara) -->
         <dependency>
             <groupId>jakarta.json.bind</groupId>
             <artifactId>jakarta.json.bind-api</artifactId>
@@ -82,7 +82,7 @@
             <artifactId>jakarta.annotation-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- MicroProfile Config (seleção de provider/chave do LLM) -->
+        <!-- MicroProfile Config (LLM provider/key selection) -->
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
