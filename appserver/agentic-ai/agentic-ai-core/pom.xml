@@ -120,6 +120,14 @@
                         </goals>
                         <configuration>
                             <instructions>
+                                <!--
+                                    This is an internal implementation module
+                                    (fish.payara.server.internal.agentic-ai), so it must
+                                    not export any packages for OSGi consumption. An empty
+                                    Export-Package keeps every package private, instead of
+                                    letting bnd fall back to exporting the module's packages.
+                                    Mirrors the Jakarta Data implementation module (data-core).
+                                -->
                                 <Export-Package/>
                             </instructions>
                         </configuration>
