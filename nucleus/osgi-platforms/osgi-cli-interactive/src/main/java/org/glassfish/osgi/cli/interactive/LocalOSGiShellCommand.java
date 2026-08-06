@@ -260,15 +260,16 @@ public class LocalOSGiShellCommand extends CLICommand {
             shellType = cmd.executeAndReturnOutput(args).trim();
 
             if (file == null) {
-                if (terminal != null) {
-                    //Pause the asadmin terminal
-                    terminal.pause();
-                }
                 System.out.println(strings.get("multimodeIntro"));
-                Terminal osgiShellTerminal = TerminalBuilder.builder()
-                        .name(REMOTE_COMMAND)
-                        .system(true)
-                        .build();
+                Terminal osgiShellTerminal;
+                if (terminal != null) {
+                    osgiShellTerminal = terminal;
+                } else {
+                    osgiShellTerminal = TerminalBuilder.builder()
+                            .name(REMOTE_COMMAND)
+                            .system(true)
+                            .build();
+                }
 
                  reader = LineReaderBuilder.builder()
                         .appName(REMOTE_COMMAND)
@@ -300,7 +301,7 @@ public class LocalOSGiShellCommand extends CLICommand {
         } catch (IOException e) {
             throw new CommandException(e);
         } finally {
-            if (reader != null && reader.getTerminal() != null) {
+            if (reader != null && reader.getTerminal() != null && reader.getTerminal() != terminal) {
                 try {
                     reader.getTerminal().close();
                 } catch (IOException ioe) {
@@ -456,9 +457,6 @@ public class LocalOSGiShellCommand extends CLICommand {
                 // handle built-in exit and quit commands
                 // XXX - care about their arguments?
                 if (command.equals("exit") || command.equals("quit")) {
-                    if (terminal != null && terminal.paused()) {
-                        terminal.resume();
-                    }
                     break;
                 }
 
@@ -536,9 +534,11 @@ public class LocalOSGiShellCommand extends CLICommand {
     public void postConstruct() {
         super.postConstruct();
         try {
+            ProgramOptions remoteOptions = new ProgramOptions(locator.getService(ProgramOptions.class));
+            remoteOptions.setInteractive(false);
             cmd = new RemoteCLICommand(REMOTE_COMMAND,
-                locator.<ProgramOptions>getService(ProgramOptions.class),
-                locator.<Environment>getService(Environment.class));
+                remoteOptions,
+                locator.getService(Environment.class));
         } catch (CommandException ex) {
             // ignore - will be handled by execute()
         }
