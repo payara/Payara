@@ -75,13 +75,6 @@
             <artifactId>jakarta.enterprise.cdi-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- Temporary until @Traced annotation is removed -->
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>microprofile-telemetry</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
@@ -111,6 +104,11 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap.resolver</groupId>
             <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

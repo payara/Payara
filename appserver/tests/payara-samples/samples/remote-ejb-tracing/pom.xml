@@ -61,7 +61,6 @@
             <artifactId>jakarta.jakartaee-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- Temporary dependencies while EE11 in development, remove once EE11 fully released -->
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
@@ -126,18 +125,10 @@
             <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Temporary until @Traced annotation is removed -->
         <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>microprofile-telemetry</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.payara-appserver-modules</groupId>
-            <artifactId>jaxrs-client-tracing</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
