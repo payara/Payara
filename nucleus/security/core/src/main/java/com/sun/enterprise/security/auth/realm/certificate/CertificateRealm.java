@@ -191,7 +191,13 @@ public final class CertificateRealm extends BaseRealm {
     private void validateSubjectViaAPI(Subject subject, X500Principal principal) {
         X509Certificate certificate = getCertificateFromSubject(subject, principal);
         if (certificate == null) {
-            _logger.warning(() -> String.format("No X509Certificate found(subject=%s, principal=%s)", subject, principal));
+            _logger.warning(() -> String.format(
+                "%s#validateSubjectViaAPI: No X509Certificate found in Subject public credentials matching principal '%s'. " +
+                "Subject contents: %s",
+                this.getClass().getSimpleName(),
+                principal,
+                subject
+            ));
             return;
         }
 
@@ -242,7 +248,7 @@ public final class CertificateRealm extends BaseRealm {
                 for (Object item : data) {
                     if (item instanceof X509Certificate) {
                         X509Certificate certificate = (X509Certificate) item;
-                        if (principal.equals(certificate.getIssuerX500Principal())) {
+                        if (principal.equals(certificate.getSubjectX500Principal())) {
                             result = (X509Certificate) item;
                         }
                     }
