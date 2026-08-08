@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2019-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2019-2026 Payara Foundation and/or its affiliates
 package com.sun.enterprise.v3.admin.cluster;
 
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_INSTALLDIR;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_NODEHOST;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTE_WINRM_PASSWORD;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTE_WINRM_PORT;
+import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTE_WINRM_USER;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHPASSWORD;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEPORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_REMOTEUSER;
@@ -58,6 +61,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import jakarta.inject.Inject;
 
 import org.glassfish.api.ActionReport;
@@ -167,6 +171,13 @@ public abstract class DeleteNodeRemoteCommand implements AdminCommand {
             info.add(PARAM_REMOTEUSER, sshAuth.getUserName());
             info.add(PARAM_NODEHOST, node.getNodeHost());
             info.add(PARAM_WINDOWS_DOMAIN, node.getWindowsDomain());
+
+            WinrmConnector winrm = node.getWinrmConnector();
+            if (winrm != null) {
+                info.add(PARAM_REMOTE_WINRM_USER, winrm.getWinrmUser());
+                info.add(PARAM_REMOTE_WINRM_PASSWORD, winrm.getWinrmPassword());
+                info.add(PARAM_REMOTE_WINRM_PORT, winrm.getWinrmPort());
+            }
         }
 
         CommandInvocation commandInvocation = commandRunner.getCommandInvocation("_delete-node", report, context.getSubject());

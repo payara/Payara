@@ -50,6 +50,7 @@ import com.sun.enterprise.config.serverbeans.SshConnector;
 import com.sun.enterprise.config.serverbeans.SystemProperty;
 import fish.payara.docker.DockerConstants;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -288,6 +289,16 @@ public class JsonRequestConstructorTest {
 
         @Override
         public void setSshConnector(SshConnector connector) {
+
+        }
+
+        @Override
+        public WinrmConnector getWinrmConnector() {
+            return null;
+        }
+
+        @Override
+        public void setWinrmConnector(WinrmConnector connector) {
 
         }
 
