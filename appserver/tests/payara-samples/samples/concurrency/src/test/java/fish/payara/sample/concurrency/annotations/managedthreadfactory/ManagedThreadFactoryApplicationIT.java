@@ -83,8 +83,9 @@ public class ManagedThreadFactoryApplicationIT {
     public static Archive<?> createDeployment() {
         //Creating Jar ejb module
         JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb-jar.jar")
-                .addClasses(ManagedThreadFactoryEJB.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addClasses(ManagedThreadFactoryEJB.class, ManagedThreadFactoryEJBFromConfig.class)
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsResource("payara-ejb-jar2.xml", "META-INF/payara-ejb-jar.xml");
         System.out.println(ejbJar.toString(true));
         //Creating web module
         WebArchive webWar = ShrinkWrap.create(WebArchive.class, "test.war")
@@ -118,6 +119,18 @@ public class ManagedThreadFactoryApplicationIT {
     public void testManagedThreadFactoryFromApplicationConfig() throws MalformedURLException {
         logger.log(Level.INFO, "Consuming service to submit xml config ManagedThreadFactory {0}", new Object[]{client});
         WebTarget target = this.client.target(new URL(this.base, "xml/application").toExternalForm());
+        String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
+        logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
+        assertTrue(message.contains("Counting numbers total"));
+        assertTrue(message.contains("125000250000"));
+    }
+
+    @Test
+    @DisplayName("testing ManagedThreadFactory tag from EJB config")
+    @RunAsClient
+    public void testManagedThreadFactoryFromEJBConfig() throws MalformedURLException {
+        logger.log(Level.INFO, "Consuming service to submit xml config ManagedThreadFactory {0}", new Object[]{client});
+        WebTarget target = this.client.target(new URL(this.base, "xml/ejbconfig").toExternalForm());
         String message = target.request().accept(MediaType.TEXT_PLAIN).get(String.class);
         logger.log(Level.INFO, "Returned message {0}", new Object[]{message});
         assertTrue(message.contains("Counting numbers total"));
