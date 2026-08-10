@@ -320,26 +320,6 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP REST Client TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-                stage('Jakarta Agentic AI TCK') {
-                    agent {
-                        label 'general-purpose'
-                    }
-                    steps {
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        build job: 'TCKs/JakartaEE-11-TCK',
-                        parameters: [
-                            string(name: 'buildProject', value: 'Build'),
-                            string(name: 'payaraBuildNumber', value: buildId),
-                            string(name: 'payaraDistribution', value: 'Full'),
-                            string(name: 'tck_profile', value: 'Full'),
-                            string(name: 'jdk_version', value: 'zulu-21'),
-                            string(name: 'tck_suites', value: 'agentic-ai'),
-                            string(name: 'specificRunnerBranchCommitOrTag', value: 'EE11'),
-                            string(name: 'runnerRepoOrg', value: 'payara')
-                        ]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran Jakarta Agentic AI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                    }
-                }
                 stage('EE8 Tests') {
                     agent {
                         label 'general-purpose'
