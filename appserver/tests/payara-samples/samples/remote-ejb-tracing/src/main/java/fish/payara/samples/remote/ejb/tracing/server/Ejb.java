@@ -48,8 +48,6 @@ import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.common.AttributeKey;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
-import java.util.Map;
 import java.util.Random;
 
 

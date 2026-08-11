@@ -41,7 +41,6 @@ package fish.payara.samples.remote.ejb.tracing.web;
 
 import fish.payara.samples.remote.ejb.tracing.EjbRemote;
 import jakarta.ejb.EJBException;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
