@@ -46,7 +46,6 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.NODE_DEFAULT_SSH_POR
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYPASSPHRASE;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
-import static org.glassfish.cluster.ssh.util.SSHUtil.getExistingKeyFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -152,10 +151,6 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
 
     @Override
     protected final void populateCommandArgs(List<String> args) {
-        if (sshkeyfile == null) {
-            sshkeyfile = getExistingKeyFile();
-        }
-
         if (sshkeyfile != null) {
             args.add("--sshkeyfile");
             args.add(sshkeyfile);
