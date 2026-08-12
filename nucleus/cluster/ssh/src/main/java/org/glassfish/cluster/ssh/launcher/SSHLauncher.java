@@ -54,11 +54,13 @@ import com.sun.enterprise.util.io.FileUtils;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.channel.ClientChannelEvent;
+import org.apache.sshd.client.config.hosts.HostConfigEntryResolver;
 import org.apache.sshd.client.config.hosts.KnownHostEntry;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.config.keys.FilePasswordProvider;
+import org.apache.sshd.common.keyprovider.KeyIdentityProvider;
 import org.apache.sshd.common.NamedResource;
 import org.apache.sshd.common.util.GenericUtils;
 import org.apache.sshd.common.util.security.SecurityUtils;
@@ -128,6 +130,7 @@ public class SSHLauncher {
     private String password;
     private String rawPassword;
     private String rawKeyPassPhrase;
+    private boolean keyAuthFailed = false;
 
     public void init(Logger logger) {
         this.logger = logger;
@@ -179,10 +182,16 @@ public class SSHLauncher {
 
     private void init(String userName, String host, int port, String password, String keyFile,
                       String keyPassPhrase, char[] privateKey, Logger logger) {
+        // Preserve keyAuthFailed when re-initialising with the same key and host so that
+        // subsequent openSession() calls skip the key without retrying it. Reset only when
+        // the key file or target host actually changes (different credentials or target).
+        if (!Objects.equals(this.keyFile, keyFile) || !Objects.equals(this.host, host)) {
+            this.keyAuthFailed = false;
+        }
         this.port = port == 0 ? 22 : port;
         this.host = host;
         this.privateKey = (privateKey != null) ? Arrays.copyOf(privateKey, privateKey.length) : null;
-        this.keyFile = (keyFile == null && privateKey == null) ? SSHUtil.getExistingKeyFile() : keyFile;
+        this.keyFile = keyFile;
         this.logger = logger;
         this.userName = SSHUtil.checkString(userName) == null ? System.getProperty("user.name") : userName;
         this.rawPassword = password;
@@ -210,6 +219,10 @@ public class SSHLauncher {
     SshClient buildClient() throws IOException {
         logger.finer("Building SSH client, knownHosts=" + knownHosts);
         SshClient client = SshClient.setUpDefaultClient();
+
+        client.setHostConfigEntryResolver(HostConfigEntryResolver.EMPTY);
+
+        client.setKeyIdentityProvider(KeyIdentityProvider.EMPTY_KEYS_PROVIDER);
 
         // Ensure the known_hosts file exists so the verifier can record new keys (TOFU).
         // If creation fails we fall back to accept-all and log a warning.
@@ -278,19 +291,24 @@ public class SSHLauncher {
             }
         }
 
-        if (!authenticated && SSHUtil.checkString(keyFile) != null) {
+        if (!authenticated && !keyAuthFailed && SSHUtil.checkString(keyFile) != null) {
             logger.finer("Attempting key-file auth: " + keyFile);
             File key = new File(keyFile);
             if (key.exists()) {
                 try {
                     authenticated = tryKeyFileAuth(session, key);
                     logger.finer("Key-file auth result: " + authenticated);
+                    if (!authenticated) {
+                        keyAuthFailed = true;
+                    }
                 } catch (IOException | GeneralSecurityException ex) {
                     appendWarning(message, "SSH auth with key file " + key + " failed: "
                             + ExceptionUtil.getRootCause(ex).getMessage(), ex);
+                    keyAuthFailed = true;
                 }
             } else {
                 logger.warning("Key file does not exist: " + keyFile);
+                keyAuthFailed = true;
             }
         }
 
