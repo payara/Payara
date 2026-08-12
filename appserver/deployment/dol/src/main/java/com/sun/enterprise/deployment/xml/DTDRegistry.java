@@ -280,6 +280,10 @@ public final class DTDRegistry {
     @Deprecated
     public static final String PAYARA_WEBAPP_4_DTD_SYSTEM_ID = "https://docs.payara.fish/schemas/payara-web-app_4.dtd";
     @Deprecated
+    public static final String PAYARA5_WEBAPP_400_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 5 Servlet 4.0//EN";
+    @Deprecated
+    public static final String PAYARA5_WEBAPP_400_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara5-web-app_4_0-0.dtd";
+    @Deprecated
     public static final String PAYARA6_WEBAPP_600_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 6 Servlet 6.0//EN";
     @Deprecated
     public static final String PAYARA6_WEBAPP_600_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara6-web-app_6_0-0.dtd";
@@ -290,6 +294,10 @@ public final class DTDRegistry {
     public static final String PAYARA7_WEBAPP_611_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Server 7 Servlet 6.1 Revision 1//EN";
     public static final String PAYARA7_WEBAPP_611_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-web-app_6_1-1.dtd";
 
+    @Deprecated
+    public static final String PAYARA5_APPCLIENT_80_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 5 Jakarta EE Application Client 8//EN";
+    @Deprecated
+    public static final String PAYARA5_APPCLIENT_80_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara5-application-client_8-0.dtd";
     @Deprecated
     public static final String PAYARA6_APPCLIENT_100_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 6 Jakarta EE Application Client 10//EN";
     @Deprecated
@@ -302,6 +310,10 @@ public final class DTDRegistry {
     public static final String PAYARA7_APPCLIENT_111_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-application-client_11-1.dtd";
 
     @Deprecated
+    public static final String PAYARA5_APPLICATION_80_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 5 Jakarta EE Application 8//EN";
+    @Deprecated
+    public static final String PAYARA5_APPLICATION_80_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara5-application_8-0.dtd";
+    @Deprecated
     public static final String PAYARA6_APPLICATION_100_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 6 Jakarta EE Application 10//EN";
     @Deprecated
     public static final String PAYARA6_APPLICATION_100_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara6-application_10-0.dtd";
@@ -312,6 +324,10 @@ public final class DTDRegistry {
     public static final String PAYARA7_APPLICATION_111_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 7 Jakarta EE Application 11 Revision 1//EN";
     public static final String PAYARA7_APPLICATION_111_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara7-application_11-1.dtd";
 
+    @Deprecated
+    public static final String PAYARA5_EJBJAR_320_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 5 EJB 3.2//EN";
+    @Deprecated
+    public static final String PAYARA5_EJBJAR_320_DTD_SYSTEM_ID = "https://raw.githubusercontent.com/payara/Payara/refs/heads/main/appserver/deployment/dtds/src/main/resources/glassfish/lib/dtds/payara5-ejb-jar_3_2-0.dtd";
     @Deprecated
     public static final String PAYARA6_EJBJAR_400_DTD_PUBLIC_ID = "-//Payara.fish//DTD Payara Application Server 6 EJB 4.0//EN";
     @Deprecated
