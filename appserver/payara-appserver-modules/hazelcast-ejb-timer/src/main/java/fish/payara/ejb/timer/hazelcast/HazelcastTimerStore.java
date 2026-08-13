@@ -60,6 +60,8 @@ import fish.payara.nucleus.eventbus.MessageReceiver;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -91,6 +93,8 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
     private static final String EJB_TIMER_CACHE_NAME = "HZEjbTmerCache";
     private static final String EJB_TIMER_CONTAINER_CACHE_NAME = "HZEjbTmerContainerCache";
     private static final String EJB_TIMER_APPLICAION_CACHE_NAME = "HZEjbTmerApplicationCache";
+
+    private volatile Lock timerFailoverLock;
 
     private final IMap<String, HZTimer> pkCache;
     private final IMap<Long, Set<TimerPrimaryKey>> containerCache;
@@ -1169,6 +1173,23 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
         return rc;
     }
 
+    private Lock getTimerFailoverLock() {
+        if (timerFailoverLock == null) {
+            synchronized (this) {
+                if (timerFailoverLock == null) {
+                    try {
+                        timerFailoverLock = hazelcast.getCPSubsystem().getLock("EJB-TIMER-LOCK");
+                    } catch (UnsupportedOperationException e) {
+                        logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
+                                + "EJB timer failover will use a local lock instead of a distributed lock", e);
+                        timerFailoverLock = new ReentrantLock();
+                    }
+                }
+            }
+        }
+        return timerFailoverLock;
+    }
+
     @Override
     public void memberAdded(MemberEvent event) {
         //do nothing
@@ -1176,8 +1197,8 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
 
     @Override
     public void memberRemoved(MemberEvent event) {
-        FencedLock hazelcastLock = hazelcast.getCPSubsystem().getLock("EJB-TIMER-LOCK");
-        hazelcastLock.lock();
+        Lock lock = getTimerFailoverLock();
+        lock.lock();
         try {
             Collection<HZTimer> allTimers = pkCache.values();
             Collection<HZTimer> removedTimers = new HashSet<>();
@@ -1198,7 +1219,7 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
                 logger.log(Level.INFO, "<== ... Timers Restored.");
             }
         } finally {
-            hazelcastLock.unlock();
+            lock.unlock();
         }
     }
 
