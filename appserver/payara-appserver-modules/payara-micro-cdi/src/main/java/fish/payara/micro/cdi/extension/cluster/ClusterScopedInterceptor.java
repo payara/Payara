@@ -102,7 +102,7 @@ public class ClusterScopedInterceptor implements Serializable {
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
         try {
             clusteredLookup.getClusteredUsageCount().incrementAndGet();
-        } catch (CPSubsystemException e) {
+        } catch (UnsupportedOperationException | CPSubsystemException e) {
             log.log(Level.WARNING, "CP subsystem not available; clustered singleton usage count will not be tracked", e);
         }
         return invocationContext.proceed();
@@ -120,7 +120,7 @@ public class ClusterScopedInterceptor implements Serializable {
             } else if (!clusteredAnnotation.callPreDestroyOnDetach()) {
                 return null;
             }
-        } catch (CPSubsystemException e) {
+        } catch (UnsupportedOperationException | CPSubsystemException e) {
             log.log(Level.WARNING, "CP subsystem not available; destroying clustered singleton without usage count", e);
             clusteredLookup.destroy();
         }
