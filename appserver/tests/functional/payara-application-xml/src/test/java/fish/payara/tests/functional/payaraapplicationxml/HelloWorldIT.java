@@ -225,6 +225,6 @@ public class HelloWorldIT {
 
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals("Hello World!", message);
-        Assert.assertTrue(uri.getPath().equals("/adios/"));
+        Assert.assertTrue(uri.getPath().equals("/au-revoir/"));
     }
 }
