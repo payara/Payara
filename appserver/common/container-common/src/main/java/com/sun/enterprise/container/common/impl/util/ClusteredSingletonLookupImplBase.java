@@ -41,6 +41,8 @@
 package com.sun.enterprise.container.common.impl.util;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IFunction;
+import com.hazelcast.cp.CPGroupId;
 import com.hazelcast.cp.IAtomicLong;
 import com.hazelcast.cp.exception.CPSubsystemException;
 import com.hazelcast.cp.lock.FencedLock;
@@ -48,8 +50,14 @@ import com.hazelcast.map.IMap;
 import com.sun.enterprise.container.common.spi.ClusteredSingletonLookup;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Condition;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.JavaEEContextUtil;
@@ -61,6 +69,8 @@ import org.glassfish.internal.api.JavaEEContextUtil.Context;
  * @author lprimak
  */
 public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingletonLookup {
+    private static final Logger logger = Logger.getLogger(ClusteredSingletonLookupImplBase.class.getName());
+
     private final HazelcastCore hzCore = Globals.getDefaultHabitat().getService(HazelcastCore.class);
     private final JavaEEContextUtil ctxUtil = Globals.getDefaultHabitat().getService(JavaEEContextUtil.class);
     private final String componentId;
@@ -93,8 +103,23 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
 
     @Override
     public FencedLock getDistributedLock() {
-        return retryCpOperation(() -> lock.updateAndGet(v -> v != null ?
-                v : getHazelcastInstance().getCPSubsystem().getLock(makeLockKey())));
+        FencedLock existing = lock.get();
+        if (existing != null) return existing;
+        synchronized (this) {
+            existing = lock.get();
+            if (existing != null) return existing;
+            FencedLock newLock;
+            try {
+                newLock = retryCpOperation(() ->
+                        getHazelcastInstance().getCPSubsystem().getLock(makeLockKey()));
+            } catch (UnsupportedOperationException e) {
+                logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
+                        + "using IMap-based distributed lock for clustered EJB singleton", e);
+                newLock = new IMapFencedLock(getHazelcastInstance().getMap(getMapKey()), makeLockKey());
+            }
+            lock.set(newLock);
+            return newLock;
+        }
     }
 
     @Override
@@ -105,9 +130,24 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
     }
 
     @Override
-    public  IAtomicLong getClusteredUsageCount() {
-        return retryCpOperation(() -> count.updateAndGet(v -> v != null ?
-                v : getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey())));
+    public IAtomicLong getClusteredUsageCount() {
+        IAtomicLong existing = count.get();
+        if (existing != null) return existing;
+        synchronized (this) {
+            existing = count.get();
+            if (existing != null) return existing;
+            IAtomicLong newCount;
+            try {
+                newCount = retryCpOperation(() ->
+                        getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey()));
+            } catch (UnsupportedOperationException e) {
+                logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
+                        + "using IMap-based atomic counter for clustered EJB singleton", e);
+                newCount = new IMapAtomicLong(getHazelcastInstance().getMap(getMapKey()), makeCountKey());
+            }
+            count.set(newCount);
+            return newCount;
+        }
     }
 
     private HazelcastInstance getHazelcastInstance() {
@@ -181,6 +221,364 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
             return getKeyPrefix() + sessionKey;
         } else {
             return getKeyPrefix() + componentId + "/" + sessionKey;
+        }
+    }
+
+    /**
+     * IMap-based distributed lock fallback for when CP subsystem is unavailable (Hazelcast CE).
+     * Uses IMap entry locking, which provides AP-mode distributed mutual exclusion equivalent
+     * to what UNSAFE-mode CP provided in Hazelcast 5.3.x.
+     */
+    private static final class IMapFencedLock implements FencedLock {
+        private final IMap<String, Object> imap;
+        private final String lockKey;
+        // Per-instance, per-thread hold count for isLockedByCurrentThread() / getLockCount().
+        // Instance-field ThreadLocal means each lock key gets its own counter per thread.
+        private final ThreadLocal<Integer> holdCount = ThreadLocal.withInitial(() -> 0);
+
+        IMapFencedLock(IMap<String, Object> imap, String lockKey) {
+            this.imap = imap;
+            this.lockKey = lockKey;
+        }
+
+        @Override
+        public void lock() {
+            imap.lock(lockKey);
+            holdCount.set(holdCount.get() + 1);
+        }
+
+        @Override
+        public void lockInterruptibly() throws InterruptedException {
+            lock();
+        }
+
+        @Override
+        public long lockAndGetFence() {
+            throw new UnsupportedOperationException("Fencing not available with IMap-based distributed lock fallback");
+        }
+
+        @Override
+        public boolean tryLock() {
+            boolean acquired = imap.tryLock(lockKey);
+            if (acquired) holdCount.set(holdCount.get() + 1);
+            return acquired;
+        }
+
+        @Override
+        public long tryLockAndGetFence() {
+            throw new UnsupportedOperationException("Fencing not available with IMap-based distributed lock fallback");
+        }
+
+        @Override
+        public boolean tryLock(long timeout, TimeUnit unit) {
+            try {
+                boolean acquired = imap.tryLock(lockKey, timeout, unit);
+                if (acquired) holdCount.set(holdCount.get() + 1);
+                return acquired;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+
+        @Override
+        public long tryLockAndGetFence(long timeout, TimeUnit unit) {
+            throw new UnsupportedOperationException("Fencing not available with IMap-based distributed lock fallback");
+        }
+
+        @Override
+        public void unlock() {
+            imap.unlock(lockKey);
+            holdCount.set(Math.max(0, holdCount.get() - 1));
+        }
+
+        @Override
+        public long getFence() {
+            throw new UnsupportedOperationException("Fencing not available with IMap-based distributed lock fallback");
+        }
+
+        @Override
+        public boolean isLocked() {
+            return imap.isLocked(lockKey);
+        }
+
+        @Override
+        public boolean isLockedByCurrentThread() {
+            return holdCount.get() > 0;
+        }
+
+        @Override
+        public int getLockCount() {
+            return holdCount.get();
+        }
+
+        @Override
+        public CPGroupId getGroupId() {
+            throw new UnsupportedOperationException("CP groups not available with IMap-based distributed lock fallback");
+        }
+
+        @Override
+        public Condition newCondition() {
+            throw new UnsupportedOperationException("Conditions not available with IMap-based distributed lock fallback");
+        }
+
+        @Override
+        public String getPartitionKey() {
+            return lockKey;
+        }
+
+        @Override
+        public String getName() {
+            return lockKey;
+        }
+
+        @Override
+        public String getServiceName() {
+            return "hz:impl:imap:lock";
+        }
+
+        @Override
+        public void destroy() {
+            imap.forceUnlock(lockKey);
+        }
+    }
+
+    /**
+     * IMap-based atomic long fallback for when CP subsystem is unavailable (Hazelcast CE).
+     * Stores the count value as a Long in the singleton IMap and uses IMap entry locking
+     * for atomicity.
+     */
+    private static final class IMapAtomicLong implements IAtomicLong {
+        private final IMap<String, Object> imap;
+        private final String countKey;
+
+        IMapAtomicLong(IMap<String, Object> imap, String countKey) {
+            this.imap = imap;
+            this.countKey = countKey;
+        }
+
+        private long getUnlocked() {
+            Object val = imap.get(countKey);
+            return val instanceof Long ? (Long) val : 0L;
+        }
+
+        @Override
+        public long get() {
+            return getUnlocked();
+        }
+
+        @Override
+        public void set(long newValue) {
+            imap.lock(countKey);
+            try {
+                imap.put(countKey, newValue);
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public long addAndGet(long delta) {
+            imap.lock(countKey);
+            try {
+                long newVal = getUnlocked() + delta;
+                imap.put(countKey, newVal);
+                return newVal;
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public long incrementAndGet() {
+            return addAndGet(1L);
+        }
+
+        @Override
+        public long decrementAndGet() {
+            return addAndGet(-1L);
+        }
+
+        @Override
+        public long getAndIncrement() {
+            return getAndAdd(1L);
+        }
+
+        @Override
+        public long getAndDecrement() {
+            return getAndAdd(-1L);
+        }
+
+        @Override
+        public long getAndAdd(long delta) {
+            imap.lock(countKey);
+            try {
+                long current = getUnlocked();
+                imap.put(countKey, current + delta);
+                return current;
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public long getAndSet(long newValue) {
+            imap.lock(countKey);
+            try {
+                long current = getUnlocked();
+                imap.put(countKey, newValue);
+                return current;
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public boolean compareAndSet(long expect, long update) {
+            imap.lock(countKey);
+            try {
+                if (getUnlocked() != expect) return false;
+                imap.put(countKey, update);
+                return true;
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public void alter(IFunction<Long, Long> function) {
+            imap.lock(countKey);
+            try {
+                imap.put(countKey, function.apply(getUnlocked()));
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public long alterAndGet(IFunction<Long, Long> function) {
+            imap.lock(countKey);
+            try {
+                long newVal = function.apply(getUnlocked());
+                imap.put(countKey, newVal);
+                return newVal;
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public long getAndAlter(IFunction<Long, Long> function) {
+            imap.lock(countKey);
+            try {
+                long current = getUnlocked();
+                imap.put(countKey, function.apply(current));
+                return current;
+            } finally {
+                imap.unlock(countKey);
+            }
+        }
+
+        @Override
+        public <R> R apply(IFunction<Long, R> function) {
+            return function.apply(get());
+        }
+
+        @Override
+        public CompletionStage<Long> addAndGetAsync(long delta) {
+            return CompletableFuture.completedFuture(addAndGet(delta));
+        }
+
+        @Override
+        public CompletionStage<Long> incrementAndGetAsync() {
+            return CompletableFuture.completedFuture(incrementAndGet());
+        }
+
+        @Override
+        public CompletionStage<Long> decrementAndGetAsync() {
+            return CompletableFuture.completedFuture(decrementAndGet());
+        }
+
+        @Override
+        public CompletionStage<Long> getAndIncrementAsync() {
+            return CompletableFuture.completedFuture(getAndIncrement());
+        }
+
+        @Override
+        public CompletionStage<Long> getAndDecrementAsync() {
+            return CompletableFuture.completedFuture(getAndDecrement());
+        }
+
+        @Override
+        public CompletionStage<Long> getAndAddAsync(long delta) {
+            return CompletableFuture.completedFuture(getAndAdd(delta));
+        }
+
+        @Override
+        public CompletionStage<Long> getAndSetAsync(long newValue) {
+            return CompletableFuture.completedFuture(getAndSet(newValue));
+        }
+
+        @Override
+        public CompletionStage<Boolean> compareAndSetAsync(long expect, long update) {
+            return CompletableFuture.completedFuture(compareAndSet(expect, update));
+        }
+
+        @Override
+        public CompletionStage<Long> getAsync() {
+            return CompletableFuture.completedFuture(get());
+        }
+
+        @Override
+        public CompletionStage<Void> setAsync(long newValue) {
+            set(newValue);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletionStage<Void> alterAsync(IFunction<Long, Long> function) {
+            alter(function);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public CompletionStage<Long> alterAndGetAsync(IFunction<Long, Long> function) {
+            return CompletableFuture.completedFuture(alterAndGet(function));
+        }
+
+        @Override
+        public CompletionStage<Long> getAndAlterAsync(IFunction<Long, Long> function) {
+            return CompletableFuture.completedFuture(getAndAlter(function));
+        }
+
+        @Override
+        public <R> CompletionStage<R> applyAsync(IFunction<Long, R> function) {
+            return CompletableFuture.completedFuture(apply(function));
+        }
+
+        @Override
+        public String getPartitionKey() {
+            return countKey;
+        }
+
+        @Override
+        public String getName() {
+            return countKey;
+        }
+
+        @Override
+        public String getServiceName() {
+            return "hz:impl:imap:atomicLong";
+        }
+
+        @Override
+        public void destroy() {
+            imap.lock(countKey);
+            try {
+                imap.delete(countKey);
+            } finally {
+                imap.unlock(countKey);
+            }
         }
     }
 }
