@@ -64,7 +64,7 @@ System unique object id. Automatically generated and updated at deployment/redep
 <!--
 This is the root element describing all the runtime of an ejb-jar in the application.
 -->
-<!ELEMENT enterprise-beans (name?, unique-id?, ejb*,
+<!ELEMENT enterprise-beans (name?, unique-id?, ejb*, pm-descriptors?, cmp-resource?,
 	message-destination*, webservice-description*, property*, webservice-default-login-config?)>
 
 <!--
@@ -81,7 +81,7 @@ Additional properties applicable to a stateful session bean:
     bean-cache, webservice-endpoint, checkpointed-methods?, checkpoint-at-end-of-method?
 
 Additional properties applicable to an entity bean:
-   is-read-only-bean?, refresh-period-in-seconds?, commit-option?, bean-cache?, bean-pool?, flush-at-end-of-method?
+   is-read-only-bean?, refresh-period-in-seconds?, cmp?, commit-option?, bean-cache?, bean-pool?, flush-at-end-of-method?
 
 Additional properties applicable to a message-driven bean:
    mdb-resource-adapter?, mdb-connection-factory?, jms-durable-subscription-name?, 
@@ -89,11 +89,11 @@ Additional properties applicable to a message-driven bean:
    ( In case of MDB, jndi-name is the jndi name of the associated jms destination )
 -->
 
-<!ELEMENT ejb (ejb-name, jndi-name?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, pass-by-reference?, 
-               principal?, mdb-connection-factory?, jms-durable-subscription-name?,
+<!ELEMENT ejb (ejb-name, jndi-name?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, pass-by-reference?,
+		       cmp?, principal?, mdb-connection-factory?, jms-durable-subscription-name?,
                jms-max-messages-load?, ior-security-config?, is-read-only-bean?, clustered-bean?, clustered-key-name?, clustered-lock-type?, clustered-attach-postconstruct?, clustered-detach-predestroy?,
                refresh-period-in-seconds?, commit-option?, cmt-timeout-in-seconds?, use-thread-pool-id?, gen-classes?, 
-               bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
+               bean-pool?, bean-cache?, mdb-resource-adapter?, webservice-endpoint*, flush-at-end-of-method?, checkpointed-methods?, checkpoint-at-end-of-method?, per-request-load-balancing?)>
 
 <!-- 
 This attribute is only applicable for stateful session bean 
@@ -164,6 +164,44 @@ The ejb ref name locates the name of the ejb reference in the application.
 <!ELEMENT ejb-ref-name (#PCDATA)>
 
 <!--
+This element describes runtime information for a CMP EntityBean object for
+EJB1.1 and EJB2.0 beans.
+-->
+<!ELEMENT cmp (mapping-properties?, is-one-one-cmp?, one-one-finders?, prefetch-disabled?)>
+
+<!--
+This contains the location of the persistence vendor specific O/R mapping file
+-->
+<!ELEMENT mapping-properties (#PCDATA)>
+
+<!--
+This element in deprecated. It has been left in the DTD for validation purposes.
+Any value will be ignored by the runtime.
+-->
+<!ELEMENT is-one-one-cmp (#PCDATA)>
+
+<!--
+This root element contains the finders for CMP 1.1.
+-->
+<!ELEMENT one-one-finders (finder+ )>
+
+<!--
+This element allows to selectively disable relationship prefetching for finders of a bean.
+Used in: cmp
+-->
+<!ELEMENT prefetch-disabled (query-method+)>
+
+<!--
+Used in: prefetch-disabled
+-->
+<!ELEMENT query-method (method-name, method-params)>
+
+<!--
+This root element contains the finder for CMP 1.1 with a method-name and query parameters
+-->
+<!ELEMENT finder (method-name, query-params?, query-filter?, query-variables?,  query-ordering?)>
+
+<!--
 The method-name element contains a name of an enterprise bean method
 or the asterisk (*) character. The asterisk is used when the element
 denotes all the methods of an enterprise bean's component and home
@@ -172,6 +210,55 @@ interfaces.
 Used in: method, finder, query-method, java-method
 -->
 <!ELEMENT method-name (#PCDATA)>
+
+
+<!--
+This contains the query parameters for CMP 1.1 finder
+-->
+<!ELEMENT query-params (#PCDATA)>
+
+<!--
+This optional element contains the query filter for CMP 1.1 finder
+-->
+<!ELEMENT query-filter (#PCDATA)>
+
+<!--
+This optional element contains variables in query expression for CMP 1.1 finder
+-->
+<!ELEMENT query-variables (#PCDATA)>
+
+<!--
+This optional element contains the ordering specification for CMP 1.1 finder.
+-->
+
+<!ELEMENT query-ordering (#PCDATA)>
+
+<!--
+This element identifies the database and the policy for processing CMP beans
+storage. The jndi-name element identifies either the persistence-manager-
+factory-resource or the jdbc-resource as defined in the server configuration.
+-->
+<!ELEMENT cmp-resource (jndi-name, default-resource-principal?, property*,
+        create-tables-at-deploy?, drop-tables-at-undeploy?,
+        database-vendor-name?, schema-generator-properties?)>
+
+<!--
+This element contains the override properties for the schema generation
+from CMP beans in this module.
+-->
+<!ELEMENT schema-generator-properties (property*) >
+
+<!--
+This element specifies whether automatic creation of tables for the CMP beans
+is done at module deployment. Acceptable values are true or false
+-->
+<!ELEMENT create-tables-at-deploy ( #PCDATA )>
+
+<!--
+This element specifies whether automatic dropping of tables for the CMP beans
+is done at module undeployment. Acceptabel values are true of false
+-->
+<!ELEMENT drop-tables-at-undeploy ( #PCDATA )>
 
 <!--
 This element specifies the database vendor name for ddl files generated at
@@ -287,6 +374,23 @@ pseudo-random selection policy.
 <!ELEMENT victim-selection-policy (#PCDATA)>
 
 <!--
+Support backward compatibility with AS7.1
+Now deprecated in 8.1 and later releases
+Use checkpoint-at-end-of-method element instead
+
+The methods should be separated by semicolons.
+The param list should separated by commas.
+All method param types should be full qualified.
+Variable name is allowed for the param type.
+No return type or exception type.
+Example:
+foo(java.lang.String, a.b.c d); bar(java.lang.String s)
+
+Used in: ejb
+-->
+<!ELEMENT checkpointed-methods (#PCDATA)>
+
+<!--
 The equivalent element of checkpointed-methods for 8.1 and later releases
 
 Used in: ejb
@@ -297,7 +401,7 @@ Used in: ejb
 bean-pool is a root element containing the bean pool properties. Used
 for stateless session bean, entity bean, and message-driven bean pools.
 -->
-<!ELEMENT bean-pool (steady-pool-size?, resize-quantity?, max-pool-size?, pool-idle-timeout-in-seconds?)>
+<!ELEMENT bean-pool (steady-pool-size?, resize-quantity?, max-pool-size?, pool-idle-timeout-in-seconds?, max-wait-time-in-millis?)>
 
 <!--
 steady-pool-size specified the initial and minimum number of beans that must be maintained in the pool. 
@@ -340,6 +444,12 @@ Specifies the timeout for transactions started by the container. This value must
 Specifes the thread pool that will be used to process any invocation on this ejb
 -->
 <!ELEMENT use-thread-pool-id (#PCDATA)>
+
+<!--
+Specifies the maximum time that the caller is willing to wait to get a bean from the pool.
+Wait time is infinite, if the value specified is 0. Deprecated.
+-->
+<!ELEMENT max-wait-time-in-millis (#PCDATA)>
 
 <!--
 refresh-period-in-seconds specifies the rate at which the read-only-bean must be refreshed 
@@ -500,6 +610,52 @@ ejb modules. Allowed values are true and false. Default will be false.
 <!ELEMENT pass-by-reference (#PCDATA)>
 
 <!--
+PM descriptors contain one or more pm descriptors, but only one of them must
+be in use at any given time. If not specified, the Sun CMP is used.
+-->
+<!ELEMENT pm-descriptors ( pm-descriptor+, pm-inuse)>
+
+<!--
+pm-descriptor describes the pluggable vendor implementation for the CMP
+support of the CMP entity beans in this module.
+-->
+<!ELEMENT pm-descriptor ( pm-identifier, pm-version, pm-config?, pm-class-generator?, pm-mapping-factory?)>
+
+<!--
+pm-identifier element identifies the vendor who provides the CMP implementation
+-->
+<!ELEMENT pm-identifier (#PCDATA)>
+
+<!--
+pm-version further specifies which version of PM vendor product to be used
+-->
+<!ELEMENT pm-version (#PCDATA)>
+
+<!--
+pm-config specifies the vendor specific config file to be used
+-->
+<!ELEMENT pm-config (#PCDATA)>
+
+<!--
+pm-class-generator specifies the vendor specific class generator to be used
+at the module deploymant time. This is the name of the class specific to this
+vendor.
+-->
+<!ELEMENT pm-class-generator (#PCDATA)>
+
+<!--
+pm-mapping-factory specifies the vendor specific mapping factory
+This is the name of the class specific to a vendor.
+-->
+<!ELEMENT pm-mapping-factory (#PCDATA)>
+
+<!--
+pm-inuse specifies which CMP vendor is used.
+-->
+<!ELEMENT pm-inuse (pm-identifier, pm-version)>
+
+
+<!--
 This holds the runtime configuration properties of the message-driven bean 
 in its operation environment.  For example, this may include information 
 about the name of a physical JMS destination etc.
@@ -561,7 +717,7 @@ Used in: ejb
 
 
 <!--
-Used in: flush-at-end-of-method, checkpoint-at-end-of-method
+Used in: flush-at-end-of-method, checkpoint-at-end-of-method, prefetch-disabled
 -->
 <!ELEMENT method (description?, ejb-name?, method-name, method-intf?, method-params?)>
 
@@ -588,7 +744,7 @@ Used in: method
 The method-params element contains a list of the fully-qualified Java
 type names of the method parameters.
 
-Used in: method, java-method
+Used in: method, query-method, java-method
 -->
 <!ELEMENT method-params (method-param*)>
 
