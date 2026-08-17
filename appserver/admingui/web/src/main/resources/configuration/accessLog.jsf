@@ -145,6 +145,10 @@
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
         </sun:property>
 
+        <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.LogHandler}" helpText="$resource{i18n_web.access.LogHandlerHelp}">
+            <sun:textField id="LogHandler" columns="$int{30}" text="#{pageSession.valueMap2['logHandler']}"/>
+        </sun:property>
+
         <sun:property id="formatProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Format}" helpText="$resource{i18n_web.access.FormatHelp}">
             <sun:textField id="Format" columns="$int{90}" maxLength="#{sessionScope.fieldLengths['maxLength.access.Format']}"  text="#{pageSession.valueMap2['format']}"/>
         </sun:property>
