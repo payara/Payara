@@ -75,6 +75,10 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @throws PropertyVetoException if a listener vetoes the change
      */
     void setFormat(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue="default")
+    String getLogHandler();
+    void setLogHandler(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the rotation-policy attribute.
