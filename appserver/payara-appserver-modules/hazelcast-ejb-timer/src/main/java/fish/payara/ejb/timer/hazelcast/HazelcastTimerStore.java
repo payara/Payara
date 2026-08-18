@@ -1177,11 +1177,15 @@ public class HazelcastTimerStore extends NonPersistentEJBTimerService implements
         if (timerFailoverLock == null) {
             synchronized (this) {
                 if (timerFailoverLock == null) {
-                    try {
-                        timerFailoverLock = hazelcast.getCPSubsystem().getLock("EJB-TIMER-LOCK");
-                    } catch (UnsupportedOperationException e) {
-                        logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
-                                + "EJB timer failover will use a local lock instead of a distributed lock", e);
+                    if (hazelcast.getConfig().getCPSubsystemConfig().getCPMemberCount() > 0) {
+                        try {
+                            timerFailoverLock = hazelcast.getCPSubsystem().getLock("EJB-TIMER-LOCK");
+                        } catch (UnsupportedOperationException e) {
+                            logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
+                                    + "EJB timer failover will use a local lock instead of a distributed lock", e);
+                        }
+                    }
+                    if (timerFailoverLock == null) {
                         timerFailoverLock = new ReentrantLock();
                     }
                 }

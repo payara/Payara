@@ -108,13 +108,17 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         synchronized (this) {
             existing = lock.get();
             if (existing != null) return existing;
-            FencedLock newLock;
-            try {
-                newLock = retryCpOperation(() ->
-                        getHazelcastInstance().getCPSubsystem().getLock(makeLockKey()));
-            } catch (UnsupportedOperationException e) {
-                logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
-                        + "using IMap-based distributed lock for clustered EJB singleton", e);
+            FencedLock newLock = null;
+            if (isCPModeConfigured()) {
+                try {
+                    newLock = retryCpOperation(() ->
+                            getHazelcastInstance().getCPSubsystem().getLock(makeLockKey()));
+                } catch (UnsupportedOperationException e) {
+                    logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
+                            + "using IMap-based distributed lock for clustered EJB singleton", e);
+                }
+            }
+            if (newLock == null) {
                 newLock = new IMapFencedLock(getHazelcastInstance().getMap(getMapKey()), makeLockKey());
             }
             lock.set(newLock);
@@ -136,13 +140,17 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
         synchronized (this) {
             existing = count.get();
             if (existing != null) return existing;
-            IAtomicLong newCount;
-            try {
-                newCount = retryCpOperation(() ->
-                        getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey()));
-            } catch (UnsupportedOperationException e) {
-                logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
-                        + "using IMap-based atomic counter for clustered EJB singleton", e);
+            IAtomicLong newCount = null;
+            if (isCPModeConfigured()) {
+                try {
+                    newCount = retryCpOperation(() ->
+                            getHazelcastInstance().getCPSubsystem().getAtomicLong(makeCountKey()));
+                } catch (UnsupportedOperationException e) {
+                    logger.log(Level.WARNING, "CP subsystem not available (requires Enterprise license); "
+                            + "using IMap-based atomic counter for clustered EJB singleton", e);
+                }
+            }
+            if (newCount == null) {
                 newCount = new IMapAtomicLong(getHazelcastInstance().getMap(getMapKey()), makeCountKey());
             }
             count.set(newCount);
@@ -155,6 +163,10 @@ public abstract class ClusteredSingletonLookupImplBase implements ClusteredSingl
             throw new IllegalStateException("ClusteredSingleton.getHazelcastInstance() - Hazelcast is Disabled");
         }
         return hzCore.getInstance();
+    }
+
+    private boolean isCPModeConfigured() {
+        return hzCore.getInstance().getConfig().getCPSubsystemConfig().getCPMemberCount() > 0;
     }
 
     @Override

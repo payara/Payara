@@ -100,10 +100,12 @@ public class ClusterScopedInterceptor implements Serializable {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
         Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-        try {
-            clusteredLookup.getClusteredUsageCount().incrementAndGet();
-        } catch (UnsupportedOperationException | CPSubsystemException e) {
-            log.log(Level.WARNING, "CP subsystem not available; clustered singleton usage count will not be tracked", e);
+        if (isCPModeConfigured()) {
+            try {
+                clusteredLookup.getClusteredUsageCount().incrementAndGet();
+            } catch (UnsupportedOperationException | CPSubsystemException e) {
+                log.log(Level.WARNING, "CP subsystem not available; clustered singleton usage count will not be tracked", e);
+            }
         }
         return invocationContext.proceed();
     }
@@ -113,17 +115,17 @@ public class ClusterScopedInterceptor implements Serializable {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
         Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-        try {
-            IAtomicLong count = clusteredLookup.getClusteredUsageCount();
-            if (count.decrementAndGet() <= 0) {
-                clusteredLookup.destroy();
-            } else if (!clusteredAnnotation.callPreDestroyOnDetach()) {
-                return null;
+        if (isCPModeConfigured()) {
+            try {
+                IAtomicLong count = clusteredLookup.getClusteredUsageCount();
+                if (count.decrementAndGet() > 0 && !clusteredAnnotation.callPreDestroyOnDetach()) {
+                    return null;
+                }
+            } catch (UnsupportedOperationException | CPSubsystemException e) {
+                log.log(Level.WARNING, "CP subsystem not available; destroying clustered singleton without usage count", e);
             }
-        } catch (UnsupportedOperationException | CPSubsystemException e) {
-            log.log(Level.WARNING, "CP subsystem not available; destroying clustered singleton without usage count", e);
-            clusteredLookup.destroy();
         }
+        clusteredLookup.destroy();
 
         return invocationContext.proceed();
     }
@@ -146,5 +148,10 @@ public class ClusterScopedInterceptor implements Serializable {
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         init();
+    }
+
+    private boolean isCPModeConfigured() {
+        return clusteredLookup.getHazelcastCore().getInstance().getConfig()
+                .getCPSubsystemConfig().getCPMemberCount() > 0;
     }
 }
