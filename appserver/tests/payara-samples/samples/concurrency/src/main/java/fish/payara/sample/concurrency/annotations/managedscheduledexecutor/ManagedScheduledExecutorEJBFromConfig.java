@@ -39,41 +39,41 @@
  */
 package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ejb.EJB;
-
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.ExecutionException;
 
-@Path("xml")
-public class ManagedScheduledExecutorEJBRest {
+import jakarta.enterprise.concurrent.Trigger;
+import jakarta.enterprise.concurrent.CronTrigger;
+import java.time.ZoneId;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    private static final Logger logger = Logger.getLogger(ManagedScheduledExecutorEJBRest.class.getName());
 
-    @EJB
-    ManagedScheduledExecutorEJB managedScheduledExecutorEJB;
+@Stateless
+public class ManagedScheduledExecutorEJBFromConfig {
 
-    @EJB
-    ManagedScheduledExecutorEJBFromConfig managedScheduledExecutorEJBFromConfig;
+    public static final Logger logger = Logger.getLogger(ManagedScheduledExecutorEJBFromConfig.class.getName());
 
-    @GET
-    @Path("application")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedScheduledExecutorEJB.processCustomManagedScheduled();
+    @Resource(lookup = "java:app/jakartaee/CustomManagedScheduledExecutorE")
+    ManagedScheduledExecutorService customManagedScheduleExecutorE;
+
+    public String processCustomManagedScheduled() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, String.format("Processing schedule executor: %s", customManagedScheduleExecutorE));
+        AtomicInteger numberExecution = new AtomicInteger();
+        ZoneId mexico = ZoneId.of("America/Mexico_City");
+        Trigger trigger = new CronTrigger("* * * * * *", mexico);
+        ScheduledFuture feature = customManagedScheduleExecutorE.schedule(() -> {
+            numberExecution.getAndIncrement();
+            System.out.println("Cron Trigger running");
+        }, trigger);
+        Thread.sleep(1500);
+        feature.cancel(true);
+        return "CronTrigger Submitted:"+numberExecution.get();
     }
-
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutorFromEJBConfig() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedScheduledExecutorEJBFromConfig.processCustomManagedScheduled();
-    }
-
 }

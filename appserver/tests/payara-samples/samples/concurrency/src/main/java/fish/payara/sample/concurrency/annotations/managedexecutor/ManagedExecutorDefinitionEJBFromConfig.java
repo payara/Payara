@@ -37,43 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.sample.concurrency.annotations.managedscheduledexecutor;
+package fish.payara.sample.concurrency.annotations.managedexecutor;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ejb.EJB;
-
+import jakarta.annotation.Resource;
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.concurrent.ManagedExecutorService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.ExecutionException;
 
-@Path("xml")
-public class ManagedScheduledExecutorEJBRest {
+@Stateless
+public class ManagedExecutorDefinitionEJBFromConfig {
 
-    private static final Logger logger = Logger.getLogger(ManagedScheduledExecutorEJBRest.class.getName());
+    public static final Logger log = Logger.getLogger(ManagedExecutorDefinitionEJBFromConfig.class.getName());
 
-    @EJB
-    ManagedScheduledExecutorEJB managedScheduledExecutorEJB;
+    @Resource(lookup = "java:app/jakartaee/EJBExecutor")
+    ManagedExecutorService ejbExecutor;
 
-    @EJB
-    ManagedScheduledExecutorEJBFromConfig managedScheduledExecutorEJBFromConfig;
-
-    @GET
-    @Path("application")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutor() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ear application config");
-        return managedScheduledExecutorEJB.processCustomManagedScheduled();
+    public String submitEJBExecutor() throws InterruptedException, ExecutionException {
+        log.log(Level.INFO, "EJBExecutor:"+ejbExecutor);
+        AtomicInteger numberExecution = new AtomicInteger(0);
+        Future future = ejbExecutor.submit(() -> {
+            numberExecution.incrementAndGet();
+            System.out.println("Job running");
+        });
+        future.get();
+        return "Executor submitted:" + numberExecution.get();
     }
-
-    @GET
-    @Path("ejbconfig")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String processManagedScheduledExecutorFromEJBConfig() throws InterruptedException, ExecutionException {
-        logger.log(Level.INFO, "Processing xml tag from ejb config");
-        return managedScheduledExecutorEJBFromConfig.processCustomManagedScheduled();
-    }
-
 }
