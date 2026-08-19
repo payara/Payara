@@ -92,7 +92,9 @@ class ClusterScopeContext implements Context {
         final Bean<TT> bean = (Bean<TT>) contextual;
         Clustered clusteredAnnotation = getAnnotation(beanManager, bean);
         clusteredLookup.setClusteredSessionKeyIfNotSet(bean.getBeanClass(), clusteredAnnotation);
-        boolean locked = lock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+        FencedLock distributedLock = clusteredAnnotation.lock() == DistributedLockType.LOCK
+                ? clusteredLookup.getDistributedLock() : null;
+        boolean locked = lock(clusteredAnnotation, distributedLock);
         TT beanInstance = null;
         try {
             beanInstance = get(contextual);
@@ -110,7 +112,7 @@ class ClusterScopeContext implements Context {
              * so unlock here as a fallback
              */
             if (locked && beanInstance == null) {
-                unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+                unlock(clusteredAnnotation, distributedLock);
             }
         }
         return beanInstance;
@@ -123,7 +125,9 @@ class ClusterScopeContext implements Context {
         Clustered clusteredAnnotation = getAnnotation(beanManager, bean);
         String beanName = getBeanName(bean, clusteredAnnotation);
         clusteredLookup.setClusteredSessionKeyIfNotSet(bean.getBeanClass(), clusteredAnnotation);
-        boolean locked = lock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+        FencedLock distributedLock = clusteredAnnotation.lock() == DistributedLockType.LOCK
+                ? clusteredLookup.getDistributedLock() : null;
+        boolean locked = lock(clusteredAnnotation, distributedLock);
         TT beanInstance = null;
         try {
             beanInstance = (TT) clusteredLookup.getClusteredSingletonMap().get(beanName);
@@ -137,7 +141,7 @@ class ClusterScopeContext implements Context {
              * so unlock here as a fallback
              */
             if (locked && beanInstance == null) {
-                unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+                unlock(clusteredAnnotation, distributedLock);
             }
         }
         return beanInstance;

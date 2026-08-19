@@ -40,12 +40,16 @@
 package fish.payara.micro.cdi.extension.cluster;
 
 import com.hazelcast.cp.IAtomicLong;
+import com.hazelcast.cp.exception.CPSubsystemException;
 import fish.payara.cluster.Clustered;
+import fish.payara.cluster.DistributedLockType;
 import fish.payara.micro.cdi.extension.cluster.annotations.ClusterScopedIntercepted;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Priority;
@@ -65,6 +69,7 @@ import org.glassfish.internal.api.Globals;
  */
 @Interceptor @ClusterScopedIntercepted @Priority(Interceptor.Priority.PLATFORM_AFTER)
 public class ClusterScopedInterceptor implements Serializable {
+    private static final Logger log = Logger.getLogger(ClusterScopedInterceptor.class.getName());
     private final BeanManager beanManager = CDI.current().getBeanManager();
     private transient ClusteredSingletonLookupImpl clusteredLookup;
     private static final long serialVersionUID = 1L;
@@ -84,7 +89,9 @@ public class ClusterScopedInterceptor implements Serializable {
             Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
             refresh(beanClass, invocationContext.getTarget());
             clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-            ClusterScopeContext.unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+            if (clusteredAnnotation.lock() == DistributedLockType.LOCK) {
+                ClusterScopeContext.unlock(clusteredAnnotation, clusteredLookup.getDistributedLock());
+            }
         }
     }
 
@@ -93,7 +100,13 @@ public class ClusterScopedInterceptor implements Serializable {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
         Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-        clusteredLookup.getClusteredUsageCount().incrementAndGet();
+        if (isCPModeConfigured()) {
+            try {
+                clusteredLookup.getClusteredUsageCount().incrementAndGet();
+            } catch (UnsupportedOperationException | CPSubsystemException e) {
+                log.log(Level.WARNING, "CP subsystem not available; clustered singleton usage count will not be tracked", e);
+            }
+        }
         return invocationContext.proceed();
     }
 
@@ -102,12 +115,17 @@ public class ClusterScopedInterceptor implements Serializable {
         Class<?> beanClass = invocationContext.getTarget().getClass().getSuperclass();
         Clustered clusteredAnnotation = ClusterScopeContext.getAnnotation(beanManager, beanClass);
         clusteredLookup.setClusteredSessionKeyIfNotSet(beanClass, clusteredAnnotation);
-        IAtomicLong count = clusteredLookup.getClusteredUsageCount();
-        if (count.decrementAndGet() <= 0) {
-            clusteredLookup.destroy();
-        } else if (!clusteredAnnotation.callPreDestroyOnDetach()) {
-            return null;
+        if (isCPModeConfigured()) {
+            try {
+                IAtomicLong count = clusteredLookup.getClusteredUsageCount();
+                if (count.decrementAndGet() > 0 && !clusteredAnnotation.callPreDestroyOnDetach()) {
+                    return null;
+                }
+            } catch (UnsupportedOperationException | CPSubsystemException e) {
+                log.log(Level.WARNING, "CP subsystem not available; destroying clustered singleton without usage count", e);
+            }
         }
+        clusteredLookup.destroy();
 
         return invocationContext.proceed();
     }
@@ -130,5 +148,10 @@ public class ClusterScopedInterceptor implements Serializable {
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         init();
+    }
+
+    private boolean isCPModeConfigured() {
+        return clusteredLookup.getHazelcastCore().getInstance().getConfig()
+                .getCPSubsystemConfig().getCPMemberCount() > 0;
     }
 }
