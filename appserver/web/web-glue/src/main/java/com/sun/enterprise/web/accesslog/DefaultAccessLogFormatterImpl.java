@@ -71,67 +71,57 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * HTTP header names
      */
-    protected static final String HTTP_HEADER_ACCEPT = "Accept";
-    protected static final String HTTP_HEADER_AUTHORIZATION = "Authorization";
-    protected static final String HTTP_HEADER_DATE = "Date";
-    protected static final String HTTP_HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
+    static final String HTTP_HEADER_ACCEPT = "Accept";
+    static final String HTTP_HEADER_AUTHORIZATION = "Authorization";
+    static final String HTTP_HEADER_DATE = "Date";
+    static final String HTTP_HEADER_IF_MODIFIED_SINCE = "If-Modified-Since";
 
     /*
      * Supported access log entry tokens
      */
-    protected static final String ATTRIBUTE_BY_NAME_PREFIX = "attribute.";
-    protected static final int ATTRIBUTE_BY_NAME_PREFIX_LEN =
-        ATTRIBUTE_BY_NAME_PREFIX.length();
-    protected static final String SESSION_ATTRIBUTE_BY_NAME_PREFIX = "session.";
-    protected static final int SESSION_ATTRIBUTE_BY_NAME_PREFIX_LEN =
-        SESSION_ATTRIBUTE_BY_NAME_PREFIX.length();
-    protected static final String AUTH_USER_NAME = "auth-user-name";
-    protected static final String CLIENT_DNS = "client.dns";
-    protected static final String CLIENT_NAME = "client.name";
-    protected static final String COOKIE = "cookie";
-    protected static final String COOKIES = "cookies";
-    protected static final String COOKIE_VALUE = "cookie.value";
-    protected static final String COOKIE_BY_NAME_PREFIX = "cookie.";
-    protected static final int COOKIE_BY_NAME_PREFIX_LEN
-        = COOKIE_BY_NAME_PREFIX.length();
-    protected static final String COOKIES_BY_NAME_PREFIX = "cookies.";
-    protected static final int COOKIES_BY_NAME_PREFIX_LEN
-        = COOKIES_BY_NAME_PREFIX.length();
-    protected static final String DATE_TIME = "datetime";
-    protected static final String HEADER_ACCEPT = "header.accept";
-    protected static final String HEADER_BY_NAME_PREFIX = "header.";
-    protected static final int HEADER_BY_NAME_PREFIX_LEN
-        = HEADER_BY_NAME_PREFIX.length();
-    protected static final String HEADERS_BY_NAME_PREFIX = "headers.";
-    protected static final int HEADERS_BY_NAME_PREFIX_LEN =
-        HEADERS_BY_NAME_PREFIX.length();
-    protected static final String RESPONSE_HEADER_BY_NAME_PREFIX =
-        "response.header.";
-    protected static final int RESPONSE_HEADER_BY_NAME_PREFIX_LEN =
-        RESPONSE_HEADER_BY_NAME_PREFIX.length();
-    protected static final String RESPONSE_HEADERS_BY_NAME_PREFIX =
-        "response.headers.";
-    protected static final int RESPONSE_HEADERS_BY_NAME_PREFIX_LEN =
-        RESPONSE_HEADERS_BY_NAME_PREFIX.length();
-    protected static final String HEADER_AUTH = "header.auth";
-    protected static final String HEADER_DATE = "header.date";
-    protected static final String HEADER_IF_MOD_SINCE = "header.if-mod-since";
-    protected static final String HEADER_USER_AGENT = "header.user-agent";
-    protected static final String HEADER_REFERER = "header.referer";
-    protected static final String HTTP_METHOD = "http-method";
-    protected static final String HTTP_URI = "http-uri";
-    protected static final String HTTP_VERSION = "http-version";
-    protected static final String QUERY_STR = "query-str";
-    protected static final String REFERER = "referer";
-    protected static final String REQUEST = "request";
-    protected static final String RESPONSE_LENGTH = "response.length";
-    protected static final String RESPONSE_CONTENT_TYPE = "response.content-type";
-    protected static final String STATUS = "status";
-    protected static final String TIME_TAKEN = "time-taken";
-    protected static final String USER_AGENT = "user.agent";
-    protected static final String VS_ID = "vs.id";
+    static final String ATTRIBUTE_BY_NAME_PREFIX = "attribute.";
+    static final int ATTRIBUTE_BY_NAME_PREFIX_LEN = ATTRIBUTE_BY_NAME_PREFIX.length();
+    static final String SESSION_ATTRIBUTE_BY_NAME_PREFIX = "session.";
+    static final int SESSION_ATTRIBUTE_BY_NAME_PREFIX_LEN = SESSION_ATTRIBUTE_BY_NAME_PREFIX.length();
+    static final String AUTH_USER_NAME = "auth-user-name";
+    static final String CLIENT_DNS = "client.dns";
+    static final String CLIENT_NAME = "client.name";
+    static final String COOKIE = "cookie";
+    static final String COOKIES = "cookies";
+    static final String COOKIE_VALUE = "cookie.value";
+    static final String COOKIE_BY_NAME_PREFIX = "cookie.";
+    static final int COOKIE_BY_NAME_PREFIX_LEN = COOKIE_BY_NAME_PREFIX.length();
+    static final String COOKIES_BY_NAME_PREFIX = "cookies.";
+    static final int COOKIES_BY_NAME_PREFIX_LEN = COOKIES_BY_NAME_PREFIX.length();
+    static final String DATE_TIME = "datetime";
+    static final String HEADER_ACCEPT = "header.accept";
+    static final String HEADER_BY_NAME_PREFIX = "header.";
+    static final int HEADER_BY_NAME_PREFIX_LEN = HEADER_BY_NAME_PREFIX.length();
+    static final String HEADERS_BY_NAME_PREFIX = "headers.";
+    static final int HEADERS_BY_NAME_PREFIX_LEN = HEADERS_BY_NAME_PREFIX.length();
+    static final String RESPONSE_HEADER_BY_NAME_PREFIX = "response.header.";
+    static final int RESPONSE_HEADER_BY_NAME_PREFIX_LEN = RESPONSE_HEADER_BY_NAME_PREFIX.length();
+    static final String RESPONSE_HEADERS_BY_NAME_PREFIX = "response.headers.";
+    static final int RESPONSE_HEADERS_BY_NAME_PREFIX_LEN = RESPONSE_HEADERS_BY_NAME_PREFIX.length();
+    static final String HEADER_AUTH = "header.auth";
+    static final String HEADER_DATE = "header.date";
+    static final String HEADER_IF_MOD_SINCE = "header.if-mod-since";
+    static final String HEADER_USER_AGENT = "header.user-agent";
+    static final String HEADER_REFERER = "header.referer";
+    static final String HTTP_METHOD = "http-method";
+    static final String HTTP_URI = "http-uri";
+    static final String HTTP_VERSION = "http-version";
+    static final String QUERY_STR = "query-str";
+    static final String REFERER = "referer";
+    static final String REQUEST = "request";
+    static final String RESPONSE_LENGTH = "response.length";
+    static final String RESPONSE_CONTENT_TYPE = "response.content-type";
+    static final String STATUS = "status";
+    static final String TIME_TAKEN = "time-taken";
+    static final String USER_AGENT = "user.agent";
+    static final String VS_ID = "vs.id";
 
-    protected Container container;
+    Container container;
 
     /**
      * List of access log pattern components
@@ -380,7 +370,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * NULL-ATTRIBUTE-<attributeName> if no attribute with the given name
      * is present in the request.
      */
-    protected void appendAttributeByName(CharBuffer cb,
+    void appendAttributeByName(CharBuffer cb,
                                        String attributeName,
                                        HttpServletRequest hreq) {
         if (attributeName == null) {
@@ -404,7 +394,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * given name is present in the session, or NULL-SESSION if
      * no session exists.
      */
-    protected void appendSessionAttributeByName(CharBuffer cb,
+    void appendSessionAttributeByName(CharBuffer cb,
                                               String attributeName,
                                               HttpServletRequest hreq) {
         if (attributeName == null) {
@@ -431,7 +421,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the client host name of the given request to the given char
      * buffer.
      */
-    protected void appendClientName(CharBuffer cb, ServletRequest req) {
+    void appendClientName(CharBuffer cb, ServletRequest req) {
         cb.put(QUOTE);
         String value = req.getRemoteHost();
         if (value == null) {
@@ -445,7 +435,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the client DNS of the given request to the given char
      * buffer.
      */
-    protected void appendClientDNS(CharBuffer cb, ServletRequest req) {
+    void appendClientDNS(CharBuffer cb, ServletRequest req) {
         cb.put(QUOTE);
         String value = req.getRemoteAddr();
         if (value == null) {
@@ -458,7 +448,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the authenticated user (if any) to the given char buffer.
      */
-    protected void appendAuthUserName(CharBuffer cb, HttpServletRequest hreq) {
+    void appendAuthUserName(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String user = hreq.getRemoteUser();
         if (user == null) {
@@ -471,7 +461,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the current date to the given char buffer.
      */
-    protected void appendCurrentDate(CharBuffer cb) {
+    void appendCurrentDate(CharBuffer cb) {
         cb.put(QUOTE);
         Date date = getDate();
         cb.put(dayFormatter.get().format(date));           // Day
@@ -489,7 +479,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends info about the given request to the given char buffer.
      */
-    protected void appendRequestInfo(CharBuffer cb, HttpServletRequest hreq) {
+    void appendRequestInfo(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         cb.put(hreq.getMethod());
         cb.put(SPACE);
@@ -510,7 +500,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the response status to the given char buffer.
      */
-    protected void appendResponseStatus(CharBuffer cb, Response response) {
+    void appendResponseStatus(CharBuffer cb, Response response) {
         cb.put(String.valueOf(((HttpResponse) response).getStatus()));
     }
 
@@ -518,7 +508,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the content length of the given response to the given char
      * buffer.
      */
-    protected void appendResponseLength(CharBuffer cb, Response response) {
+    void appendResponseLength(CharBuffer cb, Response response) {
         cb.put("" + response.getContentCount());
     }
 
@@ -526,7 +516,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the content type of the given response to the given char
      * buffer.
      */
-    protected void appendResponseContentType(CharBuffer cb, Response response) {
+    void appendResponseContentType(CharBuffer cb, Response response) {
         cb.put(response.getContentType());
     }
 
@@ -534,7 +524,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the value of the 'user-agent' header of the given request to
      * the given char buffer.
      */
-    protected void appendUserAgent(CharBuffer cb, HttpServletRequest hreq) {
+    void appendUserAgent(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String ua = hreq.getHeader("user-agent");
         if (ua == null) {
@@ -548,7 +538,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the time (in milliseconds) it has taken to service the given
      * request to the given char buffer.
      */
-    protected void appendTimeTaken(CharBuffer cb, Request req) {
+    void appendTimeTaken(CharBuffer cb, Request req) {
 
         String timeTaken = "NULL-TIME-TAKEN";
 
@@ -568,7 +558,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the value of the 'referer' header of the given request to
      * the given char buffer.
      */
-    protected void appendReferer(CharBuffer cb, HttpServletRequest hreq) {
+    void appendReferer(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String referer = hreq.getHeader("referer");
         if (referer == null) {
@@ -582,7 +572,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the Accept header of the given request to the given char
      * buffer.
      */
-    protected void appendHeaderAccept(CharBuffer cb, HttpServletRequest hreq) {
+    void appendHeaderAccept(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String accept = hreq.getHeader(HTTP_HEADER_ACCEPT);
         if (accept == null) {
@@ -596,7 +586,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the Authorization header of the given request to the given char
      * buffer.
      */
-    protected void appendHeaderAuth(CharBuffer cb, HttpServletRequest hreq) {
+    void appendHeaderAuth(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String auth = hreq.getHeader(HTTP_HEADER_AUTHORIZATION);
         if (auth == null) {
@@ -609,7 +599,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the Date header of the given request to the given char buffer.
      */
-    protected void appendHeaderDate(CharBuffer cb, HttpServletRequest hreq) {
+    void appendHeaderDate(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String date = hreq.getHeader(HTTP_HEADER_DATE);
         if (date == null) {
@@ -623,7 +613,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the If-Modified-Since header of the given request to the
      * given char buffer.
      */
-    protected void appendHeaderIfModSince(CharBuffer cb,
+    void appendHeaderIfModSince(CharBuffer cb,
                                         HttpServletRequest hreq) {
         cb.put(QUOTE);
         String ifModSince = hreq.getHeader(HTTP_HEADER_IF_MODIFIED_SINCE);
@@ -639,7 +629,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * request to the given char buffer, or NULL-HEADER-<headerName> if no
      * header with the given name is present in the request..
      */
-    protected void appendHeaderByName(CharBuffer cb,
+    void appendHeaderByName(CharBuffer cb,
                                     String headerName,
                                     HttpServletRequest hreq) {
         if (headerName == null) {
@@ -661,7 +651,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * NULL-RESPONSE-HEADER-<headerName> if no header with the given name
      * is present in the response.
      */
-    protected void appendResponseHeaderByName(CharBuffer cb,
+    void appendResponseHeaderByName(CharBuffer cb,
                                             String headerName,
                                             HttpServletResponse hres, Response response) {
         if (headerName == null) {
@@ -689,7 +679,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * NULL-HEADERS-<headerName> if no headers with the given name are
      * present in the request..
      */
-    protected void appendHeadersByName(CharBuffer cb,
+    void appendHeadersByName(CharBuffer cb,
                                      String headerName,
                                      HttpServletRequest hreq) {
         if (headerName == null) {
@@ -723,7 +713,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * NULL-RESPONSE-HEADERS-<headerName> if no headers with the given name
      * are present in the response.
      */
-    protected void appendResponseHeadersByName(CharBuffer cb,
+    void appendResponseHeadersByName(CharBuffer cb,
             String headerName, HttpServletResponse hres, Response response) {
         if (headerName == null) {
             throw new IllegalArgumentException("Null response header name");
@@ -764,7 +754,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * in the given request to the given char buffer, or NULL-COOKIE if no
      * cookies are present in the request.
      */
-    protected void appendCookie(CharBuffer cb, HttpServletRequest hreq) {
+    void appendCookie(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String cookie = "NULL-COOKIE";
         Cookie[] cookies = hreq.getCookies();
@@ -780,7 +770,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * (separated by ';') in the given request to the given char buffer,
      * or NULL-COOKIES if no cookies are present in the request.
      */
-    protected void appendCookies(CharBuffer cb, HttpServletRequest hreq) {
+    void appendCookies(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         Cookie[] cookies = hreq.getCookies();
         if (cookies != null && cookies.length > 0) {
@@ -801,7 +791,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * given char buffer, or NULL-COOKIE-VALUE if no cookies are present
      * in the request.
      */
-    protected void appendCookieValue(CharBuffer cb, HttpServletRequest hreq) {
+    void appendCookieValue(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String cookieValue = "NULL-COOKIE-VALUE";
         Cookie[] cookies = hreq.getCookies();
@@ -817,7 +807,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * given char buffer, or NULL-COOKIE-<cookieName> if no cookies with the
      * given cookie name are present in the request.
      */
-    protected void appendCookieByName(CharBuffer cb,
+    void appendCookieByName(CharBuffer cb,
                                     String cookieName,
                                     HttpServletRequest hreq) {
         if (cookieName == null) {
@@ -848,7 +838,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * given char buffer, or NULL-COOKIES-<cookieName> if no cookies with the
      * given cookie name are present in the request.
      */
-    protected void appendCookiesByName(CharBuffer cb,
+    void appendCookiesByName(CharBuffer cb,
                                      String cookieName,
                                      HttpServletRequest hreq) {
         if (cookieName == null) {
@@ -878,7 +868,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the HTTP method of the given request to the given char buffer.
      */
-    protected void appendHTTPMethod(CharBuffer cb, HttpServletRequest hreq) {
+    void appendHTTPMethod(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String method = hreq.getMethod();
         if (method == null) {
@@ -891,7 +881,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the URI of the given request to the given char buffer.
      */
-    protected void appendHTTPUri(CharBuffer cb, HttpServletRequest hreq) {
+    void appendHTTPUri(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String uri = hreq.getRequestURI();
         if (uri == null) {
@@ -905,7 +895,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the HTTP protocol version of the given request to the given
      * char buffer.
      */
-    protected void appendHTTPVersion(CharBuffer cb, HttpServletRequest hreq) {
+    void appendHTTPVersion(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String protocol = hreq.getProtocol();
         if (protocol == null) {
@@ -918,7 +908,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
     /*
      * Appends the query string of the given request to the given char buffer.
      */
-    protected void appendQueryString(CharBuffer cb, HttpServletRequest hreq) {
+    void appendQueryString(CharBuffer cb, HttpServletRequest hreq) {
         cb.put(QUOTE);
         String query = hreq.getQueryString();
         if (query == null) {
@@ -932,7 +922,7 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
      * Appends the id of the virtual server with which this access log valve
      * has been associated to the given char buffer.
      */
-    protected void appendVirtualServerId(CharBuffer cb) {
+    void appendVirtualServerId(CharBuffer cb) {
         String vsId = "NULL-VIRTUAL-SERVER";
         if (container != null) {
             vsId = container.getName();
