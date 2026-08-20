@@ -146,7 +146,11 @@
         </sun:property>
 
         <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.LogHandler}" helpText="$resource{i18n_web.access.LogHandlerHelp}">
-            <sun:textField id="LogHandler" columns="$int{30}" text="#{pageSession.valueMap2['logHandler']}"/>
+            <sun:dropDown id="LogHandler" selected="#{pageSession.valueMap2['logHandler']}" labels={"Default", "Common", "Combined", "JSON", "Custom"} />
+        </sun:property>
+
+        <sun:property id="customLogHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.CustomLogHandler}" helpText="$resource{i18n_web.access.CustomLogHandlerHelp}">
+            <sun:textField id="CustomLogHandler" columns="$int{30}" text="#{pageSession.valueMap2['customLogHandler']}"/>
         </sun:property>
 
         <sun:property id="formatProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Format}" helpText="$resource{i18n_web.access.FormatHelp}">

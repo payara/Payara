@@ -103,6 +103,7 @@ public final class PEAccessLogValve
     private static final String COMMON_HANDLER = "common";
     private static final String COMBINED_HANDLER = "combined";
     private static final String JSON_HANDLER = "json";
+    private static final String CUSTOM_HANDLER = "custom";
 
     /**
      * Name of the system property whose value specifies the max number of
@@ -840,6 +841,9 @@ public final class PEAccessLogValve
         if (accessLogConfig != null) {
             format = accessLogConfig.getFormat();
             handler = accessLogConfig.getLogHandler();
+            if (CUSTOM_HANDLER.equalsIgnoreCase(handler)) {
+                handler = accessLogConfig.getCustomLogHandler();
+            }
         } else {
             format = ConfigBeansUtilities.getDefaultFormat();
         }
