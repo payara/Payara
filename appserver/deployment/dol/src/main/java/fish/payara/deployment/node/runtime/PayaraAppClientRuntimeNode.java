@@ -91,6 +91,7 @@ public class PayaraAppClientRuntimeNode extends AppClientRuntimeNode {
      * @return the doctype tag name
      */
     public static String registerBundle(Map publicIDToDTD) {
+        publicIDToDTD.put(DTDRegistry.PAYARA5_APPCLIENT_80_DTD_PUBLIC_ID, DTDRegistry.PAYARA5_APPCLIENT_80_DTD_SYSTEM_ID);
         publicIDToDTD.put(DTDRegistry.PAYARA6_APPCLIENT_100_DTD_PUBLIC_ID, DTDRegistry.PAYARA6_APPCLIENT_100_DTD_SYSTEM_ID);
         publicIDToDTD.put(DTDRegistry.PAYARA_APPCLIENT_110_DTD_PUBLIC_ID, DTDRegistry.PAYARA_APPCLIENT_110_DTD_SYSTEM_ID);
         publicIDToDTD.put(DTDRegistry.PAYARA7_APPCLIENT_111_DTD_PUBLIC_ID, DTDRegistry.PAYARA7_APPCLIENT_111_DTD_SYSTEM_ID);
