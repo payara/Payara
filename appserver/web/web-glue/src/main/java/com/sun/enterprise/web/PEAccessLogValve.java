@@ -46,9 +46,12 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.web.accesslog.AccessLogFormatter;
 import com.sun.enterprise.web.accesslog.CombinedAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
+import com.sun.enterprise.web.accesslog.CustomAccessLogFormatter;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
+import com.sun.enterprise.web.accesslog.JsonAccessLogFormatter;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.web.accesslog.AccessLogHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
@@ -59,6 +62,7 @@ import org.glassfish.web.LogFacade;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -97,8 +101,11 @@ public final class PEAccessLogValve
     private static final ResourceBundle _resourceBundle = _logger.getResourceBundle();
 
     // Predefined patterns
-    private static final String COMMON_PATTERN = "common";
-    private static final String COMBINED_PATTERN = "combined";
+    private static final String DEFAULT_HANDLER = "default";
+    private static final String COMMON_HANDLER = "common";
+    private static final String COMBINED_HANDLER = "combined";
+    private static final String JSON_HANDLER = "json";
+    private static final String CUSTOM_HANDLER = "custom";
 
     /**
      * Name of the system property whose value specifies the max number of
@@ -393,15 +400,32 @@ public final class PEAccessLogValve
     /**
      * Set the format pattern, first translating any recognized alias.
      *
-     * @param p The new pattern
+     * @param pattern The new pattern
      */
-    public void setPattern(String p) {
-        if (COMMON_PATTERN.equalsIgnoreCase(p)) {
-            formatter = new CommonAccessLogFormatterImpl();
-        } else if (COMBINED_PATTERN.equalsIgnoreCase(p)) {
-            formatter = new CombinedAccessLogFormatterImpl();
+    public void setPattern(String pattern, String handler) {
+        if (handler != null && !handler.isEmpty()) {
+            if (DEFAULT_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new DefaultAccessLogFormatterImpl(pattern, getContainer());
+            } else if (COMMON_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new CommonAccessLogFormatterImpl();
+            } else if (COMBINED_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new CombinedAccessLogFormatterImpl();
+            } else if (JSON_HANDLER.equalsIgnoreCase(handler)) {
+                formatter = new JsonAccessLogFormatter(pattern, getContainer());
+            } else {
+                try {
+                    Class<? extends AccessLogHandler> handlerClass = Class.forName(handler).asSubclass(AccessLogHandler.class);
+                    formatter = new CustomAccessLogFormatter(handlerClass.getConstructor().newInstance());
+                } catch (ClassNotFoundException e) {
+                    _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") was not found.", e);
+                } catch (ClassCastException e) {
+                    _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") is not derived from AccessLogFormatter.", e);
+                } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+                    _logger.log(Level.SEVERE, "Failed to create access log handler:", e);
+                }
+            }
         } else {
-            formatter = new DefaultAccessLogFormatterImpl(p, getContainer());
+            formatter = new DefaultAccessLogFormatterImpl(pattern, getContainer());
         }
     }
 
@@ -815,12 +839,17 @@ public final class PEAccessLogValve
 
         // access-log format
         String format = null;
+        String handler = null;
         if (accessLogConfig != null) {
             format = accessLogConfig.getFormat();
+            handler = accessLogConfig.getLogHandler();
+            if (CUSTOM_HANDLER.equalsIgnoreCase(handler)) {
+                handler = accessLogConfig.getCustomLogHandler();
+            }
         } else {
             format = ConfigBeansUtilities.getDefaultFormat();
         }
-        setPattern(format);
+        setPattern(format, handler);
 
         // write-interval-seconds
         int interval = 0;
