@@ -46,10 +46,12 @@ import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.web.accesslog.AccessLogFormatter;
 import com.sun.enterprise.web.accesslog.CombinedAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
+import com.sun.enterprise.web.accesslog.CustomAccessLogFormatter;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.JsonAccessLogFormatter;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.util.io.FileUtils;
+import fish.payara.web.accesslog.AccessLogHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
@@ -412,8 +414,8 @@ public final class PEAccessLogValve
                 formatter = new JsonAccessLogFormatter(pattern, getContainer());
             } else {
                 try {
-                    Class<? extends AccessLogFormatter> handlerClass = Class.forName(handler).asSubclass(AccessLogFormatter.class);
-                    formatter = handlerClass.getConstructor().newInstance();
+                    Class<? extends AccessLogHandler> handlerClass = Class.forName(handler).asSubclass(AccessLogHandler.class);
+                    formatter = new CustomAccessLogFormatter(handlerClass.getConstructor().newInstance());
                 } catch (ClassNotFoundException e) {
                     _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") was not found.", e);
                 } catch (ClassCastException e) {
