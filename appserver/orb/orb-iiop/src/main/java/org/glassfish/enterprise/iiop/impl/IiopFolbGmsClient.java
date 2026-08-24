@@ -187,7 +187,9 @@ public class IiopFolbGmsClient implements ClusterListener {
     // Implementation
     //
     private boolean isDeploymentGroupsActive() {
-        return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
+        return cluster != null && cluster.isEnabled()
+                && myServer != null && !myServer.getDeploymentGroup().isEmpty()
+                && cluster.getClusterMembers().size() > 1;
     }
 
     private boolean isTraditionalClusterActive() {
