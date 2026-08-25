@@ -170,6 +170,8 @@
                             !kotlin.*,
                             !org.bouncycastle.*,
                             !org.openjsse.*,
+                            !com.oracle.svm.*,
+                            !org.graalvm.*,
                             *
                         </Import-Package>
                         <!-- Embed the dependencies and then shade them in next step -->
