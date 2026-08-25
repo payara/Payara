@@ -57,6 +57,7 @@ import org.apache.catalina.*;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.web.LogFacade;
 
 import java.io.File;
@@ -414,7 +415,8 @@ public final class PEAccessLogValve
                 formatter = new JsonAccessLogFormatter(pattern, getContainer());
             } else {
                 try {
-                    Class<? extends AccessLogHandler> handlerClass = Class.forName(handler).asSubclass(AccessLogHandler.class);
+                    Class<? extends AccessLogHandler> handlerClass =
+                            Class.forName(handler, true, getHandlerClassLoader()).asSubclass(AccessLogHandler.class);
                     formatter = new CustomAccessLogFormatter(handlerClass.getConstructor().newInstance());
                 } catch (ClassNotFoundException e) {
                     _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") was not found.", e);
@@ -427,6 +429,27 @@ public final class PEAccessLogValve
         } else {
             formatter = new DefaultAccessLogFormatterImpl(pattern, getContainer());
         }
+    }
+
+    /**
+     * Returns the class loader from which a custom access log handler should be loaded.
+     *
+     * <p>A custom handler is user-supplied and therefore lives on the server's common class loader
+     * (e.g. {@code domains/<domain>/lib}), not on this module's (web-glue) class loader. Loading it
+     * with a plain {@link Class#forName(String)} would use this class' loader and fail, so the
+     * common class loader is used instead, matching how other user-configured classes are loaded in
+     * this container.</p>
+     */
+    private ClassLoader getHandlerClassLoader() {
+        Container container = getContainer();
+        if (container instanceof com.sun.enterprise.web.VirtualServer) {
+            ServerContext serverContext = ((com.sun.enterprise.web.VirtualServer) container).getServerContext();
+            if (serverContext != null && serverContext.getCommonClassLoader() != null) {
+                return serverContext.getCommonClassLoader();
+            }
+        }
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        return contextClassLoader != null ? contextClassLoader : getClass().getClassLoader();
     }
 
     /**
