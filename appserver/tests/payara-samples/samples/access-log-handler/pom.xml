@@ -55,7 +55,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <payara.domain.dir>${payara.home}/glassfish/domains</payara.domain.dir>
+        <skipDomain>false</skipDomain>
     </properties>
 
     <dependencies>
@@ -82,6 +82,148 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>package-library</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>lib</classifier>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>setup-00</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="start-domain"/>
+                                </exec>
+                            </target>
+                            <skip>${skipDomain}</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-01</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="add-library"/>
+                                    <arg value="${project.build.directory}/${project.build.finalName}-lib.jar"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-02</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set"/>
+                                    <arg value="configs.config.server-config.http-service.access-log.log-handler=Custom"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-03</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set"/>
+                                    <arg value="configs.config.server-config.http-service.access-log.custom-log-handler=fish.payara.samples.accesslog.CustomAccessLogHandler"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-04</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set"/>
+                                    <arg value="configs.config.server-config.http-service.access-log.write-interval-seconds=0"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-05</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set"/>
+                                    <arg value="configs.config.server-config.http-service.access-log.buffer-size-bytes=0"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-06</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="set"/>
+                                    <arg value="configs.config.server-config.http-service.access-logging-enabled=true"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-07</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="stop-domain"/>
+                                </exec>
+                            </target>
+                            <skip>${skipDomain}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
                     <execution>
@@ -97,9 +239,9 @@
 
     <profiles>
         <profile>
-            <id>payara-server-managed</id>
+            <id>payara-server-remote</id>
             <properties>
-                <payara.home>${session.executionRootDirectory}/target/${payara.directory.name}</payara.home>
+                <skipDomain>true</skipDomain>
             </properties>
         </profile>
     </profiles>

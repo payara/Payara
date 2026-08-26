@@ -1,6 +1,5 @@
 package fish.payara.samples.accesslog;
 
-import fish.payara.samples.CliCommands;
 import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.PayaraTestShrinkWrap;
@@ -16,18 +15,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import static org.junit.Assert.fail;
@@ -45,44 +38,13 @@ public class CustomAccessLogHandlerIT {
 
     @Deployment
     public static WebArchive createDeployment () {
-        return PayaraTestShrinkWrap.getWebArchive()
-                .addClass(CustomAccessLogHandler.class);
+        return PayaraTestShrinkWrap.getWebArchive();
     }
 
     @Test
     public void applyCustomHandlerIT() throws Exception {
-        // Add handler class to lib.
-        String resourceName = CustomAccessLogHandler.class.getName().replace('.', '/') + ".class";
-        Path target = ServerOperations.getDomainPath("lib").resolve("classes").resolve(resourceName);
-        Files.createDirectories(target.getParent());
-
-        try (InputStream classBytes = CustomAccessLogHandlerIT.class.getClassLoader().getResourceAsStream(resourceName)) {
-            if (classBytes == null) {
-                fail("Could not locate compiled handler class on the test class path: " + resourceName);
-            }
-            Files.copy(classBytes, target, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        // Set config to use the custom handler.
-        List<List<String>> in = List.of(
-                List.of("set", ACCESS_LOG + "log-handler=Custom"),
-                List.of("set", ACCESS_LOG + "custom-log-handler=" + CustomAccessLogHandler.class.getName()),
-                List.of("set", ACCESS_LOG + "write-interval-seconds=0"),
-                List.of("set", ACCESS_LOG + "buffer-size-bytes=0"),
-                List.of("set", HTTP_CONFIG + "access-logging-enabled=true"));
-
-        for (List<String> command : in) {
-            List<String> out = new ArrayList<>();
-            CliCommands.payaraGlassFish(command, out);
-            Assert.assertTrue("Failure executing command: " + String.join(" ", command)
-                            + "\nServer responded: " + String.join(", ", out),
-                    out.contains("Command set executed successfully."));
-        }
-
-        // Ping an arbitrary URL for logging.
         ping(new URL(baseURL + ARBITRARY_RESOURCE));
 
-        // Test the log file contents.
         File log = getLogFile();
         if (log == null) {
             Assert.fail("Access Log file was not found.");
@@ -90,7 +52,6 @@ public class CustomAccessLogHandlerIT {
 
         String line = getAccessLogEntry(log);
         Assert.assertNotNull("Access Log file was empty or did not contain the tested URL.", line);
-        Files.deleteIfExists(target);
     }
 
     private void ping(URL url) throws URISyntaxException, IOException, InterruptedException {
