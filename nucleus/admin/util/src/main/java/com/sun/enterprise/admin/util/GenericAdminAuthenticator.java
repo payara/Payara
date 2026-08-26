@@ -44,6 +44,7 @@ package com.sun.enterprise.admin.util;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.auth.realm.NoSuchUserException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.file.FileRealmUser;
@@ -351,7 +352,11 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      * When enabled, the server trusts X-Real-IP and X-Forwarded-For headers.
      */
     private boolean isBehindProxyEnabled() {
-        Config config = domain.getServerNamed("server").getConfig();
+        Server server = domain.getServerNamed(serverEnv.getInstanceName());
+        if (server == null) {
+            return false;
+        }
+        Config config = server.getConfig();
         Protocol protocol = config.getAdminListener().findHttpProtocol();
         Http http = protocol != null ? protocol.getHttp() : null;
         return http != null && http.isBehindProxy();
