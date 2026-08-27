@@ -301,6 +301,11 @@ public final class PEAccessLogValve
     private AccessLogFormatter formatter;
 
     /**
+     * Classloader for domain-dir/lib
+     */
+    private ClassLoader commonClassLoader;
+
+    /**
      * Simple lock
      */
     private Object lock = new Object();
@@ -416,9 +421,9 @@ public final class PEAccessLogValve
             } else {
                 try {
                     Class<? extends AccessLogHandler> handlerClass =
-                            Class.forName(handler, true, getHandlerClassLoader()).asSubclass(AccessLogHandler.class);
+                            Class.forName(handler, true, getClassLoader()).asSubclass(AccessLogHandler.class);
                     formatter = new CustomAccessLogFormatter(handlerClass.getConstructor().newInstance());
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") was not found.", e);
                 } catch (ClassCastException e) {
                     _logger.log(Level.SEVERE, "Access Log handler class (" + handler + ") is not derived from AccessLogFormatter.", e);
@@ -431,25 +436,12 @@ public final class PEAccessLogValve
         }
     }
 
-    /**
-     * Returns the class loader from which a custom access log handler should be loaded.
-     *
-     * <p>A custom handler is user-supplied and therefore lives on the server's common class loader
-     * (e.g. {@code domains/<domain>/lib}), not on this module's (web-glue) class loader. Loading it
-     * with a plain {@link Class#forName(String)} would use this class' loader and fail, so the
-     * common class loader is used instead, matching how other user-configured classes are loaded in
-     * this container.</p>
-     */
-    private ClassLoader getHandlerClassLoader() {
-        Container container = getContainer();
-        if (container instanceof com.sun.enterprise.web.VirtualServer) {
-            ServerContext serverContext = ((com.sun.enterprise.web.VirtualServer) container).getServerContext();
-            if (serverContext != null && serverContext.getCommonClassLoader() != null) {
-                return serverContext.getCommonClassLoader();
-            }
+    private ClassLoader getClassLoader() {
+        if (commonClassLoader != null) {
+            return commonClassLoader;
         }
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        return contextClassLoader != null ? contextClassLoader : getClass().getClassLoader();
+
+        return getClass().getClassLoader();
     }
 
     /**
@@ -739,7 +731,12 @@ public final class PEAccessLogValve
             
         setPrefix(vsId + fac.getDefaultAccessLogPrefix());
         setFilter(httpService.getAccessLog().getFilter());
-        
+
+        ServerContext serverContext = habitat.getService(ServerContext.class);
+        if (serverContext != null) {
+            commonClassLoader = serverContext.getCommonClassLoader();
+        }
+
         boolean start = updateVirtualServerProperties(
                 vsId, vsBean, domain, habitat, globalAccessLogBufferSize,
                 globalAccessLogWriteInterval, globalAccessLogPrefix);
