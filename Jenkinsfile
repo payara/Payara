@@ -115,6 +115,7 @@ pipeline {
                          -Djavax.xml.accessExternalSchema=all \
                          -Dsurefire.rerunFailingTestsCount=2 \
                          -Dfailsafe.rerunFailingTestsCount=2 \
+                         -Dpayara.asadmin="${pwd()}/payara7/bin/asadmin" \
                          -f appserver/tests/payara-samples """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
