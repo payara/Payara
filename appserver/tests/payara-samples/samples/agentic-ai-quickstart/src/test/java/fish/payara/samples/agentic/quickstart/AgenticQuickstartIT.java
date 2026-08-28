@@ -44,6 +44,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,6 +54,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 
 /**
@@ -67,19 +69,39 @@ public class AgenticQuickstartIT {
     @ArquillianResource
     private URL url;
 
+    /**
+     * Deploys the module's own built WAR (with {@link StubLargeLanguageModel}
+     * merged in) rather than reassembling it from {@code addClass(...)}.
+     * <p>
+     * This matters on the embedded container, which boots the server in the test
+     * JVM: the {@code @Agent}'s phase methods are package-private, and Weld can
+     * only override them in its client proxy when {@code QuestionAgent} is loaded
+     * by the same classloader as that proxy — the webapp classloader. But the
+     * module also compiles {@code QuestionAgent} into {@code target/classes},
+     * which is on the in-JVM system classpath, and GlassFish web classloaders
+     * delegate to the parent first: Weld would load the agent from the system
+     * classpath, its proxy could not override the package-private {@code @Action},
+     * and the injected {@code LargeLanguageModel} would be null at runtime.
+     * <p>
+     * A {@code glassfish-web.xml} with {@code delegate="false"} makes the webapp
+     * classloader resolve application classes child-first, so the agent is loaded
+     * from {@code WEB-INF/classes} alongside its Weld proxy. On the out-of-process
+     * containers the agent isn't on the server classpath at all, so this is a
+     * harmless no-op there. The stub is added directly because its methods are
+     * public, so it is safe on the classpath.
+     */
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "agentic-ai-quickstart.war")
-                .addClass(RestApplication.class)
-                .addClass(AskResource.class)
-                .addClass(QuestionAgent.class)
-                .addClass(Question.class)
-                .addClass(AnswerStore.class)
+        return ShrinkWrap.create(ZipImporter.class, "agentic-ai-quickstart.war")
+                .importFrom(new File("target", "agentic-ai-quickstart.war"))
+                .as(WebArchive.class)
                 .addClass(StubLargeLanguageModel.class)
                 .addAsWebInfResource(
-                        new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" "
-                                + "version=\"4.0\" bean-discovery-mode=\"all\"/>"),
-                        "beans.xml");
+                        new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                                + "<glassfish-web-app>\n"
+                                + "    <class-loader delegate=\"false\"/>\n"
+                                + "</glassfish-web-app>\n"),
+                        "glassfish-web.xml");
     }
 
     @Test
