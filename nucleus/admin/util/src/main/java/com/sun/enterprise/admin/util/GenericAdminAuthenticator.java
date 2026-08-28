@@ -58,6 +58,7 @@ import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Set;
+
 import java.util.logging.Level;
 
 import org.glassfish.api.container.Sniffer;
@@ -140,6 +141,8 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private AuthTokenManager authTokenManager;
     
     private SecureAdmin secureAdmin;
+
+    private volatile boolean behindProxyWarningLogged = false;
 
     @Inject
     ServerEnvironment serverEnv;
@@ -354,6 +357,14 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private boolean isBehindProxyEnabled() {
         Server server = domain.getServerNamed(serverEnv.getInstanceName());
         if (server == null) {
+            if (!behindProxyWarningLogged) {
+                behindProxyWarningLogged = true;
+                ADMSEC_LOGGER.log(Level.WARNING,
+                        "Server instance {0} not found in domain configuration; behind-proxy detection disabled for admin authentication. "
+                        + "If a reverse proxy is in use, all login attempts will be tracked under the proxy''s IP address rather than the real client IP, "
+                        + "reducing brute-force protection accuracy.",
+                        serverEnv.getInstanceName());
+            }
             return false;
         }
         Config config = server.getConfig();
