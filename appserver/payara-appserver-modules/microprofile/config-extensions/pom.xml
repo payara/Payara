@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright (c) 2020-2025 Payara Foundation and/or its affiliates. All rights reserved.
+  Copyright (c) 2020-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
   The contents of this file are subject to the terms of either the GNU
   General Public License Version 2 only ("GPL") or the Common Development
@@ -51,6 +51,27 @@
     <packaging>glassfish-jar</packaging>
     <name>Microprofile-Config-Extensions</name>
     <description>Implementation of Microprofile Configuration API</description>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                      useModulePath=false keeps tests on the classpath (unnamed module).
+                      This prevents Surefire's JPMS path resolver from raising
+                      "Module X is already on the module path" when named transitive
+                      dependencies appear twice (once from the module-info requires and
+                      once from Maven's dependency tree). The module-info.java is still
+                      compiled into the production JAR; tests simply run outside the
+                      module boundary, which is fine for unit tests.
+                    -->
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
