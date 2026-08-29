@@ -49,9 +49,15 @@
  * class-model, Payara internal modules) do not yet have their own module-info.java and
  * appear on the module path as automatic modules with the derived names used here.
  *
- * SPI note: ConfigProviderResolverSync lives in the microprofile-config-service module.
- * Its META-INF/services registration has been moved there. This module declares only the
- * consumer side with 'uses'.
+ * SPI note: this module keeps META-INF/services/org.eclipse.microprofile.config.spi.ConfigProviderResolver
+ * pointing to ConfigProviderResolverSync (which lives in microprofile-config-service).
+ * As a named JPMS module, that services file is invisible to JPMS ServiceLoader — only an explicit
+ * 'provides' declaration would be used by the JVM. Because the implementation class is in a different
+ * module a cross-module 'provides' is illegal in JPMS, so this module only declares 'uses'.
+ * OSGi reads META-INF/services files independently of JPMS, so the production OSGi runtime still
+ * discovers the shim correctly.
+ * Future: once microprofile-config-service has its own module-info.java, add 'provides' there and
+ * remove the META-INF/services file from this module.
  */
 module fish.payara.microprofile.config {
 
@@ -101,8 +107,13 @@ module fish.payara.microprofile.config {
     opens fish.payara.microprofile.config.cdi;
     opens fish.payara.microprofile.config.cdi.model;
 
-    // ── SPI: this module is a consumer of ConfigProviderResolver ─────────────
-    // The 'provides' declaration (ConfigProviderResolverSync) has moved to the
-    // microprofile-config-service module, which is the correct home for the impl.
+    // ── SPI ───────────────────────────────────────────────────────────────────
+    // This module is a CONSUMER of ConfigProviderResolver.
+    // The META-INF/services file in this module (for OSGi) points to
+    // ConfigProviderResolverSync in microprofile-config-service, but JPMS
+    // ServiceLoader ignores META-INF/services in named modules — only a
+    // 'provides' declaration matters for the JVM module system. A cross-module
+    // 'provides' is illegal in JPMS, so no 'provides' is declared here.
+    // When microprofile-config-service gains module-info.java, move 'provides' there.
     uses org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 }
