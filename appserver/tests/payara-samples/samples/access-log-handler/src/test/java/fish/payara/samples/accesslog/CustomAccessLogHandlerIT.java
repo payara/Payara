@@ -1,6 +1,5 @@
 package fish.payara.samples.accesslog;
 
-import fish.payara.samples.NotMicroCompatible;
 import fish.payara.samples.PayaraArquillianTestRunner;
 import fish.payara.samples.PayaraTestShrinkWrap;
 import fish.payara.samples.ServerOperations;
@@ -25,11 +24,8 @@ import java.util.Scanner;
 
 import static org.junit.Assert.fail;
 
-@NotMicroCompatible
 @RunWith(PayaraArquillianTestRunner.class)
 public class CustomAccessLogHandlerIT {
-    private static final String HTTP_CONFIG = "configs.config.server-config.http-service.";
-    private static final String ACCESS_LOG = HTTP_CONFIG + "access-log.";
     private static final String ACCESS_LOG_FILE_PREFIX = "server_access_log";
     private static final String ARBITRARY_RESOURCE = "arbitrary-resource";
 
@@ -68,6 +64,11 @@ public class CustomAccessLogHandlerIT {
     private File getLogFile() {
         File accessLogFolder = ServerOperations.getDomainPath("logs").resolve("access").toFile();
         File accessLog = null;
+
+        // The Micro version of the test places the access log in the same folder as the server.log
+        if (!accessLogFolder.isDirectory()) {
+            accessLogFolder = ServerOperations.getDomainPath("logs").toFile();
+        }
 
         if (accessLogFolder.isDirectory()) {
             File[] files = accessLogFolder.listFiles();

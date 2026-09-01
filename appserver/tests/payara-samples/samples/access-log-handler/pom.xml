@@ -55,7 +55,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <skipDomain>false</skipDomain>
+        <micro.preboot>${basedir}/src/test/resources/micro-pre-boot-commands.txt</micro.preboot>
     </properties>
 
     <dependencies>
@@ -101,103 +101,68 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>setup-00</id>
+                        <id>create-micro-pre-boot-file</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
-                                <exec executable="${payara.asadmin}">
-                                    <arg value="start-domain"/>
-                                </exec>
+                            <target if="payara.micro.managed">
+                                <echo file="${micro.preboot}">add-library ${project.build.directory}/${project.build.finalName}-lib.jar</echo>
+                                <echo file="${micro.preboot}" append="true">${line.separator}set configs.config.server-config.http-service.access-log.log-handler=Custom</echo>
+                                <echo file="${micro.preboot}" append="true">${line.separator}set configs.config.server-config.http-service.access-log.custom-log-handler=fish.payara.samples.accesslog.CustomAccessLogHandler</echo>
+                                <echo file="${micro.preboot}" append="true">${line.separator}set configs.config.server-config.http-service.access-log.write-interval-seconds=0</echo>
+                                <echo file="${micro.preboot}" append="true">${line.separator}set configs.config.server-config.http-service.access-log.buffer-size-bytes=0</echo>
+                                <echo file="${micro.preboot}" append="true">${line.separator}set configs.config.server-config.http-service.access-logging-enabled=true</echo>
+                                <echo file="${micro.preboot}" append="true">${line.separator}set configs.config.server-config.http-service.virtual-server.server.access-logging-enabled=true</echo>
                             </target>
-                            <skip>${skipDomain}</skip>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>setup-01</id>
+                        <id>start-managed-payara-server</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <skip>${skipConfig}</skip>
+                            <target if="payara.server.managed">
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="start-domain"/>
+                                    <arg value="${payara.domain.name}"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-access-logging</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipConfig}</skip>
+                            <target unless="payara.micro.managed">
                                 <exec executable="${payara.asadmin}">
                                     <arg value="add-library"/>
                                     <arg value="${project.build.directory}/${project.build.finalName}-lib.jar"/>
                                 </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>setup-02</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
                                 <exec executable="${payara.asadmin}">
                                     <arg value="set"/>
                                     <arg value="configs.config.server-config.http-service.access-log.log-handler=Custom"/>
                                 </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>setup-03</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
                                 <exec executable="${payara.asadmin}">
                                     <arg value="set"/>
                                     <arg value="configs.config.server-config.http-service.access-log.custom-log-handler=fish.payara.samples.accesslog.CustomAccessLogHandler"/>
                                 </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>setup-04</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
                                 <exec executable="${payara.asadmin}">
                                     <arg value="set"/>
                                     <arg value="configs.config.server-config.http-service.access-log.write-interval-seconds=0"/>
                                 </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>setup-05</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
                                 <exec executable="${payara.asadmin}">
                                     <arg value="set"/>
                                     <arg value="configs.config.server-config.http-service.access-log.buffer-size-bytes=0"/>
                                 </exec>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>setup-06</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
                                 <exec executable="${payara.asadmin}">
                                     <arg value="set"/>
                                     <arg value="configs.config.server-config.http-service.access-logging-enabled=true"/>
@@ -206,18 +171,19 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>setup-07</id>
+                        <id>stop-managed-payara-server</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <skip>${skipConfig}</skip>
+                            <target if="payara.server.managed">
                                 <exec executable="${payara.asadmin}">
                                     <arg value="stop-domain"/>
+                                    <arg value="${payara.domain.name}"/>
                                 </exec>
                             </target>
-                            <skip>${skipDomain}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -239,10 +205,19 @@
 
     <profiles>
         <profile>
-            <id>payara-server-remote</id>
-            <properties>
-                <skipDomain>true</skipDomain>
-            </properties>
+            <id>payara-micro-managed</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <EXTRA_MICRO_OPTIONS>--prebootcommandfile ${basedir}/src/test/resources/micro-pre-boot-commands.txt</EXTRA_MICRO_OPTIONS>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
