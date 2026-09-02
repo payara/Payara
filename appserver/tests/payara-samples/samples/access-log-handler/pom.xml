@@ -55,7 +55,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <micro.preboot>${basedir}/src/test/resources/micro-pre-boot-commands.txt</micro.preboot>
+        <micro.preboot>${project.build.directory}/micro-pre-boot-commands.txt</micro.preboot>
     </properties>
 
     <dependencies>
@@ -212,7 +212,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <environmentVariables>
-                                <EXTRA_MICRO_OPTIONS>--prebootcommandfile ${basedir}/src/test/resources/micro-pre-boot-commands.txt</EXTRA_MICRO_OPTIONS>
+                                <EXTRA_MICRO_OPTIONS>--prebootcommandfile ${micro.preboot}</EXTRA_MICRO_OPTIONS>
                             </environmentVariables>
                         </configuration>
                     </plugin>
