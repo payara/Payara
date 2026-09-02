@@ -357,9 +357,9 @@
             <build>
                 <plugins>
                     <!--
-                    The embedded container boots GlassFish in-process, so (unlike the
+                    The embedded container boots Payara in-process, so (unlike the
                     separate-process server/micro containers) the test JVM itself needs
-                    the JDK module openings GlassFish requires on JDK 17+.
+                    the JDK module openings Payara requires on JDK 17+.
                     -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
