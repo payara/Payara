@@ -445,6 +445,7 @@
             <id>web</id>
             <properties>
                 <payara.server.artifact>payara-web</payara.server.artifact>
+                <payara.embedded.artifact>payara-embedded-web</payara.embedded.artifact>
             </properties>
         </profile>
     </profiles>
