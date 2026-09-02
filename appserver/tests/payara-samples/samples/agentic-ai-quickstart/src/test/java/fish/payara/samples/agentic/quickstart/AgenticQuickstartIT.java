@@ -43,7 +43,6 @@ import fish.payara.samples.PayaraArquillianTestRunner;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
@@ -70,38 +69,27 @@ public class AgenticQuickstartIT {
     private URL url;
 
     /**
-     * Deploys the module's own built WAR (with {@link StubLargeLanguageModel}
-     * merged in) rather than reassembling it from {@code addClass(...)}.
+     * Deploys the module's own built WAR and merges in {@link StubLargeLanguageModel}
+     * so the workflow can run without a live LLM.
      * <p>
-     * This matters on the embedded container, which boots the server in the test
-     * JVM: the {@code @Agent}'s phase methods are package-private, and Weld can
-     * only override them in its client proxy when {@code QuestionAgent} is loaded
-     * by the same classloader as that proxy — the webapp classloader. But the
-     * module also compiles {@code QuestionAgent} into {@code target/classes},
-     * which is on the in-JVM system classpath, and GlassFish web classloaders
-     * delegate to the parent first: Weld would load the agent from the system
-     * classpath, its proxy could not override the package-private {@code @Action},
-     * and the injected {@code LargeLanguageModel} would be null at runtime.
-     * <p>
-     * A {@code glassfish-web.xml} with {@code delegate="false"} makes the webapp
-     * classloader resolve application classes child-first, so the agent is loaded
-     * from {@code WEB-INF/classes} alongside its Weld proxy. On the out-of-process
-     * containers the agent isn't on the server classpath at all, so this is a
-     * harmless no-op there. The stub is added directly because its methods are
-     * public, so it is safe on the classpath.
+     * This runs against the out-of-process containers only (the managed Payara
+     * Server and Payara Micro profiles). The {@code payara-server-embedded} profile
+     * is intentionally skipped for this sample — see this module's POM: the embedded
+     * Arquillian container boots the server in the test JVM, which places the
+     * module's own {@code target/classes} on the system classpath. Because the
+     * {@code @Agent}'s phase methods are package-private, Weld can only override them
+     * in a client proxy loaded by the same classloader as the bean; the embedded
+     * container's parent-first delegation would instead resolve {@code QuestionAgent}
+     * from the system classpath, leaving the injected {@code LargeLanguageModel}
+     * null. That is an artefact of the in-JVM harness, not of a real deployment, so
+     * no classloader tweaks are needed on the containers this sample is verified on.
      */
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(ZipImporter.class, "agentic-ai-quickstart.war")
                 .importFrom(new File("target", "agentic-ai-quickstart.war"))
                 .as(WebArchive.class)
-                .addClass(StubLargeLanguageModel.class)
-                .addAsWebInfResource(
-                        new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                                + "<glassfish-web-app>\n"
-                                + "    <class-loader delegate=\"false\"/>\n"
-                                + "</glassfish-web-app>\n"),
-                        "glassfish-web.xml");
+                .addClass(StubLargeLanguageModel.class);
     }
 
     @Test

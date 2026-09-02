@@ -103,4 +103,32 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <!--
+            The embedded Arquillian container boots the server inside the test JVM, which puts
+            this module's own target/classes on the system classpath. Because the @Agent's phase
+            methods (@Trigger/@Decision/@Action/@Outcome) are package-private, Weld can only
+            override them in a client proxy loaded by the same classloader as the bean; the
+            embedded container's parent-first delegation would instead resolve QuestionAgent from
+            the system classpath, so the proxy could not override the package-private @Action and
+            the injected LargeLanguageModel would be null. That is an artefact of the in-JVM
+            harness, not of a real deployment, so this sample is verified against the managed
+            Payara Server and Payara Micro profiles (out-of-process) and skips the embedded one.
+        -->
+        <profile>
+            <id>payara-server-embedded</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
