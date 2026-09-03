@@ -95,6 +95,7 @@
         that other modules depend on
         -->
         <module>ejb-invoker-secure-endpoint</module>
+        <module>access-log-handler</module>
         <!-- Can be executed in parallel -->
         <module>samples</module>
         <module>repackaged</module>

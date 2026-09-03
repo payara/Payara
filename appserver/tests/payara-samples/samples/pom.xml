@@ -76,7 +76,6 @@
         <module>realm-identity-stores</module>
         <module>http</module>
         <module>logging</module>
-        <module>access-log-handler</module>
         <module>ejb-http-remoting</module>
         <module>remote-ejb-tracing</module>
         <module>rolesallowed-unprotected-methods</module>
