@@ -116,6 +116,7 @@ pipeline {
                          -Dsurefire.rerunFailingTestsCount=2 \
                          -Dfailsafe.rerunFailingTestsCount=2 \
                          -Dpayara.home="${pwd()}/payara7" \
+                         -Dpayara.domain.name=test-domain \
                          -f appserver/tests/payara-samples """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }

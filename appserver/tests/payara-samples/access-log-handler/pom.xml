@@ -219,6 +219,10 @@
                                     <arg value="set"/>
                                     <arg value="configs.config.server-config.http-service.access-logging-enabled=false"/>
                                 </exec>
+                                <exec executable="${payara.asadmin}">
+                                    <arg value="restart-domain"/>
+                                    <arg value="${payara.domain.name}"/>
+                                </exec>
                             </target>
                         </configuration>
                     </execution>
