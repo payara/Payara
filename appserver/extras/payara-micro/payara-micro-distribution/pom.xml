@@ -501,6 +501,13 @@
         </dependency>
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>agentic-ai</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>payara-mvc</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
