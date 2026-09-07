@@ -66,10 +66,84 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <!--
+            The OTel API/SDK core artifacts below are pulled in transitively by the
+            autoconfigure/exporter dependencies above, but Payara's dependencyManagement pins them
+            to 'provided'. The maven-shade-plugin (used to build the merged side jar) does NOT
+            include provided-scope dependencies, so without these explicit compile-scope
+            declarations their classes (e.g. io.opentelemetry.api.OpenTelemetry, the whole SDK)
+            are dropped from the bundle and OpenTelemetryBootstrap fails at boot with
+            NoClassDefFoundError. Declaring them here at compile scope makes shade embed them.
+        -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-context</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-common</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-common</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-trace</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-metrics</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-logs</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-extension-autoconfigure-spi</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-common</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp-common</artifactId>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>${opentelemetry-instrumentation-annotations.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
             <exclusions>
@@ -83,10 +157,9 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-            <version>${opentelemetry-instrumentation-annotation-support.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
-            <exclusions>               
+            <exclusions>
                 <exclusion>
                     <groupId>io.opentelemetry</groupId>
                     <artifactId>opentelemetry-api</artifactId>
@@ -102,13 +175,6 @@
             <artifactId>opentelemetry-exporter-otlp</artifactId>
             <scope>compile</scope>
             <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <!-- okhttp3 version 4 is kotlin-based, bring in kotlin stdlib -->
-                    <groupId>com.squareup.okhttp3</groupId>
-                    <artifactId>okhttp</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.semconv</groupId>
@@ -119,16 +185,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-logging</artifactId>
-            <version>${opentelemetry.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <!-- Not a perfect solution to the problem, but we need to wait for OTEL project
-             to decouple their exporter from OkHttp so that we can replace HTTP transport -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>${okhttp3-version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -145,13 +201,61 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <createSourcesJar>false</createSourcesJar>
+                    <!-- Write a side jar; the bundle plugin inlines it and owns the OSGi manifest -->
+                    <outputFile>${project.build.directory}/otel-deps-shaded.jar</outputFile>
+                    <artifactSet>
+                        <includes>
+                            <include>io.opentelemetry:*</include>
+                            <include>io.opentelemetry.instrumentation:*</include>
+                            <include>io.opentelemetry.semconv:*</include>
+                            <include>com.squareup.*:*</include>
+                            <include>org.jetbrains.kotlin:*</include>
+                        </includes>
+                    </artifactSet>
+                    <transformers>
+                        <!-- Concatenate META-INF/services across the exporter jars (the fix) -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    </transformers>
+                    <relocations>
+                        <relocation>
+                            <pattern>okhttp3.</pattern>
+                            <shadedPattern>fish.payara.shaded.okhttp3.</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio.</pattern>
+                            <shadedPattern>fish.payara.shaded.okio.</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>kotlin.</pattern>
+                            <shadedPattern>fish.payara.shaded.kotlin.</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
-                        <Export-Package>
+                        <!-- Export all io.opentelemetry packages from the included side jar.
+                             The wildcard works because the OTel API/SDK core artifacts are declared
+                             at compile scope above, so bnd sees them on its analysis classpath. -->
+                        <_exportcontents>
                             io.opentelemetry.*;version=${opentelemetry.version}
-                        </Export-Package>
+                        </_exportcontents>
                         <!-- Import API classes, not bundled okhttp -->
                         <Import-Package>
                             !okhttp.*, !fish.payara.shaded.*, !android.*,
@@ -174,15 +278,10 @@
                             !org.graalvm.*,
                             *
                         </Import-Package>
-                        <!-- Embed the dependencies and then shade them in next step -->
-                        <Embed-Dependency>
-                            *;groupId=com.squareup.*;inline=true,
-                            *;groupId=io.opentelemetry;inline=true,
-                            *;groupId=io.opentelemetry.instrumentation;inline=true,
-                            *;groupId=io.opentelemetry.semconv;inline=true,
-                            *;groupId=org.jetbrains.kotlin.*;inline=true
-                        </Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
+                        <!-- Inline the merged side jar produced by the shade plugin above -->
+                        <Include-Resource>
+                            @${project.build.directory}/otel-deps-shaded.jar
+                        </Include-Resource>
                     </instructions>
                 </configuration>
                 <executions>
@@ -193,58 +292,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>${maven.shade.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <createSourcesJar>true</createSourcesJar>
-                    <artifactSet>
-                        <includes>
-                            <include>com.squareup.*:*</include>
-                            <include>org.jetbrains.kotlin.*:*</include>
-                        </includes>
-                    </artifactSet>
-                    <filters>
-                        <!-- bundle plugin already inlined the classes, so we can skip the contents -->
-                        <filter>
-                            <artifact>com.squareup.*:*</artifact>
-                            <excludes>
-                                <exclude>**</exclude>
-                            </excludes>
-                        </filter>
-                        <filter>
-                            <artifact>org.jetbrains.kotlin.*:*</artifact>
-                            <excludes>
-                                <exclude>**</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <relocations>
-                        <relocation>
-                            <pattern>okhttp3.</pattern>
-                            <shadedPattern>fish.payara.shaded.okhttp3.</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>okio.</pattern>
-                            <shadedPattern>fish.payara.shaded.okio.</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>kotlin.</pattern>
-                            <shadedPattern>fish.payara.shaded.kotlin.</shadedPattern>
-                        </relocation>
-                    </relocations>
-                </configuration>
             </plugin>
         </plugins>
     </build>
