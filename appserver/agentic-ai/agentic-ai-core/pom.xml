@@ -121,14 +121,25 @@
                         <configuration>
                             <instructions>
                                 <!--
-                                    This is an internal implementation module
-                                    (fish.payara.server.internal.agentic-ai), so it must
-                                    not export any packages for OSGi consumption. An empty
-                                    Export-Package keeps every package private, instead of
-                                    letting bnd fall back to exporting the module's packages.
-                                    Mirrors the Jakarta Data implementation module (data-core).
+                                    The Jakarta Agentic AI CDI portable extension
+                                    (AgenticAIExtension) is discovered by a deployed
+                                    application's Weld bootstrap via ServiceLoader on the
+                                    application module class loader (see
+                                    DeploymentImpl.getExtensions -> WeldBootstrap.loadExtensions).
+                                    For that lookup to find and load the extension, the package
+                                    that declares it must be exported for OSGi consumption.
+                                    Everything else is internal implementation and stays
+                                    private; the exporting bundle resolves those packages
+                                    within its own class loader once the extension is loaded.
+
+                                    Note: an empty/self-closing <Export-Package/> does NOT
+                                    make packages private - the maven-bundle-plugin drops the
+                                    empty instruction and bnd then exports every package by
+                                    default. Private-Package is what actually keeps a package
+                                    off the export list.
                                 -->
-                                <Export-Package/>
+                                <Export-Package>fish.payara.ai.agent.extension</Export-Package>
+                                <Private-Package>fish.payara.ai.agent.*</Private-Package>
                             </instructions>
                         </configuration>
                     </execution>
