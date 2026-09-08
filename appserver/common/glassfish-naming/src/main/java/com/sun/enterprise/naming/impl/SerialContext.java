@@ -493,7 +493,7 @@ public class SerialContext implements Context {
                 return retObj;
             }
         } catch (NamingException nnfe) {
-            NamingException ne = new NamingException
+            NameNotFoundException ne = new NameNotFoundException
                     ("Lookup failed for '" + name + "' in " + this);
             ne.initCause(nnfe);
             throw ne;
