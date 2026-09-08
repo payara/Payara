@@ -149,6 +149,25 @@ class DomainXmlPreParser {
             .collect(Collectors.toList());
     }
 
+    /**
+     * The names of the deployment groups this instance is a member of. An instance can
+     * belong to several groups, so this is not limited to the single {@code deploymentGroup}
+     * marker resolved by {@code postProcess()}.
+     *
+     * @return the group names, never null; empty if the instance is in no deployment group
+     */
+    final List<String> getDGNames() {
+        if(!validDG) {
+            return Collections.emptyList();
+        }
+
+        return deploymentGroups
+            .stream()
+            .filter(groupData -> groupData.dgServerRefs.contains(instanceName))
+            .map(groupData -> groupData.name)
+            .collect(Collectors.toList());
+    }
+
     public Map<String, String> getMapServerConfig() {
         return this.mapServerConfig;
     }
@@ -189,33 +208,48 @@ class DomainXmlPreParser {
 
     private void postProcess() {
         // our instance is in either zero or one cluster.  Find it and set it.
-        for (ClusterData cd : clusters) {
-            for (String serverName : cd.serverRefs) {
-                if (instanceName.equals(serverName)) {
-                    cluster = cd;
-                    return;
-                }
-            }
+        cluster = findClusterFor(instanceName);
+        if (cluster == null) {
+            // the instance either does not exist or it is stand-alone
+            cluster = new ClusterData();
+            cluster.configRef = serverConfigRef;
+            cluster.serverRefs.add(instanceName);
         }
-        // if we get here that means the instance either 
-        // does not exist or it is stand-alone
-        cluster = new ClusterData();
-        cluster.configRef = serverConfigRef;
-        cluster.serverRefs.add(instanceName);
 
-        // our instance is in either zero or one dg. Find it and set it.
-        for (DeploymentGroupData dgData : deploymentGroups) {
-            for (String serverName : dgData.dgServerRefs) {
-                if (instanceName.equals(serverName)) {
-                    deploymentGroup = dgData;
-                    return;
-                }
+        // Deployment group membership is resolved unconditionally. This used to be skipped
+        // whenever the instance belonged to a cluster, because finding the cluster returned
+        // from this method outright, which left deploymentGroup null and validDG false for a
+        // clustered instance -- so it was denied the servers, configs and (now) the groups of
+        // any deployment group it also belonged to.
+        deploymentGroup = findDeploymentGroupFor(instanceName);
+        if (deploymentGroup == null) {
+            // the instance either does not exist or it is in no deployment group
+            deploymentGroup = new DeploymentGroupData();
+            deploymentGroup.dgServerRefs.add(instanceName);
+        }
+    }
+
+    private ClusterData findClusterFor(String serverName) {
+        for (ClusterData cd : clusters) {
+            if (cd.serverRefs.contains(serverName)) {
+                return cd;
             }
         }
-        // if we get here that means the instance either
-        // does not exist or it is stand-alone
-        deploymentGroup = new DeploymentGroupData();
-        deploymentGroup.dgServerRefs.add(instanceName);
+        return null;
+    }
+
+    /**
+     * An instance can belong to several deployment groups; this returns the first one, which
+     * only serves as the marker that the instance has some membership. Callers that need the
+     * whole picture use {@link #getDGNames()} or {@link #getDGServerNames()}.
+     */
+    private DeploymentGroupData findDeploymentGroupFor(String serverName) {
+        for (DeploymentGroupData dgData : deploymentGroups) {
+            if (dgData.dgServerRefs.contains(serverName)) {
+                return dgData;
+            }
+        }
+        return null;
     }
 
     private void validate() throws DomainXmlPreParserException {
