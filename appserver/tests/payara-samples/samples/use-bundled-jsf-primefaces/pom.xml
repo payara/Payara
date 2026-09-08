@@ -52,6 +52,10 @@
     <name>Payara Samples - Payara - Use Bundled JSF with PrimeFaces</name>
     <packaging>war</packaging>
 
+    <properties>
+        <primefaces.version>15.0.18</primefaces.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.platform</groupId>
@@ -70,7 +74,7 @@
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
-            <version>15.0.17</version> <!-- Make sure you update the version value in the tests as well when updating this -->
+            <version>${primefaces.version}</version>
             <classifier>jakarta</classifier>
         </dependency>
 
@@ -101,5 +105,19 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <primefaces.version>${primefaces.version}</primefaces.version>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
