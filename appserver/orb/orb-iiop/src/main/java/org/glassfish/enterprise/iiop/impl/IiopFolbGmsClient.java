@@ -217,6 +217,9 @@ public class IiopFolbGmsClient implements ClusterListener {
 
         // Check 2: The applications on the deployment group are deployed to all its instances
         List<ApplicationRef> dgAppRefs = myDG.getApplicationRef();
+        if (dgAppRefs.isEmpty()) {
+            return false;
+        }
         for (Server instance : dgInstances) {
             for (ApplicationRef dgAppRef : dgAppRefs) {
                 if (instance.getApplicationRef(dgAppRef.getRef()) == null) {
