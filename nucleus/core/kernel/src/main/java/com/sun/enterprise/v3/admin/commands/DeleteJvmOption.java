@@ -63,7 +63,7 @@ import java.util.List;
 @Service(name="delete-jvm-option")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @UnknownOptionsAreOperands()
 public final class DeleteJvmOption implements AdminCommand, AdminCommandSecurity.Preauthorization {
 
