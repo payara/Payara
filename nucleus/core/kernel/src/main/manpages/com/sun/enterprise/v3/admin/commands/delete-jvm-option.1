@@ -1,0 +1,101 @@
+delete-jvm-option(1)     asadmin Utility Subcommands    delete-jvm-option(1)
+
+NAME
+       delete-jvm-option - removes one option for the Java
+       application launcher
+
+SYNOPSIS
+           delete-jvm-option [--help] [--target target]
+           (jvm-option-name[=jvm-option-value])
+
+DESCRIPTION
+       The delete-jvm-option subcommand removes one command-line
+       option for the Java application launcher. This option is removed
+       from the Java configuration java—config element. To see the Java application
+       launcher options that can be deleted, use the list-jvm-options(1)
+       subcommand.
+
+       The deletion of some options requires a server restart for changes to
+       become effective. Other options are set immediately in the environment
+       of the domain administration server (DAS) and do not require a restart.
+
+       Whether a restart is required depends on the type of option.
+
+       *   Restart is not required for Java system properties whose names do
+           not start with -Djava.  or -Djavax.  (including the trailing
+           period). For example, restart is not required for the following
+           Java system property:
+
+           -Denvironment=Production
+
+       *   Restart is required for the following options:
+
+           *   Java system properties whose names start with -Djava.  or
+               -Djavax.  (including the trailing period). For example:
+
+               -Djava.security.manager
+
+           *   Startup parameters for the Java application launcher. For
+               example:
+
+               -client
+
+               -Xmx1024m
+
+               -d64
+
+       To restart the DAS, use the restart-domain(1) command.
+
+       This subcommand is supported in remote mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --target
+           Specifies the target from which you are removing Java application
+           launcher options.
+
+           Valid values are as follows:
+
+           server
+               Specifies the DAS (default).
+
+           instance-name
+               Specifies a GlassFish Server instance.
+
+           cluster-name
+               Specifies a cluster.
+
+           configuration-name
+               Specifies a named configuration.
+
+OPERANDS
+       jvm-option-name
+           One option. The format of the
+           operand depends on the following:
+
+           *   If the option has a name and a value, the format is
+               option-name=value.
+
+           *   If the option has only a name, the format is option-name. For
+               example, -Xmx2048m.
+
+EXAMPLES
+       Example 1, Deleting Java Application Launcher Option
+           This example removes a single Java application launcher options.
+
+               asadmin> delete-jvm-option -Doption1=value1
+               Command delete-jvm-option executed successfully
+
+EXIT STATUS
+       0
+           subcommand executed successfully
+
+       1
+           error in executing the subcommand
+
+SEE ALSO
+       create-jvm-options(1), list-jvm-options(1), restart-domain(1)
+
+       asadmin(1M)
