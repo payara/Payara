@@ -93,6 +93,19 @@ class AsadminRunner:
                 apps.append(parts[0])
         return apps
 
+    def get_das_admin_port(self) -> str:
+        """Return the DAS admin-listener port (defaults to 4848 if it cannot be read)."""
+        result = self.run_no_raise(
+            "get",
+            "configs.config.server-config.network-config.network-listeners."
+            "network-listener.admin-listener.port",
+        )
+        for line in result.stdout.splitlines():
+            m = re.search(r"=\s*(\d+)", line)
+            if m:
+                return m.group(1)
+        return "4848"
+
     def get_instance_http_port(self, instance_name: str, instance_ports: dict = None) -> str | None:
         """Get the HTTP listener port for the given instance via get command or from mapping."""
         if instance_ports and instance_name in instance_ports:
@@ -180,6 +193,74 @@ def check_http_content(host: str, port: str, app_name: str, expected_content: st
     logger.error(f"Timed out waiting for expected content at {url}")
     return False
 
+
+def das_management_post(port: str, path: str, data: dict, timeout: int = 60):
+    """
+    POST to the DAS management REST interface the way the admin console does, including
+    the X-Requested-By header the interface requires for mutating requests. ``path`` is
+    relative to /management/domain/ (e.g. "deployment-groups/add-instance-to-deployment-group").
+    """
+    url = f"http://localhost:{port}/management/domain/{path}"
+    headers = {"X-Requested-By": "deployment-group-tests", "Accept": "application/json"}
+    logger.info(f"POST {url} data={data}")
+    return requests.post(url, data=data, headers=headers, timeout=timeout)
+
+
+def find_instance_domain_xml(node: str, instance: str) -> str | None:
+    """
+    Locate an instance's own config file (nodes/<node>/<instance>/config/domain.xml).
+
+    The nodes directory lives under the GlassFish base, but PAYARA_HOME may point either
+    at the distribution root (which has bin/asadmin as a thin wrapper and nodes under
+    glassfish/) or directly at the glassfish base (nodes/ alongside bin/). Try both
+    layouts rather than assuming one, so the check works on CI and on a local build.
+    """
+    payara_home = os.environ.get("PAYARA_HOME")
+    if not payara_home:
+        return None
+    candidates = [
+        os.path.join(payara_home, "glassfish", "nodes", node, instance, "config", "domain.xml"),
+        os.path.join(payara_home, "nodes", node, instance, "config", "domain.xml"),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return candidate
+    return None
+
+
+def read_instance_dg_members(node: str, instance: str) -> list[str]:
+    """
+    Return the set of deployment-group member references (dg-server-ref) recorded in
+    an instance's own live config (nodes/<node>/<instance>/config/domain.xml).
+
+    This reflects the instance's in-memory membership as replicated live by the DAS,
+    which is exactly what FISH-14056 requires running members to converge on without a
+    restart. Reading the file directly (rather than a remote command) keeps the check
+    deterministic.
+    """
+    domain_xml = find_instance_domain_xml(node, instance)
+    if domain_xml is None:
+        return []
+    with open(domain_xml, encoding="utf-8") as handle:
+        content = handle.read()
+    return re.findall(r'<dg-server-ref\s+ref="([^"]+)"', content)
+
+
+def wait_for_instance_dg_members(node: str, instance: str, expected: set[str],
+                                 timeout: int = 30) -> list[str]:
+    """
+    Poll the instance's live config until its dg-server-ref set matches ``expected``
+    (or the timeout elapses). Returns the last observed member list.
+    """
+    start_time = time.time()
+    members = read_instance_dg_members(node, instance)
+    while time.time() - start_time < timeout:
+        members = read_instance_dg_members(node, instance)
+        if set(members) == expected:
+            return members
+        time.sleep(1)
+    return members
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -207,6 +288,28 @@ def asadmin() -> AsadminRunner:
 
 
 @pytest.fixture(scope="module")
+def local_node(asadmin) -> str:
+    """
+    Resolve the built-in local CONFIG node for the running domain.
+
+    The default local node is named "localhost-<domainName>" (e.g.
+    "localhost-test-domain", "localhost-domain1"), so it varies with the domain
+    the tests run against. Hardcoding it makes the suite pass only on one domain
+    name; resolving it dynamically keeps the tests portable.
+    """
+    result = asadmin.run("list-nodes", "--long")
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        # Format: "<NODE NAME>  <TYPE>  <NODE HOST>  ..."
+        if len(parts) >= 3 and parts[1] == "CONFIG" and parts[0].startswith("localhost-"):
+            logger.info(f"Resolved local CONFIG node: {parts[0]}")
+            return parts[0]
+    raise RuntimeError(
+        f"Could not resolve local CONFIG node from list-nodes output:\n{result.stdout}"
+    )
+
+
+@pytest.fixture(scope="module")
 def test_war(tmp_path_factory) -> str:
     """
     Path to a test WAR file. Uses clusterjsp.war from test-apps folder.
@@ -231,25 +334,7 @@ def sample_app(request) -> tuple[str, str]:
     return version, war_path
 
 @pytest.fixture()
-def deployment_group_env(asadmin):
-    """
-    Create a deployment group with two standalone instances, yield the
-    environment dict, then clean up everything in reverse order.
-
-    Yielded dict keys:
-        dg_name       – deployment group name
-        instances     – list of instance names
-        node_name     – "localhost-domain1" (default local node)
-    """
-    dg_name = "test-dg"
-    node_name = "localhost-test-domain"
-    instance_names = ["test-inst1", "test-inst2"]
-    # Use fixed ports to ensure HTTP accessibility
-    instance_ports = {"test-inst1": 28080, "test-inst2": 28081}
-
-
-@pytest.fixture()
-def single_instance_deployment_group_env(asadmin):
+def single_instance_deployment_group_env(asadmin, local_node):
     """
     Create a deployment group with a single standalone instance with a dedicated config,
     yield the environment dict, then clean up everything in reverse order.
@@ -259,10 +344,10 @@ def single_instance_deployment_group_env(asadmin):
         instance      – instance name
         instance_port – HTTP port for the instance
         config_name   – dedicated config name for the instance
-        node_name     – "localhost-domain1" (default local node)
+        node_name     – the local CONFIG node (resolved via the local_node fixture)
     """
     dg_name = "test-dg-single"
-    node_name = "localhost-test-domain"
+    node_name = local_node
     instance_name = "test-inst-single"
     config_name = "test-inst-single-config"
     instance_port = 28090
@@ -375,7 +460,7 @@ def single_instance_deployment_group_env(asadmin):
 
 
 @pytest.fixture()
-def deployment_group_env(asadmin):
+def deployment_group_env(asadmin, local_node):
     """
     Create a deployment group with two standalone instances, yield the
     environment dict, then clean up everything in reverse order.
@@ -383,10 +468,10 @@ def deployment_group_env(asadmin):
     Yielded dict keys:
         dg_name       – deployment group name
         instances     – list of instance names
-        node_name     – "localhost-domain1" (default local node)
+        node_name     – the local CONFIG node (resolved via the local_node fixture)
     """
     dg_name = "test-dg"
-    node_name = "localhost-test-domain"
+    node_name = local_node
     instance_names = ["test-inst1", "test-inst2"]
     # Use fixed ports to ensure HTTP accessibility
     instance_ports = {"test-inst1": 28080, "test-inst2": 28081}
@@ -484,6 +569,62 @@ def deployment_group_env(asadmin):
     logger.info(f"Deleting deployment group: {dg_name}")
     asadmin.run_no_raise("delete-deployment-group", dg_name)
     logger.info(f"Deployment group environment teardown complete: {dg_name}")
+
+
+@pytest.fixture()
+def offline_nonmember_instance(asadmin, local_node):
+    """
+    Create a single standalone instance, bring it up and then stop it so it is
+    OFFLINE, and deliberately do NOT add it to any deployment group.
+
+    Regression environment for FISH-14056: creating or deleting a deployment
+    group must not try to replicate the command to instances that are not
+    members of the group. The instance is started then stopped (rather than
+    left NEVER_STARTED) to match the reproduction steps in the ticket.
+
+    Yielded dict keys:
+        instance   – the offline, non-member instance name
+        node_name  – the local CONFIG node (resolved via the local_node fixture)
+    """
+    node_name = local_node
+    instance_name = "test-inst-offline-nonmember"
+    instance_port = 28095
+
+    logger.info("Setting up offline non-member instance environment (FISH-14056)")
+
+    # --- Pre-setup cleanup (handle stale resources from previous runs) ---
+    asadmin.run_no_raise("stop-instance", instance_name)
+    asadmin.run_no_raise("delete-instance", instance_name)
+
+    logger.info(f"Creating instance: {instance_name} with HTTP port {instance_port}")
+    asadmin.run(
+        "create-instance",
+        f"--node={node_name}",
+        f"--systemproperties=HTTP_LISTENER_PORT={instance_port}",
+        instance_name,
+    )
+
+    # Start then stop so the instance is genuinely OFFLINE (not NEVER_STARTED),
+    # which is the state that triggered the misleading replication warning.
+    logger.info(f"Starting instance {instance_name} then stopping it to make it offline")
+    asadmin.run("start-instance", instance_name)
+    time.sleep(10)
+    asadmin.run("stop-instance", instance_name)
+    time.sleep(5)
+
+    logger.info(f"Offline non-member instance environment ready: {instance_name}")
+
+    yield {
+        "instance": instance_name,
+        "node_name": node_name,
+    }
+
+    logger.info("Tearing down offline non-member instance environment (FISH-14056)")
+    asadmin.run_no_raise("start-instance", instance_name)
+    time.sleep(5)
+    asadmin.run_no_raise("stop-instance", instance_name)
+    asadmin.run_no_raise("delete-instance", instance_name)
+    logger.info(f"Offline non-member instance environment teardown complete: {instance_name}")
 
 # ---------------------------------------------------------------------------
 # Tests
@@ -986,3 +1127,413 @@ class TestDeploymentGroupDeployment:
             logger.info(f"Clearing default-web-module for virtual server {virtual_server} in config {config_name}")
             asadmin.run_no_raise("set", f"configs.config.{config_name}.http-service.virtual-server.{virtual_server}.default-web-module=")
             asadmin.run_no_raise("undeploy", f"--target={dg}", app_name)
+
+
+class TestDeploymentGroupReplicationWarning:
+    """
+    Regression tests for FISH-14056.
+
+    Deployment-group membership commands must not attempt to replicate to
+    instances that are not members of the group. Previously
+    create-deployment-group, delete-deployment-group,
+    add-instance-to-deployment-group and remove-instance-from-deployment-group
+    were annotated with @ExecuteOn(RuntimeType.ALL), which replicated the command
+    to every instance in the domain (via Target.getAllInstances()) and produced a
+    misleading "Instance <x> seems to be offline; command ... was not replicated
+    to that instance" warning for unrelated offline instances.
+
+    The fix:
+    - create-deployment-group / delete-deployment-group run @ExecuteOn(RuntimeType.DAS)
+      (there are no members to replicate to at that point).
+    - add-instance-to-deployment-group / remove-instance-from-deployment-group run
+      @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE}) with
+      @TargetType(CommandTarget.DEPLOYMENT_GROUP), so replication is scoped to the
+      group's own members (Target.getInstances(<group>)) instead of every instance in
+      the domain. Offline NON-members are therefore never contacted and no misleading
+      warning is produced, while running members learn the membership change live
+      without a restart.
+    - On add, the command implements UndoableCommand and uses prepare() on the DAS to
+      widen the replicated "instance" parameter to the group's FULL membership, so a
+      newly joined running instance converges to the complete member set live rather
+      than only recording its own reference.
+
+    The DAS domain.xml remains the single source of truth; a removed instance (which is
+    already excluded from the group at replication time) reconciles its now-inert refs on
+    the next startup via the full config sync.
+    """
+
+    # Exact signatures of the buggy replication warning.
+    WARNING_MARKERS = [
+        "was not replicated to that instance",
+        "seems to be offline",
+    ]
+
+    def _assert_no_replication_warning(self, result, command):
+        output = f"{result.stdout}\n{result.stderr}"
+        for marker in self.WARNING_MARKERS:
+            assert marker not in output, (
+                f"'{command}' produced an unexpected replication warning "
+                f"(marker: {marker!r}) for an offline non-member instance. "
+                f"Output:\n{output}"
+            )
+
+    def test_create_deployment_group_no_warning_for_offline_nonmember(
+            self, asadmin, offline_nonmember_instance
+    ):
+        """create-deployment-group must not warn about an unrelated offline instance."""
+        dg_name = "test-dg-fish14056-create"
+        asadmin.run_no_raise("delete-deployment-group", dg_name)
+        try:
+            result = asadmin.run("create-deployment-group", dg_name)
+            self._assert_no_replication_warning(result, "create-deployment-group")
+        finally:
+            asadmin.run_no_raise("delete-deployment-group", dg_name)
+
+    def test_delete_deployment_group_no_warning_for_offline_nonmember(
+            self, asadmin, offline_nonmember_instance
+    ):
+        """delete-deployment-group must not warn about an unrelated offline instance."""
+        dg_name = "test-dg-fish14056-delete"
+        asadmin.run_no_raise("delete-deployment-group", dg_name)
+        asadmin.run("create-deployment-group", dg_name)
+        result = asadmin.run("delete-deployment-group", dg_name)
+        self._assert_no_replication_warning(result, "delete-deployment-group")
+
+    def test_add_instance_to_deployment_group_no_warning_for_offline_nonmember(
+            self, asadmin, deployment_group_env, offline_nonmember_instance
+    ):
+        """add-instance-to-deployment-group must not warn about an unrelated offline instance."""
+        dg = deployment_group_env["dg_name"]
+        member = deployment_group_env["instances"][0]
+        # Remove first so the add actually changes membership, then assert the
+        # add produces no replication warning for the offline non-member.
+        asadmin.run_no_raise("remove-instance-from-deployment-group",
+                             f"--instance={member}", f"--deploymentgroup={dg}")
+        result = asadmin.run("add-instance-to-deployment-group",
+                             f"--instance={member}", f"--deploymentgroup={dg}")
+        self._assert_no_replication_warning(result, "add-instance-to-deployment-group")
+
+    def test_remove_instance_from_deployment_group_no_warning_for_offline_nonmember(
+            self, asadmin, deployment_group_env, offline_nonmember_instance
+    ):
+        """remove-instance-from-deployment-group must not warn about an unrelated offline instance."""
+        dg = deployment_group_env["dg_name"]
+        member = deployment_group_env["instances"][0]
+        try:
+            result = asadmin.run("remove-instance-from-deployment-group",
+                                 f"--instance={member}", f"--deploymentgroup={dg}")
+            self._assert_no_replication_warning(result, "remove-instance-from-deployment-group")
+        finally:
+            # Restore membership so the fixture teardown starts from a known state.
+            asadmin.run_no_raise("add-instance-to-deployment-group",
+                                 f"--instance={member}", f"--deploymentgroup={dg}")
+
+    def test_add_running_instance_converges_full_membership_live(
+            self, asadmin, deployment_group_env
+    ):
+        """
+        A running instance joining a group must converge to the group's FULL membership
+        live (no restart), not just record its own reference. Both the pre-existing member
+        and the newly added instance must end up listing every member in their own live
+        config.
+        """
+        dg = deployment_group_env["dg_name"]
+        node = deployment_group_env["node_name"]
+        existing, joining = deployment_group_env["instances"]
+
+        # Fail loudly (rather than as a confusing empty membership set) if the instance
+        # config file cannot be located under PAYARA_HOME on this environment.
+        assert find_instance_domain_xml(node, existing) is not None, (
+            f"Could not locate config/domain.xml for instance '{existing}' on node "
+            f"'{node}' under PAYARA_HOME={os.environ.get('PAYARA_HOME')!r}"
+        )
+
+        # Start from a single-member group: existing member only, joining instance running
+        # but not a member.
+        asadmin.run_no_raise("remove-instance-from-deployment-group",
+                             f"--instance={joining}", f"--deploymentgroup={dg}")
+        wait_for_instance_dg_members(node, existing, {existing})
+
+        # Add the still-running instance back; it must learn about the pre-existing member.
+        result = asadmin.run("add-instance-to-deployment-group",
+                             f"--instance={joining}", f"--deploymentgroup={dg}")
+        self._assert_no_replication_warning(result, "add-instance-to-deployment-group")
+
+        expected = {existing, joining}
+        joining_members = wait_for_instance_dg_members(node, joining, expected)
+        existing_members = wait_for_instance_dg_members(node, existing, expected)
+
+        assert set(joining_members) == expected, (
+            f"Newly added instance '{joining}' did not converge to the full membership "
+            f"live. Expected {expected}, got {set(joining_members)}"
+        )
+        assert set(existing_members) == expected, (
+            f"Existing member '{existing}' did not learn the new member live. "
+            f"Expected {expected}, got {set(existing_members)}"
+        )
+
+    def test_add_instance_via_management_rest_succeeds(
+            self, asadmin, deployment_group_env
+    ):
+        """
+        Reproduce the admin console path. The console POSTs to
+        /management/domain/deployment-groups/add-instance-to-deployment-group with the
+        group passed under the 'deploymentGroup' parameter (not 'target'). Because the
+        command is @TargetType(DEPLOYMENT_GROUP), the framework must still resolve the
+        deployment group as the replication target when it arrives under 'deploymentGroup'
+        rather than 'target' — otherwise the target defaults to 'server' and the command
+        fails with "Target server is not a supported type". Regression test for that.
+        """
+        dg = deployment_group_env["dg_name"]
+        node = deployment_group_env["node_name"]
+        existing, joining = deployment_group_env["instances"]
+        port = asadmin.get_das_admin_port()
+
+        # Remove the joining instance first so we can re-add it through the REST path.
+        asadmin.run_no_raise("remove-instance-from-deployment-group",
+                             f"--instance={joining}", f"--deploymentgroup={dg}")
+        wait_for_instance_dg_members(node, existing, {existing})
+
+        response = das_management_post(
+            port, "deployment-groups/add-instance-to-deployment-group",
+            {"deploymentGroup": dg, "instance": joining})
+        # A failed command (the regression) comes back as HTTP 500 with the action report,
+        # so a 200 is the primary success gate; the message is surfaced for diagnosis.
+        assert response.status_code == 200, (
+            f"REST add-instance-to-deployment-group returned HTTP {response.status_code} "
+            f"(this is the console regression): {response.text[:500]}"
+        )
+        body = response.json()
+        exit_code = body.get("exit_code") or body.get("exitCode")
+        if exit_code is not None:
+            assert exit_code == "SUCCESS", (
+                f"REST add-instance-to-deployment-group did not succeed: "
+                f"{exit_code} - {body.get('message')}"
+            )
+
+        expected = {existing, joining}
+        joining_members = wait_for_instance_dg_members(node, joining, expected)
+        assert set(joining_members) == expected, (
+            f"Instance '{joining}' added via the console/REST path did not converge to "
+            f"the full membership live. Expected {expected}, got {set(joining_members)}"
+        )
+
+    def test_add_running_instance_to_group_created_after_start_converges(
+            self, asadmin, local_node
+    ):
+        """
+        A running instance added to a deployment group that was created *after* the
+        instance started must still converge to the group membership live, without a
+        restart.
+
+        This is the exact admin-console workflow Andrew reported: create an instance,
+        start it, then create a deployment group and add the running instance to it.
+        Because create-deployment-group runs on the DAS only, the group is absent from
+        the already-running instance's in-memory config, so the replicated
+        add-instance-to-deployment-group must create the group on the instance instead
+        of silently dropping the change. Without the fix the instance never records the
+        membership until its next restart. Regression test for FISH-14056.
+        """
+        node = local_node
+        instance = "test-inst-dg-after-start"
+        dg = "test-dg-created-after-start"
+        instance_port = 28096
+
+        # Pre-setup cleanup (handle stale resources from previous runs).
+        asadmin.run_no_raise("remove-instance-from-deployment-group",
+                             f"--instance={instance}", f"--deploymentgroup={dg}")
+        asadmin.run_no_raise("delete-deployment-group", dg)
+        asadmin.run_no_raise("stop-instance", instance)
+        asadmin.run_no_raise("delete-instance", instance)
+
+        try:
+            # Create and start the instance BEFORE the group exists, so the running
+            # instance has no knowledge of it.
+            asadmin.run("create-instance", f"--node={node}",
+                        f"--systemproperties=HTTP_LISTENER_PORT={instance_port}",
+                        instance)
+            asadmin.run("start-instance", instance)
+
+            assert find_instance_domain_xml(node, instance) is not None, (
+                f"Could not locate config/domain.xml for instance '{instance}' on node "
+                f"'{node}' under PAYARA_HOME={os.environ.get('PAYARA_HOME')!r}"
+            )
+            # The freshly started instance is not a member of anything yet.
+            assert instance not in read_instance_dg_members(node, instance), (
+                f"Instance '{instance}' unexpectedly already appears as a deployment-group "
+                f"member before the group was created"
+            )
+
+            # Create the group only now (DAS-only), then add the still-running instance.
+            asadmin.run("create-deployment-group", dg)
+            result = asadmin.run("add-instance-to-deployment-group",
+                                 f"--instance={instance}", f"--deploymentgroup={dg}")
+            self._assert_no_replication_warning(result, "add-instance-to-deployment-group")
+
+            # The running instance must learn its membership live even though the group
+            # did not exist in its config when it started.
+            deadline = time.time() + 30
+            members = read_instance_dg_members(node, instance)
+            while instance not in members and time.time() < deadline:
+                time.sleep(1)
+                members = read_instance_dg_members(node, instance)
+            assert instance in members, (
+                f"Instance '{instance}' added to a group created after it started did not "
+                f"converge to its membership live. Expected '{instance}' in its dg-server-refs, "
+                f"got {members}"
+            )
+        finally:
+            asadmin.run_no_raise("remove-instance-from-deployment-group",
+                                 f"--instance={instance}", f"--deploymentgroup={dg}")
+            asadmin.run_no_raise("delete-deployment-group", dg)
+            asadmin.run_no_raise("stop-instance", instance)
+            asadmin.run_no_raise("delete-instance", instance)
+
+    def test_remove_running_instance_updates_remaining_member_live(
+            self, asadmin, deployment_group_env
+    ):
+        """
+        Removing an instance from a group must drop it from the remaining running members'
+        live config without a restart.
+        """
+        dg = deployment_group_env["dg_name"]
+        node = deployment_group_env["node_name"]
+        remaining, removed = deployment_group_env["instances"]
+
+        # Fail loudly (rather than as a confusing empty membership set) if the instance
+        # config file cannot be located under PAYARA_HOME on this environment.
+        assert find_instance_domain_xml(node, remaining) is not None, (
+            f"Could not locate config/domain.xml for instance '{remaining}' on node "
+            f"'{node}' under PAYARA_HOME={os.environ.get('PAYARA_HOME')!r}"
+        )
+
+        # Both instances are members after the fixture setup; confirm the remaining member
+        # sees both before the removal.
+        wait_for_instance_dg_members(node, remaining, {remaining, removed})
+
+        result = asadmin.run("remove-instance-from-deployment-group",
+                             f"--instance={removed}", f"--deploymentgroup={dg}")
+        self._assert_no_replication_warning(result, "remove-instance-from-deployment-group")
+
+        try:
+            remaining_members = wait_for_instance_dg_members(node, remaining, {remaining})
+            assert set(remaining_members) == {remaining}, (
+                f"Remaining member '{remaining}' did not drop '{removed}' live. "
+                f"Expected {{{remaining}}}, got {set(remaining_members)}"
+            )
+        finally:
+            # Restore membership so the fixture teardown starts from a known state.
+            asadmin.run_no_raise("add-instance-to-deployment-group",
+                                 f"--instance={removed}", f"--deploymentgroup={dg}")
+
+    def test_remove_running_instance_drops_own_ref_live(
+            self, asadmin, deployment_group_env
+    ):
+        """
+        A running instance removed from a group must drop the membership from its OWN live
+        config without a restart, not just from the remaining members' configs.
+
+        The framework replicates the removal only to the group's CURRENT members, and the
+        removed instance is no longer a member at replication time, so it would otherwise
+        keep its now-stale reference until its next restart. The command therefore also
+        replicates the removal to the departed running instance so it converges live.
+        Regression test for FISH-14056.
+        """
+        dg = deployment_group_env["dg_name"]
+        node = deployment_group_env["node_name"]
+        remaining, removed = deployment_group_env["instances"]
+
+        # Fail loudly (rather than as a confusing empty membership set) if the instance
+        # config file cannot be located under PAYARA_HOME on this environment.
+        assert find_instance_domain_xml(node, removed) is not None, (
+            f"Could not locate config/domain.xml for instance '{removed}' on node "
+            f"'{node}' under PAYARA_HOME={os.environ.get('PAYARA_HOME')!r}"
+        )
+
+        # Both instances are members after the fixture setup; confirm the instance that is
+        # about to be removed currently lists itself.
+        wait_for_instance_dg_members(node, removed, {remaining, removed})
+
+        result = asadmin.run("remove-instance-from-deployment-group",
+                             f"--instance={removed}", f"--deploymentgroup={dg}")
+        self._assert_no_replication_warning(result, "remove-instance-from-deployment-group")
+
+        try:
+            # The removed, still-running instance must no longer list itself as a member.
+            deadline = time.time() + 30
+            members = read_instance_dg_members(node, removed)
+            while removed in members and time.time() < deadline:
+                time.sleep(1)
+                members = read_instance_dg_members(node, removed)
+            assert removed not in members, (
+                f"Removed running instance '{removed}' did not drop its own membership live. "
+                f"Expected '{removed}' absent from its dg-server-refs, got {members}"
+            )
+        finally:
+            # Restore membership so the fixture teardown starts from a known state.
+            asadmin.run_no_raise("add-instance-to-deployment-group",
+                                 f"--instance={removed}", f"--deploymentgroup={dg}")
+
+    def test_rejoining_instance_reconciles_stale_membership(
+            self, asadmin, deployment_group_env
+    ):
+        """
+        A running instance that rejoins a group whose membership shrank while it was not a
+        member must reconcile to the DAS membership, not merely add itself on top of its
+        stale copy.
+
+        The DAS widens the replicated ``instance`` parameter to the group's full membership,
+        so on a member that list is authoritative. Only adding the missing references would
+        leave the members that departed while this instance was outside the group as phantom
+        entries in its own config until its next restart.
+
+        Sequence (with the fixture's two running instances A and B):
+          1. remove B  -> DAS [A]; B drops its own ref live, so B's copy is [A]
+          2. remove A  -> DAS [];  B is no longer a member, so it never hears this and keeps [A]
+          3. add B     -> DAS [B]; B must end up with exactly [B], not [A, B]
+        Regression test for FISH-14056.
+        """
+        dg = deployment_group_env["dg_name"]
+        node = deployment_group_env["node_name"]
+        first, second = deployment_group_env["instances"]
+
+        assert find_instance_domain_xml(node, second) is not None, (
+            f"Could not locate config/domain.xml for instance '{second}' on node "
+            f"'{node}' under PAYARA_HOME={os.environ.get('PAYARA_HOME')!r}"
+        )
+
+        # Both instances are members after the fixture setup.
+        wait_for_instance_dg_members(node, second, {first, second})
+
+        try:
+            # 1. Take the second instance out; it drops its own ref and is left holding
+            #    a copy of the membership that is correct at this point.
+            asadmin.run("remove-instance-from-deployment-group",
+                        f"--instance={second}", f"--deploymentgroup={dg}")
+            wait_for_instance_dg_members(node, second, {first})
+
+            # 2. Take the first instance out too. The second instance is not a member any
+            #    more, so the removal is not replicated to it and its copy goes stale.
+            asadmin.run("remove-instance-from-deployment-group",
+                        f"--instance={first}", f"--deploymentgroup={dg}")
+            stale_members = read_instance_dg_members(node, second)
+            assert first in stale_members, (
+                f"Test precondition not met: '{second}' was expected to still hold the stale "
+                f"reference to '{first}', got {stale_members}"
+            )
+
+            # 3. Rejoin. The instance must converge to the DAS membership exactly.
+            result = asadmin.run("add-instance-to-deployment-group",
+                                 f"--instance={second}", f"--deploymentgroup={dg}")
+            self._assert_no_replication_warning(result, "add-instance-to-deployment-group")
+
+            members = wait_for_instance_dg_members(node, second, {second})
+            assert set(members) == {second}, (
+                f"Rejoining instance '{second}' did not reconcile its membership. "
+                f"Expected {{{second}}}, got {set(members)} — '{first}' is a phantom member "
+                f"left over from the copy the instance held while it was outside the group"
+            )
+        finally:
+            # Restore membership so the fixture teardown starts from a known state.
+            asadmin.run_no_raise("add-instance-to-deployment-group",
+                                 f"--instance={first}", f"--deploymentgroup={dg}")
