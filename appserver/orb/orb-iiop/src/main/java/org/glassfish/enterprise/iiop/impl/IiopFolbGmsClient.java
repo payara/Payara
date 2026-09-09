@@ -215,19 +215,10 @@ public class IiopFolbGmsClient implements ClusterListener {
         DeploymentGroup myDG = myDeploymentGroups.get(0);
         List<Server> dgInstances = myDG.getInstances();
 
-        // Check 2: The applications on the deployment group are deployed to all its instances
-        List<ApplicationRef> dgAppRefs = myDG.getApplicationRef();
-        if (dgAppRefs.isEmpty()) {
+        // Check 2: Only enable if at least one application is targetted to the deployment group
+        if (myDG.getApplicationRef().isEmpty()) {
+            fineLog("isDeploymentGroupsActive: no application is deployed to the deployment group");
             return false;
-        }
-        for (Server instance : dgInstances) {
-            for (ApplicationRef dgAppRef : dgAppRefs) {
-                if (instance.getApplicationRef(dgAppRef.getRef()) == null) {
-                    fineLog("isDeploymentGroupsActive: application {0} is not deployed to all targets of the deployment group",
-                            dgAppRef.getRef());
-                    return false;
-                }
-            }
         }
 
         // Check 3: No other instance in the deployment group is in any other deployment group
