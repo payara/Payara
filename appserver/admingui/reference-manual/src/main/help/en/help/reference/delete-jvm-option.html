@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+
+    GPL Classpath Exception:
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+ -->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>delete-jvm-option</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>delete-jvm-option</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="delete-jndi-resource.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="delete-jvm-option-1"></a><a id="GSRFM00094"></a><a id="delete-jvm-option"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_jvm_option">delete-jvm-option</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>removes one option for the Java application launcher</p>
+</div>
+<div id="sthref825" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-jvm-option [--help]
+[--target target]
+(jvm-option-name[=jvm-option-value])</code></pre>
+</div>
+</div>
+<div id="sthref826" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-jvm-option</code> subcommand removes one command-line
+option for the Java application launcher. This option is removed
+from the Java configuration <code>java—config</code> element. To see the Java application
+launcher options that can be deleted, use the
+<a href="list-jvm-options.html#list-jvm-options-1"><code>list-jvm-options</code>(1)</a>
+subcommand.</p>
+</div>
+<div class="paragraph">
+<p>The deletion of some options requires a server restart for changes to
+become effective. Other options are set immediately in the environment
+of the domain administration server (DAS) and do not require a restart.</p>
+</div>
+<div class="paragraph">
+<p>Whether a restart is required depends on the type of option.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Restart is not required for Java system properties whose names do not
+start with <code>-Djava.</code> or <code>-Djavax.</code> (including the trailing period). For
+example, restart is not required for the following Java system property:<br>
+<code>-Denvironment=Production</code></p>
+</li>
+<li>
+<p>Restart is required for the following options:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Java system properties whose names start with <code>-Djava.</code> or <code>-Djavax.</code>
+(including the trailing period). For example:<br>
+<code>-Djava.security.manager</code></p>
+</li>
+<li>
+<p>Startup parameters for the Java application launcher. For example:<br>
+<code>-client</code><br>
+<code>-Xmx1024m</code><br>
+<code>-d64</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To restart the DAS, use the
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a> command.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref827" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>Specifies the target from which you are removing Java application
+launcher options.<br>
+Valid values are as follows:<br></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>server</code></dt>
+<dd>
+<p>Specifies the DAS (default).</p>
+</dd>
+<dt class="hdlist1">instance-name</dt>
+<dd>
+<p>Specifies a \{product---name} instance.</p>
+</dd>
+<dt class="hdlist1">cluster-name</dt>
+<dd>
+<p>Specifies a cluster.</p>
+</dd>
+<dt class="hdlist1">configuration-name</dt>
+<dd>
+<p>Specifies a named configuration.</p>
+</dd>
+</dl>
+</div>
+</dd>
+</dl>
+</div>
+<div id="sthref828" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">jvm-option-name</dt>
+<dd>
+<p>The format of the
+operand depends on the following:<br></p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the option has a name and a value, the format is
+option-name=value.</p>
+</li>
+<li>
+<p>If the option has only a name, the format is option-name. For
+example, <code>-Xmx2048m</code>.<br></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 100%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+</div>
+</div></td>
+</tr>
+</tbody>
+</table>
+<div id="sthref829" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM562"></a><a id="sthref830"></a></p>
+</div>
+<div class="paragraph">
+<p>Example 1 Deleting Java Application Launcher Option</p>
+</div>
+<div class="paragraph">
+<p>This example removes a Java application launcher option.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-jvm-option -Doption1=value1
+Command delete-jvm-option executed successfully</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a id="GSRFM563"></a><a id="sthref831"></a></p>
+</div>
+<div id="sthref832" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref833" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-jvm-options.html#create-jvm-options-1"><code>create-jvm-options</code>(1)</a>,
+<a href="list-jvm-options.html#list-jvm-options-1"><code>list-jvm-options</code>(1)</a>,
+<a href="restart-domain.html#restart-domain-1"><code>restart-domain</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>		
+		<td align="left">
+		<a href="delete-jndi-resource.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+</body>
+</html>
