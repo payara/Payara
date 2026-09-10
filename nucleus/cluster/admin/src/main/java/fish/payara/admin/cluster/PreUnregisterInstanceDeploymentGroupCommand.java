@@ -54,8 +54,6 @@ import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
 import org.glassfish.api.admin.ParameterMap;
-import org.glassfish.api.admin.RestEndpoint;
-import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.Supplemental;
 import org.glassfish.hk2.api.PerLookup;
@@ -76,8 +74,18 @@ import org.jvnet.hk2.annotations.Service;
  * This runs for both {@code delete-instance} and {@code delete-local-instance}, because both
  * reach the configuration through {@code _unregister-instance}. By the time the decorator
  * runs there is no reference left for it to remove, so it becomes a no-op fallback.
+ * <p>
+ * It has to be a separate command rather than part of {@code PostUnregisterInstanceCommand},
+ * the other supplemental of {@code _unregister-instance}: {@code _unregister-instance} is the
+ * {@code @Delete} CRUD command of the {@code server} element, so once it has run the
+ * {@link Server} bean this command reads its group membership from is gone. That is why this
+ * declares {@code Timing.Before}, while {@code PostUnregisterInstanceCommand} runs after it
+ * and does something unrelated (replicating the unregistration to a cluster's members).
+ * <p>
+ * No {@code @RestEndpoint} is declared: this is only ever run in process by the supplemental
+ * command executor on the DAS, never invoked remotely.
  *
- * @since 5.0
+ * @since 7.2026.10
  */
 @Service(name = "_pre-unregister-instance-deployment-group")
 @Supplemental(value = "_unregister-instance", on = Supplemental.Timing.Before,
@@ -85,12 +93,6 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("pre.unregister.instance.deployment.group")
 @PerLookup
 @ExecuteOn(value = {RuntimeType.DAS})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "_pre-unregister-instance-deployment-group",
-            description = "_pre-unregister-instance-deployment-group")
-})
 public class PreUnregisterInstanceDeploymentGroupCommand implements AdminCommand {
 
     @Param(name = "node", optional = true)
