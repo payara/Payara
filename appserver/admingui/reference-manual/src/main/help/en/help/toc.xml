@@ -157,6 +157,7 @@
     <tocitem target="reference/delete-resource-ref" text="delete-resource-ref" expand="false"></tocitem>
     <tocitem target="reference/delete-ssl" text="delete-ssl" expand="false"></tocitem>
     <tocitem target="reference/delete-system-property" text="delete-system-property" expand="false"></tocitem>
+    <tocitem target="reference/delete-system-properties" text="delete-system-properties" expand="false"></tocitem>
     <tocitem target="reference/delete-threadpool" text="delete-threadpool" expand="false"></tocitem>
     <tocitem target="reference/delete-transport" text="delete-transport" expand="false"></tocitem>
     <tocitem target="reference/delete-virtual-server" text="delete-virtual-server" expand="false"></tocitem>
