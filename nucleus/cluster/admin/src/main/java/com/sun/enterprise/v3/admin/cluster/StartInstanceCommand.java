@@ -78,8 +78,11 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.config.serverbeans.SshConnector;
+import com.sun.enterprise.config.serverbeans.SshAuth;
 import com.sun.enterprise.util.OS;
 import com.sun.enterprise.util.StringUtils;
+import org.glassfish.internal.api.RelativePathResolver;
 
 import fish.payara.nucleus.executorservice.PayaraExecutorService;
 
@@ -279,14 +282,45 @@ public class StartInstanceCommand implements AdminCommand {
             command.add("--debug");
         }
 
+        if ("SSH".equals(node.getType())) {
+            command.add("--sshnode=true");
+        }
+
         command.add(instanceName);
 
+        String sshPassword = null;
+        SshConnector sshConn = node.getSshConnector();
+        if (sshConn != null) {
+            SshAuth sshAuth = sshConn.getSshAuth();
+            if (sshAuth != null) {
+                String raw = sshAuth.getPassword();
+                if (raw != null) {
+                    try {
+                        sshPassword = RelativePathResolver.getRealPasswordFromAlias(raw);
+                    } catch (Exception e) {
+                        logger.warning("Failed to resolve SSH password alias: " + e.getMessage());
+                    }
+                }
+            }
+        }
+
         // Convert the command into a string representing the command
-        // a human should run.
+        // a human should run. Note: --windowspassword is appended AFTER
+        // this call so the plaintext password is never captured in humanCommand,
+        // which is logged and returned in failure error messages.
         humanCommand = makeCommandHuman(command);
 
+        if (sshPassword != null) {
+            int idx = command.size() - 1; // insert before instanceName operand
+            command.add(idx, "--windowspassword");
+            command.add(idx + 1, sshPassword);
+        }
+
         // First error message displayed if we fail
-        String firstErrorMessage = Strings.get("start.instance.failed", instanceName, noderef, nodeHost );
+        String firstErrorMessage = Strings.get("start.instance.failed", instanceName, noderef, nodeHost);
+        if ("SSH".equals(node.getType())) {
+            firstErrorMessage += "\n" + Strings.get("start.instance.failed.ssh.windows.hint", noderef);
+        }
 
         StringBuilder output = new StringBuilder();
 
