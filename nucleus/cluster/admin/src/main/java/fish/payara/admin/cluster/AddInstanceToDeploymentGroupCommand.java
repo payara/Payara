@@ -39,13 +39,17 @@
  */
 package fish.payara.admin.cluster;
 
+import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.config.util.ServerHelper;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
@@ -72,6 +76,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.UndoableCommand;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.annotations.Service;
@@ -120,6 +125,9 @@ public class AddInstanceToDeploymentGroupCommand implements UndoableCommand, Dep
 
     @Inject
     CommandRunner commandRunner;
+
+    @Inject
+    private ServiceLocator serviceLocator;
 
     /**
      * Resolves the replication target for this command. The admin console and REST
@@ -305,6 +313,127 @@ public class AddInstanceToDeploymentGroupCommand implements UndoableCommand, Dep
 
                 }
             }
+        }
+
+        if (env.isDas()) {
+            registerJoiningInstancesWithRunningMembers(instances, context);
+        }
+    }
+
+    /**
+     * Makes the group's running members and the joining instances aware of each other's
+     * {@code server} element, by replicating {@code _register-instance-at-instance} between
+     * them.
+     * <p>
+     * Adding the {@code dg-server-ref} on its own is not enough to leave a running member in
+     * the state it would have had on a restart. When an instance parses the {@code domain.xml}
+     * it synced from the DAS, {@code InstanceReaderFilter} keeps the {@code server} and
+     * {@code config} elements of its <em>fellow group members</em>, not only its own. A member
+     * that learns about a new member live therefore ends up with a {@code dg-server-ref}
+     * pointing at a server it holds no {@code server} element for, until it is restarted.
+     * Registering the instances with each other closes that gap for the {@code server} element
+     * (and the {@code node} it references), which is what {@code create-instance
+     * --deploymentgroup} already does through {@code PostRegisterInstanceCommand}. Reusing
+     * that same command here keeps the two ways of joining a group consistent.
+     * <p>
+     * The {@code config} element is deliberately not pushed: {@code _register-instance-at-
+     * instance} only sets the new server's {@code config-ref} and never creates the config
+     * itself, because members of a <em>cluster</em> all share one config and never needed it.
+     * Group members each have their own, so a live-added member's config still only reaches
+     * the others on their next restart. That limitation is not introduced here -- it applies
+     * equally to {@code create-instance --deploymentgroup} today -- and closing it means
+     * transporting a whole config element, which no command currently does.
+     * <p>
+     * Only pairs where at least one side is joining are contacted: members that were already
+     * in the group know about each other. Only running instances are targeted, and offline
+     * ones are skipped silently, for the reasons given in
+     * {@code RemoveInstanceFromDeploymentGroupCommand#replicateRemovalToDepartedRunningInstances}.
+     *
+     * @param joining the instances being added by this invocation
+     */
+    private void registerJoiningInstancesWithRunningMembers(List<String> joining, AdminCommandContext context) {
+        DeploymentGroup deploymentGroup = domain.getDeploymentGroupNamed(deploymentGroupName);
+        if (deploymentGroup == null) {
+            return;
+        }
+        // Re-read the membership so it includes the references just created above.
+        List<String> members = new ArrayList<>();
+        for (DGServerRef ref : deploymentGroup.getDGServerRef()) {
+            members.add(ref.getRef());
+        }
+
+        for (String member : members) {
+            Server registered = domain.getServerNamed(member);
+            if (registered == null) {
+                continue;
+            }
+            List<Server> targets = new ArrayList<>();
+            for (String other : members) {
+                if (other.equals(member)) {
+                    continue;
+                }
+                // An existing member already holds every other existing member's server
+                // element, so only pairs involving a joining instance need contacting.
+                if (!joining.contains(member) && !joining.contains(other)) {
+                    continue;
+                }
+                Server target = domain.getServerNamed(other);
+                if (target != null && new ServerHelper(target, target.getConfig()).isRunning()) {
+                    targets.add(target);
+                }
+            }
+            if (targets.isEmpty()) {
+                continue;
+            }
+            ClusterOperationUtil.replicateCommand(
+                    "_register-instance-at-instance",
+                    FailurePolicy.Warn,
+                    FailurePolicy.Ignore,
+                    FailurePolicy.Ignore,
+                    targets,
+                    context,
+                    registrationParameters(registered),
+                    serviceLocator);
+        }
+    }
+
+    /**
+     * Describes {@code server} to {@code _register-instance-at-instance}, which recreates it
+     * (and its node, if missing) in the receiving instance's own configuration.
+     */
+    private ParameterMap registrationParameters(Server server) {
+        ParameterMap parameters = new ParameterMap();
+        // The command declares the instance name as its primary operand, so it has to travel
+        // under the "DEFAULT" key: the field name does resolve locally but is not carried as
+        // the operand once the command is replicated.
+        parameters.add("DEFAULT", server.getName());
+        parameters.add("config", server.getConfigRef());
+        parameters.add("node", server.getNodeRef());
+        // Lets the receiving member attach the dg-server-ref itself when it already knows the
+        // group; when it does not, the replicated add creates both the group and the ref.
+        parameters.add("deploymentgroup", deploymentGroupName);
+
+        Node node = domain.getNodes().getNode(server.getNodeRef());
+        if (node != null) {
+            addIfSet(parameters, "nodehost", node.getNodeHost());
+            addIfSet(parameters, "installdir", node.getInstallDir());
+            addIfSet(parameters, "nodedir", node.getNodeDir());
+            addIfSet(parameters, "type", node.getType());
+        }
+
+        // Declared as a Properties param with ':' as its separator.
+        StringJoiner systemProperties = new StringJoiner(":");
+        for (SystemProperty systemProperty : server.getSystemProperty()) {
+            systemProperties.add(systemProperty.getName() + "=" + systemProperty.getValue());
+        }
+        addIfSet(parameters, "systemproperties", systemProperties.toString());
+
+        return parameters;
+    }
+
+    private void addIfSet(ParameterMap parameters, String name, String value) {
+        if (value != null && !value.isEmpty()) {
+            parameters.add(name, value);
         }
     }
 
