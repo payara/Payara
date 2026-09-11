@@ -62,7 +62,7 @@ import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resources.admin.cli.ResourcesXMLParser;
-import org.glassfish.resources.admin.cli.SunResourcesXML;
+import org.glassfish.resources.admin.cli.ResourcesXML;
 import org.glassfish.resources.api.*;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
@@ -372,9 +372,9 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
 
     private static void validateResourcesXML(File file, ResourcesXMLParser parser) throws ResourceConflictException {
         String filePath = file.getPath();
-        SunResourcesXML sunResourcesXML = new SunResourcesXML(filePath, parser.getResourcesList());
-        List<SunResourcesXML> resourcesXMLList = new ArrayList<SunResourcesXML>();
-        resourcesXMLList.add(sunResourcesXML);
+        ResourcesXML resourcesXML = new ResourcesXML(filePath, parser.getResourcesList());
+        List<ResourcesXML> resourcesXMLList = new ArrayList<>();
+        resourcesXMLList.add(resourcesXML);
         ResourceUtilities.resolveResourceDuplicatesConflictsWithinArchive(resourcesXMLList);
     }
 
