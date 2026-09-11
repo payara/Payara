@@ -124,6 +124,7 @@ public class ResourcesXMLParser implements EntityResolver
     private static final Logger _logger  = Logger.getLogger(ResourcesXMLParser.class.getName());
 
     private static final String SUN_RESOURCES = "sun-resources";
+    private static final String GLASSFISH_RESOURCES = "glassfish-resources";
 
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";
     public static final String JAVA_COMP_SCOPE_PREFIX = "java:comp/";
@@ -354,16 +355,27 @@ public class ResourcesXMLParser implements EntityResolver
     }
 
     /**
-     * detects and logs a warning if any of the deprecated descriptor (sun-resources*.dtd) is specified
+     * detects and logs a warning if any of the deprecated descriptors (sun-resources*.dtd,
+     * glassfish-resources*.dtd, or older payara-resources*.dtd) are specified
      */
     private void detectDeprecatedDescriptor() {
         String publicId = document.getDoctype().getPublicId();
         String systemId = document.getDoctype().getSystemId();
-        if( (publicId != null && publicId.contains(SUN_RESOURCES)) ||
-                (systemId != null && systemId.contains(SUN_RESOURCES))){
-            String msg = localStrings.getString(
-                    "deprecated.resources.dtd", resourceFile.getAbsolutePath() );
-            _logger.log(Level.FINEST, msg);
+        if ((publicId != null && publicId.contains(SUN_RESOURCES)) ||
+                (systemId != null && systemId.contains(SUN_RESOURCES))) {
+            _logger.log(Level.WARNING, localStrings.getString(
+                    "deprecated.resources.dtd", resourceFile.getAbsolutePath()));
+        } else if ((publicId != null && (publicId.contains(publicID_ges30) || publicId.contains(publicID_ges31))) ||
+                (systemId != null && systemId.contains(GLASSFISH_RESOURCES))) {
+            _logger.log(Level.WARNING, localStrings.getString(
+                    "deprecated.glassfish.resources.dtd", resourceFile.getAbsolutePath()));
+        } else if ((publicId != null && (publicId.contains(publicId_py4) || publicId.contains(PUBLIC_ID_DTD_PAYARA5_1_7_1)
+                        || publicId.contains(PUBLIC_ID_DTD_PAYARA6_1_8_1))) ||
+                (systemId != null && (systemId.contains(DTD_1_6) || systemId.contains(DTD_1_7) ||
+                        systemId.contains(DTD_1_8) || systemId.contains(DTD_PAYARA5_1_7_1) ||
+                        systemId.contains(DTD_PAYARA6_1_8_1)))) {
+            _logger.log(Level.WARNING, localStrings.getString(
+                    "deprecated.old.payara.resources.dtd", resourceFile.getAbsolutePath()));
         }
     }
 
