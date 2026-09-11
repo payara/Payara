@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE resources PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN" "http://glassfish.org/dtds/glassfish-resources_1_5.dtd">
+<resources>
+    <custom-resource jndi-name="java:app/test-resource"
+                     res-type="java.lang.String"
+                     factory-class="org.glassfish.resources.custom.factory.PrimitivesAndStringFactory">
+        <property name="value" value="glassfish-resource-wins"/>
+    </custom-resource>
+</resources>

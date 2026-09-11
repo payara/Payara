@@ -48,7 +48,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.logging.Logger;
 
 /**
  * @author Jagadish Ramu
@@ -69,8 +68,6 @@ public class ResourceUtil {
                 if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
                     //handle top-level META-INF/glassfish-resources.xml
                     if(archive.exists(RESOURCES_XML_META_INF)){
-                        Logger.getAnonymousLogger().warning("The glassfish-resources.xml file is deprecated and support"
-                            + " will be removed in the future. It is recommended to use payara-resources.xml instead.");
                         return true;
                     }
 
@@ -101,11 +98,6 @@ public class ResourceUtil {
             }catch(IOException ioe){
                 //ignore
             }
-        }
-        
-        if (hasResourcesXML) {
-            Logger.getAnonymousLogger().warning("The glassfish-resources.xml file is deprecated and support will be "
-                + "removed in the future. It is recommended to use payara-resources.xml instead.");
         }
         
         return hasResourcesXML;

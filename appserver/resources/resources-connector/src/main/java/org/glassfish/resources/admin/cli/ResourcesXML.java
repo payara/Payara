@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions copyright 2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.resources.admin.cli;
 
@@ -45,18 +46,18 @@ import org.glassfish.resources.api.Resource;
 import java.util.List;
 
 /**
- * This class encapsulates the information of a sun-resources.xml
+ * This class encapsulates the information of a sun-resources.xml, glassfish-resources.xml, or payara-resources.xml
  * packaged inside an application.
  */
 
-public class SunResourcesXML {
+public class ResourcesXML {
     /** the relative path of this sun-resources.xml to the application root */
     private String xmlPath;
 
     /** the parsed resources list from this sun-resources.xml  */
     private List<org.glassfish.resources.api.Resource> resourcesList;
 
-    public SunResourcesXML(String xPath, List<Resource> rList) {
+    public ResourcesXML(String xPath, List<Resource> rList) {
         xmlPath = xPath;
         resourcesList = rList;
     }
