@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2017-2025 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates7
 
 package org.glassfish.resources.admin.cli;
 
@@ -141,24 +141,50 @@ public class ResourcesXMLParser implements EntityResolver
                 JAVA_GLOBAL_SCOPE_PREFIX
             ));
 
+    @Deprecated
     private static final String publicID_sjsas90 = "Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions";
+    @Deprecated
     private static final String publicID_ges30 = "Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Resource Definitions";
+    @Deprecated
     private static final String publicID_ges31 = "GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions";
+    @Deprecated
     private static final String publicId_py4 = "Payara.fish//DTD Payara Server 4 Resource Definitions";
+    @Deprecated
+    private static final String PUBLIC_ID_DTD_PAYARA5_1_7_1 = "Payara.fish//DTD Payara Server 5 Resource Definitions";
+    @Deprecated
+    private static final String PUBLIC_ID_DTD_PAYARA6_1_8_1 = "Payara.fish//DTD Payara Server 6 Resource Definitions";
+    private static final String PUBLIC_ID_DTD_PAYARA7_1_8_1 = "Payara.fish//DTD Payara Server 7 Resource Definitions";
 
+    private static final String DTD_PAYARA7_1_8_1 = "payara7-resources_1_8-1.dtd";
+    @Deprecated
+    private static final String DTD_PAYARA6_1_8_1 = "payara6-resources_1_8-1.dtd";
+    @Deprecated
+    private static final String DTD_PAYARA5_1_7_1 = "payara5-resources_1_7-1.dtd";
+    @Deprecated
     private static final String DTD_1_8 = "payara-resources_1_8.dtd";
+    @Deprecated
     private static final String DTD_1_7 = "payara-resources_1_7.dtd";
+    @Deprecated
     private static final String DTD_1_6 = "payara-resources_1_6.dtd";
+    @Deprecated
     private static final String DTD_1_5 = "glassfish-resources_1_5.dtd";
+    @Deprecated
     private static final String DTD_1_4 = "sun-resources_1_4.dtd";
+    @Deprecated
     private static final String DTD_1_3 = "sun-resources_1_3.dtd";
+    @Deprecated
     private static final String DTD_1_2 = "sun-resources_1_2.dtd";
+    @Deprecated
     private static final String DTD_1_1 = "sun-resources_1_1.dtd";
+    @Deprecated
     private static final String DTD_1_0 = "sun-resources_1_0.dtd";
 
     private static final List<String> systemIDs = Collections.unmodifiableList(
             Arrays.asList(
+                    DTD_PAYARA7_1_8_1,
+                    DTD_PAYARA6_1_8_1,
                     DTD_1_8,
+                    DTD_PAYARA5_1_7_1,
                     DTD_1_7,
                     DTD_1_6,
                     DTD_1_5,
@@ -1869,15 +1895,21 @@ public class ResourcesXMLParser implements EntityResolver
             }
         }
 
-        if (!foundMatchingDTD && publicId != null){
-            if(publicId.contains(publicID_sjsas90)){
+        if (!foundMatchingDTD && publicId != null) {
+            if (publicId.contains(publicID_sjsas90)) {
                 dtdFileName = DTD_1_3;
-            }else if(publicId.contains(publicID_ges30)){
+            } else if(publicId.contains(publicID_ges30)) {
                 dtdFileName = DTD_1_4;
-            }else if(publicId.contains(publicID_ges31)){
+            } else if(publicId.contains(publicID_ges31)) {
                 dtdFileName = DTD_1_5;
             } else if (publicId.contains(publicId_py4)) {
                 dtdFileName = DTD_1_8;
+            } else if (publicId.contains(PUBLIC_ID_DTD_PAYARA5_1_7_1)) {
+                dtdFileName = DTD_PAYARA5_1_7_1;
+            } else if (publicId.contains(PUBLIC_ID_DTD_PAYARA6_1_8_1)) {
+                dtdFileName = DTD_PAYARA6_1_8_1;
+            } else if (publicId.contains(PUBLIC_ID_DTD_PAYARA7_1_8_1)) {
+                dtdFileName = DTD_PAYARA7_1_8_1;
             }
         }
 
