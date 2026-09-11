@@ -722,69 +722,62 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
     }
 
     /**
-     * Puts all glassfish-resources.xml files of an archive into a map
+     * Puts all glassfish-resources.xml or payara-resources.xml files of an archive into a map
      * <p>
      * If the archive is an ear all sub archives will be searched as well
-     * @param fileNames Map of all glassfish-resources files.
-     * All found glassfish-resource files will be added to it
-     * @param archive The archive to search for glassfish-resources.xml files
+     * @param fileNames Map of all glassfish-resources or payara-resources files.
+     * All found glassfish-resource or payara-resources files will be added to it
+     * @param archive The archive to search for glassfish-resources.xml or payara-resources.xml files
      * @param actualArchiveName The path of the archive
      * @throws IOException 
      */
-    public void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive,
-                                         String actualArchiveName) throws IOException {
-
-        if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)){
-            //Look for top-level META-INF/payara-resources.xml
+    public void retrieveAllResourcesXMLs(Map<String, String> fileNames, ReadableArchive archive, String actualArchiveName) throws IOException {
+        if (DeploymentUtils.isArchiveOfType(archive, DOLUtils.earType(), locator)) {
+            // Look for top-level META-INF/payara-resources.xml
             if (archive.exists(PAYARA_RESOURCES_XML_META_INF)) {
                 String archivePath = archive.getURI().getPath();
                 String fileName = archivePath + PAYARA_RESOURCES_XML_META_INF;
-                if(_logger.isLoggable(Level.FINEST)){
+                if (_logger.isLoggable(Level.FINEST)) {
                     _logger.log(Level.FINEST, "Payara-Resources Deployer - fileName : {0} - parent : {1}", new Object[]{fileName, archive.getName()});
                 }
                 fileNames.put(actualArchiveName, fileName);
             }
-            //Look for top-level META-INF/glassfish-resources.xml
-            if(archive.exists(RESOURCES_XML_META_INF)){
+            // Look for top-level META-INF/glassfish-resources.xml, but only if payara-resources.xml is not present
+            else if (archive.exists(RESOURCES_XML_META_INF)) {
                 String archivePath = archive.getURI().getPath();
                 String fileName = archivePath + RESOURCES_XML_META_INF;
-                if(_logger.isLoggable(Level.FINEST)){
-                    _logger.finest("GlassFish-Resources Deployer - fileName : " + fileName +
-                            " - parent : " + archive.getName());
+                if (_logger.isLoggable(Level.FINEST)) {
+                    _logger.finest("GlassFish-Resources Deployer - fileName : " + fileName + " - parent : " + archive.getName());
                 }
                 fileNames.put(actualArchiveName, fileName);
             }
 
-            //Look for sub-module level META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
-            // and also for payara-resources.xml
+            // Look for sub-module level META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml and also for payara-resources.xml
             Enumeration<String> entries = archive.entries();
-            while(entries.hasMoreElements()){
+            while (entries.hasMoreElements()) {
                 String element = entries.nextElement();
-                if(element.endsWith(".jar") || element.endsWith(".war") || element.endsWith(".rar") ||
-                        element.endsWith("_jar") || element.endsWith("_war") || element.endsWith("_rar")){
+                if (element.endsWith(".jar") || element.endsWith(".war") || element.endsWith(".rar") ||
+                        element.endsWith("_jar") || element.endsWith("_war") || element.endsWith("_rar")) {
                     ReadableArchive subArchive = archive.getSubArchive(element);
-                    if(subArchive != null ){
+                    if (subArchive != null ) {
                         retrieveResourcesXMLFromArchive(fileNames, subArchive, subArchive.getName());
                     }
                 }
             }
-        }else{
-            //Look for standalone archive's META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
+        } else {
+            // Look for standalone archive's META-INF/glassfish-resources.xml and WEB-INF/glassfish-resources.xml
             retrieveResourcesXMLFromArchive(fileNames, archive, actualArchiveName);
         }
     }
 
     /**
-     * Checks if a glassfish-resources.xml or payara-resources.xml
-     * exists in the archive, if it does, adds it to the map
-     * @param fileNames Map of all glassfish-resources.xml files
+     * Checks if a glassfish-resources.xml or payara-resources.xml exists in the archive, if it does, adds it to the map
+     * @param fileNames Map of all glassfish-resources.xml or payara-resources.xml files
      * @param archive archive to check
      * @param actualArchiveName path to archive
      */
-    private void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive,
-                                                 String actualArchiveName) {
-        
-        if(ResourceUtil.hasPayaraResourcesXML(archive, locator)){
+    private void retrieveResourcesXMLFromArchive(Map<String, String> fileNames, ReadableArchive archive, String actualArchiveName) {
+        if (ResourceUtil.hasPayaraResourcesXML(archive, locator)) {
             String archivePath = archive.getURI().getPath();
             String fileName ;
             if (DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)) {
@@ -797,18 +790,16 @@ public class ResourcesDeployer extends JavaEEDeployer<ResourcesContainer, Resour
             }
 
             fileNames.put(actualArchiveName, fileName);
-        }
-        if(ResourceUtil.hasGlassfishResourcesXML(archive, locator)){
+        } else if (ResourceUtil.hasGlassfishResourcesXML(archive, locator)) {
             String archivePath = archive.getURI().getPath();
             String fileName ;
-            if(DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)){
+            if (DeploymentUtils.isArchiveOfType(archive, DOLUtils.warType(), locator)) {
                 fileName = archivePath +  RESOURCES_XML_WEB_INF;
-            }else{
+            } else {
                 fileName = archivePath + RESOURCES_XML_META_INF;
             }
-            if(_logger.isLoggable(Level.FINEST)){
-                _logger.finest("GlassFish-Resources Deployer - fileName : " + fileName +
-                        " - parent : " + archive.getName());
+            if (_logger.isLoggable(Level.FINEST)) {
+                _logger.finest("GlassFish-Resources Deployer - fileName : " + fileName + " - parent : " + archive.getName());
             }
 
             fileNames.put(actualArchiveName, fileName);
