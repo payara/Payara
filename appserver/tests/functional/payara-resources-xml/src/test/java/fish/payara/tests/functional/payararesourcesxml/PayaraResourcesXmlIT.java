@@ -110,7 +110,7 @@ public class PayaraResourcesXmlIT {
     }
 
     @Deployment(name = "payaraOverGlassFish")
-    public static WebArchive createPayara7OverGlassFishDeployment() {
+    public static WebArchive createPayaraOverGlassFishDeployment() {
         return ShrinkWrap.create(WebArchive.class, "payara-over-glassfish.war")
                 .addClasses(RestApplication.class, ResourceLookupEndpoint.class)
                 .addAsWebInfResource(new File("src/test/WEB-INF", "payara-resources-both.xml"), "payara-resources.xml")
@@ -173,7 +173,7 @@ public class PayaraResourcesXmlIT {
     @Test
     @RunAsClient
     @OperateOnDeployment("payaraOverGlassFish")
-    public void testPayara7TakesPrecedenceOverGlassFish() {
+    public void testPayaraTakesPrecedenceOverGlassFish() {
         Response response = ClientBuilder.newClient().target(uri).path("resources").path("resource").request().get();
         Assert.assertEquals(200, response.getStatus());
         Assert.assertEquals("payara-resource-wins", response.readEntity(String.class));
