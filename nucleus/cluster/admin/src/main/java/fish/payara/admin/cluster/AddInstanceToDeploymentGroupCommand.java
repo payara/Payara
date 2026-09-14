@@ -40,6 +40,7 @@
 package fish.payara.admin.cluster;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -128,6 +129,9 @@ public class AddInstanceToDeploymentGroupCommand implements UndoableCommand, Dep
 
     @Inject
     private ServiceLocator serviceLocator;
+
+    @Inject
+    private ConfigModularityUtils configModularityUtils;
 
     /**
      * Resolves the replication target for this command. The admin console and REST
@@ -336,13 +340,14 @@ public class AddInstanceToDeploymentGroupCommand implements UndoableCommand, Dep
      * --deploymentgroup} already does through {@code PostRegisterInstanceCommand}. Reusing
      * that same command here keeps the two ways of joining a group consistent.
      * <p>
-     * The {@code config} element is deliberately not pushed: {@code _register-instance-at-
-     * instance} only sets the new server's {@code config-ref} and never creates the config
-     * itself, because members of a <em>cluster</em> all share one config and never needed it.
-     * Group members each have their own, so a live-added member's config still only reaches
-     * the others on their next restart. That limitation is not introduced here -- it applies
-     * equally to {@code create-instance --deploymentgroup} today -- and closing it means
-     * transporting a whole config element, which no command currently does.
+     * The {@code config} element is transported too, ahead of the server: {@code _register-
+     * instance-at-instance} only sets the new server's {@code config-ref} and never creates the
+     * config itself, because members of a <em>cluster</em> all share one config, but group
+     * members each have their own. Registering only the server would therefore leave a running
+     * member with a {@code config-ref} pointing at a config it does not hold until it is
+     * restarted. {@code _copy-config-at-instance} serializes the member's config on the DAS and
+     * recreates it on the receiving members first, so the {@code config-ref} resolves as soon as
+     * the server is registered.
      * <p>
      * Only pairs where at least one side is joining are contacted: members that were already
      * in the group know about each other. Only running instances are targeted, and offline
@@ -385,6 +390,9 @@ public class AddInstanceToDeploymentGroupCommand implements UndoableCommand, Dep
             if (targets.isEmpty()) {
                 continue;
             }
+            // Push the config before the server, so the config-ref the server carries resolves
+            // on the receiving members the moment the server is registered.
+            copyConfigToRunningMembers(registered, targets, context);
             ClusterOperationUtil.replicateCommand(
                     "_register-instance-at-instance",
                     FailurePolicy.Warn,
@@ -395,6 +403,38 @@ public class AddInstanceToDeploymentGroupCommand implements UndoableCommand, Dep
                     registrationParameters(registered),
                     serviceLocator);
         }
+    }
+
+    /**
+     * Recreates {@code server}'s {@code config} on the running members through
+     * {@code _copy-config-at-instance}, by serializing it on the DAS and having each member
+     * materialize it in its own configuration. See {@link #registerJoiningInstancesWithRunningMembers}
+     * for why a member needs a fellow member's config and why it cannot simply be copied there.
+     */
+    private void copyConfigToRunningMembers(Server server, List<Server> targets, AdminCommandContext context) {
+        Config config = domain.getConfigNamed(server.getConfigRef());
+        if (config == null) {
+            return;
+        }
+        String configXml = configModularityUtils.serializeConfigBean(config);
+        if (configXml == null || configXml.isEmpty()) {
+            return;
+        }
+        ParameterMap parameters = new ParameterMap();
+        // The command declares the config name as its primary operand, so it has to travel under
+        // the "DEFAULT" key: the field name resolves locally but is not carried as the operand
+        // once the command is replicated.
+        parameters.add("DEFAULT", config.getName());
+        parameters.add("configxml", configXml);
+        ClusterOperationUtil.replicateCommand(
+                "_copy-config-at-instance",
+                FailurePolicy.Warn,
+                FailurePolicy.Ignore,
+                FailurePolicy.Ignore,
+                targets,
+                context,
+                parameters,
+                serviceLocator);
     }
 
     /**
