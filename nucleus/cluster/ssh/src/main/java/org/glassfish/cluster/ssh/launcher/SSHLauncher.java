@@ -456,14 +456,14 @@ public class SSHLauncher {
                 logger.fine("Command completed with exit status: " + result);
                 return result;
             } finally {
-                try { session.close(); } catch (IOException ignored) { }
+                try { session.close(false).await(5000L); } catch (Exception ignored) { }
             }
         } catch (GeneralSecurityException ex) {
             throw new IOException("Security error during SSH connection", ex);
         } catch (IOException ex) {
             throw ex;
         } finally {
-            client.stop();
+            stopClientGracefully(client);
         }
     }
 
@@ -499,19 +499,20 @@ public class SSHLauncher {
                 fullCommand.append(command);
                 return exec(session, fullCommand.toString(), os, listInputStream(stdinLines));
             } finally {
-                try { session.close(); } catch (IOException ignored) { }
+                try { session.close(false).await(5000L); } catch (Exception ignored) { }
             }
         } catch (GeneralSecurityException ex) {
             throw new IOException("Security error during SSH connection", ex);
         } finally {
-            client.stop();
+            stopClientGracefully(client);
         }
     }
 
     int exec(ClientSession session, String command, OutputStream os, InputStream is)
             throws IOException, InterruptedException {
         logger.finer("Executing: " + command);
-        try (ChannelExec channel = session.createExecChannel(command)) {
+        ChannelExec channel = session.createExecChannel(command);
+        try {
             channel.setOut(os);
             channel.setErr(os);
 
@@ -543,6 +544,11 @@ public class SSHLauncher {
             Integer exitStatus = channel.getExitStatus();
             logger.finer("Exit status: " + exitStatus);
             return exitStatus != null ? exitStatus : -1;
+        } finally {
+            try {
+                channel.close();
+            } catch (IllegalStateException | IOException ignored) {
+            }
         }
     }
 
@@ -605,7 +611,7 @@ public class SSHLauncher {
         } catch (GeneralSecurityException ex) {
             throw new IOException("Security error during ping", ex);
         } finally {
-            client.stop();
+            try { client.close(false).await(5000L); } catch (Exception ignored) { }
         }
     }
 
@@ -664,7 +670,7 @@ public class SSHLauncher {
             return false;
         } finally {
             if (client != null) {
-                client.stop();
+                try { client.close(false).await(5000L); } catch (Exception ignored) { }
             }
         }
     }
@@ -695,7 +701,7 @@ public class SSHLauncher {
             this.keyFile = savedKeyFile;
             this.privateKey = savedPrivateKey;
             if (client != null) {
-                client.stop();
+                try { client.close(false).await(5000L); } catch (Exception ignored) { }
             }
         }
     }
@@ -984,6 +990,21 @@ public class SSHLauncher {
 
     private static String commandListToQuotedString(List<String> command) {
         return SSHCommandUtils.commandListToQuotedString(command);
+    }
+
+    private void stopClientGracefully(SshClient client) {
+        if (client == null) {
+            return;
+        }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
+        try {
+            client.close(false).await(5000L);
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
