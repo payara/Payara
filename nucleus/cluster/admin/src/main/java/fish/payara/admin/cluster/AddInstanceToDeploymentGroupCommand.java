@@ -93,16 +93,17 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "add-instance-to-deployment-group")
 @I18n("add.instance.to.deployment.group")
 @PerLookup
-// Replication is scoped to the group's own members by @TargetType, so an instance that is
-// contacted here is genuinely a member. An offline member is nevertheless not a failure: the
-// change is queued as a pending config change and the member reconciles from the DAS
-// domain.xml on its next startup, so offline/never-started members are skipped silently
-// rather than degrading the command to "completed with warnings" (this matches the policy the
-// commands carried before the replication was scoped, and the one the departed-instance
-// replication in RemoveInstanceFromDeploymentGroupCommand passes explicitly). ifFailure is
-// deliberately left at its default so a genuine replication failure is still reported.
-@ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE},
-        ifOffline = FailurePolicy.Ignore, ifNeverStarted = FailurePolicy.Ignore)
+// Replication is scoped to the group's own members by @TargetType, so an instance contacted
+// here is genuinely a member. Offline handling is deliberately left at the @ExecuteOn defaults
+// (ifOffline = Warn, ifNeverStarted = Ignore): an offline member legitimately misses this
+// membership change, so its config is stale until it is next started with sync full or sync
+// normal, and the standard "seems to be offline; command was not replicated" warning is the
+// correct, actionable signal to the operator. A never-started member needs no warning because
+// it syncs its whole config from the DAS on its first start. Because replication no longer
+// fans out to RuntimeType.ALL, this warning can only reach an actual group member and never an
+// unrelated offline instance, so it is no longer misleading. ifFailure stays at its default
+// (Error) so a genuine replication failure is still reported.
+@ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
