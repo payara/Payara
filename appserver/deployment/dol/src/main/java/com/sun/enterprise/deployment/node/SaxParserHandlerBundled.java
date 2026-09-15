@@ -41,6 +41,7 @@
 package com.sun.enterprise.deployment.node;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
+import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -62,6 +63,7 @@ import java.util.logging.Level;
  * @author tjquinn
  */
 @Service
+@PerLookup
 public class SaxParserHandlerBundled extends SaxParserHandler {
 
     /**
