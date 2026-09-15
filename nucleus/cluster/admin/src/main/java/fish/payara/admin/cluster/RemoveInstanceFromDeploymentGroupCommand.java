@@ -83,12 +83,15 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name = "remove-instance-from-deployment-group")
 @I18n("remove.instance.from.deployment.group")
 @PerLookup
-// See AddInstanceToDeploymentGroupCommand: replication is scoped to the group's members, and
-// an offline member is skipped silently because it reconciles from the DAS domain.xml on its
-// next startup. This also keeps the annotation-driven replication consistent with the explicit
-// FailurePolicy.Ignore used below when replicating to the just-removed instances.
-@ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE},
-        ifOffline = FailurePolicy.Ignore, ifNeverStarted = FailurePolicy.Ignore)
+// See AddInstanceToDeploymentGroupCommand: replication is scoped to the group's members and
+// offline handling is left at the @ExecuteOn defaults (ifOffline = Warn, ifNeverStarted =
+// Ignore). An offline member that stays in the group legitimately misses this removal, so its
+// config is stale until it is next started with sync full or sync normal, and the standard
+// "seems to be offline" warning is the correct signal for the operator. The explicit
+// FailurePolicy.Ignore used below when replicating to the JUST-REMOVED instances is separate:
+// those are no longer members, are filtered to the ones already verified running, and only
+// need the narrow stop-in-the-window race handled quietly.
+@ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
     @RestEndpoint(configBean = DeploymentGroups.class,
@@ -251,10 +254,11 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand, D
     /**
      * Replicates this removal to the just-removed instances that are still running so they
      * drop the deployment-group reference from their own live config without waiting for a
-     * restart. Only running instances are contacted: an offline instance is not a member at
-     * replication time anyway and reconciles its now-inert refs from the DAS on the next
-     * startup, so contacting it would only risk the misleading "seems to be offline" warning
-     * this command is designed to avoid.
+     * restart. Only running instances are contacted: a just-removed offline instance is on its
+     * way out of the group and reconciles its now-inert refs from the DAS on the next startup,
+     * so contacting it would only risk a misleading "seems to be offline" warning about an
+     * instance that is leaving anyway (unlike an offline member that stays in the group, whose
+     * offline warning from the annotation-driven replication above is intentional).
      *
      * Whether an instance is running is decided by a live admin-port reachability check
      * ({@link ServerHelper#isRunning()}), not by {@code InstanceStateService.getState()}:
