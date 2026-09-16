@@ -214,7 +214,7 @@
         <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.11.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.2.0</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
         <!-- Be careful updating to a higher version - an issue affecting 3.10.0-3.11.2 causes the aggregate jar to be empty -->
         <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
