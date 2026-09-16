@@ -139,6 +139,7 @@
     <tocitem target="reference/delete-jms-host" text="delete-jms-host" expand="false"></tocitem>
     <tocitem target="reference/delete-jms-resource" text="delete-jms-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-jndi-resource" text="delete-jndi-resource" expand="false"></tocitem>
+    <tocitem target="reference/delete-jvm-option" text="delete-jvm-option" expand="false"></tocitem>
     <tocitem target="reference/delete-jvm-options" text="delete-jvm-options" expand="false"></tocitem>
     <tocitem target="reference/delete-local-instance" text="delete-local-instance" expand="false"></tocitem>
     <tocitem target="reference/delete-managed-executor-service" text="delete-managed-executor-service" expand="false"></tocitem>
