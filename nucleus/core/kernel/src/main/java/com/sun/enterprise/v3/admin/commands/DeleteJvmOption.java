@@ -41,7 +41,6 @@ package com.sun.enterprise.v3.admin.commands;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 import jakarta.inject.Inject;
-import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.UnknownOptionsAreOperands;
 import org.glassfish.api.admin.AdminCommand;
