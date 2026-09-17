@@ -95,17 +95,8 @@ public class UninstallNodeSshCommand extends UninstallNodeBaseCommand {
     protected void validate() throws CommandException {
         super.validate();
         if (sshkeyfile == null) {
-            //if user hasn't specified a key file check if key exists in
-            //default location
-            String existingKey = SSHUtil.getExistingKeyFile();
-            if (existingKey == null) {
-                promptPass = true;
-            }
-            else {
-                sshkeyfile = existingKey;
-            }
-        }
-        else {
+            promptPass = true;
+        } else {
             validateKey(sshkeyfile);
         }
 

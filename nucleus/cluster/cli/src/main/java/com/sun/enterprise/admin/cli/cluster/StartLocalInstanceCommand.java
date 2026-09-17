@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2022] Payara Foundation and/or affiliates
+// Portions Copyright 2017-2026 Payara Foundation and/or affiliates
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.launcher.GFLauncher;
@@ -83,6 +83,12 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
     @Param(optional = true, shortName = "d", defaultValue = "false")
     private boolean debug;
 
+    @Param(name = "windowspassword", optional = true)
+    private String windowsPassword;
+
+    @Param(name = "sshnode", optional = true, defaultValue = "false")
+    private boolean sshNode;
+
     @Param(name = "dry-run", shortName = "n", optional = true, defaultValue = "false")
     private boolean dryRun;
 
@@ -111,6 +117,8 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand implem
         getInfo().setVerbose(verbose);
         getInfo().setWatchdog(watchdog);
         getInfo().setDebug(debug);
+        getInfo().setWindowsPassword(windowsPassword);
+        getInfo().setSshNode(sshNode);
         getInfo().setRespawnInfo(programOpts.getClassName(), programOpts.getClassPath(), respawnArgs());
 
         getLauncher().setup();
