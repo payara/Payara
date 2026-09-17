@@ -126,7 +126,7 @@ public class CoyoteAdapter extends HttpHandler {
 
     protected static final boolean ALLOW_BACKSLASH =
         Boolean.valueOf(System.getProperty("org.glassfish.grizzly.tcp.tomcat5.CoyoteAdapter.ALLOW_BACKSLASH", "false"))
-            || Boolean.parseBoolean(System.getProperty("com.sun.enterprise.web.allowBackslash", "false"));
+            || Boolean.parseBoolean(System.getProperty("org.glassfish.grizzly.http.util.HttpRequestURIDecoder.ALLOW_BACKSLASH", "false"));
 
     private static final boolean COLLAPSE_ADJACENT_SLASHES =
         Boolean.valueOf(System.getProperty(
