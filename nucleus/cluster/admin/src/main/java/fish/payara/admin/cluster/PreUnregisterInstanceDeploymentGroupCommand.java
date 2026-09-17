@@ -132,6 +132,10 @@ public class PreUnregisterInstanceDeploymentGroupCommand implements AdminCommand
             // The command declares the group under "deploymentGroup"; it surfaces it as the
             // replication target itself, see its getTarget().
             parameters.add("deploymentGroup", groupName);
+            // delete-instance always operates on an already-stopped instance, so suppress the
+            // "seems to be offline" warning the command would otherwise emit about the instance
+            // being deleted; it is expected to be offline and is on its way out anyway.
+            parameters.add("notifyoffline", "false");
             inv.parameters(parameters).execute();
         }
     }
