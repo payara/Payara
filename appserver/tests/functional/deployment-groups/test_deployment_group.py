@@ -1474,23 +1474,24 @@ class TestDeploymentGroupReplicationWarning:
             asadmin.run_no_raise("add-instance-to-deployment-group",
                                  f"--instance={removed}", f"--deploymentgroup={dg}")
 
-    def test_rejoining_instance_reconciles_stale_membership(
+    def test_removed_instance_drops_group_and_rejoin_restores_membership(
             self, asadmin, deployment_group_env
     ):
         """
-        A running instance that rejoins a group whose membership shrank while it was not a
-        member must reconcile to the DAS membership, not merely add itself on top of its
-        stale copy.
+        A running instance removed from a group drops the whole group element from its own
+        live config, not just its own dg-server-ref, and re-adding it later converges its
+        config to exactly the group's current membership.
 
-        The DAS widens the replicated ``instance`` parameter to the group's full membership,
-        so on a member that list is authoritative. Only adding the missing references would
-        leave the members that departed while this instance was outside the group as phantom
-        entries in its own config until its next restart.
+        Because a removed instance no longer carries the group at all (a restart would not
+        recreate it, since InstanceReaderFilter only keeps the groups the instance belongs
+        to), it cannot hold a stale copy of a membership that shrank while it was outside the
+        group. On rejoin there is therefore nothing to reconcile away — it must simply end up
+        with the current members, carrying no leftover reference from before it was removed.
 
         Sequence (with the fixture's two running instances A and B):
-          1. remove B  -> DAS [A]; B drops its own ref live, so B's copy is [A]
-          2. remove A  -> DAS [];  B is no longer a member, so it never hears this and keeps [A]
-          3. add B     -> DAS [B]; B must end up with exactly [B], not [A, B]
+          1. remove B  -> DAS [A]; B drops the whole group live, so B lists no members
+          2. remove A  -> DAS [];  B is no longer a member and is not contacted, still none
+          3. add B     -> DAS [B]; B must end up with exactly [B]
         Regression test for FISH-14056.
         """
         dg = deployment_group_env["dg_name"]
@@ -1506,32 +1507,31 @@ class TestDeploymentGroupReplicationWarning:
         wait_for_instance_dg_members(node, second, {first, second})
 
         try:
-            # 1. Take the second instance out; it drops its own ref and is left holding
-            #    a copy of the membership that is correct at this point.
+            # 1. Take the second instance out; being removed, it drops the whole group from
+            #    its own config, so it lists no members at all.
             asadmin.run("remove-instance-from-deployment-group",
                         f"--instance={second}", f"--deploymentgroup={dg}")
-            wait_for_instance_dg_members(node, second, {first})
-
-            # 2. Take the first instance out too. The second instance is not a member any
-            #    more, so the removal is not replicated to it and its copy goes stale.
-            asadmin.run("remove-instance-from-deployment-group",
-                        f"--instance={first}", f"--deploymentgroup={dg}")
-            stale_members = read_instance_dg_members(node, second)
-            assert first in stale_members, (
-                f"Test precondition not met: '{second}' was expected to still hold the stale "
-                f"reference to '{first}', got {stale_members}"
+            after_removal = wait_for_instance_dg_members(node, second, set())
+            assert set(after_removal) == set(), (
+                f"Removed instance '{second}' did not drop the whole group live. "
+                f"Expected no members, got {set(after_removal)}"
             )
 
-            # 3. Rejoin. The instance must converge to the DAS membership exactly.
+            # 2. Take the first instance out too. The second instance is not a member any
+            #    more, so it is not contacted and keeps holding no members.
+            asadmin.run("remove-instance-from-deployment-group",
+                        f"--instance={first}", f"--deploymentgroup={dg}")
+
+            # 3. Rejoin. The instance must converge to the DAS membership exactly, carrying
+            #    no leftover reference from before it was removed.
             result = asadmin.run("add-instance-to-deployment-group",
                                  f"--instance={second}", f"--deploymentgroup={dg}")
             self._assert_no_replication_warning(result, "add-instance-to-deployment-group")
 
             members = wait_for_instance_dg_members(node, second, {second})
             assert set(members) == {second}, (
-                f"Rejoining instance '{second}' did not reconcile its membership. "
-                f"Expected {{{second}}}, got {set(members)} — '{first}' is a phantom member "
-                f"left over from the copy the instance held while it was outside the group"
+                f"Rejoining instance '{second}' did not converge to the current membership. "
+                f"Expected {{{second}}}, got {set(members)}"
             )
         finally:
             # Restore membership so the fixture teardown starts from a known state.
