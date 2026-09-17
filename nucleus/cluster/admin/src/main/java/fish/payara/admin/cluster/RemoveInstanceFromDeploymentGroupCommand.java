@@ -40,26 +40,33 @@
 package fish.payara.admin.cluster;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
+import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.config.util.ServerHelper;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.enterprise.config.serverbeans.DGServerRef;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroups;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.FailurePolicy;
+import org.glassfish.api.admin.InstanceState;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -69,6 +76,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.UndoableCommand;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -84,13 +92,16 @@ import org.jvnet.hk2.config.TransactionFailure;
 @I18n("remove.instance.from.deployment.group")
 @PerLookup
 // See AddInstanceToDeploymentGroupCommand: replication is scoped to the group's members and
-// offline handling is left at the @ExecuteOn defaults (ifOffline = Warn, ifNeverStarted =
-// Ignore). An offline member that stays in the group legitimately misses this removal, so its
-// config is stale until it is next started with sync full or sync normal, and the standard
-// "seems to be offline" warning is the correct signal for the operator. The explicit
-// FailurePolicy.Ignore used below when replicating to the JUST-REMOVED instances is separate:
-// those are no longer members, are filtered to the ones already verified running, and only
-// need the narrow stop-in-the-window race handled quietly.
+// offline handling for the REMAINING members is left at the @ExecuteOn defaults (ifOffline =
+// Warn, ifNeverStarted = Ignore). An offline member that stays in the group legitimately misses
+// this removal, so its config is stale until it is next started with sync full or sync normal,
+// and the standard "seems to be offline" warning is the correct signal for the operator. The
+// JUST-REMOVED instances are handled separately: running ones are converged live through
+// replicateRemovalToDepartedRunningInstances (with FailurePolicy.Ignore so a stop in the
+// reachability window stays quiet), while offline ones are reported with the same
+// "seems to be offline" warning by warnOfflineDepartedInstances, unless a caller that always
+// operates on an already-stopped instance (delete-instance, via
+// PreUnregisterInstanceDeploymentGroupCommand) suppresses it with notifyoffline=false.
 @ExecuteOn(value = {RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DEPLOYMENT_GROUP})
 @RestEndpoints({
@@ -99,13 +110,22 @@ import org.jvnet.hk2.config.TransactionFailure;
             path = "remove-instance-from-deployment-group",
             description = "Remove Instance From a Deployment Group")
 })
-public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand, DeploymentTargetResolver {
+public class RemoveInstanceFromDeploymentGroupCommand implements UndoableCommand, DeploymentTargetResolver {
+
+    private static final LocalStringManagerImpl CLUSTER_UTIL_STRINGS =
+            new LocalStringManagerImpl(ClusterOperationUtil.class);
 
     @Param(name = "instance")
     String instanceName;
 
     @Param(name = "deploymentGroup")
     String deploymentGroupName;
+
+    // Whether an offline just-removed instance should produce the "seems to be offline"
+    // warning. Defaults to true; delete-instance passes false because it always removes an
+    // already-stopped instance, for which the warning would only be noise.
+    @Param(name = "notifyoffline", optional = true, defaultValue = "true")
+    String notifyOffline;
 
     @Inject
     private Domain domain;
@@ -118,6 +138,9 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand, D
 
     @Inject
     private ServiceLocator serviceLocator;
+
+    @Inject
+    private InstanceStateService instanceStateService;
 
     /**
      * Resolves the replication target for this command. The admin console and REST
@@ -147,6 +170,29 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand, D
             }
         }
         return target;
+    }
+
+    /**
+     * Runs on the DAS before the command is replicated to the deployment group's members.
+     * The {@code notifyoffline} option only governs the DAS-local offline warning about the
+     * just-removed instances (see {@link #warnOfflineDepartedInstances}); the members never act
+     * on it. Strip it from the replicated {@code parameters} so it is not sent to them: a member
+     * still holding a previously released command model (see {@link #getTarget}) would otherwise
+     * reject the replicated command with "Option notifyoffline is invalid". The DAS's own field
+     * is already injected before this runs, so removing it here does not affect the DAS.
+     */
+    @Override
+    public ActionReport.ExitCode prepare(AdminCommandContext context, ParameterMap parameters) {
+        if (env.isDas()) {
+            parameters.remove("notifyoffline");
+        }
+        return ActionReport.ExitCode.SUCCESS;
+    }
+
+    @Override
+    public void undo(AdminCommandContext context, ParameterMap parameters, List<Server> instances) {
+        // No rollback: prepare() only drops a replicated parameter and makes no configuration
+        // change, and the DAS remains the source of truth, so there is nothing to undo.
     }
 
     @Override
@@ -239,26 +285,226 @@ public class RemoveInstanceFromDeploymentGroupCommand implements AdminCommand, D
 
         }
 
+        // On a member that received this removal via replication, dropping the dg-server-ref
+        // above is not enough to reach the state a restart would produce: the member also holds
+        // the departed instance's own server and config elements (see below), which would
+        // linger until it is next restarted. Drop that footprint too.
+        if (!env.isDas() && !removedInstances.isEmpty()) {
+            dropDepartedMemberFootprint(deploymentGroupName, removedInstances, report);
+        }
+
         // The framework replicates this command only to the group's CURRENT members, which
         // no longer include the instances just removed above, so a removed but still-running
         // instance would keep its now-stale membership in its own config until its next
         // restart. Replicate the removal to the departed instances that are still running so
-        // they drop their reference live too; offline ones are skipped and reconcile from the
-        // DAS domain.xml on the next startup (which is also why no misleading offline warning
-        // is produced for them).
+        // they drop their reference live too; offline ones are handled separately below.
         if (env.isDas() && !removedInstances.isEmpty()) {
             replicateRemovalToDepartedRunningInstances(removedInstances, context);
+            if (Boolean.parseBoolean(notifyOffline)) {
+                warnOfflineDepartedInstances(removedInstances, context);
+            }
+        }
+    }
+
+    /**
+     * Warns the operator about just-removed instances that are offline. An offline instance did
+     * not receive this removal, so its own config still lists the group until it is next started
+     * with sync full or sync normal; the warning is the actionable signal that it must be
+     * started to converge.
+     * <p>
+     * This mirrors the "seems to be offline" warning the replication framework emits for an
+     * offline member that stays in the group, but it is produced locally on the DAS because the
+     * framework no longer replicates to the removed instances (they are no longer group members,
+     * so they are outside the {@code @TargetType} scope). Reachability is decided by a live
+     * admin-port check ({@link ServerHelper#isRunning()}) rather than
+     * {@code InstanceStateService.getState()}, whose cache can be stale (see
+     * {@link #replicateRemovalToDepartedRunningInstances}); a never-started instance is skipped,
+     * matching the framework's {@code ifNeverStarted = Ignore} default, because it syncs its
+     * whole config from the DAS on its first start.
+     */
+    private void warnOfflineDepartedInstances(List<String> removedInstances, AdminCommandContext context) {
+        ActionReport report = context.getActionReport();
+        for (String instance : removedInstances) {
+            Server server = domain.getServerNamed(instance);
+            if (server == null) {
+                continue;
+            }
+            if (instanceStateService.getState(instance) == InstanceState.StateType.NEVER_STARTED) {
+                continue;
+            }
+            if (!new ServerHelper(server, server.getConfig()).isRunning()) {
+                report.setActionExitCode(ActionReport.ExitCode.WARNING);
+                report.appendMessage("\n" + CLUSTER_UTIL_STRINGS.getLocalString(
+                        "clusterutil.warnoffline",
+                        "WARNING: Instance {0} seems to be offline; command {1} was not replicated to that instance",
+                        instance, "remove-instance-from-deployment-group"));
+            }
+        }
+    }
+
+    /**
+     * On an instance that received this removal via replication, drops the {@code server} and
+     * {@code config} elements it was holding only because the removed instances were fellow
+     * group members, so it converges to the state a restart would produce instead of keeping
+     * their now-inert footprint until then.
+     * <p>
+     * When an instance parses the {@code domain.xml} it synced from the DAS,
+     * {@code InstanceReaderFilter} keeps the {@code server} and {@code config} elements of its
+     * <em>fellow group members</em> alongside its own — this is what
+     * {@link AddInstanceToDeploymentGroupCommand} transports live (through
+     * {@code _register-instance-at-instance} and {@code _copy-config-at-instance}) when a member
+     * joins. Removing only the {@code dg-server-ref} therefore leaves the departed member's
+     * {@code server} and {@code config} behind until the next restart; this drops them too.
+     * <p>
+     * Two cases are handled. A member that stays in the group drops each removed instance it no
+     * longer shares any group with. The removed instance itself (when it is the one executing
+     * this replicated command) drops its ex-fellow members' footprint and the now-inert group
+     * element from its own config, since it is no longer a member and a restart would not
+     * recreate either here.
+     */
+    private void dropDepartedMemberFootprint(String groupName, List<String> removed, ActionReport report) {
+        String me = env.getInstanceName();
+        if (removed.contains(me)) {
+            DeploymentGroup group = domain.getDeploymentGroupNamed(groupName);
+            if (group != null) {
+                // Former fellow members whose footprint this instance held. Two sources, unioned:
+                // the members still referenced by the group (a one-at-a-time removal, where only
+                // this instance departed so its ex-fellows are still listed) and the members
+                // removed alongside this instance in the same call (a whole-group teardown or a
+                // multi-instance remove, where their references are already gone). Snapshot before
+                // the group element is removed below, which is what the loop reads them from.
+                Set<String> peers = new LinkedHashSet<>();
+                for (DGServerRef ref : group.getDGServerRef()) {
+                    if (!ref.getRef().equals(me)) {
+                        peers.add(ref.getRef());
+                    }
+                }
+                for (String departed : removed) {
+                    if (!departed.equals(me)) {
+                        peers.add(departed);
+                    }
+                }
+                // Remove the group element first, then each peer's footprint. While the group
+                // still exists, DeploymentGroup.getReference() reports the config-ref of its
+                // first surviving member (see DeploymentGroup.Duck.getReference), so the group
+                // counts as a second reference container of that peer's config and the <= 1
+                // guard in removeStandaloneInstanceFootprint would keep the config. Worse, as
+                // each peer's server is removed the group's reported reference shifts to the
+                // next surviving peer, protecting every peer config in turn. Dropping the group
+                // first leaves only the peer's own server referencing its config, so the whole
+                // footprint is removed as intended.
+                removeGroupElement(group, report);
+                for (String peer : peers) {
+                    if (!sharesAnotherGroup(me, peer, groupName)) {
+                        removeStandaloneInstanceFootprint(peer, report);
+                    }
+                }
+            }
+            return;
+        }
+        for (String departed : removed) {
+            if (!departed.equals(me) && !sharesAnotherGroup(me, departed, groupName)) {
+                removeStandaloneInstanceFootprint(departed, report);
+            }
+        }
+    }
+
+    /**
+     * Returns whether instances {@code a} and {@code b} are both members of some deployment
+     * group other than {@code excludeGroup}. If they are, they remain fellow members and one
+     * must keep holding the other's {@code server}/{@code config}, so it must not be dropped.
+     */
+    private boolean sharesAnotherGroup(String a, String b, String excludeGroup) {
+        for (DeploymentGroup group : domain.getDeploymentGroups().getDeploymentGroup()) {
+            if (group.getName().equals(excludeGroup)) {
+                continue;
+            }
+            if (group.getDGServerRefByRef(a) != null && group.getDGServerRefByRef(b) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes the {@code server} element of {@code instanceName} from this instance's own
+     * configuration, together with its auto-generated {@code <name>-config} when nothing else
+     * references it.
+     * <p>
+     * Only a standalone instance's footprint is removed: a clustered instance's {@code server}
+     * and {@code config} are owned by its cluster and kept in sync through cluster replication,
+     * not through deployment-group membership. The config is only removed when it is the
+     * instance's own auto-generated {@code <name>-config} and no other reference container still
+     * uses it, mirroring the guard in {@code Server.DeleteDecorator}.
+     */
+    private void removeStandaloneInstanceFootprint(String instanceName, ActionReport report) {
+        Server target = domain.getServerNamed(instanceName);
+        if (target == null || target.getCluster() != null) {
+            return;
+        }
+        String configName = target.getConfigRef();
+        Config config = (configName != null) ? domain.getConfigNamed(configName) : null;
+        boolean removeConfig = config != null
+                && configName.equals(instanceName + "-config")
+                && domain.getReferenceContainersOf(config).size() <= 1;
+        try {
+            ConfigSupport.apply((Servers servers) -> {
+                Server server = servers.getServer(instanceName);
+                if (server != null) {
+                    servers.getServer().remove(server);
+                }
+                return null;
+            }, domain.getServers());
+            if (removeConfig) {
+                ConfigSupport.apply((Configs configs) -> {
+                    Config namedConfig = configs.getConfigByName(configName);
+                    if (namedConfig != null) {
+                        configs.getConfig().remove(namedConfig);
+                    }
+                    return null;
+                }, domain.getConfigs());
+            }
+        } catch (TransactionFailure e) {
+            // Non-fatal: a leftover server/config only means this member keeps it until its next
+            // restart, which is exactly the pre-fix behaviour, so warn rather than fail.
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.appendMessage("\nFailed to remove the configuration of departed instance "
+                    + instanceName + " from " + env.getInstanceName()
+                    + "; it will be cleared on the next restart.");
+        }
+    }
+
+    /**
+     * Removes the deployment-group element itself from this instance's own configuration, used
+     * when this instance has just been removed from the group and therefore should no longer
+     * carry it. A restart would not recreate it here, since {@code InstanceReaderFilter} only
+     * keeps the groups an instance is a member of.
+     */
+    private void removeGroupElement(DeploymentGroup group, ActionReport report) {
+        String groupName = group.getName();
+        try {
+            ConfigSupport.apply((DeploymentGroups groups) -> {
+                for (DeploymentGroup candidate : groups.getDeploymentGroup()) {
+                    if (candidate.getName().equals(groupName)) {
+                        groups.getDeploymentGroup().remove(candidate);
+                        break;
+                    }
+                }
+                return null;
+            }, domain.getDeploymentGroups());
+        } catch (TransactionFailure e) {
+            report.setActionExitCode(ActionReport.ExitCode.WARNING);
+            report.appendMessage("\nFailed to remove deployment group " + groupName + " from "
+                    + env.getInstanceName() + "; it will be cleared on the next restart.");
         }
     }
 
     /**
      * Replicates this removal to the just-removed instances that are still running so they
      * drop the deployment-group reference from their own live config without waiting for a
-     * restart. Only running instances are contacted: a just-removed offline instance is on its
-     * way out of the group and reconciles its now-inert refs from the DAS on the next startup,
-     * so contacting it would only risk a misleading "seems to be offline" warning about an
-     * instance that is leaving anyway (unlike an offline member that stays in the group, whose
-     * offline warning from the annotation-driven replication above is intentional).
+     * restart. Only running instances are contacted here; an offline just-removed instance is
+     * handled by {@link #warnOfflineDepartedInstances}, which warns the operator that it must be
+     * started to converge (its config still lists the group until then).
      *
      * Whether an instance is running is decided by a live admin-port reachability check
      * ({@link ServerHelper#isRunning()}), not by {@code InstanceStateService.getState()}:
