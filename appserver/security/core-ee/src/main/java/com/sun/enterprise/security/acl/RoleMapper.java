@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import javax.security.auth.Subject;
 
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
@@ -328,7 +329,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
 
     @Override
     public Principal getCallerPrincipal(Subject subject) {
-        return
+        return getCustomPrincipal(
                 subject.getPublicCredentials()
                         .stream()
                         .filter(DistinguishedPrincipalCredential.class::isInstance)
@@ -338,7 +339,28 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
                                 .stream()
                                 .filter(UserPrincipal.class::isInstance)
                                 .findAny()
-                                .orElse(null));
+                                .orElse(null)));
+    }
+
+    /**
+     * Unwraps the internal principal wrappers so the real caller principal is exposed.
+     *
+     * <p>
+     * Since Soteria 4.0.2 (soteria#400) the caller principal is resolved through the container's
+     * Jakarta Authorization {@code PrincipalMapper}. Returning the internal
+     * {@link DistinguishedPrincipalCredential} (or a {@link WebPrincipal}) wrapper here would leak an
+     * implementation type to the application. This mirrors eclipse-ee4j/glassfish#25741.
+     */
+    private Principal getCustomPrincipal(Principal principal) {
+        if (principal instanceof DistinguishedPrincipalCredential distinguishedPrincipal) {
+            return distinguishedPrincipal.principal();
+        }
+
+        if (principal instanceof WebPrincipal webPrincipal) {
+            return webPrincipal.getCustomPrincipal();
+        }
+
+        return principal;
     }
 
     private Set<String> getCallerPrincipalNames(Subject subject) {
