@@ -808,9 +808,9 @@ public class SecurityHandler {
             Map<String, Object> payload = new HashMap<String, Object>();
             payload.put("target", configName);
             for (Map<String, String> option : newOptions) {
-                ArrayList kv = InstanceHandler.getKeyValuePair(new JvmOption(UtilHandlers.escapePropertyValue(option.get(JVM_OPTION)),
-                        option.get(MIN_VERSION), option.get(MAX_VERSION)).toString());
-                payload.put((String)kv.get(0), kv.get(1));
+                String jvmOptionEscape = new JvmOption(UtilHandlers.escapePropertyValue(option.get(JVM_OPTION)),
+                        option.get(MIN_VERSION), option.get(MAX_VERSION)).toString();
+                payload.put(jvmOptionEscape, "");
             }
             RestUtil.restRequest(endpoint, payload, "POST", handlerCtx, false);
         }catch(Exception ex){
