@@ -229,12 +229,12 @@ public class RunCommandTest {
 
         @Override
         public CommandModel getModel(String name, Logger logger) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return null;
         }
 
         @Override
         public CommandModel getModel(String scope, String name, Logger logger) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return null;
         }
 
         @Override
