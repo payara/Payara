@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package org.glassfish.diagnostics.context.impl;
 
 import static org.glassfish.contextpropagation.PropagationMode.JMS_QUEUE;
@@ -55,16 +55,13 @@ import java.util.EnumSet;
 import org.glassfish.contextpropagation.Location;
 import org.glassfish.contextpropagation.View;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.Mocked;
 import mockit.Verifications;
-import mockit.integration.junit4.JMockit;
 
-@RunWith(JMockit.class)
 public class ContextImplUnitTest {
 
     /**
