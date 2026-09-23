@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright 2022-2025 Payara Foundation and/or its affiliates
+// Portions Copyright 2022-2026 Payara Foundation and/or its affiliates
 package org.apache.catalina.connector;
 
 import java.nio.charset.Charset;
@@ -271,7 +271,9 @@ public class CoyoteAdapter extends HttpHandler {
     private void initServletInterceptors() {
         try {
             ServiceLocator services = org.glassfish.internal.api.Globals.getDefaultHabitat();
-            interceptors = services.getAllServices(ServletContainerInterceptor.class);
+            if (services != null) {
+                interceptors = services.getAllServices(ServletContainerInterceptor.class);
+            }
         } catch (Throwable th) {
             log.log(Level.SEVERE, LogFacade.FAILED_TO_INITIALIZE_THE_INTERCEPTOR, th);
         }
@@ -418,7 +420,10 @@ public class CoyoteAdapter extends HttpHandler {
         DataChunk decodedURI;
         try {
             decodedURI = req.getRequest().getRequestURIRef().getDecodedRequestURIBC();
-        } catch (CharConversionException cce) {
+        } catch (CharConversionException | IllegalArgumentException | IllegalStateException e) {
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "Invalid URI", e);
+            }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid URI");
             return false;
         }

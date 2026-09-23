@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.v3.services.impl;
 
@@ -215,21 +215,34 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 stuckThreadsStore.registerThread(Thread.currentThread().getId());
             }
             handler.call();
+        } catch (CharConversionException | IllegalArgumentException | IllegalStateException ex) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Invalid URI in request", ex);
+            }
+            response.sendError(400, "Invalid URI");
         } catch (Exception ex) {
             try {
                 if (LOGGER.isLoggable(Level.WARNING)) {
-                    LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.exceptionMapper, ex, 
-                            request.getRequest().getRequestURIRef().getDecodedRequestURIBC());
+                    String uri;
+                    try {
+                        uri = String.valueOf(request.getRequest().getRequestURIRef().getDecodedRequestURIBC());
+                    } catch (Exception ignored) {
+                        uri = String.valueOf(request.getRequest().getRequestURIRef().getRequestURIBC());
+                    }
+                    LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.exceptionMapper, ex, uri);
                 }
                 
                 response.sendError(500);
+            } catch (CharConversionException | IllegalArgumentException | IllegalStateException ex2) {
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
+                }
+                response.sendError(400, "Invalid URI");
             } catch (Exception ex2) {
                 if (LOGGER.isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
                 }
-                if (ex2 instanceof CharConversionException) {
-                    response.sendError(500);
-                }
+                response.sendError(500);
             }
         }
         finally {
