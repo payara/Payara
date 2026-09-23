@@ -95,11 +95,23 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>jmockit-agent-path</id>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <runOrder>alphabetical</runOrder>
-                    <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
+                    <argLine>-javaagent:${org.jmockit:jmockit:jar}</argLine>
                 </configuration>
             </plugin>
         </plugins>
