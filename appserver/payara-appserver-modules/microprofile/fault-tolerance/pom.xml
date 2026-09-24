@@ -50,17 +50,7 @@
     <name>Microprofile - Fault Tolerance</name>
     <description>Implementation of MicroProfile Fault Tolerance API</description>
     <packaging>glassfish-jar</packaging>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
@@ -117,4 +107,31 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <rerunFailingTestsCount>3</rerunFailingTestsCount>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs>
+                        <!--
+                            javassist is a transitive Weld/CDI dependency that lands on the
+                            classpath (unnamed module) during Payara's module-aware compilation.
+                            Named modules cannot read the unnamed module without this flag.
+                        -->
+                        <arg>--add-reads</arg>
+                        <arg>fish.payara.microprofile.faulttolerance=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
