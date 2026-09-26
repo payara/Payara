@@ -46,6 +46,8 @@ import com.sun.enterprise.config.serverbeans.ResourceRef;
 import com.sun.enterprise.config.serverbeans.SshConnector;
 import java.beans.PropertyVetoException;
 import java.util.List;
+
+import fish.payara.enterprise.config.serverbeans.WinrmConnector;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -184,6 +186,16 @@ public class PathsTest {
 
         @Override
         public void setSshConnector(SshConnector connector) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public WinrmConnector getWinrmConnector() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setWinrmConnector(WinrmConnector connector) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
