@@ -1478,14 +1478,21 @@ class TestDeploymentGroupReplicationWarning:
             self, asadmin, deployment_group_env
     ):
         """
-        Removing an OFFLINE instance from a group must drop it from the remaining ONLINE
-        members' live config without a restart, exactly as when the removed instance is
-        still running.
+        Removing an OFFLINE instance from a group must still drop it from the remaining
+        ONLINE members' live config without a restart, exactly as when the removed instance
+        is still running.
 
         Reproduces the reported scenario where an operator stops one member and then removes
-        it: the framework replicates the removal to the group's CURRENT members, and the
-        still-running members must converge live so they no longer carry the departed
-        instance. The removed instance being offline must not suppress that convergence.
+        it. The framework replicates the removal to the group's CURRENT members, so the
+        still-running members must converge live and no longer carry the departed instance;
+        the removed instance being offline must not suppress that convergence.
+
+        The offline just-removed instance itself is a separate matter: its own config still
+        lists the group until it is next started with a sync, so the command deliberately
+        emits the "seems to be offline" warning naming that instance (see
+        RemoveInstanceFromDeploymentGroupCommand.warnOfflineDepartedInstances). That warning
+        is the correct, actionable signal about the removed instance and must NOT be confused
+        with the online members failing to converge, which is what this test pins down.
         Regression test for FISH-14056.
         """
         dg = deployment_group_env["dg_name"]
@@ -1511,12 +1518,23 @@ class TestDeploymentGroupReplicationWarning:
         try:
             result = asadmin.run("remove-instance-from-deployment-group",
                                  f"--instance={removed}", f"--deploymentgroup={dg}")
-            self._assert_no_replication_warning(result, "remove-instance-from-deployment-group")
 
+            # The remaining ONLINE member must converge live regardless of the removed
+            # instance being offline: this is the actual FISH-14056 requirement.
             remaining_members = wait_for_instance_dg_members(node, remaining, {remaining})
             assert set(remaining_members) == {remaining}, (
                 f"Remaining online member '{remaining}' did not drop offline instance "
                 f"'{removed}' live. Expected {{{remaining}}}, got {set(remaining_members)}"
+            )
+
+            # The warning is expected here and must name the removed OFFLINE instance: it
+            # reports that the removed instance's own config is stale until it is next
+            # started, which is the intended, actionable signal — not a sign that the online
+            # member failed to converge (already asserted above).
+            output = f"{result.stdout}\n{result.stderr}"
+            assert f"Instance {removed} seems to be offline" in output, (
+                f"Expected the '{removed} seems to be offline' warning for the removed "
+                f"offline instance. Output:\n{output}"
             )
         finally:
             # Restore membership so the fixture teardown starts from a known state.
