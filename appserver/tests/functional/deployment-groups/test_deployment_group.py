@@ -1474,6 +1474,56 @@ class TestDeploymentGroupReplicationWarning:
             asadmin.run_no_raise("add-instance-to-deployment-group",
                                  f"--instance={removed}", f"--deploymentgroup={dg}")
 
+    def test_remove_offline_instance_converges_online_members_live(
+            self, asadmin, deployment_group_env
+    ):
+        """
+        Removing an OFFLINE instance from a group must drop it from the remaining ONLINE
+        members' live config without a restart, exactly as when the removed instance is
+        still running.
+
+        Reproduces the reported scenario where an operator stops one member and then removes
+        it: the framework replicates the removal to the group's CURRENT members, and the
+        still-running members must converge live so they no longer carry the departed
+        instance. The removed instance being offline must not suppress that convergence.
+        Regression test for FISH-14056.
+        """
+        dg = deployment_group_env["dg_name"]
+        node = deployment_group_env["node_name"]
+        remaining, removed = deployment_group_env["instances"]
+
+        # Fail loudly (rather than as a confusing empty membership set) if the instance
+        # config file cannot be located under PAYARA_HOME on this environment.
+        assert find_instance_domain_xml(node, remaining) is not None, (
+            f"Could not locate config/domain.xml for instance '{remaining}' on node "
+            f"'{node}' under PAYARA_HOME={os.environ.get('PAYARA_HOME')!r}"
+        )
+
+        # Both instances are members after the fixture setup; confirm the remaining member
+        # sees both before the removal.
+        wait_for_instance_dg_members(node, remaining, {remaining, removed})
+
+        # Take the member to be removed OFFLINE first, which is what distinguishes this from
+        # removing a running member.
+        asadmin.run("stop-instance", removed)
+        time.sleep(5)
+
+        try:
+            result = asadmin.run("remove-instance-from-deployment-group",
+                                 f"--instance={removed}", f"--deploymentgroup={dg}")
+            self._assert_no_replication_warning(result, "remove-instance-from-deployment-group")
+
+            remaining_members = wait_for_instance_dg_members(node, remaining, {remaining})
+            assert set(remaining_members) == {remaining}, (
+                f"Remaining online member '{remaining}' did not drop offline instance "
+                f"'{removed}' live. Expected {{{remaining}}}, got {set(remaining_members)}"
+            )
+        finally:
+            # Restore membership so the fixture teardown starts from a known state.
+            asadmin.run_no_raise("add-instance-to-deployment-group",
+                                 f"--instance={removed}", f"--deploymentgroup={dg}")
+            asadmin.run_no_raise("start-instance", removed)
+
     def test_removed_instance_drops_group_and_rejoin_restores_membership(
             self, asadmin, deployment_group_env
     ):
