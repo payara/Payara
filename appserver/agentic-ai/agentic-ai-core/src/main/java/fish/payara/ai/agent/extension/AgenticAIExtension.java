@@ -73,9 +73,12 @@ import jakarta.validation.executable.ExecutableValidator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 
@@ -193,10 +196,13 @@ public class AgenticAIExtension implements Extension {
      * Scans an agent class and builds its validated {@link AgentMetadata}.
      * <p>
      * Collects the {@code @Trigger}, {@code @Decision}, {@code @Action},
-     * {@code @Outcome} and {@code @HandleException} methods, then validates the
-     * agent's structure at deploy time, raising {@link DefinitionException} when:
-     * there is more than one {@code @Trigger} or {@code @Outcome}, no
-     * {@code @Trigger} at all, a {@code @WorkflowScoped} agent declares a general
+     * {@code @Outcome} and {@code @HandleException} methods across the agent's
+     * class hierarchy (so phase methods inherited from a superclass participate),
+     * then validates the agent's structure at deploy time, raising
+     * {@link DefinitionException} when: a method declares more than one phase
+     * annotation, there is more than one {@code @Trigger} or {@code @Outcome}, no
+     * {@code @Trigger} at all, the {@code @Trigger} declares more than one event
+     * parameter, a {@code @WorkflowScoped} agent declares a general
      * {@code @Observes} method outside the trigger, or phase ordering is
      * inconsistent. Phases are sorted into execution order and exception handlers
      * are sorted most-specific-first.
@@ -209,10 +215,18 @@ public class AgenticAIExtension implements Extension {
         Method outcome = null;
 
         boolean applicationScoped = agentClass.isAnnotationPresent(ApplicationScoped.class);
-        for (Method method : agentClass.getDeclaredMethods()) {
+        for (Method method : collectAgentMethods(agentClass)) {
+            if (countPhaseAnnotations(method) > 1) {
+                throw new DefinitionException("@Agent " + agentClass.getName() + " method "
+                        + method.getName() + " cannot declare more than one phase annotation");
+            }
             if (method.isAnnotationPresent(Trigger.class)) {
                 if (trigger != null) {
                     throw new DefinitionException("@Agent " +  agentClass.getName() + " cannot have more than one @Trigger annotation");
+                }
+                if (countEventParameters(method) > 1) {
+                    throw new DefinitionException("@Agent " + agentClass.getName()
+                            + " @Trigger method cannot declare more than one event parameter");
                 }
                 trigger = method;
             } else if (method.isAnnotationPresent(Decision.class)) {
@@ -264,6 +278,60 @@ public class AgenticAIExtension implements Extension {
             if (parameter.isAnnotationPresent(Observes.class)) return true;
         }
         return false;
+    }
+
+    /**
+     * Collects the agent's methods across its class hierarchy, most-derived
+     * first, so that phase methods inherited from a (possibly non-{@code @Agent})
+     * superclass participate in the workflow. A method overridden in a subclass
+     * shadows the superclass declaration, so an unannotated override correctly
+     * drops an inherited phase.
+     */
+    private List<Method> collectAgentMethods(Class<?> agentClass) {
+        List<Method> methods = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (Class<?> c = agentClass; c != null && c != Object.class; c = c.getSuperclass()) {
+            for (Method method : c.getDeclaredMethods()) {
+                if (method.isSynthetic() || method.isBridge()) {
+                    continue;
+                }
+                String signature = method.getName() + Arrays.toString(method.getParameterTypes());
+                if (seen.add(signature)) {
+                    methods.add(method);
+                }
+            }
+        }
+        return methods;
+    }
+
+    /**
+     * Counts how many phase annotations ({@code @Trigger}, {@code @Decision},
+     * {@code @Action}, {@code @Outcome}, {@code @HandleException}) a method
+     * declares. The specification allows at most one phase annotation per method.
+     */
+    private int countPhaseAnnotations(Method method) {
+        int count = 0;
+        if (method.isAnnotationPresent(Trigger.class)) count++;
+        if (method.isAnnotationPresent(Decision.class)) count++;
+        if (method.isAnnotationPresent(Action.class)) count++;
+        if (method.isAnnotationPresent(Outcome.class)) count++;
+        if (method.isAnnotationPresent(HandleException.class)) count++;
+        return count;
+    }
+
+    /**
+     * Counts the event parameters of a {@code @Trigger} method, i.e. every
+     * parameter that is not an injected {@link LargeLanguageModel}. The
+     * specification permits at most one event parameter.
+     */
+    private int countEventParameters(Method method) {
+        int count = 0;
+        for (Parameter parameter : method.getParameters()) {
+            if (!LargeLanguageModel.class.isAssignableFrom(parameter.getType())) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**

@@ -47,7 +47,7 @@
     <parent>
         <groupId>fish.payara.server.internal.hk2</groupId>
         <artifactId>glassfish-nucleus-hk2</artifactId>
-        <version>7.2026.9-SNAPSHOT</version>
+        <version>7.2026.10-SNAPSHOT</version>
     </parent>
     <artifactId>config-generator</artifactId>
     <packaging>maven-plugin</packaging>
@@ -66,7 +66,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.15.2</version>
+                <version>3.16.0</version>
                 <configuration>
                     <!-- https://issues.apache.org/jira/browse/MPLUGIN-504 -->
                     <goalPrefix>config-generator</goalPrefix>

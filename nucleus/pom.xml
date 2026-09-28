@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.server</groupId>
         <artifactId>payara-aggregator</artifactId>
-        <version>7.2026.9-SNAPSHOT</version>
+        <version>7.2026.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-nucleus-parent</artifactId>
@@ -96,7 +96,7 @@
         <javassist.version>3.33.0-GA</javassist.version>
 
         <apache.sshd.version>2.19.0</apache.sshd.version>
-        <slf4j.version>2.0.18</slf4j.version>
+        <slf4j.version>2.0.19</slf4j.version>
 
         <!-- Primitive Function Library (PFL); a library of simple utilities used by Glassfish -->
         <pfl.version>5.1.1</pfl.version>
@@ -131,16 +131,16 @@
         <glassfish-management-api.version>3.3.0.payara-p1</glassfish-management-api.version>
         <btrace.version>1.2.3</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
-        <ha-api.version>3.1.13</ha-api.version>
+        <ha-api.version>3.2.0</ha-api.version>
         <mockito.version>5.23.0</mockito.version>
 
         <!-- Build -->
         <glassfishbuild.version>3.2.20.payara-p3</glassfishbuild.version>
-        <logging-annotation-processor.version>1.10</logging-annotation-processor.version>
+        <logging-annotation-processor.version>1.11</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.22</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
-        <ant.version>1.10.17</ant.version>
+        <ant.version>1.10.18</ant.version>
         <metainf-services.version>1.11</metainf-services.version>
         <javadoc.options>-Xdoclint:none</javadoc.options>
 
@@ -149,8 +149,7 @@
 
         <awaitility.version>4.3.0</awaitility.version>
 
-        <okhttp3-version>4.12.0</okhttp3-version>
-        <kotlin-version>2.4.10</kotlin-version>
+        <kotlin-version>2.4.20</kotlin-version>
 
         <payara.deployment.transformer.version>2.0.0-SNAPSHOT</payara.deployment.transformer.version>
     </properties>
@@ -801,7 +800,7 @@ Parent is ${project.parent}</echo>
             <dependency>
                 <groupId>org.jmockit</groupId>
                 <artifactId>jmockit</artifactId>
-                <version>1.40</version>
+                <version>1.50</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

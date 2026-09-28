@@ -215,7 +215,7 @@ final class OtelSupport {
                         // DEFAULT / EXTENSION: use pattern (e.g. "/" or "*.jsp") not raw path
                         String pattern = mapping.getPattern();
                         if (pattern != null && !pattern.isEmpty() && !"/".equals(pattern)) {
-                            return pattern;
+                            return pattern.startsWith("/") ? pattern : "/" + pattern;
                         }
                         return "";
                 }

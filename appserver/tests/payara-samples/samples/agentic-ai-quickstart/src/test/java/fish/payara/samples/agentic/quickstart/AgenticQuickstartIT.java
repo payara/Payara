@@ -43,7 +43,7 @@ import fish.payara.samples.PayaraArquillianTestRunner;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,6 +53,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.io.File;
 import java.net.URL;
 
 /**
@@ -67,19 +68,28 @@ public class AgenticQuickstartIT {
     @ArquillianResource
     private URL url;
 
+    /**
+     * Deploys the module's own built WAR and merges in {@link StubLargeLanguageModel}
+     * so the workflow can run without a live LLM.
+     * <p>
+     * This runs against the out-of-process containers only (the managed Payara
+     * Server and Payara Micro profiles). The {@code payara-server-embedded} profile
+     * is intentionally skipped for this sample — see this module's POM: the embedded
+     * Arquillian container boots the server in the test JVM, which places the
+     * module's own {@code target/classes} on the system classpath. Because the
+     * {@code @Agent}'s phase methods are package-private, Weld can only override them
+     * in a client proxy loaded by the same classloader as the bean; the embedded
+     * container's parent-first delegation would instead resolve {@code QuestionAgent}
+     * from the system classpath, leaving the injected {@code LargeLanguageModel}
+     * null. That is an artefact of the in-JVM harness, not of a real deployment, so
+     * no classloader tweaks are needed on the containers this sample is verified on.
+     */
     @Deployment(testable = false)
     public static WebArchive createDeployment() {
-        return ShrinkWrap.create(WebArchive.class, "agentic-ai-quickstart.war")
-                .addClass(RestApplication.class)
-                .addClass(AskResource.class)
-                .addClass(QuestionAgent.class)
-                .addClass(Question.class)
-                .addClass(AnswerStore.class)
-                .addClass(StubLargeLanguageModel.class)
-                .addAsWebInfResource(
-                        new StringAsset("<beans xmlns=\"https://jakarta.ee/xml/ns/jakartaee\" "
-                                + "version=\"4.0\" bean-discovery-mode=\"all\"/>"),
-                        "beans.xml");
+        return ShrinkWrap.create(ZipImporter.class, "agentic-ai-quickstart.war")
+                .importFrom(new File("target", "agentic-ai-quickstart.war"))
+                .as(WebArchive.class)
+                .addClass(StubLargeLanguageModel.class);
     }
 
     @Test

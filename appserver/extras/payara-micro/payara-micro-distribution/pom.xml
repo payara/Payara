@@ -45,7 +45,7 @@
     <parent>
         <groupId>fish.payara.server.internal.extras</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>7.2026.9-SNAPSHOT</version>
+        <version>7.2026.10-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.extras</groupId>
     <artifactId>payara-micro</artifactId>
@@ -495,6 +495,13 @@
         <dependency>
             <groupId>fish.payara.server.internal.packager</groupId>
             <artifactId>data</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.packager</groupId>
+            <artifactId>agentic-ai</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

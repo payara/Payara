@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -38,43 +38,22 @@
  * holder.
  */
 
-package org.glassfish.resources.admin.cli;
+package fish.payara.samples.accesslog;
 
-import org.glassfish.resources.api.Resource;
+import fish.payara.web.accesslog.AccessLogHandler;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.List;
+import java.nio.CharBuffer;
 
-/**
- * This class encapsulates the information of a sun-resources.xml
- * packaged inside an application.
- */
+public class CustomAccessLogHandler implements AccessLogHandler {
+    public static final String PREFIX = "CUSTOM-ACCESS-LOG-HANDLER";
 
-public class SunResourcesXML {
-    /** the relative path of this sun-resources.xml to the application root */
-    private String xmlPath;
-
-    /** the parsed resources list from this sun-resources.xml  */
-    private List<org.glassfish.resources.api.Resource> resourcesList;
-
-    public SunResourcesXML(String xPath, List<Resource> rList) {
-        xmlPath = xPath;
-        resourcesList = rList;
+    @Override
+    public void appendLogEntry(HttpServletRequest request, HttpServletResponse response, CharBuffer buffer) {
+        buffer.put(PREFIX)
+                .put(" method=").put(request.getMethod())
+                .put(" uri=").put(request.getRequestURI())
+                .put(" status=").put(Integer.toString(response.getStatus()));
     }
-
-    public String getXMLPath() {
-        return xmlPath;
-    }
-
-    public void setXMLPath(String xPath) {
-        xmlPath = xPath;
-    }
-
-    public List<org.glassfish.resources.api.Resource> getResourcesList() {
-        return resourcesList;
-    }
-
-    public void setResourcesList(List<org.glassfish.resources.api.Resource> rList) {
-        resourcesList = rList;
-    }
-
 }
