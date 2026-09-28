@@ -117,7 +117,7 @@
                 if( ${actionValue}=remove){
                     gf.removeFromDG(selectedRows="${selectedRows}"  dgName="#{pageSession.dgName}")
                 }
-                gf.redirect(page="#{listLink}");
+                gf.redirect(page="#{listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />
     </sun:dropDown>
 </define>
@@ -206,7 +206,7 @@
                 attrs="#{requestScope.addToDGAttrMap}"
                 method="POST"
                 result="#{pageSession.addResults}");
-                gf.redirect(page="#{listLink}");
+                gf.redirect(page="#{listLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />
     
 </sun:dropDown>  

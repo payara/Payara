@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,8 +63,8 @@ public interface DeploymentGroups extends ConfigBeanProxy {
      * @return 
      */
     @Element
-    @Create(value="create-deployment-group", cluster = @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.ALL}), i18n=@I18n("create.deploymentgroup.command") )
-    @Delete(value="delete-deployment-group", resolver= TypeAndNameResolver.class, i18n=@I18n("delete.deploymentgroup.command"), cluster = @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.ALL}))
+    @Create(value="create-deployment-group", cluster = @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.DAS}), i18n=@I18n("create.deploymentgroup.command") )
+    @Delete(value="delete-deployment-group", resolver= TypeAndNameResolver.class, i18n=@I18n("delete.deploymentgroup.command"), cluster = @org.glassfish.api.admin.ExecuteOn(value = {RuntimeType.DAS}))
     public List<DeploymentGroup> getDeploymentGroup();
     
     /**
