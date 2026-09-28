@@ -251,26 +251,28 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 Subject subject,
-                                                boolean managedJob) {            
+                                                boolean managedJob) {
+        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        CommandModel model = cr.getModel(commandName, LOGGER);
+        ParameterMap normalizedParameters = resolveAliasedParameters(parameters, model);
+
         AsadminRecorderService asadminRecorderService = Globals.get(AsadminRecorderService.class);
         if (asadminRecorderService != null && asadminRecorderService.isEnabled()) {
-            asadminRecorderService.recordAsadminCommand(commandName, 
-                                                        parameters);
-        }
-        
-        AdminAuditService auditService = Globals.getDefaultHabitat().getService(AdminAuditService.class);
-        if (auditService != null && auditService.isEnabled()) {
-            auditService.recordAsadminCommand(commandName, parameters, subject);
+            asadminRecorderService.recordAsadminCommand(commandName, normalizedParameters);
         }
 
-        CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
+        AdminAuditService auditService = Globals.getDefaultHabitat().getService(AdminAuditService.class);
+        if (auditService != null && auditService.isEnabled()) {
+            auditService.recordAsadminCommand(commandName, normalizedParameters, subject);
+        }
+
         RestActionReporter ar = new RestActionReporter();
         final CommandInvocation commandInvocation = cr.getCommandInvocation(commandName, ar, subject);
         if (managedJob) {
             commandInvocation.managedJob();
         }
-        commandInvocation.parameters(parameters).execute();
-        addCommandLog(ar, commandName, parameters);
+        commandInvocation.parameters(normalizedParameters).execute();
+        addCommandLog(ar, commandName, normalizedParameters);
 
         return ar;
     }
@@ -292,6 +294,30 @@ public class ResourceUtil {
         }
 
         return runCommand(commandName, p, subject);
+    }
+
+    static ParameterMap resolveAliasedParameters(ParameterMap parameters, CommandModel model) {
+        if (model == null) {
+            return parameters;
+        }
+        Map<String, String> aliasToName = new HashMap<>();
+        for (CommandModel.ParamModel paramModel : model.getParameters()) {
+            String alias = paramModel.getParam().alias();
+            if (alias != null && !alias.isEmpty()) {
+                aliasToName.put(alias, paramModel.getName());
+            }
+        }
+        if (aliasToName.isEmpty()) {
+            return parameters;
+        }
+        ParameterMap normalized = new ParameterMap();
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+            String key = aliasToName.getOrDefault(entry.getKey(), entry.getKey());
+            for (String value : entry.getValue()) {
+                normalized.add(key, value);
+            }
+        }
+        return normalized;
     }
 
     public static EventOutput runCommandWithSse(final String commandName,

@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fish.payara.server</groupId>
     <artifactId>payara-aggregator</artifactId>
-    <version>7.2026.9-SNAPSHOT</version>
+    <version>7.2026.10-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Payara Project</name>
@@ -206,25 +206,25 @@
     <properties>
         <!-- build versions -->
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
-        <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
+        <maven.compiler.plugin.version>3.16.0</maven.compiler.plugin.version>
         <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
         <maven.jar.plugin.version>3.5.1</maven.jar.plugin.version>
-        <maven.surefire.plugin.version>3.5.6</maven.surefire.plugin.version>
+        <maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
         <maven.resources.plugin.version>3.5.0</maven.resources.plugin.version>
         <maven.release.plugin.version>3.3.1</maven.release.plugin.version>
         <maven.dependency.plugin.version>3.11.0</maven.dependency.plugin.version>
         <maven.gpg.plugin.version>3.2.8</maven.gpg.plugin.version>
-        <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.2.0</maven.deploy.plugin.version>
         <maven.source.plugin.version>3.4.0</maven.source.plugin.version>
         <!-- Be careful updating to a higher version - an issue affecting 3.10.0-3.11.2 causes the aggregate jar to be empty -->
         <maven.javadoc.plugin.version>3.8.0</maven.javadoc.plugin.version>
-        <maven.install.plugin.version>3.1.4</maven.install.plugin.version>
-        <maven.bundle.plugin.version>6.1.0</maven.bundle.plugin.version>
-        <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
-        <maven.exec.plugin.version>3.6.3</maven.exec.plugin.version>
+        <maven.install.plugin.version>3.2.0</maven.install.plugin.version>
+        <maven.bundle.plugin.version>6.2.0</maven.bundle.plugin.version>
+        <maven.failsafe.plugin.version>3.6.0</maven.failsafe.plugin.version>
+        <maven.exec.plugin.version>3.6.4</maven.exec.plugin.version>
         <maven.site.plugin.version>3.22.0</maven.site.plugin.version>
         <maven.enforcer.plugin.version>3.6.3</maven.enforcer.plugin.version>
-        <maven.build.helper.plugin.version>3.6.1</maven.build.helper.plugin.version>
+        <maven.build.helper.plugin.version>3.6.2</maven.build.helper.plugin.version>
         <maven.flatten.plugin.version>1.8.0</maven.flatten.plugin.version>
         <dynamic-build-properties-maven-plugin.version>0.0.1.a2</dynamic-build-properties-maven-plugin.version>
         <license-maven-plugin.version>2.7.1</license-maven-plugin.version>
@@ -242,13 +242,13 @@
 
         <!-- BOM-referenced versions -->
         <osgi-resource-locator.version>3.0.0</osgi-resource-locator.version>
-        <snakeyaml.version>2.6</snakeyaml.version>
-        <mojarra.version>4.1.14.payara-p1</mojarra.version>
+        <snakeyaml.version>2.7</snakeyaml.version>
+        <mojarra.version>4.1.16.payara-p1</mojarra.version>
         <jaxb-extra-osgi.version>2.3.0</jaxb-extra-osgi.version>
         <jakarta.mvc.version>3.0.1</jakarta.mvc.version>
         <krazo.version>4.0.1.payara-p1</krazo.version>
-        <yasson.version>3.0.4</yasson.version>
-        <eclipselink.version>5.0.0.payara-p1</eclipselink.version>
+        <yasson.version>3.0.5</yasson.version>
+        <eclipselink.version>5.0.1.payara-p1</eclipselink.version>
         <eclipselink.asm.version>9.10.0</eclipselink.asm.version>
         <openmq.version>6.8.0.payara-p3</openmq.version>
         <com.ibm.jbatch.container.version>2.1.1</com.ibm.jbatch.container.version>
@@ -262,7 +262,7 @@
         <woodstock-external.prototype.version>6.0.3</woodstock-external.prototype.version>
         <angus-activation.version>2.0.3</angus-activation.version>
         <istack-commons-runtime.version>4.2.0</istack-commons-runtime.version>
-        <jline.version>4.4.0</jline.version>
+        <jline.version>4.4.5</jline.version>
         <wsdl4j.version>1.6.3</wsdl4j.version>
         <microprofile-release.version>7.1</microprofile-release.version>
         <payara-arquillian-container.version>4.0.alpha4</payara-arquillian-container.version>
@@ -271,25 +271,25 @@
         <jakarta.data-api.version>1.0.2</jakarta.data-api.version>
         <jakarta.agentic-ai-api.version>1.0.0-M1</jakarta.agentic-ai-api.version>
         <validation.xml.root>${project.build.outputDirectory}</validation.xml.root>
-        <payara.security-connectors.version>4.0.0</payara.security-connectors.version>
+        <payara.security-connectors.version>4.1.0</payara.security-connectors.version>
         <hk2.version>4.0.2</hk2.version>
         <osgi.version>8.0.0</osgi.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
         <osgi.enterprise.version>7.0.0</osgi.enterprise.version>
         <osgi.cmpn.version>7.0.0</osgi.cmpn.version>
         <osgi.dto.version>1.1.1</osgi.dto.version>
-        <soteria.version>4.0.1.payara-p1</soteria.version>
+        <soteria.version>4.0.2</soteria.version>
         <cdi-api.version>4.1.0</cdi-api.version>
         <grizzly.version>5.0.2</grizzly.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jakarta.el-api.version>6.0.1</jakarta.el-api.version>
         <expressly.version>6.0.0</expressly.version>
-        <microprofile-config.version>3.1.1</microprofile-config.version>
+        <microprofile-config.version>3.1.2</microprofile-config.version>
         <parsson.version>1.1.7.payara-p1</parsson.version>
         <jakarta.activation-api.version>2.1.4</jakarta.activation-api.version>
         <jaxb-api.version>4.0.5</jaxb-api.version>
-        <jackson.version>2.22.2</jackson.version>
-        <jersey.version>4.0.2.payara-p1</jersey.version>
+        <jackson.version>2.22.3</jackson.version>
+        <jersey.version>4.0.2.payara-p2</jersey.version>
         <jakarta.validation.version>3.1.1</jakarta.validation.version>
         <jakarta.validation.osgi.version>3.1</jakarta.validation.osgi.version>
         <jakarta.validation.osgi.version.upperbound>4</jakarta.validation.osgi.version.upperbound>
@@ -340,8 +340,8 @@
         <epicyro.version>3.1.1</epicyro.version>
         <mail.version>2.1.5</mail.version>
         <angus.mail.version>2.0.5</angus.mail.version>
-        <opentelemetry.version>1.65.0</opentelemetry.version>
-        <opentelemetry-semconv.version>1.43.0</opentelemetry-semconv.version>
+        <opentelemetry.version>1.66.0</opentelemetry.version>
+        <opentelemetry-semconv.version>1.44.0</opentelemetry-semconv.version>
         <opentelemetry-instrumentation-annotations.version>2.31.1</opentelemetry-instrumentation-annotations.version>
         <opentelemetry-instrumentation-annotation-support.version>2.31.1-alpha</opentelemetry-instrumentation-annotation-support.version>
         <jakarta.faces-api.version>4.1.2</jakarta.faces-api.version>
@@ -638,7 +638,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>xml-maven-plugin</artifactId>
-                    <version>1.2.1</version>
+                    <version>1.2.2</version>
                     <executions>
                         <execution>
                             <id>validate-xml-files</id>

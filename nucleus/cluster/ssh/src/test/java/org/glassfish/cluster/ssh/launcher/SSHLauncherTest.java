@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2022 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2022-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -114,5 +114,27 @@ public class SSHLauncherTest {
         System.out.println(customTimeout);
         System.setProperty(SSHLauncher.TIMEOUT_PROPERTY, customTimeout);
         Assert.assertEquals(SSHLauncher.DEFAULT_TIMEOUT_MSEC, sshLauncher.getTimeout());
+    }
+
+    /**
+     * When no keyFile is specified, keyFile must remain null so that
+     * openSession() does not attempt key-based auth before password auth.
+     * Spurious key-auth attempts exhaust the SSH server's MaxAuthTries and
+     * cause the subsequent password auth to fail with "Too many authentication failures".
+     */
+    @Test
+    public void noKeyFileWhenOnlyPasswordConfigured() {
+        Logger logger = Logger.getLogger(SSHLauncherTest.class.getName());
+        sshLauncher.init("user", "host", 22, "password", null, null, logger);
+        Assert.assertTrue("keyFile should be null when none is specified",
+                sshLauncher.toString().contains("keyFile=null"));
+    }
+
+    @Test
+    public void noKeyFileWhenNoCredentialsConfigured() {
+        Logger logger = Logger.getLogger(SSHLauncherTest.class.getName());
+        sshLauncher.init("user", "host", 22, null, null, null, logger);
+        Assert.assertTrue("keyFile should be null when no credentials are specified",
+                sshLauncher.toString().contains("keyFile=null"));
     }
 }

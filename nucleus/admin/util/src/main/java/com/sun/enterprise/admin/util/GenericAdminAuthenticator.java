@@ -361,7 +361,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 behindProxyWarningLogged = true;
                 ADMSEC_LOGGER.log(Level.WARNING,
                         "Server instance {0} not found in domain configuration; behind-proxy detection disabled for admin authentication. "
-                        + "If a reverse proxy is in use, all login attempts will be tracked under the proxy''s IP address rather than the real client IP, "
+                        + "If a reverse proxy is in use, all login attempts will be tracked under the proxy's IP address rather than the real client IP, "
                         + "reducing brute-force protection accuracy.",
                         serverEnv.getInstanceName());
             }

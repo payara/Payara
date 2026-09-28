@@ -48,7 +48,7 @@
     <parent>
         <groupId>fish.payara.samples</groupId>
         <artifactId>payara-samples</artifactId>
-        <version>7.2026.9-SNAPSHOT</version>
+        <version>7.2026.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>samples-micro-programmatic</artifactId>
@@ -59,10 +59,6 @@
             <groupId>fish.payara.extras</groupId>
             <artifactId>payara-micro</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fish.payara.server.internal.extras</groupId>
-            <artifactId>payara-micro-boot</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

@@ -48,6 +48,7 @@ import com.sun.corba.ee.spi.folb.GroupInfoServiceObserver;
 import com.sun.corba.ee.spi.folb.SocketInfo;
 import com.sun.corba.ee.spi.misc.ORBConstants;
 import com.sun.corba.ee.spi.orb.ORB;
+import com.sun.enterprise.config.serverbeans.ApplicationRef;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
@@ -56,6 +57,8 @@ import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.config.serverbeans.Servers;
+import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.nucleus.hazelcast.HazelcastConfigSpecificConfiguration;
 import com.sun.logging.LogDomains;
 import fish.payara.nucleus.cluster.ClusterListener;
 import fish.payara.nucleus.cluster.MemberEvent;
@@ -73,7 +76,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -92,6 +97,10 @@ public class IiopFolbGmsClient implements ClusterListener {
     private Server myServer;
 
     private Nodes nodes;
+
+    private Servers servers;
+
+    private Configs configs;
 
     private Map<String, ClusterInstanceInfo> currentMembers;
 
@@ -120,8 +129,10 @@ public class IiopFolbGmsClient implements ClusterListener {
                 domain = services.getService(Domain.class);
                 fineLog("IiopFolbGmsClient: domain {0}", domain);
 
-                Servers servers = services.getService(Servers.class);
+                servers = services.getService(Servers.class);
                 fineLog("IiopFolbGmsClient: servers {0}", servers);
+
+                configs = services.getService(Configs.class);
 
                 nodes = services.getService(Nodes.class);
                 fineLog("IiopFolbGmsClient: nodes {0}", nodes);
@@ -187,7 +198,67 @@ public class IiopFolbGmsClient implements ClusterListener {
     // Implementation
     //
     private boolean isDeploymentGroupsActive() {
-        return cluster != null && cluster.isEnabled() && cluster.getClusterMembers().size() > 1;
+        if (cluster == null || !cluster.isEnabled() || myServer == null || cluster.getClusterMembers().size() <= 1) {
+            return false;
+        }
+        // Check 1: Instance is in exactly one deployment group
+        List<DeploymentGroup> myDeploymentGroups = myServer.getDeploymentGroup();
+        if (myDeploymentGroups.isEmpty()) {
+            fineLog("isDeploymentGroupsActive: instance is not in a deployment group");
+            return false;
+        }
+        if (myDeploymentGroups.size() > 1) {
+            fineLog("isDeploymentGroupsActive: instance belongs to more than one deployment group");
+            return false;
+        }
+
+        DeploymentGroup myDG = myDeploymentGroups.get(0);
+        List<Server> dgInstances = myDG.getInstances();
+
+        // Check 2: Only enable if at least one application is targetted to the deployment group
+        if (myDG.getApplicationRef().isEmpty()) {
+            fineLog("isDeploymentGroupsActive: no application is deployed to the deployment group");
+            return false;
+        }
+
+        // Check 3: No other instance in the deployment group is in any other deployment group
+        for (Server instance : dgInstances) {
+            if (!instance.getName().equals(myServer.getName()) && instance.getDeploymentGroup().size() > 1) {
+                fineLog("isDeploymentGroupsActive: instance {0} belongs to more than one deployment group", instance.getName());
+                return false;
+            }
+        }
+
+        // Check 4: All instances in the deployment group share the same Hazelcast instance group
+        String myMemberGroup = getMemberGroup(myServer);
+        for (Server instance : dgInstances) {
+            if (!myMemberGroup.equals(getMemberGroup(instance))) {
+                fineLog("isDeploymentGroupsActive: not all instances in the deployment group share the same Hazelcast instance group");
+                return false;
+            }
+        }
+
+        // Check 5: The instance group is not shared with any instance outside the deployment group.
+        Set<String> dgInstanceNames = dgInstances.stream().map(Server::getName).collect(Collectors.toSet());
+        for (UUID memberId : cluster.getClusterMembers()) {
+            String memberName = cluster.getMemberName(memberId);
+            if (!dgInstanceNames.contains(memberName) && myMemberGroup.equals(cluster.getMemberGroup(memberId))) {
+                fineLog("isDeploymentGroupsActive: Hazelcast instance group {0} is shared with an instance outside the deployment group",
+                        myMemberGroup);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private String getMemberGroup(Server server) {
+        Config config =  server.getConfig();
+        if (config == null) {
+            return "";
+        }
+        HazelcastConfigSpecificConfiguration hzConfig = config.getExtensionByType(HazelcastConfigSpecificConfiguration.class);
+        return hzConfig != null ? hzConfig.getMemberGroup() : "";
     }
 
     private boolean isTraditionalClusterActive() {
@@ -329,7 +400,6 @@ public class IiopFolbGmsClient implements ClusterListener {
         String configRef = server.getConfigRef();
         fineLog("getConfigForServer: configRef {0}", configRef);
 
-        Configs configs = services.getService(Configs.class);
         fineLog("getConfigForServer: configs {0}", configs);
 
         Config config = configs.getConfigByName(configRef);
@@ -362,9 +432,16 @@ public class IiopFolbGmsClient implements ClusterListener {
     private Map<String, ClusterInstanceInfo> getAllClusterInstanceInfo() {
         Map<String, ClusterInstanceInfo> result = new HashMap<>();
 
+        if (myServer == null) {
+            return result;
+        }
+
         final Config myConfig = getConfigForServer(myServer);
         fineLog("getAllClusterInstanceInfo: myConfig {0}", myConfig.getName());
-        result.put(myServer.getName(), getClusterInstanceInfo(myServer, myConfig, false));
+        ClusterInstanceInfo myCii = getClusterInstanceInfo(myServer, myConfig, false);
+        if (myCii != null) {
+            result.put(myServer.getName(), myCii);
+        }
 
         // Iterate over cluster or deployment group
         // When myServer is DAS's situation, myCluster is null - we check we're not adding the same server twice
@@ -432,7 +509,6 @@ public class IiopFolbGmsClient implements ClusterListener {
 
     @Override
     public void memberAdded(MemberEvent event) {
-        // if member added into my group
         if (cluster.getUnderlyingHazelcastService().getMemberGroup().equals(event.getServerGroup())) {
             addMember(event.getServer());
         }
