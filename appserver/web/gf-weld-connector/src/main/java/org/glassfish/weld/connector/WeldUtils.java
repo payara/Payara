@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.weld.connector;
 
@@ -70,6 +70,7 @@ import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 import jakarta.interceptor.Interceptor;
 import javax.xml.parsers.SAXParserFactory;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -168,6 +169,11 @@ public class WeldUtils {
         cdi.add(Stateful.class.getName());
         cdi.add(Stateless.class.getName());
         cdi.add(jakarta.ejb.Singleton.class.getName());
+
+        // MicroProfile @RegisterRestClient is annotated with @Stereotype and @Dependent, making it a CDI bean-defining
+        // annotation. We add it here in case early boot (e.g. PostBootRunLevel) HK2 type scanning fails to resolve it
+        // via OSGi at this early point in time (ApplicationLifecycle#getDeployableTypes)
+        cdi.add(RegisterRestClient.class.getName());
 
         cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
     }
