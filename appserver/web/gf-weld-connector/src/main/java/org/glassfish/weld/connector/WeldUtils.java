@@ -70,7 +70,6 @@ import jakarta.inject.Scope;
 import jakarta.inject.Singleton;
 import jakarta.interceptor.Interceptor;
 import javax.xml.parsers.SAXParserFactory;
-import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -173,7 +172,7 @@ public class WeldUtils {
         // MicroProfile @RegisterRestClient is annotated with @Stereotype and @Dependent, making it a CDI bean-defining
         // annotation. We add it here in case early boot (e.g. PostBootRunLevel) HK2 type scanning fails to resolve it
         // via OSGi at this early point in time (ApplicationLifecycle#getDeployableTypes)
-        cdi.add(RegisterRestClient.class.getName());
+        cdi.add("org.eclipse.microprofile.rest.client.inject.RegisterRestClient");
 
         cdiEnablingAnnotations = Collections.unmodifiableSet(cdi);
     }
