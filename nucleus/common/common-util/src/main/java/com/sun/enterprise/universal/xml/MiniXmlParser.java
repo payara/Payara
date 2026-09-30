@@ -1,4 +1,4 @@
-  /*
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
@@ -71,6 +71,8 @@ import static javax.xml.stream.XMLStreamConstants.*;
 public class MiniXmlParser {
 
     private static final Logger LOGGER = Logger.getLogger(MiniXmlParser.class.getName());
+    private static final String DEFAULT_ADMIN_REALM = "admin-realm";
+
     public MiniXmlParser(File domainXml) throws MiniXmlParserException {
         this(domainXml, DEFAULT_VS_ID);  // default for a domain
     }
@@ -864,13 +866,21 @@ public class MiniXmlParser {
     }
 
     private void parseAdminService() throws XMLStreamException, EndDocumentException {
-        Map<String, String> attributes = null;
+        Map<String, String> adminServiceAttributes = parseAttributes();
+        adminRealm = adminServiceAttributes.get("auth-realm-name");
 
         skipToButNotPast("admin-service", "jmx-connector");
         String name = parser.getLocalName();
         if ("jmx-connector".equals(name)) {
-            attributes = parseAttributes();
-            adminRealm = attributes.get("auth-realm-name");
+            Map<String, String> attributes = parseAttributes();
+            String jmxAuthRealm = attributes.get("auth-realm-name");
+            if (jmxAuthRealm != null) {
+                adminRealm = jmxAuthRealm;
+            }
+        }
+
+        if (adminRealm == null) {
+            adminRealm = DEFAULT_ADMIN_REALM;
         }
     }
 
