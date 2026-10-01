@@ -469,7 +469,7 @@
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
                 <configuration>
-                    <excludes>**/.ade_path/**</excludes>
+                    <excludes>**/.ade_path/**,**/module-info.java</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
                 </configuration>
             </plugin>
