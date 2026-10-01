@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright 2026 Payara Foundation and/or affiliates
+
 package org.jvnet.hk2.config.generator;
 
 import com.sun.codemodel.*;
