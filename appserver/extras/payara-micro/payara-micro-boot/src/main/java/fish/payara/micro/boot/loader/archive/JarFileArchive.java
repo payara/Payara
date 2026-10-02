@@ -45,7 +45,6 @@ public class JarFileArchive implements Archive {
 
 	private static final String UNPACK_MARKER = "UNPACK:";
 
-	private static final int BUFFER_SIZE = 32 * 1024;
 
 	private final JarFile jarFile;
 

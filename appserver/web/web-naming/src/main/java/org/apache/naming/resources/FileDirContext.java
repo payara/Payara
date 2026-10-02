@@ -105,10 +105,6 @@ public class FileDirContext extends BaseDirContext {
     // -------------------------------------------------------------- Constants
 
 
-    /**
-     * The descriptive information string for this implementation.
-     */
-    protected static final int BUFFER_SIZE = 2048;
 
 
     // ----------------------------------------------------------- Constructors
