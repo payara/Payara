@@ -494,4 +494,17 @@ public class MiniXmlParserTest {
        assertFalse("Min Version Not Present", opt.minVersion.isPresent());
        assertFalse("Max Version Not Present", opt.maxVersion.isPresent());
     }
+
+    @Test
+    public void adminRealmDefaultsWhenAttributeAbsent() throws MiniXmlParserException {
+        File f = new File(getClass().getClassLoader()
+                .getResource("adminrealmstripped.xml").getPath());
+        MiniXmlParser instance = new MiniXmlParser(f, "server");
+        assertEquals("admin-realm", instance.getAdminRealmName());
+        Map<String, String> props = instance.getAdminRealmProperties();
+        assertNotNull(props);
+        assertEquals("com.sun.enterprise.security.auth.realm.file.FileRealm",
+                props.get("classname"));
+        assertNotNull(props.get("file"));
+    }
 }
