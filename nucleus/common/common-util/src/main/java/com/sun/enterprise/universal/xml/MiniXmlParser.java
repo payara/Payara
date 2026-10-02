@@ -872,8 +872,7 @@ public class MiniXmlParser {
         skipToButNotPast("admin-service", "jmx-connector");
         String name = parser.getLocalName();
         if ("jmx-connector".equals(name)) {
-            Map<String, String> attributes = parseAttributes();
-            String jmxAuthRealm = attributes.get("auth-realm-name");
+            String jmxAuthRealm = parseAttributes().get("auth-realm-name");
             if (jmxAuthRealm != null) {
                 adminRealm = jmxAuthRealm;
             }
