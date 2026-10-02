@@ -389,11 +389,7 @@ public abstract class GenericSniffer implements Sniffer {
         }
         is.reset();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int bytesRead;
-        final byte [] buffer = new byte[1024];
-        while (( bytesRead = is.read(buffer)) != -1 ) {
-            baos.write(buffer, 0, bytesRead);
-        }
+        is.transferTo(baos);
         try {
             rdr.close();
         } catch (XMLStreamException ex) {

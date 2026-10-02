@@ -405,11 +405,7 @@ public class ServletContainerInitializerUtil {
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         try {
                             is = new BufferedInputStream(new FileInputStream(fileName));
-                            byte[] bs = new byte[2048];
-                            int size = -1;
-                            while ((size = is.read(bs)) >= 0) {
-                                baos.write(bs, 0, size);
-                            } 
+                            is.transferTo(baos); 
                             classInfo.loadClassData(baos.toByteArray());
                         } finally {
                             if (is != null) {

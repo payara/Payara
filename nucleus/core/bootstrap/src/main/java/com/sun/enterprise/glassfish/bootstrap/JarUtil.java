@@ -186,11 +186,7 @@ public class JarUtil {
                 }
                 try (InputStream is = jar.getInputStream(file);
                      FileOutputStream fos = new FileOutputStream(f)) {
-                    int count = 0;
-                    byte[] buffer = new byte[8192];
-                    while ((count = is.read(buffer, 0, buffer.length)) != -1) {
-                        fos.write(buffer, 0, count);
-                    }
+                    is.transferTo(fos);
                 }
             }
         }

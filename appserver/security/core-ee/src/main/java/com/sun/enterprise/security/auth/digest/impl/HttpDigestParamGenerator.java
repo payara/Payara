@@ -148,14 +148,7 @@ public final class HttpDigestParamGenerator extends DigestParameterGenerator {
             try {
                 sis = request.getInputStream();
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                while (true) {
-                    byte[] data = new byte[1024];
-                    int len = sis.read(data, 0, 1023);
-                    if (len == -1) {
-                        break;
-                    }
-                    bos.write(data, 0, len);
-                }
+                sis.transferTo(bos);
                 entityBody = bos.toByteArray();
             } catch (IOException ex) {
                 Logger.getLogger("global").log(SEVERE, null, ex);

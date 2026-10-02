@@ -443,11 +443,7 @@ public class CollectLogFiles implements AdminCommand {
                 try {
                     from = new FileInputStream(logFile);
                     to = new FileOutputStream(toFile);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead;
-
-                    while ((bytesRead = from.read(buffer)) != -1)
-                        to.write(buffer, 0, bytesRead); // write
+                    from.transferTo(to);
                 }
                 catch (Exception ex) {
                     final String errorMsg = localStrings.getLocalString(

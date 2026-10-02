@@ -241,11 +241,7 @@ public class ACCClassLoader extends URLClassLoader {
             if (is == null) {
                 throw new ClassNotFoundException(className);
             }
-            final byte[] buffer = new byte[8196];
-            int bytesRead;
-            while ( (bytesRead = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, bytesRead);
-            }
+            is.transferTo(baos);
             return baos.toByteArray();
         } catch (IOException ex) {
             throw new ClassNotFoundException(className, ex);

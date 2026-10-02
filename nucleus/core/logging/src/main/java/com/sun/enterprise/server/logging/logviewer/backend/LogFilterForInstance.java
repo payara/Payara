@@ -146,11 +146,7 @@ public class LogFilterForInstance {
                     if (instanceLogFileSize != fileSizeOnNode) {
                         try (BufferedInputStream in = new BufferedInputStream(sftpClient.read(loggingFile));
                              BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(instanceLogFile))) {
-                            byte[] buf = new byte[8192];
-                            int len;
-                            while ((len = in.read(buf)) >= 0) {
-                                out.write(buf, 0, len);
-                            }
+                            in.transferTo(out);
                         }
                     }
                 }
@@ -220,11 +216,7 @@ public class LogFilterForInstance {
                     try (InputStream in = sftpClient.read(remoteFilePath);
                          BufferedOutputStream out = new BufferedOutputStream(
                                  new FileOutputStream(localFile))) {
-                        byte[] buf = new byte[8192];
-                        int len;
-                        while ((len = in.read(buf)) >= 0) {
-                            out.write(buf, 0, len);
-                        }
+                        in.transferTo(out);
                     } catch (IOException ex) {
                         logger.warning("Failed to download log file "
                                 + remoteFilePath + ": " + ex.getMessage());

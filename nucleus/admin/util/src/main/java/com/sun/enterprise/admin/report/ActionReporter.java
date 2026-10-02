@@ -191,11 +191,7 @@ public abstract class ActionReporter extends ActionReport {
     }
 
     private void copyStream(InputStream in, OutputStream out) throws IOException {
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) >= 0) {
-            out.write(buf, 0, len);
-        }
+        in.transferTo(out);
 
         out.close();
         in.close();

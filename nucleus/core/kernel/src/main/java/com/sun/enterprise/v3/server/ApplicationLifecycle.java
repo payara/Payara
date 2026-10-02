@@ -2364,13 +2364,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         final ZipEntry entry = new ZipEntry(entryName);
         zipOS.putNextEntry(entry);
         if ( ! f.isDirectory()) {
-            final byte[] buffer = new byte[1024];
             final InputStream is = new BufferedInputStream(new FileInputStream(f));
-            int bytesRead;
             try {
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    zipOS.write(buffer, 0, bytesRead);
-                }
+                is.transferTo(zipOS);
             } finally {
                 is.close();
                 zipOS.closeEntry();

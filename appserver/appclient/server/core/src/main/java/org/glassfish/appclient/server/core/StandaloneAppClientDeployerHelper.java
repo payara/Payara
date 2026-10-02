@@ -164,12 +164,8 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
     private void copyToArchive(final File inputFile, final OutputJarArchive outputArchive, final String pathInJar) throws IOException {
         final OutputStream os = outputArchive.putNextEntry(pathInJar);
         final InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
-        final byte[] buffer = new byte[512];
-        int bytesRead;
         try {
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
+            is.transferTo(os);
         } finally {
             try {
                 os.flush();

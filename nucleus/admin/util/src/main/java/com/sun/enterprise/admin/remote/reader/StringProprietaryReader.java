@@ -62,11 +62,7 @@ public class StringProprietaryReader implements ProprietaryReader<String> {
     @Override
     public String readFrom(final InputStream is, final String contentType) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buff = new byte[512];
-        int count;
-        while ((count = is.read(buff)) > 0) {
-            baos.write(buff, 0, count);
-        }
+        is.transferTo(baos);
         return baos.toString("UTF-8");
     }
     

@@ -189,10 +189,7 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
 
             is = s.getInputStream();
             baos = new ByteArrayOutputStream();
-            int b;
-            while ((b = is.read()) != -1) {
-                baos.write(b);
-            }
+            is.transferTo(baos);
         } finally {
             close(os);
             close(is);

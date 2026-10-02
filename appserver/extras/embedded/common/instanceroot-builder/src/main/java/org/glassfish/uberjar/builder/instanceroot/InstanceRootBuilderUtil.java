@@ -99,11 +99,7 @@ public class InstanceRootBuilderUtil {
                 if (!f.exists() || overwrite) {
                     f.getParentFile().mkdirs();
                     FileOutputStream fos = new FileOutputStream(new File(destDir, path));
-                    byte[] data = new byte[2048];
-                    int count = 0;
-                    while ((count = stream.read(data)) != -1) {
-                        fos.write(data, 0, count);
-                    }
+                    stream.transferTo(fos);
                     logger.fine("Created " + f);
                 }
             } catch (Exception ex) {

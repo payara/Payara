@@ -2364,18 +2364,10 @@ public class DefaultServlet extends HttpServlet {
                                     ServletOutputStream ostream) {
         // Copy the input stream to the output stream
         IOException exception = null;
-        byte buffer[] = new byte[input];
-        int len;
-        while (true) {
-            try {
-                len = istream.read(buffer);
-                if (len == -1)
-                    break;
-                ostream.write(buffer, 0, len);
-            } catch (IOException e) {
-                exception = e;
-                break;
-            }
+        try {
+            istream.transferTo(ostream);
+        } catch (IOException e) {
+            exception = e;
         }
         return exception;
 

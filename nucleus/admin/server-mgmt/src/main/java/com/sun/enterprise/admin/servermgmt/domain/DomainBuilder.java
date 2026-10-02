@@ -255,7 +255,6 @@ public class DomainBuilder {
         createDirectory(domainDir);
         try {
             // Extract other jar entries
-            byte[] buffer = new byte[10000];
             for (Enumeration<JarEntry> entry = templateJar.entries(); entry.hasMoreElements();) {
                 JarEntry jarEntry = entry.nextElement();
                 String entryName = jarEntry.getName();
@@ -279,10 +278,7 @@ public class DomainBuilder {
                     in = templateJar.getInputStream(jarEntry);
                     outputStream = new BufferedOutputStream(new FileOutputStream(new File(domainDir.getAbsolutePath(),
                             jarEntry.getName())));
-                    int i = 0;
-                    while ((i = in.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, i);
-                    }
+                    in.transferTo(outputStream);
                 } finally {
                     if (in != null) {
                         try {
