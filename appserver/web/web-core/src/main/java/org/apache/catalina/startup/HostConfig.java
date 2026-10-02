@@ -566,14 +566,7 @@ public class HostConfig
                             ostream =
                                     new BufferedOutputStream
                                         (new FileOutputStream(xml), 1024);
-                            byte buffer[] = new byte[1024];
-                            while (true) {
-                                int n = istream.read(buffer);
-                                if (n < 0) {
-                                    break;
-                                }
-                                ostream.write(buffer, 0, n);
-                            }
+                            istream.transferTo(ostream);
                             ostream.flush();
                             ostream.close();
                             ostream = null;

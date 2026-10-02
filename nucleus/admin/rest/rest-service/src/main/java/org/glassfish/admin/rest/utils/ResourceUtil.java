@@ -151,12 +151,8 @@ public class ResourceUtil {
     protected static byte[] getBytesFromStream(final InputStream is) {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] bytes = null;
-        int nRead;
-        byte[] data = new byte[16384];
         try {
-            while ((nRead = is.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
+            is.transferTo(buffer);
             buffer.flush();
             bytes = buffer.toByteArray();
             buffer.close();

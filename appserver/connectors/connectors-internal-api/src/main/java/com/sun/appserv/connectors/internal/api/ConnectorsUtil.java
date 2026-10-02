@@ -855,9 +855,7 @@ public class ConnectorsUtil {
                 try {
                     is = jar.getInputStream(file);
                     fos = new FileOutputStream(f);
-                    while (is.available() > 0) {
-                        fos.write(is.read());
-                    }
+                    is.transferTo(fos);
                 } finally {
                     try {
                         if (fos != null) {

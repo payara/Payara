@@ -150,8 +150,8 @@ public class Util {
             oStream = new FileOutputStream(localFile);
             iStream = Util.class.getResourceAsStream("/config/" + fileName);
 
-            while (iStream != null && iStream.available() > 0) {
-                oStream.write(iStream.read());
+            if (iStream != null) {
+                iStream.transferTo(oStream);
             }
         } finally {
             if (oStream != null) {

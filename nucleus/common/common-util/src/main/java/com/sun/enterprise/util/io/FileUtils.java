@@ -1245,11 +1245,7 @@ public class FileUtils  {
                 throw new RuntimeException("Can't create parent dir of output file: " + f);
 
             os = new BufferedOutputStream(FileUtils.openFileOutputStream(f));
-            byte buf[] = new byte[10240];
-            int len = 0;
-            while ((len =bis.read(buf)) > 0) {
-               os.write(buf, 0, len);
-            }
+            bis.transferTo(os);
             return f;
         } finally {
             if (os != null)
@@ -1355,12 +1351,7 @@ public class FileUtils  {
         try {
             is = new BufferedInputStream(is);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int n;
-
-            while ((n = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, n);
-            }
+            is.transferTo(baos);
             is.close();
             return baos.toByteArray();
         } catch (Exception e) {

@@ -426,11 +426,7 @@ public class PackageAppClient {
         File fileToCopy = new File(uriToCopy);
         InputStream is = new BufferedInputStream(new FileInputStream(fileToCopy));
         try {
-            int bytesRead;
-            byte [] buffer = new byte[4096];
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
+            is.transferTo(os);
         } finally {
             if (is != null) {
                 is.close();

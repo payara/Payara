@@ -206,11 +206,7 @@ public class MultipartProprietaryReader implements ProprietaryReader<ParamsWithP
         }
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buff = new byte[256];
-            int count;
-            while ((count = is.read(buff)) > 0) {
-                baos.write(buff, 0, count);
-            }
+            is.transferTo(baos);
             return baos.toString("UTF-8");
         } finally {
             try { is.close(); } catch (Exception ex) {}
