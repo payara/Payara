@@ -127,4 +127,25 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs>
+                        <!--
+                            CORBA (org.omg.*), JAX-WS Metro (com.sun.xml.ws.api.*), and
+                            jakarta.xml.soap.* are provided via jars on the classpath
+                            (unnamed module) during Payara's module-aware compilation.
+                            Named modules cannot read the unnamed module without this flag.
+                        -->
+                        <arg>--add-reads</arg>
+                        <arg>fish.payara.microprofile.telemetry=ALL-UNNAMED</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

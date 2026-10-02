@@ -51,14 +51,15 @@
  * while the existing MANIFEST.MF (Bundle-SymbolicName, Export-Package, Import-Package)
  * continues to serve the OSGi runtime — the dual-presence strategy.
  *
- * Automatic-module note: microprofile-config-api, hk2-api, hk2-config, and Payara internal
- * modules appear as automatic modules on the module path with the derived names used here.
+ * Automatic-module note: hk2-api, hk2-config, and Payara internal modules appear as automatic
+ * modules on the module path with the derived names used here. microprofile-config-api ships
+ * an explicit module-info.class since 3.1.2.
  * Named (MR JAR) modules: nimbus-jose-jwt, jersey-client, all jackson-* artifacts.
  */
 module fish.payara.microprofile.config.extensions {
 
     // ── Spec and standard Jakarta APIs ───────────────────────────────────────
-    // automatic module: microprofile-config-api-*.jar → org.eclipse.microprofile.config
+    // named module since 3.1.2: microprofile-config-api-*.jar ships module-info.class
     requires org.eclipse.microprofile.config;
     // named modules
     requires jakarta.annotation;
