@@ -866,22 +866,11 @@ public class MiniXmlParser {
     }
 
     private void parseAdminService() throws XMLStreamException, EndDocumentException {
-        Map<String, String> adminServiceAttributes = parseAttributes();
-        adminRealm = adminServiceAttributes.get("auth-realm-name");
-
-        skipToButNotPast("admin-service", "jmx-connector");
-        String name = parser.getLocalName();
-        if ("jmx-connector".equals(name)) {
-            Map<String, String> attributes = parseAttributes();
-            String jmxAuthRealm = attributes.get("auth-realm-name");
-            if (jmxAuthRealm != null) {
-                adminRealm = jmxAuthRealm;
-            }
-        }
-
+        adminRealm = parseAttributes().get("auth-realm-name");
         if (adminRealm == null) {
             adminRealm = DEFAULT_ADMIN_REALM;
         }
+        skipToEnd("admin-service");
     }
 
     private void populateAdminRealmProperties() throws

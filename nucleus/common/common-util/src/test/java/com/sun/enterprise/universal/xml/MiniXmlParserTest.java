@@ -507,11 +507,4 @@ public class MiniXmlParserTest {
                 props.get("classname"));
         assertNotNull(props.get("file"));
     }
-
-    @Test
-    public void adminRealmStillReadFromJmxConnectorWhenPresent() throws MiniXmlParserException {
-        MiniXmlParser instance = new MiniXmlParser(rightOrder, "server");
-        assertEquals("admin-realm", instance.getAdminRealmName());
-        assertNotNull(instance.getAdminRealmProperties());
-    }
 }
