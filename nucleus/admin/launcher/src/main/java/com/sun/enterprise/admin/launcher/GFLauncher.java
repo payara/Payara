@@ -1154,7 +1154,7 @@ public abstract class GFLauncher {
         long deadline = System.currentTimeMillis() + 30_000;
         while (System.currentTimeMillis() < deadline) {
             try {
-                String raw = new String(Files.readAllBytes(pidFile.toPath()), StandardCharsets.UTF_8).trim();
+                String raw = Files.readString(pidFile.toPath(), StandardCharsets.UTF_8).trim();
                 if (!raw.isEmpty()) {
                     cmdPid = Integer.parseInt(raw);
                     break;
@@ -1233,7 +1233,7 @@ public abstract class GFLauncher {
 
     private static String readSilently(File file) {
         try {
-            return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
+            return Files.readString(file.toPath(), StandardCharsets.UTF_8).trim();
         } catch (Exception ignored) {
             return "";
         }

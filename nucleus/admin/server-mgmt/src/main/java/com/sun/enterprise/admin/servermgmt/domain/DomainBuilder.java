@@ -61,7 +61,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.io.InputStream;
@@ -368,8 +367,8 @@ public class DomainBuilder {
         File mpFile = new File(configDir, DomainConstants.MASTERPASSWORD_FILE);
         if (mpLocation != null) {
             File mpLocationFile = new File(configDir, DomainConstants.MASTERPASSWORD_LOCATION_FILE);
-            try (FileWriter writer = new FileWriter(mpLocationFile)) {
-                writer.write(mpLocation);
+            try {
+                Files.writeString(mpLocationFile.toPath(), mpLocation);
                 mpFile = new File(mpLocation);
             } catch (IOException e) {
                 throw new IOException(STRINGS.get("masterPasswordNotSaved"), e);
