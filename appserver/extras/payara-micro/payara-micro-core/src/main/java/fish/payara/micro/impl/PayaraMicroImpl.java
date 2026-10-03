@@ -58,6 +58,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1027,7 +1028,7 @@ public class PayaraMicroImpl implements PayaraMicroBoot {
         resetLogging(loggingProperty);
         // If it's been enabled, watch the log file for changes
         if (enableDynamicLogging) {
-            PayaraFileWatcher.watch(new File(loggingProperty).toPath(), () -> {
+            PayaraFileWatcher.watch(Path.of(loggingProperty), () -> {
                 LOGGER.info("Logging file modified, resetting logging");
                 resetLogging(loggingProperty);
             });

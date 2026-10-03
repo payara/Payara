@@ -44,6 +44,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.List;
@@ -524,7 +525,7 @@ public class ASMClassWriter implements ClassWriter {
                     throw new RuntimeException("Unable to create parent directory for generated class file logging");
                 }
             }
-            Files.write(new File(parentDir, clsName + ".class").toPath(), classData);
+            Files.write(Path.of(parentDir.getPath(), clsName + ".class"), classData);
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }
