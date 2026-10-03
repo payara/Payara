@@ -45,7 +45,6 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 import static com.sun.enterprise.util.StringUtils.ok;
@@ -82,11 +81,10 @@ public class RemoteResponseManager implements ResponseManager {
 
         // make a copy of the stream.  O/w if Manifest.read() blows up -- the
         // data would be gone!
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(in, baos, 0);
+        byte[] bytes = in.readAllBytes();
         
-        responseStream = new ByteArrayInputStream(baos.toByteArray());
-        response = baos.toString();
+        responseStream = new ByteArrayInputStream(bytes);
+        response = new String(bytes);
         
         if(!ok(response))
             throw new RemoteFailureException(STRINGS.get("emptyResponse"));

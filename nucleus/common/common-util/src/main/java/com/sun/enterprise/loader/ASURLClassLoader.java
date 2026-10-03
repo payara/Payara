@@ -830,11 +830,9 @@ public class ASURLClassLoader extends CurrentBeforeParentClassLoader
      * @throws   IOException  if an i/o error
      */
     private byte[] getClassData(InputStream istream) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
         try (BufferedInputStream bstream = new BufferedInputStream(istream)) {
-            bstream.transferTo(bout);
+            return bstream.readAllBytes();
         }
-        return bout.toByteArray();
     }
 
 

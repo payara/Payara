@@ -49,7 +49,6 @@ import com.sun.enterprise.util.OS;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -1350,10 +1349,9 @@ public class FileUtils  {
 
         try {
             is = new BufferedInputStream(is);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            is.transferTo(baos);
+            byte[] bytes = is.readAllBytes();
             is.close();
-            return baos.toByteArray();
+            return bytes;
         } catch (Exception e) {
             try {
                 is.close();

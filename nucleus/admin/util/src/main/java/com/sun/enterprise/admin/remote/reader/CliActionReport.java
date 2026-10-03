@@ -41,7 +41,6 @@
 package com.sun.enterprise.admin.remote.reader;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -160,21 +159,12 @@ public class CliActionReport extends ActionReport {
             if(in == null)
                 throw new NullPointerException("Internal Error - null InputStream");
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            copyStream(in, baos);
-            setMessage(baos.toString());
+            setMessage(new String(in.readAllBytes()));
         }
         catch (Exception ex) {
             setActionExitCode(ExitCode.FAILURE);
             setFailureCause(ex);
         }
-    }
-
-    private void copyStream(InputStream in, OutputStream out) throws IOException {
-        in.transferTo(out);
-
-        out.close();
-        in.close();
     }
     
     @Override

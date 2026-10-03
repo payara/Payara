@@ -42,7 +42,6 @@
 
 package org.glassfish.grizzly.config;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,7 +177,7 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
         Socket s = null;
         OutputStream os = null;
         InputStream is = null;
-        ByteArrayOutputStream baos = null;
+        byte[] bytes = null;
         
         try {
             s = new Socket(host, port);
@@ -188,12 +187,10 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
 
 
             is = s.getInputStream();
-            baos = new ByteArrayOutputStream();
-            is.transferTo(baos);
+            bytes = is.readAllBytes();
         } finally {
             close(os);
             close(is);
-            close(baos);
             if (s != null) {
                 try {
                     s.close();
@@ -201,7 +198,7 @@ public class PUGrizzlyConfigTest extends BaseTestGrizzlyConfig {
             }
         }
 
-        return new String(baos.toByteArray());
+        return new String(bytes);
     }
 
     private void close(Closeable c) {
