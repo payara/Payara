@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2019] [Payara Foundation and/or affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or affiliates]
 
 package com.sun.enterprise.v3.services.impl;
 
@@ -170,7 +170,13 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         try {
             request.addAfterServiceListener(afterServiceListener);
             
-            final Callable handler = lookupHandler(request, response);
+            final Callable handler;
+            try {
+                handler = lookupHandler(request, response);
+            } catch (CharConversionException ex) {
+                response.sendError(400, "Invalid URI");
+                return;
+            }
             if (stuckThreadsStore != null){
                 stuckThreadsStore.registerThread(Thread.currentThread().getId());
             }
@@ -263,8 +269,15 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 }
             }
 
-            final DataChunk decodedURI = request.getRequest()
-                    .getRequestURIRef().getDecodedRequestURIBC(isAllowEncodedSlash());
+            final DataChunk decodedURI;
+            try {
+                decodedURI = request.getRequest()
+                        .getRequestURIRef().getDecodedRequestURIBC(isAllowEncodedSlash());
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                CharConversionException cce = new CharConversionException(ex.getMessage());
+                cce.initCause(ex);
+                throw cce;
+            }
 
             mappingData = request.getNote(MAPPING_DATA);
             if (mappingData == null) {
