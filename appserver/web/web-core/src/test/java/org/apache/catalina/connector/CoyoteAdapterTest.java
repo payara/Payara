@@ -23,10 +23,12 @@
 package org.apache.catalina.connector;
 
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.CharConversionException;
 import java.nio.charset.StandardCharsets;
 import org.glassfish.grizzly.http.HttpRequestPacket;
 import org.glassfish.grizzly.http.util.RequestURIRef;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -55,11 +57,19 @@ public class CoyoteAdapterTest {
     private Response catalinaResponse;
 
     private CoyoteAdapter coyoteAdapter;
+    private ServiceLocator previousHabitat;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        previousHabitat = Globals.getDefaultHabitat();
+        Globals.setDefaultHabitat(mock(ServiceLocator.class));
         coyoteAdapter = new CoyoteAdapter(connector);
+    }
+
+    @After
+    public void tearDown() {
+        Globals.setDefaultHabitat(previousHabitat);
     }
 
     @Test
@@ -112,8 +122,9 @@ public class CoyoteAdapterTest {
 
     @Test
     public void testPostParseRequestWithCharConversionExceptionReturns400() throws Exception {
-        RequestURIRef uriRef = mock(RequestURIRef.class);
-        when(uriRef.getDecodedRequestURIBC()).thenThrow(new CharConversionException("Invalid character"));
+        RequestURIRef uriRef = new RequestURIRef();
+        byte[] rawUri = "/%00".getBytes(StandardCharsets.US_ASCII);
+        uriRef.init(rawUri, 0, rawUri.length);
 
         HttpRequestPacket requestPacket = mock(HttpRequestPacket.class);
         when(requestPacket.getRequestURIRef()).thenReturn(uriRef);

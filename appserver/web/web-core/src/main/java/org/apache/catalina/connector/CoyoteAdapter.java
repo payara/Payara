@@ -271,9 +271,7 @@ public class CoyoteAdapter extends HttpHandler {
     private void initServletInterceptors() {
         try {
             ServiceLocator services = org.glassfish.internal.api.Globals.getDefaultHabitat();
-            if (services != null) {
-                interceptors = services.getAllServices(ServletContainerInterceptor.class);
-            }
+            interceptors = services.getAllServices(ServletContainerInterceptor.class);
         } catch (Throwable th) {
             log.log(Level.SEVERE, LogFacade.FAILED_TO_INITIALIZE_THE_INTERCEPTOR, th);
         }
@@ -421,9 +419,6 @@ public class CoyoteAdapter extends HttpHandler {
         try {
             decodedURI = req.getRequest().getRequestURIRef().getDecodedRequestURIBC();
         } catch (CharConversionException | IllegalArgumentException | IllegalStateException e) {
-            if (log.isLoggable(Level.FINE)) {
-                log.log(Level.FINE, "Invalid URI", e);
-            }
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid URI");
             return false;
         }

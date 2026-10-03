@@ -170,7 +170,13 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         try {
             request.addAfterServiceListener(afterServiceListener);
             
-            final Callable handler = lookupHandler(request, response);
+            final Callable handler;
+            try {
+                handler = lookupHandler(request, response);
+            } catch (CharConversionException ex) {
+                response.sendError(400, "Invalid URI");
+                return;
+            }
             if (stuckThreadsStore != null){
                 stuckThreadsStore.registerThread(Thread.currentThread().getId());
             }
@@ -215,34 +221,21 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 stuckThreadsStore.registerThread(Thread.currentThread().getId());
             }
             handler.call();
-        } catch (CharConversionException | IllegalArgumentException | IllegalStateException ex) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Invalid URI in request", ex);
-            }
-            response.sendError(400, "Invalid URI");
         } catch (Exception ex) {
             try {
                 if (LOGGER.isLoggable(Level.WARNING)) {
-                    String uri;
-                    try {
-                        uri = String.valueOf(request.getRequest().getRequestURIRef().getDecodedRequestURIBC());
-                    } catch (Exception ignored) {
-                        uri = String.valueOf(request.getRequest().getRequestURIRef().getRequestURIBC());
-                    }
-                    LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.exceptionMapper, ex, uri);
+                    LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.exceptionMapper, ex, 
+                            request.getRequest().getRequestURIRef().getDecodedRequestURIBC());
                 }
                 
                 response.sendError(500);
-            } catch (CharConversionException | IllegalArgumentException | IllegalStateException ex2) {
-                if (LOGGER.isLoggable(Level.WARNING)) {
-                    LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
-                }
-                response.sendError(400, "Invalid URI");
             } catch (Exception ex2) {
                 if (LOGGER.isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
                 }
-                response.sendError(500);
+                if (ex2 instanceof CharConversionException) {
+                    response.sendError(500);
+                }
             }
         }
         finally {
@@ -276,8 +269,15 @@ public class ContainerMapper extends ADBAwareHttpHandler {
                 }
             }
 
-            final DataChunk decodedURI = request.getRequest()
-                    .getRequestURIRef().getDecodedRequestURIBC(isAllowEncodedSlash());
+            final DataChunk decodedURI;
+            try {
+                decodedURI = request.getRequest()
+                        .getRequestURIRef().getDecodedRequestURIBC(isAllowEncodedSlash());
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                CharConversionException cce = new CharConversionException(ex.getMessage());
+                cce.initCause(ex);
+                throw cce;
+            }
 
             mappingData = request.getNote(MAPPING_DATA);
             if (mappingData == null) {
