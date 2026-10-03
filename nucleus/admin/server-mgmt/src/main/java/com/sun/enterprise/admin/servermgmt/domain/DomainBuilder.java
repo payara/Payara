@@ -63,6 +63,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -382,17 +383,11 @@ public class DomainBuilder {
             domainSecurity.createSSLCertificateDatabase(configDir, domainConfig, masterPassword);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, STRINGS.getString("SomeProblemWithKeytool", e.getMessage()));
-            FileOutputStream fos = null;
             try {
                 File keystoreFile = new File(configDir, DomainConstants.KEYSTORE_FILE);
-                fos = new FileOutputStream(keystoreFile);
-                fos.write(keystoreBytes);
+                Files.write(keystoreFile.toPath(), keystoreBytes);
             } catch (Exception ex) {
                 getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
-            } finally {
-                if (fos != null) {
-                    fos.close();
-                }
             }
         }
 

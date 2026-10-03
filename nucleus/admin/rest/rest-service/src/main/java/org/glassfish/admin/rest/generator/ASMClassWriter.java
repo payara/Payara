@@ -42,8 +42,8 @@ package org.glassfish.admin.rest.generator;
 
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.ProtectionDomain;
 import java.util.HashMap;
 import java.util.List;
@@ -515,7 +515,6 @@ public class ASMClassWriter implements ClassWriter {
             clsName = clsName.substring(index + 1);
         }
 
-        FileOutputStream fos = null;
         try {
             String rootPath = System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY)
                     + File.separator + "lib" + File.separator + "rest" + File.separator;
@@ -525,20 +524,9 @@ public class ASMClassWriter implements ClassWriter {
                     throw new RuntimeException("Unable to create parent directory for generated class file logging");
                 }
             }
-
-            fos = new FileOutputStream(new File(parentDir, clsName + ".class"));
-            fos.write(classData);
-            fos.flush();
+            Files.write(new File(parentDir, clsName + ".class").toPath(), classData);
         } catch (Exception ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
-        } finally {
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException ex) {
-                    RestLogging.restLogger.log(Level.SEVERE, null, ex);
-                }
-            }
         }
     }
 
