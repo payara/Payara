@@ -48,5 +48,5 @@ package com.sun.enterprise.util.cluster;
  * @author Byron Nevins
  */
 public enum RemoteType {
-    SSH, CONFIG, DOCKER
+    SSH, WINRM, CONFIG, DOCKER
 }
