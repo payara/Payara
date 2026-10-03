@@ -49,6 +49,8 @@ import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.*;
 import java.util.zip.*;
+import java.nio.file.Files;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import jakarta.xml.bind.*;
 
 
@@ -498,7 +500,9 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
 		    if (!entry.mkdir())
 			logger.warning(Strings.get("Sync.cantCreateDirectory", dir));
 		} else {
-		    FileUtils.copy(zf.getInputStream(ze), new FileOutputStream(entry), 0);
+		    try (InputStream is = zf.getInputStream(ze)) {
+			Files.copy(is, entry.toPath(), REPLACE_EXISTING);
+		    }
 		}
 	    }
 	}

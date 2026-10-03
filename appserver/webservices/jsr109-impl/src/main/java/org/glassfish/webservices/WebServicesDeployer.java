@@ -76,7 +76,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.*;
-import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -376,12 +377,7 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer, We
             mkDirs(dest.getParentFile());
             mkFile(dest);
         }
-        try (FileInputStream fileInputStream = new FileInputStream(src);
-             FileOutputStream fileOutputStream = new FileOutputStream(dest);
-             FileChannel srcChannel = fileInputStream.getChannel();
-             FileChannel destChannel = fileOutputStream.getChannel()) {
-            destChannel.transferFrom(srcChannel, 0, srcChannel.size());
-        }
+        Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public void downloadFile(URL httpUrl, File toFile) throws Exception {

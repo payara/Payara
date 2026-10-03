@@ -42,16 +42,14 @@
 package org.glassfish.appclient.client.packageappclient;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
@@ -424,14 +422,7 @@ public class PackageAppClient {
             final OutputStream os,
             final URI uriToCopy) throws IOException {
         File fileToCopy = new File(uriToCopy);
-        InputStream is = new BufferedInputStream(new FileInputStream(fileToCopy));
-        try {
-            is.transferTo(os);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
+        Files.copy(fileToCopy.toPath(), os);
     }
 
     /**
