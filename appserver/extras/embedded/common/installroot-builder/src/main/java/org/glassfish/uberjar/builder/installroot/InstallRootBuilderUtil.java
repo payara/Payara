@@ -41,8 +41,8 @@
 package org.glassfish.uberjar.builder.installroot;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -87,8 +87,7 @@ public class InstallRootBuilderUtil {
                 // create directory.
                 if (!f.exists()) {
                     f.getParentFile().mkdirs();
-                    FileOutputStream fos = new FileOutputStream(new File(destDir, path));
-                    stream.transferTo(fos);
+                    Files.copy(stream, f.toPath());
                     logger.fine("Created " + f);
                 }
             } catch (Exception ex) {

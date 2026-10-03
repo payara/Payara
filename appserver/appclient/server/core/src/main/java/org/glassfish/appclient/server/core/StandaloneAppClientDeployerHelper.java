@@ -46,12 +46,10 @@ import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
 import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
 import com.sun.logging.LogDomains;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -163,16 +161,8 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
     
     private void copyToArchive(final File inputFile, final OutputJarArchive outputArchive, final String pathInJar) throws IOException {
         final OutputStream os = outputArchive.putNextEntry(pathInJar);
-        final InputStream is = new BufferedInputStream(new FileInputStream(inputFile));
-        try {
-            is.transferTo(os);
-        } finally {
-            try {
-                os.flush();
-            } finally {
-                is.close();
-            }
-        }
+        Files.copy(inputFile.toPath(), os);
+        os.flush();
     }
 
     

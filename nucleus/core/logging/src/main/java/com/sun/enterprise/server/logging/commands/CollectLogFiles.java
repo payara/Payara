@@ -63,9 +63,10 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -436,14 +437,9 @@ public class CollectLogFiles implements AdminCommand {
                 // File to copy in output file path.
                 File toFile = new File(targetDir, logFile.getName());
 
-                FileInputStream from = null;
-                FileOutputStream to = null;
-
                 // Copying File
                 try {
-                    from = new FileInputStream(logFile);
-                    to = new FileOutputStream(toFile);
-                    from.transferTo(to);
+                    Files.copy(logFile.toPath(), toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
                 catch (Exception ex) {
                     final String errorMsg = localStrings.getLocalString(
@@ -452,9 +448,6 @@ public class CollectLogFiles implements AdminCommand {
                     report.setFailureCause(ex);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
-                } finally {
-                    if (from != null) try { from.close(); } catch (Exception ex) {}
-                    if (to != null) try { to.close(); } catch (Exception ex) {}
                 }
 
 
