@@ -43,7 +43,7 @@ package org.glassfish.flashlight.impl.client;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.Utility;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
@@ -241,9 +241,8 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             logger.log(Level.WARNING, WRITE_ERROR, new RuntimeException("Can't create directory: " + dir));
             return;
         }
-        try (
-            FileOutputStream fos = new FileOutputStream(new File(dir, name + ".class"))) {
-            fos.write(data);
+        try {
+            Files.write(new File(dir, name + ".class").toPath(), data);
         } catch (Throwable th) {
             logger.log(Level.WARNING, WRITE_ERROR, th);
         }
