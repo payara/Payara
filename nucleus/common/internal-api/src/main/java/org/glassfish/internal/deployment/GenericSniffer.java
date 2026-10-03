@@ -44,7 +44,6 @@ package org.glassfish.internal.deployment;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.HK2Module;
-import java.io.ByteArrayOutputStream;
 import jakarta.inject.Inject;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -388,14 +387,13 @@ public abstract class GenericSniffer implements Sniffer {
             encoding = "UTF-8";
         }
         is.reset();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        is.transferTo(baos);
+        byte[] bytes = is.readAllBytes();
         try {
             rdr.close();
         } catch (XMLStreamException ex) {
             throw new IOException(ex);
         }
         is.close();
-        return new String(baos.toByteArray(), encoding);
+        return new String(bytes, encoding);
     }
 }

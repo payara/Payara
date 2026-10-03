@@ -1336,12 +1336,12 @@ public class RemoteAdminCommand {
      */
     private CommandModel parseMetadata(InputStream in, StringBuilder errors) {
         if (logger.isLoggable(Level.FINER)) { // XXX - assume "debug" == "FINER"
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] bytes = new byte[0];
             try {
-                FileUtils.copy(in, baos, 0);
+                bytes = in.readAllBytes();
             } catch (IOException ex) { }
-            in = new ByteArrayInputStream(baos.toByteArray());
-            String response = baos.toString(UTF_8);
+            in = new ByteArrayInputStream(bytes);
+            String response = new String(bytes, UTF_8);
             logger.finer("------- RAW METADATA RESPONSE ---------");
             logger.finer(response);
             logger.finer("------- RAW METADATA RESPONSE ---------");

@@ -48,7 +48,6 @@ import com.sun.enterprise.universal.xml.MiniXmlParser.JvmOption;
 
 import fish.payara.audit.AdminAuditService;
 import fish.payara.asadmin.recorder.AsadminRecorderService;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -149,13 +148,9 @@ public class ResourceUtil {
     }
 
     protected static byte[] getBytesFromStream(final InputStream is) {
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         byte[] bytes = null;
         try {
-            is.transferTo(buffer);
-            buffer.flush();
-            bytes = buffer.toByteArray();
-            buffer.close();
+            bytes = is.readAllBytes();
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION, ex.getMessage());
         }

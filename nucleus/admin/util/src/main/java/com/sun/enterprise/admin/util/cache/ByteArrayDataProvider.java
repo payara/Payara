@@ -39,8 +39,6 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -66,9 +64,7 @@ public class ByteArrayDataProvider implements DataProvider {
 
     @Override
     public Object toInstance(InputStream stream, Class clazz) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(stream, baos, 0);
-        return baos.toByteArray();
+        return stream.readAllBytes();
     }
     
 }

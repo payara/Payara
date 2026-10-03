@@ -39,10 +39,10 @@
  */
 package com.sun.enterprise.admin.remote.reader;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -61,9 +61,7 @@ public class StringProprietaryReader implements ProprietaryReader<String> {
 
     @Override
     public String readFrom(final InputStream is, final String contentType) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        is.transferTo(baos);
-        return baos.toString("UTF-8");
+        return new String(is.readAllBytes(), StandardCharsets.UTF_8);
     }
     
 }
