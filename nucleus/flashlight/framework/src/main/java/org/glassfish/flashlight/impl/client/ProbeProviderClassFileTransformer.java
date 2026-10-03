@@ -44,6 +44,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.Utility;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
@@ -242,7 +243,7 @@ public class ProbeProviderClassFileTransformer implements ClassFileTransformer {
             return;
         }
         try {
-            Files.write(new File(dir, name + ".class").toPath(), data);
+            Files.write(Path.of(dir.getPath(), name + ".class"), data);
         } catch (Throwable th) {
             logger.log(Level.WARNING, WRITE_ERROR, th);
         }
