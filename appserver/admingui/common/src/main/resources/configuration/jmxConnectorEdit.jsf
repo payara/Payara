@@ -69,7 +69,10 @@
         setPageSessionAttribute(key="showCancelButton" value="#{false}" );
         setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
         setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
-        setPageSessionAttribute(key="has2Objects" value="#{false}" );
+        setPageSessionAttribute(key="has2Objects" value="#{true}" );
+        setPageSessionAttribute(key="selfUrl2" value="#{pageSession.parentUrl}");
+        setPageSessionAttribute(key="valueMap2" value="#{pageSession.adminServiceMap}");
+        setPageSessionAttribute(key="onlyUseAttrs2" value={"authRealmName"});
 
     />
     </event>
@@ -108,7 +111,7 @@
                 <sun:textField id="Port" styleClass="required port" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmxConnector.port']}" text="#{pageSession.valueMap['port']}" required="#{true}" />
             </sun:property>
             <sun:property id="RealmNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.edJmxConnector.realmNameLabel}" helpText="$resource{i18n.edJmxConnector.realmNameHelp}" >
-                <sun:textField id="RealmName" styleClass="required" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmxConnector.realmName']}" text="#{pageSession.valueMap['authRealmName']}" required="#{true}" />
+                <sun:textField id="RealmName" styleClass="required" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.edJmxConnector.realmName']}" text="#{pageSession.adminServiceMap['authRealmName']}" required="#{true}" />
             </sun:property>
 
 
