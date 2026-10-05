@@ -129,7 +129,11 @@ public class OpenTelemetryService implements EventListener {
             return true;
         }
         String application = currentApplication();
-        return application != null && appTelemetries.containsKey(application);
+        if (application == null) {
+            return isPayaraTracingEnabled();
+        }
+        OpenTelemetrySdkHandle info = appTelemetries.get(application);
+        return (info != null && info.isEnabled()) || isPayaraTracingEnabled();
     }
 
     public Tracer getCurrentTracer() {
@@ -392,6 +396,10 @@ public class OpenTelemetryService implements EventListener {
         return configProperties != null && !configProperties.getOptionalValue(PayaraTelemetryConstants.OTEL_SDK_DISABLED, Boolean.class).orElse(true);
     }
 
+    private boolean isTelemetryEnabled(Config config) {
+        return isOtelEnabled(config) || isPayaraTracingEnabled();
+    }
+
     /**
      * Very carefully ask whether Payara Request Tracing service is enabled.
      * The method might be invoked way sooner than it is appropriate time for request tracing to start,
@@ -412,8 +420,9 @@ public class OpenTelemetryService implements EventListener {
      * @return
      */
     private void initializeApplication(String applicationName, Config config) {
+        boolean enabled = isTelemetryEnabled(config);
         OpenTelemetrySdk sdk = createSdk(applicationName, config);
-        OpenTelemetrySdkHandle previous = appTelemetries.put(applicationName, new OpenTelemetrySdkHandle(sdk));
+        OpenTelemetrySdkHandle previous = appTelemetries.put(applicationName, new OpenTelemetrySdkHandle(sdk, enabled));
         if (previous != null) {
             previous.shutdown();
         }
@@ -427,6 +436,7 @@ public class OpenTelemetryService implements EventListener {
     static class OpenTelemetrySdkHandle {
 
         private final OpenTelemetrySdk sdk;
+        private final boolean enabled;
 
         private Tracer tracer;
 
@@ -437,7 +447,16 @@ public class OpenTelemetryService implements EventListener {
         private DoubleHistogram requestDurationHistogram;
 
         OpenTelemetrySdkHandle(OpenTelemetrySdk sdk) {
+            this(sdk, true);
+        }
+
+        OpenTelemetrySdkHandle(OpenTelemetrySdk sdk, boolean enabled) {
             this.sdk = sdk;
+            this.enabled = enabled;
+        }
+
+        boolean isEnabled() {
+            return enabled;
         }
 
         Tracer tracer() {

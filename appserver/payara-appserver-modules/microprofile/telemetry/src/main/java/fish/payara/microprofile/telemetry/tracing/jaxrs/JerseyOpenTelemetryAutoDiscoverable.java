@@ -41,6 +41,7 @@ package fish.payara.microprofile.telemetry.tracing.jaxrs;
 
 import fish.payara.microprofile.telemetry.tracing.PayaraTracingServices;
 import jakarta.ws.rs.core.FeatureContext;
+import org.eclipse.microprofile.config.Config;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
 
@@ -48,6 +49,13 @@ import org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable;
  * AutoDiscoverable that registers the {@link OpenTelemetryApplicationEventListener}.
  */
 public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverable {
+
+    /**
+     * MP Config property that provides an explicit kill switch for JAX-RS telemetry tracing.
+     * Set to {@code false} to skip registration of {@link OpenTelemetryApplicationEventListener}
+     * regardless of auto-detection. Defaults to not set (no override — auto-detection applies).
+     */
+    public static final String JAXRS_TRACING_ENABLED_MP_KEY = "payara.telemetry.tracing.jaxrs.enabled";
 
     @Override
     public void configure(FeatureContext context) {
@@ -57,9 +65,27 @@ public class JerseyOpenTelemetryAutoDiscoverable implements ForcedAutoDiscoverab
         if (deployment == null || deployment.getCurrentDeploymentContext() == null) {
             return;
         }
+        if (isExplicitlyDisabled(PayaraTracingServices.getConfig())) {
+            return;
+        }
         if (tracingServices.isTracingAvailable() &&
                 !context.getConfiguration().isRegistered(OpenTelemetryApplicationEventListener.class)) {
             context.register(OpenTelemetryApplicationEventListener.class);
         }
+    }
+
+    /**
+     * Returns {@code true} if the operator has explicitly set
+     * {@value #JAXRS_TRACING_ENABLED_MP_KEY} to {@code false} in MP Config.
+     * When the property is absent (the default) this returns {@code false} so
+     * auto-detection proceeds normally — no behaviour change for existing deployments.
+     */
+    static boolean isExplicitlyDisabled(Config config) {
+        if (config == null) {
+            return false;
+        }
+        return config.getOptionalValue(JAXRS_TRACING_ENABLED_MP_KEY, Boolean.class)
+                .map(enabled -> !enabled)
+                .orElse(false);
     }
 }
