@@ -397,10 +397,10 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
 
     private void rejectRemoteAdminIfDisabled(final String host) throws RemoteAdminAccessException {
         /*
-         * Accept the request if secure admin is enabled or if the 
-         * request is local.
+         * Accept the request if secure admin is enabled or if the
+         * request is local. An unknown origin is treated as remote.
          */
-        if (SecureAdmin.Util.isEnabled(secureAdmin) || NetUtils.isThisHostLocal(host)) {
+        if (SecureAdmin.Util.isEnabled(secureAdmin) || (host != null && !host.isBlank() && NetUtils.isThisHostLocal(host))) {
             return;
         }
         throw new RemoteAdminAccessException();
@@ -543,37 +543,45 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
-        String user = "";
-        char[] password = "".toCharArray();
-        String host = null;
-        if (credentials instanceof String[]) {
-            // this is supposed to be 2-string array with user name and password
-            String[] up = (String[])credentials;
-            if (up.length == 1) {
-                user = up[0];
-            } else if (up.length >= 2) {
-                user = up[0];
-                password = up[1] != null ? up[1].toCharArray() : "".toCharArray();
-            }
-            if (up.length > 2) {
-                host = up[2];
-            } else {
-                try {
-                    /*
-                     * This method is used for JMX over RMI authentication, so
-                     * we can find out the host from RMI.
-                     */
-                    host = RemoteServer.getClientHost();
-                } catch (ServerNotActiveException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
+        // Credentials must be exactly a 2-string array with user name and password.
+        if (!(credentials instanceof String[])) {
+            throw new SecurityException("Invalid JMX credentials");
+        }
+        String[] up = (String[]) credentials;
+        if (up.length != 2 || up[0] == null || up[1] == null) {
+            throw new SecurityException("Invalid JMX credentials");
+        }
+        String user = up[0];
+        String password = up[1];
+
+        /*
+         * The peer host must come from the transport and never from the
+         * credentials, which are controlled by the caller. Fail closed if it
+         * cannot be determined (e.g. a connector that is not RMI based).
+         */
+        String host;
+        try {
+            host = RemoteServer.getClientHost();
+        } catch (ServerNotActiveException ex) {
+            ADMSEC_LOGGER.log(Level.FINE, "Unable to determine JMX client host", ex);
+            throw new SecurityException("Unable to determine JMX client host");
+        }
+        if (host == null || host.isBlank()) {
+            throw new SecurityException("Unable to determine JMX client host");
+        }
+
+        /*
+         * The empty user name is mapped to the default admin user, and an empty
+         * password is never acceptable, for connections that are not local.
+         */
+        if ((user.isEmpty() || password.isEmpty()) && !NetUtils.isLocal(host)) {
+            throw new SecurityException("Invalid JMX credentials");
         }
 
         String realm = as.getAuthRealmName();
 
         try {
-            return loginAsAdmin(user, new String(password), realm, host);
+            return loginAsAdmin(user, password, realm, host);
         } catch (LoginException e) {
             if (ADMSEC_LOGGER.isLoggable(Level.FINE)) {
                 ADMSEC_LOGGER.log(Level.FINE, "*** LoginException during JMX auth\n  user={0}\n  host={1}\n  realm={2}",
