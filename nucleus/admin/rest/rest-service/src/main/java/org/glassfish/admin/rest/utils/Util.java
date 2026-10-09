@@ -501,11 +501,7 @@ public class Util {
 
 
             out = new BufferedOutputStream(new FileOutputStream(f));
-            byte[] buffer = new byte[32 * 1024];
-            int bytesRead = 0;
-            while ((bytesRead = fileStream.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
+            fileStream.transferTo(out);
             return f;
         } catch (IOException ex) {
             RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION,

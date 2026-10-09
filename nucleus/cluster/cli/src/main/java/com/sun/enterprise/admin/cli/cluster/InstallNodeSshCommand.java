@@ -169,11 +169,7 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                     logger.log(Level.INFO, "Copying {0} ({1} bytes) to {2}:{3}",
                             new Object[]{zipFile.getCanonicalPath(), zipFile.length(), host, sshInstallDir});
                     try (OutputStream out = sftpClient.writeToFile(remoteZipPath); FileInputStream fis = new FileInputStream(zipFile)) {
-                        byte[] buf = new byte[32768];
-                        int len;
-                        while ((len = fis.read(buf)) >= 0) {
-                            out.write(buf, 0, len);
-                        }
+                        fis.transferTo(out);
                     }
                     if (logger.isLoggable(Level.FINER)) {
                         logger.log(Level.FINER, "Copied {0} to {1}:{2}", new Object[]{zipFile.getCanonicalPath(), host, sshInstallDir});

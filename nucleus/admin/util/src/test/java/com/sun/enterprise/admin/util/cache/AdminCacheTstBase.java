@@ -41,7 +41,7 @@ package com.sun.enterprise.admin.util.cache;
 
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.Date;
 import org.glassfish.tests.utils.Utils;
 import org.junit.AfterClass;
@@ -82,16 +82,7 @@ public abstract class AdminCacheTstBase {
                     return;
                 }
                 File f = new File(dir, "qeen.junit");
-                FileOutputStream fos = null;
-                try {
-                    fos = new FileOutputStream(f);
-                    fos.write("Another One Bites the Dust".getBytes());
-                } finally {
-                    try {
-                        fos.close();
-                    } catch (Exception ex) {
-                    }
-                }
+                Files.writeString(f.toPath(), "Another One Bites the Dust");
                 if (!f.exists()) {
                     skipThisTest = true;
                     System.out.println("JUNIT: AdminCache tests: Can not do this test. Can not write to files in " + dir.getPath() + " directory.");

@@ -44,6 +44,7 @@ package com.sun.enterprise.glassfish.bootstrap;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -184,13 +185,8 @@ public class JarUtil {
                 } else if (f.exists()) {
                     continue;
                 }
-                try (InputStream is = jar.getInputStream(file);
-                     FileOutputStream fos = new FileOutputStream(f)) {
-                    int count = 0;
-                    byte[] buffer = new byte[8192];
-                    while ((count = is.read(buffer, 0, buffer.length)) != -1) {
-                        fos.write(buffer, 0, count);
-                    }
+                try (InputStream is = jar.getInputStream(file)) {
+                    Files.copy(is, f.toPath());
                 }
             }
         }

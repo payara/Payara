@@ -105,10 +105,6 @@ public class FileDirContext extends BaseDirContext {
     // -------------------------------------------------------------- Constants
 
 
-    /**
-     * The descriptive information string for this implementation.
-     */
-    protected static final int BUFFER_SIZE = 2048;
 
 
     // ----------------------------------------------------------- Constructors
@@ -664,16 +660,9 @@ public class FileDirContext extends BaseDirContext {
 
         try {
             FileOutputStream os = null;
-            byte buffer[] = new byte[BUFFER_SIZE];
-            int len = -1;
             try {
                 os = new FileOutputStream(file);
-                while (true) {
-                    len = is.read(buffer);
-                    if (len == -1)
-                        break;
-                    os.write(buffer, 0, len);
-                }
+                is.transferTo(os);
             } finally {
                 if (os != null)
                     os.close();

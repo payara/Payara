@@ -44,12 +44,11 @@ package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
-import com.sun.enterprise.util.io.FileUtils;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.json.Json;
@@ -79,9 +78,7 @@ public class AdminCommandStateJsonProprietaryReader implements ProprietaryReader
 
     @Override
     public AdminCommandState readFrom(final InputStream is, final String contentType) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(is, baos, 0);
-        String str = baos.toString("UTF-8");
+        String str = new String(is.readAllBytes(), StandardCharsets.UTF_8);
         try (JsonParser parser = Json.createParser(new StringReader(str))) {
             parser.next();
             JsonObject json = parser.getObject();

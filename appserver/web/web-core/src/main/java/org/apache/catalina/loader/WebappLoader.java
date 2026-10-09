@@ -1292,13 +1292,7 @@ public class WebappLoader
     private boolean copy(InputStream is, OutputStream os) {
 
         try {
-            byte[] buf = new byte[4096];
-            while (true) {
-                int len = is.read(buf);
-                if (len < 0)
-                    break;
-                os.write(buf, 0, len);
-            }
+            is.transferTo(os);
         } catch (IOException e) {
             return false;
         } finally {

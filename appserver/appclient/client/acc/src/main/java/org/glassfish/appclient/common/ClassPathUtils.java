@@ -139,7 +139,7 @@ public class ClassPathUtils {
         final List<Path> result = new ArrayList<>();
         try {
             for (String classPathElement : classPath.split(File.pathSeparator)) {
-                result.add(new File(classPathElement.trim()).toPath());
+                result.add(Path.of(classPathElement.trim()));
             }
             return result;
         } catch (Exception e) {

@@ -55,6 +55,7 @@ import jakarta.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -122,8 +123,8 @@ public abstract class CopyConfig implements AdminCommand {
             }
         }
         try {
-            Files.createDirectories(new File(configConfigDir, "docroot").toPath());
-            Files.createDirectories(new File(configConfigDir, "lib/ext").toPath());
+            Files.createDirectories(Path.of(configConfigDir.getPath(), "docroot"));
+            Files.createDirectories(Path.of(configConfigDir.getPath(), "lib/ext"));
 
             String srcConfigLoggingFile = env.getInstanceRoot().getAbsolutePath() + File.separator + "config" + File.separator
                     + srcConfig + File.separator + ServerEnvironmentImpl.kLoggingPropertiesFileName;

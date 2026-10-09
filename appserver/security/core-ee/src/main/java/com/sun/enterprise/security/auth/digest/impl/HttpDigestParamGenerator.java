@@ -51,7 +51,6 @@ import static com.sun.enterprise.security.auth.digest.api.Constants.RESPONSE;
 import static com.sun.enterprise.security.auth.digest.api.Constants.URI;
 import static java.util.logging.Level.SEVERE;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.spec.AlgorithmParameterSpec;
@@ -147,16 +146,7 @@ public final class HttpDigestParamGenerator extends DigestParameterGenerator {
         if ("auth-int".equals(qop)) {
             try {
                 sis = request.getInputStream();
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                while (true) {
-                    byte[] data = new byte[1024];
-                    int len = sis.read(data, 0, 1023);
-                    if (len == -1) {
-                        break;
-                    }
-                    bos.write(data, 0, len);
-                }
-                entityBody = bos.toByteArray();
+                entityBody = sis.readAllBytes();
             } catch (IOException ex) {
                 Logger.getLogger("global").log(SEVERE, null, ex);
             } finally {

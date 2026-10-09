@@ -43,10 +43,10 @@ package com.sun.enterprise.admin.remote.reader;
 import com.sun.enterprise.admin.remote.ParamsWithPayload;
 import com.sun.enterprise.admin.remote.RestPayloadImpl;
 import com.sun.enterprise.util.StringUtils;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 import org.glassfish.api.ActionReport;
@@ -205,13 +205,7 @@ public class MultipartProprietaryReader implements ProprietaryReader<ParamsWithP
             return null;
         }
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buff = new byte[256];
-            int count;
-            while ((count = is.read(buff)) > 0) {
-                baos.write(buff, 0, count);
-            }
-            return baos.toString("UTF-8");
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } finally {
             try { is.close(); } catch (Exception ex) {}
         }

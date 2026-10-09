@@ -45,8 +45,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -343,15 +342,8 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
 
         File file = new File(baseDir, fileName);
         if (file.exists()) {
-            int dataSize = (int) file.length();
-            data = new byte[dataSize];
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-                int offset = 0;
-                for (int toRead = dataSize; toRead > 0;) {
-                    int count = bis.read(data, offset, toRead);
-                    offset += count;
-                    toRead -= count;
-                }
+            try {
+                data = Files.readAllBytes(file.toPath());
             } catch (Exception ex) {
                 logger.log(Level.WARNING,
                         "FileStore.readFromfile failed", ex);
@@ -369,9 +361,8 @@ public class FileBackingStore<K extends Serializable, V extends Serializable>
     private void writetoFile(K sessionKey, String fileName, byte[] data)
             throws BackingStoreException {
         File file = new File(baseDir, fileName);
-        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file))) {
-            bos.write(data, 0, data.length);
-            bos.flush();
+        try {
+            Files.write(file.toPath(), data);
             if (logger.isLoggable(TRACE_LEVEL)) {
                 logger.log(TRACE_LEVEL, debugStr + " Successfully saved "
                         + "session: " + sessionKey);

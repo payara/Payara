@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -163,7 +164,7 @@ public class HazelcastSymmetricEncryptor {
         byte[] encryptedBytes = null;
         try {
             encryptedBytes = Files.readAllBytes(
-                    new File(serverEnvironment.getConfigDirPath() + File.separator + DATAGRID_KEY_FILE).toPath());
+                    Path.of(serverEnvironment.getConfigDirPath() + File.separator + DATAGRID_KEY_FILE));
         } catch (IOException ioe) {
             Logger.getLogger(HazelcastSymmetricEncryptor.class.getName()).log(Level.SEVERE,
                     "Error reading datagrid key, please check if it's accessible at expected location: "

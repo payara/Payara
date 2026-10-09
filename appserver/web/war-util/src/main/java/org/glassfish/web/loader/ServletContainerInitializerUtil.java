@@ -48,7 +48,6 @@ import org.glassfish.hk2.classmodel.reflect.*;
 import jakarta.servlet.ServletContainerInitializer;
 import jakarta.servlet.annotation.HandlesTypes;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -402,20 +401,13 @@ public class ServletContainerInitializerUtil {
                 if (fileName.endsWith(".class")) {
                     try {
                         InputStream is = null;
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         try {
                             is = new BufferedInputStream(new FileInputStream(fileName));
-                            byte[] bs = new byte[2048];
-                            int size = -1;
-                            while ((size = is.read(bs)) >= 0) {
-                                baos.write(bs, 0, size);
-                            } 
-                            classInfo.loadClassData(baos.toByteArray());
+                            classInfo.loadClassData(is.readAllBytes());
                         } finally {
                             if (is != null) {
                                 is.close();
                             }
-                            baos.close();
                         }
                     } catch (Throwable t) {
                         if (log.isLoggable(Level.WARNING)) {

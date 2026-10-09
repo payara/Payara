@@ -45,7 +45,6 @@ package org.glassfish.appclient.client.acc;
 import org.glassfish.appclient.common.ClassPathUtils;
 import org.glassfish.appclient.common.ClientClassLoaderDelegate;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -236,17 +235,11 @@ public class ACCClassLoader extends URLClassLoader {
 
     private byte[] readByteCode(final String className) throws ClassNotFoundException {
         final String resourceName = className.replace('.', '/') + ".class";
-        try (InputStream is = getResourceAsStream(resourceName);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (InputStream is = getResourceAsStream(resourceName)) {
             if (is == null) {
                 throw new ClassNotFoundException(className);
             }
-            final byte[] buffer = new byte[8196];
-            int bytesRead;
-            while ( (bytesRead = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, bytesRead);
-            }
-            return baos.toByteArray();
+            return is.readAllBytes();
         } catch (IOException ex) {
             throw new ClassNotFoundException(className, ex);
         }

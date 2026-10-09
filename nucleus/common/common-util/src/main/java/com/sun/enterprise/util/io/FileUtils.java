@@ -49,7 +49,6 @@ import com.sun.enterprise.util.OS;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -1245,11 +1244,7 @@ public class FileUtils  {
                 throw new RuntimeException("Can't create parent dir of output file: " + f);
 
             os = new BufferedOutputStream(FileUtils.openFileOutputStream(f));
-            byte buf[] = new byte[10240];
-            int len = 0;
-            while ((len =bis.read(buf)) > 0) {
-               os.write(buf, 0, len);
-            }
+            bis.transferTo(os);
             return f;
         } finally {
             if (os != null)
@@ -1354,15 +1349,9 @@ public class FileUtils  {
 
         try {
             is = new BufferedInputStream(is);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int n;
-
-            while ((n = is.read(buffer)) != -1) {
-                baos.write(buffer, 0, n);
-            }
+            byte[] bytes = is.readAllBytes();
             is.close();
-            return baos.toByteArray();
+            return bytes;
         } catch (Exception e) {
             try {
                 is.close();

@@ -39,7 +39,6 @@
  */
 package com.sun.enterprise.admin.util.cache;
 
-import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.nio.charset.Charset;
 import org.jvnet.hk2.annotations.Service;
@@ -74,9 +73,7 @@ public class StringDataProvider implements DataProvider {
 
     @Override
     public Object toInstance(InputStream stream, Class clazz) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(stream, baos, 0);
-        return new String(baos.toByteArray(), charset);
+        return new String(stream.readAllBytes(), charset);
     }
     
 }

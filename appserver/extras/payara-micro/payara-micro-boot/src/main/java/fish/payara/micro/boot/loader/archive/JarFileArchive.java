@@ -45,7 +45,6 @@ public class JarFileArchive implements Archive {
 
 	private static final String UNPACK_MARKER = "UNPACK:";
 
-	private static final int BUFFER_SIZE = 32 * 1024;
 
 	private final JarFile jarFile;
 
@@ -140,11 +139,7 @@ public class JarFileArchive implements Archive {
 
 	private void unpack(JarEntry entry, File file) throws IOException {
 		try (InputStream inputStream = this.jarFile.getInputStream(entry, ResourceAccess.ONCE); OutputStream outputStream = new FileOutputStream(file)) {
-                    byte[] buffer = new byte[BUFFER_SIZE];
-                    int bytesRead = -1;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
+                    inputStream.transferTo(outputStream);
                     outputStream.flush();
 		}
 	}
