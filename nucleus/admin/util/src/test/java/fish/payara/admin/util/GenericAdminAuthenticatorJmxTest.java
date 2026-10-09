@@ -62,7 +62,9 @@ public class GenericAdminAuthenticatorJmxTest {
     }
 
     @Test
-    public void nullCredentialsAreRejected() {
+    public void nullCredentialsAreRejectedWhenClientHostIsUnknown() {
+        // Null is treated as empty credentials, which are only accepted for a local client. Outside
+        // an RMI call there is no client host, so this must fail closed.
         assertRejected(null);
     }
 

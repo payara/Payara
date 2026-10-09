@@ -543,16 +543,22 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
-        // Credentials must be exactly a 2-string array with user name and password.
-        if (!(credentials instanceof String[])) {
-            throw new SecurityException("Invalid JMX credentials");
+        // Credentials must be a 2-string array with user name and password. Clients that are given
+        // no credentials (e.g. JConsole with blank fields) send null, which is treated as an empty
+        // user name and password; those are only accepted below for local connections.
+        String user = "";
+        String password = "";
+        if (credentials != null) {
+            if (!(credentials instanceof String[])) {
+                throw new SecurityException("Invalid JMX credentials");
+            }
+            String[] up = (String[]) credentials;
+            if (up.length != 2 || up[0] == null || up[1] == null) {
+                throw new SecurityException("Invalid JMX credentials");
+            }
+            user = up[0];
+            password = up[1];
         }
-        String[] up = (String[]) credentials;
-        if (up.length != 2 || up[0] == null || up[1] == null) {
-            throw new SecurityException("Invalid JMX credentials");
-        }
-        String user = up[0];
-        String password = up[1];
 
         /*
          * The peer host must come from the transport and never from the
