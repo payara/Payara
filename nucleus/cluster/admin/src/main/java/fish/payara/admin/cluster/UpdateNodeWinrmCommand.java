@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -16,8 +16,8 @@
  * file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
  *
  * GPL Classpath Exception:
- * Oracle designates this particular file as subject to the "Classpath"
- * exception as provided by Oracle in the GPL Version 2 section of the License
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
  * file that accompanied this code.
  *
  * Modifications:
@@ -37,81 +37,74 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
 
-package com.sun.enterprise.v3.admin.cluster;
-
-import com.sun.enterprise.util.cluster.RemoteType;
-import com.sun.enterprise.util.cluster.SshAuthType;
+package fish.payara.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.Node;
+import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.v3.admin.cluster.NodeUtils;
+import com.sun.enterprise.v3.admin.cluster.UpdateNodeRemoteCommand;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
+import org.glassfish.api.admin.RestEndpoint;
+import org.glassfish.api.admin.RestEndpoints;
+import org.glassfish.api.admin.RestParam;
+import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-/**
- * Remote AdminCommand to update an ssh node.  This command is run only on DAS.
- *
- * @author Joe Di Pol
- */
-@Service(name = "update-node-ssh")
-@I18n("update.node.ssh")
+@Service(name = "update-node-winrm")
+@I18n("update.node.winrm")
 @PerLookup
 @ExecuteOn({RuntimeType.DAS})
 @RestEndpoints({
-    @RestEndpoint(configBean=Node.class,
-        opType=RestEndpoint.OpType.POST,
-        path="update-node-ssh",
-        description="Update Node",
-        params={
-            @RestParam(name="id", value="$parent")
-        })
+        @RestEndpoint(configBean= Node.class,
+                opType=RestEndpoint.OpType.POST,
+                path="update-node-winrm",
+                description="Update Node",
+                params={
+                        @RestParam(name="id", value="$parent")
+                })
 })
-public class UpdateNodeSshCommand extends UpdateNodeRemoteCommand {
+public class UpdateNodeWinrmCommand extends UpdateNodeRemoteCommand {
+    @Param(name = "winrmuser", optional = true)
+    String winrmUserSubclass;
 
-    @Param(name = "sshport", optional = true)
-    private String sshportInSubClass;
-    @Param(name = "sshuser", optional = true)
-    private String sshuserInSubClass;
-    /** {@link SshAuthType} name */
-    @Param(name = "sshauthtype", optional = true, acceptableValues = "KEY,PASSWORD")
-    private String sshAuthTypeInSubClass;
-    @Param(name = "sshkeyfile", optional = true)
-    private String sshkeyfileInSubClass;
-    @Param(name = "sshkeypassphrase", optional = true, password = true)
-    private String sshkeypassphraseInSubClass;
-    @Param(name = "sshpassword", optional = true, password = true)
-    private String sshpasswordInSubClass;
+    @Param(name = "winrmpassword", optional = true, password = true)
+    String winrmPasswordSubclass;
 
-    @Override
-    public void execute(AdminCommandContext context) {
-        executeInternal(context);
-    }
+    @Param(name = "winrmport", optional = true, defaultValue = NodeUtils.NODE_DEFAULT_WINRM_PORT)
+    String winrmPortSubclass;
 
     @Override
     protected void populateParameters() {
-        remotePort = sshportInSubClass;
-        remoteUser = sshuserInSubClass;
-        sshAuthType = sshAuthTypeInSubClass;
-        sshkeyfile = sshkeyfileInSubClass;
-        sshkeypassphrase = sshkeypassphraseInSubClass;
-        remotepassword = sshpasswordInSubClass;
+        remoteUser = winrmUserSubclass;
+        remotepassword = winrmPasswordSubclass;
+        remotePort = winrmPortSubclass;
     }
 
     @Override
     protected void applyParameters(ParameterMap map) {
-        // Nothing to do here, SSH parameter names are already hard-coded in the superclass.
+        map.add(NodeUtils.PARAM_REMOTE_WINRM_USER, remoteUser);
+        map.add(NodeUtils.PARAM_REMOTE_WINRM_PASSWORD, remotepassword);
+        map.add(NodeUtils.PARAM_REMOTE_WINRM_PORT, remotePort);
     }
 
     @Override
     protected RemoteType getType() {
-        return RemoteType.SSH;
+        return RemoteType.WINRM;
     }
 
     @Override
     protected String getDefaultPort() {
-        return NodeUtils.NODE_DEFAULT_SSH_PORT;
+        return NodeUtils.NODE_DEFAULT_WINRM_PORT;
+    }
+
+    @Override
+    public void execute(AdminCommandContext context) {
+        executeInternal(context);
     }
 }
