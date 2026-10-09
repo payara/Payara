@@ -54,6 +54,9 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.AnnotationType;
+import org.glassfish.hk2.classmodel.reflect.ExtensibleType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -73,7 +76,10 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
@@ -118,6 +124,7 @@ public class DeploymentUtils {
     public static class WarLibraryDescriptor {
         private final Descriptor descriptor;
         private final List<Type> types;
+        private volatile Map<String, Set<String>> typeNamesByAnnotationOrParent;
 
         public WarLibraryDescriptor(Descriptor descriptor, List<Type> types) {
             this.descriptor = descriptor;
@@ -130,6 +137,45 @@ public class DeploymentUtils {
 
         public List<Type> getTypes() {
             return types;
+        }
+
+        /**
+         * Returns the names of the non-annotation types in this library that are either annotated with
+         * the given annotation or extend the given class / interface (directly or transitively).
+         * Mirrors the semantics of {@link ExtensibleType#isInstanceOf(String)} and
+         * {@link Type#getAnnotation(String)}, but uses an index built once per library.
+         *
+         * @param annotationOrParentName fully qualified name of an annotation or parent type
+         * @return names of matching types, possibly empty
+         */
+        public Set<String> getTypeNamesAnnotatedWithOrExtending(String annotationOrParentName) {
+            Map<String, Set<String>> index = typeNamesByAnnotationOrParent;
+            if (index == null) {
+                index = buildIndex();
+                typeNamesByAnnotationOrParent = index;
+            }
+            return index.getOrDefault(annotationOrParentName, Collections.emptySet());
+        }
+
+        private Map<String, Set<String>> buildIndex() {
+            Map<String, Set<String>> index = new HashMap<>();
+            for (Type type : types) {
+                if (type instanceof AnnotationType) {
+                    continue;
+                }
+                for (AnnotationModel annotation : type.getAnnotations()) {
+                    index.computeIfAbsent(annotation.getType().getName(), k -> new HashSet<>()).add(type.getName());
+                }
+                if (type instanceof ExtensibleType<?> extensibleType) {
+                    for (ExtensibleType<?> parent = extensibleType.getParent(); parent != null;
+                            parent = parent.getParent()) {
+                        if (!parent.getName().equals(type.getName())) {
+                            index.computeIfAbsent(parent.getName(), k -> new HashSet<>()).add(type.getName());
+                        }
+                    }
+                }
+            }
+            return index;
         }
     }
 

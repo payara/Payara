@@ -43,6 +43,7 @@ package org.glassfish.web.loader;
 
 import fish.payara.web.loader.ServletContainerInitializerBlacklist;
 import org.glassfish.deployment.common.ClassDependencyBuilder;
+import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.hk2.classmodel.reflect.*;
 
 import jakarta.servlet.ServletContainerInitializer;
@@ -448,6 +449,7 @@ public class ServletContainerInitializerUtil {
         if (classInfo==null) {
             return initializerList;
         }
+        addWarLibraryTypes(interestList, initializerList, cl, isStandalone);
         for (Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e:
                 interestList.entrySet()) {
 
@@ -557,6 +559,32 @@ public class ServletContainerInitializerUtil {
             }
         }
         return initializerList;
+    }
+
+    /**
+     * War libraries are scanned only once and their types are cached, so they are absent from the
+     * deployment's Types. Match the cached types against the interest list here.
+     */
+    private static void addWarLibraryTypes(
+            Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
+            Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
+            ClassLoader cl, boolean isStandalone) {
+        if (!DeploymentUtils.useWarLibraries(DeploymentUtils.getCurrentDeploymentContext())) {
+            return;
+        }
+        DeploymentUtils.getWarLibraryCache().values().forEach(descriptor ->
+                interestList.forEach((interest, initializers) -> {
+                    for (String typeName : descriptor.getTypeNamesAnnotatedWithOrExtending(interest.getName())) {
+                        try {
+                            Class<?> loaded = cl.loadClass(typeName);
+                            initializers.forEach(initializer ->
+                                    initializerList.computeIfAbsent(initializer, k -> new HashSet<>()).add(loaded));
+                        } catch (Throwable t) {
+                            log.log(getStandaloneWarningLevel(isStandalone), LogFacade.CLASS_LOADING_ERROR,
+                                    new Object[] {typeName, t.toString()});
+                        }
+                    }
+                }));
     }
 
     private static Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> checkAgainstBlacklist(
