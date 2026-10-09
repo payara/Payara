@@ -56,6 +56,7 @@ import com.sun.common.util.logging.GFLogRecord;
 import jakarta.inject.Singleton;
 
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.*;
@@ -176,7 +177,7 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
 
             //format the message
             StringBuilder sb = new StringBuilder();
-            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm:ss");
+            SimpleDateFormat formatter = new SimpleDateFormat("MMM dd HH:mm:ss", Locale.ENGLISH);
             sb.append(formatter.format(millisec));
             sb.append(" [ ");
             sb.append(logLevel);
