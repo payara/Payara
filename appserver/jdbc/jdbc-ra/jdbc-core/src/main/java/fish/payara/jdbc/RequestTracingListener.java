@@ -39,64 +39,30 @@
  */
 package fish.payara.jdbc;
 
-import com.sun.gjc.util.SQLTraceLogger;
-import com.sun.logging.LogDomains;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.notification.requesttracing.RequestTraceSpanLog;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.common.Attributes;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
-import org.glassfish.internal.api.Globals;
 
 /**
- * A SQLTraceListener for the Request Tracing service.
- * @author Andrew Pielage
+ * A SQLTraceListener for OpenTelemetry.
  */
 public class RequestTracingListener implements SQLTraceListener {
 
-    private RequestTracingService requestTracing;
-    
-    private static final Logger logger = 
-            LogDomains.getLogger(SQLTraceLogger.class, 
-                    LogDomains.SQL_TRACE_LOGGER);
-    
-    public RequestTracingListener() {
-        try {
-            requestTracing = Globals.getDefaultHabitat().getService(
-                    RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of RequestTracingListener - "
-                    + "NullPointerException");
-        }
-    }
-    
     @Override
     public void sqlTrace(SQLTraceRecord record) {
-        // Construct request event and trace
-        RequestTraceSpanLog spanLog = constructJDBCSpanLog(record);
-        if (requestTracing != null) {
-            requestTracing.addSpanLog(spanLog);
-        } 
-    }
-    
-    /**
-     * Constructs a Request tracing event for the JDBC event
-     * @param record The SQL record to log
-     * @return RequestEvent to be traced
-     */
-    private RequestTraceSpanLog constructJDBCSpanLog(SQLTraceRecord record) {
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jdbcContextEvent");
-        
-        spanLog.addLogEntry("Method Name", record.getMethodName());
-        spanLog.addLogEntry("Parameters", Arrays.toString(record.getParams()));
-        spanLog.addLogEntry("Pool Name", record.getPoolName());
-        spanLog.addLogEntry("Thread ID", Long.toString(record.getThreadID()));
-        spanLog.addLogEntry("Thread Name", record.getThreadName());
-        spanLog.addLogEntry("Execution Time", Long.toString(record.getExecutionTime()));
-             
-        return spanLog;
+        Span span = Span.current();
+        if (!span.isRecording()) {
+            return;
+        }
+        span.addEvent("jdbcContextEvent", Attributes.builder()
+                .put("Method Name", String.valueOf(record.getMethodName()))
+                .put("Parameters", Arrays.toString(record.getParams()))
+                .put("Pool Name", String.valueOf(record.getPoolName()))
+                .put("Thread ID", record.getThreadID())
+                .put("Thread Name", String.valueOf(record.getThreadName()))
+                .put("Execution Time", record.getExecutionTime())
+                .build());
     }
 }
