@@ -41,14 +41,12 @@ package fish.payara.microprofile.faulttolerance.service;
 
 import jakarta.interceptor.InvocationContext;
 
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-
 /**
  * A abstraction to decouple FT implementation from request tracing implementation as far as possible.
  */
 public interface FaultToleranceRequestTracing {
 
-    void startSpan(RequestTraceSpan span, InvocationContext context);
+    void startSpan(String name, InvocationContext context);
 
     void endSpan();
 }

@@ -103,6 +103,11 @@ import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
  * Main service class that provides methods used by interceptors for tracing
  * requests.
  *
+ * This service is fed by the OpenTelemetry SpanProcessor bridge
+ * ({@link fish.payara.opentracing.PayaraRequestTracingProcessor}); new
+ * instrumentation must not call this service directly, but instead use
+ * OpenTelemetry through {@link fish.payara.opentracing.OpenTelemetryService}.
+ *
  * @author mertcaliskan
  * @since 4.1.1.163
  */

@@ -47,9 +47,11 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceServiceConfiguratio
 import fish.payara.microprofile.faulttolerance.otel.OtelMetricsContext;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.metrics.MetricsService;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Scope;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.concurrent.ManagedExecutorService;
 import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
@@ -71,6 +73,8 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -92,12 +96,11 @@ public class FaultToleranceServiceImpl
         implements EventListener, FaultToleranceService, FaultToleranceRequestTracing {
 
     private static final Logger logger = Logger.getLogger(FaultToleranceServiceImpl.class.getName());
+    private static final Scope NOOP_SCOPE = () -> { };
 
     private InvocationManager invocationManager;
     private FaultToleranceServiceConfiguration config;
-
-    @Inject
-    private RequestTracingService requestTracingService;
+    private final ThreadLocal<Deque<Scope>> spanScopes = ThreadLocal.withInitial(ArrayDeque::new);
 
     @Inject
     private ServiceLocator serviceLocator;
@@ -122,7 +125,6 @@ public class FaultToleranceServiceImpl
         try {
             events.register(this);
             invocationManager = serviceLocator.getService(InvocationManager.class);
-            requestTracingService = serviceLocator.getService(RequestTracingService.class);
             config = serviceLocator.getService(FaultToleranceServiceConfiguration.class);
             InitialContext context = new InitialContext();
             asyncExecutorService = (ManagedExecutorService) context.lookup(config.getManagedExecutorService());
@@ -195,28 +197,41 @@ public class FaultToleranceServiceImpl
     }
 
     @Override
-    public void startSpan(RequestTraceSpan span, InvocationContext context) {
-        if (requestTracingService != null && requestTracingService.isRequestTracingEnabled()) {
-            addGenericFaultToleranceRequestTracingDetails(span, context);
-            requestTracingService.startTrace(span);
+    public void startSpan(String name, InvocationContext context) {
+        Scope scope = NOOP_SCOPE;
+        try {
+            if (openTelemetryService != null && openTelemetryService.isEnabled()) {
+                ComponentInvocation inv = invocationManager.getCurrentInvocation();
+                SpanBuilder b = openTelemetryService.getCurrentTracer().spanBuilder(name)
+                        .setSpanKind(SpanKind.INTERNAL);
+                addAttributeIfNotNull(b, "App Name", inv != null ? inv.getAppName() : null);
+                addAttributeIfNotNull(b, "Component ID", inv != null ? inv.getComponentId() : null);
+                addAttributeIfNotNull(b, "Module Name", inv != null ? inv.getModuleName() : null);
+                addAttributeIfNotNull(b, "Class Name", context.getMethod().getDeclaringClass().getName());
+                addAttributeIfNotNull(b, "Method Name", context.getMethod().getName());
+                Span span = b.startSpan();
+                Scope made = span.makeCurrent();
+                scope = () -> { made.close(); span.end(); };
+            }
+        } catch (RuntimeException e) {
+            logger.log(Level.FINE, "Could not start fault tolerance span " + name, e);
+            scope = NOOP_SCOPE;
         }
+        spanScopes.get().push(scope);
     }
 
     @Override
     public void endSpan() {
-        if (requestTracingService != null && requestTracingService.isRequestTracingEnabled()) {
-            requestTracingService.endTrace();
-        }
+        Deque<Scope> stack = spanScopes.get();
+        if (stack.isEmpty()) { return; }
+        try { stack.pop().close(); } catch (RuntimeException e) { logger.log(Level.FINE, "Could not end fault tolerance span", e); }
+        if (stack.isEmpty()) { spanScopes.remove(); }
     }
 
-    private void addGenericFaultToleranceRequestTracingDetails(RequestTraceSpan span,
-                                                               InvocationContext context) {
-        ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        span.addSpanTag("App Name", currentInvocation.getAppName());
-        span.addSpanTag("Component ID", currentInvocation.getComponentId());
-        span.addSpanTag("Module Name", currentInvocation.getModuleName());
-        span.addSpanTag("Class Name", context.getMethod().getDeclaringClass().getName());
-        span.addSpanTag("Method Name", context.getMethod().getName());
+    private void addAttributeIfNotNull(SpanBuilder builder, String key, String value) {
+        if (value != null) {
+            builder.setAttribute(key, value);
+        }
     }
 
     @Override

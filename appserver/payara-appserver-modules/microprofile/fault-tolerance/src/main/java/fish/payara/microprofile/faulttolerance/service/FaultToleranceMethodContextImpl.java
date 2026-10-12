@@ -70,7 +70,6 @@ import fish.payara.microprofile.faulttolerance.FaultToleranceMetrics;
 import fish.payara.microprofile.faulttolerance.policy.AsynchronousPolicy;
 import fish.payara.microprofile.faulttolerance.policy.FaultTolerancePolicy;
 import fish.payara.microprofile.faulttolerance.state.CircuitBreakerState;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
 
 /**
  * The execution context for a FT annotated method. Each specific {@link Method} on a specific {@link Class} has a
@@ -273,7 +272,7 @@ public final class FaultToleranceMethodContextImpl implements FaultToleranceMeth
 
     @Override
     public void trace(String method) {
-        shared.requestTracing.startSpan(new RequestTraceSpan(method), context);
+        shared.requestTracing.startSpan(method, context);
     }
 
     @Override
