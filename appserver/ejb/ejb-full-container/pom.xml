@@ -76,5 +76,16 @@
             <groupId>jakarta.jms</groupId>
             <artifactId>jakarta.jms-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.server.internal.payara-modules</groupId>
+            <artifactId>opentelemetry-tracing-starter</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
