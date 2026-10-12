@@ -87,8 +87,6 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import fish.payara.cluster.DistributedLockType;
-import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -267,7 +265,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
 
     protected ContainerType containerType;
 
-    private final RequestTracingService requestTracingService;
     private final OpenTelemetryService openTelemetryService;
 
     // constants for EJB(Local)Home/EJB(Local)Object methods,
@@ -593,7 +590,6 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                             final SecurityManager sm) throws Exception {
         this.containerType = type;
         this.securityManager = sm;
-        this.requestTracingService = Globals.getDefaultHabitat().getService(RequestTracingService.class);
         this.openTelemetryService = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
 
         try {
@@ -4138,26 +4134,7 @@ public abstract class BaseContainer implements Container, EjbContainerFacade, Ja
                     }
                 }
             }
-            RequestTraceSpanLog spanLog = constructEjbMethodSpanLog(info, callEnter);
-            requestTracingService.addSpanLog(spanLog);
         }
-    }
-
-    private RequestTraceSpanLog constructEjbMethodSpanLog(CallFlowInfo info, boolean callEnter) {
-        String eventName = "enterEjbMethodEvent";
-        if (!callEnter) {
-            eventName = "exitEjbMethodEvent";
-        }
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog(eventName);
-        spanLog.addLogEntry("ApplicationName", info.getApplicationName());
-        spanLog.addLogEntry("ComponentName", info.getComponentName());
-        spanLog.addLogEntry("ComponentType", info.getComponentType().toString());
-        spanLog.addLogEntry("ModuleName", info.getModuleName());
-        spanLog.addLogEntry("EJBClass", this.ejbClass.getCanonicalName());
-        spanLog.addLogEntry("EJBMethod", info.getMethod().getName());
-        spanLog.addLogEntry("CallerPrincipal", info.getCallerPrincipal());
-        spanLog.addLogEntry("TX-ID", info.getTransactionId());
-        return spanLog;
     }
 
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,

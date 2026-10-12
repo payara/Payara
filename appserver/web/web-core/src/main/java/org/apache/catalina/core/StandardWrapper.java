@@ -59,8 +59,6 @@
 
 package org.apache.catalina.core;
 
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.context.Scope;
 import jakarta.servlet.Servlet;
@@ -83,7 +81,6 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.management.Notification;
@@ -110,7 +107,6 @@ import java.util.logging.Logger;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static java.text.MessageFormat.format;
-import static java.util.Collections.list;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.logging.Level.FINE;
@@ -144,7 +140,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
     private static final String[] DEFAULT_SERVLET_METHODS = { "GET", "HEAD", "POST" };
 
-    private final RequestTracingService requestTracing;
     private static final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -332,7 +327,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
         swValve = new StandardWrapperValve();
         pipeline.setBasic(swValve);
-        requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
         openTelemetryService = getDefaultHabitat().getService(OpenTelemetryService.class);
 
         // suppress PWC6117 file not found errors
@@ -1540,15 +1534,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
                         SecurityUtil.doAsPrivilege("service", servlet, classTypeUsedInService, serviceType, principal);
                     } else {
-                        RequestTraceSpan span = null;
-                        if (requestTracing.isRequestTracingEnabled()) {
-                            if (servlet instanceof ServletContainer) {
-                                span = constructWebServiceRequestSpan(httpRequest);
-                            } else if (servlet instanceof Servlet) {
-                                span = constructServletRequestSpan(httpRequest, servlet);
-                            }
-                        }
-
                         try {
                             if (isJspServlet) {
                                 isInSuppressFFNFThread.set(true);
@@ -1556,10 +1541,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
 
                             servlet.service(httpRequest, httpResponse);
                         } finally {
-                            if (requestTracing.isRequestTracingEnabled() && span != null) {
-                                span.addSpanTag("ResponseStatus", Integer.toString(httpResponse.getStatus()));
-                                requestTracing.traceSpan(span);
-                            }
                             isInSuppressFFNFThread.set(false);
                         }
                     }
@@ -1590,37 +1571,6 @@ public class StandardWrapper extends ContainerBase implements ServletConfig, Wra
         }
     }
     // END IASRI 4665318
-
-    private RequestTraceSpan constructWebServiceRequestSpan(HttpServletRequest httpServletRequest) {
-        RequestTraceSpan span = new RequestTraceSpan("processWebserviceRequest");
-        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
-
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
-        }
-        span.addSpanTag("Method", httpServletRequest.getMethod());
-
-        return span;
-    }
-
-    private RequestTraceSpan constructServletRequestSpan(HttpServletRequest httpServletRequest, Servlet serv) {
-        RequestTraceSpan span  = new RequestTraceSpan("processServletRequest");
-        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
-
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            span.addSpanTag(headerName, list(httpServletRequest.getHeaders(headerName)).toString());
-        }
-
-        span.addSpanTag("Method",httpServletRequest.getMethod());
-        span.addSpanTag("QueryString", httpServletRequest.getQueryString());
-        span.addSpanTag("Class",serv.getClass().getCanonicalName());
-
-        return span;
-    }
 
     /**
      * Remove the specified initialization parameter from this servlet.
