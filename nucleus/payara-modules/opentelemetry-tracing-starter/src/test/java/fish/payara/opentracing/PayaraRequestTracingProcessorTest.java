@@ -55,15 +55,24 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 public class PayaraRequestTracingProcessorTest {
 
@@ -80,9 +89,16 @@ public class PayaraRequestTracingProcessorTest {
                 .build().get("test");
     }
 
+    private RequestTracingService enabledService() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        when(rt.isRequestTracingEnabled()).thenReturn(true);
+        when(rt.startTrace(any(RequestTraceSpan.class))).thenAnswer(inv -> inv.getArgument(0));
+        return rt;
+    }
+
     @Test
     public void localRootSpanStartsAndEndsTrace() {
-        RequestTracingService rt = mock(RequestTracingService.class);
+        RequestTracingService rt = enabledService();
         Span root = tracer(rt).spanBuilder("GET").startSpan();
         ArgumentCaptor<RequestTraceSpan> startCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
         verify(rt).startTrace(startCaptor.capture());
@@ -91,11 +107,12 @@ public class PayaraRequestTracingProcessorTest {
         ArgumentCaptor<RequestTraceSpan> endCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
         verify(rt).traceSpan(endCaptor.capture(), anyLong());
         assertEquals("Same root span should be passed to traceSpan", capturedRoot, endCaptor.getValue());
+        verify(rt, times(1)).startTrace(any(RequestTraceSpan.class));
     }
 
     @Test
     public void childSpanIsTracedNotStarted() {
-        RequestTracingService rt = mock(RequestTracingService.class);
+        RequestTracingService rt = enabledService();
         Tracer t = tracer(rt);
         Span root = t.spanBuilder("GET").startSpan();
         Span child = t.spanBuilder("child").setParent(Context.root().with(root)).startSpan();
@@ -112,7 +129,7 @@ public class PayaraRequestTracingProcessorTest {
 
     @Test
     public void remoteParentSpanStartsPropagatedTrace() {
-        RequestTracingService rt = mock(RequestTracingService.class);
+        RequestTracingService rt = enabledService();
         // Build a remote parent context
         SpanContext remoteCtx = SpanContext.createFromRemoteParent(
                 "12345678901234567890123456789012",
@@ -135,6 +152,92 @@ public class PayaraRequestTracingProcessorTest {
         RequestTracingService rt = mock(RequestTracingService.class);
         Span root = tracer(rt, Sampler.alwaysOff()).spanBuilder("unsampled").startSpan();
         root.end();
-        verifyNoInteractions(rt);
+        verify(rt, never()).startTrace(any(RequestTraceSpan.class));
+        verify(rt, never()).traceSpan(any(RequestTraceSpan.class), anyLong());
+        verify(rt, never()).discardTrace();
+    }
+
+    @Test
+    public void rootStartDiscardsStaleTrace() {
+        RequestTracingService rt = enabledService();
+        Tracer t = tracer(rt);
+        // Start two roots on same thread without ending root1
+        Span root1 = t.spanBuilder("root1").startSpan();
+        Span root2 = t.spanBuilder("root2").startSpan();
+        // Verify: discardTrace, startTrace, discardTrace, startTrace (in order, twice each)
+        InOrder inOrder = inOrder(rt);
+        inOrder.verify(rt).discardTrace();
+        inOrder.verify(rt).startTrace(any(RequestTraceSpan.class));
+        inOrder.verify(rt).discardTrace();
+        inOrder.verify(rt).startTrace(any(RequestTraceSpan.class));
+    }
+
+    @Test
+    public void rootEndedOnAnotherThreadIsReportedOnThatThread() throws Exception {
+        RequestTracingService rt = enabledService();
+        Tracer t = tracer(rt);
+
+        // Record threads of startTrace calls
+        java.util.List<Thread> startThreads = new java.util.ArrayList<>();
+        when(rt.startTrace(any(RequestTraceSpan.class))).thenAnswer(inv -> {
+            startThreads.add(Thread.currentThread());
+            return inv.getArgument(0);
+        });
+
+        // Start root on test thread
+        Span root = t.spanBuilder("async-root").startSpan();
+        ArgumentCaptor<RequestTraceSpan> startCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt, times(1)).startTrace(startCaptor.capture());
+        RequestTraceSpan rootSpan = startCaptor.getValue();
+        assertEquals("First startTrace should be from test thread", Thread.currentThread(), startThreads.get(0));
+
+        // End root on a different thread
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        try {
+            executor.submit((Runnable) root::end).get();
+        } finally {
+            executor.shutdown();
+        }
+
+        // Verify startTrace was called exactly twice
+        verify(rt, times(2)).startTrace(any(RequestTraceSpan.class));
+        assertEquals("Two startTrace calls recorded", 2, startThreads.size());
+        assertNotEquals("startTrace calls from different threads", startThreads.get(0), startThreads.get(1));
+
+        // Verify traceSpan was called once with that root
+        verify(rt).traceSpan(same(rootSpan), anyLong());
+    }
+
+
+    @Test
+    public void disabledServiceDoesNothing() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        when(rt.isRequestTracingEnabled()).thenReturn(false);
+        Tracer t = tracer(rt);
+        Span root = t.spanBuilder("disabled-root").startSpan();
+        Span child = t.spanBuilder("disabled-child").setParent(Context.root().with(root)).startSpan();
+        child.end();
+        root.end();
+        verify(rt, never()).startTrace(any(RequestTraceSpan.class));
+        verify(rt, never()).traceSpan(any(RequestTraceSpan.class), anyLong());
+        verify(rt, never()).discardTrace();
+    }
+
+    @Test
+    public void enabledAtEndOnlyStillReportsSpan() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        // Return false first, then true for subsequent calls
+        when(rt.isRequestTracingEnabled()).thenReturn(false, true, true, true, true);
+        when(rt.startTrace(any(RequestTraceSpan.class))).thenAnswer(inv -> inv.getArgument(0));
+        Tracer t = tracer(rt);
+        Span root = t.spanBuilder("toggle-root").startSpan();
+        root.end();
+        // Verify traceSpan is called with PROPAGATED_TRACE span (created when root == null)
+        ArgumentCaptor<RequestTraceSpan> traceSpanCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt).traceSpan(traceSpanCaptor.capture(), anyLong());
+        RequestTraceSpan reportedSpan = traceSpanCaptor.getValue();
+        assertEquals("Should create PROPAGATED_TRACE span when root == null",
+                EventType.PROPAGATED_TRACE, reportedSpan.getEventType());
+        assertEquals("Span name should match the original span", "toggle-root", reportedSpan.getEventName());
     }
 }

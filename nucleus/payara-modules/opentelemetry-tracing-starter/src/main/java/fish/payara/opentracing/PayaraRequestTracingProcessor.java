@@ -68,13 +68,23 @@ import io.opentelemetry.sdk.trace.data.SpanData;
  *     <li>Sampled root spans, and propagated spans are created as root spans in tracing service.</li>
  *     <li>Payara spans are created with parent reference to OTEL spans</li>
  *     <li>non-root spans are traced as "request spans", which should make them included in current trace</li>
- *
+ *     <li>A root span that ends on a different thread than it started on (async servlet) is reported as a root-only trace on the ending thread; children recorded on the starting thread are not included.</li>
  * </ul>
  */
 class PayaraRequestTracingProcessor implements SpanProcessor {
     private final RequestTracingService requestTracingService;
 
-    private ConcurrentMap<ReadableSpan, RequestTraceSpan> rootInProgressSpans = new ConcurrentHashMap<>();
+    private static final class RootState {
+        final RequestTraceSpan span;
+        final Thread startThread;
+
+        RootState(RequestTraceSpan span, Thread startThread) {
+            this.span = span;
+            this.startThread = startThread;
+        }
+    }
+
+    private ConcurrentMap<ReadableSpan, RootState> rootInProgressSpans = new ConcurrentHashMap<>();
 
     public PayaraRequestTracingProcessor(RequestTracingService requestTracingService) {
         this.requestTracingService = requestTracingService;
@@ -82,14 +92,15 @@ class PayaraRequestTracingProcessor implements SpanProcessor {
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        if (!span.getSpanContext().isSampled()) {
+        if (!span.getSpanContext().isSampled() || !requestTracingService.isRequestTracingEnabled()) {
             return;
         }
         var parent = span.getParentSpanContext();
         if (!parent.isValid() || parent.isRemote()) {
-            var type = parent.isValid() ? EventType.PROPAGATED_TRACE : EventType.TRACE_START;
-            var payaraSpan = createSpan(span, type);
-            rootInProgressSpans.put(span, payaraSpan);
+            // The trace store is thread-bound: drop a trace left open on this thread (e.g. its root ended on another thread).
+            requestTracingService.discardTrace();
+            var payaraSpan = createSpan(span, parent.isValid() ? EventType.PROPAGATED_TRACE : EventType.TRACE_START);
+            rootInProgressSpans.put(span, new RootState(payaraSpan, Thread.currentThread()));
             requestTracingService.startTrace(payaraSpan);
         }
     }
@@ -109,14 +120,22 @@ class PayaraRequestTracingProcessor implements SpanProcessor {
         if (!span.getSpanContext().isSampled()) {
             return;
         }
-        // some of the data are only visible upon export
-        var data = span.toSpanData();
-        var payaraSpan = rootInProgressSpans.remove(span);
-        if (payaraSpan == null) {
-            payaraSpan = createTraceSpan(data);
+        RootState root = rootInProgressSpans.remove(span);
+        if (!requestTracingService.isRequestTracingEnabled()) {
+            return;
         }
+        var data = span.toSpanData();
+        RequestTraceSpan payaraSpan = root != null ? root.span : createTraceSpan(data);
         fill(data, payaraSpan);
-        requestTracingService.traceSpan(payaraSpan, TimeUnit.NANOSECONDS.toMillis(data.getEndEpochNanos()));
+        long endMillis = TimeUnit.NANOSECONDS.toMillis(data.getEndEpochNanos());
+        if (root != null && root.startThread != Thread.currentThread()) {
+            // Root finished on another thread (async): the trace opened on the start thread cannot be closed from here,
+            // so report the root on this thread. Children recorded on the start thread are not included.
+            if (requestTracingService.startTrace(payaraSpan) == null) {
+                return;
+            }
+        }
+        requestTracingService.traceSpan(payaraSpan, endMillis);
     }
 
     @Override

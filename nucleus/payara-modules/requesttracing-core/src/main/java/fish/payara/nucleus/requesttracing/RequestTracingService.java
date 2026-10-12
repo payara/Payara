@@ -470,6 +470,15 @@ public class RequestTracingService implements EventListener, ConfigListener {
         processTraceEnd();
     }
 
+    /**
+     * Drops, without publishing, whatever trace is currently held for the calling thread.
+     * The trace store is thread-bound, so this is how a trace left open on a thread
+     * (e.g. its root ended on another thread) is cleared.
+     */
+    public void discardTrace() {
+        requestEventStore.flushStore();
+    }
+
 
     public void processSpan(RequestTraceSpan finishedSpan) {
         if (!isRequestTracingEnabled()) {

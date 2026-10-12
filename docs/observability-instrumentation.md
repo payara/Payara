@@ -6,7 +6,7 @@ New server instrumentation **must use the OpenTelemetry API only** (`io.opentele
 
 ## How Legacy Request Tracing Receives Spans
 
-The `PayaraRequestTracingProcessor` SpanProcessor bridge (in `nucleus/payara-modules/opentelemetry-tracing-starter`, registered by `RequestTracingBridgeProvider` only when request tracing is enabled at SDK creation) starts a legacy trace for each sampled span with no local parent (local root or remote parent) and stores every other sampled span when it ends. Consumers of Request Tracing (list-requesttraces, notifiers, UI) receive data unchanged through this bridge.
+The `PayaraRequestTracingProcessor` SpanProcessor bridge (in `nucleus/payara-modules/opentelemetry-tracing-starter`, always registered by `RequestTracingBridgeProvider` and checks isRequestTracingEnabled() per span, so request tracing can be enabled dynamically) starts a legacy trace for each sampled span with no local parent (local root or remote parent) and stores every other sampled span when it ends. Consumers of Request Tracing (list-requesttraces, notifiers, UI) receive data unchanged through this bridge.
 
 ## Guidance for Instrumentation
 
@@ -57,4 +57,6 @@ Other OpenTelemetry emitters exist (JAX-RS client filter, JAX-WS handler, @WithS
 
 - **(g) WebSocket stuck-thread registration**: WebSocket stuck-thread registration no longer depends on request tracing being enabled.
 
-- **(h) Request trace store thread-bound**: The request trace store is thread-bound; a root span that ends on a different thread than it started on does not close its legacy trace.
+- **(h) Request trace store thread-bound**: The legacy trace store is thread-bound; a root span that ends on a different thread than it started on (async servlet) is reported as a root-only trace on the ending thread, children recorded on the starting thread are not included, and the trace left open on the starting thread is discarded when the next root span starts there. If request tracing rejects a nested root on a thread that already has a trace in progress, the in-progress trace on that thread is discarded.
+
+- **(i) Non-servlet requests**: Requests that never reach a servlet (non-servlet Grizzly adapters) no longer get a legacy root trace (previously created at the Grizzly level).
