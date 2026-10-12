@@ -82,18 +82,15 @@ class PayaraRequestTracingProcessor implements SpanProcessor {
 
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-        if (span.getSpanContext().isSampled()) {
-            // we notify about starting root and propagated spans.
-            if (span.getParentSpanContext().isValid()) {
-                if (span.getParentSpanContext().isRemote()) {
-                    var payaraSpan = createSpan(span, EventType.PROPAGATED_TRACE);
-                    rootInProgressSpans.put(span, payaraSpan);
-                    requestTracingService.startTrace(payaraSpan);
-                }
-            } else {
-                  var payaraSpan = createSpan(span, EventType.TRACE_START);
-                  requestTracingService.traceSpan(payaraSpan);
-            }
+        if (!span.getSpanContext().isSampled()) {
+            return;
+        }
+        var parent = span.getParentSpanContext();
+        if (!parent.isValid() || parent.isRemote()) {
+            var type = parent.isValid() ? EventType.PROPAGATED_TRACE : EventType.TRACE_START;
+            var payaraSpan = createSpan(span, type);
+            rootInProgressSpans.put(span, payaraSpan);
+            requestTracingService.startTrace(payaraSpan);
         }
     }
 

@@ -1,0 +1,85 @@
+/*
+ *
+ *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ *  The contents of this file are subject to the terms of either the GNU
+ *  General Public License Version 2 only ("GPL") or the Common Development
+ *  and Distribution License("CDDL") (collectively, the "License").  You
+ *  may not use this file except in compliance with the License.  You can
+ *  obtain a copy of the License at
+ *  https://github.com/payara/Payara/blob/main/LICENSE.txt
+ *  See the License for the specific
+ *  language governing permissions and limitations under the License.
+ *
+ *  When distributing the software, include this License Header Notice in each
+ *  file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+ *
+ *  GPL Classpath Exception:
+ *  The Payara Foundation designates this particular file as subject to the "Classpath"
+ *  exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *  file that accompanied this code.
+ *
+ *  Modifications:
+ *  If applicable, add the following below the License Header, with the fields
+ *  enclosed by brackets [] replaced with your identifying information:
+ *  "Portions Copyright [year] [name of copyright owner]"
+ *
+ *  Contributor(s):
+ *  If you wish your version of this file to be governed by only the CDDL or
+ *  only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *  elects to include this software in this distribution under the [CDDL or GPL
+ *  Version 2] license."  If you don't indicate a single choice of license, a
+ *  recipient has the option to distribute your version of this file under
+ *  either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *  its licensees da above.  However, if you add GPL Version 2 code
+ *  and therefore, elected the GPL Version 2 license, then the option applies
+ *  only if the new code is made subject to such option by the copyright
+ *  holder.
+ *
+ */
+
+package fish.payara.opentracing;
+
+import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
+public class PayaraRequestTracingProcessorTest {
+
+    private Tracer tracer(RequestTracingService rt) {
+        return SdkTracerProvider.builder()
+                .addSpanProcessor(new PayaraRequestTracingProcessor(rt))
+                .build().get("test");
+    }
+
+    @Test
+    public void localRootSpanStartsAndEndsTrace() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        Span root = tracer(rt).spanBuilder("GET").startSpan();
+        verify(rt).startTrace(any(RequestTraceSpan.class));
+        root.end();
+        verify(rt).traceSpan(any(RequestTraceSpan.class), anyLong());
+    }
+
+    @Test
+    public void childSpanIsStoredNotStarted() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        Tracer t = tracer(rt);
+        Span root = t.spanBuilder("GET").startSpan();
+        Span child = t.spanBuilder("child").setParent(io.opentelemetry.context.Context.root().with(root)).startSpan();
+        child.end();
+        root.end();
+        verify(rt, times(1)).startTrace(any(RequestTraceSpan.class));
+        verify(rt, atLeastOnce()).traceSpan(any(RequestTraceSpan.class), anyLong());
+    }
+}
