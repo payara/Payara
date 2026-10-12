@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 package org.glassfish.diagnostics.context.impl;
 
 import static org.glassfish.diagnostics.context.ContextManager.WORK_CONTEXT_KEY;
@@ -49,15 +49,12 @@ import org.glassfish.contextpropagation.ContextViewFactory;
 import org.glassfish.contextpropagation.spi.ContextMapHelper;
 import org.glassfish.diagnostics.context.Context;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import mockit.Expectations;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.Mocked;
-import mockit.integration.junit4.JMockit;
 
-@RunWith(JMockit.class)
 public class ContextManagerImplUnitTest {
 
     /**

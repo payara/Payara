@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2019-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -55,6 +55,58 @@ import org.junit.Test;
 public class BootCommandsTest {
 
     @Test
+    public void parseCommandStripsDoubleQuotesFromValues() throws IOException {
+        BootCommands bootCommands = new BootCommands();
+        String commandText = "set-config value=\"example\"";
+        try (Reader reader = new StringReader(commandText)) {
+            bootCommands.parseCommandScript(reader, false);
+        }
+        assertThat(bootCommands.getCommands().size(), is(1));
+        BootCommand command = bootCommands.getCommands().get(0);
+        assertThat(command.getArguments().length, is(1));
+        assertEquals("value=example", command.getArguments()[0]);
+    }
+
+    @Test
+    public void parseCommandStripsSingleQuotesFromValues() throws IOException {
+        BootCommands bootCommands = new BootCommands();
+        String commandText = "set-config value='example'";
+        try (Reader reader = new StringReader(commandText)) {
+            bootCommands.parseCommandScript(reader, false);
+        }
+        assertThat(bootCommands.getCommands().size(), is(1));
+        BootCommand command = bootCommands.getCommands().get(0);
+        assertThat(command.getArguments().length, is(1));
+        assertEquals("value=example", command.getArguments()[0]);
+    }
+
+    @Test
+    public void parseCommandStripsQuotesFromValueContainingSpaces() throws IOException {
+        BootCommands bootCommands = new BootCommands();
+        String commandText = "set format=\"%header.X-Forwarded-For% %auth-user-name% %datetime% %request% %status% %response.length%\"";
+        try (Reader reader = new StringReader(commandText)) {
+            bootCommands.parseCommandScript(reader, false);
+        }
+        assertThat(bootCommands.getCommands().size(), is(1));
+        BootCommand command = bootCommands.getCommands().get(0);
+        assertThat(command.getArguments().length, is(1));
+        assertEquals("format=%header.X-Forwarded-For% %auth-user-name% %datetime% %request% %status% %response.length%", command.getArguments()[0]);
+    }
+
+    @Test
+    public void parseCommandUnescapesInnerQuotes() throws IOException {
+        BootCommands bootCommands = new BootCommands();
+        String commandText = "set-config --description=\"results \\\"in\\\" error\"";
+        try (Reader reader = new StringReader(commandText)) {
+            bootCommands.parseCommandScript(reader, false);
+        }
+        assertThat(bootCommands.getCommands().size(), is(1));
+        BootCommand command = bootCommands.getCommands().get(0);
+        assertThat(command.getArguments().length, is(1));
+        assertEquals("--description=results \"in\" error", command.getArguments()[0]);
+    }
+
+    @Test
     public void parseCommand() throws IOException {
         BootCommands bootCommands = new BootCommands();
         String commandText = "create-custom-resource --restype java.lang.String -s v --name='custom-res' --description=\"results \\\"in\\\" error\" --property value=\"${ENV=ini_ws_uri}\" vfp/vfp-menu/ini.ws.uri";
@@ -69,10 +121,10 @@ public class BootCommandsTest {
         assertEquals(command.getArguments()[1], "java.lang.String");
         assertEquals(command.getArguments()[2], "-s");
         assertEquals(command.getArguments()[3], "v");
-        assertEquals(command.getArguments()[4], "--name='custom-res'");
-        assertEquals(command.getArguments()[5], "--description=\"results \\\"in\\\" error\"");
+        assertEquals(command.getArguments()[4], "--name=custom-res");
+        assertEquals(command.getArguments()[5], "--description=results \"in\" error");
         assertEquals(command.getArguments()[6], "--property");
-        assertEquals(command.getArguments()[7], "value=\"${ENV=ini_ws_uri}\"");
+        assertEquals(command.getArguments()[7], "value=${ENV=ini_ws_uri}");
         assertEquals(command.getArguments()[8], "vfp/vfp-menu/ini.ws.uri");
     }
 

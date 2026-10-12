@@ -37,16 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
+import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
 import jakarta.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.transaction.InvalidTransactionException;
+import jakarta.transaction.Status;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.Transaction;
+import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+
 import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
@@ -54,9 +68,11 @@ import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorService
 import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.inject.Inject;
@@ -130,6 +146,80 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     @Inject
     private ResourceNamingService resourceNamingService;
 
+    @Inject
+    private OpenTelemetryService openTelemetryService;
+
+    @Inject
+    @Optional
+    private RequestTracingService requestTracingService;
+
+    @Inject
+    @Optional
+    private StuckThreadsStore stuckThreadsStore;
+
+    private final InvocationFacade invocationFacade = new InvocationFacade() {
+        @Override public ComponentInvocation getCurrentInvocation() { return invocationManager.getCurrentInvocation(); }
+        @Override public JndiNameEnvironment getJndiNameEnvironment(String componentId) { 
+            return compEnvMgr != null ? compEnvMgr.getJndiNameEnvironment(componentId) : null; 
+        }
+        @Override public void preInvoke(ComponentInvocation i) { invocationManager.preInvoke(i); }
+        @Override public void postInvoke(ComponentInvocation i) { invocationManager.postInvoke(i); }
+        @Override public void cleanupTransaction(boolean canCommitOrRollback) {
+            if (transactionManager != null) {
+                if (canCommitOrRollback) {
+                    Transaction tx = transactionManager.getCurrentTransaction();
+                    if (tx != null) {
+                        try {
+                            int status = tx.getStatus();
+                            if (status == Status.STATUS_ACTIVE) transactionManager.commit();
+                            else if (status == Status.STATUS_MARKED_ROLLBACK) transactionManager.rollback();
+                        } catch (Exception ex) { logger.log(Level.SEVERE, "Transaction cleanup failed", ex); }
+                    }
+                }
+                transactionManager.clearThreadTx();
+            }
+        }
+        @Override public boolean isApplicationEnabled(String appName) {
+            Application app = applications.getApplication(appName);
+            if (app != null) return deployment.isAppEnabled(app);
+            return applicationRegistry.get(appName) != null;
+        }
+        @Override public boolean isContextService() { return transactionManager == null; }
+
+        @Override
+        public ClassLoader getContextClassLoader(String appName) {
+            if (appName == null) return null;
+            ApplicationInfo app = applicationRegistry.get(appName);
+            if (app == null) return null;
+            return app.getAppClassLoader();
+        }
+
+        @Override
+        public Transaction suspend() throws SystemException {
+            if (transactionManager == null) {
+                return null;
+            }
+            return transactionManager.suspend();
+        }
+
+        @Override
+        public void resume(Transaction suspendedTxn) throws SystemException, InvalidTransactionException {
+            if (transactionManager != null) {
+                transactionManager.resume(suspendedTxn);
+            }
+        }
+    };
+
+    private final MonitoringFacade monitoringFacade = new MonitoringFacade() {
+        @Override public Tracer getTracer() { return openTelemetryService.getCurrentTracer(); }
+        @Override public OpenTelemetry getOpenTelemetry() { return openTelemetryService.getCurrentSdk(); }
+        @Override public boolean isRequestTracingEnabled() { return requestTracingService != null && requestTracingService.isRequestTracingEnabled(); }
+        @Override public void endTrace() { if (requestTracingService != null) requestTracingService.endTrace(); }
+        @Override public void registerStuckThread(long tid) { if (stuckThreadsStore != null) stuckThreadsStore.registerThread(tid); }
+        @Override public void deregisterStuckThread(long tid) { if (stuckThreadsStore != null) stuckThreadsStore.deregisterThread(tid); }
+    };
+
+
     /**
      * Returns the ConcurrentRuntime instance.
      * It follows singleton pattern and only one instance exists at any point
@@ -154,30 +244,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
      */
     ConcurrentRuntime() {
         setRuntime(this);
-    }
-
-    InvocationManager getInvocationManager() {
-        return invocationManager;
-    }
-
-    Deployment getDeployment() {
-        return deployment;
-    }
-
-    Applications getApplications() {
-        return applications;
-    }
-
-    JavaEETransactionManager getTransactionManager() {
-        return transactionManager;
-    }
-
-    ApplicationRegistry getApplicationRegistry() {
-        return applicationRegistry;
-    }
-
-    public ComponentEnvManager getCompEnvMgr() {
-        return compEnvMgr;
     }
 
     public synchronized ContextServiceImpl getContextService(ResourceInfo resource, ContextServiceConfig config) {
@@ -425,12 +491,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     private ContextServiceImpl createContextServiceImpl(String jndiName, boolean isContextInfoEnabled, Set<String> propagated, Set<String> cleared, Set<String> unchanged) {
         ContextSetupProviderImpl contextSetupProvider
                 = new ContextSetupProviderImpl(
-                invocationManager,
-                deployment,
-                compEnvMgr,
-                applicationRegistry,
-                applications,
-                transactionManager,
+                invocationFacade, monitoringFacade,
+                jndiName,
                 propagated,
                 cleared,
                 unchanged
@@ -440,7 +502,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 = new ContextServiceImpl(
                 jndiName,
                 contextSetupProvider,
-                new TransactionSetupProviderImpl(transactionManager,
+                new TransactionSetupProviderImpl(invocationFacade,
                         unchanged.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA),
                         cleared.contains(ContextSetupProviderImpl.CONTEXT_TYPE_WORKAREA))
         );
@@ -496,6 +558,14 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             contextService = prepareContextService(contextOfResource, CONTEXT_INFO_ALL, true, true);
         }
         return contextService;
+    }
+
+    InvocationFacade getInvocationFacade() {
+        return invocationFacade;
+    }
+
+    MonitoringFacade getMonitoringFacade() {
+        return monitoringFacade;
     }
 
     /**

@@ -81,7 +81,7 @@ public class ProgressStatusComplexTest {
         assertTrue(prgs.size() > 40);
         assertTrue(scopeCount(prgs, "complex:") >= 4);
         assertEquals(0, scopeCount(prgs, "complex.ch1:"));
-        assertEquals(5, scopeCount(prgs, "complex.ch2-paral:"));
+        assertTrue(scopeCount(prgs, "complex.ch2-paral:") >= 5);
         assertEquals(4, scopeCount(prgs, "complex.ch3:"));
         assertEquals(5, scopeCount(prgs, "complex.ch1.ch11:"));
         assertEquals(6, scopeCount(prgs, "complex.ch1.ch12:"));

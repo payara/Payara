@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,14 +42,9 @@
 
 package fish.payara.samples.otel.manual;
 
-import java.io.IOException;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
@@ -57,6 +52,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 @WebServlet("/manual/*")
 @Dependent
@@ -67,8 +67,8 @@ public class ManuallyTracingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try(Scope scope = span.makeCurrent()) {
-            span.setAttribute(SemanticAttributes.HTTP_METHOD, "GET");
-            span.setAttribute(SemanticAttributes.HTTP_URL, req.getRequestURI());
+            span.setAttribute(HttpAttributes.HTTP_REQUEST_METHOD, "GET");
+            span.setAttribute(HttpAttributes.HTTP_ROUTE, req.getRequestURI());
             LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(ThreadLocalRandom.current().nextInt(1000)));
         }
     }

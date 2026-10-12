@@ -37,11 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.admin.monitor.jvm;
 
 import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
+import java.util.Objects;
+import java.util.Optional;
 import org.glassfish.external.statistics.CountStatistic;
 import org.glassfish.external.statistics.StringStatistic;
 import org.glassfish.external.statistics.impl.CountStatisticImpl;
@@ -64,8 +67,9 @@ import org.glassfish.gmbal.ManagedObject;
 @ManagedObject
 @Description( "JVM Thread Info Statistics" )
 public class JVMThreadInfoStatsProvider {
-    
-    private final ThreadInfo threadInfo;
+
+    private final ThreadMXBean threadMXBean;
+    private final long threadId;
     
     private final CountStatisticImpl blockedCount = new CountStatisticImpl(
             "BlockedCount", StatisticImpl.UNIT_COUNT,
@@ -85,7 +89,7 @@ public class JVMThreadInfoStatsProvider {
     private final StringStatisticImpl stackTrace = new StringStatisticImpl(
             "StackTrace", "String",
                 "Returns the stack trace of the thread associated with this ThreadInfo" );
-    private final CountStatisticImpl threadId = new CountStatisticImpl(
+    private final CountStatisticImpl threadIdStat = new CountStatisticImpl(
             "ThreadId", "String",
                 "Returns the ID of the thread associated with this ThreadInfo" );
     private final StringStatisticImpl threadName = new StringStatisticImpl(
@@ -101,8 +105,9 @@ public class JVMThreadInfoStatsProvider {
             "WaitingTime", StatisticImpl.UNIT_MILLISECOND,
                 "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has waited for notification since thread contention monitoring is enabled" );
 
-    public JVMThreadInfoStatsProvider(ThreadInfo info) {
-        this.threadInfo = info;
+    public JVMThreadInfoStatsProvider(ThreadMXBean threadMXBean, long threadId) {
+        this.threadMXBean = threadMXBean;
+        this.threadId = threadId;
     }
 
     /**
@@ -112,7 +117,7 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="blockedcount")
     @Description( "Returns the total number of times that the thread associated with this ThreadInfo blocked to enter or reenter a monitor" )
     public CountStatistic getBlockedCount() {
-        blockedCount.setCount(threadInfo.getBlockedCount());
+        getThreadInfo().ifPresent(info -> blockedCount.setCount(info.getBlockedCount()));
         return blockedCount;
     }
 
@@ -124,7 +129,7 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="blockedtime")
     @Description( "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has blocked to enter or reenter a monitor since thread contention monitoring is enabled" )
     public CountStatistic getBlockedTime() {
-        blockedTime.setCount(threadInfo.getBlockedTime());
+        getThreadInfo().ifPresent(info -> blockedTime.setCount(info.getBlockedTime()));
         return blockedTime;
     }
 
@@ -135,12 +140,10 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="lockname")
     @Description( "Returns the string representation of an object for which the thread associated with this ThreadInfo is blocked waiting" )
     public StringStatistic getLockName() {
-        String name = threadInfo.getLockName();
-        if (name == null) {
-            lockName.setCurrent("Thread is not waiting on monitor lock.");
-        } else {
-            lockName.setCurrent(name);
-        }
+        getThreadInfo().ifPresent(info -> {
+            String name = info.getLockName();
+            lockName.setCurrent(Objects.requireNonNullElse(name, "Thread is not waiting on monitor lock."));
+        });
         return lockName;
     }
 
@@ -151,7 +154,7 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="lockownerid")
     @Description( "Returns the ID of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting" )
     public CountStatistic getLockOwnerId() {
-        lockOwnerId.setCount(threadInfo.getLockOwnerId());
+        getThreadInfo().ifPresent(info -> lockOwnerId.setCount(info.getLockOwnerId()));
         return lockOwnerId;
     }
 
@@ -162,12 +165,10 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="lockownername")
     @Description( "Returns the name of the thread which owns the object for which the thread associated with this ThreadInfo is blocked waiting" )
     public StringStatistic getLockOwnerName() {
-        String name = threadInfo.getLockOwnerName();
-        if (name == null) {
-            lockOwnerName.setCurrent("None of the other threads is holding any monitors of this thread.");
-        } else {
-            lockOwnerName.setCurrent(name);
-        }
+        getThreadInfo().ifPresent(info -> {
+            String name = info.getLockOwnerName();
+            lockOwnerName.setCurrent(Objects.requireNonNullElse(name, "None of the other threads is holding any monitors of this thread."));
+        });
         return lockOwnerName;
     }
 
@@ -175,16 +176,18 @@ public class JVMThreadInfoStatsProvider {
      * Gets the the stack trace of the thread associated with this {@link ThreadInfo}
      * @return a {@link StringStatistic} with a command separated list of the stack trace elements
      */
-    @ManagedAttribute(id="stacktrace")
-    @Description( "Returns the stack trace of the thread associated with this ThreadInfo" )
+    @ManagedAttribute(id = "stacktrace")
+    @Description("Returns the stack trace of the thread associated with this ThreadInfo")
     public StringStatistic getStackTrace() {
-        StackTraceElement[] elements = threadInfo.getStackTrace();
-        StringBuilder sb = new StringBuilder();
-        for (StackTraceElement ste : elements) {
-            sb.append(ste.toString());
-            sb.append(',');
-        }
-        stackTrace.setCurrent(sb.toString());
+        getThreadInfo().ifPresent(info -> {
+            StackTraceElement[] elements = info.getStackTrace();
+            StringBuilder sb = new StringBuilder();
+            for (StackTraceElement ste : elements) {
+                sb.append(ste.toString());
+                sb.append(',');
+            }
+            stackTrace.setCurrent(sb.toString());
+        });
         return stackTrace;
     }
 
@@ -195,8 +198,8 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="threadid")
     @Description( "Returns the ID of the thread associated with this ThreadInfo" )
     public CountStatistic getThreadId() {
-        threadId.setCount(threadInfo.getThreadId());
-        return threadId;
+        threadIdStat.setCount(threadId);
+        return threadIdStat;
     }
 
     /**
@@ -206,7 +209,7 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="threadname")
     @Description( "Returns the name of the thread associated with this ThreadInfo" )
     public StringStatistic getThreadName() {
-        threadName.setCurrent(threadInfo.getThreadName());
+        getThreadInfo().ifPresent(info -> threadName.setCurrent(info.getThreadName()));
         return threadName;
     }
 
@@ -217,7 +220,7 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="threadstate")
     @Description( "Returns the state of the thread associated with this ThreadInfo" )
     public StringStatistic getThreadState() {
-        threadState.setCurrent(threadInfo.getThreadState().toString());
+        getThreadInfo().ifPresent(info -> threadState.setCurrent(info.getThreadState().toString()));
         return threadState;
     }
 
@@ -228,7 +231,7 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="waitedcount")
     @Description( "Returns the total number of times that the thread associated with this ThreadInfo waited for notification" )
     public CountStatistic getWaitedCount() {
-        waitedCount.setCount(threadInfo.getWaitedCount());
+        getThreadInfo().ifPresent(info -> waitedCount.setCount(info.getWaitedCount()));
         return waitedCount;
     }
 
@@ -240,7 +243,11 @@ public class JVMThreadInfoStatsProvider {
     @ManagedAttribute(id="waitedtime")
     @Description( "Returns the approximate accumulated elapsed time (in milliseconds) that the thread associated with this ThreadInfo has waited for notification since thread contention monitoring is enabled" )
     public CountStatistic getWaitedTime() {
-        waitedTime.setCount(threadInfo.getWaitedTime());
+        getThreadInfo().ifPresent(info -> waitedTime.setCount(info.getWaitedTime()));
         return waitedTime;
+    }
+
+    private Optional<ThreadInfo> getThreadInfo() {
+        return Optional.ofNullable(threadMXBean.getThreadInfo(threadId, 5));
     }
 }

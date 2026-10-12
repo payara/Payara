@@ -38,15 +38,15 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.v3.services.impl.monitor;
 
 import com.sun.enterprise.v3.services.impl.monitor.stats.ConnectionQueueStatsProvider;
 import com.sun.enterprise.v3.services.impl.monitor.stats.ThreadPoolStatsProvider;
 import com.sun.enterprise.v3.services.impl.monitor.stats.ThreadPoolStatsProviderGlobal;
-import org.glassfish.grizzly.threadpool.AbstractThreadPool;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.glassfish.grizzly.threadpool.ThreadPoolInfo;
 import org.glassfish.grizzly.threadpool.ThreadPoolProbe;
 
 /**
@@ -91,38 +91,38 @@ public class ThreadPoolMonitor implements ThreadPoolProbe {
     }
 
     @Override
-    public void onThreadPoolStartEvent(AbstractThreadPool threadPool) {
+    public void onThreadPoolStartEvent(ThreadPoolInfo threadPool) {
     }
 
     @Override
-    public void onThreadPoolStopEvent(AbstractThreadPool threadPool) {
+    public void onThreadPoolStopEvent(ThreadPoolInfo threadPool) {
     }
 
     @Override
-    public void onThreadAllocateEvent(AbstractThreadPool threadPool, Thread thread) {
+    public void onThreadAllocateEvent(ThreadPoolInfo threadPool, Thread thread) {
         grizzlyMonitoring.getThreadPoolProbeProvider().threadAllocatedEvent(monitoringId, threadPool, thread.getId());
     }
 
     @Override
-    public void onThreadReleaseEvent(AbstractThreadPool threadPool, Thread thread) {
+    public void onThreadReleaseEvent(ThreadPoolInfo threadPool, Thread thread) {
         grizzlyMonitoring.getThreadPoolProbeProvider().threadReleasedEvent(monitoringId, threadPool, thread.getId());
     }
 
     @Override
-    public void onMaxNumberOfThreadsEvent(AbstractThreadPool threadPool, int maxNumberOfThreads) {
+    public void onMaxNumberOfThreadsEvent(ThreadPoolInfo threadPool, int maxNumberOfThreads) {
         grizzlyMonitoring.getThreadPoolProbeProvider().maxNumberOfThreadsReachedEvent(monitoringId, threadPool, 
                 maxNumberOfThreads);
     }
 
     @Override
-    public void onTaskDequeueEvent(AbstractThreadPool threadPool, Runnable task) {
+    public void onTaskDequeueEvent(ThreadPoolInfo threadPool, Runnable task) {
         grizzlyMonitoring.getThreadPoolProbeProvider().threadDispatchedFromPoolEvent(monitoringId, 
                 Thread.currentThread().getId());
         grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskDequeuedEvent(monitoringId, task.getClass().getName());
     }
 
     @Override
-    public void onTaskCancelEvent(AbstractThreadPool threadPool, Runnable task) {
+    public void onTaskCancelEvent(ThreadPoolInfo threadPool, Runnable task) {
         // when dequeued task is cancelled - we have to "return" the thread, that
         // we marked as dispatched from the pool
         grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(monitoringId, 
@@ -130,18 +130,18 @@ public class ThreadPoolMonitor implements ThreadPoolProbe {
     }
     
     @Override
-    public void onTaskCompleteEvent(AbstractThreadPool threadPool, Runnable task) {
+    public void onTaskCompleteEvent(ThreadPoolInfo threadPool, Runnable task) {
         grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(
                 monitoringId, Thread.currentThread().getId());
     }
 
     @Override
-    public void onTaskQueueEvent(AbstractThreadPool threadPool, Runnable task) {
+    public void onTaskQueueEvent(ThreadPoolInfo threadPool, Runnable task) {
         grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskQueuedEvent(monitoringId, task.getClass().getName());
     }
 
     @Override
-    public void onTaskQueueOverflowEvent(AbstractThreadPool threadPool) {
+    public void onTaskQueueOverflowEvent(ThreadPoolInfo threadPool) {
         grizzlyMonitoring.getConnectionQueueProbeProvider().onTaskQueueOverflowEvent(monitoringId);
     }
 }

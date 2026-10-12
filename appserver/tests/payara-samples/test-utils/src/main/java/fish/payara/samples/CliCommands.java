@@ -55,21 +55,30 @@ import java.util.logging.Logger;
 /**
  * Methods to execute "cli commands" against various servers.
  *
+ * Deprecated! We should be configuring the Server via Maven antrun to run asadmin commands,
+ * and Micro via pre/post boot files or command line options.
+ *
  * @author Arjan Tijms
  */
+@Deprecated
 public class CliCommands {
 
+    @Deprecated
     private static final Logger logger = Logger.getLogger(CliCommands.class.getName());
+    @Deprecated
     private static final String OS = System.getProperty("os.name").toLowerCase();
 
+    @Deprecated
     public static int payaraGlassFish(String... cliCommands) {
         return payaraGlassFish(asList(cliCommands), null);
     }
 
+    @Deprecated
     public static int payaraGlassFish(List<String> cliCommands) {
         return payaraGlassFish(cliCommands, null);
     }
 
+    @Deprecated
     public static int payaraGlassFish(List<String> cliCommands, List<String> output) {
         String productRoot = System.getProperty("com.sun.aas.productRoot");
         if (productRoot == null) {
@@ -112,6 +121,7 @@ public class CliCommands {
         }
     }
 
+    @Deprecated
     public static Process destroyAtShutDown(final Process process) {
         getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -131,6 +141,7 @@ public class CliCommands {
         return process;
     }
 
+    @Deprecated
     public static Process readAllInput(List<String> output, Process process) {
         // Read any output from the process
         try (Scanner scanner = new Scanner(process.getInputStream())) {
@@ -146,6 +157,7 @@ public class CliCommands {
         return process;
     }
 
+    @Deprecated
     public static int waitToFinish(Process process) {
 
         // Wait up to 30s for the process to finish
@@ -172,6 +184,7 @@ public class CliCommands {
         throw new IllegalStateException("Asadmin process seems stuck after waiting for 30 seconds");
     }
 
+    @Deprecated
     public static boolean isWindows() {
         return OS.contains("win");
     }

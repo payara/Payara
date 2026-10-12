@@ -5,7 +5,7 @@ NAME
        Server
 
 SYNOPSIS
-           remove-library [--help] [--type={common|ext|app}]
+           remove-library [--help] [--type={common|ext|app|war}]
 
            library-name [library-name ... ]
 
@@ -60,6 +60,10 @@ OPTIONS
            app
                Removes the library files from the application-specific class
                loader directory, domain-dir/lib/applibs.
+
+           war
+               Removes the library files from the war-packaged class loader
+               directory, domain-dir/lib/warlibs.
 
            For more information about these directories, see "Class Loaders"
            in Oracle GlassFish Server Application Development Guide.

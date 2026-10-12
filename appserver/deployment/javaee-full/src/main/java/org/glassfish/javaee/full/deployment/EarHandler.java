@@ -158,6 +158,11 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         try {
             PayaraApplicationXmlParser payaraApplicationXMLParser = new PayaraApplicationXmlParser(archive);
             versionIdentifier = payaraApplicationXMLParser.extractVersionIdentifierValue(archive);
+
+            // Check glassfish-application.xml if no value provided in payara-application.xml
+            if (versionIdentifier == null) {
+                versionIdentifier = new GFApplicationXmlParser(archive).extractVersionIdentifierValue(archive);
+            }
         } catch (XMLStreamException e) {
             _logger.log(Level.SEVERE, e.getMessage());
         } catch (IOException e) {
@@ -546,6 +551,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         if (!context.getAppProps().containsKey(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
             try {
                 Boolean cdiEnabled = new PayaraApplicationXmlParser(source).isEnableImplicitCDI();
+
+                // Check glassfish-application.xml if no value provided in payara-application.xml
+                if (cdiEnabled == null) {
+                    cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
+                }
+
                 if (cdiEnabled != null) {
                     context.getAppProps().put(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI, cdiEnabled.toString().toLowerCase());
                 }

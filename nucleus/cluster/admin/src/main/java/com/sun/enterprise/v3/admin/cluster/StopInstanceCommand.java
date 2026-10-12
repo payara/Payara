@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
+import com.sun.enterprise.admin.util.InstanceStateService;
 import com.sun.enterprise.admin.util.RemoteInstanceCommandHelper;
 import com.sun.enterprise.admin.util.TimeoutParamDefaultCalculator;
 import com.sun.enterprise.config.serverbeans.Node;
@@ -53,6 +54,7 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.admin.StopServer;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.InstanceState;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -114,6 +116,9 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
 
     @Inject
     private ModulesRegistry registry;
+
+    @Inject
+    private InstanceStateService instanceStateService;
 
     @Param(optional = true, defaultValue = "true")
     private Boolean force = true;
@@ -192,6 +197,12 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             report.setMessage(Strings.get("stop.instance.success",
                     instanceName));
         }
+
+        // Pro-actively mark the instance as NOT_RUNNING so that the next list-instances
+        // poll shows the correct state immediately without waiting for a TCP probe to
+        // time out. On Windows, closed ports produce no RST, so a probe-based check
+        // can take up to connectTimeout ms before returning NOT_RUNNING.
+        instanceStateService.setState(instanceName, InstanceState.StateType.NOT_RUNNING, true);
 
         if (kill) {
             // If we killed then stop-local-instance already waited for death

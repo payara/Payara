@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2017-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package fish.payara.nucleus.microprofile.config.source;
 
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -57,10 +58,14 @@ public class PayaraServerProperties extends PayaraConfigSource {
 
     private HashMap<String, String> properties;
 
-    public PayaraServerProperties() {
-        ServerEnvironment server = Globals.getDefaultHabitat().getService(ServerEnvironment.class);
-        ServerContext serverCtx = Globals.getDefaultHabitat().getService(ServerContext.class);
+    public PayaraServerProperties(MicroprofileConfigConfiguration mpConfig,
+            ServerEnvironment server, ServerContext serverCtx) {
+        super(mpConfig);
         properties = new HashMap<>(20);
+        populateProperties(server, serverCtx);
+    }
+
+    private void populateProperties(ServerEnvironment server, ServerContext serverCtx) {
         properties.put("payara.instance.type", server.getRuntimeType().name());
         properties.put("payara.instance.name", server.getInstanceName());
         properties.put("payara.instance.root", server.getInstanceRoot().getAbsolutePath());

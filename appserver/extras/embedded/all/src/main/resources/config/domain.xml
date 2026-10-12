@@ -108,7 +108,7 @@
                 </iiop-listener>
             </iiop-service>
             <admin-service auth-realm-name="admin-realm" type="das-and-server" system-jmx-connector-name="system">
-                <jmx-connector auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="8686" name="system" />
+                <jmx-connector security-enabled="false" address="0.0.0.0" port="8686" name="system" />
                 <property value="/admin" name="adminConsoleContextRoot" />
                 <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
                 <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />

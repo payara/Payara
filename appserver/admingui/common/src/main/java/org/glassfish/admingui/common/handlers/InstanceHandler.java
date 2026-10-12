@@ -180,8 +180,7 @@ public class InstanceHandler {
             String jvmOptionUnescaped = new JvmOption((String) oneRow.get(JVM_OPTION),
                     (String) oneRow.get(MIN_VERSION), (String) oneRow.get(MAX_VERSION)).toString();
             String jvmOptionEscape = UtilHandlers.escapePropertyValue(jvmOptionUnescaped);         //refer to GLASSFISH-19069
-            ArrayList<String> kv = getKeyValuePair(jvmOptionEscape);
-            payload.put(kv.get(0), kv.get(1));
+            payload.put(jvmOptionEscape, "");
         }
     }
 

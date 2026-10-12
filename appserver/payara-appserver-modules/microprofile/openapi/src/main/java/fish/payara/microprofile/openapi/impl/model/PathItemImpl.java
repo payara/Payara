@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,22 +39,25 @@
  */
 package fish.payara.microprofile.openapi.impl.model;
 
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
-import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
-
 import fish.payara.microprofile.openapi.api.visitor.ApiContext;
+import fish.payara.microprofile.openapi.impl.model.parameters.ParameterImpl;
 import fish.payara.microprofile.openapi.impl.model.servers.ServerImpl;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import fish.payara.microprofile.openapi.impl.model.util.ModelUtils;
 import org.eclipse.microprofile.openapi.models.Operation;
 import org.eclipse.microprofile.openapi.models.PathItem;
 import org.eclipse.microprofile.openapi.models.parameters.Parameter;
 import org.eclipse.microprofile.openapi.models.servers.Server;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.createList;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.extractAnnotations;
+import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.readOnlyView;
 
 public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
@@ -73,9 +76,14 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
     protected List<Parameter> parameters = createList();
 
     public static PathItem createInstance(AnnotationModel annotation, ApiContext context) {
-        PathItem from = new PathItemImpl();
+        PathItemImpl from = new PathItemImpl();
         extractAnnotations(annotation, context, "servers", ServerImpl::createInstance, from::addServer);
         from.setExtensions(parseExtensions(annotation));
+        from.setRef(annotation.getValue("ref", String.class));
+        from.setSummary(annotation.getValue("summary", String.class));
+        from.setDescription(annotation.getValue("description", String.class));
+        extractAnnotations(annotation, context, "operations", "method", OperationImpl::createInstance, from::setOperation);
+        extractAnnotations(annotation, context, "parameters", ParameterImpl::createInstance, from::addParameter);
         return from;
     }
 
@@ -86,6 +94,9 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
 
     @Override
     public void setRef(String ref) {
+        if (ref != null && !ref.contains(".") && !ref.contains("/")) {
+            ref = "#/components/pathItems/" + ref;
+        }
         this.ref = ref;
     }
 
@@ -310,6 +321,24 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
         }
     }
 
+    private void setOperation(String method, Operation operation) {
+        if (method == null) {
+            return;
+        }
+
+        switch (method.toUpperCase(Locale.ROOT)) {
+            case "GET" -> setGET(operation);
+            case "PUT" -> setPUT(operation);
+            case "POST" -> setPOST(operation);
+            case "DELETE" -> setDELETE(operation);
+            case "OPTIONS" -> setOPTIONS(operation);
+            case "HEAD" -> setHEAD(operation);
+            case "PATCH" -> setPATCH(operation);
+            case "TRACE" -> setTRACE(operation);
+            default -> {}
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -383,4 +412,62 @@ public class PathItemImpl extends ExtensibleImpl<PathItem> implements PathItem {
         return hash;
     }
 
+    public static void merge (PathItem from, PathItem to, boolean override) {
+        ExtensibleImpl.merge(from, to, override);
+
+        to.setRef(ModelUtils.mergeProperty(from.getRef(), to.getRef(), override));
+        to.setSummary(ModelUtils.mergeProperty(from.getSummary(), to.getSummary(), override));
+        to.setDescription(ModelUtils.mergeProperty(from.getDescription(), to.getDescription(), override));
+
+        if (to.getGET() == null) {
+            to.setGET(from.getGET());
+        } else {
+            OperationImpl.merge(from.getGET(), to.getGET(), override);
+        }
+
+        if (to.getPUT() == null) {
+            to.setPUT(from.getPUT());
+        } else {
+            OperationImpl.merge(from.getPUT(), to.getPUT(), override);
+        }
+
+        if (to.getPOST() == null) {
+            to.setPOST(from.getPOST());
+        } else {
+            OperationImpl.merge(from.getPOST(), to.getPOST(), override);
+        }
+
+        if (to.getDELETE() == null) {
+            to.setDELETE(from.getDELETE());
+        } else {
+            OperationImpl.merge(from.getDELETE(), to.getDELETE(), override);
+        }
+
+        if (to.getOPTIONS() == null) {
+            to.setOPTIONS(from.getOPTIONS());
+        } else {
+            OperationImpl.merge(from.getOPTIONS(), to.getOPTIONS(), override);
+        }
+
+        if (to.getHEAD() == null) {
+            to.setHEAD(from.getHEAD());
+        } else {
+            OperationImpl.merge(from.getHEAD(), to.getHEAD(), override);
+        }
+
+        if (to.getPATCH() == null) {
+            to.setPATCH(from.getPATCH());
+        } else {
+            OperationImpl.merge(from.getPATCH(), to.getPATCH(), override);
+        }
+
+        if (to.getTRACE() == null) {
+            to.setTRACE(from.getTRACE());
+        } else {
+            OperationImpl.merge(from.getTRACE(), to.getTRACE(), override);
+        }
+
+        ModelUtils.mergeImmutableList(from.getServers(), to.getServers(), to::setServers);
+        ModelUtils.mergeImmutableList(from.getParameters(), to.getParameters(), to::setParameters);
+    }
 }

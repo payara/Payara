@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.deployment.util;
 
@@ -158,6 +158,9 @@ public class ResourceValidator implements EventListener, ResourceValidatorVisito
                 parseResourcesBd(bd, appResources);
             }
             if (bd instanceof EjbBundleDescriptor) {
+                for (ResourceDescriptor resourceDescriptor : ((JndiNameEnvironment) bd).getAllResourcesDescriptors()) {
+                    parseResources(resourceDescriptor, (JndiNameEnvironment) bd, appResources);
+                }
                 // Resources from Java files in the ejb.jar which are neither an EJB nor a managed bean are stored here.
                 // Skip validation for them, validate only Managed Beans.
                 for (ManagedBeanDescriptor mbd : bd.getManagedBeans()) {

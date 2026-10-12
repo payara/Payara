@@ -1,0 +1,148 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ *    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ *     The contents of this file are subject to the terms of either the GNU
+ *     General Public License Version 2 only ("GPL") or the Common Development
+ *     and Distribution License("CDDL") (collectively, the "License").  You
+ *     may not use this file except in compliance with the License.  You can
+ *     obtain a copy of the License at
+ *     https://github.com/payara/Payara/blob/main/LICENSE.txt
+ *     See the License for the specific
+ *     language governing permissions and limitations under the License.
+ *
+ *     When distributing the software, include this License Header Notice in each
+ *     file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+ *
+ *     GPL Classpath Exception:
+ *     The Payara Foundation designates this particular file as subject to the "Classpath"
+ *     exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ *     file that accompanied this code.
+ *
+ *     Modifications:
+ *     If applicable, add the following below the License Header, with the fields
+ *     enclosed by brackets [] replaced by your own identifying information:
+ *     "Portions Copyright [year] [name of copyright owner]"
+ *
+ *     Contributor(s):
+ *     If you wish your version of this file to be governed by only the CDDL or
+ *     only the GPL Version 2, indicate your decision by adding "[Contributor]
+ *     elects to include this software in this distribution under the [CDDL or GPL
+ *     Version 2] license."  If you don't indicate a single choice of license, a
+ *     recipient has the option to distribute your version of this file under
+ *     either the CDDL, the GPL Version 2 or to extend the choice of license to
+ *     its licensees as provided above.  However, if you add GPL Version 2 code
+ *     and therefore, elected the GPL Version 2 license, then the option applies
+ *     only if the new code is made subject to such option by the copyright
+ *     holder.
+ */
+package fish.payara.opentracing;
+
+import fish.payara.telemetry.service.PayaraTelemetryConstants;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.metrics.DoubleHistogram;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.semconv.ErrorAttributes;
+import io.opentelemetry.semconv.HttpAttributes;
+import io.opentelemetry.semconv.UrlAttributes;
+
+import java.util.HashMap;
+
+/**
+ * Carries a raw W3C propagation carrier, operation name, span kind, and
+ * attributes across a boundary where the OTel SDK or invocation context is not
+ * yet available — for example, between a CORBA PortableInterceptor callback
+ * (no invocation context) and the EJB container {@code preInvoke} (invocation
+ * established, correct per-app SDK available).
+ * <p>
+ * Context extraction is deliberately deferred until
+ * {@link #applyDeferredContext()} so that the correct per-application propagator
+ * is used.  The same object is reused to hold the {@link PropagationHelper} once
+ * the span has been started.
+ */
+final class DeferredContext {
+    private static final ThreadLocal<DeferredContext> local = new ThreadLocal<>();
+
+    static DeferredContext get() {
+        return local.get();
+    }
+
+    static void set(HashMap<String, String> carrier, String operation, SpanKind spanKind, Attributes attributes) {
+        local.set(new DeferredContext(carrier, operation, spanKind, attributes));
+    }
+
+    static void remove() {
+        local.remove();
+    }
+
+
+    static final TextMapGetter<HashMap<String, String>> CARRIER_GETTER =
+            new TextMapGetter<HashMap<String, String>>() {
+                @Override public Iterable<String> keys(HashMap<String, String> c) { return c.keySet(); }
+                @Override public String get(HashMap<String, String> c, String key) { return c.get(key); }
+            };
+    private final HashMap<String, String> carrier;
+    private final String operation;
+    private final SpanKind spanKind;
+    private final Attributes attributes;
+    private final long startNanos;
+    private PropagationHelper spanHelper;
+    private DoubleHistogram histogram;
+
+    DeferredContext(HashMap<String, String> carrier, String operation,
+                    SpanKind spanKind, Attributes attributes) {
+        this.carrier = carrier;
+        this.operation = operation;
+        this.spanKind = spanKind;
+        this.attributes = attributes;
+        this.startNanos = System.nanoTime();
+    }
+
+    void apply(ContextPropagators propagators, Tracer currentTracer, Context current, DoubleHistogram histogram) {
+        Context parentContext = propagators.getTextMapPropagator()
+                .extract(current, carrier, CARRIER_GETTER);
+        var span = currentTracer
+                .spanBuilder(operation)
+                .setParent(parentContext)
+                .setSpanKind(spanKind)
+                .setAllAttributes(attributes)
+                .startSpan();
+        this.spanHelper = PropagationHelper.start(span, parentContext);
+        this.histogram = histogram;
+    }
+
+    void end(Throwable error) {
+        if (spanHelper != null) {
+            spanHelper.end(error);
+            spanHelper.close();
+        }
+    }
+
+    void endWithDuration(Throwable error, int httpStatus) {
+        end(error);
+        if (histogram == null) {
+            return;
+        }
+        double seconds = (System.nanoTime() - startNanos) * PayaraTelemetryConstants.NANO_CONVERSION;
+        String method = attributes.get(HttpAttributes.HTTP_REQUEST_METHOD);
+        String scheme = attributes.get(UrlAttributes.URL_SCHEME);
+        AttributesBuilder histoAttrs = Attributes.builder()
+                .put(HttpAttributes.HTTP_RESPONSE_STATUS_CODE, (long) httpStatus);
+        if (method != null) {
+            histoAttrs.put(HttpAttributes.HTTP_REQUEST_METHOD, method);
+        }
+        if (scheme != null) {
+            histoAttrs.put(UrlAttributes.URL_SCHEME, scheme);
+        }
+        if (httpStatus >= 500) {
+            histoAttrs.put(ErrorAttributes.ERROR_TYPE, Integer.toString(httpStatus));
+        }
+        histogram.record(seconds, histoAttrs.build());
+    }
+}

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,18 +78,20 @@ public class PathsImpl extends ExtensibleTreeMap<PathItem, Paths> implements Pat
     @Override
     public void setPathItems(Map<String, PathItem> items) {
         clear();
-        putAll(items);
+        if (items != null) {
+            putAll(items);
+        }
     }
 
     public static void merge(Paths from, Paths to, boolean override) {
         if (from == null || to == null) {
             return;
         }
-        from.getPathItems().entrySet().forEach(entry -> {
-            if (!to.hasPathItem(entry.getKey())) {
-                to.addPathItem(entry.getKey(), entry.getValue());
+        from.getPathItems().forEach((name, fromPathItem) -> {
+            if (!to.hasPathItem(name)) {
+                to.addPathItem(name, fromPathItem);
             } else {
-                ModelUtils.merge(entry.getValue(), to.getPathItem(entry.getKey()), override);
+                PathItemImpl.merge(fromPathItem, to.getPathItem(name), override);
             }
         });
     }

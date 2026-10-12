@@ -44,7 +44,10 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.admin.amx.config.AMXConfiguration;
+
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jakarta.inject.Inject;
@@ -63,10 +66,13 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
+import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.UnprocessedChangeEvent;
+import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 /**
  * Asadmin command to set the Monitoring Service configuration.
@@ -99,11 +105,14 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
     @Param(name = "dtraceenabled", optional = true, alias = "dtraceEnabled")
     private Boolean dtraceEnabled;
 
+    @Param(name = "otelenabled", optional = true, alias = "otelEnabled")
+    private Boolean otelEnabled;
+
     @Inject
     protected Target targetUtil;
 
     @Inject
-    ServiceLocator serviceLocator;
+    UnprocessedConfigListener unprocessedConfigListener;
 
     @Inject
     private Logger logger;
@@ -140,10 +149,24 @@ public class SetMonitoringServiceConfiguration implements AdminCommand {
                          monitoringServiceProxy.setDtraceEnabled(String.valueOf(dtraceEnabled));
                     }
 
+                    if (otelEnabled != null) {
+                        String value = String.valueOf(otelEnabled);
+                        boolean changed = !value.equals(monitoringServiceProxy.getOpenTelemetryEnabled());
+                        monitoringServiceProxy.setOpenTelemetryEnabled(value);
+                        if (changed) {
+                            UnprocessedChangeEvent event = new UnprocessedChangeEvent(
+                                    new PropertyChangeEvent(monitoringServiceProxy, "otelEnabled", !otelEnabled, otelEnabled),
+                                    "Restart required due toggle of OpenTelemetry setting");
+                            UnprocessedChangeEvents events = new UnprocessedChangeEvents(event);
+                            unprocessedConfigListener.unprocessedTransactedEvents(Collections.singletonList(events));
+                        }
+                    }
+
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return monitoringServiceProxy;
                 }
             }, monitoringService);
+
         } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Failed to execute the command set-monitoring-service-configuration: {0}",  ex.getCause().getMessage());
             actionReport.setMessage(ex.getCause().getMessage());

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2026 Payara Foundation and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://github.com/payara/Payara/blob/main/LICENSE.txt
+    See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at legal/OPEN-SOURCE-LICENSE.txt.
+
+    GPL Classpath Exception:
+    The Payara Foundation designates this particular file as subject to the "Classpath"
+    exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+ -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>delete-system-properties</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/96c4d89611.js"></script>
+  </head>
+  <body>
+<table id="doc-title" cellspacing="0" cellpadding="0">
+  <tr>
+  <td align="left" valign="top">
+  <b>delete-system-properties</b><br />
+  </td>
+  </tr>
+</table>
+<hr />
+
+<table width="90%" id="top-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="delete-system-property.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-threadpool.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class=" vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+
+
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><a id="delete-system-properties-1"></a><a id="delete-system-properties"></a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_delete_system_properties">delete-system-properties</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>removes one or more system properties of the domain, configuration, cluster, or
+server instance</p>
+</div>
+<div id="sthref-dsp-synopsis" class="paragraph">
+<p>Synopsis</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin [asadmin-options] delete-system-properties [--help]
+[--target target_name ]
+property_name[:property_name]*</code></pre>
+</div>
+</div>
+<div id="sthref-dsp-description" class="paragraph">
+<p>Description</p>
+</div>
+<div class="paragraph">
+<p>The <code>delete-system-properties</code> subcommand deletes one or more system properties
+of a domain, configuration, cluster, or server instance. Multiple property names
+are separated by colons (<code>:</code>). Make sure that the system properties are not
+referenced elsewhere in the configuration before deleting them.</p>
+</div>
+<div class="paragraph">
+<p>This subcommand is supported in remote mode only.</p>
+</div>
+<div id="sthref-dsp-options" class="paragraph">
+<p>Options</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">asadmin-options</dt>
+<dd>
+<p>Options for the <code>asadmin</code> utility. For information about these
+options, see the <a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a> help page.</p>
+</dd>
+<dt class="hdlist1"><code>--help</code></dt>
+<dt class="hdlist1"><code>-?</code></dt>
+<dd>
+<p>Displays the help text for the subcommand.</p>
+</dd>
+<dt class="hdlist1"><code>--target</code></dt>
+<dd>
+<p>This option specifies the target on which you are deleting the system
+properties. The valid targets for this subcommand are instance,
+cluster, configuration, domain, and server. Server is the default
+option.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref-dsp-operands" class="paragraph">
+<p>Operands</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">property_name[:property_name]*</dt>
+<dd>
+<p>A colon-separated list of names of the system properties to remove.</p>
+</dd>
+</dl>
+</div>
+<div id="sthref-dsp-examples" class="paragraph">
+<p>Examples</p>
+</div>
+<div class="paragraph">
+<p>Example 1   Deleting a Single System Property</p>
+</div>
+<div class="paragraph">
+<p>This example deletes the system property named <code>http-listener-port</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-system-properties http-listener-port
+System Properties [http-listener-port] deleted from target server. Make sure you check their references.
+Command delete-system-properties executed successfully.</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Example 2   Deleting Multiple System Properties</p>
+</div>
+<div class="paragraph">
+<p>This example deletes the system properties named <code>http-listener-port</code> and
+<code>https-listener-port</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code class="language-oac_no_warn" data-lang="oac_no_warn">asadmin&gt; delete-system-properties http-listener-port:https-listener-port
+System Properties [http-listener-port, https-listener-port] deleted from target server. Make sure you check their references.
+Command delete-system-properties executed successfully.</code></pre>
+</div>
+</div>
+<div id="sthref-dsp-exit" class="paragraph">
+<p>Exit Status</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">0</dt>
+<dd>
+<p>subcommand executed successfully</p>
+</dd>
+<dt class="hdlist1">1</dt>
+<dd>
+<p>error in executing the subcommand</p>
+</dd>
+</dl>
+</div>
+<div id="sthref-dsp-seealso" class="paragraph">
+<p>See Also</p>
+</div>
+<div class="paragraph">
+<p><a href="asadmin.html#asadmin-1m"><code>asadmin</code>(1M)</a></p>
+</div>
+<div class="paragraph">
+<p><a href="create-system-properties.html#create-system-properties-1"><code>create-system-properties</code>(1)</a>,
+<a href="delete-system-property.html#delete-system-property-1"><code>delete-system-property</code>(1)</a>,
+<a href="list-system-properties.html#list-system-properties-1"><code>list-system-properties</code>(1)</a></p>
+</div>
+</div>
+</div>
+
+<hr />
+
+<table width="90%" id="bottom-nav" cellspacing="0" cellpadding="0">
+	<colgroup>
+		<col width="12%"/>
+		<col width="12%"/>
+		<col width="*"/>
+	</colgroup>
+	<tr>
+		<td align="left">
+		<a href="delete-system-property.html">
+			<span class=" vector-font"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Previous</span>
+		</a>
+		</td>
+
+		<td align="left">
+		<a href="delete-threadpool.html">
+			<span class="vector-font"><i class="fa fa-arrow-circle-right vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Next</span>
+		</a>
+		</td>
+
+		<td align="right">
+		<a href="toc.html">
+			<span class="vector-font"><i class="fa fa-list vector-font" aria-hidden="true"></i></span>
+			<span style="position:relative;top:-2px;">Contents</span>
+		</a>
+		</td>
+	</tr>
+</table>
+</body>
+</html>

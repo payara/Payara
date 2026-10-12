@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package fish.payara.samples.multiplekeystores;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -48,21 +49,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.io.File;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import fish.payara.samples.CliCommands;
-import fish.payara.samples.SecurityUtils;
-import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-
-import static org.junit.Assert.*;
+/**
+ *
+ * @author James Hillyard
+ */
 
 @RunWith(PayaraArquillianTestRunner.class)
 @NotMicroCompatible
@@ -96,7 +92,7 @@ public class SecureCustomHttpListenerTest {
     }
 
     @Test
-    public void secureHttpListenerTwoWithDefaultCert() throws IOException,InterruptedException {
+    public void secureHttpListenerTwoWithDefaultCert() throws IOException, InterruptedException {
         waitForServer(8181);
         WebResponse webResponse = WEB_CLIENT.getPage(HTTP_LISTENER_TWO_URL).getWebResponse();
         assertNotNull(webResponse);
@@ -104,7 +100,7 @@ public class SecureCustomHttpListenerTest {
     }
 
     @Test
-    public void secureNewHttpListenerWithAdditionalCert() throws IOException,InterruptedException {
+    public void secureNewHttpListenerWithAdditionalCert() throws IOException, InterruptedException {
         waitForServer(8282);
         WebResponse webResponse = WEB_CLIENT.getPage(NEW_LISTENER_URL).getWebResponse();
         assertNotNull(webResponse);

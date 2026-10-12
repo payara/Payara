@@ -69,7 +69,9 @@ pipeline {
                         retry(3)
                     }
                     steps {
+
                         processPayaraArtifacts(buildId)
+
                         setupDomain()
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
@@ -103,6 +105,7 @@ pipeline {
                         retry(3)
                     }
                     steps {
+
                         processPayaraArtifacts(buildId, true)
                         setupDomain()
 
@@ -110,10 +113,10 @@ pipeline {
                         sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-server-remote,playwright \
                          -Djavax.net.ssl.trustStore=${env.JAVA_HOME}/lib/security/cacerts \
                          -Djavax.xml.accessExternalSchema=all \
-                         -Dpayara.home=${pwd()}/appserver/distributions/payara/target/stage/payara7 \
                          -Dsurefire.rerunFailingTestsCount=2 \
-                         -Dpayara.domain.name=${DOMAIN_NAME} \
                          -Dfailsafe.rerunFailingTestsCount=2 \
+                         -Dpayara.home="${pwd()}/payara7" \
+                         -Dpayara.domain.name=test-domain \
                          -f appserver/tests/payara-samples """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
@@ -140,7 +143,7 @@ pipeline {
                             string(name: 'buildProject', value: "Build"),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'Config'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -159,7 +162,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'Fault-Tolerance'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -178,7 +181,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'Health'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -197,7 +200,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'JWT-Auth'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -216,7 +219,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'Metrics'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -235,7 +238,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'OpenAPI'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -243,42 +246,61 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenAPI TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-                stage('MicroProfile OpenTelemetry Tracing TCK') {
+                stage('MicroProfile OpenTelemetry JVM Metrics TCK') {
                     agent {
                         label 'general-purpose'
                     }
                     steps {
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
-                            string(name: 'suites', value: 'OpenTelemetry-Tracing'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Runtime'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
                         ]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
-                stage('MicroProfile OpenTracing TCK') {
+                stage('MicroProfile OpenTelemetry JVM Metrics Application TCK') {
                     agent {
                         label 'general-purpose'
                     }
                     steps {
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry JVM Metrics Application TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                         build job: 'TCKs/MP-TCKs',
                         parameters: [
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
-                            string(name: 'suites', value: 'OpenTracing'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenTelemetry-JVM-Metrics-Application'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
                         ]
-                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTracing TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry JVM Metrics Application TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                    }
+                }
+                stage('MicroProfile OpenTelemetry Tracing Logging TCK') {
+                    agent {
+                        label 'general-purpose'
+                    }
+                    steps {
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running MP OpenTelemetry Tracing Logging TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        build job: 'TCKs/MP-TCKs',
+                        parameters: [
+                            string(name: 'buildProject', value: 'Build'),
+                            string(name: 'payaraBuildNumber', value: buildId),
+                            string(name: 'repoOrg', value: 'payara'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
+                            string(name: 'suites', value: 'OpenTelemetry-Tracing-Logging'),
+                            string(name: 'jdkVer', value: 'zulu-21'),
+                            string(name: 'distribution', value: 'full')
+                        ]
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran MP OpenTelemetry Tracing Logging TCK  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                 }
                 stage('MicroProfile REST Client TCK') {
@@ -292,7 +314,7 @@ pipeline {
                             string(name: 'buildProject', value: 'Build'),
                             string(name: 'payaraBuildNumber', value: buildId),
                             string(name: 'repoOrg', value: 'payara'),
-                            string(name: 'testBranchCommitOrTag', value: 'microprofile-6.1-Payara7'),
+                            string(name: 'testBranchCommitOrTag', value: 'microprofile-7.1'),
                             string(name: 'suites', value: 'Rest-Client'),
                             string(name: 'jdkVer', value: 'zulu-21'),
                             string(name: 'distribution', value: 'full')
@@ -374,7 +396,7 @@ pipeline {
                         -pl fish.payara.samples:samples-test-utils """
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running test with Payara Micro  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed,install-deps \
+                        sh """mvn -V -B -ff clean install --strict-checksums -Ppayara-micro-managed \
                         -Dsurefire.rerunFailingTestsCount=2 \
                         -Dfailsafe.rerunFailingTestsCount=2 \
                         -f appserver/tests/functional/payara-micro """
@@ -409,6 +431,11 @@ pipeline {
                                 -Dfailsafe.rerunFailingTestsCount=2 \
                                 -f appserver/tests/functional/payara-application-xml """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && python3 appserver/tests/functional/jms/test_jms_ping.py \
+                        --domain-name ${env.DOMAIN_NAME} """
+                        echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
                         always {

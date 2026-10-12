@@ -57,12 +57,23 @@ public class ManagedScheduledExecutorEJBRest {
     @EJB
     ManagedScheduledExecutorEJB managedScheduledExecutorEJB;
 
+    @EJB
+    ManagedScheduledExecutorEJBFromConfig managedScheduledExecutorEJBFromConfig;
+
     @GET
     @Path("application")
     @Produces(MediaType.TEXT_PLAIN)
     public String processManagedScheduledExecutor() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, "Processing xml tag from ear application config");
         return managedScheduledExecutorEJB.processCustomManagedScheduled();
+    }
+
+    @GET
+    @Path("ejbconfig")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String processManagedScheduledExecutorFromEJBConfig() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing xml tag from ejb config");
+        return managedScheduledExecutorEJBFromConfig.processCustomManagedScheduled();
     }
 
 }

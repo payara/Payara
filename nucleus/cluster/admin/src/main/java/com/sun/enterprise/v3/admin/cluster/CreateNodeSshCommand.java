@@ -45,12 +45,13 @@ import static com.sun.enterprise.v3.admin.cluster.NodeUtils.NODE_DEFAULT_REMOTE_
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.NODE_DEFAULT_SSH_PORT;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYFILE;
 import static com.sun.enterprise.v3.admin.cluster.NodeUtils.PARAM_SSHKEYPASSPHRASE;
+import static org.glassfish.api.ActionReport.ExitCode.WARNING;
 import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
-import static org.glassfish.cluster.ssh.util.SSHUtil.getExistingKeyFile;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -66,6 +67,7 @@ import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.cluster.RemoteType;
+import com.sun.enterprise.util.net.NetUtils;
 
 /**
  * Remote AdminCommand to create and ssh node.  This command is run only on DAS.
@@ -103,7 +105,22 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
     @Override
     public final void execute(AdminCommandContext context) {
         populateBaseClass();
+
+        boolean localHost = NetUtils.isThisHostLocal(nodehost);
+
         executeInternal(context);
+
+        if (localHost) {
+            context.getLogger().warning(Strings.get("create.node.ssh.local.host.warning", nodehost));
+
+            ActionReport report = context.getActionReport();
+            String warningMsg = Strings.get("create.node.ssh.local.host.warning", nodehost);
+            String existing = report.getMessage();
+            report.setMessage(StringUtils.ok(existing) ? warningMsg + NL + existing : warningMsg);
+            if (report.getActionExitCode() != ActionReport.ExitCode.FAILURE) {
+                report.setActionExitCode(WARNING);
+            }
+        }
     }
 
     @Override
@@ -152,10 +169,6 @@ public class CreateNodeSshCommand extends CreateRemoteNodeCommand {
 
     @Override
     protected final void populateCommandArgs(List<String> args) {
-        if (sshkeyfile == null) {
-            sshkeyfile = getExistingKeyFile();
-        }
-
         if (sshkeyfile != null) {
             args.add("--sshkeyfile");
             args.add(sshkeyfile);

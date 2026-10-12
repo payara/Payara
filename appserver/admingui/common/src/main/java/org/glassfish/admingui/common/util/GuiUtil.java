@@ -233,6 +233,7 @@ public class GuiUtil {
         sessionMap.put("reqInt", GuiUtil.getMessage("msg.JS.enterIntegerValue"));
         sessionMap.put("reqNum", GuiUtil.getMessage("msg.JS.enterNumericValue"));
         sessionMap.put("reqPort", GuiUtil.getMessage("msg.JS.enterPortValue"));
+        sessionMap.put("reqRegex", GuiUtil.getMessage("msg.JS.enterRegex"));
         sessionMap.put("_SESSION_INITIALIZED","TRUE");
         sessionMap.put("restartRequired", Boolean.FALSE);
 

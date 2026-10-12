@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2021] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.cli;
 
@@ -65,7 +65,7 @@ import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
-import org.jline.terminal.impl.ExternalTerminal;
+import org.jline.terminal.impl.DumbTerminal;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -155,32 +155,13 @@ public class MultimodeCommand extends CLICommand {
 
                 reader.unsetOpt(LineReader.Option.INSERT_TAB);
             } else {
-
                 printPrompt = false;
                 if (!file.canRead()) {
                     throw new CommandException("File: " + file + " can not be read");
                 }
-                OutputStream out = new OutputStream() {
-
-                    @Override
-                    public void write(int b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b) throws IOException {
-                        return;
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) throws IOException {
-                        return;
-                    }
-                };
-
-                Terminal asadminTerminal = new ExternalTerminal(ASADMIN, "",
-                        new FileInputStream(file), out, encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
-                
+                Terminal asadminTerminal = new DumbTerminal(ASADMIN, Terminal.TYPE_DUMB,
+                        new FileInputStream(file), OutputStream.nullOutputStream(),
+                        encoding != null ? Charset.forName(encoding) : Charset.defaultCharset());
                 reader = newLineReaderBuilder()
                         .terminal(asadminTerminal)
                         .build();

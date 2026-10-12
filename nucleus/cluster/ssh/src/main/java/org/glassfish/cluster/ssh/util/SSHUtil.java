@@ -37,18 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2020-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.cluster.ssh.util;
 
 import com.sun.enterprise.util.io.FileUtils;
-import com.trilead.ssh2.Connection;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.glassfish.api.admin.CommandException;
 
@@ -57,40 +54,17 @@ import org.glassfish.api.admin.CommandException;
  */
 public class SSHUtil {
 
-    private static final List<Connection> activeConnections = new ArrayList<>();
     private static final String NL = System.getProperty("line.separator");
 
-   /**
-       * Registers a connection for cleanup when the plugin is stopped.
-       *
-       * @param connection The connection.
-       */
-      public static synchronized void register(Connection connection) {
-          if (!activeConnections.contains(connection)) {
-              activeConnections.add(connection);
-          }
-      }
-
-   /**
-       * Unregisters a connection for cleanup when the plugin is stopped.
-       *
-       * @param connection The connection.
-       */
-      public static synchronized void unregister(Connection connection) {
-          connection.close();
-          activeConnections.remove(connection);
-      }
-
-   /**
-       * Convert empty string to null.
-       */
-      public static String checkString(String s) {
-          if(s==null || s.length()==0) {
+    /**
+     * Convert empty string to null.
+     */
+    public static String checkString(String s) {
+        if (s == null || s.length() == 0) {
             return null;
         }
-          return s;
-      }
-
+        return s;
+    }
 
     public static String getExistingKeyFile() {
         String key = null;
@@ -105,62 +79,50 @@ public class SSHUtil {
         return key;
     }
 
-      public static String getDefaultKeyFile() {
-          String k = System.getProperty("user.home") + File.separator
-          //String k = System.getenv("HOME") + File.separator
-                          + ".ssh" + File.separator + "id_rsa";
-          return k;
-      }
+    public static String getDefaultKeyFile() {
+        return System.getProperty("user.home") + File.separator
+                + ".ssh" + File.separator + "id_rsa";
+    }
 
     /**
-     * Simple method to validate an encrypted key file
-     * @return true|false
-     * @throws CommandException
+     * Simple method to validate an encrypted key file.
      */
     public static boolean isEncryptedKey(String keyFile) throws CommandException {
-        boolean res = false;
+        boolean encrypted = false;
         try {
             String f = FileUtils.readSmallFile(keyFile);
             if (f.startsWith("-----BEGIN ") && f.contains("ENCRYPTED")
                     && f.endsWith(" PRIVATE KEY-----" + NL)) {
-                res=true;
+                encrypted = true;
             }
-        }
-        catch (IOException ioe) {
+        } catch (IOException ioe) {
             throw new CommandException(Strings.get("error.parsing.key", keyFile, ioe.getMessage()));
         }
-        return res;
+        return encrypted;
     }
 
-
     /**
-     * This method validates either private or public key file. In case of private
-     * key, it parses the key file contents to verify if it indeed contains a key
-     * @param  file the key file
-     * @return success if file exists, false otherwise
+     * Validates either a private or public key file.
      */
     public static boolean validateKeyFile(String file) throws CommandException {
-        boolean ret = false;
-        //if key exists, set prompt flag
+        boolean valid;
         File f = new File(file);
         if (f.exists()) {
             if (!f.getName().endsWith(".pub")) {
-                String key = null;
+                String key;
                 try {
                     key = FileUtils.readSmallFile(file);
-                }
-                catch (IOException ioe) {
+                } catch (IOException ioe) {
                     throw new CommandException(Strings.get("unable.to.read.key", file, ioe.getMessage()));
                 }
                 if (!key.startsWith("-----BEGIN ") && !key.endsWith(" PRIVATE KEY-----" + NL)) {
                     throw new CommandException(Strings.get("invalid.key.file", file));
                 }
             }
-            ret = true;
-        }
-        else {
+            valid = true;
+        } else {
             throw new CommandException(Strings.get("key.does.not.exist", file));
         }
-        return ret;
+        return valid;
     }
 }

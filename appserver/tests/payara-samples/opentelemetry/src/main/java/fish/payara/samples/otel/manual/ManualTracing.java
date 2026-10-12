@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,7 @@ import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.ServiceAttributes;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Disposes;
@@ -80,7 +80,7 @@ public class ManualTracing {
 
     void initOtelManually() {
         Resource resource = Resource.getDefault()
-                .merge(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "manual-otel-app")));
+                .merge(Resource.create(Attributes.of(ServiceAttributes.SERVICE_NAME, "manual-otel-app")));
 
         SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
                 .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())

@@ -51,13 +51,6 @@ import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.InstanceDirs;
 import fish.payara.util.cluster.PayaraServerNameGenerator;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -72,10 +65,19 @@ import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.cluster.ssh.connect.NodeRunnerSsh;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 import static com.sun.enterprise.util.SystemPropertyConstants.AGENT_ROOT_PROPERTY;
 import static java.util.logging.Level.SEVERE;
@@ -86,9 +88,9 @@ import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 
 /**
  * Remote AdminCommand to create an instance.  This command is run only on DAS.
- *  1. Register the instance on DAS
- *  2. Create the file system on the instance node via ssh, node agent, or other
- *  3. Bootstrap a minimal set of config files on the instance for secure admin.
+ * 1. Register the instance on DAS
+ * 2. Create the file system on the instance node via ssh, node agent, or other
+ * 3. Bootstrap a minimal set of config files on the instance for secure admin.
  *
  * @author Jennifer Chou
  */
@@ -97,39 +99,39 @@ import static org.glassfish.api.admin.RestEndpoint.OpType.POST;
 @PerLookup
 @ExecuteOn(RuntimeType.DAS)
 @RestEndpoints({
-    @RestEndpoint(configBean=Domain.class,
-        opType=POST, 
-        path="create-instance", 
-        description="Create Instance")
+        @RestEndpoint(configBean = Domain.class,
+                opType = POST,
+                path = "create-instance",
+                description = "Create Instance")
 })
 public class CreateInstanceCommand implements AdminCommand {
     private static final String NEWLINE = System.lineSeparator();
-    
+
     @Param(name = "node", alias = "nodeagent")
     String node;
-    
+
     @Param(name = "config", optional = true)
     @I18n("generic.config")
     String configRef;
-    
+
     @Param(name = "cluster", optional = true)
     String clusterName;
-    
+
     @Param(name = "deploymentgroup", optional = true)
     String deploymentGroup;
-    
+
     @Param(name = "lbenabled", optional = true)
     private Boolean lbEnabled;
-    
+
     @Param(name = "checkports", optional = true, defaultValue = "true")
     private boolean checkPorts;
-    
+
     @Param(optional = true, defaultValue = "false")
     private boolean terse;
-    
+
     @Param(name = "portbase", optional = true)
     private String portBase;
-    
+
     @Param(name = "systemproperties", optional = true, separator = ':')
     private String systemProperties;
 
@@ -141,28 +143,28 @@ public class CreateInstanceCommand implements AdminCommand {
 
     @Param(name = "instance_name", primary = true)
     private String instance;
-    
+
     @Param(name = "dataGridStartPort", optional = true, alias = "datagridstartport")
     private String dataGridStartPort;
-    
+
     @Inject
     private CommandRunner commandRunner;
-    
+
     @Inject
     private ServiceLocator serviceLocator;
-    
+
     @Inject
     private Nodes nodes;
-    
+
     @Inject
     private Servers servers;
-    
+
     @Inject
     private ServerEnvironment env;
-    
+
     @Inject
     private Target targetUtil;
-    
+
     private Logger logger; // set in execute and all references occur after that assignment
     private AdminCommandContext ctx;
     private Node theNode;
@@ -207,6 +209,9 @@ public class CreateInstanceCommand implements AdminCommand {
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
 
+        logger.fine("Creating instance " + instance + " on node " + node
+                + " (host=" + nodeHost + ", type=" + theNode.getType() + ")");
+
         if (autoName) {
             instance = PayaraServerNameGenerator.validateInstanceNameUnique(instance, context);
         } else {
@@ -240,6 +245,7 @@ public class CreateInstanceCommand implements AdminCommand {
         commandInvocation.parameters(commandParameters);
         
         commandInvocation.execute();
+        logger.fine("_register-instance result=" + report.getActionExitCode());
 
         if (report.getActionExitCode() != SUCCESS && report.getActionExitCode() != WARNING) {
             // If we couldn't update domain.xml then stop!
@@ -267,6 +273,7 @@ public class CreateInstanceCommand implements AdminCommand {
         }
 
         if (!validateDasOptions()) {
+            logger.warning("validateDasOptions failed");
             report.setActionExitCode(WARNING);
             return;
         }
@@ -276,8 +283,8 @@ public class CreateInstanceCommand implements AdminCommand {
                     "\n\nSuccessfully registered instance with DAS, now attempting to create Docker container...");
             createDockerContainer();
         } else {
-            // Then go create the instance filesystem on the node
             createInstanceFilesystem();
+            logger.fine("createInstanceFilesystem completed, status=" + report.getActionExitCode());
         }
 
         if (extraTerse) {
@@ -326,7 +333,6 @@ public class CreateInstanceCommand implements AdminCommand {
                     logger.warning(msg);
                     report.setActionExitCode(FAILURE);
                     report.setMessage(msg);
-                    
                     return;
                 }
             }
@@ -446,8 +452,9 @@ public class CreateInstanceCommand implements AdminCommand {
         String dasHost = dasServer.getAdminHost();
         String dasPort = Integer.toString(dasServer.getAdminPort());
 
-        ArrayList<String> command = new ArrayList<String>();
-        String humanCommand = null;
+        logger.fine("Creating instance filesystem, dasHost=" + dasHost + ":" + dasPort);
+
+        ArrayList<String> command = new ArrayList<>();
 
         if (!theNode.isLocal()) {
             // Only specify the DAS host if the node is remote. See issue 13993
@@ -470,7 +477,9 @@ public class CreateInstanceCommand implements AdminCommand {
 
         command.add(instance);
 
-        humanCommand = makeCommandHuman(command);
+        String humanCommand = makeCommandHuman(command, theNode);
+        logger.finer("userManagedNodeType=" + userManagedNodeType() + " command=" + command);
+
         if (userManagedNodeType()) {
             report.setMessage(
                 StringUtils.cat(NEWLINE, registerInstanceMessage, Strings.get("create.instance.config", instance, humanCommand)));
@@ -478,12 +487,11 @@ public class CreateInstanceCommand implements AdminCommand {
             return;
         }
 
-        // First error message displayed if we fail
         StringBuilder output = new StringBuilder();
 
-        // Run the command on the node and handle errors.
         nodeUtils.runAdminCommandOnNode(
-            theNode, command, ctx, Strings.get("create.instance.filesystem.failed", instance, node, nodeHost), humanCommand, output);
+                theNode, command, ctx, Strings.get("create.instance.filesystem.failed", instance, node, nodeHost), humanCommand, output);
+        logger.fine("_create-instance-filesystem returned exitCode=" + report.getActionExitCode());
 
         if (report.getActionExitCode() != SUCCESS) {
             // Something went wrong with the nonlocal command don't continue but set status to warning
@@ -564,7 +572,7 @@ public class CreateInstanceCommand implements AdminCommand {
 
             if (nodeDir != null) {
                 command.add("--nodedir");
-                command.add(nodeDir); // XXX escape spaces?
+                command.add(nodeDir);
             }
 
             command.add("--node");
@@ -572,10 +580,12 @@ public class CreateInstanceCommand implements AdminCommand {
 
             command.add(instance);
 
-            // Run the command on the node
+            logger.fine("Running _validate-das-options: " + command);
             nodeUtils.runAdminCommandOnNode(theNode, command, ctx, "", null, null);
+            logger.fine("_validate-das-options returned " + report.getActionExitCode());
 
             if (report.getActionExitCode() != SUCCESS) {
+                logger.warning("_validate-das-options failed: " + report.getMessage());
                 report.setActionExitCode(FAILURE);
                 isDasOptionsValid = false;
             }
@@ -584,12 +594,13 @@ public class CreateInstanceCommand implements AdminCommand {
         return isDasOptionsValid;
     }
 
-    private String makeCommandHuman(List<String> commands) {
+    private String makeCommandHuman(List<String> commands, Node node) {
         StringBuilder fullCommand = new StringBuilder();
 
-        fullCommand.append("lib");
-        fullCommand.append(System.getProperty("file.separator"));
-        fullCommand.append("nadmin ");
+        fullCommand.append("lib/");
+        boolean remoteWindows = node != null
+                && NodeRunnerSsh.isWindowsInstallDir(node.getInstallDirUnixStyle());
+        fullCommand.append(remoteWindows ? "nadmin.bat " : "nadmin ");
 
         for (String command : commands) {
             if (command.equals("_create-instance-filesystem")) {

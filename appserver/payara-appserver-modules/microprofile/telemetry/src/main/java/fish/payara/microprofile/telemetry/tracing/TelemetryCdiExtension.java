@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
+import fish.payara.telemetry.service.OpenTelemetryBootstrap;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.spi.AfterBeanDiscovery;
@@ -66,8 +67,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 /**
  * Extension class that adds a Producer for OpenTracing Tracers, allowing injection.
@@ -76,21 +75,24 @@ import java.util.stream.StreamSupport;
  */
 public class TelemetryCdiExtension implements Extension {
     private final OpenTelemetryService openTelemetryService;
+    
+    private final OpenTelemetryBootstrap openTelemetryBootstrap;
 
     private boolean appManagedOtel;
 
     public TelemetryCdiExtension() {
         openTelemetryService = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryService.class);
+        openTelemetryBootstrap = Globals.getDefaultBaseServiceLocator().getService(OpenTelemetryBootstrap.class);
     }
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-        addAnnotatedType(bbd, bm, OpenTracingTracerProducer.class);
         addAnnotatedType(bbd, bm, OpenTelemetryTracerProducer.class);
+        addAnnotatedType(bbd, bm, OpenTelemetryMeterProducer.class);
         bbd.addInterceptorBinding(new WithSpanAnnotatedType(bm.createAnnotatedType(WithSpan.class)));
     }
 
-    void afterBeanDiscovery(@Observes AfterBeanDiscovery abd, BeanManager bm) {
-        abd.addBean(new WithSpanMethodInterceptorBean(bm));
+    void afterBeanDiscovery(@Observes AfterBeanDiscovery abd) {
+        abd.addBean(new WithSpanMethodInterceptorBean());
     }
 
     static void addAnnotatedType(BeforeBeanDiscovery bbd, BeanManager bm, Class<?> beanClass) {
@@ -100,17 +102,16 @@ public class TelemetryCdiExtension implements Extension {
 
     void initializeOpenTelemetry(@Observes AfterDeploymentValidation adv) {
         try {
-            var config = ConfigProvider.getConfig();
-            if (config.getOptionalValue("otel.sdk.disabled", Boolean.class).orElse(true)) {
-                // app-specific OpenTelemetry is not configured
-                return;
+            //verify if global config is available
+            if (openTelemetryBootstrap.isRuntimeTelemetryDisabled()) {
+                var config = ConfigProvider.getConfig();
+                if (config.getOptionalValue("otel.sdk.disabled", Boolean.class).orElse(true)) {
+                    // app-specific OpenTelemetry is not configured
+                    return;
+                }
+                appManagedOtel = true;
+                openTelemetryService.initializeCurrentApplication(config);
             }
-            // This is potentially expensive, but Autoconfigure SDK does not have lazy per-key provider, needs a map
-            var otelProps = StreamSupport.stream(config.getPropertyNames().spliterator(), false)
-                    .filter(key -> key.startsWith("otel."))
-                    .collect(Collectors.toMap(k -> k, k -> config.getValue(k, String.class)));
-            appManagedOtel = true;
-            openTelemetryService.initializeCurrentApplication(otelProps);
         } catch (Exception e) {
             adv.addDeploymentProblem(e);
         }

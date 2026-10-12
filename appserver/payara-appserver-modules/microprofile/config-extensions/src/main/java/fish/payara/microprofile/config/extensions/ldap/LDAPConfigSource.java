@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
@@ -58,6 +63,10 @@ public class LDAPConfigSource extends ConfiguredExtensionConfigSource<LDAPConfig
     private static final Logger LOGGER = Logger.getLogger(LDAPConfigSource.class.getName());
 
     private LDAPConfigSourceHelper ldapConfigSourceHelper;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    MicroprofileConfigConfiguration microprofileConfigConfiguration;
 
     @Override
     public void bootstrap() {
@@ -115,9 +124,7 @@ public class LDAPConfigSource extends ConfiguredExtensionConfigSource<LDAPConfig
     @Override
     public int getOrdinal() {
         return Integer.parseInt(
-                Globals.getDefaultHabitat()
-                        .getService(ConfigProviderResolverImpl.class)
-                        .getMPConfig().getLdapOrdinality()
+                microprofileConfigConfiguration.getLdapOrdinality()
         );
     }
 
