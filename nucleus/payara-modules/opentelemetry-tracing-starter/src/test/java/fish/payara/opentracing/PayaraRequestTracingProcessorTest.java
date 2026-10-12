@@ -42,17 +42,28 @@
 
 package fish.payara.opentracing;
 
+import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class PayaraRequestTracingProcessorTest {
 
@@ -62,24 +73,68 @@ public class PayaraRequestTracingProcessorTest {
                 .build().get("test");
     }
 
+    private Tracer tracer(RequestTracingService rt, Sampler sampler) {
+        return SdkTracerProvider.builder()
+                .setSampler(sampler)
+                .addSpanProcessor(new PayaraRequestTracingProcessor(rt))
+                .build().get("test");
+    }
+
     @Test
     public void localRootSpanStartsAndEndsTrace() {
         RequestTracingService rt = mock(RequestTracingService.class);
         Span root = tracer(rt).spanBuilder("GET").startSpan();
-        verify(rt).startTrace(any(RequestTraceSpan.class));
+        ArgumentCaptor<RequestTraceSpan> startCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt).startTrace(startCaptor.capture());
+        RequestTraceSpan capturedRoot = startCaptor.getValue();
         root.end();
-        verify(rt).traceSpan(any(RequestTraceSpan.class), anyLong());
+        ArgumentCaptor<RequestTraceSpan> endCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt).traceSpan(endCaptor.capture(), anyLong());
+        assertEquals("Same root span should be passed to traceSpan", capturedRoot, endCaptor.getValue());
     }
 
     @Test
-    public void childSpanIsStoredNotStarted() {
+    public void childSpanIsTracedNotStarted() {
         RequestTracingService rt = mock(RequestTracingService.class);
         Tracer t = tracer(rt);
         Span root = t.spanBuilder("GET").startSpan();
-        Span child = t.spanBuilder("child").setParent(io.opentelemetry.context.Context.root().with(root)).startSpan();
+        Span child = t.spanBuilder("child").setParent(Context.root().with(root)).startSpan();
         child.end();
         root.end();
         verify(rt, times(1)).startTrace(any(RequestTraceSpan.class));
-        verify(rt, atLeastOnce()).traceSpan(any(RequestTraceSpan.class), anyLong());
+        ArgumentCaptor<RequestTraceSpan> traceSpanCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt, times(2)).traceSpan(traceSpanCaptor.capture(), anyLong());
+        // Verify that one of the traced spans is the child
+        boolean childFound = traceSpanCaptor.getAllValues().stream()
+                .anyMatch(span -> "child".equals(span.getEventName()));
+        assertEquals("Child span should be traced", true, childFound);
+    }
+
+    @Test
+    public void remoteParentSpanStartsPropagatedTrace() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        // Build a remote parent context
+        SpanContext remoteCtx = SpanContext.createFromRemoteParent(
+                "12345678901234567890123456789012",
+                "1234567890123456",
+                TraceFlags.getSampled(),
+                TraceState.getDefault());
+        Span root = tracer(rt).spanBuilder("remote-child")
+                .setParent(Context.root().with(Span.wrap(remoteCtx)))
+                .startSpan();
+        ArgumentCaptor<RequestTraceSpan> startCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt).startTrace(startCaptor.capture());
+        RequestTraceSpan capturedSpan = startCaptor.getValue();
+        assertEquals("Remote parent span should be PROPAGATED_TRACE", EventType.PROPAGATED_TRACE, capturedSpan.getEventType());
+        root.end();
+        verify(rt).traceSpan(same(capturedSpan), anyLong());
+    }
+
+    @Test
+    public void unsampledSpanCausesNoServiceCalls() {
+        RequestTracingService rt = mock(RequestTracingService.class);
+        Span root = tracer(rt, Sampler.alwaysOff()).spanBuilder("unsampled").startSpan();
+        root.end();
+        verifyNoInteractions(rt);
     }
 }
