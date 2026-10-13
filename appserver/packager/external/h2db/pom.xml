@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2017-2019 Payara Foundation and/or its affiliates. All rights reserved.
+    Copyright (c) 2017-2026 Payara Foundation and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,12 @@
                             <tasks>
                                 <resolveArtifact artifactId="h2db" property="h2db.zip" />
                                 <mkdir dir="target/classes/h2db" />
-				<unzip src="${h2db.zip}" dest="target/classes/h2db">
+                                <unzip src="${h2db.zip}" dest="target/classes/h2db">
+                                    <patternset>
+                                        <exclude name="src/**" />
+                                        <exclude name="build.**" />
+                                        <exclude name="docs/**" />
+                                    </patternset>
                                 </unzip>
                             </tasks>
                         </configuration>
