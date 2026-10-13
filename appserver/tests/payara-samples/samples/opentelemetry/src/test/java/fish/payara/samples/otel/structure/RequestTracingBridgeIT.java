@@ -73,6 +73,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RequestTracingBridgeIT extends AbstractSpanNameTest {
     private static final Logger LOG = Logger.getLogger(RequestTracingBridgeIT.class.getName());
 
+    private String uri(String path) {
+        return URI.create(baseUri.toString().replaceAll("/+$", "") + "/" + path.replaceAll("^/+", "")).toString();
+    }
+
     public static class BridgeConfig extends Conf {
         public BridgeConfig() {
             super(Map.of(SPAN_NAMING_KEY, "opentelemetry"));
@@ -141,7 +145,7 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
 
     @Test
     public void syncRequestYieldsOneCompleteTraceWithRootFirst() throws Exception {
-        String url = baseUri.toString() + "jaxrs/structure/ejb";
+        String url = uri("jaxrs/structure/ejb");
         HttpRequest request = HttpRequest.newBuilder(new URI(url)).GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
@@ -171,7 +175,7 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
     @Test
     public void asyncRequestIsPublishedAndLaterRequestsAreUnaffected() throws Exception {
         // First async request
-        String asyncUrl = baseUri.toString() + "structure-async";
+        String asyncUrl = uri("structure-async");
         HttpRequest asyncRequest = HttpRequest.newBuilder(new URI(asyncUrl)).GET().build();
         HttpResponse<String> asyncResponse = httpClient.send(asyncRequest, HttpResponse.BodyHandlers.ofString());
         assertThat(asyncResponse.statusCode()).isEqualTo(200);
@@ -185,7 +189,7 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
 
         // Then 3 sequential sync requests
         for (int i = 0; i < 3; i++) {
-            String url = baseUri.toString() + "jaxrs/structure/ejb";
+            String url = uri("jaxrs/structure/ejb");
             HttpRequest request = HttpRequest.newBuilder(new URI(url)).GET().build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             assertThat(response.statusCode()).isEqualTo(200);
@@ -206,6 +210,7 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
 
     private RequestTrace waitForTrace(String urlPathSuffix, long timeoutMs) throws InterruptedException {
         long deadline = System.currentTimeMillis() + timeoutMs;
+        RequestTrace foundTrace = null;
         while (System.currentTimeMillis() < deadline) {
             List<RequestTrace> traces = collector.traces();
             for (RequestTrace trace : traces) {
@@ -216,12 +221,50 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
                     }
                     String urlPath = rootSpan.getSpanTags().get("url.path");
                     if (urlPath != null && urlPath.endsWith(urlPathSuffix)) {
-                        return trace;
+                        foundTrace = trace;
+                        break;
                     }
                 }
             }
+            if (foundTrace != null) {
+                break;
+            }
             Thread.sleep(100);
         }
-        return null;
+
+        if (foundTrace == null) {
+            return null;
+        }
+
+        // Wait settle time for asynchronous event bus to complete
+        Thread.sleep(500);
+
+        // Verify exactly one trace matches the suffix
+        List<RequestTrace> allTraces = collector.traces();
+        var matchingTraces = allTraces.stream()
+            .filter(trace -> !trace.getTraceSpans().isEmpty())
+            .filter(trace -> {
+                var rootSpan = trace.getTraceSpans().getFirst();
+                if (rootSpan.getEventName().contains("ArquillianServletRunner")) {
+                    return false;
+                }
+                String urlPath = rootSpan.getSpanTags().get("url.path");
+                return urlPath != null && urlPath.endsWith(urlPathSuffix);
+            })
+            .toList();
+
+        if (matchingTraces.size() != 1) {
+            StringBuilder details = new StringBuilder();
+            for (RequestTrace trace : matchingTraces) {
+                var rootSpan = trace.getTraceSpans().getFirst();
+                details.append("\n  - Root: ").append(rootSpan.getEventName())
+                       .append(", TraceID: ").append(trace.getTraceId())
+                       .append(", url.path: ").append(rootSpan.getSpanTags().get("url.path"));
+            }
+            throw new AssertionError("Expected exactly one trace with url.path suffix '" + urlPathSuffix +
+                "' but found " + matchingTraces.size() + ":" + details);
+        }
+
+        return foundTrace;
     }
 }

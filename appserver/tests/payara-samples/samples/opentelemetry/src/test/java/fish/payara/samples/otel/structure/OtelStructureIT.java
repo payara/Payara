@@ -70,6 +70,10 @@ public class OtelStructureIT extends AbstractSpanNameTest {
         }
     }
 
+    private String uri(String path) {
+        return URI.create(baseUri.toString().replaceAll("/+$", "") + "/" + path.replaceAll("^/+", "")).toString();
+    }
+
     @Deployment
     public static WebArchive deployment() {
         return configSource(base(), StructureConfig.class)
@@ -85,7 +89,7 @@ public class OtelStructureIT extends AbstractSpanNameTest {
     @Test
     public void servletRequestCreatesServerRootNamedAfterMethod() throws Exception {
         exporter.reset();
-        String url = baseUri.toString() + "jaxrs/structure/ejb";
+        String url = uri("jaxrs/structure/ejb");
         HttpRequest request = HttpRequest.newBuilder(new URI(url)).GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
@@ -112,7 +116,7 @@ public class OtelStructureIT extends AbstractSpanNameTest {
     @Test
     public void ejbAndJtaAreSpanEventsOnTheRoot() throws Exception {
         exporter.reset();
-        String url = baseUri.toString() + "jaxrs/structure/ejb";
+        String url = uri("jaxrs/structure/ejb");
         HttpRequest request = HttpRequest.newBuilder(new URI(url)).GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
@@ -154,21 +158,25 @@ public class OtelStructureIT extends AbstractSpanNameTest {
                     assertThat(jtaEndEvent).isPresent();
                     assertThat(jtaEndEvent.get().getAttributes().get(statusKey))
                             .isEqualTo("Committed");
-
-                    // Check legacy names are gone
-                    assertThat(spans)
-                            .noneMatch(s -> "processServletRequest".equals(s.getName())
-                                    || "processContainerRequest".equals(s.getName())
-                                    || "processWebserviceRequest".equals(s.getName()));
-                    assertThat(eventNames)
-                            .doesNotContain("processServletRequest", "processContainerRequest", "processWebserviceRequest");
                 });
+
+        // Check legacy names are gone
+        assertThat(spans)
+                .noneMatch(s -> "processServletRequest".equals(s.getName())
+                        || "processContainerRequest".equals(s.getName())
+                        || "processWebserviceRequest".equals(s.getName()));
+        var allEventNames = spans.stream()
+                .filter(s -> s.getKind() == SpanKind.SERVER)
+                .flatMap(s -> s.getEvents().stream().map(e -> e.getName()))
+                .toList();
+        assertThat(allEventNames)
+                .doesNotContain("processServletRequest", "processContainerRequest", "processWebserviceRequest");
     }
 
     @Test
     public void faultToleranceRetryCreatesInternalSpans() throws Exception {
         exporter.reset();
-        String url = baseUri.toString() + "jaxrs/structure/retry";
+        String url = uri("jaxrs/structure/retry");
         HttpRequest request = HttpRequest.newBuilder(new URI(url)).GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);
@@ -206,7 +214,7 @@ public class OtelStructureIT extends AbstractSpanNameTest {
     @Test
     public void ejbTimerCreatesParentlessInternalSpan() throws Exception {
         exporter.reset();
-        String url = baseUri.toString() + "jaxrs/structure/timer";
+        String url = uri("jaxrs/structure/timer");
         HttpRequest request = HttpRequest.newBuilder(new URI(url)).GET().build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         assertThat(response.statusCode()).isEqualTo(200);

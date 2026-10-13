@@ -54,11 +54,17 @@ import org.glassfish.hk2.api.ServiceHandle;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -164,5 +170,81 @@ public class RequestTracingBridgeProviderTest {
 
         // Verify traceSpan was called
         verify(requestTracingService).traceSpan(any(RequestTraceSpan.class), anyLong());
+    }
+
+    @Test
+    public void lazyProcessorCreatesExactlyOneDelegateUnderConcurrentCreation() throws Exception {
+        int N = 8;
+        RequestTracingBridgeProvider provider = new RequestTracingBridgeProvider();
+
+        ServiceHandle<RequestTracingService> serviceHandle = mock(ServiceHandle.class);
+        IterableProvider<RequestTracingService> iterableProvider = mock(IterableProvider.class);
+        RequestTracingService requestTracingService = mock(RequestTracingService.class);
+        when(iterableProvider.getHandle()).thenReturn(serviceHandle);
+        when(requestTracingService.isRequestTracingEnabled()).thenReturn(true);
+        when(requestTracingService.startTrace(any(RequestTraceSpan.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        CountDownLatch inWindow = new CountDownLatch(N);
+        when(serviceHandle.isActive()).thenAnswer(inv -> {
+            inWindow.countDown();
+            inWindow.await(200, TimeUnit.MILLISECONDS);
+            return true;
+        });
+
+        AtomicInteger getInvocationCount = new AtomicInteger(0);
+        when(iterableProvider.get()).thenAnswer(inv -> {
+            getInvocationCount.incrementAndGet();
+            return requestTracingService;
+        });
+
+        java.lang.reflect.Field field = RequestTracingBridgeProvider.class.getDeclaredField("requestTracingServiceHandle");
+        field.setAccessible(true);
+        field.set(provider, iterableProvider);
+
+        RequestTracingBridgeProvider.LazyRequestTracingProcessor lazyProc =
+            provider.new LazyRequestTracingProcessor();
+
+        Tracer tracer = SdkTracerProvider.builder()
+                .addSpanProcessor(lazyProc)
+                .build().get("test");
+
+        CountDownLatch latch = new CountDownLatch(1);
+        CountDownLatch completionLatch = new CountDownLatch(N);
+        ConcurrentLinkedQueue<Exception> workerExceptions = new ConcurrentLinkedQueue<>();
+
+        // N threads all released simultaneously
+        for (int i = 0; i < N; i++) {
+            Thread t = new Thread(() -> {
+                try {
+                    latch.await();
+                    Span root = tracer.spanBuilder("root-span-" + Thread.currentThread().getId()).startSpan();
+                    root.end();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (Exception e) {
+                    workerExceptions.offer(e);
+                } finally {
+                    completionLatch.countDown();
+                }
+            });
+            t.setDaemon(true);
+            t.start();
+        }
+
+        latch.countDown();
+        boolean finished = completionLatch.await(5, TimeUnit.SECONDS);
+        if (!finished) {
+            throw new AssertionError("Timeout waiting for " + N + " threads to complete");
+        }
+
+        assertEquals("Worker threads should have no exceptions", 0, workerExceptions.size());
+
+        // Verify startTrace was called exactly N times (once per root span)
+        ArgumentCaptor<RequestTraceSpan> captor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(requestTracingService, times(N)).startTrace(captor.capture());
+        assertEquals("startTrace should be called exactly " + N + " times", N, captor.getAllValues().size());
+
+        // Verify the delegate was created exactly once (IterableProvider.get() called once)
+        assertEquals("IterableProvider.get() should be called exactly once", 1, getInvocationCount.get());
     }
 }

@@ -74,17 +74,17 @@ class RequestTracingBridgeProvider implements AutoConfigurationCustomizerProvide
         private volatile SpanProcessor delegate;
 
         private SpanProcessor delegate() {
-            if (delegate != null) {
-                return delegate;
-            }
-            try {
-                if (!requestTracingServiceHandle.getHandle().isActive()) {
+            SpanProcessor current = delegate;
+            if (current != null) { return current; }
+            synchronized (this) {
+                if (delegate != null) { return delegate; }
+                try {
+                    if (!requestTracingServiceHandle.getHandle().isActive()) { return null; }
+                    delegate = new PayaraRequestTracingProcessor(requestTracingServiceHandle.get());
+                    return delegate;
+                } catch (RuntimeException e) {
                     return null;
                 }
-                delegate = new PayaraRequestTracingProcessor(requestTracingServiceHandle.get());
-                return delegate;
-            } catch (RuntimeException e) {
-                return null;
             }
         }
 

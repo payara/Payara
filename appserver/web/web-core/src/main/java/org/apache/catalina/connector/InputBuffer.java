@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
@@ -471,7 +471,7 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
                                                 .startSpan();
                                         wsScope = wsSpan.makeCurrent();
                                     } catch (RuntimeException e) {
-                                        log.log(Level.WARNING, "Failed to start OTel span for websocket request", e);
+                                        log.log(Level.FINE, "Failed to start OTel span for websocket request", e);
                                     }
                                 }
                             }
