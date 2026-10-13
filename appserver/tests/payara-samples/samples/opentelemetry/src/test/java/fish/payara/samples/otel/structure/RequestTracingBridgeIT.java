@@ -68,6 +68,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(Arquillian.class)
 public class RequestTracingBridgeIT extends AbstractSpanNameTest {
@@ -100,37 +101,46 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
 
     @BeforeClass
     public static void enableRequestTracing() throws Exception {
-        CliCommands.payaraGlassFish(
+        int rc = CliCommands.payaraGlassFish(
+                "set-cdieventbus-notifier-configuration",
+                "--enabled=true",
+                "--dynamic=true",
+                "--loopBack=true"
+        );
+        assertEquals("set-cdieventbus-notifier-configuration failed", 0, rc);
+
+        rc = CliCommands.payaraGlassFish(
                 "set-requesttracing-configuration",
                 "--thresholdValue=1",
                 "--thresholdUnit=NANOSECONDS",
                 "--enabled=true",
                 "--target=server-config",
-                "--dynamic=true"
-        );
-
-        CliCommands.payaraGlassFish(
-                "notification-cdieventbus-configure",
-                "--loopBack=true",
                 "--dynamic=true",
-                "--enabled=true",
-                "--hazelcastEnabled=true"
+                "--enableNotifiers=cdieventbus-notifier"
         );
+        assertEquals("set-requesttracing-configuration failed", 0, rc);
     }
 
     @AfterClass
     public static void disableRequestTracing() {
-        CliCommands.payaraGlassFish(
+        int rc = CliCommands.payaraGlassFish(
                 "set-requesttracing-configuration",
                 "--enabled=false",
-                "--dynamic=true"
+                "--dynamic=true",
+                "--disableNotifiers=cdieventbus-notifier"
         );
+        if (rc != 0) {
+            LOG.warning("set-requesttracing-configuration disable failed with exit code " + rc);
+        }
 
-        CliCommands.payaraGlassFish(
-                "notification-cdieventbus-configure",
+        rc = CliCommands.payaraGlassFish(
+                "set-cdieventbus-notifier-configuration",
                 "--enabled=false",
                 "--dynamic=true"
         );
+        if (rc != 0) {
+            LOG.warning("set-cdieventbus-notifier-configuration disable failed with exit code " + rc);
+        }
     }
 
     @Before
