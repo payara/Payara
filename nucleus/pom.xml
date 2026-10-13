@@ -78,13 +78,9 @@
 
         <!-- Other -->
 
-        <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
-        <tiger.types.version>1.4.payara-p1</tiger.types.version>
-
         <glassfish-corba.version>5.0.0.payara-p1</glassfish-corba.version>
         <bouncycastle-jdk15on.version>1.70</bouncycastle-jdk15on.version>
 
-        <junit.version>4.13.2</junit.version>
         <testng.version>7.12.0</testng.version>
 
         <ldapbp.version>1.0</ldapbp.version>
@@ -135,10 +131,7 @@
         <mockito.version>5.24.0</mockito.version>
 
         <!-- Build -->
-        <glassfishbuild.version>3.2.20.payara-p3</glassfishbuild.version>
         <logging-annotation-processor.version>1.11</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.22</command-security-plugin.version>
-        <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <ant.version>1.10.18</ant.version>
         <metainf-services.version>1.11</metainf-services.version>
@@ -171,7 +164,7 @@
         <module>diagnostics</module>
         <module>resources</module>
         <module>resources-l10n</module>
-        <module>hk2</module>
+        <module>config-types</module>
     </modules>
 
     <build>
@@ -197,20 +190,7 @@
                     <version>${maven.clean.plugin.version}</version>
                </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>${maven.resources.plugin.version}</version>
-                </plugin>
 
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${maven.surefire.plugin.version}</version>
-                    <configuration>
-                        <trimStackTrace>false</trimStackTrace>
-                    </configuration>
-                </plugin>
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -286,16 +266,6 @@
 
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
-                    <artifactId>hk2-inhabitant-generator</artifactId>
-                    <version>${hk2.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.glassfish.hk2</groupId>
-                    <artifactId>osgiversion-maven-plugin</artifactId>
-                    <version>${hk2.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.glassfish.hk2</groupId>
                     <artifactId>consolidatedbundle-maven-plugin</artifactId>
                     <version>${hk2.plugin.version}</version>
                 </plugin>
@@ -321,11 +291,6 @@
                     <version>${maven.jaxb2.plugin.version}</version>
                 </plugin>
 
-                <plugin>
-                    <groupId>org.glassfish.build</groupId>
-                    <artifactId>glassfishbuild-maven-plugin</artifactId>
-                    <version>${glassfishbuild.version}</version>
-                </plugin>
 
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -443,12 +408,41 @@
                 </configuration>
             </plugin>
 
+            <!-- Generates the HK2 config injectors for @Configured classes -->
             <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-inhabitant-generator</artifactId>
-                <configuration>
-                    <supportedProjectTypes>jar,ejb,war,glassfish-jar</supportedProjectTypes>
-                </configuration>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <!-- Ensures that hk2-config is built before the modules that use it -->
+                <dependencies>
+                    <dependency>
+                        <groupId>fish.payara.server.internal.hk2</groupId>
+                        <artifactId>hk2-config</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>generate-hk2-config</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>fish.payara.server.internal.hk2</groupId>
+                                    <artifactId>hk2-config</artifactId>
+                                    <version>${project.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                            <annotationProcessors>
+                                <annotationProcessor>org.jvnet.hk2.config.generator.ConfigInjectorGenerator</annotationProcessor>
+                            </annotationProcessors>
+                            <proc>only</proc>
+                            <generatedSourcesDirectory>${project.build.directory}/generated-sources/hk2-config-generator</generatedSourcesDirectory>
+                            <createMissingPackageInfoClass>false</createMissingPackageInfoClass>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -472,6 +466,22 @@
                     <excludes>**/.ade_path/**</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
                 </configuration>
+                <!--
+                    The glassfish-jar lifecycle binds this plugin implicitly. Injectors are generated by the
+                    generate-hk2-config compiler execution below instead.
+                -->
+                <executions>
+                    <execution>
+                        <id>default-generate-test-injectors</id>
+                        <phase/>
+                        <goals/>
+                    </execution>
+                    <execution>
+                        <id>default-generate-injectors</id>
+                        <phase/>
+                        <goals/>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -512,49 +522,12 @@ Parent is ${project.parent}</echo>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathLayoutType>custom</classpathLayoutType>
-                            <customClasspathLayout>${artifact.artifactId}${artifact.dashClassifier?}.${artifact.extension}</customClasspathLayout>
-                        </manifest>
-
-                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                    </archive>
-                    <excludes>
-                        <exclude>**/.ade_path/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <configuration>
                     <includePom>true</includePom>
                     <excludes>
                         <exclude>**/.ade_path/**</exclude>
                     </excludes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>osgiversion-maven-plugin</artifactId>
-
-                <!--
-                    Since we don't want a qualifier like b05 or SNAPSHOT to appear
-                    in the package version attribute, we use the following goal to
-                    populate a project property with an OSGi version which is
-                    equivalent to maven version without qualifier and then use that
-                    property in osgi.bundle while exporting.
-                -->
-                <configuration>
-                    <dropVersionComponent>qualifier</dropVersionComponent>
-                    <versionPropertyName>project.osgi.version</versionPropertyName>
                 </configuration>
             </plugin>
 
