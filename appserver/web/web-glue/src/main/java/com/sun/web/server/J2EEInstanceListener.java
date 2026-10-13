@@ -42,9 +42,9 @@ package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.security.SecurityContextProxy;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.security.integration.SecurityConstants;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
 import com.sun.enterprise.web.WebModule;
@@ -217,8 +217,11 @@ public final class J2EEInstanceListener implements InstanceListener {
                     break;
                 }
 
-                if (prin != null && prin == basePrincipal && prin.getClass().getName().equals(SecurityConstants.WEB_PRINCIPAL_CLASS)) {
-                    securityContext.setSecurityContextWithPrincipal(prin);
+                if (basePrincipal instanceof SecurityContextProxy) {
+                    // basePrincipal carries its own SecurityContext — use it directly.
+                    // RequestFacade.getUserPrincipal() may unwrap the principal (e.g. WebPrincipal →
+                    // customPrincipal), losing the SecurityContext; basePrincipal bypasses that.
+                    securityContext.setSecurityContextWithPrincipal(basePrincipal);
                 } else if (prin != basePrincipal) {
 
                     // the wrapper has overridden getUserPrincipal
