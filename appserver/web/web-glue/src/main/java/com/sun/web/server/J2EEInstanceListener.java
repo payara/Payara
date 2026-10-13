@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2021-2026] [Payara Foundation and/or its affiliates]
 package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
@@ -206,11 +206,10 @@ public final class J2EEInstanceListener implements InstanceListener {
                     }
 
                     else if (base instanceof RequestFacade) {
-                        // try to avoid the getUnWrappedCoyoteRequest call
-                        // when we can identify see we have the texact class.
-                        if (base.getClass() != RequestFacade.class) {
-                            basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
-                        }
+                        // Always use getUnwrappedCoyoteRequest() — RequestFacade.getUserPrincipal()
+                        // unwraps WebPrincipal to its customPrincipal, which is not a SecurityContextProxy,
+                        // so setSecurityContextWithPrincipal would build a fresh roleless SecurityContext.
+                        basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
                     } else {
                         basePrincipal = base.getUserPrincipal();
                     }
