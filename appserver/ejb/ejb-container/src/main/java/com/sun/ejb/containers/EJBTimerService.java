@@ -69,6 +69,7 @@ import com.sun.enterprise.admin.monitor.callflow.RequestType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbTimerService;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
@@ -1108,6 +1109,16 @@ public abstract class EJBTimerService {
         return ejbContainerUtil.getContainer(containerId);
     }
 
+    private String timerAppName(TimerPrimaryKey id) {
+        try {
+            RuntimeTimerState state = getTimerState(id);
+            BaseContainer container = state == null ? null : getContainer(state.getContainerId());
+            return container == null ? null : container.getEjbDescriptor().getApplication().getAppName();
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
     /**
      * Called from timer thread.  Used to deliver ejb timeout.
      */
@@ -1927,27 +1938,38 @@ public abstract class EJBTimerService {
             if (stuckThreads != null){
                 stuckThreads.registerThread(Thread.currentThread().getId());
             }
+            // Timer worker thread has no application context; resolve the owning application
+            // from the timer so that the application's OpenTelemetry SDK is used.
             Span span = null;
             Scope scope = null;
-            if (openTelemetryService != null && openTelemetryService.isEnabled()) {
-                try {
-                    span = openTelemetryService.getCurrentTracer().spanBuilder("executeEjbTimerTask")
-                            .setSpanKind(SpanKind.INTERNAL)
-                            .setNoParent()
-                            .setAttribute("TimerID", timerId_.toString())
-                            .startSpan();
-                    scope = span.makeCurrent();
-                } catch (RuntimeException e) {
-                    logger.log(Level.FINE, "Failed to create OTel span for timer task", e);
+            if (openTelemetryService != null) {
+                String appName = timerService_.timerAppName(timerId_);   // null => no span
+                if (appName != null) {
+                    InvocationManager im = timerService_.ejbContainerUtil.getInvocationManager();
+                    im.pushAppEnvironment(() -> appName);
+                    try {
+                        if (openTelemetryService.isEnabled()) {
+                            span = openTelemetryService.getCurrentTracer().spanBuilder("executeEjbTimerTask")
+                                    .setSpanKind(SpanKind.INTERNAL)
+                                    .setNoParent()
+                                    .setAttribute("TimerID", timerId_.toString())
+                                    .startSpan();
+                        }
+                    } catch (RuntimeException e) {
+                        logger.log(Level.FINE, "Failed to create OTel span for timer task", e);
+                    } finally {
+                        im.popAppEnvironment();
+                    }
+                    if (span != null) {
+                        scope = span.makeCurrent();
+                    }
                 }
             }
             try {
                 timerService_.deliverTimeout(timerId_);
             }finally {
-                if (scope != null) {
-                    scope.close();
-                    span.end();
-                }
+                if (scope != null) scope.close();
+                if (span != null) span.end();
                 if (stuckThreads != null){
                     stuckThreads.deregisterThread(Thread.currentThread().getId());
                 }
