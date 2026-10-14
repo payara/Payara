@@ -10,7 +10,7 @@
     <message name="NegativeNumberException"/>
     <message name="log"/>
     <message name="logResponse"/>
-    <portType name="CalculatorServiceSrv">
+    <portType name="CalculatorService">
         <operation name="add">
             <input message="tns:add"/>
             <output message="tns:addResponse"/>
@@ -21,7 +21,7 @@
             <output message="tns:logResponse"/>
         </operation>
     </portType>
-    <binding name="CalculatorServicePortBinding" type="tns:CalculatorServiceEjb">
+    <binding name="CalculatorServicePortBinding" type="tns:CalculatorService">
         <wsp:PolicyReference URI="#CalculatorServicePortBindingPolicy"/>
         <operation name="add">
             <input></input>

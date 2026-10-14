@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.osgi.cli.remote;
 
@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import jakarta.inject.Inject;
 import org.apache.felix.service.command.CommandProcessor;
 import org.apache.felix.service.command.CommandSession;
+import org.apache.felix.service.command.Converter;
 import org.apache.felix.shell.ShellService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -108,7 +109,7 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
             new ConcurrentHashMap<String, RemoteCommandSession>();
 
     @Param(name = "command-line", primary = true, optional = true, multiple = true, defaultValue = "help")
-    private Object commandLine;
+    private List<String> commandLine;
 
     @Param(name = "session", optional = true)
     private String sessionOp;
@@ -158,10 +159,8 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
 
                 if(commandLine == null) {
                     params.set("DEFAULT".toLowerCase(Locale.US), "asadmin-osgi-shell");
-                } else if(commandLine instanceof String) {
-                    params.set("DEFAULT".toLowerCase(Locale.US), (String) commandLine);
-                } else if(commandLine instanceof List) {
-                    params.set("DEFAULT".toLowerCase(Locale.US), (List<String>) commandLine);
+                } else {
+                    params.set("DEFAULT".toLowerCase(Locale.US), commandLine);
                 }
 
                 if(sessionOp != null) {
@@ -189,35 +188,16 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
         if(commandLine == null) {
             cmd = "asadmin-osgi-shell";
             cmdName = cmd;
-        } else if(commandLine instanceof String) {
-            cmd = (String) commandLine;
-            cmdName = cmd;
-        } else if(commandLine instanceof List) {
-            for(Object arg : (List) commandLine) {
-                if(cmd.length() == 0) {
-                    // first arg
-                    cmd = (String) arg;
-                    cmdName = cmd;
-                } else {
-                    cmd += " " + (String) arg;
-                }
-            }
-        } else if(commandLine instanceof String[]) {
-            for(Object arg : (String[]) commandLine) {
-                if(cmd.length() == 0) {
-                    // first arg
-                    cmd = (String) arg;
-                    cmdName = cmd;
-                } else {
-                    cmd += " " + (String) arg;
-                }
-            }
         } else {
-            // shouldn't happen...
-            report.setMessage("Unable to deal with argument list of type "
-                    + commandLine.getClass().getName());
-            report.setActionExitCode(ActionReport.ExitCode.WARNING);
-            return;
+            for(String arg : commandLine) {
+                if(cmd.isEmpty()) {
+                    // first arg
+                    cmd = arg;
+                    cmdName = cmd;
+                } else {
+                    cmd += " " + arg;
+                }
+            }
         }
 
         // standard output...
@@ -306,7 +286,10 @@ public class OSGiShellCommand implements AdminCommand, PostConstruct {
                 } else if("execute".equals(sessionOp)) {
                     RemoteCommandSession remote = sessions.get(sessionId);
                     CommandSession session = remote.attach(in, out, err);
-                    session.execute(cmd);
+                    Object result = session.execute(cmd);
+                    if (result != null) {
+                        out.println(session.format(result, Converter.INSPECT));
+                    }
                     remote.detach();
                 } else if("stop".equals(sessionOp)) {
                     RemoteCommandSession remote = sessions.remove(sessionId);

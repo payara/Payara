@@ -47,9 +47,9 @@
   "content": {
     "text/plain": {
       "schema": {
-        "type": "array",
+        "type": ["array"],
         "items": {
-          "type": "string"
+          "type": ["string"]
         }
       }
     }

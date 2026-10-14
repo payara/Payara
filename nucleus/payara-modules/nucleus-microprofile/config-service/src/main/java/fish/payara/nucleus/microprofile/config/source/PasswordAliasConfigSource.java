@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2018-2021 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,8 @@
 package fish.payara.nucleus.microprofile.config.source;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
+import org.glassfish.config.support.TranslatedConfigView;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -47,16 +49,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.internal.api.Globals;
-
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Objects;
 
 /**
  *
@@ -64,29 +63,30 @@ import java.util.Objects;
  */
 public class PasswordAliasConfigSource extends PayaraConfigSource {
 
-    private final DomainScopedPasswordAliasStore store;
+    private final Supplier<DomainScopedPasswordAliasStore> store;
 
-    public PasswordAliasConfigSource() {
-        store = Globals.getDefaultHabitat().getService(DomainScopedPasswordAliasStore.class);
+    public PasswordAliasConfigSource(MicroprofileConfigConfiguration mpConfig,
+                                     Supplier<DomainScopedPasswordAliasStore> store) {
+        super(mpConfig);
+        this.store = store;
     }
 
     @Override
     public int getOrdinal() {
-        return Integer.parseInt(configService.getMPConfig().getPasswordOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getPasswordOrdinality);
     }
-
 
     @Override
     public Map<String, String> getProperties() {
         Map<String,String> properties = new HashMap<>();
-        store.keys().forEachRemaining(key -> properties.put(key, new String(store.get(key))));
+        store.get().keys().forEachRemaining(key -> properties.put(key, new String(store.get().get(key))));
         return properties;
     }
 
     @Override
     public Set<String> getPropertyNames() {
         Set<String> propertyNames = new HashSet<>();
-        store.keys().forEachRemaining(propertyNames::add);
+        store.get().keys().forEachRemaining(propertyNames::add);
         return propertyNames;
     }
 
@@ -98,8 +98,8 @@ public class PasswordAliasConfigSource extends PayaraConfigSource {
         String value = null;
 
         // Attempt to match literally against password store
-        if (store.containsKey(name)) {
-            value = new String(store.get(name));
+        if (store.get().containsKey(name)) {
+            value = new String(store.get().get(name));
         } else {
             // Check if the property being asked for is in the format ${ALIAS=xxx} and get the password associated with the alias if so
             if (TranslatedConfigView.getAlias(name) != null) {

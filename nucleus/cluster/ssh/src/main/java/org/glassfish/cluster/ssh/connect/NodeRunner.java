@@ -136,7 +136,11 @@ public class NodeRunner {
             throw new IllegalArgumentException("Node is null");
         }
 
-        final List<String> stdinLines = new ArrayList<String>();
+        logger.fine("runAdminCommandOnNode: node=" + node.getName()
+                + " host=" + node.getNodeHost()
+                + " args=" + args);
+
+        List<String> stdinLines = new ArrayList<>();
         stdinLines.add(AsadminInput.versionSpecifier());
         stdinLines.add(AUTH_TOKEN_STDIN_LINE_PREFIX + authTokenManager.createToken(context.getSubject()));
         args.add(0, "--interactive=false");            // No prompting!
@@ -157,7 +161,7 @@ public class NodeRunner {
             ProcessManagerException {
         args.add(0, AsadminInput.CLI_INPUT_OPTION);
         args.add(1, AsadminInput.SYSTEM_IN_INDICATOR); // specified to read from System.in
-        List<String> fullcommand = new ArrayList<String>();
+        List<String> fullcommand = new ArrayList<>();
 
         if (!StringUtils.ok(node.getInstallDirUnixStyle())) {
             throw new IllegalArgumentException("Node does not have an installDir");
@@ -234,19 +238,4 @@ public class NodeRunner {
         return fullCommand.toString();
     }
 
-    /* hack TODO do not know how to get int status back from Windows
-     */
-    private int determineStatus(List<String> args, StringBuilder output) {
-        if (isDeleteFS(args) && output.toString().indexOf("UTIL6046") >= 0)
-            return 1;
-        return 0;
-    }
-
-    private boolean isDeleteFS(List<String> args) {
-        for (String arg : args) {
-            if ("_delete-instance-filesystem".equals(arg))
-                return true;
-        }
-        return false;
-    }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2022] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -143,7 +143,7 @@ public class BootCommands {
                 List<String> elements = new ArrayList<>();
                 Matcher flagMatcher = COMMAND_FLAG_PATTERN.matcher(commandStr);
                 while (flagMatcher.find()) {
-                    elements.add(flagMatcher.group(1));
+                    elements.add(unquote(flagMatcher.group(1)));
                 }
                 command = elements.toArray(new String[elements.size()]);
                 if (command.length > 1) {
@@ -154,6 +154,28 @@ public class BootCommands {
             }
             commandStr = bufferReader.readLine();
         }
+    }
+
+    private static String unquote(String token) {
+        int equalsIndex = token.indexOf('=');
+        if (equalsIndex >= 0 && equalsIndex < token.length() - 1) {
+            String textAfterEquals = token.substring(equalsIndex + 1);
+            if (textAfterEquals.length() >= 2 &&
+                    ((textAfterEquals.startsWith("\"") && textAfterEquals.endsWith("\"")) ||
+                    (textAfterEquals.startsWith("'") && textAfterEquals.endsWith("'")))) {
+                textAfterEquals = textAfterEquals.substring(1, textAfterEquals.length() - 1)
+                        .replace("\\\"", "\"")
+                        .replace("\\'", "'");
+                return token.substring(0, equalsIndex + 1) + textAfterEquals;
+            }
+        } else if (token.length() >= 2 &&
+                ((token.startsWith("\"") && token.endsWith("\"")) ||
+                 (token.startsWith("'") && token.endsWith("'")))) {
+            return token.substring(1, token.length() - 1)
+                    .replace("\\\"", "\"")
+                    .replace("\\'", "'");
+        }
+        return token;
     }
 
     public boolean executeCommands(CommandRunner runner) {

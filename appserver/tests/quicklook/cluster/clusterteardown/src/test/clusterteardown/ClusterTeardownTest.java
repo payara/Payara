@@ -55,7 +55,7 @@ public class ClusterTeardownTest extends AdminBaseDevTest {
     final String cname = "eec1";
     final String i1name = "eein1-with-a-very-very-very-long-name";
     final String i2name = "eein2";
-    final String domain = System.getProperty("domain.name", "test-domain");
+    final String domain = System.getProperty("domain.name", "domain1");
 
     public boolean retStatus;
 

@@ -39,9 +39,15 @@
  */
 package org.glassfish.nucleus.quicklook;
 
+import org.glassfish.tests.utils.NucleusTestUtils;
 import static org.glassfish.tests.utils.NucleusTestUtils.*;
 import static org.testng.AssertJUnit.assertTrue;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -58,6 +64,26 @@ public class ClusterTest {
     final String i2name = "eein2";
     String i1url = "http://localhost:" + port1;
     String i2url = "http://localhost:" + port2;
+
+    @BeforeClass
+    public void cleanUp() {
+        nadmin("stop-local-instance", "--kill", i1name);
+        nadmin("stop-local-instance", "--kill", i2name);
+        nadmin("delete-local-instance", i1name);
+        nadmin("delete-local-instance", i2name);
+        // Scan for stale instances (e.g. from a previous run that used different instance names)
+        NucleusTestUtils.NadminReturn list = nadminWithOutput("list-instances");
+        Matcher m = Pattern.compile("^(\\S+)\\s+not running", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE).matcher(list.out);
+        while (m.find()) {
+            String staleName = m.group(1);
+            if (!nadmin("delete-instance", staleName)) {
+                nadmin("delete-local-instance", staleName);
+                nadmin("delete-config", staleName + "-config");
+            }
+        }
+        nadmin("delete-cluster", cname);
+        nadmin("delete-config", cname + "-config");
+    }
 
     public void createClusterTest() {
         // create a cluster and two instances
@@ -85,12 +111,21 @@ public class ClusterTest {
         assertTrue("start instance2", nadmin("start-local-instance", i2name));
     }
     
+    private boolean waitForUrl(String url, String expected, int timeoutSeconds) {
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(timeoutSeconds);
+        while (System.currentTimeMillis() < deadline) {
+            if (matchString(expected, getURL(url))) return true;
+            try { Thread.sleep(2000); } catch (InterruptedException e) { break; }
+        }
+        return false;
+    }
+
     @Test(dependsOnMethods = { "startInstancesTest" })
-    public void checkClusterTest() {           
+    public void checkClusterTest() {
         // check that the instances are there
         assertTrue("list-instances", nadmin("list-instances"));
-        assertTrue("getindex1", matchString("GlassFish Server", getURL(i1url)));
-        assertTrue("getindex2", matchString("GlassFish Server", getURL(i2url)));
+        assertTrue("getindex1", waitForUrl(i1url, "Payara Server", 30));
+        assertTrue("getindex2", waitForUrl(i2url, "Payara Server", 30));
     }
     
     @Test(dependsOnMethods = { "checkClusterTest" })

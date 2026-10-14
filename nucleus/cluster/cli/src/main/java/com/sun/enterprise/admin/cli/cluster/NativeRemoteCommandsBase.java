@@ -37,20 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2018-2026 Payara Foundation and/or its affiliates
 
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.util.io.FileUtils;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.apache.sshd.sftp.client.SftpClient;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.*;
+import org.glassfish.api.admin.CommandException;
 import com.sun.enterprise.admin.cli.CLICommand;
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
 import org.glassfish.cluster.ssh.sftp.SFTPClient;
@@ -60,8 +62,6 @@ import com.sun.enterprise.universal.glassfish.TokenResolver;
 import com.sun.enterprise.util.io.DomainDirs;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
-
-import com.trilead.ssh2.SFTPv3DirectoryEntry;
 
 
 import com.sun.enterprise.security.store.PasswordAdapter;
@@ -198,30 +198,20 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     }
 
     /**
-     * Method to delete files and directories on remote host
+     * Method to delete files and directories on remote host.
      * 'nodes' directory is not considered for deletion since it would contain
      * configuration information.
-     * @param sftpClient sftp client instance
-     * @param dasFiles file layout on DAS
-     * @param dir directory to be removed
-     * @param force true means delete all files, false means leave non-GlassFish files
-     *              untouched
-     * @throws IOException in case of error
      */
-    // byron XXXX
     void deleteRemoteFiles(SFTPClient sftpClient, List<String> dasFiles, String dir, boolean force)
             throws IOException {
 
-        for (SFTPv3DirectoryEntry directoryEntry : (List<SFTPv3DirectoryEntry>) sftpClient.ls(dir)) {
-            if (directoryEntry.filename.equals(".") || directoryEntry.filename.equals("..")
-                    || directoryEntry.filename.equals("nodes")) {
+        for (SftpClient.DirEntry directoryEntry : sftpClient.ls(dir)) {
+            if (directoryEntry.getFilename().equals(".") || directoryEntry.getFilename().equals("..")
+                    || directoryEntry.getFilename().equals("nodes")) {
                 continue;
-            }
-            else if (directoryEntry.attributes.isDirectory()) {
-                String f1 = dir + "/" + directoryEntry.filename;
+            } else if (directoryEntry.getAttributes().isDirectory()) {
+                String f1 = dir + "/" + directoryEntry.getFilename();
                 deleteRemoteFiles(sftpClient, dasFiles, f1, force);
-                //only if file is present in DAS, it is targeted for removal on remote host
-                //using force deletes all files on remote host
                 if (force) {
                     if (logger.isLoggable(Level.FINE)) {
                         logger.fine("Force removing directory " + f1);
@@ -235,10 +225,11 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                     }
                 }
             } else {
-                String f2 = dir + "/" + directoryEntry.filename;
+                String f2 = dir + "/" + directoryEntry.getFilename();
                 if (force) {
-                    if (logger.isLoggable(Level.FINE))
+                    if (logger.isLoggable(Level.FINE)) {
                         logger.fine("Force removing file " + f2);
+                    }
                     sftpClient.rm(f2);
                 } else {
                     if (dasFiles.contains(f2)) {
@@ -250,38 +241,15 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     }
 
     /**
-     * Method to check if specified remote directory contains files
-     *
-     * @param sftp SFTP client handle
-     * @param file path to remote directory
-     * @return true if empty, false otherwise
-     * @throws IOException
+     * Method to check if specified remote directory contains files.
      */
     boolean isRemoteDirectoryEmpty(SFTPClient sftp, String file) throws IOException {
-        List<SFTPv3DirectoryEntry> l = (List<SFTPv3DirectoryEntry>) sftp.ls(file);
+        List<SftpClient.DirEntry> l = sftp.ls(file);
         return l.size() <= 2;
     }
 
     /**
-     * Remove trailing slash from a path string
-     * @param s
-     * @return
-     */
-    String removeTrailingSlash(String s) {
-        if (!StringUtils.ok(s))
-            return s;
-
-        if (s.endsWith("/")) {
-            s = s.substring(0, s.length() - 1);
-        }
-        return s;
-    }
-
-    /**
-     * Obtains the real password from the domain specific keystore given an alias
-     * @param host host that we are connecting to
-     * @param alias password alias of form ${ALIAS=xxx}
-     * @return real password of ssh user, null if not found
+     * Obtains the real password from the domain specific keystore given an alias.
      */
     String expandPasswordAlias(String host, String alias, boolean verifyConn) {
         String expandedPassword = null;
@@ -290,17 +258,9 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
         try {
             File domainsDirFile = DomainDirs.getDefaultDomainsDir();
             if (domainsDirFile != null) {
-                //get the list of domains
-                //if(domainsDirFile != null) {
-                File[] files = domainsDirFile.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File f) {
-                        return f.isDirectory();
-                    }
-                });
+                File[] files = domainsDirFile.listFiles(File::isDirectory);
                 if (files != null) {
                     for (File f : files) {
-                        //the following property is required for initializing the password helper
                         System.setProperty(SystemPropertyConstants.INSTANCE_ROOT_PROPERTY, f.getAbsolutePath());
                         try {
                             final PasswordAdapter pa = new PasswordAdapter(null);

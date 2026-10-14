@@ -377,12 +377,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
         Map<String, String> existing = new HashMap<String, String>();
         existing.put("target", target);
         for (String option : getEntity()) {
-            int index = option.indexOf('=');
-            if (index > -1) {
-                existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
-            } else {
-                existing.put(escapeOptionPart(option), "");
-            }
+            existing.put(escapeOptionPart(option), "");
         }
 
         runCommand(getDeleteCommand(), processData(existing, true),

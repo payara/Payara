@@ -37,7 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2017-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
+// Payara Foundation and/or its affiliates elects to include this software in this distribution under the GPL Version 2 license
 package com.sun.enterprise.util.net;
 
 import com.sun.enterprise.util.CULoggerInfo;
@@ -546,24 +547,22 @@ public class NetUtils {
 
     private static boolean isPortFreeClient(String hostName, int portNumber) {
         try {
-            // WBN - I have no idea why I'm messing with these streams!
-            // I lifted the code from installer.  Apparently if you just
-            // open a socket on a free port and catch the exception something
-            // will go wrong in Windows.
-            // Feel free to change it if you know EXACTLY what you're doing
-
-            //If the host name is null, assume localhost
             if (hostName == null) {
                 hostName = getHostName();
             }
-            try(Socket socket = new Socket(hostName, portNumber);
-                OutputStream os = socket.getOutputStream();
-                InputStream is = socket.getInputStream()) {
-                // will be closed automatically
+            if (hostName == null) {
+                hostName = "localhost";
+            }
+            // Use an explicit 1-second timeout: on remote hosts (especially Windows) that
+            // silently drop packets via firewall, new Socket(host, port) without a timeout
+            // blocks for the OS TCP connection timeout (minutes), hanging callers like
+            // PortManager indefinitely.
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress(hostName, portNumber), 1000);
             }
         }
         catch (Exception e) {
-            // Nobody is listening on this port
+            // Connection refused, timed out, or nobody listening — port is free
             return true;
         }
 
@@ -818,6 +817,59 @@ public class NetUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Interface for accessing HTTP headers, allowing different request types to be used
+     * with the getRemoteHost method.
+     */
+    public interface RequestInfoProvider {
+        /**
+         * Gets the value of an HTTP header.
+         *
+         * @param name the header name
+         * @return the header value, or null if not present
+         */
+        String getHeader(String name);
+
+        /**
+         * Gets the value of the remote host.
+         *
+         * @return remote host of the HTTP request
+         */
+        String getRemoteHost();
+    }
+
+    /**
+     * Gets the real remote host based on proxy headers.
+     * <p>
+     * If behindProxy is true, checks X-Real-IP and X-Forwarded-For headers
+     * to get the original client IP when behind a reverse proxy.
+     * Otherwise, returns the remote host.
+     *
+     * @param requestInfoProvider provides access to request info
+     * @param behindProxy true if the server is behind a reverse proxy
+     * @return the real remote host IP/hostname
+     */
+    public static String getRemoteHost(RequestInfoProvider requestInfoProvider, boolean behindProxy) {
+        if (behindProxy) {
+
+            // Check X-Real-IP first (set by closest proxy like nginx)
+            String xRealIP = requestInfoProvider.getHeader("X-Real-IP");
+            if (xRealIP != null && !xRealIP.isBlank()) {
+                return xRealIP;
+            }
+
+            // Check X-Forwarded-For (can contain multiple IPs in format "client, proxy1, proxy2")
+            String xForwardedFor = requestInfoProvider.getHeader("X-Forwarded-For");
+            if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+                int commaIndex = xForwardedFor.indexOf(',');
+                return commaIndex > 0 ? xForwardedFor.substring(0, commaIndex).trim() : xForwardedFor.trim();
+            }
+        }
+
+        // Fall back to the remote host
+        return requestInfoProvider.getRemoteHost();
     }
 
     ///////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 <!--
   ~    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
   ~
-  ~    Copyright (c) 2019-2025 Payara Foundation and/or its affiliates. All rights reserved.
+  ~    Copyright (c) 2019-2026 Payara Foundation and/or its affiliates. All rights reserved.
   ~
   ~    The contents of this file are subject to the terms of either the GNU
   ~    General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
     <parent>
         <groupId>fish.payara.api</groupId>
         <artifactId>api-parent</artifactId>
-        <version>7.2026.6-SNAPSHOT</version>
+        <version>7.2026.11-SNAPSHOT</version>
     </parent>
 
     <artifactId>payara-bom</artifactId>
@@ -179,11 +179,6 @@
                 <groupId>org.eclipse.microprofile.config</groupId>
                 <artifactId>microprofile-config-api</artifactId>
                 <version>${microprofile-config.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.microprofile.opentracing</groupId>
-                <artifactId>microprofile-opentracing-api</artifactId>
-                <version>${microprofile-opentracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
@@ -455,6 +450,11 @@
                 <artifactId>jakarta.data-api</artifactId>
                 <version>${jakarta.data-api.version}</version>
             </dependency>
+            <dependency>
+                <groupId>jakarta.agentic-ai</groupId>
+                <artifactId>jakarta.agentic-ai-api</artifactId>
+                <version>${jakarta.agentic-ai-api.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.osgi</groupId>
@@ -522,8 +522,8 @@
             </dependency>
 
             <dependency>
-                <groupId>io.opentelemetry.instrumentation</groupId>
-                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
                 <version>${opentelemetry.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -572,15 +572,9 @@
                 <scope>provided</scope>
             </dependency>
             <dependency>
-                <groupId>io.opentelemetry</groupId>
+                <groupId>io.opentelemetry.semconv</groupId>
                 <artifactId>opentelemetry-semconv</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentelemetry</groupId>
-                <artifactId>opentelemetry-opentracing-shim</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-semconv.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -616,34 +610,15 @@
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-                <version>${opentelemetry.version}</version>
+                <version>${opentelemetry-instrumentation-annotations.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-instrumentation-annotations-support</artifactId>
-                <version>${opentelemetry.alpha.version}</version>
+                <version>${opentelemetry-instrumentation-annotation-support.version}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-api</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-util</artifactId>
-                <version>${opentracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing</groupId>
-                <artifactId>opentracing-noop</artifactId>
-                <version>${opentracing.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
             <!-- Implementations -->
             <dependency>
                 <groupId>org.glassfish.grizzly</groupId>
@@ -733,11 +708,6 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
-                <artifactId>org.eclipse.persistence.moxy</artifactId>
-                <version>${eclipselink.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.sdo</artifactId>
                 <version>${eclipselink.version}</version>
             </dependency>
@@ -760,6 +730,14 @@
                 <groupId>org.eclipse.persistence</groupId>
                 <artifactId>org.eclipse.persistence.asm</artifactId>
                 <version>${eclipselink.asm.version}</version>
+            </dependency>
+            <!-- No longer shipped with server, but version managed, so that users of jersey-media-moxy
+                 would fetch correct version of moxy, 5.0.0-B1 advertised by it is incompatible -->
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>org.eclipse.persistence.moxy</artifactId>
+                <version>${eclipselink.version}</version>
+                <scope>compile</scope>
             </dependency>
             <!-- Annotation processor is best suited for provided scope -->
             <dependency>
@@ -857,13 +835,18 @@
             </dependency>
 
             <dependency>
-                <groupId>org.eclipse</groupId>
+                <groupId>org.eclipse.yasson</groupId>
                 <artifactId>yasson</artifactId>
                 <version>${yasson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.parsson</groupId>
                 <artifactId>jakarta.json</artifactId>
+                <version>${parsson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.parsson</groupId>
+                <artifactId>parsson</artifactId>
                 <version>${parsson.version}</version>
             </dependency>
             <dependency>

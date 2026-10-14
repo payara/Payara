@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -266,24 +266,22 @@ public class BeanValidationTest extends OpenApiApplicationTest {
         assertTrue(link.get("parameters").isArray());
 
         List<String> result = link.get("parameters").findValuesAsText("maximum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("3"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMaximum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("3"));
 
         link = path(getOpenAPIJson(), "paths./test/bean-validation/decimalmin/{param}.post");
         assertNotNull(link);
         assertTrue(link.get("parameters").isArray());
 
         result = link.get("parameters").findValuesAsText("minimum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("1"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMinimum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("1"));
     }
 
     @Test
@@ -315,12 +313,11 @@ public class BeanValidationTest extends OpenApiApplicationTest {
         assertTrue(link.get("parameters").isArray());
 
         List<String> result = link.get("parameters").findValuesAsText("maximum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("0"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMaximum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("0"));
 
         link = path(getOpenAPIJson(), "paths./test/bean-validation/negativeorzero/{param}.post");
         assertNotNull(link);
@@ -341,12 +338,11 @@ public class BeanValidationTest extends OpenApiApplicationTest {
         assertTrue(link.get("parameters").isArray());
 
         List<String> result = link.get("parameters").findValuesAsText("minimum");
-        assertEquals(1, result.size());
-        assertTrue(result.contains("0"));
+        assertEquals(0, result.size());
 
         result = link.get("parameters").findValuesAsText("exclusiveMinimum");
         assertEquals(1, result.size());
-        assertTrue(result.contains("true"));
+        assertTrue(result.contains("0"));
 
         link = path(getOpenAPIJson(), "paths./test/bean-validation/positiveorzero/{param}.post");
         assertNotNull(link);

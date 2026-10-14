@@ -37,8 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2017-2026 Payara Foundation and/or its affiliates
 
-// Portions Copyright [2017-2021] [Payara Foundation and/or its affiliates]
 package org.glassfish.deployment.admin;
 
 import org.glassfish.api.ActionReport;
@@ -72,7 +72,7 @@ import org.glassfish.api.admin.AccessRequired;
 @AccessRequired(resource=DeploymentCommandUtils.LIBRARY_SECURITY_RESOURCE_PREFIX + "/$type", action="read")
 public class ListLibrariesCommand implements AdminCommand {
 
-    @Param(optional=true, acceptableValues="common, ext, app")
+    @Param(optional=true, acceptableValues="common, ext, app, war")
     String type = "common";
 
     @Inject
@@ -90,6 +90,8 @@ public class ListLibrariesCommand implements AdminCommand {
             libDir = new File(libDir, "ext");
         } else if (type.equals("app")) {
             libDir = new File(libDir, "applibs");
+        } else if (type.equals("war")) {
+            libDir = new File(libDir, "warlibs");
         }
 
         ActionReport.MessagePart part = report.getTopMessagePart();

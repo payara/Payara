@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2017-2020] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2017-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,8 @@
  */
 package fish.payara.nucleus.microprofile.config.source;
 
-import fish.payara.nucleus.microprofile.config.spi.ConfigProviderResolverImpl;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
+import fish.payara.nucleus.microprofile.config.spi.MicroprofileConfigConfiguration;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 import java.io.File;
@@ -66,15 +67,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toMap;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 /**
  * Config Source that reads properties from files from a directory
@@ -216,28 +217,27 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     public static final String DEFAULT_DIR = "secrets";
     private Path directory;
     private final ConcurrentHashMap<String, DirProperty> properties = new ConcurrentHashMap<>();
-    
-    public DirConfigSource() {
+
+    public DirConfigSource(MicroprofileConfigConfiguration mpConfig, PayaraExecutorService executorService) {
+        super(mpConfig);
         try {
-            // get the directory from the app server config
             Optional<Path> dir = findDir();
             if (dir.isPresent()) {
                 this.directory = dir.get();
-                // create the watcher for the directory
-                configService.getExecutor().scheduleWithFixedDelay(createWatcher(this.directory), 0, 1, SECONDS);
+                executorService.scheduleWithFixedDelay(createWatcher(this.directory), 0, 1, SECONDS);
             }
         } catch (IOException e) {
             logger.log(SEVERE, "MPCONFIG DirConfigSource: error during setup.", e);
         }
     }
 
-    // Used for testing only with explicit dependency injection
-    // Used for testing only with explicit dependency injection
-    DirConfigSource(Path directory, ConfigProviderResolverImpl configService) {
-        super(configService);
+
+    /** For testing only – no executor or directory scanning is performed. */
+    DirConfigSource(Path directory, MicroprofileConfigConfiguration mpConfig) {
+        super(mpConfig);
         this.directory = directory;
     }
-    
+
     DirPropertyWatcher createWatcher(Path topmostDirectory) throws IOException {
         return new DirPropertyWatcher(topmostDirectory);
     }
@@ -265,7 +265,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
         if (storedOrdinal != null) {
             return Integer.parseInt(storedOrdinal);
         }
-        return Integer.parseInt(configService.getMPConfig().getSecretDirOrdinality());
+        return getOrdinal(MicroprofileConfigConfiguration::getSecretDirOrdinality);
     }
 
     @Override
@@ -280,7 +280,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     }
 
     Optional<Path> findDir() throws IOException {
-        String path = configService.getMPConfig().getSecretDir();
+        String path = mpConfig.getSecretDir();
         if (path == null)
             return Optional.empty();
         

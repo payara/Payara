@@ -526,7 +526,6 @@ public class ServerTags  {
     public static final String HTTP_PROTOCOL = "http-protocol";
     public static final String VERSION = "version";
     public static final String DNS_LOOKUP_ENABLED = "dns-lookup-enabled";
-    public static final String FORCED_RESPONSE_TYPE = "forced-response-type";
     public static final String DEFAULT_RESPONSE_TYPE = "default-response-type";
     public static final String SSL_ENABLED = "ssl-enabled";
     /** Tags for Element http-file-cache */

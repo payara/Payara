@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,7 +78,6 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    @Optional
     private MicroprofileConfigConfiguration configuration;
 
     @Inject
@@ -100,11 +99,6 @@ public class ExtensionConfigSourceService implements EventListener, ConfigListen
 
     @PostConstruct
     void initialize() {
-        // Get the config if it's not been injected
-        if (configuration == null) {
-            configuration = locator.getService(MicroprofileConfigConfiguration.class);
-        }
-
         // Register an event listener
         if (events != null) {
             events.register(this);

@@ -58,12 +58,23 @@ public class ManagedThreadFactoryEJBRest {
     @EJB
     ManagedThreadFactoryEJB managedThreadFactoryEJB;
 
+    @EJB
+    ManagedThreadFactoryEJBFromConfig managedThreadFactoryEJBCFromConfig;
+
     @GET
     @Path("application")
     @Produces(MediaType.TEXT_PLAIN)
     public String processApplicationManagedThreadFactory() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, "Processing xml tag from ear application config");
         return managedThreadFactoryEJB.submitJob();
+    }
+
+    @GET
+    @Path("ejbconfig")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String processEJBManagedThreadFactory() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing xml tag from ejb config");
+        return managedThreadFactoryEJBCFromConfig.submitJob();
     }
 
 }

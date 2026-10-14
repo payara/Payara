@@ -2,7 +2,7 @@
  *
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2023-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -42,18 +42,19 @@
 package fish.payara.microprofile.telemetry.tracing;
 
 import fish.payara.opentracing.OpenTelemetryService;
+import fish.payara.opentracing.OtelRouteState;
 import fish.payara.opentracing.PropagationHelper;
 import fish.payara.requesttracing.jaxrs.client.PayaraTracingServices;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.opentelemetry.instrumentation.api.annotation.support.MethodSpanAttributesExtractor;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import jakarta.enterprise.inject.spi.BeanManager;
+import io.opentelemetry.semconv.ExceptionAttributes;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.InvocationContext;
 import jakarta.ws.rs.DELETE;
@@ -64,128 +65,27 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import org.glassfish.api.invocation.InvocationManager;
-import org.jboss.weld.interceptor.WeldInvocationContext;
 
-import java.lang.annotation.Annotation;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static java.util.Arrays.asList;
-import static java.util.logging.Level.FINER;
 
 /**
  * Interceptor for CDI beans that adds tracing spans using OpenTelemetry.
  */
-public class WithSpanMethodInterceptor {
+public class WithSpanMethodInterceptor implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = Logger.getLogger(WithSpanMethodInterceptor.class.getName());
 
     private static final Class[] HTTP_METHODS = //
             new Class[] {GET.class, POST.class, DELETE.class, PUT.class, HEAD.class, PATCH.class, OPTIONS.class};
 
-    private final BeanManager bm;
-
-    public WithSpanMethodInterceptor(final BeanManager bm) {
-        this.bm = bm;
-    }
-
-    /**
-     * Gets the annotation from the method that triggered the interceptor.
-     *
-     * @param <A> The annotation type to return
-     * @param beanManager The invoking interceptor's BeanManager
-     * @param annotationClass The class of the annotation to get
-     * @param invocationContext The context of the method invocation
-     * @return The annotation that triggered the interceptor.
-     */
-    private static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, InvocationContext invocationContext) {
-        A annotation = getInterceptedAnnotation(annotationClass, invocationContext);
-
-        if (annotation == null) {
-            annotation = getAnnotation(beanManager, annotationClass, invocationContext.getMethod().getDeclaringClass(), invocationContext.getMethod());
-        }
-
-        return annotation;
-    }
-
-    public static <A extends Annotation> A getAnnotation(BeanManager beanManager, Class<A> annotationClass, Class<?> annotatedClass, Method method) {
-        logGetAnnotation(annotationClass, method);
-        Objects.requireNonNull(annotatedClass, "annotatedClass");
-        Objects.requireNonNull(method, "method");
-
-        // Try to get the annotation from the method, otherwise attempt to get it from the class
-        if (method.isAnnotationPresent(annotationClass)) {
-            LOG.log(FINER, "Annotation was directly present on the method");
-            return method.getAnnotation(annotationClass);
-        }
-
-        if (annotatedClass.isAnnotationPresent(annotationClass)) {
-            LOG.log(FINER, "Annotation was directly present on the class");
-            return annotatedClass.getAnnotation(annotationClass);
-        }
-
-        LOG.log(FINER, "Annotation wasn't directly present on the method or class, checking stereotypes");
-
-        // Account for Stereotypes
-        Queue<Annotation> annotations = new LinkedList<>(asList(annotatedClass.getAnnotations()));
-
-        // Loop over each individual annotation
-        while (!annotations.isEmpty()) {
-            Annotation a = annotations.remove();
-
-            // Check if this is the annotation we're looking for
-            if (a.annotationType().equals(annotationClass)) {
-                LOG.log(FINER, "Annotation was found in a stereotype");
-                return annotationClass.cast(a);
-            }
-
-            // If the found annotation is a stereotype, get the individual annotations and add them to the list
-            // to be iterated over
-            if (beanManager.isStereotype(a.annotationType())) {
-                annotations.addAll(beanManager.getStereotypeDefinition(a.annotationType()));
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Uses Weld to find an annotation. The annotation must be an intercepted annotation that has a binding
-     * @param <A>
-     * @param annotationClass {@link Annotation} to look for
-     * @param invocationContext
-     * @return the {@link Annotation} that the interceptor is inceptoring,or null if it cannot be found
-     */
-    private static <A extends Annotation> A getInterceptedAnnotation(Class<A> annotationClass, InvocationContext invocationContext){
-         if (invocationContext instanceof WeldInvocationContext) {
-            Set<Annotation> interceptorBindings = ((WeldInvocationContext) invocationContext).getInterceptorBindings();
-            for (Annotation annotationBound : interceptorBindings) {
-                if (annotationBound.annotationType().equals(annotationClass)) {
-                    return (A) annotationBound;
-                }
-            }
-        }
-        return null;
-    }
-
-    private static void logGetAnnotation(Class<?> annotatedClass, Method method) {
-        LOG.log(FINER, "Attempting to get annotation {0} from {1}",
-            new String[] {getString(annotatedClass, Class::getSimpleName), getString(method, Method::getName)});
-    }
-
-    private static <T> String getString(final T object, Function<T, String> toString) {
-        if (object == null) {
-            return null;
-        }
-        return toString.apply(object);
+    public WithSpanMethodInterceptor() {
     }
 
     @AroundInvoke
@@ -201,20 +101,37 @@ public class WithSpanMethodInterceptor {
         extractSpanAttributes(invocationContext, builder);
         var attributes = builder.build();
 
-        // If Request Tracing is enabled, and this isn't a JaxRs method
-        if (openTelemetryService == null || !openTelemetryService.isEnabled() //
-                || isJaxRsMethod(invocationContext) || isWebServiceMethod(invocationContext, invocationManager)) {
-            // If request tracing was turned off, or this is a JaxRs method, just carry on
-            LOG.finest("The call is already monitored by some different component, proceeding the invocation.");
-            var currentSpan = Span.current();
-            currentSpan.setAllAttributes(attributes);
+        if (openTelemetryService == null || !openTelemetryService.isEnabled()) {
             return invocationContext.proceed();
         }
 
-        // Get the WithSpan annotation present on the method
-        final WithSpan withSpan = getAnnotation(bm, WithSpan.class, invocationContext);
+        // JAX-RS methods are traced by the container/client filters — skip.
+        if (isJaxRsMethod(invocationContext)) {
+            Span.current().setAllAttributes(attributes);
+            return invocationContext.proceed();
+        }
 
-        // If we *have* been told to, get the application's Tracer instance and start an active span.
+        // JAX-WS methods already have a SERVER span created by the JAX-WS infrastructure.
+        // Enrich that span with the @WithSpan name override and @SpanAttribute parameters
+        // instead of creating a redundant child span.
+        if (isWebServiceMethod(invocationContext, invocationManager)) {
+            enrichCurrentSpan(invocationContext.getMethod(), attributes);
+            return invocationContext.proceed();
+        }
+
+        // CDI bean method: check for @WithSpan and create a new span.
+        final WithSpan withSpan = invocationContext.getMethod().getAnnotation(WithSpan.class);
+
+        if (withSpan == null) {
+            LOG.finest("No @WithSpan annotation found on method, proceeding without creating a span.");
+            return invocationContext.proceed();
+        }
+
+        if (WithSpanEnabledLookup.isDisabled(invocationContext.getMethod())) {
+            LOG.finest("Tracing is disabled for this method via configuration, proceeding without creating a span.");
+            return invocationContext.proceed();
+        }
+
         SpanBuilder spanBuilder = openTelemetryService.getCurrentTracer()
                 .spanBuilder(getWithSpanValue(invocationContext, withSpan))
                 .setSpanKind(withSpan.kind())
@@ -240,7 +157,7 @@ public class WithSpanMethodInterceptor {
     private boolean isJaxRsMethod(InvocationContext invocationContext) {
         // Check if any of the HTTP Method annotations are present on the intercepted method
         for (Class httpMethod : HTTP_METHODS) {
-            if (getAnnotation(bm, httpMethod, invocationContext) != null) {
+            if (invocationContext.getMethod().isAnnotationPresent(httpMethod)) {
                 return true;
             }
         }
@@ -249,17 +166,52 @@ public class WithSpanMethodInterceptor {
     }
 
     /**
-     * Helper method that determines if the annotated method is the monitored JAX-WS method or not by inspecting the invocation manager.
-     * <p>
-     * JaxWs method tracing is handled by the JAX-WS monitoring pipe/tube, so we don't process them using this
-     * interceptor.
-     *
-     * @param invocationContext The invocation context from the AroundInvoke method.
-     * @param invocationManager The current invocation manager for this thread
-     * @return True if the method is a JaxRs method.
+     * Returns {@code true} if the intercepted method is currently executing as a JAX-WS web service method.
+     * The SERVER span for JAX-WS is owned by the JAX-WS infrastructure; the interceptor enriches it
+     * rather than creating a new child span.
      */
     private boolean isWebServiceMethod(InvocationContext invocationContext, InvocationManager invocationManager) {
         return invocationContext.getMethod().equals(invocationManager.peekWebServiceMethod());
+    }
+
+    /**
+     * Enriches the current JAX-WS SERVER span with {@link WithSpan} name and {@link SpanAttribute} parameters.
+     *
+     * <p>The SERVER span is already created by the JAX-WS infrastructure. If the method carries
+     * {@link WithSpan} with a non-empty value, the span name is updated. Parameter attributes are
+     * always applied when {@link WithSpan} is present and tracing is not disabled via config.
+     *
+     * <p>Two span-ownership paths are handled:
+     * <ul>
+     *   <li><b>Servlet endpoint</b> ({@code StandardWrapper} owns the span): an
+     *       {@link OtelRouteState} is present in {@link Context#current()}. The name override is
+     *       written there so that {@code OtelSupport.endAndRecord} applies it last — calling
+     *       {@link Span#updateName} directly would be overwritten at span-end.</li>
+     *   <li><b>EJB endpoint</b> (deferred span owned by {@link fish.payara.opentracing.OpenTelemetryService}):
+     *       no {@code OtelRouteState} is present; {@link Span#updateName} is called directly.</li>
+     * </ul>
+     *
+     * @param method     the intercepted business method
+     * @param attributes span attributes extracted from {@link SpanAttribute}-annotated parameters
+     */
+    private void enrichCurrentSpan(Method method, Attributes attributes) {
+        WithSpan withSpan = method.getAnnotation(WithSpan.class);
+        if (withSpan != null && !WithSpanEnabledLookup.isDisabled(method)) {
+            String name = withSpan.value();
+            if (!name.isEmpty()) {
+                OtelRouteState routeState = OtelRouteState.fromContext(Context.current());
+                if (routeState != null) {
+                    // Servlet path: StandardWrapper reads spanName() at span-end via OtelSupport.endAndRecord.
+                    routeState.overrideSpanName(name);
+                } else {
+                    // EJB path: the deferred span is already the current span; update it directly.
+                    Span.current().updateName(name);
+                }
+            }
+        }
+        // Always apply @SpanAttribute parameter attributes — mirrors JAX-RS behaviour where
+        // parameter attributes are set on the SERVER span regardless of @WithSpan presence.
+        Span.current().setAllAttributes(attributes);
     }
 
     /**
@@ -333,10 +285,10 @@ public class WithSpanMethodInterceptor {
 
     private void markSpanAsFailed(Span span, Throwable ex) {
         LOG.log(Level.FINEST, "Setting the error to the active span ...", ex);
-        span.setAttribute("error", true);
-        span.setAttribute(SemanticAttributes.EXCEPTION_TYPE, Throwable.class.getName());
-        span.addEvent(SemanticAttributes.EXCEPTION_EVENT_NAME,
-                Attributes.of(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
+        span.setStatus(StatusCode.ERROR, ex.getMessage());
+        span.setAttribute(ExceptionAttributes.EXCEPTION_TYPE, ex.getClass().getName());
+        span.addEvent(ExceptionAttributes.EXCEPTION_TYPE.toString(),
+                Attributes.of(ExceptionAttributes.EXCEPTION_MESSAGE, ex.getMessage()));
         span.recordException(ex);
     }
 }

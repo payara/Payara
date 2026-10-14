@@ -238,13 +238,42 @@ public class ClusterHandler {
             attrs.put("instance", instanceName);
             GuiUtil.getLogger().info(endPoint);
             try {
-                RestUtil.restRequest(endPoint, attrs, "post", null, false);
+                Map<String, Object> response = RestUtil.restRequest(endPoint, attrs, "post", null, false);
+                surfaceOfflineWarning(response);
             } catch (Exception ex) {
                 GuiUtil.prepareAlert("error", GuiUtil.getMessage("msg.Error"), ex.getMessage());
                 return;
             }
         }
 
+    }
+
+    /**
+     * Surfaces the "seems to be offline" warning that remove-instance-from-deployment-group appends
+     * to its top-level report when a departed member is offline. The replication framework overwrites
+     * the command's exit code back to SUCCESS once it runs (it executed on the DAS only, or converged
+     * the running members), so {@link RestUtil#parseResponse} never raises the warning alert itself.
+     * The warning survives in the top-level report message, which is empty on an ordinary successful
+     * removal, so a non-empty message on a SUCCESS response is precisely the offline case to alert on.
+     */
+    private static void surfaceOfflineWarning(Map<String, Object> response) {
+        if (response == null) {
+            return;
+        }
+        Object dataObj = response.get("data");
+        if (!(dataObj instanceof Map)) {
+            return;
+        }
+        Map<String, Object> data = (Map<String, Object>) dataObj;
+        // A WARNING exit code is already alerted by RestUtil.parseResponse; only the SUCCESS case,
+        // whose warning the framework left stranded in the report message, needs surfacing here.
+        if (!"SUCCESS".equals(data.get("exit_code"))) {
+            return;
+        }
+        Object message = data.get("message");
+        if (message != null && !message.toString().trim().isEmpty()) {
+            GuiUtil.prepareAlert("warning", GuiUtil.getCommonMessage("msg.command.warning"), message.toString().trim());
+        }
     }
 
     @Handler(id = "gf.dgAction",

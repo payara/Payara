@@ -139,6 +139,7 @@
     <tocitem target="reference/delete-jms-host" text="delete-jms-host" expand="false"></tocitem>
     <tocitem target="reference/delete-jms-resource" text="delete-jms-resource" expand="false"></tocitem>
     <tocitem target="reference/delete-jndi-resource" text="delete-jndi-resource" expand="false"></tocitem>
+    <tocitem target="reference/delete-jvm-option" text="delete-jvm-option" expand="false"></tocitem>
     <tocitem target="reference/delete-jvm-options" text="delete-jvm-options" expand="false"></tocitem>
     <tocitem target="reference/delete-local-instance" text="delete-local-instance" expand="false"></tocitem>
     <tocitem target="reference/delete-managed-executor-service" text="delete-managed-executor-service" expand="false"></tocitem>
@@ -157,6 +158,7 @@
     <tocitem target="reference/delete-resource-ref" text="delete-resource-ref" expand="false"></tocitem>
     <tocitem target="reference/delete-ssl" text="delete-ssl" expand="false"></tocitem>
     <tocitem target="reference/delete-system-property" text="delete-system-property" expand="false"></tocitem>
+    <tocitem target="reference/delete-system-properties" text="delete-system-properties" expand="false"></tocitem>
     <tocitem target="reference/delete-threadpool" text="delete-threadpool" expand="false"></tocitem>
     <tocitem target="reference/delete-transport" text="delete-transport" expand="false"></tocitem>
     <tocitem target="reference/delete-virtual-server" text="delete-virtual-server" expand="false"></tocitem>

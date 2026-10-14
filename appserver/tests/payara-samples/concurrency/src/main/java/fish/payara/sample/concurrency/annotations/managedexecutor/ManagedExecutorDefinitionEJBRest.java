@@ -57,12 +57,23 @@ public class ManagedExecutorDefinitionEJBRest {
     @EJB
     ManagedExecutorDefinitionEJB managedExecutorDefinitionEJB;
 
+    @EJB
+    ManagedExecutorDefinitionEJBFromConfig managedExecutorDefinitionEJBFromConfig;
+
     @GET
     @Path("application")
     @Produces(MediaType.TEXT_PLAIN)
     public String processManagedExecutor() throws InterruptedException, ExecutionException {
         logger.log(Level.INFO, "Processing xml tag from ear application config");
         return managedExecutorDefinitionEJB.submitApplicationExecutor();
+    }
+
+    @GET
+    @Path("ejbconfig")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String processEJBManagedExecutor() throws InterruptedException, ExecutionException {
+        logger.log(Level.INFO, "Processing xml tag from ejb config");
+        return managedExecutorDefinitionEJBFromConfig.submitEJBExecutor();
     }
 
 }

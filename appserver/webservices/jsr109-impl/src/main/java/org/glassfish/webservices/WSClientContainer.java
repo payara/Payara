@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2022] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2022-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -51,7 +51,7 @@ public class WSClientContainer extends Container {
 
     ServiceReferenceDescriptor svcRef;
     private org.glassfish.webservices.SecurityService  secServ;
-    
+
     public WSClientContainer(ServiceReferenceDescriptor ref) {
         svcRef = ref;
         if (Globals.getDefaultHabitat() != null) {
@@ -67,8 +67,9 @@ public class WSClientContainer extends Container {
             }
         }
         if(spiType == ServiceInterceptor.class) {
-            return((T)(new PortCreationCallbackImpl(svcRef)));
+            return (T) ServiceInterceptor.aggregate(new PortCreationCallbackImpl(svcRef), WSContainerResolver.otelInterceptor());
         }
         return null;
     }
+
 }

@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resources.admin.cli.ResourcesXML;
 import org.glassfish.resources.api.Resource;
 
 import java.util.*;
@@ -141,60 +142,60 @@ public class ResourceUtilities {
       * We currently do not handle any resource conflicts found within the archive
       * and the method throws an exception when this condition is detected.
       *
-      * @param sunResList a list of <code>SunResourcesXML</code> corresponding to
-      * sun-resources.xml found within an archive.
+      * @param resXmlList a list of <code>ResourcesXML</code> corresponding to
+      * payara-resources.xml, glassfish-resources.xml, or sun-resources.xml found within an archive.
       *
       * @return a Set of <code>Resource</code>s that have been resolved of
       * duplicates and conflicts.
       *
-      * @throws org.glassfish.resources.api.ResourceConflictException an exception is thrown when an archive is found to
+      * @throws ResourceConflictException an exception is thrown when an archive is found to
       * have two or more resources that conflict with each other.
       */
      public static Set<org.glassfish.resources.api.Resource> resolveResourceDuplicatesConflictsWithinArchive(
-             List<org.glassfish.resources.admin.cli.SunResourcesXML> sunResList) throws ResourceConflictException {
-         boolean conflictExist = false;
+             List<ResourcesXML> resXmlList) throws ResourceConflictException {
          StringBuilder conflictingResources = new StringBuilder();
-         Set<org.glassfish.resources.api.Resource> resourceSet = new HashSet<org.glassfish.resources.api.Resource>();
-         Iterator<org.glassfish.resources.admin.cli.SunResourcesXML> sunResourcesXMLIter = sunResList.iterator();
-         while(sunResourcesXMLIter.hasNext()){
-             //get list of resources from one sun-resources.xml file
-             org.glassfish.resources.admin.cli.SunResourcesXML sunResXML = sunResourcesXMLIter.next();
-             List<org.glassfish.resources.api.Resource> resources = sunResXML.getResourcesList();
+         Set<org.glassfish.resources.api.Resource> resourceSet = new HashSet<>();
+         Iterator<ResourcesXML> resourcesXmlIter = resXmlList.iterator();
+         while(resourcesXmlIter.hasNext()){
+             // Get list of resources from one *-resources.xml file
+             ResourcesXML resourcesXml = resourcesXmlIter.next();
+             List<org.glassfish.resources.api.Resource> resources = resourcesXml.getResourcesList();
              Iterator<org.glassfish.resources.api.Resource> resourcesIter = resources.iterator();
-             //for each resource mentioned
+             // For each resource mentioned
              while(resourcesIter.hasNext()){
                  org.glassfish.resources.api.Resource res = resourcesIter.next();
                  Iterator<org.glassfish.resources.api.Resource> resSetIter = resourceSet.iterator();
                  boolean addResource = true;
-                 //check if a duplicate has already been added
+                 // Check if a duplicate has already been added
                  while(resSetIter.hasNext()){
                      Resource existingRes = resSetIter.next();
                      if(existingRes.equals(res)){
                          //duplicate within an archive
                          addResource = false;
                          _logger.warning(localStrings.getString("duplicate.resource.sun.resource.xml",
-                                 getIdToCompare(res), sunResXML.getXMLPath()));
+                                 getIdToCompare(res), resourcesXml.getXMLPath()));
                          break;
                      }
                      //check if another existing resource conflicts with the
                      //resource being added
-                     if(existingRes.isAConflict(res)){
+                     if (existingRes.isAConflict(res)) {
                          //conflict within an archive
                          addResource = false;
                          conflictingResources.append("\n");
                          String message = localStrings.getString("conflict.resource.sun.resource.xml",
-                                 getIdToCompare(res), sunResXML.getXMLPath());
+                                 getIdToCompare(res), resourcesXml.getXMLPath());
                          conflictingResources.append(message);
                          _logger.warning(message);
                          if(_logger.isLoggable(Level.FINE))
                              logAttributes(res);
                      }
                  }
-                 if(addResource)
+                 if (addResource) {
                      resourceSet.add(res);
+                 }
              }
          }
-         if(conflictingResources.toString().length() > 0){
+         if (conflictingResources.toString().length() > 0) {
              throw new ResourceConflictException(conflictingResources.toString());
          }
          return resourceSet;

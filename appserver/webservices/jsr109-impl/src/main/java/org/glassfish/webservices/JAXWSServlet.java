@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates
 
 package org.glassfish.webservices;
 
@@ -46,12 +46,8 @@ import static jakarta.xml.ws.http.HTTPBinding.HTTP_BINDING;
 import static org.glassfish.webservices.LogUtils.SERVLET_ENDPOINT_FAILURE;
 
 import java.io.IOException;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.logging.Logger;
 
 import jakarta.servlet.ServletConfig;
@@ -79,8 +75,7 @@ import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 
-import fish.payara.notification.requesttracing.RequestTraceSpan;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
+
 
 /**
  * The JAX-WS dispatcher servlet.
@@ -99,7 +94,6 @@ public class JAXWSServlet extends HttpServlet {
     private transient WebServiceEngineImpl wsEngine_;
     private boolean wsdlExposed = true;
     private String urlPattern;
-    private RequestTracingService requestTracing;
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {
@@ -155,8 +149,6 @@ public class JAXWSServlet extends HttpServlet {
 
             throw new ServletException(t);
         }
-
-        requestTracing = Globals.get(RequestTracingService.class);
     }
 
     @Override
@@ -174,23 +166,18 @@ public class JAXWSServlet extends HttpServlet {
 
         // Lookup registered URLs and get the appropriate adapter;
         // pass control to the adapter
-        RequestTraceSpan span = null;
+        // Note: the OTel SERVER span for this request is owned by StandardWrapper (via OtelSupport)
+        // since servlet-based JAX-WS endpoints are deployed inside a WAR and go through the normal
+        // servlet pipeline. No additional span management is needed here.
         try {
             ServletAdapter targetEndpoint = (ServletAdapter) getEndpointFor(request);
             if (targetEndpoint != null) {
-                if (requestTracing.isRequestTracingEnabled()) {
-                    span = constructWsRequestSpan(request, targetEndpoint.getAddress());
-                }
                 targetEndpoint.handle(getServletContext(), request, response);
             } else {
                 throw new ServletException("Service not found");
             }
         } catch (Throwable t) {
             throw new ServletException(t);
-        } finally {
-            if (requestTracing.isRequestTracingEnabled() && span != null) {
-                requestTracing.traceSpan(span);
-            }
         }
         endedEvent(endpoint.getEndpointAddressPath());
     }
@@ -242,22 +229,6 @@ public class JAXWSServlet extends HttpServlet {
         synchronized (this) {
             wsEngine_.removeHandler(endpoint);
         }
-    }
-
-    private RequestTraceSpan constructWsRequestSpan(HttpServletRequest httpServletRequest, URI uri) {
-        RequestTraceSpan span = new RequestTraceSpan("processSoapWebserviceRequest");
-        span.addSpanTag("URI", uri.toString());
-        span.addSpanTag("URL", httpServletRequest.getRequestURL().toString());
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            span.addSpanTag(headerName, headers.toString());
-        }
-        span.addSpanTag("Method", httpServletRequest.getMethod());
-
-        return span;
     }
 
     @Probe(name = "startedEvent")

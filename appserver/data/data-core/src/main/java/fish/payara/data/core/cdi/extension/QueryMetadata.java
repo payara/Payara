@@ -40,6 +40,7 @@
 package fish.payara.data.core.cdi.extension;
 
 import java.lang.reflect.Method;
+import fish.payara.data.core.querymethod.QueryMethodParser;
 
 /**
  * This class represent the immutable structure of a query to be utilised at runtime
@@ -51,14 +52,16 @@ public class QueryMetadata {
     private final Class<?> declaredEntityClass;
     private final QueryType queryType;
     private final EntityMetadata entityMetadata;
+    private final QueryMethodParser.ParseResult parseResult;
 
-    public QueryMetadata(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata) {
+    public QueryMetadata(Class<?> repositoryInterface, Method method, Class<?> declaredEntityClass, Class<?> entityParamType, QueryType queryType, EntityMetadata entityMetadata, QueryMethodParser.ParseResult parseResult) {
         this.repositoryInterface = repositoryInterface;
         this.method = method;
         this.declaredEntityClass = declaredEntityClass;
         this.entityParamType = entityParamType;
         this.queryType = queryType;
         this.entityMetadata = entityMetadata;
+        this.parseResult = parseResult;
     }
 
     public Class<?> getRepositoryInterface() {
@@ -83,5 +86,9 @@ public class QueryMetadata {
 
     public EntityMetadata getEntityMetadata() {
         return entityMetadata;
+    }
+
+    public QueryMethodParser.ParseResult getParseResult() {
+        return parseResult;
     }
 }

@@ -46,7 +46,7 @@
     <parent>
         <groupId>fish.payara.server.internal.tests</groupId>
         <artifactId>payara-tests</artifactId>
-        <version>7.2026.6-SNAPSHOT</version>
+        <version>7.2026.11-SNAPSHOT</version>
     </parent>
 
     <groupId>fish.payara.samples</groupId>
@@ -70,6 +70,8 @@
         <payara.containerType>SERVER</payara.containerType>
         <!-- Either payara or payara-web -->
         <payara.server.artifact>payara</payara.server.artifact>
+        <!-- Either payara-embedded-all or payara-embedded-web -->
+        <payara.embedded.artifact>payara-embedded-all</payara.embedded.artifact>
 
         <!-- Exclude unstable tests by default-->
         <excludedGroups>fish.payara.samples.Unstable</excludedGroups>
@@ -80,18 +82,18 @@
 
         <!-- Repackaged versions -->
         <http-matchers.version>1.1</http-matchers.version>
-        <smallrye-config.version>3.17.2</smallrye-config.version>
-        <smallrye-common.version>2.18.1</smallrye-common.version>
-        <jacc-provider.version>0.3</jacc-provider.version>
+        <smallrye-config.version>4.0.0</smallrye-config.version>
+        <smallrye-common.version>2.21.1</smallrye-common.version>
         <shrinkwrap.version>1.2.6</shrinkwrap.version>
-        <shrinkwrap.resolver.version>3.3.4</shrinkwrap.resolver.version>
-        <arquillian.version>1.10.1.Final</arquillian.version>
+        <shrinkwrap.resolver.version>3.3.7</shrinkwrap.resolver.version>
+        <arquillian.version>1.10.2.Final</arquillian.version>
     </properties>
 
     <modules>
         <module>test-utils</module>
         <module>repackaged</module>
         <module>ejb-invoker-secure-endpoint</module>
+        <module>access-log-handler</module>
         <module>payara-expression-config-properties</module>
         <module>clustered-singleton</module>
         <module>custom-loginmodule-realm</module>
@@ -100,7 +102,7 @@
         <module>formauth</module>
         <module>jacc-per-app</module>
         <module>jaxrs-rolesallowed</module>
-        <!--module>jaxrs-rolesallowed-servlet</module-->
+        <module>jaxrs-rolesallowed-servlet</module>
         <module>jaxws-security</module>
         <module>jaxws-tracing</module>
         <module>legacy-mode-empty-beans-xml</module>
@@ -130,6 +132,8 @@
         <module>data</module>
         <module>versioned-deployment</module>
         <module>microprofile-jwt-error-cache</module>
+        <module>agentic-ai-quickstart</module>
+        <module>agentic-ai</module>
     </modules>
 
     <profiles>
@@ -146,7 +150,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <payara.server.managed/>
+                <payara.server.managed/> <!-- Flag useful for profile-specific maven-antrun-plugin configuration -->
                 <payara.directory.name>payara7</payara.directory.name>
                 <payara.containerType>SERVER</payara.containerType>
                 <skipKillZombies>true</skipKillZombies> <!-- Whether to skip the pre-integration-test phase zombie server kill -->
@@ -291,6 +295,7 @@
                 <payara.asadmin>${payara.home}${file.separator}glassfish${file.separator}bin${file.separator}asadmin.bat</payara.asadmin>
             </properties>
         </profile>
+
         <profile>
             <id>payara-micro-managed</id>
             <!--
@@ -298,7 +303,7 @@
             The Payara version that's used can be set via the payara.version property.
             -->
             <properties>
-                <payara.micro.managed/>
+                <payara.micro.managed/> <!-- Flag useful for profile-specific maven-antrun-plugin configuration -->
                 <payara.containerType>MICRO</payara.containerType>
             </properties>
 
@@ -340,6 +345,77 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>payara-server-embedded</id>
+            <!--
+            This profile runs the samples against Payara Embedded via the Arquillian
+            embedded container. The embedded distribution under test is selected by the
+            payara.embedded.artifact property (payara-embedded-all or payara-embedded-web).
+            -->
+            <dependencies>
+                <dependency>
+                    <groupId>fish.payara.arquillian</groupId>
+                    <artifactId>arquillian-payara-server-embedded</artifactId>
+                    <scope>test</scope>
+                    <optional>true</optional>
+                </dependency>
+                <dependency>
+                    <groupId>jakarta.platform</groupId>
+                    <artifactId>jakarta.jakartaee-api</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>fish.payara.extras</groupId>
+                    <artifactId>${payara.embedded.artifact}</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.eclipse.parsson</groupId>
+                    <artifactId>jakarta.json</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.jersey.core</groupId>
+                    <artifactId>jersey-client</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <!--
+                    The embedded container boots Payara in-process, so (unlike the
+                    separate-process server/micro containers) the test JVM itself needs
+                    the JDK module openings Payara requires on JDK 17+.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <argLine>
+                                --add-opens=java.base/jdk.internal.loader=ALL-UNNAMED
+                                --add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED
+                                --add-exports=java.base/jdk.internal.ref=ALL-UNNAMED
+                                --add-opens=java.base/java.lang=ALL-UNNAMED
+                                --add-opens=java.base/java.nio=ALL-UNNAMED
+                                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                                --add-opens=java.management/sun.management=ALL-UNNAMED
+                                --add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED
+                                --add-exports=java.base/sun.net.www=ALL-UNNAMED
+                                --add-exports=java.base/sun.security.util=ALL-UNNAMED
+                                --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+                                --add-opens=java.desktop/java.beans=ALL-UNNAMED
+                                --add-exports=jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED
+                                --add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED
+                                --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+                                --add-opens=java.base/java.util=ALL-UNNAMED
+                                --add-opens=java.base/java.net=ALL-UNNAMED
+                            </argLine>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -407,6 +483,7 @@
             <id>web</id>
             <properties>
                 <payara.server.artifact>payara-web</payara.server.artifact>
+                <payara.embedded.artifact>payara-embedded-web</payara.embedded.artifact>
             </properties>
         </profile>
     </profiles>
@@ -537,12 +614,14 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
 
             <!-- disable GlassFish plugins for tests -
             not necessary, don't support parallel builds and slow down testing -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
@@ -574,6 +653,7 @@
 
             <!-- override nucleus.pom builtin settings, make it the default -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
@@ -586,15 +666,14 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
-                        <!-- affects managed only -->
                         <payara.home>${payara.home}</payara.home>
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
-                        <!-- affects micro only -->
                         <payara.microJar>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
@@ -605,15 +684,15 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
                         <payara.adminHost>${payara.adminHost}</payara.adminHost>
                         <payara.containerType>${payara.containerType}</payara.containerType>
-                        <!-- affects managed only -->
                         <payara.home>${payara.home}</payara.home>
+                        <com.sun.aas.productRoot>${payara.home}${file.separator}glassfish</com.sun.aas.productRoot> <!-- Required by the deprecated CliCommands -->
                         <payara.domain.name>${payara.domain.name}</payara.domain.name>
-                        <!-- affects micro only -->
                         <payara.microJar>${maven.multiModuleProjectDirectory}${file.separator}target${file.separator}payara-micro-${payara.version}.jar</payara.microJar>
                         <payara.clusterEnabled>true</payara.clusterEnabled>
                         <payara.debug>${payara.debug}</payara.debug>
@@ -624,8 +703,8 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.5.1</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                 </configuration>
@@ -635,6 +714,7 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven.failsafe.plugin.version}</version>
                     <executions>
@@ -680,7 +760,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.17</version>
+            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- needed for maven-war-plugin to work properly -->
@@ -698,7 +778,9 @@
     <reporting>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <aggregate>true</aggregate>
                     <linkXRef>true</linkXRef>

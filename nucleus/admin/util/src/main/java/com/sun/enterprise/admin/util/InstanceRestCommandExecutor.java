@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2019] Payara Foundation and/or affiliates
+// Portions Copyright 2018-2026 Payara Foundation and/or affiliates
 
 package com.sun.enterprise.admin.util;
 
@@ -45,6 +45,8 @@ import com.sun.enterprise.admin.remote.ServerRemoteRestAdminCommand;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -137,7 +139,11 @@ public class InstanceRestCommandExecutor extends ServerRemoteRestAdminCommand im
                         "{0}:\n{1}\n", getServer().getName(), getCommandOutput()));
         } catch (CommandException cmdEx) {
             ActionReport.ExitCode finalResult;
-            if(cmdEx.getCause() instanceof java.net.ConnectException) {
+            // ConnectException = connection refused (Linux: clean port close sends RST)
+            // SocketTimeoutException = connect timed out (Windows: closed port gives no RST, hangs until timeout)
+            // Both mean the instance is unreachable.
+            if (cmdEx.getCause() instanceof ConnectException
+                    || cmdEx.getCause() instanceof SocketTimeoutException) {
                 finalResult = FailurePolicy.applyFailurePolicy(offlinePolicy, ActionReport.ExitCode.FAILURE);
                 if(!finalResult.equals(ActionReport.ExitCode.FAILURE))
                     aReport.setMessage(STRINGS.getLocalString("clusterutil.warnoffline",

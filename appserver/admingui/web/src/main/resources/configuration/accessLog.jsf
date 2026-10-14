@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 -->
-<!-- Portions Copyright [2016-2018] [Payara Foundation and/or its affiliates] -->
+<!-- Portions Copyright 2016-2026 Payara Foundation and/or its affiliates -->
 
 <!-- configuration/accessLog.jsf -->
 
@@ -103,6 +103,10 @@
            </sun:checkbox>
         </sun:property>
 
+        <sun:property id="filterProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Filter}" helpText="$resource{i18n_web.access.FilterHelp}">
+            <sun:textField id="Filter" styleClass="regex" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.accessLogFilter']}" text="#{pageSession.valueMap2['filter']}" />
+        </sun:property>
+
         <sun:property id="rotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Rotation}" helpText="$resource{i18n_web.access.RotationHelp}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap2['rotationEnabled']}" selectedValue="true" >
            </sun:checkbox>
@@ -139,6 +143,14 @@
         <sun:property id="accessLogWriteInterval"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.accessLogWriteInterval}" helpText="$resource{i18n_web.access.accessLogWriteIntervalHelp}">
             <sun:textField id="accessLogWriteInterval" styleClass="intAllowMinus" columns="$int{30}" maxLength="#{sessionScope.fieldLengths['maxLength.access.accessLogWriteInterval']}"  text="#{pageSession.valueMap2['writeIntervalSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+        </sun:property>
+
+        <sun:property id="logHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.LogHandler}" helpText="$resource{i18n_web.access.LogHandlerHelp}">
+            <sun:dropDown id="LogHandler" selected="#{pageSession.valueMap2['logHandler']}" labels={"Default", "Common", "Combined", "JSON", "Custom"} />
+        </sun:property>
+
+        <sun:property id="customLogHandlerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.CustomLogHandler}" helpText="$resource{i18n_web.access.CustomLogHandlerHelp}">
+            <sun:textField id="CustomLogHandler" columns="$int{30}" text="#{pageSession.valueMap2['customLogHandler']}"/>
         </sun:property>
 
         <sun:property id="formatProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Format}" helpText="$resource{i18n_web.access.FormatHelp}">

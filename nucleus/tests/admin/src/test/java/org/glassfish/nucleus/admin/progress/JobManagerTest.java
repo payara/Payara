@@ -62,7 +62,7 @@ public class JobManagerTest {
 
     @BeforeTest
     public void setUp() throws Exception {
-        nadmin("stop-domain");
+        nadmin("stop-domain", "--kill=true");
         //delete jobs.xml incase there were other jobs run
         deleteJobsFile();
 
@@ -73,14 +73,14 @@ public class JobManagerTest {
 
     @AfterTest
     public void cleanUp() throws Exception {
-        nadmin("stop-domain");
+        nadmin("stop-domain", "--kill=true");
         nadmin("start-domain");
 
     }
     
     @Test(enabled=true)
     public void noJobsTest() {
-        nadmin("stop-domain");
+        nadmin("stop-domain", "--kill=true");
         //delete jobs.xml incase there were other jobs run
         deleteJobsFile();
         nadmin("start-domain");
@@ -104,21 +104,19 @@ public class JobManagerTest {
         result = nadminWithOutput("list-jobs","1").out;
         assertTrue( result.contains(COMMAND1) && result.contains("COMPLETED"));
         //shutdown server
-        assertTrue( nadmin("stop-domain"));
+        assertTrue( nadmin("stop-domain", "--kill=true"));
         //restart
         assertTrue( nadmin("start-domain"));
         //check jobs
         result = nadminWithOutput("list-jobs","1").out;
         assertTrue( result.contains(COMMAND1) && result.contains("COMPLETED"));
-        nadmin("start-domain");
-
     }
 
     @Test(dependsOnMethods = { "runJobTest" }, enabled=true)
        public void runDetachTest() {
            String result = null;
            //shutdown server
-           assertTrue( nadmin("stop-domain"));
+           assertTrue( nadmin("stop-domain", "--kill=true"));
 
            //delete the jobs file
            deleteJobsFile();
@@ -152,7 +150,7 @@ public class JobManagerTest {
            try {
                String result = null;
                //shutdown server
-               assertTrue( nadmin("stop-domain"));
+               assertTrue( nadmin("stop-domain", "--kill=true"));
 
                //delete the jobs file
                deleteJobsFile();
@@ -169,7 +167,7 @@ public class JobManagerTest {
                result = nadminWithOutput("list-jobs","1").out;
                assertTrue( result.contains(COMMAND1) );
                //shutdown server
-               assertTrue( nadmin("stop-domain"));
+               assertTrue( nadmin("stop-domain", "--kill=true"));
 
                //start server
                assertTrue( nadmin("start-domain"));
@@ -194,8 +192,9 @@ public class JobManagerTest {
     /**
      * This will delete the jobs.xml file
      */
+    @Test(enabled=false)
     public static void deleteJobsFile() {
-        File configDir = new File(nucleusRoot,"domains/domain1/config");
+        File configDir = new File(nucleusRoot,"glassfish/domains/domain1/config");
         File jobsFile = new File (configDir,"jobs.xml");
         System.out.println("Deleting.. " + jobsFile);
         if (jobsFile!= null && jobsFile.exists()) {
