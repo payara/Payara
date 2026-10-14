@@ -254,7 +254,7 @@
                                     <skip>${skipTestConfigCleanup}</skip>
                                     <executable>${payara.asadmin}</executable>
                                     <arguments>
-                                        <argument>${serverRestartCommand}</argument>
+                                        <argument>restart-domain</argument>
                                         <argument>${payara.domain.name}</argument>
                                     </arguments>
                                 </configuration>
