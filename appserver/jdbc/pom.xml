@@ -55,23 +55,6 @@
     <name>JDBC Module</name>
     <packaging>pom</packaging>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>glassfishbuild-maven-plugin</artifactId>
-                <configuration>
-                    <!-- configuration for the run mojo -->
-                    <distribution>
-                        <groupId>org.glassfish.distributions</groupId>
-                        <artifactId>web</artifactId>
-                        <version>${project.version}</version>
-                    </distribution>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <developers>
         <developer>
             <id>jr158900</id>

@@ -353,7 +353,8 @@
         <hk2.plugin.version>4.0.0-M2.payara-p2</hk2.plugin.version>
         <tiger.types.version>1.4.payara-p1</tiger.types.version>
         <junit.version>4.13.2</junit.version>
-        <glassfishbuild.version>3.2.20.payara-p3</glassfishbuild.version>
+        <glassfishbuild.version>4.1.0</glassfishbuild.version>
+        <commons-io.version>2.22.0</commons-io.version>
         <command-security-plugin.version>1.0.22</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
     </properties>
@@ -691,6 +692,20 @@
                     <groupId>org.glassfish.build</groupId>
                     <artifactId>glassfishbuild-maven-plugin</artifactId>
                     <version>${glassfishbuild.version}</version>
+                    <!-- Adds support for the glassfish-jar, distribution-fragment and glassfish-distribution packagings -->
+                    <extensions>true</extensions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>commons-io</groupId>
+                            <artifactId>commons-io</artifactId>
+                            <version>${commons-io.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${maven.exec.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.glassfish.hk2</groupId>
