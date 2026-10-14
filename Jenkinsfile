@@ -1,7 +1,6 @@
 #!groovy
 // Jenkinsfile for building a PR and running a subset of tests against it
 def pom
-def DOMAIN_NAME
 def payaraBuildNumber
 def buildId
 
@@ -16,7 +15,6 @@ pipeline {
         MP_METRICS_TAGS='tier=integration'
         MP_CONFIG_CACHE_DURATION=0
         JAVA_HOME = tool("zulu-21")
-        DOMAIN_NAME = "test-domain"
     }
     tools {
         jdk "zulu-21"
@@ -30,7 +28,6 @@ pipeline {
                     payaraBuildNumber = "PR${env.ghprbPullId}#${currentBuild.number}"
                     echo "Payara pom version is ${pom.version}"
                     echo "Build number is ${payaraBuildNumber}"
-                    echo "Domain name is ${DOMAIN_NAME}"
                 }
             }
         }
@@ -116,7 +113,6 @@ pipeline {
                          -Dsurefire.rerunFailingTestsCount=2 \
                          -Dfailsafe.rerunFailingTestsCount=2 \
                          -Dpayara.home="${pwd()}/payara7" \
-                         -Dpayara.domain.name=test-domain \
                          -f appserver/tests/payara-samples """
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran test  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
@@ -433,8 +429,7 @@ pipeline {
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran payara-application.xml tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Running JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-                        sh """export PAYARA_HOME=${pwd()}/payara7 && python3 appserver/tests/functional/jms/test_jms_ping.py \
-                        --domain-name ${env.DOMAIN_NAME} """
+                        sh """export PAYARA_HOME=${pwd()}/payara7 && python3 appserver/tests/functional/jms/test_jms_ping.py"""
                         echo '*#*#*#*#*#*#*#*#*#*#*#*#  Ran JMS ping tests  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
                     }
                     post {
@@ -454,18 +449,9 @@ pipeline {
     }
 }
 
-void makeDomain() {
-    script{
-        ASADMIN = "./payara7/bin/asadmin"
-        DOMAIN_NAME = "test-domain"
-    }
-    sh "${ASADMIN} create-domain --nopassword ${DOMAIN_NAME}"
-}
-
 void setupDomain() {
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up domain  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
-    makeDomain()
-    sh "${ASADMIN} start-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} start-domain"
     sh "${ASADMIN} start-database || true"
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Domain setup complete  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
 }
@@ -475,15 +461,15 @@ void processReport() {
 }
 
 void stopDomain() {
-    sh "${ASADMIN} stop-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} stop-domain"
     sh "${ASADMIN} stop-database || true"
 }
 
 void saveLogsAndCleanup(String logArchiveName) {
-    zip archive: true, dir: "./payara7/glassfish/domains/${DOMAIN_NAME}/logs", glob: 'server.*', zipFile: logArchiveName
+    zip archive: true, dir: "./payara7/glassfish/domains/domain1/logs", glob: 'server.*', zipFile: logArchiveName
     echo 'tidying up after tests: '
     sh "rm -f -v *.zip"
-    sh "${ASADMIN} delete-domain ${DOMAIN_NAME}"
+    sh "${ASADMIN} delete-domain domain1"
 }
 
 void updatePomPayaraVersion(String payaraVersion) {
