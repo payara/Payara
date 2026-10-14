@@ -58,7 +58,7 @@ public class ClusterSetupTest extends AdminBaseDevTest {
     final String cname = "eec1";
     final String i1name = "eein1-with-a-very-very-very-long-name";
     final String i2name = "eein2";
-    final String domain = System.getProperty("domain.name", "test-domain");
+    final String domain = System.getProperty("domain.name", "domain1");
 
     String i1url = "http://localhost:" + port1;
     String i2url = "http://localhost:" + port2;
