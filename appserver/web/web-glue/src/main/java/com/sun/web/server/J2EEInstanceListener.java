@@ -217,20 +217,21 @@ public final class J2EEInstanceListener implements InstanceListener {
                     break;
                 }
 
-                if (basePrincipal instanceof SecurityContextProxy) {
-                    // basePrincipal carries its own SecurityContext — use it directly.
-                    // RequestFacade.getUserPrincipal() may unwrap the principal (e.g. WebPrincipal →
-                    // customPrincipal), losing the SecurityContext; basePrincipal bypasses that.
-                    securityContext.setSecurityContextWithPrincipal(basePrincipal);
-                } else if (prin != basePrincipal) {
-
-                    // the wrapper has overridden getUserPrincipal
-                    // reject the request if the wrapper does not have
-                    // the necessary permission.
-
+                if (wrapped && prin != basePrincipal) {
+                    // A request wrapper has overridden getUserPrincipal() — honour the override,
+                    // but require the wrapper to hold the doAsPrivileged permission first.
                     checkObjectForDoAsPermission(hreq);
                     securityContext.setSecurityContextWithPrincipal(prin);
-
+                } else if (basePrincipal instanceof SecurityContextProxy) {
+                    // No override: use basePrincipal (the raw WebPrincipal) which carries the full
+                    // SecurityContext including groups. Bypasses RequestFacade.getUserPrincipal()
+                    // which unwraps WebPrincipal → customPrincipal and loses the SecurityContext
+                    // (FISH-991).
+                    securityContext.setSecurityContextWithPrincipal(basePrincipal);
+                } else if (prin != basePrincipal) {
+                    // Non-WebPrincipal auth: a wrapper or facade returned a different principal.
+                    checkObjectForDoAsPermission(hreq);
+                    securityContext.setSecurityContextWithPrincipal(prin);
                 }
 
             }
