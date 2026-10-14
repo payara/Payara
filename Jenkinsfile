@@ -450,6 +450,9 @@ pipeline {
 }
 
 void setupDomain() {
+    script {
+        ASADMIN = "./payara7/bin/asadmin"
+    }
     echo '*#*#*#*#*#*#*#*#*#*#*#*#  Setting up domain  *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#'
     sh "${ASADMIN} start-domain"
     sh "${ASADMIN} start-database || true"
