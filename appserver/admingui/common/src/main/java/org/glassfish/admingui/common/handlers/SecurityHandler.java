@@ -490,7 +490,7 @@ public class SecurityHandler {
             List<Map> selectedRows = (List) obj;
             for(Map oneRow : selectedRows){
                 String user = (String)oneRow.get("name");
-                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/admin-service/jmx-connector/system.json";
+                String endpoint = GuiUtil.getSessionValue("REST_URL") + "/configs/config/" + configName + "/admin-service.json";
                 Map<String, Object> responseMap = RestUtil.restRequest(endpoint, null, "get", handlerCtx, false);
                 Map<String, Object> valueMap = (Map<String, Object>) responseMap.get("data");
                 valueMap = (Map<String, Object>) ((Map<String, Object>) valueMap.get("extraProperties")).get("entity");
