@@ -52,6 +52,7 @@ import fish.payara.notification.requesttracing.EventType;
 import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.trace.ReadWriteSpan;
 import io.opentelemetry.sdk.trace.ReadableSpan;
@@ -68,6 +69,7 @@ import io.opentelemetry.sdk.trace.data.SpanData;
  *     <li>Payara spans are created with parent reference to OTEL spans</li>
  *     <li>non-root spans are traced as "request spans", which should make them included in current trace</li>
  *     <li>A root span that ends on a different thread than it started on (async servlet) is reported as a root-only trace on the ending thread; children recorded on the starting thread are not included.</li>
+ *     <li>A SERVER span whose parent is a stale local context (not part of a tracked trace) is also reported as the start of a legacy trace.</li>
  * </ul>
  */
 class PayaraRequestTracingProcessor implements SpanProcessor {
@@ -76,10 +78,12 @@ class PayaraRequestTracingProcessor implements SpanProcessor {
     private static final class RootState {
         final RequestTraceSpan span;
         final Thread startThread;
+        final String traceId;
 
-        RootState(RequestTraceSpan span, Thread startThread) {
+        RootState(RequestTraceSpan span, Thread startThread, String traceId) {
             this.span = span;
             this.startThread = startThread;
+            this.traceId = traceId;
         }
     }
 
@@ -95,13 +99,28 @@ class PayaraRequestTracingProcessor implements SpanProcessor {
             return;
         }
         var parent = span.getParentSpanContext();
-        if (!parent.isValid() || parent.isRemote()) {
+        String traceId = span.getSpanContext().getTraceId();
+
+        // Rule 1: parent is not valid (local root)
+        // Rule 2: parent is valid AND remote
+        // Rule 3: span kind is SERVER AND parent is valid and local AND no tracked root with same trace id
+        boolean isRule1 = !parent.isValid();
+        boolean isRule2 = parent.isValid() && parent.isRemote();
+        boolean isRule3 = span.getKind() == SpanKind.SERVER && parent.isValid() && !parent.isRemote() && !hasTrackedRoot(traceId);
+
+        if (isRule1 || isRule2 || isRule3) {
             // The trace store is thread-bound: drop a trace left open on this thread (e.g. its root ended on another thread).
             requestTracingService.discardTrace();
-            var payaraSpan = createSpan(span, parent.isValid() ? EventType.PROPAGATED_TRACE : EventType.TRACE_START);
-            rootInProgressSpans.put(span, new RootState(payaraSpan, Thread.currentThread()));
+            EventType eventType = (parent.isValid() && parent.isRemote()) ? EventType.PROPAGATED_TRACE : EventType.TRACE_START;
+            var payaraSpan = createSpan(span, eventType);
+            rootInProgressSpans.put(span, new RootState(payaraSpan, Thread.currentThread(), traceId));
             requestTracingService.startTrace(payaraSpan);
         }
+    }
+
+    private boolean hasTrackedRoot(String traceId) {
+        return rootInProgressSpans.values().stream()
+                .anyMatch(root -> root.traceId.equals(traceId));
     }
 
     private static RequestTraceSpan createSpan(ReadableSpan span, EventType type) {

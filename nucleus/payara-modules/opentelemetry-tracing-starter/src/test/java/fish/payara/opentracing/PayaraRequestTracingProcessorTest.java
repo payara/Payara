@@ -47,6 +47,7 @@ import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.TraceFlags;
 import io.opentelemetry.api.trace.TraceState;
@@ -238,5 +239,83 @@ public class PayaraRequestTracingProcessorTest {
         assertEquals("Should create PROPAGATED_TRACE span when root == null",
                 EventType.PROPAGATED_TRACE, reportedSpan.getEventType());
         assertEquals("Span name should match the original span", "toggle-root", reportedSpan.getEventName());
+    }
+
+    @Test
+    public void serverSpanWithStaleLocalParentStartsLegacyTrace() {
+        RequestTracingService rt = enabledService();
+        // Create a parent span with a different tracer (not tracked in rt's processor)
+        SdkTracerProvider foreignProvider = SdkTracerProvider.builder().build();
+        Tracer foreignTracer = foreignProvider.get("foreign");
+        Span foreignParent = foreignTracer.spanBuilder("foreign-root").startSpan();
+
+        // Create a SERVER span with the foreign parent (stale local context)
+        Tracer mainTracer = tracer(rt);
+        Context parentCtx = Context.root().with(foreignParent);
+        Span serverSpan = mainTracer.spanBuilder("GET").setSpanKind(SpanKind.SERVER)
+                .setParent(parentCtx).startSpan();
+
+        // Verify startTrace was called once with TRACE_START (not PROPAGATED_TRACE)
+        ArgumentCaptor<RequestTraceSpan> startCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt).startTrace(startCaptor.capture());
+        RequestTraceSpan capturedSpan = startCaptor.getValue();
+        assertEquals("Stale local parent should start a TRACE_START", EventType.TRACE_START, capturedSpan.getEventType());
+
+        // End the span and verify traceSpan is called with the same span
+        serverSpan.end();
+        ArgumentCaptor<RequestTraceSpan> endCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt).traceSpan(endCaptor.capture(), anyLong());
+        assertEquals("traceSpan should be called with the captured span", capturedSpan, endCaptor.getValue());
+
+        foreignParent.end();
+        foreignProvider.close();
+    }
+
+    @Test
+    public void nestedServerSpanInTrackedTraceIsAChildNotARoot() {
+        RequestTracingService rt = enabledService();
+        Tracer t = tracer(rt);
+
+        // Start a local root (tracked in rootInProgressSpans)
+        Span root = t.spanBuilder("GET").setSpanKind(SpanKind.SERVER).startSpan();
+        ArgumentCaptor<RequestTraceSpan> startCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt, times(1)).startTrace(startCaptor.capture());
+
+        // Start a SERVER child span of the root
+        Span serverChild = t.spanBuilder("nested-server").setSpanKind(SpanKind.SERVER)
+                .setParent(Context.root().with(root)).startSpan();
+
+        // Verify startTrace was called only once overall (not twice)
+        verify(rt, times(1)).startTrace(any(RequestTraceSpan.class));
+        // Verify discardTrace was called exactly once (for the root, not the child)
+        verify(rt, times(1)).discardTrace();
+
+        // End both spans and verify traceSpan is called for both
+        serverChild.end();
+        root.end();
+        ArgumentCaptor<RequestTraceSpan> traceSpanCaptor = ArgumentCaptor.forClass(RequestTraceSpan.class);
+        verify(rt, times(2)).traceSpan(traceSpanCaptor.capture(), anyLong());
+    }
+
+    @Test
+    public void internalSpanWithLocalParentIsNotARoot() {
+        RequestTracingService rt = enabledService();
+        // Create a parent span with a different tracer (not tracked in rt's processor)
+        SdkTracerProvider foreignProvider = SdkTracerProvider.builder().build();
+        Tracer foreignTracer = foreignProvider.get("foreign");
+        Span foreignParent = foreignTracer.spanBuilder("foreign-root").startSpan();
+
+        // Create a NON-server span (e.g., INTERNAL) with the foreign parent
+        Tracer mainTracer = tracer(rt);
+        Context parentCtx = Context.root().with(foreignParent);
+        Span internalSpan = mainTracer.spanBuilder("internal-op").setSpanKind(SpanKind.INTERNAL)
+                .setParent(parentCtx).startSpan();
+
+        // Verify startTrace was never called
+        verify(rt, never()).startTrace(any(RequestTraceSpan.class));
+
+        internalSpan.end();
+        foreignParent.end();
+        foreignProvider.close();
     }
 }
