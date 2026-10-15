@@ -579,8 +579,11 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
         /*
          * The empty user name is mapped to the default admin user, and an empty
          * password is never acceptable, for connections that are not local.
+         * Use the same host-locality check as rejectRemoteAdminIfDisabled so
+         * "local" is defined consistently everywhere in this class, rather
+         * than mixing it with NetUtils.isLocal's plain string comparison.
          */
-        if ((user.isEmpty() || password.isEmpty()) && !NetUtils.isLocal(host)) {
+        if ((user.isEmpty() || password.isEmpty()) && !NetUtils.isThisHostLocal(host)) {
             throw new SecurityException("Invalid JMX credentials");
         }
 
