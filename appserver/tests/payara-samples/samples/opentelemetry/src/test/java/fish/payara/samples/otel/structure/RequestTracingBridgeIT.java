@@ -249,7 +249,9 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
         // Wait settle time for asynchronous event bus to complete
         Thread.sleep(500);
 
-        // Verify exactly one trace matches the suffix
+        // Verify exactly one distinct trace matches the suffix.
+        // The CDI event-bus notifier fires once per deployed CDI application on a shared server,
+        // so the same trace may be delivered several times; we tolerate duplicates.
         List<RequestTrace> allTraces = collector.traces();
         var matchingTraces = allTraces.stream()
             .filter(trace -> !trace.getTraceSpans().isEmpty())
@@ -263,7 +265,13 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
             })
             .toList();
 
-        if (matchingTraces.size() != 1) {
+        // Group by trace id and check that there is exactly one distinct id
+        var distinctTraceIds = matchingTraces.stream()
+            .map(RequestTrace::getTraceId)
+            .distinct()
+            .toList();
+
+        if (distinctTraceIds.size() != 1) {
             StringBuilder details = new StringBuilder();
             for (RequestTrace trace : matchingTraces) {
                 var rootSpan = trace.getTraceSpans().getFirst();
@@ -271,8 +279,8 @@ public class RequestTracingBridgeIT extends AbstractSpanNameTest {
                        .append(", TraceID: ").append(trace.getTraceId())
                        .append(", url.path: ").append(rootSpan.getSpanTags().get("url.path"));
             }
-            throw new AssertionError("Expected exactly one trace with url.path suffix '" + urlPathSuffix +
-                "' but found " + matchingTraces.size() + ":" + details);
+            throw new AssertionError("Expected exactly one distinct trace with url.path suffix '" + urlPathSuffix +
+                "' but found " + distinctTraceIds.size() + " distinct trace ids:" + details);
         }
 
         return foundTrace;
