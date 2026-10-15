@@ -37,14 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2021-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2021-2026] [Payara Foundation and/or its affiliates]
 package com.sun.web.server;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
+import com.sun.enterprise.security.SecurityContextProxy;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.security.integration.RealmInitializer;
-import com.sun.enterprise.security.integration.SecurityConstants;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.web.WebComponentInvocation;
 import com.sun.enterprise.web.WebModule;
@@ -206,11 +206,10 @@ public final class J2EEInstanceListener implements InstanceListener {
                     }
 
                     else if (base instanceof RequestFacade) {
-                        // try to avoid the getUnWrappedCoyoteRequest call
-                        // when we can identify see we have the texact class.
-                        if (base.getClass() != RequestFacade.class) {
-                            basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
-                        }
+                        // Always use getUnwrappedCoyoteRequest() — RequestFacade.getUserPrincipal()
+                        // unwraps WebPrincipal to its customPrincipal, which is not a SecurityContextProxy,
+                        // so setSecurityContextWithPrincipal would build a fresh roleless SecurityContext.
+                        basePrincipal = ((RequestFacade) base).getUnwrappedCoyoteRequest().getUserPrincipal();
                     } else {
                         basePrincipal = base.getUserPrincipal();
                     }
@@ -218,17 +217,21 @@ public final class J2EEInstanceListener implements InstanceListener {
                     break;
                 }
 
-                if (prin != null && prin == basePrincipal && prin.getClass().getName().equals(SecurityConstants.WEB_PRINCIPAL_CLASS)) {
-                    securityContext.setSecurityContextWithPrincipal(prin);
-                } else if (prin != basePrincipal) {
-
-                    // the wrapper has overridden getUserPrincipal
-                    // reject the request if the wrapper does not have
-                    // the necessary permission.
-
+                if (wrapped && prin != basePrincipal) {
+                    // A request wrapper has overridden getUserPrincipal() — honour the override,
+                    // but require the wrapper to hold the doAsPrivileged permission first.
                     checkObjectForDoAsPermission(hreq);
                     securityContext.setSecurityContextWithPrincipal(prin);
-
+                } else if (basePrincipal instanceof SecurityContextProxy) {
+                    // No override: use basePrincipal (the raw WebPrincipal) which carries the full
+                    // SecurityContext including groups. Bypasses RequestFacade.getUserPrincipal()
+                    // which unwraps WebPrincipal → customPrincipal and loses the SecurityContext
+                    // (FISH-991).
+                    securityContext.setSecurityContextWithPrincipal(basePrincipal);
+                } else if (prin != basePrincipal) {
+                    // Non-WebPrincipal auth: a wrapper or facade returned a different principal.
+                    checkObjectForDoAsPermission(hreq);
+                    securityContext.setSecurityContextWithPrincipal(prin);
                 }
 
             }
