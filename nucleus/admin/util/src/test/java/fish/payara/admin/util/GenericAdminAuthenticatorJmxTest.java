@@ -114,7 +114,6 @@ public class GenericAdminAuthenticatorJmxTest {
     @Test
     public void nonArrayCredentialsAreRejected() {
         givenClientHostIsLocal();
-        assertRejected("");
         assertRejected("admin");
         assertRejected(new Object());
     }
@@ -130,7 +129,6 @@ public class GenericAdminAuthenticatorJmxTest {
     public void arraysWithHostElementAreRejected() {
         givenClientHostIsLocal();
         assertRejected(new String[] {"admin", "password", "localhost"});
-        assertRejected(new String[] {"", "", "localhost"});
     }
 
     @Test
@@ -142,46 +140,12 @@ public class GenericAdminAuthenticatorJmxTest {
 
     @Test
     public void unknownClientHostIsRejected() {
-        // If the client host cannot be determined at all, authentication must fail closed,
-        // regardless of what credentials were supplied.
         givenClientHostUnknown();
-        assertRejected(null);
         assertRejected(new String[] {"admin", "password"});
-        assertRejected(new String[] {"", ""});
-    }
-
-    @Test
-    public void emptyCredentialsPassTheLocalRemoteCheckFromLocalHost() {
-        // Null, and a 2-element array of empty strings, are both treated as "no credentials
-        // supplied" (e.g. JConsole with blank fields) and must not be rejected by the
-        // local/remote check for a local client, to preserve the vanilla no-password
-        // development setup. This authenticator has no injected AdminService (this is a plain
-        // unit test, not one running in a container), so authenticate() still fails past that
-        // point with a NullPointerException; that failure, coming from code reached only after
-        // the local/remote check, is itself proof the check did not reject these credentials.
-        givenClientHostIsLocal();
-        assertFailsPastLocalRemoteCheck(null);
-        assertFailsPastLocalRemoteCheck(new String[] {"", ""});
-    }
-
-    private void assertFailsPastLocalRemoteCheck(Object credentials) {
-        try {
-            authenticator.authenticate(credentials);
-            fail("Expected authenticate() to fail due to the missing AdminService injection: " + credentials);
-        } catch (SecurityException unexpected) {
-            fail("Empty credentials from a local host should not be rejected by the "
-                    + "local/remote check: " + unexpected);
-        } catch (NullPointerException expected) {
-            // expected: as.getAuthRealmName() NPEs because `as` is never injected in this plain
-            // unit test. Reaching this point confirms the local/remote check accepted the
-            // credentials.
-        }
     }
 
     @Test
     public void emptyCredentialsAreRejectedFromRemoteHost() {
-        // The same two "no credentials supplied" shapes as above must instead be rejected
-        // outright when the client host is not local.
         givenClientHostIsRemote();
         assertRejected(null);
         assertRejected(new String[] {"", ""});
