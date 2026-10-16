@@ -501,8 +501,14 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
     private Subject authenticate(String user, final char[] password, final String realm, final String host) throws LoginException {
         if (user.isEmpty()) {
             user = getDefaultAdminUser();
+            if (user == null) {
+                // No single default admin user could be determined (e.g. not a file realm,
+                // missing key file, or zero/multiple admin-group users). Fail closed rather
+                // than pass a null username on to the realm/login module below.
+                throw new LoginException();
+            }
         }
-        if ( ! isInAdminGroup(user, realm)) {
+        if (!isInAdminGroup(user, realm)) {
             throw new LoginException();
         }
 
@@ -582,6 +588,9 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
          * Use the same host-locality check as rejectRemoteAdminIfDisabled so
          * "local" is defined consistently everywhere in this class, rather
          * than mixing it with NetUtils.isLocal's plain string comparison.
+         *
+         * Note: NetUtils.isThisHostLocal(null) returns true, so this depends on host == null
+         * already being rejected above.
          */
         if ((user.isEmpty() || password.isEmpty()) && !NetUtils.isThisHostLocal(host)) {
             throw new SecurityException("Invalid JMX credentials");
