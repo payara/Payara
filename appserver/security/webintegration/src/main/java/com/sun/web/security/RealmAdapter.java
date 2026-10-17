@@ -68,7 +68,6 @@ import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.security.ee.web.integration.WebSecurityManagerFactory;
 import com.sun.enterprise.util.net.NetUtils;
 import com.sun.logging.LogDomains;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import jakarta.security.auth.message.AuthStatus;
 import jakarta.security.auth.message.MessageInfo;
 import jakarta.security.auth.message.config.ServerAuthContext;
@@ -228,10 +227,6 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      */
     @Inject
     protected WebSecurityManagerFactory webSecurityManagerFactory;
-
-    @Inject
-    private RequestTracingService requestTracing;
-
 
     private NetworkListeners nwListeners;
     private CNonceValidator cNonceValidator;

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -69,16 +69,18 @@ import com.sun.enterprise.admin.monitor.callflow.RequestType;
 import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.config.EjbContainer;
 import org.glassfish.ejb.config.EjbTimerService;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.ejb.PersistentTimerService;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
+import fish.payara.opentracing.OpenTelemetryService;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.notification.requesttracing.EventType;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Scope;
 import static java.util.Objects.isNull;
 import static java.util.logging.Level.INFO;
 import org.glassfish.internal.api.Globals;
@@ -117,8 +119,8 @@ public abstract class EJBTimerService {
     protected TimerCache timerCache_;
 
     private boolean shutdown_;
-    
-    private RequestTracingService requestTracing;
+
+    private OpenTelemetryService openTelemetryService;
     private StuckThreadsStore stuckThreadsStore;
 
     // Total number of ejb components initialized as timed objects between the
@@ -182,8 +184,8 @@ public abstract class EJBTimerService {
         ownerIdOfThisServer_ = env.getInstanceName();
         domainName_ = env.getDomainName();
         isDas = env.isDas() || env.isEmbedded();
-        
-        requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+
+        openTelemetryService = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
         stuckThreadsStore = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
 
         initProperties();
@@ -1107,6 +1109,16 @@ public abstract class EJBTimerService {
         return ejbContainerUtil.getContainer(containerId);
     }
 
+    private String timerAppName(TimerPrimaryKey id) {
+        try {
+            RuntimeTimerState state = getTimerState(id);
+            BaseContainer container = state == null ? null : getContainer(state.getContainerId());
+            return container == null ? null : container.getEjbDescriptor().getApplication().getAppName();
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
     /**
      * Called from timer thread.  Used to deliver ejb timeout.
      */
@@ -1408,7 +1420,7 @@ public abstract class EJBTimerService {
                            "Adding work pool task for timer " + timerId);
                     }
 
-                    TaskExpiredWork work = new TaskExpiredWork(this, timerId,requestTracing, stuckThreadsStore);
+                    TaskExpiredWork work = new TaskExpiredWork(this, timerId, openTelemetryService, stuckThreadsStore);
                     ejbContainerUtil.addWork(work);
                 } else {
                     logger.log(Level.FINE, "Timer " + timerId + 
@@ -1904,20 +1916,20 @@ public abstract class EJBTimerService {
 
     /**
      * This class gets a callback on a worker thread where the actual
-     * ejbTimeout invocation will be made.  
+     * ejbTimeout invocation will be made.
      */
     private static class TaskExpiredWork implements Runnable {
         private EJBTimerService timerService_;
         private TimerPrimaryKey timerId_;
-        private RequestTracingService requestTracing;
+        private OpenTelemetryService openTelemetryService;
         private StuckThreadsStore stuckThreads;
 
-        public TaskExpiredWork(EJBTimerService timerService, 
+        public TaskExpiredWork(EJBTimerService timerService,
                                TimerPrimaryKey timerId,
-                               RequestTracingService rt, StuckThreadsStore stuckThreadStore) {
+                               OpenTelemetryService otel, StuckThreadsStore stuckThreadStore) {
             timerService_ = timerService;
             timerId_ = timerId;
-            requestTracing = rt;
+            openTelemetryService = otel;
             stuckThreads = stuckThreadStore;
         }
 
@@ -1926,19 +1938,38 @@ public abstract class EJBTimerService {
             if (stuckThreads != null){
                 stuckThreads.registerThread(Thread.currentThread().getId());
             }
-            // Delegate to Timer Service.
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()){
-                RequestTraceSpan span = new RequestTraceSpan(EventType.TRACE_START, "executeEjbTimerTask");
-                span.addSpanTag("TimerID", timerId_.toString());
-                
-                requestTracing.startTrace(span);
-            }          
+            // Timer worker thread has no application context; resolve the owning application
+            // from the timer so that the application's OpenTelemetry SDK is used.
+            Span span = null;
+            Scope scope = null;
+            if (openTelemetryService != null) {
+                String appName = timerService_.timerAppName(timerId_);   // null => no span
+                if (appName != null) {
+                    InvocationManager im = timerService_.ejbContainerUtil.getInvocationManager();
+                    im.pushAppEnvironment(() -> appName);
+                    try {
+                        if (openTelemetryService.isEnabled()) {
+                            span = openTelemetryService.getCurrentTracer().spanBuilder("executeEjbTimerTask")
+                                    .setSpanKind(SpanKind.INTERNAL)
+                                    .setNoParent()
+                                    .setAttribute("TimerID", timerId_.toString())
+                                    .startSpan();
+                        }
+                    } catch (RuntimeException e) {
+                        logger.log(Level.FINE, "Failed to create OTel span for timer task", e);
+                    } finally {
+                        im.popAppEnvironment();
+                    }
+                    if (span != null) {
+                        scope = span.makeCurrent();
+                    }
+                }
+            }
             try {
                 timerService_.deliverTimeout(timerId_);
             }finally {
-                if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                    requestTracing.endTrace();
-                }
+                if (scope != null) scope.close();
+                if (span != null) span.end();
                 if (stuckThreads != null){
                     stuckThreads.deregisterThread(Thread.currentThread().getId());
                 }

@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.connector;
 
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
@@ -78,7 +78,10 @@ import java.util.logging.Logger;
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.http.WebConnection;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Scope;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.LogFacade;
@@ -102,7 +105,7 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
     private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
 
-    private RequestTracingService requestTracing;
+    private OpenTelemetryService otel;
     private StuckThreadsStore stuckThreadsStore;
 
     // -------------------------------------------------------------- Constants
@@ -131,7 +134,7 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
      */
     public InputBuffer() {
         this(DEFAULT_BUFFER_SIZE);
-        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        otel = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
         stuckThreadsStore = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
     }
 
@@ -452,12 +455,25 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
                     prevIsReady = true;
                     // dispatch data available
                     if (dataAvailable.compareAndSet(true, false)) {
+                        Span wsSpan = null;
+                        Scope wsScope = null;
                         try {
                             context.fireContainerEvent(ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
                             // if it's a Tyrus websocket conn.
                             if (isWebSocketRequest()) {
-                                requestTracing.startTrace("processWebsocketRequest");
                                 stuckThreadsStore.registerThread(Thread.currentThread().getId());
+                                // Create OTel span for websocket processing
+                                if (otel != null && otel.isEnabled()) {
+                                    try {
+                                        wsSpan = otel.getCurrentTracer().spanBuilder("processWebsocketRequest")
+                                                .setSpanKind(SpanKind.INTERNAL)
+                                                .setNoParent()
+                                                .startSpan();
+                                        wsScope = wsSpan.makeCurrent();
+                                    } catch (RuntimeException e) {
+                                        log.log(Level.FINE, "Failed to start OTel span for websocket request", e);
+                                    }
+                                }
                             }
                             readListener.onDataAvailable();
                         } catch (Throwable t) {
@@ -465,7 +481,12 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
                             readListener.onError(t);
                         } finally {
                             if (isWebSocketRequest()) {
-                                requestTracing.endTrace();
+                                if (wsScope != null) {
+                                    wsScope.close();
+                                }
+                                if (wsSpan != null) {
+                                    wsSpan.end();
+                                }
                                 stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
                             }
                             context.fireContainerEvent(ContainerEvent.AFTER_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
@@ -516,7 +537,7 @@ public class InputBuffer extends Reader implements ByteInputChannel, CharChunk.C
         }
 
         private boolean isWebSocketRequest() {
-            return readListener != null && readListener instanceof TyrusHttpUpgradeHandler && requestTracing.isRequestTracingEnabled();
+            return readListener != null && readListener instanceof TyrusHttpUpgradeHandler;
         }
 
     }

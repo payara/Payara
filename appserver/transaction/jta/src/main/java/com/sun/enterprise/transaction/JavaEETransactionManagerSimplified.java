@@ -57,7 +57,6 @@ import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
-import fish.payara.notification.requesttracing.RequestTraceSpanLog;
 import fish.payara.opentracing.OpenTelemetryService;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
@@ -685,9 +684,9 @@ public class JavaEETransactionManagerSimplified
         setCurrentTransaction(tx);
 
         if (isOpenTelemetryEnabled()) {
-            addJtaEventTraceLog(constructJTABeginSpanLog(tx), tx);
+            addJtaEvent("jtaContextBeginEvent", jtaBeginAttributes(tx));
         }
-        
+
         return tx;
     }
 
@@ -976,9 +975,9 @@ public class JavaEETransactionManagerSimplified
             }
 
             if (isOpenTelemetryEnabled()) {
-                addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
+                addJtaEvent("jtaContextEndEvent", jtaEndAttributes(tx));
             }
-            
+
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
@@ -1014,7 +1013,7 @@ public class JavaEETransactionManagerSimplified
             }
 
             if (isOpenTelemetryEnabled()) {
-                addJtaEventTraceLog(constructJTAEndSpanLog(tx), tx);
+                addJtaEvent("jtaContextEndEvent", jtaEndAttributes(tx));
             }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
@@ -1736,77 +1735,28 @@ public class JavaEETransactionManagerSimplified
         return tx;
     }
 
-    private void addJtaEventTraceLog(RequestTraceSpanLog spanLog, JavaEETransaction tx) {
+    private void addJtaEvent(String eventName, Attributes attrs) {
         Span span = Span.current();
         if (span.isRecording()) {
-            AttributesBuilder attrsBuilder = Attributes.builder();
-            spanLog.getLogEntries().forEach(attrsBuilder::put);
-            String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
-            span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
-
-            // Add transaction ID as attribute item
-            if (tx != null) {
-                // TODO: MP71: Transaction ID is inappropriate for trace attribute, because of high cardinality
-                //setTransactionAttribute(span, tx);
-            }
-        } else {
-            // TODO: MP71 if there's no trace being recorded, then there's nothing to do
-//            final PayaraTracingServices payaraTracingServices = new PayaraTracingServices();
-//            final Tracer tracer = payaraTracingServices.getActiveTracer();
-//            AttributesBuilder attrsBuilder = Attributes.builder();
-//            spanLog.getLogEntries().forEach(attrsBuilder::put);
-//            if (tx != null && tracer != null) {
-//                span = tracer.spanBuilder("addJtaEventTraceLog").startSpan();
-//                span.makeCurrent();
-//                String eventName = spanLog.getLogEntries().getOrDefault("logEvent", "jtaTransactionEvent");
-//                span.addEvent(eventName, attrsBuilder.build(), spanLog.getTimeMillis(), TimeUnit.MILLISECONDS);
-//                // Add transaction ID as attribute item
-//                setTransactionAttribute(span, tx);
-//            }
-//            getRequestTracing().addSpanLog(spanLog);
+            span.addEvent(eventName, attrs);
         }
     }
 
-    private void setTransactionAttribute(Span span, JavaEETransaction tx) {
-        if (tx.getClass().equals(JavaEETransactionImpl.class)) {
-            span.setAttribute("TX-ID", ((JavaEETransactionImpl) tx).getTransactionId());
-        } else {
-            span.setAttribute("TransactionInfo", tx.toString());
-        }
+    private Attributes jtaBeginAttributes(JavaEETransactionImpl tx) {
+        return Attributes.builder()
+                .put("Transaction ID", tx.getTransactionId())
+                .put("Remaining Timeout", Integer.toString(tx.getRemainingTimeout()))
+                .build();
     }
 
-    private RequestTraceSpanLog constructJTABeginSpanLog(JavaEETransactionImpl transaction) {
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jtaContextBeginEvent");
-
-        spanLog.addLogEntry("Transaction ID", transaction.getTransactionId());
-        spanLog.addLogEntry("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));
-
-        return spanLog;
-    }
-
-    private RequestTraceSpanLog constructJTAEndSpanLog(JavaEETransaction transaction) throws SystemException {
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jtaContextEndEvent");
-
+    private Attributes jtaEndAttributes(JavaEETransaction transaction) throws SystemException {
+        AttributesBuilder b = Attributes.builder();
         if (transaction.getClass().equals(JavaEETransactionImpl.class)) {
-            JavaEETransactionImpl tx = (JavaEETransactionImpl) transaction;
-            spanLog.addLogEntry("Transaction ID", (tx.getTransactionId()));
+            b.put("Transaction ID", ((JavaEETransactionImpl) transaction).getTransactionId());
         }
-
-        // Check if transaction was rolled back or committed
         int status = transaction.getStatus();
-        switch (status) {
-            case 3:
-                spanLog.addLogEntry("Status", "Committed");
-                break;
-            case 4:
-                spanLog.addLogEntry("Status", "Rolled Back");
-                break;
-            default:
-                spanLog.addLogEntry("Status", Integer.toString(status));
-                break;
-        }
-
-        return spanLog;
+        b.put("Status", status == 3 ? "Committed" : status == 4 ? "Rolled Back" : Integer.toString(status));
+        return b.build();
     }
 
 /****************************************************************************/

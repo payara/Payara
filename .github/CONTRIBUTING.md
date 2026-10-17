@@ -182,3 +182,7 @@ If you do post an issue and we request further information from you please respo
 
 If you have a question on how to use Payara or you need advice and guidance please don't create a GitHub issue. Please post a message on our discussion forum which is monitored both by the community and by Payara Engineers. 
 https://forum.payara.fish/
+
+## Observability Instrumentation
+
+New tracing instrumentation must use OpenTelemetry only; see [observability-instrumentation.md](../docs/observability-instrumentation.md) for the rules and guidance.

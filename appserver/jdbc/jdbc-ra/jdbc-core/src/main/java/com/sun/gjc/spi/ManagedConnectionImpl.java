@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright 2016-2025 Payara Foundation and/or its affiliates.
+// Portions Copyright 2016-2026 Payara Foundation and/or its affiliates.
 
 package com.sun.gjc.spi;
 
@@ -57,7 +57,7 @@ import com.sun.logging.LogDomains;
 import fish.payara.jdbc.RequestTracingListener;
 import fish.payara.jdbc.SQLTraceStoreAdapter;
 import fish.payara.jdbc.SlowSQLLogger;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.opentracing.OpenTelemetryService;
 
 import static java.lang.Double.parseDouble;
 
@@ -166,7 +166,7 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
     private Boolean isClientInfoSupported = null;
     
     private JdbcConnectionPool connectionPool;
-    private RequestTracingService requestTracing;
+    private OpenTelemetryService openTelemetryService;
     
     /**
      * Constructor for <code>ManagedConnectionImpl</code>. The pooledConn parameter is expected
@@ -231,10 +231,10 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
         try {
             RunLevelController runLevelController = Globals.getDefaultHabitat().getService(RunLevelController.class);
             if (runLevelController != null && runLevelController.getCurrentRunLevel() == StartupRunLevel.VAL) {
-                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+                openTelemetryService = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
             }
         } catch (NullPointerException ex) {
-            _logger.log(Level.INFO, "Error retrieving Request Tracing service "
+            _logger.log(Level.INFO, "Error retrieving OpenTelemetry service "
                     + "during initialisation of ManagedConnectionImpl - NullPointerException");
         }
     }
@@ -504,15 +504,15 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
         }
         
         /**
-         * Register a RequestTracingListener if request tracing is enabled,
+         * Register a RequestTracingListener if OpenTelemetry tracing is enabled,
          * creating a SQLTraceDelegator if one does not already exist.
          * This check is required here to prevent having to
-         * recreate the connection pool to accommodate dynamic request tracing
+         * recreate the connection pool to accommodate dynamic OpenTelemetry tracing
          * enabling/disabling.
          */
         
         if (sqlTraceDelegator == null) {
-            if ((requestTracing != null && requestTracing.isRequestTracingEnabled())
+            if ((isOtelEnabled())
                     || (isSlowQueryLoggingEnabled())) {
                 sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(),
                         spiMCF.getApplicationName(), spiMCF.getModuleName());
@@ -520,13 +520,13 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
         }
 
         if (sqlTraceDelegator != null) {
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                // This method will only register a request tracing listener 
+            if (isOtelEnabled()) {
+                // This method will only register a request tracing listener
                 // if one doesn't already exist
                 sqlTraceDelegator.registerSQLTraceListener(new RequestTracingListener());
             } else {
                 /**
-                 * If request tracing is not enabled, but there is a SQL trace
+                 * If OpenTelemetry tracing is not enabled, but there is a SQL trace
                  * delegator, deregister the request tracing listener if one is
                  * registered.
                  */
@@ -1386,5 +1386,13 @@ public class ManagedConnectionImpl implements jakarta.resource.spi.ManagedConnec
 
     public boolean isSkipClientInfoValidation() {
         return skipClientInfoValidation;
+    }
+
+    private boolean isOtelEnabled() {
+        try {
+            return openTelemetryService != null && openTelemetryService.isEnabled();
+        } catch (RuntimeException ex) {
+            return false;
+        }
     }
 }

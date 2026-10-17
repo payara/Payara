@@ -58,7 +58,6 @@
 // Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates.]
 package org.apache.catalina.core;
 
-import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.MappingImpl;
@@ -234,8 +233,6 @@ public final class ApplicationDispatcher
         this.queryString = queryString;
         this.name = name;
 
-        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
-
         if (log.isLoggable(Level.FINE))
             log.log(Level.FINE, "servletPath= " + this.servletPath + ", pathInfo= "
                     + this.pathInfo + ", queryString= " + queryString + ", name= "
@@ -294,8 +291,6 @@ public final class ApplicationDispatcher
      */
     private Wrapper wrapper;
     private HttpServletMapping mappingForDispatch;
-
-    private RequestTracingService requestTracing;
 
     // ------------------------------------------------------------- Properties
 

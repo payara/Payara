@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2016-2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -102,6 +102,11 @@ import fish.payara.nucleus.requesttracing.store.RequestTraceStoreInterface;
 /**
  * Main service class that provides methods used by interceptors for tracing
  * requests.
+ *
+ * This service is fed by the OpenTelemetry SpanProcessor bridge
+ * ({@link fish.payara.opentracing.PayaraRequestTracingProcessor}); new
+ * instrumentation must not call this service directly, but instead use
+ * OpenTelemetry through {@link fish.payara.opentracing.OpenTelemetryService}.
  *
  * @author mertcaliskan
  * @since 4.1.1.163
@@ -463,6 +468,15 @@ public class RequestTracingService implements EventListener, ConfigListener {
         }
         requestEventStore.endTrace(timestampMillis);
         processTraceEnd();
+    }
+
+    /**
+     * Drops, without publishing, whatever trace is currently held for the calling thread.
+     * The trace store is thread-bound, so this is how a trace left open on a thread
+     * (e.g. its root ended on another thread) is cleared.
+     */
+    public void discardTrace() {
+        requestEventStore.flushStore();
     }
 
 

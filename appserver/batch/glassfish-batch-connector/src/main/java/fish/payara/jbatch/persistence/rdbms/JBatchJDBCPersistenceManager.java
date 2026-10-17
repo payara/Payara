@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2021] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,8 +56,9 @@ import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-import fish.payara.notification.requesttracing.RequestTraceSpanLog;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
+import io.opentelemetry.api.trace.Span;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -95,7 +96,6 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY;
 import static org.glassfish.batch.spi.impl.BatchRuntimeHelper.PAYARA_TABLE_SUFFIX_PROPERTY;
-import static org.glassfish.internal.api.Globals.getDefaultHabitat;
 
 /**
  *
@@ -125,8 +125,6 @@ public class JBatchJDBCPersistenceManager implements
     // h2 create table strings
     protected Map<String, String> createH2Strings;
 
-    protected RequestTracingService requestTracing;
-    
     private static final String JAVA_EE_MODE = "Java EE mode, getting connection from data source";
     private static final String NULL_TAGGED = "<null>";
 
@@ -182,14 +180,6 @@ public class JBatchJDBCPersistenceManager implements
         } catch (SQLException e) {
             logger.severe(e.getLocalizedMessage());
             throw new BatchContainerServiceException(e);
-        }
-
-        try {
-            requestTracing = getDefaultHabitat().getService(RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            logger.log(INFO,
-                    "Error retrieving Request Tracing service "
-                    + "during initialisation of JBatchJDBCPersistenceManager - NullPointerException");
         }
 
         logger.config("Exiting CLASSNAME.init()");
@@ -1520,10 +1510,9 @@ public class JBatchJDBCPersistenceManager implements
         jobExecution.setCreateTime(now);
         jobExecution.setLastUpdateTime(now);
 
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()
-                && requestTracing.isTraceInProgress()) {
-            RequestTraceSpanLog spanLog = constructJBatchExecutionSpanLog(jobExecution);
-            requestTracing.addSpanLog(spanLog);
+        Span span = Span.current();
+        if (span.isRecording()) {
+            span.addEvent("jBatchExecutionContextEvent", jbatchAttributes(jobExecution));
         }
 
         return jobExecution;
@@ -2447,24 +2436,17 @@ public class JBatchJDBCPersistenceManager implements
         return createH2Strings;
     }
 
-    private RequestTraceSpanLog constructJBatchExecutionSpanLog(RuntimeJobExecution jobExecution) {
-        RequestTraceSpanLog spanLog = new RequestTraceSpanLog("jBatchExecutionContextEvent");
-
+    private Attributes jbatchAttributes(RuntimeJobExecution je) {
+        AttributesBuilder b = Attributes.builder();
         try {
-            spanLog.addLogEntry("Execution ID", Long.toString(jobExecution.getExecutionId()));
-            spanLog.addLogEntry("Job ID", Long.toString(jobExecution.getInstanceId()));
-            spanLog.addLogEntry("Job Name", jobExecution.getJobInstance().getJobName());
-            spanLog.addLogEntry("Batch Status", jobExecution.getJobOperatorJobExecution().getBatchStatus().toString());
-
-            if (jobExecution.getJobParameters() != null) {
-                spanLog.addLogEntry("Job Parameters", jobExecution.getJobParameters().toString());
-            } else {
-                spanLog.addLogEntry("Job Parameters", "null");
-            }
+            b.put("Execution ID", je.getExecutionId())
+             .put("Job ID", je.getInstanceId())
+             .put("Job Name", je.getJobInstance().getJobName())
+             .put("Batch Status", je.getJobOperatorJobExecution().getBatchStatus().toString())
+             .put("Job Parameters", String.valueOf(je.getJobParameters()));
         } catch (NullPointerException e) {
-            logger.log(Level.INFO, "NullPointerException when creating request tracing JBatchExecutionContextEvent");
+            logger.log(Level.INFO, "NullPointerException when creating JBatch execution event attributes");
         }
-
-        return spanLog;
+        return b.build();
     }
 }

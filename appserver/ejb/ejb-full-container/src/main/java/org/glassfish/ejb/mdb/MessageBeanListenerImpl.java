@@ -37,18 +37,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  *
- * Portions Copyright [2017-2021] Payara Foundation and/or affiliates
+ * Portions Copyright [2017-2026] Payara Foundation and/or affiliates
  */
 
 package org.glassfish.ejb.mdb;
 
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.notification.requesttracing.RequestTraceSpan;
 import fish.payara.nucleus.healthcheck.stuck.StuckThreadsStore;
-import fish.payara.notification.requesttracing.EventType;
+import fish.payara.opentracing.OpenTelemetryService;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Scope;
 import java.lang.reflect.Method;
-import java.util.UUID;
+import java.util.logging.Logger;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Queue;
@@ -65,20 +67,22 @@ import org.glassfish.internal.api.Globals;
  */
 public class MessageBeanListenerImpl implements MessageBeanListener {
 
+    private static final Logger logger = Logger.getLogger(MessageBeanListenerImpl.class.getName());
+
     private final MessageBeanContainer container_;
     private ResourceHandle resourceHandle_;
-    private final RequestTracingService requestTracing;
+    private final OpenTelemetryService openTelemetryService;
     private final StuckThreadsStore stuckThreadsStore;
 
-    MessageBeanListenerImpl(MessageBeanContainer container, 
+    MessageBeanListenerImpl(MessageBeanContainer container,
                             ResourceHandle handle) {
         container_ = container;
 
         // can be null
         resourceHandle_ = handle;
-        
-        // get the request tracing service
-        requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+
+        // get the OpenTelemetry service
+        openTelemetryService = Globals.getDefaultHabitat().getService(OpenTelemetryService.class);
         stuckThreadsStore = Globals.getDefaultHabitat().getService(StuckThreadsStore.class);
     }
 
@@ -103,40 +107,48 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
         if (stuckThreadsStore != null){
             stuckThreadsStore.registerThread(Thread.currentThread().getId());
         }
-        
-        RequestTraceSpan span = null;
-        if (requestTracing!= null && requestTracing.isRequestTracingEnabled()) {            
-            span = new RequestTraceSpan(EventType.TRACE_START, "deliverMdb");
-            span.addSpanTag("MDB Class", container_.getEjbDescriptor().getEjbClassName());
-            span.addSpanTag("Message Count", Long.toString(container_.getMessageCount()));
-            span.addSpanTag("JNDI", container_.getEjbDescriptor().getJndiName());
+
+        Span span = null;
+        Scope scope = null;
+        OpenTelemetryService otel = openTelemetryService;
+        if (otel != null && otel.isEnabled()) {
             try {
-                jakarta.jms.Message msg = (jakarta.jms.Message) params[0];
-                 span.addSpanTag("JMS Type",msg.getJMSType());               
-                 span.addSpanTag("JMS CorrelationID",msg.getJMSCorrelationID());               
-                 span.addSpanTag("JMS MessageID",msg.getJMSMessageID());               
-                 span.addSpanTag("JMS Destination",getDestinationName(msg.getJMSDestination()));
-                 span.addSpanTag("JMS ReplyTo", getDestinationName(msg.getJMSReplyTo()));
-                 // check RT conversation ID
-                 UUID conversationID = (UUID) msg.getObjectProperty("#BAF-CID");
-                 if (conversationID !=  null) {
-                     // reset the conversation ID to match the received ID to 
-                     // propagate the conversation across the message send
-                     requestTracing.setTraceId(conversationID);
-                 }
-            } catch (ClassCastException cce){}
-            requestTracing.startTrace(span);
+                SpanBuilder sb = otel.getCurrentTracer().spanBuilder("deliverMdb")
+                        .setSpanKind(SpanKind.CONSUMER)
+                        .setAttribute("MDB Class", container_.getEjbDescriptor().getEjbClassName())
+                        .setAttribute("Message Count", container_.getMessageCount())
+                        .setAttribute("JNDI", container_.getEjbDescriptor().getJndiName());
+                try {
+                    if (params != null && params.length > 0) {
+                        jakarta.jms.Message msg = (jakarta.jms.Message) params[0];
+                        putIfNotNull(sb, "JMS Type", msg.getJMSType());
+                        putIfNotNull(sb, "JMS CorrelationID", msg.getJMSCorrelationID());
+                        putIfNotNull(sb, "JMS MessageID", msg.getJMSMessageID());
+                        putIfNotNull(sb, "JMS Destination", getDestinationName(msg.getJMSDestination()));
+                        putIfNotNull(sb, "JMS ReplyTo", getDestinationName(msg.getJMSReplyTo()));
+                    }
+                } catch (ClassCastException | JMSException ignored) { }
+                span = sb.startSpan();
+                scope = span.makeCurrent();
+            } catch (RuntimeException e) {
+                logger.fine("Failed to start OTel span for MDB delivery: " + e.getMessage());
+            }
         }
         try {
             return container_.deliverMessage(params);
         }finally {
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
-                requestTracing.endTrace();
+            if (scope != null) {
+                scope.close();
+                span.end();
             }
             if (stuckThreadsStore != null){
                 stuckThreadsStore.deregisterThread(Thread.currentThread().getId());
             }
         }
+    }
+
+    private static void putIfNotNull(SpanBuilder b, String k, String v) {
+        if (v != null) b.setAttribute(k, v);
     }
 
     @Override
