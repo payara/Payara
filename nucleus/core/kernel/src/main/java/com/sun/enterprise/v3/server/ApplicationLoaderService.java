@@ -71,7 +71,6 @@ import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.deployment.monitor.DeploymentLifecycleStatsProvider;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
@@ -164,15 +163,6 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
      */
     @Override
     public void postConstruct() {
-
-        assert env!=null;
-        try{
-            logger.fine("Satisfying Optional Packages dependencies...");
-            InstalledLibrariesResolver.initializeInstalledLibRegistry(env.getLibPath().getAbsolutePath());
-        }catch(Exception e){
-            logger.log(Level.WARNING, KernelLoggerInfo.exceptionOptionalDepend, e);
-        }
-
         DeploymentLifecycleStatsProvider dlsp = new DeploymentLifecycleStatsProvider();
         StatsProviderManager.register("deployment", PluginPoint.SERVER,
             "deployment/lifecycle", dlsp);
