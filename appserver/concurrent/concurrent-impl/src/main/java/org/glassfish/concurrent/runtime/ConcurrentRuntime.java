@@ -211,8 +211,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     };
 
     private final MonitoringFacade monitoringFacade = new MonitoringFacade() {
-        @Override public Tracer getTracer() { return openTelemetryService.getCurrentTracer(); }
-        @Override public OpenTelemetry getOpenTelemetry() { return openTelemetryService.getCurrentSdk(); }
+        @Override public Tracer getTracer() { return openTelemetryService.isEnabled() ? openTelemetryService.getCurrentTracer() : null; }
+        @Override public OpenTelemetry getOpenTelemetry() { return openTelemetryService.isEnabled() ? openTelemetryService.getCurrentSdk() : null; }
         @Override public boolean isRequestTracingEnabled() { return requestTracingService != null && requestTracingService.isRequestTracingEnabled(); }
         @Override public void endTrace() { if (requestTracingService != null) requestTracingService.endTrace(); }
         @Override public void registerStuckThread(long tid) { if (stuckThreadsStore != null) stuckThreadsStore.registerThread(tid); }
