@@ -797,11 +797,7 @@ public class SSHLauncher {
 
             try (OutputStream out = sftp.writeToFile(".ssh/key.tmp");
                  FileInputStream fis = new FileInputStream(pubKey)) {
-                byte[] buf = new byte[4096];
-                int len;
-                while ((len = fis.read(buf)) >= 0) {
-                    out.write(buf, 0, len);
-                }
+                fis.transferTo(out);
             }
 
             ByteArrayOutputStream execOut = new ByteArrayOutputStream();

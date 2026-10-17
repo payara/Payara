@@ -153,12 +153,7 @@ public class ZipFile {
 
                 bos = new BufferedOutputStream(getOutputStream(f), BUFFER_SIZE);
 
-                int totalBytes = 0;
-
-                for (int numBytes = zin.read(buffer); numBytes > 0; numBytes = zin.read(buffer)) {
-                    bos.write(buffer, 0, numBytes);
-                    totalBytes += numBytes;
-                }
+                zin.transferTo(bos);
                 bos.close();
                 bos = null;
                 files.add(filename);

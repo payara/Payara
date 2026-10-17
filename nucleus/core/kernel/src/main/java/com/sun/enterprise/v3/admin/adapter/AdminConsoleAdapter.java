@@ -374,11 +374,8 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
                 logger.log(Level.WARNING, KernelLoggerInfo.consoleResourceNotFound, resourcePath);
                 return;
             }
-            byte[] buf = new byte[512];
             ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
-            for (int i = in.read(buf); i != -1; i = in.read(buf)) {
-                baos.write(buf, 0, i);
-            }
+            in.transferTo(baos);
             String contentType = getContentType(resourcePath);
             if (contentType != null) {
                 res.setContentType(contentType);

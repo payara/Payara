@@ -416,10 +416,7 @@ public class LoggingConfigImpl implements LoggingConfig {
                      * After creating entry in the zip file, actually
                      * write the file.
                      */
-                    int length;
-                    while ((length = fin.read(buffer)) > 0) {
-                        zout.write(buffer, 0, length);
-                    }
+                    fin.transferTo(zout);
 
                     /*
                      * After writing the file to ZipOutputStream, use

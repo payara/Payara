@@ -61,8 +61,8 @@ import com.sun.enterprise.util.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -255,7 +255,6 @@ public class DomainBuilder {
         createDirectory(domainDir);
         try {
             // Extract other jar entries
-            byte[] buffer = new byte[10000];
             for (Enumeration<JarEntry> entry = templateJar.entries(); entry.hasMoreElements();) {
                 JarEntry jarEntry = entry.nextElement();
                 String entryName = jarEntry.getName();
@@ -279,10 +278,7 @@ public class DomainBuilder {
                     in = templateJar.getInputStream(jarEntry);
                     outputStream = new BufferedOutputStream(new FileOutputStream(new File(domainDir.getAbsolutePath(),
                             jarEntry.getName())));
-                    int i = 0;
-                    while ((i = in.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, i);
-                    }
+                    in.transferTo(outputStream);
                 } finally {
                     if (in != null) {
                         try {
@@ -371,8 +367,8 @@ public class DomainBuilder {
         File mpFile = new File(configDir, DomainConstants.MASTERPASSWORD_FILE);
         if (mpLocation != null) {
             File mpLocationFile = new File(configDir, DomainConstants.MASTERPASSWORD_LOCATION_FILE);
-            try (FileWriter writer = new FileWriter(mpLocationFile)) {
-                writer.write(mpLocation);
+            try {
+                Files.writeString(mpLocationFile.toPath(), mpLocation);
                 mpFile = new File(mpLocation);
             } catch (IOException e) {
                 throw new IOException(STRINGS.get("masterPasswordNotSaved"), e);
@@ -386,17 +382,11 @@ public class DomainBuilder {
             domainSecurity.createSSLCertificateDatabase(configDir, domainConfig, masterPassword);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, STRINGS.getString("SomeProblemWithKeytool", e.getMessage()));
-            FileOutputStream fos = null;
             try {
                 File keystoreFile = new File(configDir, DomainConstants.KEYSTORE_FILE);
-                fos = new FileOutputStream(keystoreFile);
-                fos.write(keystoreBytes);
+                Files.write(keystoreFile.toPath(), keystoreBytes);
             } catch (Exception ex) {
                 getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, ex);
-            } finally {
-                if (fos != null) {
-                    fos.close();
-                }
             }
         }
 

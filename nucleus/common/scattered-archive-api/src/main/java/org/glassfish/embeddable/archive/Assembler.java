@@ -266,11 +266,7 @@ class Assembler {
         if (fin == null || jos == null) {
             return;
         }
-        int read = 0;
-        byte[] buffer = new byte[8192];
-        while ((read = fin.read(buffer, 0, buffer.length)) != -1) {
-            jos.write(buffer, 0, read);
-        }
+        fin.transferTo(jos);
         jos.flush();
     }
 

@@ -242,11 +242,7 @@ public class Util {
             }
             os = new BufferedOutputStream(new FileOutputStream(result));
             is = new BufferedInputStream(new FileInputStream(inputFile));
-            byte [] buffer = new byte[BUFFER_SIZE];
-            int bytesRead = 0;
-            while ( (bytesRead = is.read(buffer) ) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
+            is.transferTo(os);
 
             return result;
         } finally {

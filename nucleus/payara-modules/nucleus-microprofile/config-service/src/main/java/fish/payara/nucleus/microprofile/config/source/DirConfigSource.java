@@ -455,7 +455,7 @@ public class DirConfigSource extends PayaraConfigSource implements ConfigSource 
     static final DirProperty readPropertyFromPath(Path path, BasicFileAttributes mainAtts, Path rootPath) throws IOException {
         if (Files.exists(path) && Files.isRegularFile(path) && Files.isReadable(path)) {
             return new DirProperty(
-                new String(Files.readAllBytes(path), StandardCharsets.UTF_8),
+                Files.readString(path, StandardCharsets.UTF_8),
                 mainAtts.lastModifiedTime(),
                 path.toAbsolutePath()
             );
