@@ -52,7 +52,7 @@
         getRequestValue(key="name" value="#{pageSession.Name}");
         urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
         urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system.json", method="get", result="#{requestScope.result}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service.json", method="get", result="#{requestScope.result}");
         setPageSessionAttribute(key="AuthRealmName" value="#{requestScope.result.data.extraProperties.entity.authRealmName}");
         setPageSessionAttribute(key="isAdminRealm", value="false")
         if ("#{pageSession.Name}=#{pageSession.AuthRealmName}"){

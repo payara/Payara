@@ -222,9 +222,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 .map(snapshot -> snapshot.clearedContext(contextObjectProperties))
                 .forEach(snapshot -> threadContextSnapshots.add(snapshot));
 
-        // Built-in OTel waiting-span context: always captured at submit time,
-        // regardless of the executor's context-type propagation configuration.
-        threadContextSnapshots.add(otelContextProvider.currentContext(contextObjectProperties));
+        // Built-in OTel waiting-span context: only captured when OTel is active for the
+        // current application scope. MonitoringFacade.getOpenTelemetry() returns null when
+        // OTel is not applicable — this must be verified before any OpenTelemetry API
+        // objects are obtained.
+        if (monitoringFacade.getOpenTelemetry() != null) {
+            threadContextSnapshots.add(otelContextProvider.currentContext(contextObjectProperties));
+        }
 
         return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread,
                 threadContextSnapshots, Collections.EMPTY_LIST);
