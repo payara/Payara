@@ -503,8 +503,7 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             user = getDefaultAdminUser();
             if (user == null) {
                 // No single default admin user could be determined (e.g. not a file realm,
-                // missing key file, or zero/multiple admin-group users). Fail closed rather
-                // than pass a null username on to the realm/login module below.
+                // missing key file, or zero/multiple admin-group users).
                 throw new LoginException();
             }
         }
@@ -549,9 +548,9 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
-        // Credentials must be a 2-string array with user name and password. Clients that are given
-        // no credentials (e.g. JConsole with blank fields) send null, which is treated as an empty
-        // user name and password; those are only accepted below for local connections.
+        // Credentials must be a 2-string array with user name and password. Clients that are given no credentials
+        // (e.g. JConsole with blank fields) send null, which is treated as an empty user name and password; those are
+        // only accepted below for local connections.
         String user = "";
         String password = "";
         if (credentials != null) {
@@ -566,11 +565,6 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             password = up[1];
         }
 
-        /*
-         * The peer host must come from the transport and never from the
-         * credentials, which are controlled by the caller. Fail closed if it
-         * cannot be determined (e.g. a connector that is not RMI based).
-         */
         String host;
         try {
             host = RemoteServer.getClientHost();
@@ -582,16 +576,12 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
             throw new SecurityException("Unable to determine JMX client host");
         }
 
-        /*
-         * The empty user name is mapped to the default admin user, and an empty
-         * password is never acceptable, for connections that are not local.
-         * Use the same host-locality check as rejectRemoteAdminIfDisabled so
-         * "local" is defined consistently everywhere in this class, rather
-         * than mixing it with NetUtils.isLocal's plain string comparison.
-         *
-         * Note: NetUtils.isThisHostLocal(null) returns true, so this depends on host == null
-         * already being rejected above.
-         */
+
+        // The empty user name is mapped to the default admin user, and an empty password is never acceptable, for
+        // connections that are not local.
+        // Use the same host-locality check as rejectRemoteAdminIfDisabled so "local" is defined consistently everywhere
+        // in this class, rather than mixing it with NetUtils.isLocal's plain string comparison.
+        // Note: NetUtils.isThisHostLocal(null) returns true, so this depends on host == null already being rejected above.
         if ((user.isEmpty() || password.isEmpty()) && !NetUtils.isThisHostLocal(host)) {
             throw new SecurityException("Invalid JMX credentials");
         }
