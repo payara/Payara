@@ -167,7 +167,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      * instead of being rejected. Payara defaults it to true, since {@code StandardContextValve} already guards
      * against backslash traversal. Uses a class literal, which does not initialize {@link HttpRequestURIDecoder}.
      */
-    public static final String ALLOW_BACKSLASH_PROPERTY = HttpRequestURIDecoder.class.getName() + ".ALLOW_BACKSLASH";
+    private static final String ALLOW_BACKSLASH_PROPERTY = HttpRequestURIDecoder.class.getName() + ".ALLOW_BACKSLASH";
 
     private final Set<MapperUpdateListener> mapperUpdateListeners =
             Collections.newSetFromMap(
