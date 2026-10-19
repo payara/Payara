@@ -108,6 +108,7 @@ import org.glassfish.grizzly.http.util.HttpRequestURIDecoder;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -166,7 +167,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      * instead of being rejected. Payara defaults it to true, since {@code StandardContextValve} already guards
      * against backslash traversal. Uses a class literal, which does not initialize {@link HttpRequestURIDecoder}.
      */
-    public static final String ALLOW_BACKSLASH_PROPERTY = HttpRequestURIDecoder.class.getName() + ".ALLOW_BACKSLASH";
+    private static final String ALLOW_BACKSLASH_PROPERTY = HttpRequestURIDecoder.class.getName() + ".ALLOW_BACKSLASH";
 
     private final Set<MapperUpdateListener> mapperUpdateListeners =
             Collections.newSetFromMap(
@@ -557,6 +558,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         if (System.getProperty(ALLOW_BACKSLASH_PROPERTY) == null) {
             System.setProperty(ALLOW_BACKSLASH_PROPERTY, "true");
         }
+        Globals.initAllowBackslash(Boolean.getBoolean(ALLOW_BACKSLASH_PROPERTY));
         events.register(this);
 
         final NetworkConfig networkConfig = config.getNetworkConfig();
