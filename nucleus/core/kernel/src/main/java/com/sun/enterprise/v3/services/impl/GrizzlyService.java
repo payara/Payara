@@ -108,6 +108,7 @@ import org.glassfish.grizzly.http.util.HttpRequestURIDecoder;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -557,6 +558,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         if (System.getProperty(ALLOW_BACKSLASH_PROPERTY) == null) {
             System.setProperty(ALLOW_BACKSLASH_PROPERTY, "true");
         }
+        Globals.initAllowBackslash(Boolean.getBoolean(ALLOW_BACKSLASH_PROPERTY));
         events.register(this);
 
         final NetworkConfig networkConfig = config.getNetworkConfig();
