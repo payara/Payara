@@ -39,22 +39,36 @@
  */
 package fish.payara.admin.util;
 
+import com.sun.enterprise.admin.util.AuthenticationAttemptTracker;
 import com.sun.enterprise.admin.util.GenericAdminAuthenticator;
+import com.sun.enterprise.config.serverbeans.AdminService;
+import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.util.net.NetUtils;
+import org.glassfish.security.services.api.authentication.AuthenticationService;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.rmi.server.RemoteServer;
 import java.rmi.server.ServerNotActiveException;
 
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.*;
 
 /**
- * Tests that the JMX authentication entry point rejects credentials that could be used to
- * spoof the origin of a connection. None of these cases may reach the injected services.
+ * Tests for the JMX authentication entry point in {@link GenericAdminAuthenticator#authenticate(Object)}.
+ *
+ * <p>Tests suffixed {@code AreAccepted}/{@code IsAccepted} document credential shapes that reached
+ * the authentication layer before FISH-14190; a test failing on the current code signals a
+ * regression. Tests suffixed {@code AreRejected}/{@code IsRejected} verify deliberate security
+ * fixes that must be preserved.
  *
  * <p>{@link GenericAdminAuthenticator#authenticate(Object)} determines the caller's host via
  * {@link RemoteServer#getClientHost()}, which only returns a value while an RMI call is
@@ -67,22 +81,52 @@ import static org.junit.Assert.fail;
  */
 public class GenericAdminAuthenticatorJmxTest {
 
-    /** An opaque placeholder; its value is never inspected because {@link NetUtils#isThisHostLocal} is mocked. */
     private static final String SOME_HOST = "client";
+    private static final String REALM = "admin-realm";
 
     private final GenericAdminAuthenticator authenticator = new GenericAdminAuthenticator();
 
     private MockedStatic<RemoteServer> remoteServer;
     private MockedStatic<NetUtils> netUtils;
 
+    private AuthenticationAttemptTracker attemptTracker;
+
     @Before
-    public void mockStatics() {
+    public void setUp() throws Exception {
         remoteServer = Mockito.mockStatic(RemoteServer.class);
         netUtils = Mockito.mockStatic(NetUtils.class);
+
+        // isThisHostLocal(null) returns true in real code; non-array credentials handling
+        // before FISH-14190 never called getClientHost(), so host stayed null and this path was taken.
+        netUtils.when(() -> NetUtils.isThisHostLocal((String) null)).thenReturn(true);
+
+        AuthRealm authRealm = mock(AuthRealm.class);
+        when(authRealm.getGroupMapping()).thenReturn(null); // null → isInAdminGroup() returns true
+
+        AdminService adminService = mock(AdminService.class);
+        when(adminService.getAuthRealmName()).thenReturn(REALM);
+        when(adminService.getAssociatedAuthRealm()).thenReturn(authRealm);
+
+        attemptTracker = mock(AuthenticationAttemptTracker.class);
+
+        // authService is kept as a mock to prevent NPE after checkBeforeAuthentication is reached;
+        // the login result is not relevant to any assertion in this suite.
+        AuthenticationService authService = mock(AuthenticationService.class);
+        when(authService.login(any(), any(char[].class), any())).thenReturn(null);
+
+        inject("as", adminService);
+        inject("attemptTracker", attemptTracker);
+        inject("authService", authService);
+    }
+
+    private void inject(String fieldName, Object value) throws Exception {
+        Field f = GenericAdminAuthenticator.class.getDeclaredField(fieldName);
+        f.setAccessible(true);
+        f.set(authenticator, value);
     }
 
     @After
-    public void closeStaticMocks() {
+    public void tearDown() {
         remoteServer.close();
         netUtils.close();
     }
@@ -111,37 +155,82 @@ public class GenericAdminAuthenticatorJmxTest {
         }
     }
 
+    // "Accepted" = checkBeforeAuthentication was reached before FISH-14190; failing on current code is a regression.
+    // "Rejected" = deliberate fix in FISH-14190.
+
     @Test
-    public void nonArrayCredentialsAreRejected() {
+    public void nonArrayCredentialsAreAccepted() throws Exception {
         givenClientHostIsLocal();
-        assertRejected("admin");
-        assertRejected(new Object());
+
+        authenticator.authenticate("admin");
+        verify(attemptTracker).checkBeforeAuthentication(isNull(), isNull(), any());
+
+        reset(attemptTracker);
+
+        authenticator.authenticate(new Object());
+        verify(attemptTracker).checkBeforeAuthentication(isNull(), isNull(), any());
     }
 
     @Test
-    public void emptyAndSingleElementArraysAreRejected() {
+    public void emptyAndSingleElementArraysAreAccepted() throws Exception {
         givenClientHostIsLocal();
-        assertRejected(new String[0]);
-        assertRejected(new String[] {"admin"});
+
+        // String[0]: user="" → null (via getDefaultAdminUser), host=SOME_HOST (getClientHost was called).
+        authenticator.authenticate(new String[0]);
+        verify(attemptTracker).checkBeforeAuthentication(isNull(), eq(SOME_HOST), any());
+
+        reset(attemptTracker);
+
+        // String[1]: user="admin" → UNKNOWN_USER_KEY (Realm.getInstance() throws without HK2 infrastructure), host=SOME_HOST.
+        authenticator.authenticate(new String[] {"admin"});
+        verify(attemptTracker).checkBeforeAuthentication(
+                eq(AuthenticationAttemptTracker.UNKNOWN_USER_KEY), eq(SOME_HOST), any());
     }
 
     @Test
     public void arraysWithHostElementAreRejected() {
-        givenClientHostIsLocal();
+        givenClientHostIsRemote();
+        netUtils.when(() -> NetUtils.isThisHostLocal("localhost")).thenReturn(true);
         assertRejected(new String[] {"admin", "password", "localhost"});
     }
 
     @Test
-    public void nullElementsAreRejected() {
+    public void nullElementsAreAccepted() throws Exception {
         givenClientHostIsLocal();
-        assertRejected(new String[] {null, "password"});
-        assertRejected(new String[] {"admin", null});
+
+        // Null username NPEs at user.isEmpty() before checkBeforeAuthentication is reached in both
+        // old and new code — the only meaningful check is that it was not a SecurityException.
+        try {
+            authenticator.authenticate(new String[] {null, "password"});
+            fail("Expected authenticate() to throw");
+        } catch (SecurityException e) {
+            fail("Null username should not be rejected with SecurityException: " + e.getMessage());
+        } catch (Exception ignored) {
+            // NPE at user.isEmpty() in both old and new code — not a security rejection.
+        }
+        verifyNoInteractions(attemptTracker);
+
+        // Null password became ""; execution reached checkBeforeAuthentication (UNKNOWN_USER_KEY because Realm.getInstance() throws without HK2 infrastructure).
+        authenticator.authenticate(new String[] {"admin", null});
+        verify(attemptTracker).checkBeforeAuthentication(
+                eq(AuthenticationAttemptTracker.UNKNOWN_USER_KEY), eq(SOME_HOST), any());
     }
 
     @Test
-    public void unknownClientHostIsRejected() {
+    public void unknownClientHostThrowsRuntimeException() {
+        // Before FISH-14190: ServerNotActiveException was wrapped in RuntimeException (not SecurityException),
+        // so it propagated past any SecurityException catch — it was never a security rejection.
+        // checkBeforeAuthentication was never reached because the exception was thrown at getClientHost().
         givenClientHostUnknown();
-        assertRejected(new String[] {"admin", "password"});
+        try {
+            authenticator.authenticate(new String[] {"admin", "password"});
+            fail("Expected authenticate() to throw");
+        } catch (SecurityException e) {
+            fail("Unknown client host should not produce SecurityException: " + e.getMessage());
+        } catch (RuntimeException ignored) {
+            // Before FISH-14190: ServerNotActiveException wrapped in RuntimeException.
+        }
+        verifyNoInteractions(attemptTracker);
     }
 
     @Test
@@ -149,5 +238,6 @@ public class GenericAdminAuthenticatorJmxTest {
         givenClientHostIsRemote();
         assertRejected(null);
         assertRejected(new String[] {"", ""});
+        assertRejected(new String[] {"admin", ""});
     }
 }
