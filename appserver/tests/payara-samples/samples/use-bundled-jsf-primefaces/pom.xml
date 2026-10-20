@@ -53,7 +53,7 @@
     <packaging>war</packaging>
 
     <properties>
-        <primefaces.version>15.0.18</primefaces.version>
+        <primefaces.version>15.0.19</primefaces.version>
     </properties>
 
     <dependencies>
