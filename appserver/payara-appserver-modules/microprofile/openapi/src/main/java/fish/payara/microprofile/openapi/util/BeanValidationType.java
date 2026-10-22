@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2025 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2025-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,5 +40,5 @@
 package fish.payara.microprofile.openapi.util;
 
 public enum BeanValidationType {
-    NOT_EMPTY, NOT_BLANK, SIZE, DECIMAL_MAX, DECIMAL_MIN, MAX, MIN, NEGATIVE, NEGATIVE_OR_ZERO, POSITIVE, POSITIVE_OR_ZER0
+    NOT_EMPTY, NOT_BLANK, SIZE, DECIMAL_MAX, DECIMAL_MIN, MAX, MIN, NEGATIVE, NEGATIVE_OR_ZERO, POSITIVE, POSITIVE_OR_ZER0, DIGITS
 }
