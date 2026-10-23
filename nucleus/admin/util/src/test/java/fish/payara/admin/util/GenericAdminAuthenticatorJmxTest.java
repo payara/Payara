@@ -111,6 +111,32 @@ public class GenericAdminAuthenticatorJmxTest {
         }
     }
 
+    /**
+     * Asserts that {@code credentials} are not rejected by the credentials-parsing or
+     * local/remote checks, by verifying that execution reaches {@code as.getAuthRealmName()}
+     * (the line immediately after those checks), rather than inferring this from some
+     * exception being thrown, which could happen for unrelated reasons and give a false pass.
+     * Authentication still fails past that point with a NullPointerException, because this
+     * authenticator has no injected AdminService (this is a plain unit test, not one running
+     * in a container); that is expected and is not what this assertion is checking.
+     */
+    private void assertPassesCredentialAndLocalRemoteChecks(Object credentials) {
+        try {
+            authenticator.authenticate(credentials);
+            fail("Expected authenticate() to fail due to the missing AdminService injection: " + credentials);
+        } catch (SecurityException unexpected) {
+            fail("Credentials should not be rejected by the credentials or local/remote checks: " + unexpected);
+        } catch (NullPointerException expected) {
+            // expected: as.getAuthRealmName() NPEs because `as` is never injected in this plain
+            // unit test. Reaching this point confirms neither check rejected the credentials.
+        }
+    }
+
+    /**
+     * Credentials that are not a {@code String[]} at all (a bare {@code String}, or any other
+     * object) must be rejected outright, rather than treated as an empty user name and
+     * password the way a {@code null} credentials object is.
+     */
     @Test
     public void nonArrayCredentialsAreRejected() {
         givenClientHostIsLocal();
@@ -118,36 +144,84 @@ public class GenericAdminAuthenticatorJmxTest {
         assertRejected(new Object());
     }
 
-    @Test
-    public void emptyAndSingleElementArraysAreRejected() {
-        givenClientHostIsLocal();
-        assertRejected(new String[0]);
-        assertRejected(new String[] {"admin"});
-    }
-
+    /**
+     * A credentials array with a third element must be rejected, regardless of its value,
+     * since the peer host must come from the transport, never from the caller.
+     */
     @Test
     public void arraysWithHostElementAreRejected() {
         givenClientHostIsLocal();
         assertRejected(new String[] {"admin", "password", "localhost"});
     }
 
-    @Test
-    public void nullElementsAreRejected() {
-        givenClientHostIsLocal();
-        assertRejected(new String[] {null, "password"});
-        assertRejected(new String[] {"admin", null});
-    }
-
+    /**
+     * If the client host cannot be determined at all (no RMI call in progress), authentication
+     * must fail closed, regardless of what credentials were supplied.
+     */
     @Test
     public void unknownClientHostIsRejected() {
         givenClientHostUnknown();
         assertRejected(new String[] {"admin", "password"});
     }
 
+    /**
+     * Null, and a 2-element array of empty strings, are both treated as "no credentials
+     * supplied" and must be rejected by the local/remote check for a remote client, mirroring
+     * {@link #emptyCredentialsPassTheLocalRemoteCheckFromLocalHost()}.
+     */
     @Test
     public void emptyCredentialsAreRejectedFromRemoteHost() {
         givenClientHostIsRemote();
         assertRejected(null);
         assertRejected(new String[] {"", ""});
+    }
+
+    /**
+     * A missing user name and/or password (a 0- or 1-element array) is treated the same as an
+     * empty string for that field, exactly as a null array element is; see
+     * {@link #emptyCredentialsPassTheLocalRemoteCheckFromLocalHost()}.
+     */
+    @Test
+    public void emptyAndSingleElementArraysAreAcceptedFromLocalHost() {
+        givenClientHostIsLocal();
+        assertPassesCredentialAndLocalRemoteChecks(new String[0]);
+        assertPassesCredentialAndLocalRemoteChecks(new String[] {"admin"});
+    }
+
+    /**
+     * Null, and a 2-element array of empty strings, are both treated as "no credentials
+     * supplied" (e.g. JConsole with blank fields) and must not be rejected by the local/remote
+     * check for a local client, to preserve the vanilla no-password development setup.
+     */
+    @Test
+    public void emptyCredentialsPassTheLocalRemoteCheckFromLocalHost() {
+        givenClientHostIsLocal();
+        assertPassesCredentialAndLocalRemoteChecks(null);
+        assertPassesCredentialAndLocalRemoteChecks(new String[] {"", ""});
+    }
+
+    /**
+     * A null user name or password element is treated the same as an empty string for that
+     * field, not rejected outright. In particular, a user name with no password (e.g.
+     * JConsole with the password field left blank) sends a null password element.
+     */
+    @Test
+    public void nullArrayElementsAreTreatedAsEmptyFromLocalHost() {
+        givenClientHostIsLocal();
+        assertPassesCredentialAndLocalRemoteChecks(new String[] {null, "password"});
+        assertPassesCredentialAndLocalRemoteChecks(new String[] {"admin", null});
+    }
+
+    /**
+     * A null user name or password element is treated the same as an empty string for that
+     * field, not rejected outright for being null. From a remote host, though, that empty field
+     * is still rejected by the local/remote check, mirroring
+     * {@link #nullArrayElementsAreTreatedAsEmptyFromLocalHost()}.
+     */
+    @Test
+    public void nullArrayElementsAreTreatedAsEmptyFromRemoteHost() {
+        givenClientHostIsRemote();
+        assertRejected(new String[] {null, "password"});
+        assertRejected(new String[] {"admin", null});
     }
 }

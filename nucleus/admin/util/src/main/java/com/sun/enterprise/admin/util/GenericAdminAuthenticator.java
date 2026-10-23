@@ -548,9 +548,10 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
      */
     @Override
     public Subject authenticate(Object credentials) {
-        // Credentials must be a 2-string array with user name and password. Clients that are given no credentials
-        // (e.g. JConsole with blank fields) send null, which is treated as an empty user name and password; those are
-        // only accepted below for local connections.
+        // Credentials must be a String[] of at most 2 elements: user name, then password. Clients that are given
+        // no credentials (e.g. JConsole with blank fields) send null, which is treated as an empty user name and
+        // password; those are only accepted below for local connections. A missing or null user name/password
+        // element (a 0- or 1-element array, or a null array element) is likewise treated as empty.
         String user = "";
         String password = "";
         if (credentials != null) {
@@ -558,11 +559,15 @@ public class GenericAdminAuthenticator implements AdminAccessController, JMXAuth
                 throw new SecurityException("Invalid JMX credentials");
             }
             String[] up = (String[]) credentials;
-            if (up.length != 2 || up[0] == null || up[1] == null) {
+            if (up.length > 2) {
                 throw new SecurityException("Invalid JMX credentials");
             }
-            user = up[0];
-            password = up[1];
+            if (up.length >= 1 && up[0] != null) {
+                user = up[0];
+            }
+            if (up.length == 2 && up[1] != null) {
+                password = up[1];
+            }
         }
 
         String host;
