@@ -60,7 +60,6 @@
 package org.glassfish.web.loader;
 
 import com.sun.appserv.BytecodePreprocessor;
-import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -2038,9 +2037,6 @@ public class WebappClassLoader
             }
         }
 
-        // START SJSAS 6258619
-        ClassLoaderUtil.releaseLoader(this);
-        // END SJSAS 6258619
         CacheCleaner.clearCaches(this);
 
         synchronized(jarFilesLock) {
