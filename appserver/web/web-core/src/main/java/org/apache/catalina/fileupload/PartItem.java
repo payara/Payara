@@ -65,6 +65,7 @@ import org.apache.catalina.util.RequestUtil;
 
 import jakarta.servlet.http.Part;
 import java.io.*;
+import java.nio.file.Files;
 import org.glassfish.hk2.utilities.CleanerFactory;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -349,24 +350,11 @@ class PartItem
             return cachedContent;
         }
 
-        byte[] fileData = new byte[(int) getSize()];
-        FileInputStream fis = null;
-
+        byte[] fileData;
         try {
-            fis = new FileInputStream(dfos.getFile());
-            if (fis.read(fileData) != (int)getSize())
-                if (log.isLoggable(Level.INFO))
-                    log.log(Level.INFO, LogFacade.FILE_DATA_IS_EMPTY_INFO);
+            fileData = Files.readAllBytes(dfos.getFile().toPath());
         } catch (IOException e) {
             fileData = null;
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
         }
 
         return fileData;

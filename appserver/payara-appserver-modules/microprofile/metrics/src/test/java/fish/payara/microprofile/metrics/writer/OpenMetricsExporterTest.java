@@ -39,7 +39,6 @@
  */
 package fish.payara.microprofile.metrics.writer;
 
-import static java.nio.file.Files.readAllBytes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -397,7 +396,7 @@ public class OpenMetricsExporterTest {
 
     private String readFile(String file) {
         try {
-            return new String(readAllBytes(Paths.get(getClass().getResource(file).toURI())));
+            return Files.readString(Paths.get(getClass().getResource(file).toURI()));
         } catch (Exception ex) {
             throw new AssertionError(ex);
         }

@@ -602,16 +602,12 @@ public class PayloadImpl implements Payload {
 
         @Override
         public void copy(final OutputStream os) throws IOException {
-            int bytesRead;
-            byte [] buffer = new byte[1024];
             final InputStream is = getInputStream();
             /*
              * Directory entries can have null input streams.
              */
             if (is != null) {
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
-                }
+                is.transferTo(os);
             }
         }
         

@@ -48,12 +48,10 @@ import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
 import org.apache.sshd.sftp.client.SftpClient;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -144,14 +142,7 @@ public class LogFilterForInstance {
 
                     // if differ both size then downloading
                     if (instanceLogFileSize != fileSizeOnNode) {
-                        try (BufferedInputStream in = new BufferedInputStream(sftpClient.read(loggingFile));
-                             BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(instanceLogFile))) {
-                            byte[] buf = new byte[8192];
-                            int len;
-                            while ((len = in.read(buf)) >= 0) {
-                                out.write(buf, 0, len);
-                            }
-                        }
+                        Files.copy(sftpClient.read(loggingFile), instanceLogFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
             }
@@ -217,14 +208,8 @@ public class LogFilterForInstance {
                 for (String remoteFileName : fileNames) {
                     String remoteFilePath = sourceDir + "/" + remoteFileName;
                     File localFile = new File(tempDirectoryOnServer, remoteFileName);
-                    try (InputStream in = sftpClient.read(remoteFilePath);
-                         BufferedOutputStream out = new BufferedOutputStream(
-                                 new FileOutputStream(localFile))) {
-                        byte[] buf = new byte[8192];
-                        int len;
-                        while ((len = in.read(buf)) >= 0) {
-                            out.write(buf, 0, len);
-                        }
+                    try {
+                        Files.copy(sftpClient.read(remoteFilePath), localFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException ex) {
                         logger.warning("Failed to download log file "
                                 + remoteFilePath + ": " + ex.getMessage());

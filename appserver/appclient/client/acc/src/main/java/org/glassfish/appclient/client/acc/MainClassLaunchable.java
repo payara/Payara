@@ -161,11 +161,7 @@ public class
         final ZipEntry mainClassEntry = new ZipEntry(mainClassResourceName);
         jos.putNextEntry(mainClassEntry);
         InputStream is = loader.getResourceAsStream(mainClassResourceName);
-        int bytesRead;
-        byte[] buffer = new byte[1024];
-        while ( (bytesRead = is.read(buffer)) != -1) {
-            jos.write(buffer, 0, bytesRead);
-        }
+        is.transferTo(jos);
         is.close();
         jos.closeEntry();
         jos.close();

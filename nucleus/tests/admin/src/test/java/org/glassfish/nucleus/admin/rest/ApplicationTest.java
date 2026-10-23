@@ -257,13 +257,7 @@ public class ApplicationTest extends RestTestBase {
         BufferedInputStream in = new BufferedInputStream(url.openStream());
         FileOutputStream fos = new FileOutputStream(file);
         BufferedOutputStream bout = new BufferedOutputStream(fos, 1024);
-        byte data[] = new byte[8192];
-        int read = in.read(data, 0, 8192);
-        while (read >= 0) {
-            bout.write(data, 0, read);
-            data = new byte[8192];
-            read = in.read(data, 0, 8192);
-        }
+        in.transferTo(bout);
         bout.close();
         in.close();
 
