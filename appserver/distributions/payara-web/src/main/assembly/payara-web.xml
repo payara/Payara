@@ -59,6 +59,9 @@
                 <exclude>bin/*</exclude>
                 <exclude>glassfish/bin/*</exclude>
                 <exclude>glassfish/lib/nadmin*</exclude>
+                <exclude>mq/bin/*</exclude>
+                <exclude>h2db/bin/*</exclude>
+                <exclude>glassfish/osgi/felix/bin/*</exclude>
                 <!-- Exclude appserver-domain files -->
                 <exclude>glassfish/common/templates/gf/*appserver-domain*.jar</exclude>
                 <!-- Exclude production-domain files -->
@@ -77,6 +80,9 @@
                 <include>bin/*</include>
                 <include>glassfish/bin/*</include>
                 <include>glassfish/lib/nadmin*</include>
+                <include>mq/bin/*</include>
+                <include>h2db/bin/*</include>
+                <include>glassfish/osgi/felix/bin/*</include>
             </includes>
             <outputDirectory>${install.dir.name}</outputDirectory>
         </fileSet>

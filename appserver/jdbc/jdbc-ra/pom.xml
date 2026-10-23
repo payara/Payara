@@ -56,23 +56,6 @@
   <name>JDBC Resource Adapter</name>
   <packaging>pom</packaging>
 
-  <build>
-    <plugins>
-      <plugin>
-          <groupId>org.glassfish.build</groupId>
-          <artifactId>glassfishbuild-maven-plugin</artifactId>
-          <configuration>
-              <!-- configuration for the run mojo -->
-              <distribution>
-                  <groupId>fish.payara.server.internal.distributions</groupId>
-                  <artifactId>web</artifactId>
-                  <version>${project.version}</version>
-              </distribution>
-          </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
   <developers>
     <developer>
       <id>sm157516</id>
