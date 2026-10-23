@@ -65,6 +65,7 @@ import static fish.payara.microprofile.openapi.impl.model.util.ModelUtils.isVoid
 import fish.payara.microprofile.openapi.impl.visitor.OpenApiWalker;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -437,6 +438,11 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
         handleBeanValidationAnnotation(param, element, context, BeanValidationType.POSITIVE_OR_ZER0);
     }
 
+    @Override
+    public void visitDigits(AnnotationModel param, AnnotatedElement element, ApiContext context) {
+        handleBeanValidationAnnotation(param, element, context, BeanValidationType.DIGITS);
+    }
+
     private void handleBeanValidationAnnotation(AnnotationModel param, AnnotatedElement element, ApiContext context, BeanValidationType type) {
         if (element instanceof FieldModel) {
             addSchemaProperty(param, element, context, type);
@@ -632,6 +638,55 @@ public class ApplicationProcessor implements OASProcessor, ApiVisitor {
                     property.setMinimum(BigDecimal.ZERO);
                 }
                 break;
+            case DIGITS:
+                handleDigitsProperty(property, param);
+                break;
+        }
+    }
+
+    private void handleDigitsProperty(Schema property, AnnotationModel param) {
+        List<SchemaType> type = property.getType();
+        if (type == null || type.isEmpty()) {
+            return;
+        }
+
+        if ((type.contains(SchemaType.INTEGER) || type.contains(SchemaType.NUMBER)) && property.getMultipleOf() == null) {
+            final int fractionValue = param.getValue("fraction", Integer.class);
+            BigDecimal multipleOf;
+            if (fractionValue > 0) {
+                multipleOf = new BigDecimal(BigInteger.ONE, fractionValue);
+            } else {
+                multipleOf = BigDecimal.ONE;
+            }
+            property.setMultipleOf(multipleOf);
+        }
+
+        if (type.contains(SchemaType.STRING) && property.getPattern() == null) {
+            final int fractionValue = param.getValue("fraction", Integer.class);
+            final int integerValue = param.getValue("integer", Integer.class);
+            final StringBuilder pattern =  new StringBuilder(50);
+
+            pattern.append('^');
+            if (integerValue > 0) {
+                pattern.append("\\d");
+
+                if (integerValue > 1) {
+                    pattern.append("{1,").append(integerValue).append('}');
+                }
+            }
+
+            if (fractionValue > 0) {
+                pattern.append("([.]\\d");
+
+                if (fractionValue > 1) {
+                    pattern.append("{1,").append(fractionValue).append("}");
+                }
+
+                pattern.append(")?");
+            }
+
+            pattern.append('$');
+            property.setPattern(pattern.toString());
         }
     }
 

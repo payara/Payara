@@ -50,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -363,7 +364,7 @@ public final class ModelUtils {
         if ("boolean".equals(typeName) || Boolean.class.getName().equals(typeName)) {
             return List.of(SchemaType.BOOLEAN);
         }
-        if ("int".equals(typeName) || Integer.class.getName().equals(typeName)) {
+        if ("int".equals(typeName) || Integer.class.getName().equals(typeName) || BigInteger.class.getName().equals(typeName)) {
             return List.of(SchemaType.INTEGER);
         }
         if ("short".equals(typeName)

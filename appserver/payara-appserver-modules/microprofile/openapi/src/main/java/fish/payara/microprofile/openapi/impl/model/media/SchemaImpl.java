@@ -96,6 +96,7 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
 
     private static final Logger LOGGER = Logger.getLogger(SchemaImpl.class.getName());
+    private static final String BASE_DIALECT = "https://spec.openapis.org/oas/3.1/dialect/base";
     private static final Map<String, GetterSetter<?>> METHODS = Map.<String, GetterSetter<?>>ofEntries(
             Map.entry("discriminator", new GetterSetter<>(Schema::getDiscriminator, Schema::setDiscriminator)),
             Map.entry("title", new GetterSetter<>(Schema::getTitle, Schema::setTitle)),
@@ -1295,13 +1296,15 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
             examples.remove(example);
         }
     }
-    
+
     @Override
     public Object get(String key) {
         if (METHODS.containsKey(key)) {
             return METHODS.get(key).getter.apply(this);
         }
-        
+        if (isBaseDialect() && hasExtension(key)) {
+            return getExtension(key);
+        }
         if (values == null) {
             values = createMap();
         }
@@ -1315,7 +1318,15 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
                 METHODS.get(key).set(this, value);
                 return this;
             }
-            
+            if (isBaseDialect()) {
+                // unknown properties are extensions in the base dialect
+                if (value == null) {
+                    removeExtension(key);
+                } else {
+                    addExtension(key, value);
+                }
+                return this;
+            }
             if (values == null) {
                 values = createMap();
             }
@@ -1325,21 +1336,38 @@ public class SchemaImpl extends ExtensibleImpl<Schema> implements Schema {
     }
 
     @Override
+    @JsonIgnore
     public Map<String, ?> getAll() {
-        return readOnlyView(values);
+        Map<String, Object> all = createMap();
+        if (values != null) {
+            all.putAll(values);
+        }
+        if (isBaseDialect() && super.getExtensions() != null) {
+            all.putAll(super.getExtensions());
+        }
+        return readOnlyView(all);
     }
 
     @Override
-    public void setAll(Map<String, ?> values) {
-        this.values = createMap(values);
+    public void setAll(Map<String, ?> allProperties) {
+        this.values = createMap();
+        this.extensions = null;
+        if (allProperties == null) {
+            return;
+        }
+        allProperties.forEach(this::set);
     }
-    
+
+    private boolean isBaseDialect() {
+        return schemaDialect == null || BASE_DIALECT.equals(schemaDialect);
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getArbitraryValues() {
         Map<String, Object> combinedValues = createMap();
 
-        if (getAll() != null) {
-            combinedValues.putAll(getAll());
+        if (values != null) {
+            combinedValues.putAll(values);
         }
         if (super.getExtensions() != null) {
             combinedValues.putAll(super.getExtensions());

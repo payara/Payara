@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2018-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2018-2026 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import java.util.TreeSet;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Negative;
@@ -291,6 +292,7 @@ public class OpenApiWalker<E extends AnnotatedElement> implements ApiWalker {
                 annotationVisitor.put(NegativeOrZero.class, visitor::visitNegativeOrZero);
                 annotationVisitor.put(Positive.class, visitor::visitPositive);
                 annotationVisitor.put(PositiveOrZero.class, visitor::visitPositiveOrZero);
+                annotationVisitor.put(Digits.class, visitor::visitDigits);
             }
 
             // All other OpenAPI annotations
