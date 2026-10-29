@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -75,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 import java.util.jar.Manifest;
@@ -118,10 +119,19 @@ public class DeploymentUtils {
     public static class WarLibraryDescriptor {
         private final Descriptor descriptor;
         private final List<Type> types;
+        private final Map<String, Object> derivedData = new ConcurrentHashMap<>();
 
         public WarLibraryDescriptor(Descriptor descriptor, List<Type> types) {
             this.descriptor = descriptor;
             this.types = types;
+        }
+
+        /**
+         * Computes data derived from this library's types once, and keeps it as long as the library is cached.
+         */
+        @SuppressWarnings("unchecked")
+        public <T> T getDerivedData(String key, Supplier<T> supplier) {
+            return (T) derivedData.computeIfAbsent(key, k -> supplier.get());
         }
 
         public Descriptor getDescriptor() {
