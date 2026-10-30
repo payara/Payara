@@ -157,6 +157,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
     @Param(name = "multicastPort", optional = true)
     private String multicastPort;
 
+    @Param(name = "multicastTimeout", optional = true)
+    private String multicastTimeout;
+
     @Param(name = "clusterName", optional = true)
     private String hzClusterName;
 
@@ -281,6 +284,9 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                         }
                         if (multicastPort != null) {
                             hazelcastRuntimeConfigurationProxy.setMulticastPort(multicastPort);
+                        }
+                        if (multicastTimeout != null) {
+                            hazelcastRuntimeConfigurationProxy.setMulticastTimeoutSeconds(multicastTimeout);
                         }
                         if (hostawarePartitioning != null) {
                             hazelcastRuntimeConfigurationProxy.setHostAwarePartitioning(hostawarePartitioning.toString());
@@ -472,6 +478,17 @@ public class SetHazelcastConfiguration implements AdminCommand, DeploymentTarget
                 }
             } catch (NumberFormatException nfe) {
                 actionReport.failure(logger, "multicast is not a valid integer", nfe);
+                return result;
+            }
+        }
+        if (multicastTimeout != null) {
+            try {
+                if (Integer.parseInt(multicastTimeout) < 0) {
+                    actionReport.failure(logger, "multicast timeout must not be negative");
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {
+                actionReport.failure(logger, "multicast timeout is not a valid integer", nfe);
                 return result;
             }
         }

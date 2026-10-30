@@ -418,8 +418,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
                 // the join wait lets discovery-based members starting at the same time find each other and lets the
                 // master coalesce the partition rebalancing of several joins; a DAS whose domain defines no instances
                 // has nobody to wait for, while Hazelcast would still poll discovery for the full period (a single
-                // round with 0 as of Hazelcast 5.4)
-                config.setProperty(ClusterProperty.WAIT_SECONDS_BEFORE_JOIN.getName(), mayHaveOtherMembers() ? "1" : "0");
+                // round with 0 as of Hazelcast 5.4). An explicitly set system property always wins.
+                String waitBeforeJoin = ClusterProperty.WAIT_SECONDS_BEFORE_JOIN.getName();
+                config.setProperty(waitBeforeJoin, System.getProperty(waitBeforeJoin, mayHaveOtherMembers() ? "1" : "0"));
 
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
@@ -545,6 +546,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             mcConfig.setEnabled(true);
             mcConfig.setMulticastGroup(configuration.getMulticastGroup());
             mcConfig.setMulticastPort(Integer.parseInt(configuration.getMulticastPort()));
+            mcConfig.setMulticastTimeoutSeconds(Integer.parseInt(configuration.getMulticastTimeoutSeconds()));
         } else if (discoveryMode.startsWith("kubernetes")) {
             config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
             config.getNetworkConfig().getJoin().getKubernetesConfig().setEnabled(true)
@@ -760,6 +762,7 @@ public class HazelcastCore implements EventListener, ConfigListener {
             if (multicastConfig != null && multicastConfig.isEnabled()) {
                 configuration.setMulticastGroup(multicastConfig.getMulticastGroup());
                 configuration.setMulticastPort(String.valueOf(multicastConfig.getMulticastPort()));
+                configuration.setMulticastTimeoutSeconds(String.valueOf(multicastConfig.getMulticastTimeoutSeconds()));
             }
             KubernetesConfig kubernetesConfig = joinConfig.getKubernetesConfig();
             if (kubernetesConfig != null && kubernetesConfig.isEnabled()) {
