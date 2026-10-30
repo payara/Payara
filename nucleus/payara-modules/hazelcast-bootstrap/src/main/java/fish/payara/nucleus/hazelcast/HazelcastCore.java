@@ -45,6 +45,7 @@ import com.hazelcast.cluster.ClusterState;
 import com.hazelcast.cluster.Member;
 import com.hazelcast.collection.ISet;
 import com.hazelcast.config.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
 import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.config.ExecutorConfig;
 import com.hazelcast.config.GlobalSerializerConfig;
@@ -166,6 +167,9 @@ public class HazelcastCore implements EventListener, ConfigListener {
 
     @Inject
     ServerEnvironment env;
+
+    @Inject
+    Domain domain;
 
     @Inject
     HazelcastRuntimeConfiguration configuration;
@@ -411,8 +415,11 @@ public class HazelcastCore implements EventListener, ConfigListener {
                     }
                 }
                 config.setClassLoader(clh.getCommonClassLoader());
-                // can set to zero as of Hazelcast 5.4 or greater
-                config.setProperty(ClusterProperty.WAIT_SECONDS_BEFORE_JOIN.getName(), "1");
+                // the join wait lets discovery-based members starting at the same time find each other and lets the
+                // master coalesce the partition rebalancing of several joins; a DAS whose domain defines no instances
+                // has nobody to wait for, while Hazelcast would still poll discovery for the full period (a single
+                // round with 0 as of Hazelcast 5.4)
+                config.setProperty(ClusterProperty.WAIT_SECONDS_BEFORE_JOIN.getName(), mayHaveOtherMembers() ? "1" : "0");
 
                 if(ctxUtil != null) {
                     SerializationConfig serializationConfig = new SerializationConfig();
@@ -461,6 +468,18 @@ public class HazelcastCore implements EventListener, ConfigListener {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Configuration data could no be saved", ex);
         }
         return config;
+    }
+
+    /**
+     * @return whether another member of this domain's data grid may exist: always for instances, Payara Micro and
+     * discovery modes that find members the domain does not define, for a DAS using domain discovery only if the
+     * domain defines server instances
+     */
+    private boolean mayHaveOtherMembers() {
+        if (!env.isDas() || env.isMicro() || !"domain".equals(configuration.getDiscoveryMode())) {
+            return true;
+        }
+        return domain.getServers().getServer().stream().anyMatch(server -> !server.isDas());
     }
 
     private static boolean isYamlFile(String hazelcastFilePath) {

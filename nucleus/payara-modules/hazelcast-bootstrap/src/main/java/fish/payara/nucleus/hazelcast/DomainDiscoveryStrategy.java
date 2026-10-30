@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2016-2023] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2016-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -69,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,6 +87,9 @@ import java.util.logging.Logger;
  * @author steve
  */
 public final class DomainDiscoveryStrategy extends AbstractDiscoveryStrategy {
+    /** time a probe waits for a candidate member to accept a connection */
+    private static final int PROBE_TIMEOUT_MILLIS = Integer.getInteger("fish.payara.hazelcast.discovery.probe.timeout", 500);
+
     private final boolean hostAwarePartitioning;
     private final Holder.LazyHolder<InetAddress> chosenAddress =
             Holder.LazyHolder.lazyHolder(MemberAddressPicker::findMyAddressOrLocalHost);
@@ -193,9 +199,41 @@ public final class DomainDiscoveryStrategy extends AbstractDiscoveryStrategy {
                     }
                 }
             }
+            nodes = listeningNodes(nodes);
         }
 
         return nodes;
+    }
+
+    /**
+     * Hazelcast treats a refused connection to a candidate like a member that has not answered yet and keeps
+     * waiting for it until the join wait expires. Only candidates with a member listening are therefore handed
+     * over. The probes run in parallel: nothing listening costs a refused connection, an unreachable host costs
+     * one probe timeout.
+     */
+    private List<DiscoveryNode> listeningNodes(List<DiscoveryNode> candidates) {
+        List<CompletableFuture<Boolean>> probes = new ArrayList<>();
+        for (DiscoveryNode candidate : candidates) {
+            probes.add(CompletableFuture.supplyAsync(() -> isListening(candidate.getPrivateAddress())));
+        }
+        List<DiscoveryNode> listening = new LinkedList<>();
+        for (int i = 0; i < candidates.size(); i++) {
+            if (probes.get(i).join()) {
+                listening.add(candidates.get(i));
+            } else {
+                getLogger().log(Level.FINE, String.format("Skipping %s, no member is listening there", candidates.get(i).getPrivateAddress()));
+            }
+        }
+        return listening;
+    }
+
+    private static boolean isListening(Address address) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(address.getInetAddress(), address.getPort()), PROBE_TIMEOUT_MILLIS);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     @Override
