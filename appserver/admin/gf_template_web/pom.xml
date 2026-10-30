@@ -91,20 +91,37 @@
             </plugin>
 
             <plugin>
-                <groupId>org.glassfish.build</groupId>
-                <artifactId>glassfishbuild-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <!--
+                        Builds the template's logging.properties: the nucleus file in full, followed by the
+                        appserver logger levels from appserver/logging/logging.properties without its comment lines.
+                    -->
                     <execution>
+                        <id>merge-logging-properties</id>
                         <phase>process-resources</phase>
                         <goals>
-                            <goal>merge-copyright-headers</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <outputFile>${project.build.directory}/classes/config/logging.properties</outputFile>
-                            <inputFiles>
-                                <inputFile>${project.build.directory}/dependency/config/logging.properties</inputFile>
-                                <inputFile>../../logging/logging.properties</inputFile>
-                            </inputFiles>
+                            <target>
+                                <mkdir dir="${project.build.directory}/classes/config"/>
+                                <concat destfile="${project.build.directory}/classes/config/logging.properties" force="yes" fixlastline="true">
+                                    <fileset file="${project.build.directory}/dependency/config/logging.properties"/>
+                                </concat>
+                                <concat destfile="${project.build.directory}/classes/config/logging.properties" append="true" force="yes">
+                                    <fileset file="${project.basedir}/../../logging/logging.properties"/>
+                                    <filterchain>
+                                        <tokenfilter>
+                                            <trim/>
+                                        </tokenfilter>
+                                        <linecontainsregexp negate="true">
+                                            <regexp pattern="^#"/>
+                                        </linecontainsregexp>
+                                    </filterchain>
+                                </concat>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
