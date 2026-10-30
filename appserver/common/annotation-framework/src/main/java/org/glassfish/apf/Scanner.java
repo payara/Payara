@@ -37,11 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.apf;
 
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.util.Set;
@@ -103,6 +102,5 @@ public interface Scanner<T> {
      * Return the types information for this module
      * @return types the archive resulting types
      */
-    public Types getTypes();
     
 }

@@ -53,7 +53,6 @@ import org.glassfish.hk2.utilities.CleanerFactory;
 
 import java.lang.ref.Cleaner;
 import java.util.*;
-import java.util.concurrent.atomic.LongAccumulator;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
@@ -793,10 +792,18 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
         }
     }
 
-    @Override
+    /**
+     * @return the sum of the CRCs of all entries, used to validate cached class indexes,
+     * or -1 for an embedded archive
+     */
     public long getArchiveCrc() {
-        LongAccumulator checksum = new LongAccumulator(Long::sum, 0);
-        jarFile.entries().asIterator().forEachRemaining(entry -> checksum.accumulate(entry.getCrc()));
-        return checksum.get();
+        if (jarFile == null) {
+            return -1;
+        }
+        long crc = 0;
+        for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
+            crc += entries.nextElement().getCrc();
+        }
+        return crc;
     }
 }

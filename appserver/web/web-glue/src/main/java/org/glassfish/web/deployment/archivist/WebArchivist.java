@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2025] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2014-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -79,7 +79,6 @@ import java.io.InputStream;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -376,9 +375,8 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                         }
                         DeploymentUtils.getWarLibraryCache().putIfAbsent(wfDesc.getWarLibraryPath(),
                                 new DeploymentUtils.WarLibraryDescriptor(wfDesc,
-                                        jandexIndexer.getIndexesByURI(deployment.getCurrentDeploymentContext(),
-                                        Collections.singleton(Path.of(wfDesc.getWarLibraryPath()).toUri()))
-                                                .values().stream().findAny().orElse(null)));
+                                        jandexIndexer.getIndex(deployment.getCurrentDeploymentContext(),
+                                                Path.of(wfDesc.getWarLibraryPath()).toUri())));
                     }
                 } else {
                     super.readAnnotations(archive, wfDesc, localExtensions);
@@ -468,9 +466,6 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                 }
             }
             wfDesc.setJarName(lib.substring(lib.lastIndexOf('/') + 1));
-            if (embeddedArchive != null) {
-                wfDesc.setName(embeddedArchive.getURI().getPath());
-            }
             if (isWarLibrary) {
                 if (wfDesc.getClassLoader() != null) {
                     wfDesc.setClassLoader(wfDesc.getClassLoader().getParent());

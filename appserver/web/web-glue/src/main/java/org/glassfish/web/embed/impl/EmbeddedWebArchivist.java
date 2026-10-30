@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.embed.impl;
 
@@ -45,7 +46,6 @@ import org.glassfish.apf.ProcessingResult;
 import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.internal.embedded.*;
 import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.archivist.WebArchivist;
@@ -76,7 +76,7 @@ public class EmbeddedWebArchivist extends WebArchivist {
             final Set<Class> elements = new HashSet<Class>();
 
             @Override
-            public void process(ReadableArchive archiveFile, Object bundleDesc, ClassLoader classLoader, Parser parser)
+            public void process(ReadableArchive archiveFile, Object bundleDesc, ClassLoader classLoader)
                     throws IOException {
                 // in embedded mode, we don't scan archive, we just process all classes.
                 Enumeration<String> entries = archiveFile.entries();

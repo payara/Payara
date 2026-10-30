@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2025] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
  /*
  * JavaEEScanner.java
@@ -47,10 +47,7 @@
 package org.glassfish.apf.impl;
 
 import org.glassfish.apf.ComponentInfo;
-import org.glassfish.hk2.classmodel.reflect.Types;
 
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Super class for all JavaEE scanners
@@ -59,17 +56,11 @@ import java.io.IOException;
  */
 public abstract class JavaEEScanner {
 
-    Types types;
 
     public ComponentInfo getComponentInfo(Class componentImpl) {
-        throw new UnsupportedOperationException("No longer supported");
+        return new ComponentDefinition(componentImpl);
     }
 
-    protected void initTypes(File file) throws IOException {
-        throw new UnsupportedOperationException("No longer supported");
-    }
 
-    public Types getTypes() {
-        throw new UnsupportedOperationException("No longer supported");
-    }
+
 }

@@ -53,7 +53,6 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
  *
  * @author Jerome ochez
  */
-@Deprecated(forRemoval = true)
 class ProcessingContextImpl implements ProcessingContext {
     
     protected AnnotationProcessor processor;

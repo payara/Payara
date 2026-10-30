@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.util;
 
@@ -603,7 +603,7 @@ public class DOLUtils {
             context.getAppProps().putAll(appProps);
         }
         context.setArchiveHandler(handler);
-        Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, null);
+        Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs);
         context.postDeployClean(true);
         String type = getTypeFromModuleType(md.getModuleType());
         Sniffer mainSniffer = null;

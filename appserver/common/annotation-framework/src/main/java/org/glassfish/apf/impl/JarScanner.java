@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -79,7 +79,6 @@ public class JarScanner extends JavaEEScanner implements Scanner<Object> {
                 }
             }        
         }
-        initTypes(jarFile);
     }    
     
     @Override

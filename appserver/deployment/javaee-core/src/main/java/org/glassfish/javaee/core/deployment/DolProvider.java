@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2021] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.core.deployment;
 
@@ -67,13 +67,12 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.deployment.common.*;
-import org.glassfish.hk2.classmodel.reflect.Parser;
-import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.deployment.ApplicationInfoProvider;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
 import org.jvnet.hk2.annotations.Service;
@@ -121,6 +120,9 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
     @Inject
     Deployment deployment;
+
+    @Inject
+    JandexIndexer jandexIndexer;
 
     @Inject
     ServerEnvironment env;
@@ -228,9 +230,6 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
         }
 
         application.setRegistrationName(name);
-
-        sourceArchive.removeExtraData(Types.class);
-        sourceArchive.removeExtraData(Parser.class);
 
         Logger.getAnonymousLogger().log(FINE, "DOL Loading time{0}", System.currentTimeMillis() - start);
 
@@ -348,7 +347,7 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
             ClassLoaderHierarchy clh = clhProvider.get();
             context.createDeploymentClassLoader(clh, archiveHandler);
             cl = context.getClassLoader();
-            deployment.getDeployableTypes(context);
+            jandexIndexer.index(context);
             deployment.getSniffers(archiveHandler, null, context);
             return processDOL(context);
         } finally  {

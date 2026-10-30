@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2020] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.apf.impl;
 
@@ -76,7 +76,6 @@ public class DirectoryScanner extends JavaEEScanner implements Scanner<Object> {
     
     private void init(File directory) throws java.io.IOException {
         init(directory, directory);
-        initTypes(directory);
     } 
     
     private void init(File top, File directory) throws java.io.IOException {

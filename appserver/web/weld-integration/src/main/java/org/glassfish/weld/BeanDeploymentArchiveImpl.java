@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016-2024] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -680,16 +680,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
     }
 
     private void addClassNamesFromIndex(ReadableArchive archive, boolean hasBeansXml) {
-        Globals.getDefaultHabitat().getService(JandexIndexer.class)
-                .getIndexesByURI(context, Collections.singleton(archive.getURI()))
-                .values().stream().findAny().get().getIndex()
-                .getKnownClasses().forEach(classInfo -> {
-                    String className = classInfo.name().toString();
-                    if (hasBeansXml || isCDIAnnotatedClass(className)) {
-                        beanClassNames.add(className);
-                    }
-                    moduleClassNames.add(className);
-                });
+        JandexIndexer.Index index = Globals.get(JandexIndexer.class).getIndex(context, archive.getURI());
+        if (index == null) {
+            logger.log(SEVERE, CDILoggerInfo.SEVERE_ERROR_READING_ARCHIVE,
+                    new Object[]{"No class index available for " + archive.getURI()});
+            return;
+        }
+        for (String className : index.getKnownClassNames()) {
+            if (hasBeansXml || isCDIAnnotatedClass(className)) {
+                beanClassNames.add(className);
+            }
+            moduleClassNames.add(className);
+        }
     }
 
     private void collectRarInfo(ReadableArchive archive) throws IOException, ClassNotFoundException {

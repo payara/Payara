@@ -49,6 +49,7 @@ import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
+import fish.payara.nucleus.executorservice.PayaraExecutorService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -86,8 +87,8 @@ import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.ParsingContext;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.hk2.utilities.BuilderHelper;
+import org.glassfish.hk2.classmodel.reflect.util.CommonModelRegistry;
+import org.glassfish.hk2.classmodel.reflect.util.ResourceLocator;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -146,6 +147,8 @@ import java.util.logging.Logger;
 import static java.util.stream.Collectors.toMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.glassfish.hk2.classmodel.reflect.util.ParsingConfig;
+import org.glassfish.hk2.utilities.BuilderHelper;
 
 /**
  * Application Loader is providing useful methods to load applications
@@ -190,6 +193,15 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
     @Inject
     Events events;
+
+    @Inject
+    ConfigSupport configSupport;
+
+    @Inject
+    CommonClassLoaderServiceImpl commonClassLoaderService;
+
+    @Inject
+    PayaraExecutorService executorService;
 
     @Inject
     private HotDeployService hotDeployService;
@@ -647,11 +659,80 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         return appInfo;
     }
 
-    @Override
-    @Deprecated(forRemoval = true)
-    @SuppressWarnings("squid:S2095")
-    public Types getDeployableTypes(DeploymentContext context) throws IOException {
-        throw new IllegalStateException("This method is not supported anymore");
+    /**
+     * Parses an archive with the HK2 class-model parser. Deployment itself uses the {@link JandexIndexer};
+     * this remains for MicroProfile OpenAPI, whose model is built on the HK2 class model.
+     */
+    public Parser getDeployableParser(ReadableArchive source, boolean skipScanExternalLibProp,
+                                      boolean modelUnAnnotatedMembers, StructuredDeploymentTracing tracing, Logger logger)
+            throws java.io.IOException {
+        Parser parser = new Parser(createBuilder(modelUnAnnotatedMembers, logger).build());
+        ReadableArchiveScannerAdapter scannerAdapter = new ReadableArchiveScannerAdapter(parser, source);
+        DeploymentSpan mainScanSpan = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, source.getName());
+        return processParsing(source, skipScanExternalLibProp, tracing, parser, scannerAdapter, mainScanSpan);
+    }
+
+    public Parser processParsing(ReadableArchive source, boolean skipScanExternalLibProp,
+                                 StructuredDeploymentTracing tracing, Parser parser,
+                                 ReadableArchiveScannerAdapter scannerAdapter, DeploymentSpan mainScanSpan)
+            throws IOException {
+        try {
+            parser.parse(scannerAdapter, () -> mainScanSpan.close());
+            for (ReadableArchive externalLibArchive : getExternalLibraries(source, skipScanExternalLibProp)) {
+                ReadableArchiveScannerAdapter libAdapter = null;
+                try {
+                    DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, externalLibArchive.getName());
+                    libAdapter = new ReadableArchiveScannerAdapter(parser, externalLibArchive);
+                    parser.parse(libAdapter, () -> span.close());
+                } finally {
+                    if (libAdapter != null) {
+                        libAdapter.close();
+                    }
+                }
+            }
+            parser.awaitTermination();
+            scannerAdapter.close();
+            return parser;
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public ParsingContext.Builder createBuilder(boolean modelUnAnnotatedMembers, Logger logger) {
+        ResourceLocator locator = determineLocator();
+        // scan the jar and store the result in the deployment context.
+        ParsingContext.Builder parsingContextBuilder = new ParsingContext.Builder()
+                .logger(logger)
+                .executorService(executorService.getUnderlyingExecutorService())
+                .config(new ParsingConfig() {
+                    @Override
+                    public Set<String> getAnnotationsOfInterest() {
+                        return Collections.emptySet();
+                    }
+
+                    @Override
+                    public Set<String> getTypesOfInterest() {
+                        return Collections.emptySet();
+                    }
+
+                    @Override
+                    public boolean modelUnAnnotatedMembers() {
+                        return modelUnAnnotatedMembers;
+                    }
+                });
+        // workaround bug in Builder
+        parsingContextBuilder.locator(locator);
+        return parsingContextBuilder;
+    }
+
+
+
+    private ResourceLocator determineLocator() {
+        if (CommonModelRegistry.getInstance().canLoadResources()) {
+            // common model registry will handle our external class dependencies
+            return null;
+        }
+        return new ClassloaderResourceLocatorAdapter(commonClassLoaderService.getCommonClassLoader());
     }
 
     private void notifyLifecycleInterceptorsBefore(final ExtendedDeploymentContext.Phase phase,
@@ -666,6 +747,23 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
         for (ApplicationLifecycleInterceptor i : alcInterceptors) {
             i.after(phase, dc);
         }
+    }
+
+    private List<ReadableArchive> getExternalLibraries(ReadableArchive source, Boolean skipScanExternalLibProp) throws IOException {
+        List<ReadableArchive> externalLibArchives = new ArrayList<>();
+
+        if (skipScanExternalLibProp) {
+            // if we skip scanning external libraries, we should just
+            // return an empty list here
+            return Collections.emptyList();
+        }
+
+        List<URI> externalLibs = DeploymentUtils.getExternalLibraries(source);
+        for (URI externalLib : externalLibs) {
+            externalLibArchives.add(archiveFactory.openArchive(new File(externalLib.getPath())));
+        }
+
+        return externalLibArchives;
     }
 
     /**
@@ -2478,41 +2576,5 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
     @Override
     public ExtendedDeploymentContext getCurrentDeploymentContext() {
         return DeploymentUtils.getCurrentDeploymentContext();
-    }
-
-    @Deprecated(forRemoval = true)
-    public ParsingContext.Builder createBuilder(boolean modelUnAnnotatedMembers, Logger logger) {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Deprecated(forRemoval = true)
-    public Parser getDeployableParser(ReadableArchive source, boolean skipScanExternalLibProp,
-                                       boolean modelUnAnnotatedMembers, StructuredDeploymentTracing tracing,
-                                       Logger logger, DeploymentContext deploymentContext) throws IOException {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Deprecated(forRemoval = true)
-    public Parser getDeployableParser(ReadableArchive source, boolean skipScanExternalLibProp,
-                                      boolean modelUnAnnotatedMembers, StructuredDeploymentTracing tracing, Logger logger)
-            throws IOException {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Deprecated(forRemoval = true)
-    public Parser processParsing(ReadableArchive source, boolean skipScanExternalLibProp,
-                          StructuredDeploymentTracing tracing, Parser parser,
-                          ReadableArchiveScannerAdapter scannerAdapter, DeploymentSpan mainScanSpan)
-            throws IOException {
-        throw new UnsupportedOperationException("Deprecated");
-    }
-
-    @Deprecated(forRemoval = true)
-    public Parser processParsing(boolean skipScanExternalLibProp,
-                                 StructuredDeploymentTracing tracing, Parser parser,
-                                 ReadableArchiveScannerAdapter scannerAdapter, DeploymentSpan mainScanSpan,
-                                 DeploymentContext deploymentContext)
-            throws IOException {
-        throw new UnsupportedOperationException("Deprecated");
     }
 }
