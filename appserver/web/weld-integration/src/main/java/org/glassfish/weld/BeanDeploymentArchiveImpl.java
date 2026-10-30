@@ -77,7 +77,6 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
-import static java.util.logging.Level.WARNING;
 import static org.glassfish.web.loader.NonCachedJarStreamHandler.forceNonCachedJarURL;
 import static org.glassfish.weld.WeldDeployer.WELD_BOOTSTRAP;
 import static org.glassfish.weld.connector.WeldUtils.*;
@@ -95,7 +94,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
     private final List<String> moduleClassNames; // Names of classes in the module
     private final List<String> beanClassNames; // Names of bean classes in the module
     private transient List<Class<?>> moduleClasses; // Classes in the module
-    private transient List<Class<?>> beanClasses; // Classes identified as Beans through Weld SPI
+    private transient List<Class<?>> beanClasses; // Bean classes that are already loaded, see getLoadedBeanClasses()
     private final List<URL> beansXmlURLs;
     private transient Collection<EjbDescriptor<?>> ejbDescImpls;
     private transient Set<BeanDeploymentArchive> beanDeploymentArchives;
@@ -267,11 +266,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
         }
         return beanClassNames;
-    }
-
-    public Collection<Class<?>> getBeanClassObjects() {
-        initializeFromOriginal();
-        return beanClasses;
     }
 
     public Collection<String> getModuleBeanClasses() {
@@ -689,7 +683,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
     /**
      * Adds the classes of the archive, taken from its class index, as module classes and, if the archive
-     * is a bean archive, those that are beans as bean classes.
+     * is a bean archive, those that are beans as bean classes. Classes are not loaded here: Weld loads the
+     * ones it needs through its fast bootstrap path, see {@link org.glassfish.weld.services.JandexClassFileServices}.
      */
     private void addClassNamesFromIndex(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml) {
         JandexIndexer.Index index = Globals.get(JandexIndexer.class).getIndex(context, archive.getURI());
@@ -699,17 +694,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             return;
         }
         for (String className : index.getKnownClassNames()) {
-            try {
-                if (isBeanArchive && (hasBeansXml || isCDIAnnotatedClass(className))) {
-                    beanClasses.add(getClassLoader().loadClass(className));
-                    beanClassNames.add(className);
-                }
-                moduleClassNames.add(className);
-            } catch (Throwable t) {
-                if (logger.isLoggable(WARNING)) {
-                    logger.log(WARNING, CDILoggerInfo.ERROR_LOADING_BEAN_CLASS, new Object[]{className, t.toString()});
-                }
+            if (isBeanArchive && (hasBeansXml || isCDIAnnotatedClass(className))) {
+                beanClassNames.add(className);
             }
+            moduleClassNames.add(className);
         }
     }
 
@@ -874,11 +862,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
         if (this == o) return true;
         if (!(o instanceof BeanDeploymentArchiveImpl)) return false;
         BeanDeploymentArchiveImpl that = (BeanDeploymentArchiveImpl) o;
-        return Objects.equals(id, that.id) && Objects.equals(beanClasses, that.beanClasses);
+        return Objects.equals(id, that.id) && Objects.equals(beanClassNames, that.beanClassNames);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, beanClasses);
+        return Objects.hash(id, beanClassNames);
     }
 }

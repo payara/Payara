@@ -154,7 +154,7 @@ public class RootBeanDeploymentArchiveTest {
         assertEquals("root_" + archiveName, rootBeanDeploymentArchive.getId());
         assertEquals(WeldUtils.BDAType.UNKNOWN, rootBeanDeploymentArchive.getBDAType());
         assertEquals(0, rootBeanDeploymentArchive.getBeanClasses().size());
-        assertEquals(0, rootBeanDeploymentArchive.getBeanClassObjects().size());
+        assertEquals(0, rootBeanDeploymentArchive.getLoadedBeanClasses().size());
         assertNull(rootBeanDeploymentArchive.getBeansXml());
 
         BeanDeploymentArchiveImpl moduleBda = (BeanDeploymentArchiveImpl) rootBeanDeploymentArchive.getModuleBda();
