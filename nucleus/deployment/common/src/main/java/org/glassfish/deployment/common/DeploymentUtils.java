@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2018-2024] Payara Foundation and/or affiliates
+// Portions Copyright [2018-2026] Payara Foundation and/or affiliates
 
 package org.glassfish.deployment.common;
 
@@ -55,6 +55,7 @@ import fish.payara.enterprise.config.serverbeans.DeploymentGroup;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 
@@ -118,10 +119,12 @@ public class DeploymentUtils {
     public static class WarLibraryDescriptor {
         private final Descriptor descriptor;
         private final List<Type> types;
+        private final Types deploymentTypes;
 
-        public WarLibraryDescriptor(Descriptor descriptor, List<Type> types) {
+        public WarLibraryDescriptor(Descriptor descriptor, List<Type> types, Types deploymentTypes) {
             this.descriptor = descriptor;
             this.types = types;
+            this.deploymentTypes = deploymentTypes;
         }
 
         public Descriptor getDescriptor() {
@@ -130,6 +133,13 @@ public class DeploymentUtils {
 
         public List<Type> getTypes() {
             return types;
+        }
+
+        /**
+         * @return the Types model the war library was scanned into
+         */
+        public Types getDeploymentTypes() {
+            return deploymentTypes;
         }
     }
 
