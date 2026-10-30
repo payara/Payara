@@ -1252,16 +1252,7 @@ public class WsUtil {
             is = httpUrl.openStream();
 
             os = new FileOutputStream(toFile, true);
-            int readCount;
-            byte[] buffer = new byte[10240]; // Read 10KB at a time
-            while(true) {
-                readCount = is.read(buffer, 0, 10240);
-                if(readCount != -1) {
-                    os.write(buffer, 0, readCount);
-                } else {
-                    break;
-                }
-            }
+            is.transferTo(os);
         } finally {
             if(is != null) {
                 is.close();

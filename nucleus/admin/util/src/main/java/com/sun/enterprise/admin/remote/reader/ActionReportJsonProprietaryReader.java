@@ -42,9 +42,9 @@
 package com.sun.enterprise.admin.remote.reader;
 
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
-import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -86,9 +86,7 @@ public class ActionReportJsonProprietaryReader implements ProprietaryReader<Acti
 
     @Override
     public ActionReport readFrom(final InputStream is, final String contentType) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        FileUtils.copy(is, baos, 0);
-        String str = baos.toString("UTF-8");
+        String str = new String(is.readAllBytes(), StandardCharsets.UTF_8);
         try (JsonParser parser = Json.createParser(new StringReader(str))) {
             parser.next();
             JsonObject json = parser.getObject();

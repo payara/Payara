@@ -75,7 +75,7 @@ public class HandleDelegateClassLoader
         }
 
         InputStream is = null;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try {
             // read the bytes for IIOPHandleDelegate.class
             ClassLoader resCl = Thread.currentThread().getContextClassLoader();
             if (Thread.currentThread().getContextClassLoader() == null)  {
@@ -83,13 +83,7 @@ public class HandleDelegateClassLoader
             }
             is = resCl.getResourceAsStream("org/glassfish/enterprise/iiop/impl/IIOPHandleDelegate.class");
 
-            byte[] buf = new byte[4096]; // currently IIOPHandleDelegate is < 4k
-            int nread = 0;
-            while ( (nread = is.read(buf, 0, buf.length)) != -1 ) {
-                baos.write(buf, 0, nread);
-            }
-
-            byte[] buf2 = baos.toByteArray();
+            byte[] buf2 = is.readAllBytes();
             
             handleDelClass = defineClass(
             "org.glassfish.enterprise.iiop.impl.IIOPHandleDelegate",

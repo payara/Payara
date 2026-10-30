@@ -254,14 +254,7 @@ public class JavaClientGenerator extends ClientGenerator {
             target.putNextEntry(entry);
             in = new BufferedInputStream(new FileInputStream(source));
 
-            byte[] buffer = new byte[1024];
-            while (true) {
-                int count = in.read(buffer);
-                if (count == -1) {
-                    break;
-                }
-                target.write(buffer, 0, count);
-            }
+            in.transferTo(target);
             target.closeEntry();
         } finally {
             if (in != null) {

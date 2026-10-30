@@ -6404,13 +6404,7 @@ public class StandardContext
         try {
             is = new FileInputStream(src);
             os = new FileOutputStream(dest);
-            byte[] buf = new byte[4096];
-            while (true) {
-                int len = is.read(buf);
-                if (len < 0)
-                    break;
-                os.write(buf, 0, len);
-            }
+            is.transferTo(os);
             is.close();
             os.close();
         } catch (IOException e) {

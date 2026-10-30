@@ -108,10 +108,7 @@ public class IOTools {
      */
     public static void flow( InputStream is, OutputStream os, byte[] buf ) 
         throws IOException {
-        int numRead;
-        while ( (numRead = is.read(buf) ) >= 0) {
-            os.write(buf, 0, numRead);
-        }
+        is.transferTo(os);
     }  
 
     /**
