@@ -446,7 +446,7 @@ public class SSHLauncher {
 
     private int runCommandAsIs(String command, OutputStream os, List<String> stdinLines)
             throws IOException, InterruptedException {
-        logger.fine("Running command on " + host + ": " + command);
+        logger.fine("Running command on " + host + ": " + SSHUtil.redactCommand(command));
 
         SshClient client = buildClient();
         try {
@@ -477,7 +477,7 @@ public class SSHLauncher {
                                List<String> stdinLines, String[] env)
             throws IOException, InterruptedException {
         if (logger.isLoggable(Level.FINER)) {
-            logger.finer("Running command " + command + " on host: " + host);
+            logger.finer("Running command " + SSHUtil.redactCommand(command) + " on host: " + host);
         }
 
         SshClient client = buildClient();
@@ -510,7 +510,7 @@ public class SSHLauncher {
 
     int exec(ClientSession session, String command, OutputStream os, InputStream is)
             throws IOException, InterruptedException {
-        logger.finer("Executing: " + command);
+        logger.finer("Executing: " + SSHUtil.redactCommand(command));
         ChannelExec channel = session.createExecChannel(command);
         try {
             channel.setOut(os);
@@ -538,7 +538,7 @@ public class SSHLauncher {
             logger.finer("waitFor returned events=" + events);
 
             if (events.contains(ClientChannelEvent.TIMEOUT)) {
-                logger.warning("Command timed out: " + command);
+                logger.warning("Command timed out: " + SSHUtil.redactCommand(command));
             }
 
             Integer exitStatus = channel.getExitStatus();

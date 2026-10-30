@@ -53,6 +53,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
 
 import org.glassfish.cluster.ssh.launcher.SSHLauncher;
+import org.glassfish.cluster.ssh.util.SSHUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.ByteArrayOutputStream;
@@ -118,7 +119,7 @@ public class NodeRunnerSsh  {
         fullcommand.addAll(args);
 
         try {
-            lastCommandRun = commandListToString(fullcommand);
+            lastCommandRun = commandListToString(SSHUtil.redactCommand(fullcommand));
             logger.fine("Preparing SSH command on " + node.getNodeHost()
                     + " (windows=" + isWindowsInstallDir(installDir) + "): " + lastCommandRun);
 

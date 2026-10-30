@@ -45,7 +45,10 @@ import com.sun.enterprise.util.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import org.glassfish.api.admin.CommandException;
 
@@ -55,6 +58,34 @@ import org.glassfish.api.admin.CommandException;
 public class SSHUtil {
 
     private static final String NL = System.getProperty("line.separator");
+    private static final List<String> SENSITIVE_OPTIONS = List.of("--windowspassword");
+    private static final String REDACTED = "********";
+    private static final Pattern SENSITIVE_OPTION_VALUE = Pattern.compile(
+            "(" + String.join("|", SENSITIVE_OPTIONS) + ")([ =])(\"[^\"]*\"|'[^']*'|\\S+)");
+
+    public static List<String> redactCommand(List<String> command) {
+        List<String> redacted = new ArrayList<>(command.size());
+        boolean redactNext = false;
+        for (String arg : command) {
+            if (redactNext) {
+                redacted.add(REDACTED);
+                redactNext = false;
+            } else if (SENSITIVE_OPTIONS.contains(arg)) {
+                redacted.add(arg);
+                redactNext = true;
+            } else {
+                redacted.add(redactCommand(arg));
+            }
+        }
+        return redacted;
+    }
+
+    public static String redactCommand(String command) {
+        if (command == null) {
+            return null;
+        }
+        return SENSITIVE_OPTION_VALUE.matcher(command).replaceAll("$1$2" + REDACTED);
+    }
 
     /**
      * Convert empty string to null.
