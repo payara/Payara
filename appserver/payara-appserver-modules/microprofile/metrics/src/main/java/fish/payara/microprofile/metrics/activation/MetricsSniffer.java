@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.JandexIndexer;
-import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.jvnet.hk2.annotations.Service;
 
 import fish.payara.microprofile.connector.MicroProfileSniffer;
@@ -88,14 +87,8 @@ public class MetricsSniffer extends MicroProfileSniffer {
 
     @Override
     public boolean handles(DeploymentContext context) {
-        Index index = jandexIndexer.getRootIndex(context);
-        if (index != null) {
-            if (!index.getIndex().getAnnotations(MetricRegistry.class).isEmpty()) {
-                return true;
-            }
-            if (!index.getIndex().getAnnotations(Metric.class).isEmpty()) {
-                return true;
-            }
+        if (jandexIndexer.references(context, MetricRegistry.class.getName(), Metric.class.getName())) {
+            return true;
         }
 
         return super.handles(context);

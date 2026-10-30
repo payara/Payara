@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) [2020-2025] Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) [2020-2026] Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.deployment.JandexIndexer;
-import org.glassfish.internal.deployment.JandexIndexer.Index;
 import org.glassfish.weld.WeldDeployer;
 import org.jvnet.hk2.annotations.Service;
 
@@ -71,18 +70,14 @@ public class ConfigDeployer extends MicroProfileDeployer<ConfigContainer, Config
 
         // Perform annotation scanning to see if CDI extension is required here
         // This is performed here so that the ApplicationContainer executes regardless of CDI extension state
-        Index index = jandexIndexer.getRootIndex(deploymentContext);
-        if (index != null) {
-            boolean found = false;
-            found |= !index.getIndex().getAnnotations(ConfigProperty.class).isEmpty();
-            found |= !index.getIndex().getAnnotations(ConfigProperties.class).isEmpty();
-            found |= !index.getIndex().getAnnotations(Config.class).isEmpty();
-            if (found) {
-                // Register the CDI extension
-                final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
-                if (snifferExtensions != null) {
-                    snifferExtensions.add(ConfigCdiExtension::new);
-                }
+        // The annotations that denote a Config API enabled application
+        boolean annotationFound = jandexIndexer.getAllIndexes(deploymentContext).values().stream()
+                .anyMatch(index -> index.hasAnnotations(ConfigProperty.class.getName(), ConfigProperties.class.getName()));
+        if (annotationFound || jandexIndexer.references(deploymentContext, Config.class.getName())) {
+            // Register the CDI extension
+            final Collection<Supplier<Extension>> snifferExtensions = deploymentContext.getTransientAppMetaData(WeldDeployer.SNIFFER_EXTENSIONS, Collection.class);
+            if (snifferExtensions != null) {
+                snifferExtensions.add(ConfigCdiExtension::new);
             }
         }
 

@@ -77,6 +77,8 @@ import java.util.logging.Logger;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
+import static java.util.logging.Level.WARNING;
+import static org.glassfish.web.loader.NonCachedJarStreamHandler.forceNonCachedJarURL;
 import static org.glassfish.weld.WeldDeployer.WELD_BOOTSTRAP;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
@@ -500,7 +502,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
             if (webinfbda) {
                 bdaType = BDAType.WAR;
-                addClassNamesFromIndex(archive, hasBeansXml);
+                addClassNamesFromIndex(archive, true, hasBeansXml);
+                if (beansXMLURL != null) {
+                    addBeansXMLURL(archive, beansXMLURL);
+                }
             }
 
             // If this archive has WEB-INF/lib entry..
@@ -671,15 +676,22 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
 
     private void collectJarInfo(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml)
             throws IOException, ClassNotFoundException {
-        if (archive != null && isBeanArchive) {
+        if (archive != null) {
             if (logger.isLoggable(FINE)) {
                 logger.log(FINE, CDILoggerInfo.COLLECTING_JAR_INFO, new Object[]{archive.getURI()});
             }
-            addClassNamesFromIndex(archive, hasBeansXml);
+            addClassNamesFromIndex(archive, isBeanArchive, hasBeansXml);
+            if (archive.exists(META_INF_BEANS_XML)) {
+                addBeansXMLURL(archive, META_INF_BEANS_XML);
+            }
         }
     }
 
-    private void addClassNamesFromIndex(ReadableArchive archive, boolean hasBeansXml) {
+    /**
+     * Adds the classes of the archive, taken from its class index, as module classes and, if the archive
+     * is a bean archive, those that are beans as bean classes.
+     */
+    private void addClassNamesFromIndex(ReadableArchive archive, boolean isBeanArchive, boolean hasBeansXml) {
         JandexIndexer.Index index = Globals.get(JandexIndexer.class).getIndex(context, archive.getURI());
         if (index == null) {
             logger.log(SEVERE, CDILoggerInfo.SEVERE_ERROR_READING_ARCHIVE,
@@ -687,10 +699,17 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             return;
         }
         for (String className : index.getKnownClassNames()) {
-            if (hasBeansXml || isCDIAnnotatedClass(className)) {
-                beanClassNames.add(className);
+            try {
+                if (isBeanArchive && (hasBeansXml || isCDIAnnotatedClass(className))) {
+                    beanClasses.add(getClassLoader().loadClass(className));
+                    beanClassNames.add(className);
+                }
+                moduleClassNames.add(className);
+            } catch (Throwable t) {
+                if (logger.isLoggable(WARNING)) {
+                    logger.log(WARNING, CDILoggerInfo.ERROR_LOADING_BEAN_CLASS, new Object[]{className, t.toString()});
+                }
             }
-            moduleClassNames.add(className);
         }
     }
 
@@ -699,7 +718,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             logger.log(FINE, CDILoggerInfo.COLLECTING_RAR_INFO, new Object[]{archive.getURI()});
         }
         Enumeration<String> entries = archive.entries();
-        addClassNamesFromIndex(archive, false);
+        addClassNamesFromIndex(archive, true, true);
+        if (archive.exists(META_INF_BEANS_XML)) {
+            addBeansXMLURL(archive, META_INF_BEANS_XML);
+        }
         while (entries.hasMoreElements()) {
             String entry = entries.nextElement();
             if (entry.endsWith(JAR_SUFFIX)) {
@@ -795,7 +817,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive, Seriali
             file = new File(file, beansXMLPath);
             url = file.toURI().toURL();
         } else {
-            url = new URL("jar:" + file.toURI() + "!/" + beansXMLPath);
+            url = forceNonCachedJarURL(new URL("jar:" + file.toURI() + "!/" + beansXMLPath));
         }
 
         return url;

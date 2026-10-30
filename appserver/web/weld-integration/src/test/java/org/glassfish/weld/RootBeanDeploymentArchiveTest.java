@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+// Portions Copyright [2016-2026] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -46,6 +46,10 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.JandexIndexer;
+import org.jboss.jandex.Index;
 import org.glassfish.weld.connector.WeldUtils;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
@@ -115,8 +119,6 @@ public class RootBeanDeploymentArchiveTest {
         expect(subArchive2.getURI()).andReturn(webInfLib2URI).anyTimes();
         expect(beansXML.getBeanDiscoveryMode()).andReturn(BeanDiscoveryMode.ALL).anyTimes();
 
-        expect(readableArchive.entries()).andReturn(Collections.<String>emptyEnumeration());
-        readableArchive.close();
 
         expect(readableArchive.exists(WeldUtils.WEB_INF_LIB)).andReturn(true).anyTimes();
         expect(readableArchive.entries(WeldUtils.WEB_INF_LIB)).andReturn(Collections.enumeration(webInfLibEntries));
@@ -126,6 +128,18 @@ public class RootBeanDeploymentArchiveTest {
 
         expect(readableArchive.getSubArchive(webInfLib2)).andReturn(subArchive2);
         expect(subArchive2.exists(WeldUtils.META_INF_BEANS_XML)).andReturn(true);
+
+        // class indexes of the archives, as built by the deployment
+        JandexIndexer jandexIndexer = mockSupport.createMock(JandexIndexer.class);
+        expect(jandexIndexer.getIndex(deploymentContext, URI.create("an.war")))
+                .andReturn(new JandexIndexer.Index(Index.of(Collections.<Class<?>>emptyList()))).anyTimes();
+        expect(jandexIndexer.getIndex(deploymentContext, webInfLib1URI))
+                .andReturn(new JandexIndexer.Index(Index.of(Lib1Class1.class, Lib1Class2.class))).anyTimes();
+        expect(jandexIndexer.getIndex(deploymentContext, webInfLib2URI))
+                .andReturn(new JandexIndexer.Index(Index.of(Lib2Class1.class, Lib2Class2.class))).anyTimes();
+        ServiceLocator serviceLocator = mockSupport.createMock(ServiceLocator.class);
+        expect(serviceLocator.getService(JandexIndexer.class)).andReturn(jandexIndexer).anyTimes();
+        Globals.setDefaultHabitat(serviceLocator);
 
         // build new BeanDeploymentArchiveImpl for lib1 and lib2
         setupMocksForWebInfLibBda(subArchive1, subArchive11Name, lib1ClassNames);
@@ -159,6 +173,7 @@ public class RootBeanDeploymentArchiveTest {
 
         mockSupport.verifyAll();
         mockSupport.resetAll();
+        Globals.setDefaultHabitat(null);
     }
 
     private void setupMocksForWebInfLibBda(ReadableArchive libJarArchive,
@@ -170,7 +185,6 @@ public class RootBeanDeploymentArchiveTest {
         expect(libJarArchive.exists(WeldUtils.WEB_INF_CLASSES)).andReturn(false).anyTimes();
         expect(libJarArchive.exists(WeldUtils.WEB_INF_LIB)).andReturn(false).anyTimes();
         expect(libJarArchive.exists(WeldUtils.META_INF_BEANS_XML)).andReturn(true).anyTimes();
-        expect(libJarArchive.entries()).andReturn(Collections.enumeration(archiveClassNames));
         libJarArchive.close();
     }
 

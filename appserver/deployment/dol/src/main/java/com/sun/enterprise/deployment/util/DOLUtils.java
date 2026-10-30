@@ -596,9 +596,6 @@ public class DOLUtils {
         Properties appProps = archive.getParentArchive().getArchiveMetaData(DeploymentProperties.APP_PROPS, Properties.class);
         ExtendedDeploymentContext context = new DeploymentContextImpl(null, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
         context.setParentContext(habitat.getService(Deployment.class).getCurrentDeploymentContext());
-        for (var entry : habitat.getService(Deployment.class).getCurrentDeploymentContext().getTransientAppMetadata().entrySet()) {
-            context.addTransientAppMetaData(entry.getKey(), entry.getValue());
-        }
         if (appProps != null) {
             context.getAppProps().putAll(appProps);
         }

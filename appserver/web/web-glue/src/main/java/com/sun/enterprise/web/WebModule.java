@@ -126,7 +126,8 @@ import org.glassfish.embeddable.web.config.LoginConfig;
 import org.glassfish.embeddable.web.config.SecurityConfig;
 import org.glassfish.embeddable.web.config.TransportGuarantee;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.common.Role;
 import org.glassfish.web.LogFacade;
@@ -614,12 +615,11 @@ public class WebModule extends PwcWebModule implements Context {
     }
 
     @Override
-    protected Types getTypes() {
-        if (wmInfo.getDeploymentContext()!=null) {
-            throw new IllegalStateException("getTypes() should not be called on a WebModule");
-        } else {
-            return null;
+    protected Map<String, JandexIndexer.Index> getClassIndexes() {
+        if (wmInfo.getDeploymentContext() != null) {
+            return Globals.get(JandexIndexer.class).getAllIndexes(wmInfo.getDeploymentContext());
         }
+        return null;
     }
 
     @Override

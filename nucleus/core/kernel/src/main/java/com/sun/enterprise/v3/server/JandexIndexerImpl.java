@@ -53,6 +53,7 @@ import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.DeploymentTracing;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.deployment.analysis.DeploymentSpan;
 import org.glassfish.internal.deployment.analysis.StructuredDeploymentTracing;
@@ -98,7 +99,7 @@ import java.util.zip.GZIPOutputStream;
  * Builds the Jandex indexes of a deployment, see {@link JandexIndexer}.
  * <p>
  * The root archive is indexed together with all nested archives (jars in WEB-INF/lib, EAR
- * modules and libraries), the nested ones in parallel. Indexes of library jars are cached under
+ * modules and libraries) in parallel. Indexes of library jars are cached under
  * {@code <instance-root>/jandex-cache}, keyed by jar name, size and checksum; cache files
  * are written once the deployment has succeeded.
  */
@@ -112,6 +113,8 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     private static final String PREBUILT_INDEX = "META-INF/jandex.idx";
     /** nested archive entries */
     private static final Pattern ARCHIVE_ENTRY = Pattern.compile("\\.([jwr]ar)$");
+    /** expanded module directories inside an expanded EAR, e.g. {@code ejb_jar} */
+    private static final Pattern EXPANDED_MODULE = Pattern.compile("_[jwr]ar$");
 
     @Inject
     private ArchiveFactory archiveFactory;
@@ -147,16 +150,16 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
         }
         if (DeploymentUtils.useWarLibraries(deploymentContext)) {
             for (String warLibrary : DeploymentUtils.getWarLibraryCache().keySet()) {
-                resolve(deploymentContext, indexes, Path.of(warLibrary).toUri(), tracing);
+                resolve(indexes, Path.of(warLibrary).toUri(), tracing);
             }
         }
         if (!Boolean.parseBoolean(deploymentContext.getAppProps().getProperty(DeploymentProperties.SKIP_SCAN_EXTERNAL_LIB))) {
             try {
                 for (URI externalLibrary : DeploymentUtils.getExternalLibraries(source)) {
-                    resolve(deploymentContext, indexes, externalLibrary, tracing);
+                    resolve(indexes, externalLibrary, tracing);
                 }
                 for (URI externalLibrary : deploymentContext.getAppLibs()) {
-                    resolve(deploymentContext, indexes, externalLibrary, tracing);
+                    resolve(indexes, externalLibrary, tracing);
                 }
             } catch (URISyntaxException e) {
                 LOGGER.log(Level.WARNING, e, () -> "Unable to determine the external libraries of " + source.getName());
@@ -178,7 +181,7 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
 
     @Override
     public Index getIndex(DeploymentContext deploymentContext, URI archive) {
-        Map.Entry<String, Index> resolved = resolve(deploymentContext, indexes(deploymentContext), archive, null);
+        Map.Entry<String, Index> resolved = resolve(indexes(deploymentContext), archive, null);
         return resolved == null ? null : resolved.getValue();
     }
 
@@ -187,7 +190,7 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
         Map<String, Index> indexes = indexes(deploymentContext);
         Map<String, Index> result = new LinkedHashMap<>();
         for (URI archive : archives) {
-            Map.Entry<String, Index> resolved = resolve(deploymentContext, indexes, archive, null);
+            Map.Entry<String, Index> resolved = resolve(indexes, archive, null);
             if (resolved != null) {
                 result.put(resolved.getKey(), resolved.getValue());
             }
@@ -197,12 +200,8 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
 
     @Override
     public boolean hasAnyAnnotations(DeploymentContext deploymentContext, Collection<URI> archives, String... annotationNames) {
-        Map<String, Index> indexes = findIndexes(deploymentContext);
-        if (indexes == null) {
-            return false;
-        }
         for (URI archive : archives) {
-            Index index = indexes.get(key(archive));
+            Index index = getIndex(deploymentContext, archive);
             if (index != null && index.hasAnnotations(annotationNames)) {
                 return true;
             }
@@ -216,29 +215,33 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
             for (Runnable write; (write = pendingCacheWrites.poll()) != null;) {
                 executorService.submit(write);
             }
+        } else if (event.is(Deployment.DEPLOYMENT_FAILURE)) {
+            pendingCacheWrites.clear();
         }
     }
 
     private void indexRootArchive(ReadableArchive source, Map<String, Index> indexes,
                                   StructuredDeploymentTracing tracing) throws IOException {
         List<String> entries = Collections.list(source.entries());
-        Set<String> subArchives = new LinkedHashSet<>();
-        // modules expanded next to their archive are indexed through the archive
-        Set<String> expandedEntries = new HashSet<>();
+        Set<String> expandedModules = new HashSet<>();
+        for (String entry : entries) {
+            if (!entry.contains("/") && EXPANDED_MODULE.matcher(entry).find() && source.isDirectory(entry)) {
+                expandedModules.add(entry);
+            }
+        }
+        Set<String> subArchives = new LinkedHashSet<>(expandedModules);
         for (String entry : entries) {
             Matcher matcher = ARCHIVE_ENTRY.matcher(entry);
-            if (matcher.find()) {
+            if (matcher.find() && !source.isDirectory(entry)
+                    // prefer the expanded module directory over the module archive it was expanded from
+                    && !expandedModules.contains(entry.substring(0, matcher.start()) + "_" + matcher.group(1))) {
                 subArchives.add(entry);
-                String expanded = entry.substring(0, matcher.start()) + "_" + matcher.group(1);
-                if (source.isDirectory(expanded)) {
-                    expandedEntries.add(expanded + "/");
-                }
             }
         }
         Index rootIndex = readPrebuiltIndex(source);
         if (rootIndex == null) {
             rootIndex = new Index(JandexIndexer.indexArchive(source,
-                    entry -> expandedEntries.stream().noneMatch(entry::startsWith)));
+                    entry -> expandedModules.stream().noneMatch(module -> entry.startsWith(module + "/"))));
         }
         indexes.put(key(source.getURI()), rootIndex);
         indexSubArchives(source, subArchives, indexes, tracing);
@@ -266,31 +269,37 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     }
 
     private void indexSubArchive(ReadableArchive parent, String name, Map<String, Index> indexes,
-                                 StructuredDeploymentTracing tracing) throws IOException {
+                                 StructuredDeploymentTracing tracing) {
         try (ReadableArchive subArchive = parent.getSubArchive(name)) {
             if (subArchive != null) {
                 try (DeploymentSpan span = tracing.startSpan(DeploymentTracing.AppStage.CLASS_SCANNING, subArchive.getName())) {
                     indexes.computeIfAbsent(key(subArchive.getURI()), key -> indexOrGetFromCache(subArchive));
                 }
             }
+        } catch (IOException | RuntimeException e) {
+            LOGGER.log(Level.WARNING, e, () -> "Unable to index " + name + " in " + parent.getName()
+                    + ", it will be ignored for annotation scanning");
         }
     }
 
     /**
-     * Resolve the index for an archive URI: the archive itself, the root archive for a directory inside the
-     * deployment, a shared WAR library, or an archive that is indexed on demand.
+     * Resolve the index for an archive URI: the archive itself, the archive enclosing a directory URI
+     * (e.g. {@code WEB-INF/classes}), a shared WAR library, or an archive that is indexed on demand.
      */
-    private Map.Entry<String, Index> resolve(DeploymentContext deploymentContext, Map<String, Index> indexes, URI uri,
-                                             StructuredDeploymentTracing tracing) {
+    private Map.Entry<String, Index> resolve(Map<String, Index> indexes, URI uri, StructuredDeploymentTracing tracing) {
         String key = key(uri);
         Index index = indexes.get(key);
         if (index != null) {
             return Map.entry(key, index);
         }
-        if (key.endsWith("/")) {
-            String rootKey = key(deploymentContext.getSource().getURI());
-            Index rootIndex = indexes.get(rootKey);
-            return rootIndex == null ? null : Map.entry(rootKey, rootIndex);
+        String enclosing = null;
+        for (String candidate : indexes.keySet()) {
+            if (key.startsWith(candidate + "/") && (enclosing == null || candidate.length() > enclosing.length())) {
+                enclosing = candidate;
+            }
+        }
+        if (enclosing != null) {
+            return Map.entry(enclosing, indexes.get(enclosing));
         }
         DeploymentUtils.WarLibraryDescriptor warLibrary = DeploymentUtils.getWarLibraryCache().get(uri.getPath());
         if (warLibrary != null && warLibrary.getIndex() != null) {
@@ -397,11 +406,18 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     }
 
     /**
-     * @return the indexes of the deployment, or null if it was not indexed
+     * @return the indexes of the deployment, walking up to the parent context for sub-module contexts, or null
      */
     @SuppressWarnings("unchecked")
     private static Map<String, Index> findIndexes(DeploymentContext deploymentContext) {
-        return deploymentContext.getTransientAppMetaData(INDEX_METADATA_KEY, Map.class);
+        for (DeploymentContext context = deploymentContext; context != null;
+             context = context instanceof ExtendedDeploymentContext ? ((ExtendedDeploymentContext) context).getParentContext() : null) {
+            Map<String, Index> indexes = context.getTransientAppMetaData(INDEX_METADATA_KEY, Map.class);
+            if (indexes != null) {
+                return indexes;
+            }
+        }
+        return null;
     }
 
     /**
@@ -423,9 +439,15 @@ public class JandexIndexerImpl implements JandexIndexer, EventListener {
     }
 
     /**
-     * @return map key of an archive URI
+     * Normalized map key of an archive URI: {@code file:/} and {@code file:///} spellings and trailing
+     * slashes of directory URIs are unified.
      */
     static String key(URI uri) {
-        return uri.toString();
+        String path = uri.getRawPath();
+        String key = path == null ? uri.toString() : uri.getScheme() + ":" + path;
+        while (key.length() > 1 && key.endsWith("/")) {
+            key = key.substring(0, key.length() - 1);
+        }
+        return key;
     }
 }

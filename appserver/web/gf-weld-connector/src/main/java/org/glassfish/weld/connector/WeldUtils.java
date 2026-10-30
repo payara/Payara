@@ -48,9 +48,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import jakarta.decorator.Decorator;
@@ -70,10 +73,12 @@ import javax.xml.parsers.SAXParserFactory;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.deployment.JandexIndexer;
 import org.glassfish.internal.deployment.JandexIndexer.Index;
+import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.xml.sax.Attributes;
@@ -82,7 +87,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.function.BooleanSupplier;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WeldUtils {
 
@@ -243,28 +248,56 @@ public class WeldUtils {
             return annotations;
         }
         IndexView index = indexer().getCompositeIndex(context);
-        Set<String> result = new HashSet<>();
-        for (String annotation : index.getKnownClasses().stream()
+        ClassLoader classLoader = getClassLoader(context);
+        Map<String, Boolean> known = new HashMap<>();
+        annotations = index.getKnownClasses().stream()
                 .flatMap(classInfo -> classInfo.annotationsMap().keySet().stream())
-                .map(DotName::toString).collect(Collectors.toSet())) {
-            if (cdiEnablingAnnotations.contains(annotation)) {
-                result.add(annotation);
-                continue;
-            }
-            try {
-                for (Annotation meta : context.getClassLoader().loadClass(annotation).getAnnotations()) {
-                    if (cdiEnablingAnnotations.contains(meta.annotationType().getName())) {
-                        result.add(annotation);
-                        break;
-                    }
-                }
-            } catch (ClassNotFoundException | LinkageError e) {
-                // not an annotation type the application can see
-            }
-        }
-        annotations = result.toArray(new String[0]);
+                .map(DotName::toString)
+                .distinct()
+                .filter(annotation -> isCDIEnablingAnnotation(annotation, index, classLoader, known))
+                .toArray(String[]::new);
         context.addTransientAppMetaData(CDI_ENABLING_ANNOTATIONS_CACHE_METADATA, annotations);
         return annotations;
+    }
+
+    /**
+     * Determine if the specified annotation type is a CDI-enabling annotation
+     *
+     * @param annotation  The annotation type name to check
+     * @param index       The class index of the application, used to look up the annotation's meta-annotations
+     * @param classLoader Used to look up meta-annotations of annotation types outside the application
+     * @param known       Memoized results, also guarding against cyclic meta-annotations
+     * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
+     */
+    private static boolean isCDIEnablingAnnotation(String annotation, IndexView index, ClassLoader classLoader,
+                                                   Map<String, Boolean> known) {
+        if (cdiEnablingAnnotations.contains(annotation)) {
+            return true;
+        }
+        Boolean result = known.get(annotation);
+        if (result == null) {
+            known.put(annotation, false);
+            result = getMetaAnnotations(annotation, index, classLoader)
+                    .anyMatch(meta -> isCDIEnablingAnnotation(meta, index, classLoader, known));
+            known.put(annotation, result);
+        }
+        return result;
+    }
+
+    private static Stream<String> getMetaAnnotations(String annotation, IndexView index, ClassLoader classLoader) {
+        ClassInfo classInfo = index.getClassByName(annotation);
+        if (classInfo != null) {
+            return classInfo.declaredAnnotations().stream().map(meta -> meta.name().toString());
+        }
+        if (classLoader == null || annotation.startsWith("java.")) {
+            return Stream.empty();
+        }
+        try {
+            return Arrays.stream(classLoader.loadClass(annotation).getAnnotations())
+                    .map(meta -> meta.annotationType().getName());
+        } catch (ClassNotFoundException | LinkageError e) {
+            return Stream.empty();
+        }
     }
 
     /**
@@ -304,6 +337,21 @@ public class WeldUtils {
         return Globals.get(JandexIndexer.class);
     }
 
+    /**
+     * @return the application's class loader, or the common class loader while the application
+     * class loader does not exist yet (e.g. when sniffers run before the prepare phase)
+     */
+    private static ClassLoader getClassLoader(DeploymentContext context) {
+        try {
+            ClassLoader classLoader = context.getClassLoader();
+            if (classLoader != null) {
+                return classLoader;
+            }
+        } catch (RuntimeException e) {
+            logger.log(Level.FINEST, "No deployment class loader available yet", e);
+        }
+        return Globals.get(ClassLoaderHierarchy.class).getCommonClassLoader();
+    }
 
     /**
      * Determine whether the specified class is annotated with a CDI scope annotation.

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2020] Payara Foundation and/or affiliates
+// Portions Copyright [2020-2026] Payara Foundation and/or affiliates
 
 package com.sun.enterprise.deployment.util;
 
@@ -45,14 +45,16 @@ import com.sun.enterprise.deployment.annotation.introspection.AnnotationScanner;
 import com.sun.enterprise.deployment.annotation.introspection.ClassFile;
 import com.sun.enterprise.deployment.annotation.introspection.ConstantPoolInfo;
 import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.classmodel.reflect.*;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.JandexIndexer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Enumeration;
-import java.util.Collection;
 import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
@@ -76,15 +78,12 @@ public class AnnotationDetector {
     }
     
     public boolean hasAnnotationInArchiveWithNoScanning(ReadableArchive archive) throws IOException {
-        Types types = null;
-        if (archive.getParentArchive() != null) {
-            types = archive.getParentArchive().getExtraData(Types.class);
-        } else {
-            types = archive.getExtraData(Types.class);
-        }
+        DeploymentContext deploymentContext = DeploymentUtils.getCurrentDeploymentContext();
+        JandexIndexer indexer = deploymentContext == null || Globals.getDefaultHabitat() == null
+                ? null : Globals.getDefaultHabitat().getService(JandexIndexer.class);
 
         // we are on the client side so we need to scan annotations
-        if (types == null) {
+        if (indexer == null) {
             return hasAnnotationInArchive(archive);
         }
 
@@ -96,30 +95,11 @@ public class AnnotationDetector {
             DOLUtils.getDefaultLogger().log(Level.WARNING, e.getMessage(), e);
         }
 
-
         // force populating the annotations field in the scanner
         scanner.isAnnotation("foo");
 
         Set<String> annotations = scanner.getAnnotations();
-        if (annotations == null) {
-            return false;
-        }
-
-        for (String annotationType : annotations)  {
-            Type type = types.getBy(annotationType);
-             // we never found anyone using that type
-            if (type==null) continue;
-            if (type instanceof AnnotationType) {
-                Collection<AnnotatedElement> elements = ((AnnotationType) type).allAnnotatedTypes();
-                for (AnnotatedElement element : elements) {
-                    Type t = (element instanceof Member?((Member) element).getDeclaringType():(Type) element);
-                    if (t.wasDefinedIn(uris)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return annotations != null && indexer.hasAnyAnnotations(deploymentContext, uris, annotations.toArray(new String[0]));
     }
 
     public boolean hasAnnotationInArchive(ReadableArchive archive) throws IOException {
